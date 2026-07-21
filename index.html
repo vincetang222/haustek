@@ -1,0 +1,1645 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Haustek Agency — Music Label & Distribution | Để nhạc Việt vang xa hơn</title>
+<meta name="description" content="Haustek Agency — music label & distribution từ 2017. Làm nhạc, phát hành và đưa nhạc Việt lên Spotify, Apple Music, YouTube Music, TikTok, TIDAL, NhacCuaTui, Zing MP3 cùng mọi nền tảng streaming trên thế giới. Đối tác Believe, ADA, ONErpm.">
+<meta name="keywords" content="Haustek Agency, music label Việt Nam, music distribution, phát hành nhạc Spotify, TikTok, techno Việt Nam, Believe, ADA Music, ONErpm, NhacCuaTui, Zing MP3">
+<meta name="author" content="Haustek Agency">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="https://haustek-agency.com/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Haustek Agency">
+<meta property="og:title" content="Haustek Agency — Music Label & Distribution">
+<meta property="og:description" content="Để nhạc Việt vang xa hơn. Music label & distribution từ 2017.">
+<meta property="og:locale" content="vi_VN">
+<meta property="og:locale:alternate" content="en_US">
+<meta name="twitter:card" content="summary_large_image">
+
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%230A0A0D'/%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%23FF2E4C'/%3E%3Cstop offset='1' stop-color='%237FD6E8'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath d='M20 15v34M44 15v34M20 31h24' stroke='url(%23g)' stroke-width='7' stroke-linecap='round' fill='none'/%3E%3C/svg%3E">
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    { "@type": "Organization", "@id": "https://haustek-agency.com/#org", "name": "Haustek Agency", "url": "https://haustek-agency.com/", "email": "info@haustek-agency.com", "foundingDate": "2017", "foundingLocation": {"@type":"Place","name":"California, USA"}, "sameAs": ["https://www.facebook.com/haustek.agency","https://www.instagram.com/haustek.agency","https://open.spotify.com/artist/1jiigt5sMZ62es2sH1UwYU"] },
+    { "@type": "MusicGroup", "name": "Haustek Agency", "url": "https://haustek-agency.com/", "genre": ["Electronic","Techno","Ambient"], "foundingDate": "2017" }
+  ]
+}
+</script>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Be+Vietnam+Pro:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<style>
+/* =========================================================
+   HAUSTEK v6 — glass, red/ice, bento + ~10 subtle effects
+   ========================================================= */
+:root{
+  --ink:#0A0A0D;
+  --ink-2:#0D0D12;
+  --line:rgba(255,255,255,.09);
+  --line-2:rgba(255,255,255,.18);
+  --glass:rgba(255,255,255,.04);
+  --glass-2:rgba(255,255,255,.07);
+  --concrete:#9A9AA4;
+  --paper:#F0F0F2;
+  --red:#FF2E4C;
+  --ice:#7FD6E8;
+  --display:'Space Grotesk',sans-serif;
+  --body:'Be Vietnam Pro',sans-serif;
+  --mono:'IBM Plex Mono',monospace;
+  --pad:20px;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  background:var(--ink);color:var(--paper);
+  font-family:var(--body);font-weight:300;line-height:1.7;
+  overflow-x:hidden;
+}
+
+/* [FX 1] hạt nhiễu công nghiệp phủ toàn trang */
+body::after{
+  content:"";position:fixed;inset:0;pointer-events:none;z-index:200;opacity:.045;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* [FX 2] con trỏ tùy chỉnh — 2 vòng tròn theo chuột */
+.cursor,.cursor-dot{
+  position:fixed;top:0;left:0;pointer-events:none;z-index:9998;
+  border-radius:50%;transform:translate(-50%,-50%);
+  transition:transform .1s linear, width .25s, height .25s, background .25s, border-color .25s, opacity .25s;
+  will-change:transform;
+}
+.cursor{width:28px;height:28px;border:1px solid var(--paper);opacity:.6;mix-blend-mode:difference}
+.cursor-dot{width:5px;height:5px;background:var(--red);z-index:9999}
+.cursor.hot{width:52px;height:52px;border-color:var(--red);opacity:1}
+@media(hover:none){.cursor,.cursor-dot{display:none}}
+
+::selection{background:var(--red);color:var(--paper)}
+img{max-width:100%;display:block}
+a{color:inherit;text-decoration:none}
+a,button,summary{cursor:pointer;-webkit-tap-highlight-color:transparent}
+
+/* [FX 3] progress bar cuộn trang */
+.scroll-progress{
+  position:fixed;top:0;left:0;height:2px;width:0;
+  background:linear-gradient(90deg,var(--red),var(--ice));
+  z-index:9997;transition:width .1s linear;
+  box-shadow:0 0 12px rgba(255,46,76,.6);
+}
+
+/* =========================================================
+   NAV
+   ========================================================= */
+.nav{
+  position:fixed;top:0;left:0;right:0;z-index:100;
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+  padding:12px var(--pad);
+  background:rgba(10,10,13,.62);
+  backdrop-filter:blur(14px) saturate(1.2);-webkit-backdrop-filter:blur(14px) saturate(1.2);
+  border-bottom:1px solid var(--line);
+}
+.logo{display:flex;align-items:center;gap:10px;flex:none}
+.logo img{height:11px;width:auto}
+.rec{width:8px;height:8px;border-radius:50%;background:var(--red);flex:none;box-shadow:0 0 12px var(--red);animation:blink 1.6s steps(2,end) infinite}
+@keyframes blink{50%{opacity:.3}}
+.nav-right{display:flex;align-items:center;gap:8px}
+.nav-links{display:none}
+.lang-toggle{
+  font-family:var(--mono);font-size:11px;letter-spacing:.08em;
+  background:var(--glass);border:1px solid var(--line);color:var(--concrete);
+  padding:7px 12px;border-radius:8px;transition:all .2s;
+}
+.lang-toggle:hover{border-color:var(--line-2);color:var(--paper)}
+.nav-submit{
+  font-family:var(--mono);font-size:11px;letter-spacing:.08em;
+  background:var(--paper);color:var(--ink);padding:8px 14px;font-weight:500;border-radius:8px;
+  position:relative;overflow:hidden;transition:color .2s;
+}
+.nav-submit::before{content:"";position:absolute;inset:0;background:var(--red);transform:translateX(-101%);transition:transform .28s}
+.nav-submit span{position:relative;z-index:1}
+.nav-submit:hover::before{transform:none}
+.nav-submit:hover{color:var(--paper)}
+@media(min-width:1000px){
+  .nav-links{display:flex;gap:22px}
+  .nav-links a{color:var(--concrete);font-family:var(--mono);font-size:12px;letter-spacing:.05em;transition:color .2s;position:relative;padding:4px 0}
+  .nav-links a::after{content:"";position:absolute;left:0;bottom:-2px;width:100%;height:1px;background:var(--red);transform:scaleX(0);transform-origin:right;transition:transform .3s ease}
+  .nav-links a:hover::after,.nav-links a.on::after{transform:scaleX(1);transform-origin:left}
+  .nav-links a:hover,.nav-links a.on{color:var(--paper)}
+}
+
+/* =========================================================
+   SECTIONS
+   ========================================================= */
+section{padding:82px var(--pad) 60px;position:relative;overflow:hidden;border-bottom:1px solid var(--line)}
+.wrap{width:100%;max-width:1200px;margin:0 auto;position:relative;z-index:2}
+
+/* [PERF] section nào cuộn ra khỏi màn hình thì trình duyệt bỏ qua việc
+   vẽ/blur bên trong nó — giảm hẳn số khung kính cần tính cùng lúc */
+section:not(.hero){content-visibility:auto;contain-intrinsic-size:1px 900px}
+
+.sec-head{margin-bottom:22px}
+.sec-eyebrow{
+  display:flex;align-items:center;gap:14px;
+  font-family:var(--mono);font-size:11px;letter-spacing:.22em;text-transform:uppercase;
+  color:var(--concrete);margin-bottom:14px;
+}
+.sec-eyebrow::before{content:"";width:26px;height:1px;background:var(--red)}
+.sec-eyebrow .sec-no{margin-left:auto;color:rgba(255,255,255,.2);letter-spacing:.2em}
+h1,h2{font-family:var(--display);font-weight:600;letter-spacing:-.025em;color:var(--paper)}
+h2{font-size:clamp(30px,7vw,58px);line-height:1.02;margin-bottom:12px}
+h2 em,h1 em{
+  font-style:italic;font-weight:500;
+  background:linear-gradient(92deg,var(--red) 0%,var(--ice) 100%);
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+}
+.lead{color:var(--concrete);font-size:15px;max-width:560px}
+
+/* [FX 4] scroll reveal — mờ + trồi lên */
+.rv{opacity:0;transform:translateY(24px);transition:opacity .7s ease,transform .7s ease}
+.rv.in{opacity:1;transform:none}
+
+/* section backgrounds */
+.bg-about::before{content:"";position:absolute;inset:0;z-index:0;
+  background:radial-gradient(48% 40% at 88% 8%, rgba(255,46,76,.14), transparent 70%),
+             radial-gradient(52% 44% at 6% 96%, rgba(127,214,232,.09), transparent 70%);}
+.bg-svc{background:var(--ink-2)}
+.bg-svc::before{content:"";position:absolute;inset:0;z-index:0;opacity:.5;
+  background-image:linear-gradient(rgba(255,255,255,.03) 1px,transparent 1px),
+                   linear-gradient(90deg,rgba(255,255,255,.03) 1px,transparent 1px);
+  background-size:56px 56px;
+  -webkit-mask-image:radial-gradient(72% 72% at 50% 40%,#000,transparent);
+          mask-image:radial-gradient(72% 72% at 50% 40%,#000,transparent);}
+.bg-partners{background:#08080B}
+.bg-partners::before{content:"";position:absolute;inset:0;z-index:0;
+  background:radial-gradient(70% 60% at 50% 50%, rgba(255,46,76,.06), transparent 70%);}
+.bg-artists{background:var(--ink-2)}
+.bg-artists::before{content:"";position:absolute;inset:0;z-index:0;
+  background:radial-gradient(46% 40% at 20% 10%, rgba(127,214,232,.09), transparent 70%),
+             radial-gradient(48% 42% at 92% 96%, rgba(255,46,76,.09), transparent 70%);}
+.bg-collabs::before{content:"";position:absolute;inset:0;z-index:0;opacity:.4;
+  background-image:repeating-linear-gradient(90deg,var(--line) 0 1px,transparent 1px 120px);
+  -webkit-mask-image:radial-gradient(70% 70% at 50% 50%,#000,transparent);
+          mask-image:radial-gradient(70% 70% at 50% 50%,#000,transparent);}
+.bg-rel::before{content:"";position:absolute;inset:0;z-index:0;
+  background:radial-gradient(60% 48% at 50% 110%, rgba(127,214,232,.12), transparent 70%);}
+.bg-blog{background:var(--ink-2)}
+.bg-blog::before{content:"";position:absolute;inset:0;z-index:0;opacity:.55;
+  background-image:radial-gradient(rgba(255,255,255,.05) 1px,transparent 1px);
+  background-size:22px 22px;
+  -webkit-mask-image:radial-gradient(75% 75% at 50% 50%,#000,transparent);
+          mask-image:radial-gradient(75% 75% at 50% 50%,#000,transparent);}
+.bg-faq::before{content:"";position:absolute;inset:0;z-index:0;
+  background:radial-gradient(42% 34% at 92% 88%, rgba(255,46,76,.11), transparent 70%);}
+.bg-ct{background:var(--ink-2)}
+.bg-ct::before{content:"";position:absolute;inset:0;z-index:0;
+  background:radial-gradient(54% 46% at 12% 8%, rgba(255,46,76,.14), transparent 70%),
+             radial-gradient(56% 48% at 92% 96%, rgba(127,214,232,.13), transparent 70%);}
+
+/* =========================================================
+   HERO
+   ========================================================= */
+.hero{
+  min-height:100svh;display:flex;flex-direction:column;justify-content:space-between;
+  padding-top:78px;padding-bottom:22px;
+}
+#ripple{position:absolute;inset:0;width:100%;height:100%;z-index:0}
+.hero::before{
+  content:"";position:absolute;inset:0;z-index:1;pointer-events:none;
+  background:radial-gradient(42% 38% at 82% 14%, rgba(255,46,76,.16), transparent 70%),
+             radial-gradient(46% 42% at 10% 55%, rgba(127,214,232,.09), transparent 70%),
+             linear-gradient(to bottom, rgba(10,10,13,.35), transparent 40%, rgba(10,10,13,.92) 96%);
+}
+.hero-top{position:relative;z-index:2}
+.hero-tag{
+  display:inline-flex;align-items:center;gap:10px;
+  font-family:var(--mono);font-size:10.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--concrete);
+  border:1px solid var(--line);border-radius:100px;padding:7px 14px;margin-bottom:22px;
+  background:var(--glass);backdrop-filter:blur(10px);
+}
+.hero-tag .pulse{width:6px;height:6px;border-radius:50%;background:var(--red);animation:blink 1.6s steps(2,end) infinite;box-shadow:0 0 8px var(--red)}
+h1{font-size:clamp(46px,11vw,124px);line-height:.98;font-weight:600}
+
+/* [FX 5] tiêu đề tách theo dòng, chảy lên khi vào tầm nhìn */
+.split{display:block;overflow:hidden}
+.split .row{display:inline-block;transform:translateY(105%);transition:transform 1s cubic-bezier(.2,.7,.2,1)}
+.split.in .row{transform:translateY(0)}
+.split .row+.row{transition-delay:.1s}
+
+.hero-sub{color:var(--concrete);font-size:14px;max-width:560px;margin:20px 0 24px}
+.hero-sub strong{color:var(--paper);font-weight:500}
+
+.deck{
+  display:inline-flex;align-items:center;gap:14px;flex-wrap:wrap;
+  padding:10px;border:1px solid var(--line);border-radius:16px;
+  background:var(--glass);backdrop-filter:blur(14px);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.07);
+}
+.play-btn{
+  display:inline-flex;align-items:center;gap:12px;
+  font-family:var(--mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;
+  background:var(--paper);color:var(--ink);border:none;padding:14px 20px;font-weight:500;border-radius:10px;
+  transition:transform .15s,box-shadow .25s;
+}
+.play-btn:hover{box-shadow:0 6px 22px rgba(255,46,76,.4)}
+.play-btn:active{transform:translateY(2px)}
+.vu{display:flex;gap:3px;align-items:flex-end;height:16px}
+.vu i{width:3px;height:4px;background:var(--ink);border-radius:1px;transition:height .1s}
+.playing .vu i{background:var(--red)}
+.bpm{font-family:var(--mono);font-size:11px;letter-spacing:.1em;color:var(--concrete);padding-right:8px}
+.bpm b{color:var(--paper);font-weight:500}
+
+/* HERO bento */
+.hero-bento{
+  position:relative;z-index:2;
+  display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin-top:32px;
+}
+.hb{
+  background:var(--glass);border:1px solid var(--line);border-radius:14px;padding:14px;
+  backdrop-filter:blur(14px);box-shadow:inset 0 1px 0 rgba(255,255,255,.07);
+  min-height:88px;display:flex;flex-direction:column;justify-content:space-between;
+  position:relative;overflow:hidden;
+}
+.hb b{font-family:var(--display);font-weight:700;font-size:clamp(20px,4.6vw,32px);display:block;letter-spacing:-.02em;line-height:1.1}
+.hb span{font-family:var(--mono);font-size:10px;letter-spacing:.1em;color:var(--concrete);text-transform:uppercase}
+.hb.big{grid-column:span 3;grid-row:span 2}
+.hb.wide{grid-column:span 3}
+.hb.sm{grid-column:span 2}
+.hb-1 b{color:var(--red)}
+.hb-1{background:linear-gradient(135deg,rgba(255,46,76,.13),var(--glass) 60%)}
+.hb-1::before{content:"";position:absolute;right:-30px;bottom:-30px;width:120px;height:120px;border-radius:50%;background:radial-gradient(circle,rgba(255,46,76,.22),transparent 65%)}
+.hb-3 b{color:var(--ice)}
+@media(max-width:640px){
+  .hero-bento{grid-template-columns:repeat(4,1fr)}
+  .hb.big{grid-column:span 4;grid-row:auto}
+  .hb.wide{grid-column:span 2}
+  .hb.sm{grid-column:span 2}
+}
+
+/* =========================================================
+   TICKER
+   ========================================================= */
+.ticker{
+  border-bottom:1px solid var(--line);
+  overflow:hidden;white-space:nowrap;padding:11px 0;
+  background:rgba(255,255,255,.03);backdrop-filter:blur(8px);
+}
+.ticker-track{display:inline-block;animation:scroll 30s linear infinite}
+.ticker:hover .ticker-track{animation-play-state:paused} /* [FX 6] pause ticker khi hover */
+.ticker span{
+  font-family:var(--display);font-weight:500;font-size:12.5px;letter-spacing:.18em;
+  text-transform:uppercase;color:var(--concrete);margin:0 22px;transition:color .2s;
+}
+.ticker span:hover{color:var(--paper)}
+.ticker i{color:var(--red);font-style:normal}
+@keyframes scroll{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+
+/* =========================================================
+   CARD KÍNH  — [FX 7] tilt 3D theo chuột
+   ========================================================= */
+.card{
+  background:var(--glass);border:1px solid var(--line);border-radius:16px;
+  backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.07), 0 8px 28px rgba(0,0,0,.35);
+  display:flex;flex-direction:column;overflow:hidden;position:relative;
+  transition:border-color .3s,box-shadow .3s,transform .18s ease-out;
+  transform-style:preserve-3d;
+  /* will-change chỉ bật lúc tương tác thật (xem JS) — bật sẵn cho mọi card
+     cùng lúc sẽ ép trình duyệt giữ riêng một lớp compositor cho từng card,
+     rất tốn khi cuộn qua nhiều card liên tiếp */
+}
+.card:hover{
+  border-color:var(--line-2);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.1), 0 20px 44px rgba(0,0,0,.55);
+}
+/* [FX 8] highlight sáng chạy theo chuột */
+.card::before{
+  content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;
+  background:radial-gradient(240px 240px at var(--mx,50%) var(--my,50%), rgba(255,255,255,.09), transparent 60%);
+  opacity:0;transition:opacity .3s;z-index:1;
+}
+.card:hover::before{opacity:1}
+.card>*{position:relative;z-index:2}
+.card-head{
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+  padding:10px 14px;border-bottom:1px solid var(--line);background:var(--glass-2);
+}
+.card-head .ct{font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--paper);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.card-head .cn{font-family:var(--mono);font-size:10px;color:var(--concrete);letter-spacing:.08em;flex:none}
+.card-head .dot{width:6px;height:6px;border-radius:50%;background:var(--concrete);flex:none;transition:all .3s}
+.card:hover .card-head .dot{background:var(--red);box-shadow:0 0 8px var(--red);animation:pulseDot 1.2s ease-in-out infinite}
+@keyframes pulseDot{50%{transform:scale(1.4)}}
+
+/* =========================================================
+   ABOUT
+   ========================================================= */
+.about-bento{display:grid;gap:10px;grid-template-columns:1fr}
+@media(min-width:760px){
+  .about-bento{grid-template-columns:1.4fr 1fr;grid-template-rows:auto auto}
+  .a-story{grid-column:1;grid-row:1 / span 2}
+  .a-stat-1{grid-column:2;grid-row:1}
+  .a-stats{grid-column:2;grid-row:2}
+}
+.a-story{padding:0}
+.a-story .a-inner{padding:20px}
+.a-story p{color:var(--concrete);font-size:14px}
+.a-story p+p{margin-top:10px}
+.roles{display:flex;flex-wrap:wrap;gap:6px;margin-top:16px}
+.roles span{
+  font-family:var(--mono);font-size:10px;letter-spacing:.05em;text-transform:uppercase;
+  padding:5px 11px;border:1px solid var(--line);border-radius:100px;color:var(--concrete);
+  background:var(--glass);transition:all .2s;
+}
+.roles span:hover{border-color:var(--ice);color:var(--ice);transform:translateY(-2px)}
+.a-stat-1{padding:24px;position:relative;overflow:hidden;display:flex;flex-direction:column;justify-content:space-between}
+.a-stat-1::after{content:"";position:absolute;right:-40px;top:-40px;width:180px;height:180px;border-radius:50%;
+  background:radial-gradient(circle,rgba(255,46,76,.22),transparent 65%);pointer-events:none;z-index:1}
+.a-stat-1 .num{font-family:var(--display);font-weight:700;font-size:clamp(40px,8vw,64px);line-height:1;letter-spacing:-.03em;color:var(--paper);position:relative;z-index:2}
+.a-stat-1 .num em{font-style:normal;color:var(--red)}
+.a-stat-1 .num-label{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--concrete);margin-top:10px;display:block;position:relative;z-index:2}
+.a-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);border-radius:14px;overflow:hidden;border:1px solid var(--line)}
+.a-stats>div{background:var(--ink);padding:14px 12px;transition:background .3s}
+.a-stats>div:hover{background:var(--ink-2)}
+.a-stats b{font-family:var(--display);font-weight:700;font-size:clamp(18px,3.8vw,24px);display:block;letter-spacing:-.02em}
+.a-stats span{font-family:var(--mono);font-size:9px;letter-spacing:.08em;color:var(--concrete);text-transform:uppercase;line-height:1.3;display:block;margin-top:2px}
+
+/* =========================================================
+   SERVICES bento
+   ========================================================= */
+.svc-bento{display:grid;gap:10px;grid-template-columns:1fr}
+@media(min-width:760px){
+  .svc-bento{grid-template-columns:repeat(6,1fr);grid-auto-rows:minmax(180px,auto)}
+  .svc-1{grid-column:span 4;grid-row:span 2}
+  .svc-2{grid-column:span 2}
+  .svc-3{grid-column:span 2}
+  .svc-4{grid-column:span 3}
+  .svc-5{grid-column:span 3}
+}
+.svc-body{padding:18px;display:flex;flex-direction:column;gap:12px;flex:1}
+.svc-body svg{color:var(--ice)}
+.svc-body h3{font-family:var(--display);font-weight:600;font-size:16px;letter-spacing:-.01em}
+.svc-body p{color:var(--concrete);font-size:13px;flex:1}
+.svc-1 .svc-body{gap:16px}
+.svc-1 .svc-body h3{font-size:22px}
+.svc-1 .svc-body p{font-size:14px;max-width:520px}
+.svc-1{background:linear-gradient(160deg,rgba(255,46,76,.08),var(--glass) 60%)}
+.svc-1 .card-head .dot{background:var(--red);box-shadow:0 0 8px var(--red)}
+.svc-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.svc-tags span{
+  font-family:var(--mono);font-size:10px;letter-spacing:.06em;text-transform:uppercase;
+  padding:4px 9px;border:1px solid var(--line);border-radius:100px;color:var(--concrete);transition:all .2s;
+}
+.svc-tags span:hover{color:var(--paper);border-color:var(--paper);transform:translateY(-2px)}
+
+/* =========================================================
+   PARTNERS
+   ========================================================= */
+.partners-strip{display:grid;gap:10px;grid-template-columns:repeat(2,1fr);margin-top:26px}
+@media(min-width:760px){.partners-strip{grid-template-columns:repeat(5,1fr)}}
+.partner{
+  display:flex;flex-direction:column;justify-content:space-between;gap:10px;
+  padding:16px;border:1px solid var(--line);border-radius:12px;
+  background:var(--glass);backdrop-filter:blur(8px);
+  transition:border-color .3s,transform .3s,background .3s;min-height:120px;position:relative;overflow:hidden;
+}
+.partner:hover{border-color:var(--line-2);transform:translateY(-3px);background:var(--glass-2)}
+.partner .p-name{font-family:var(--display);font-weight:700;font-size:17px;letter-spacing:-.02em;color:var(--paper)}
+.partner .p-tag{font-family:var(--mono);font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--concrete)}
+.partner .p-arrow{display:inline-flex;align-items:center;gap:4px;font-family:var(--mono);font-size:10px;color:var(--concrete);letter-spacing:.06em;transition:color .25s}
+.partner:hover .p-arrow{color:var(--red)}
+.partner .p-arrow span{transition:transform .25s}
+.partner:hover .p-arrow span{transform:translate(3px,-3px)}
+
+/* =========================================================
+   ARTISTS grid — [FX 9] avatar khối glass, gradient rìa
+   ========================================================= */
+.artist-grid{
+  display:grid;gap:10px;grid-template-columns:repeat(2,1fr);margin-top:10px;
+}
+@media(min-width:640px){.artist-grid{grid-template-columns:repeat(3,1fr)}}
+@media(min-width:900px){.artist-grid{grid-template-columns:repeat(4,1fr)}}
+@media(min-width:1180px){.artist-grid{grid-template-columns:repeat(6,1fr)}}
+.artist{
+  display:flex;flex-direction:column;gap:8px;padding:12px;
+  background:var(--glass);border:1px solid var(--line);border-radius:14px;
+  backdrop-filter:blur(6px);transition:all .3s;position:relative;overflow:hidden;text-align:left;
+}
+.artist:hover{transform:translateY(-4px);border-color:var(--line-2)}
+.artist .av{
+  aspect-ratio:1;border-radius:10px;position:relative;overflow:hidden;
+  background:linear-gradient(135deg,var(--ink-2),#161620);
+}
+.artist .av::before{
+  content:"";position:absolute;inset:0;opacity:.85;transition:transform .5s ease;
+  background:conic-gradient(from calc(var(--seed,0)*90deg) at 40% 60%, #FF2E4C, #7FD6E8, #F0F0F2, #FF2E4C);
+  filter:blur(6px);
+}
+.artist:hover .av::before{transform:scale(1.15) rotate(6deg)}
+.artist .av::after{
+  content:attr(data-init);position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  font-family:var(--display);font-weight:700;font-size:clamp(22px,3.6vw,32px);color:var(--paper);
+  letter-spacing:-.02em;text-shadow:0 2px 12px rgba(0,0,0,.6);z-index:2;mix-blend-mode:screen;
+}
+.artist .a-name{font-family:var(--display);font-weight:600;font-size:14px;letter-spacing:-.01em;color:var(--paper)}
+.artist .a-role{font-family:var(--mono);font-size:10px;letter-spacing:.08em;color:var(--concrete);text-transform:uppercase}
+
+/* =========================================================
+   COLLABS grid — [FX 10] "logo wall" khung glass
+   ========================================================= */
+.collab-grid{
+  display:grid;gap:10px;grid-template-columns:repeat(2,1fr);margin-top:10px;
+}
+@media(min-width:640px){.collab-grid{grid-template-columns:repeat(3,1fr)}}
+@media(min-width:900px){.collab-grid{grid-template-columns:repeat(4,1fr)}}
+@media(min-width:1180px){.collab-grid{grid-template-columns:repeat(6,1fr)}}
+.collab{
+  display:flex;flex-direction:column;justify-content:space-between;gap:10px;
+  padding:14px;border:1px solid var(--line);border-radius:12px;background:var(--glass);
+  backdrop-filter:blur(6px);min-height:96px;transition:all .3s;position:relative;overflow:hidden;
+}
+.collab:hover{transform:translateY(-3px);border-color:var(--line-2);background:var(--glass-2)}
+.collab::before{
+  content:"";position:absolute;left:0;top:0;bottom:0;width:2px;background:var(--red);
+  transform:scaleY(0);transform-origin:top;transition:transform .35s ease;
+}
+.collab:hover::before{transform:scaleY(1)}
+.collab .c-tag{font-family:var(--mono);font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--concrete)}
+.collab .c-name{font-family:var(--display);font-weight:700;font-size:15px;letter-spacing:-.01em;color:var(--paper);line-height:1.2}
+.collab .c-yr{font-family:var(--mono);font-size:10px;color:var(--concrete)}
+
+/* =========================================================
+   RELEASES bento
+   ========================================================= */
+.rel-bento{display:grid;gap:10px;grid-template-columns:1fr}
+@media(min-width:760px){
+  .rel-bento{grid-template-columns:repeat(6,1fr)}
+  .rel-1{grid-column:span 3;grid-row:span 2}
+  .rel-2{grid-column:span 3}
+  .rel-3{grid-column:span 3}
+  .rel-4{grid-column:span 2}
+  .rel-5{grid-column:span 2}
+  .rel-6{grid-column:span 2}
+}
+.rel-art{aspect-ratio:1.35;position:relative;overflow:hidden}
+.rel-1 .rel-art{aspect-ratio:auto;height:100%;min-height:280px}
+.rel-art .gart{position:absolute;inset:0;transition:transform .6s ease;opacity:.92;filter:grayscale(.1) contrast(1.05)}
+.card:hover .rel-art .gart{transform:scale(1.06)}
+.rel-art::after{content:"";position:absolute;inset:0;background:linear-gradient(to top,rgba(10,10,13,.65),transparent 55%);pointer-events:none}
+.rel-art .play{
+  position:absolute;right:12px;bottom:12px;width:40px;height:40px;border-radius:50%;z-index:3;
+  background:rgba(240,240,242,.94);color:var(--ink);display:flex;align-items:center;justify-content:center;
+  opacity:0;transform:translateY(8px) scale(.9);transition:all .28s;
+}
+.card:hover .rel-art .play{opacity:1;transform:none}
+.rel-foot{display:flex;justify-content:space-between;align-items:center;padding:11px 14px;border-top:1px solid var(--line)}
+.rel-foot span{font-family:var(--mono);font-size:10px;letter-spacing:.08em;color:var(--concrete);text-transform:uppercase}
+.rel-foot .go{font-family:var(--mono);font-size:10.5px;color:var(--paper)}
+
+.g1{background:repeating-radial-gradient(circle at 30% 40%,rgba(240,240,242,.9) 0 2px,#0A0A0D 2px 14px)}
+.g2{background:repeating-radial-gradient(circle at 75% 25%,#0A0A0D 0 3px,rgba(127,214,232,.55) 3px 5px,#14161C 5px 16px)}
+.g3{background:repeating-conic-gradient(from 0deg at 55% 60%,rgba(240,240,242,.85) 0 4deg,#0A0A0D 4deg 14deg)}
+.g4{background:repeating-radial-gradient(circle at 60% 80%,rgba(255,46,76,.7) 0 2px,#1B0E14 2px 10px,#0A0A0D 10px 22px)}
+.g5{background:repeating-linear-gradient(100deg,#0A0A0D 0 6px,rgba(240,240,242,.5) 6px 8px,#0A0A0D 8px 26px)}
+.g6{background:repeating-radial-gradient(circle at 20% 20%,#0A0A0D 0 4px,rgba(127,214,232,.55) 4px 6px,#0A0A0D 6px 24px)}
+
+/* =========================================================
+   EVENTS
+   ========================================================= */
+.evt-bento{display:grid;gap:10px;grid-template-columns:1fr}
+@media(min-width:760px){
+  .evt-bento{grid-template-columns:repeat(6,1fr)}
+  .evt-1{grid-column:span 4;grid-row:span 2}
+  .evt-2{grid-column:span 2}
+  .evt-3{grid-column:span 2}
+  .evt-4{grid-column:span 3}
+  .evt-5{grid-column:span 3}
+}
+.evt-body{padding:16px;display:flex;flex-direction:column;gap:8px;flex:1}
+.evt-body h3{font-family:var(--display);font-weight:600;font-size:17px;letter-spacing:-.01em;color:var(--paper)}
+.evt-1 .evt-body h3{font-size:26px;line-height:1.15}
+.evt-body p{color:var(--concrete);font-size:13px}
+.evt-meta{display:flex;gap:12px;font-family:var(--mono);font-size:10px;letter-spacing:.08em;color:var(--concrete);text-transform:uppercase}
+.evt-meta .past{color:var(--red)}
+.evt-art{aspect-ratio:1.7;position:relative;overflow:hidden}
+.evt-1 .evt-art{aspect-ratio:1.5}
+.evt-art .gart{position:absolute;inset:0;opacity:.85;filter:grayscale(.1);transition:transform .6s ease}
+.card:hover .evt-art .gart{transform:scale(1.05)}
+.evt-art::after{content:"";position:absolute;inset:0;background:linear-gradient(to top,rgba(10,10,13,.55),transparent 55%);pointer-events:none}
+.evt-art .badge{
+  position:absolute;top:12px;left:12px;font-family:var(--mono);font-size:10px;
+  letter-spacing:.14em;text-transform:uppercase;color:var(--paper);z-index:2;
+  padding:5px 10px;border-radius:100px;background:rgba(10,10,13,.55);border:1px solid var(--line);backdrop-filter:blur(8px);
+}
+.evt-art .badge.live{background:rgba(255,46,76,.85);border-color:var(--red)}
+
+/* =========================================================
+   BLOG
+   ========================================================= */
+.blog-grid{display:grid;gap:12px;grid-template-columns:1fr}
+@media(min-width:640px){.blog-grid{grid-template-columns:repeat(2,1fr)}}
+@media(min-width:1000px){.blog-grid{grid-template-columns:repeat(3,1fr)}}
+.post-body{padding:14px 16px 16px;display:flex;flex-direction:column;gap:9px;flex:1}
+.post-meta{display:flex;gap:10px;font-family:var(--mono);font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--concrete)}
+.post-body h3{font-family:var(--display);font-weight:500;font-size:15.5px;line-height:1.35;letter-spacing:-.01em;color:var(--paper)}
+.post-body p{color:var(--concrete);font-size:12.5px;flex:1}
+.more{font-family:var(--mono);font-size:11px;letter-spacing:.06em;color:var(--red);display:inline-flex;gap:6px;align-items:center}
+.more::after{content:"→";transition:transform .25s}
+.card:hover .more::after{transform:translateX(4px)}
+.post-art{height:110px;position:relative;overflow:hidden}
+.post-art .gart{position:absolute;inset:0;opacity:.85;transition:transform .5s}
+.card:hover .post-art .gart{transform:scale(1.05)}
+.post-art::after{content:"";position:absolute;inset:0;background:linear-gradient(to top,rgba(10,10,13,.5),transparent);pointer-events:none}
+
+/* =========================================================
+   FAQ
+   ========================================================= */
+.faq-list{max-width:820px}
+.faq-list details{
+  border:1px solid var(--line);border-radius:14px;margin-bottom:8px;
+  background:var(--glass);backdrop-filter:blur(12px);
+  transition:border-color .25s;overflow:hidden;
+}
+.faq-list details[open]{border-color:var(--line-2)}
+.faq-list summary{
+  list-style:none;display:flex;justify-content:space-between;align-items:center;gap:14px;
+  padding:15px 18px;font-weight:500;font-size:13.5px;
+}
+.faq-list summary::-webkit-details-marker{display:none}
+.faq-list summary .chev{flex:none;font-family:var(--mono);color:var(--concrete);transition:transform .25s,color .25s}
+.faq-list details[open] .chev{transform:rotate(45deg);color:var(--red)}
+.faq-list .ans{padding:0 18px 15px;color:var(--concrete);font-size:12.5px;max-width:700px}
+.faq-list .ans a{color:var(--red)}
+.faq-list .ans a:hover{text-decoration:underline}
+
+/* =========================================================
+   PLATFORMS + CONTACT
+   ========================================================= */
+.plat-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:22px}
+.plat-grid a{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:13px 15px;border-radius:12px;color:var(--concrete);
+  background:var(--glass);border:1px solid var(--line);backdrop-filter:blur(8px);
+  font-family:var(--mono);font-size:11.5px;letter-spacing:.04em;transition:all .2s;
+}
+.plat-grid a:hover{background:var(--paper);color:var(--ink);border-color:var(--paper);transform:translateY(-2px)}
+.plat-grid a.tiktok:hover{background:var(--red);color:var(--paper);border-color:var(--red)}
+@media(min-width:760px){.plat-grid{grid-template-columns:repeat(3,1fr)}}
+@media(min-width:1020px){.plat-grid{grid-template-columns:repeat(5,1fr)}}
+.contact-line{display:flex;flex-direction:column;gap:8px}
+.contact-line a{
+  display:flex;justify-content:space-between;align-items:center;gap:10px;
+  border:1px solid var(--line);border-radius:12px;padding:13px 15px;font-size:13px;
+  background:var(--glass);backdrop-filter:blur(10px);transition:all .2s;
+}
+.contact-line a span{font-family:var(--mono);font-size:10px;color:var(--concrete);letter-spacing:.08em;flex:none}
+.contact-line a:hover{border-color:var(--line-2);transform:translateX(4px)}
+.mailto-big{
+  font-family:var(--display);font-weight:600;font-size:clamp(18px,4.5vw,28px);letter-spacing:-.02em;
+  border-bottom:2px solid var(--red);display:inline-block;margin:6px 0 22px;word-break:break-all;
+  transition:color .2s;
+}
+.mailto-big:hover{color:var(--red)}
+
+/* =========================================================
+   SUBMIT PAGE
+   ========================================================= */
+.page{display:none}
+.page.active{display:block;animation:pageIn .5s ease}
+@keyframes pageIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.pg-submit,.pg-events{background:var(--ink-2)}
+.pg-submit::before{content:"";position:absolute;inset:0;z-index:0;
+  background:radial-gradient(50% 42% at 88% 6%, rgba(255,46,76,.15), transparent 70%),
+             radial-gradient(52% 46% at 6% 96%, rgba(127,214,232,.11), transparent 70%);}
+.submit-wrap{max-width:640px;margin:0 auto;width:100%;position:relative;z-index:2}
+.form-card{
+  background:var(--glass);border:1px solid var(--line);border-radius:20px;backdrop-filter:blur(12px);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.07), 0 16px 48px rgba(0,0,0,.4);
+  padding:22px;margin-top:18px;
+}
+.form-grid{display:grid;gap:14px}
+.field label{display:block;font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--concrete);margin-bottom:6px}
+.field input,.field select,.field textarea{
+  width:100%;background:rgba(0,0,0,.3);border:1px solid var(--line);color:var(--paper);
+  font-family:var(--body);font-size:14px;padding:13px 14px;border-radius:10px;
+  transition:border-color .2s,box-shadow .2s;appearance:none;
+}
+.field textarea{min-height:96px;resize:vertical}
+.field input:focus,.field select:focus,.field textarea:focus{
+  outline:none;border-color:var(--line-2);box-shadow:0 0 0 3px rgba(127,214,232,.12);
+}
+.form-note{font-family:var(--mono);font-size:10.5px;color:var(--concrete);letter-spacing:.02em}
+.submit-btn{
+  margin-top:4px;display:inline-flex;align-items:center;gap:12px;
+  font-family:var(--mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;font-weight:500;
+  background:var(--paper);color:var(--ink);border:none;padding:16px 26px;border-radius:12px;
+  position:relative;overflow:hidden;transition:transform .15s;
+}
+.submit-btn::before{content:"";position:absolute;inset:0;background:linear-gradient(92deg,var(--red),var(--ice));transform:translateX(-101%);transition:transform .3s}
+.submit-btn span,.submit-btn svg{position:relative;z-index:1}
+.submit-btn:hover::before{transform:none}
+.submit-btn:active{transform:translateY(2px)}
+@media(min-width:640px){.form-2{display:grid;grid-template-columns:1fr 1fr;gap:14px}}
+
+footer{padding:22px var(--pad);display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap}
+footer img{height:10px;opacity:.7}
+footer p{font-family:var(--mono);font-size:10px;letter-spacing:.06em;color:var(--concrete)}
+.fsoc{display:flex;gap:16px}
+.fsoc a{color:var(--concrete);font-size:11px;font-family:var(--mono);transition:color .2s}
+.fsoc a:hover{color:var(--paper)}
+
+a:focus-visible,button:focus-visible,summary:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible{outline:2px solid var(--red);outline-offset:2px}
+
+@media (prefers-reduced-motion: reduce){
+  *{animation:none!important;transition:none!important}
+  .rv,.split .row{opacity:1;transform:none}
+  html{scroll-behavior:auto}
+  .cursor,.cursor-dot{display:none}
+}
+</style>
+</head>
+<body>
+
+<!-- [FX 2] con trỏ tùy chỉnh -->
+<div class="cursor" aria-hidden="true"></div>
+<div class="cursor-dot" aria-hidden="true"></div>
+
+<!-- [FX 3] progress bar -->
+<div class="scroll-progress" id="sp" aria-hidden="true"></div>
+
+<header class="nav">
+  <a class="logo" href="#/" aria-label="Haustek Agency">
+    <span class="rec" aria-hidden="true"></span>
+    <img src="data:image/png;base64,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" alt="Haustek Agency" width="389" height="82">
+  </a>
+  <nav class="nav-links" aria-label="Điều hướng">
+    <a href="#/" data-nav="home" data-i18n="nav_home">Trang chủ</a>
+    <a href="#/events" data-nav="events" data-i18n="nav_events">Sự kiện</a>
+    <a href="#/#services" data-i18n="nav_services">Dịch vụ</a>
+    <a href="#/#artists" data-i18n="nav_artists">Nghệ sĩ</a>
+    <a href="#/#releases" data-i18n="nav_releases">Phát hành</a>
+    <a href="#/#blog">Blog</a>
+    <a href="#/#faq">FAQ</a>
+  </nav>
+  <div class="nav-right">
+    <button class="lang-toggle" id="langBtn" aria-label="Switch to English">EN</button>
+    <a class="nav-submit" href="#/submit"><span data-i18n="nav_submit">GỬI NHẠC</span></a>
+  </div>
+</header>
+
+<!-- ===================== TRANG CHỦ ===================== -->
+<main id="page-home" class="page active">
+
+<section class="hero" id="top">
+  <canvas id="ripple" aria-hidden="true"></canvas>
+
+  <div class="wrap hero-top">
+    <p class="hero-tag"><span class="pulse"></span><span data-i18n="hero_tag">Đang phát sóng · Since 2017</span></p>
+    <h1>
+      <span class="split" data-i18n-split="h1_l1"><span class="row">Để nhạc Việt</span></span>
+      <span class="split" data-i18n-split="h1_l2"><span class="row"><em>vang xa hơn.</em></span></span>
+    </h1>
+    <p class="hero-sub" data-i18n="hero_sub"><strong>Haustek Agency</strong> — music label &amp; distribution từ 2017. Nơi hội tụ của producer, DJ, rapper và những giọng ca Việt khắp trong nước lẫn hải ngoại: chúng tôi làm nhạc, phát hành và lo trọn đường đi của mỗi bản thu.</p>
+    <div class="deck">
+      <button class="play-btn" id="playBtn" aria-pressed="false">
+        <svg id="playIco" width="10" height="12" viewBox="0 0 10 12" fill="currentColor" aria-hidden="true"><path d="M0 0l10 6L0 12z"/></svg>
+        <span id="playLabel" data-i18n="play">PLAY BEAT</span>
+        <span class="vu" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>
+      </button>
+      <span class="bpm">124 <b>BPM</b> · <span data-i18n="bpm_note">beat chạy thẳng trong trình duyệt</span></span>
+    </div>
+  </div>
+
+  <div class="wrap hero-bento">
+    <div class="hb big hb-1">
+      <span data-i18n="hb_label_1">Tổng lượt nghe</span>
+      <div><b data-count="700000">0</b><span style="font-family:var(--mono);font-size:11px;letter-spacing:.14em;color:var(--concrete);font-weight:400;text-transform:uppercase;margin-top:4px;display:block" data-i18n="hb_note_1">trên các nền tảng</span></div>
+    </div>
+    <div class="hb wide">
+      <span data-i18n="hb_label_2">Thành lập</span>
+      <b>2017</b>
+    </div>
+    <div class="hb sm hb-3">
+      <span data-i18n="hb_label_3">Nền tảng</span>
+      <b data-count="11">0</b>
+    </div>
+    <div class="hb sm">
+      <span data-i18n="hb_label_4">Releases</span>
+      <b data-count="20" data-suffix="+">0</b>
+    </div>
+  </div>
+</section>
+
+<div class="ticker" aria-hidden="true">
+  <div class="ticker-track" id="tick">
+    <span>The Day Pass <i>—</i></span><span>Alone <i>—</i></span><span>Hey You <i>—</i></span>
+    <span>Heaven Drops <i>—</i></span><span>Time Stop <i>—</i></span><span>The Mountain Mist <i>—</i></span>
+    <span>iamprogrammed <i>—</i></span><span>Shea <i>—</i></span><span>HẮC (HA666) <i>—</i></span>
+    <span>Thập Thiên <i>—</i></span><span>Snow in Summer <i>—</i></span><span>Red River <i>—</i></span>
+  </div>
+</div>
+
+<!-- ABOUT -->
+<section id="about" class="bg-about">
+  <div class="wrap">
+    <div class="sec-head rv">
+      <p class="sec-eyebrow"><span data-i18n="about_label">Về Haustek</span><span class="sec-no">01 / VỀ</span></p>
+      <h2 data-i18n="about_h2">Bắt đầu ở California,<br><em>gắn bó với nhạc Việt.</em></h2>
+    </div>
+    <div class="about-bento">
+      <div class="card a-story rv">
+        <div class="card-head"><span class="ct" data-i18n="about_ct">Hồ sơ label</span><span class="cn">EST.2017</span><span class="dot"></span></div>
+        <div class="a-inner">
+          <p data-i18n="about_p1">Thành lập tại California năm 2017, Haustek đã cùng nghệ sĩ Việt đi qua đủ chặng đường: làm nhạc, dựng show từ những đêm diễn nhỏ đến sân khấu quốc tế, dàn dựng trình diễn nghệ thuật và sản xuất quảng cáo cho nhãn hàng.</p>
+          <p data-i18n="about_p2">Với chúng tôi, mỗi lần phát hành là một lần bắc cầu — để tiếng kick dưới hầm techno hay dải ambient mỏng như sương của nghệ sĩ Việt chạm tới người nghe ở khắp nơi.</p>
+          <div class="roles">
+            <span>Producers</span><span>DJs</span><span>VJs</span><span>Performers</span>
+            <span>Rappers</span><span>Bands</span><span>Singers</span>
+          </div>
+        </div>
+      </div>
+      <div class="card a-stat-1 rv">
+        <div class="num" data-count="276" data-suffix="K">0</div>
+        <span class="num-label" data-i18n="stat_1">The Day Pass — lượt nghe trên Spotify</span>
+      </div>
+      <div class="a-stats rv">
+        <div><b data-count="137" data-suffix="K">0</b><span>Alone</span></div>
+        <div><b data-count="133" data-suffix="K">0</b><span>Hey You</span></div>
+        <div><b data-count="5" data-suffix="K+">0</b><span data-i18n="stat_monthly">Nghe / tháng</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SERVICES -->
+<section id="services" class="bg-svc">
+  <div class="wrap">
+    <div class="sec-head rv">
+      <p class="sec-eyebrow"><span data-i18n="svc_label">Dịch vụ</span><span class="sec-no">02 / DỊCH VỤ</span></p>
+      <h2 data-i18n="svc_h2">Bạn lo phần nhạc,<br><em>Haustek lo phần còn lại.</em></h2>
+    </div>
+    <div class="svc-bento">
+      <article class="card svc-1 rv">
+        <div class="card-head"><span class="ct">Music Distribution</span><span class="cn">SVC-01 · CORE</span><span class="dot"></span></div>
+        <div class="svc-body">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.8 2.6 4 5.7 4 9s-1.2 6.4-4 9c-2.8-2.6-4-5.7-4-9s1.2-6.4 4-9z"/></svg>
+          <h3 data-i18n="svc1_h">Phát hành khắp mọi nơi có tai người nghe</h3>
+          <p data-i18n="svc1_p">Đưa nhạc của bạn lên Spotify, Apple Music, YouTube Music, TikTok, TIDAL, Beatport, NhacCuaTui, Zing MP3… — lên sóng đúng lịch, số liệu minh bạch, báo cáo rõ ràng.</p>
+          <div class="svc-tags">
+            <span>Spotify</span><span>Apple Music</span><span>YouTube</span><span>TikTok</span><span>TIDAL</span><span>NCT</span><span>Zing MP3</span><span>Beatport</span>
+          </div>
+        </div>
+      </article>
+      <article class="card svc-2 rv">
+        <div class="card-head"><span class="ct">Label &amp; A&amp;R</span><span class="cn">SVC-02</span><span class="dot"></span></div>
+        <div class="svc-body">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3"/><circle cx="4" cy="12" r="2"/><circle cx="12" cy="10" r="2"/><circle cx="20" cy="14" r="2"/></svg>
+          <h3 data-i18n="svc2_h">Đồng hành nghệ sĩ</h3>
+          <p data-i18n="svc2_p">Định hình chất riêng, xây hình ảnh nghệ sĩ và vạch lộ trình phát hành đường dài.</p>
+        </div>
+      </article>
+      <article class="card svc-3 rv">
+        <div class="card-head"><span class="ct" data-i18n="svc3_h_head">Sự kiện</span><span class="cn">SVC-03</span><span class="dot"></span></div>
+        <div class="svc-body">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M12 2l2.4 6.9L21 11l-6.6 2.1L12 20l-2.4-6.9L3 11l6.6-2.1z"/></svg>
+          <h3 data-i18n="svc3_h">Show &amp; trình diễn</h3>
+          <p data-i18n="svc3_p">Đêm diễn trong nước, chuỗi quốc tế như United We Stream Asia. <a href="#/events" style="color:var(--red)">Xem lịch sử →</a></p>
+        </div>
+      </article>
+      <article class="card svc-4 rv">
+        <div class="card-head"><span class="ct">Booking</span><span class="cn">SVC-04</span><span class="dot"></span></div>
+        <div class="svc-body">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="2" y="6" width="14" height="12" rx="2"/><path d="M16 10l6-3v10l-6-3"/></svg>
+          <h3 data-i18n="svc4_h">Booking nghệ sĩ</h3>
+          <p data-i18n="svc4_p">DJ set, live band, trình diễn nghệ thuật kèm visual cho brand, festival và không gian riêng.</p>
+        </div>
+      </article>
+      <article class="card svc-5 rv">
+        <div class="card-head"><span class="ct">Production</span><span class="cn">SVC-05</span><span class="dot"></span></div>
+        <div class="svc-body">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M4 4h16v16H4z"/><path d="M8 8h8v8H8z"/></svg>
+          <h3 data-i18n="svc5_h">Sản xuất nhạc &amp; quảng cáo</h3>
+          <p data-i18n="svc5_p">Từ ý tưởng đến thành phẩm — nhạc phim, jingle, campaign cho nhãn hàng.</p>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- PARTNERS -->
+<section id="partners" class="bg-partners">
+  <div class="wrap">
+    <div class="sec-head rv">
+      <p class="sec-eyebrow"><span data-i18n="prt_label">Đối tác phân phối</span><span class="sec-no">03 / ĐỐI TÁC</span></p>
+      <h2 data-i18n="prt_h2">Bên cạnh chúng tôi,<br><em>những cái tên lớn của ngành.</em></h2>
+      <p class="lead" style="margin-top:8px" data-i18n="prt_lead">Haustek kết nối với hệ thống phân phối toàn cầu và cả hai nền tảng streaming lớn nhất Việt Nam — để bản nhạc của bạn xuất hiện đúng nơi khán giả đang nghe.</p>
+    </div>
+    <div class="partners-strip rv">
+      <a class="partner" href="https://www.believe.com/" target="_blank" rel="noopener">
+        <span class="p-tag">GLOBAL</span><span class="p-name">Believe</span>
+        <span class="p-arrow">believe.com <span>↗</span></span>
+      </a>
+      <a class="partner" href="https://www.ada-music.com/" target="_blank" rel="noopener">
+        <span class="p-tag">WARNER GROUP</span><span class="p-name">ADA</span>
+        <span class="p-arrow">ada-music.com <span>↗</span></span>
+      </a>
+      <a class="partner" href="https://onerpm.com/" target="_blank" rel="noopener">
+        <span class="p-tag">GLOBAL</span><span class="p-name">ONErpm</span>
+        <span class="p-arrow">onerpm.com <span>↗</span></span>
+      </a>
+      <a class="partner" href="https://www.nhaccuatui.com/" target="_blank" rel="noopener">
+        <span class="p-tag">VIETNAM</span><span class="p-name">NhacCuaTui</span>
+        <span class="p-arrow">nhaccuatui.com <span>↗</span></span>
+      </a>
+      <a class="partner" href="https://zingmp3.vn/" target="_blank" rel="noopener">
+        <span class="p-tag">VIETNAM</span><span class="p-name">Zing MP3</span>
+        <span class="p-arrow">zingmp3.vn <span>↗</span></span>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ARTISTS -->
+<section id="artists" class="bg-artists">
+  <div class="wrap">
+    <div class="sec-head rv">
+      <p class="sec-eyebrow"><span data-i18n="art_label">Nghệ sĩ Haustek</span><span class="sec-no">04 / ROSTER</span></p>
+      <h2 data-i18n="art_h2">Cộng đồng của chúng tôi,<br><em>từ hầm techno đến ambient.</em></h2>
+      <p class="lead" style="margin-top:8px" data-i18n="art_lead">Producer, DJ, VJ, rapper, ban nhạc và giọng ca cùng chung mái nhà Haustek — trong nước và hải ngoại.</p>
+    </div>
+    <div class="artist-grid rv" id="artistGrid">
+      <!-- render bằng JS để bảo trì dễ -->
+    </div>
+  </div>
+</section>
+
+<!-- COLLABS -->
+<section id="collabs" class="bg-collabs">
+  <div class="wrap">
+    <div class="sec-head rv">
+      <p class="sec-eyebrow"><span data-i18n="col_label">Sản phẩm hợp tác</span><span class="sec-no">05 / COLLABS</span></p>
+      <h2 data-i18n="col_h2">Đã cùng làm việc với<br><em>rất nhiều bên.</em></h2>
+      <p class="lead" style="margin-top:8px" data-i18n="col_lead">Nhãn hàng, không gian nghệ thuật, series livestream, media — một số đối tác Haustek đã hợp tác qua các dự án âm nhạc, sự kiện và sản xuất quảng cáo.</p>
+    </div>
+    <div class="collab-grid rv" id="collabGrid">
+      <!-- render bằng JS -->
+    </div>
+  </div>
+</section>
+
+<!-- RELEASES -->
+<section id="releases" class="bg-rel">
+  <div class="wrap">
+    <div class="sec-head rv">
+      <p class="sec-eyebrow"><span data-i18n="rel_label">Phát hành</span><span class="sec-no">06 / CATALOG</span></p>
+      <h2 data-i18n="rel_h2">Catalog<br><em>Haustek.</em></h2>
+    </div>
+    <div class="rel-bento">
+      <a class="card rel-1 rv" href="https://open.spotify.com/album/0A7gytpSXrYXNPq32m61Qy" target="_blank" rel="noopener">
+        <div class="card-head"><span class="ct">The Day You Are Gone</span><span class="cn">HSTK-001 · FEATURED</span><span class="dot"></span></div>
+        <div class="rel-art"><div class="gart g1"></div>
+          <span class="play" aria-hidden="true"><svg width="12" height="14" viewBox="0 0 10 12" fill="currentColor"><path d="M0 0l10 6L0 12z"/></svg></span></div>
+        <div class="rel-foot"><span>Album · 2021</span><span class="go">Spotify ↗</span></div>
+      </a>
+      <a class="card rel-2 rv" href="https://open.spotify.com/album/5JMXe1nCyAIfuisdM7UNKO" target="_blank" rel="noopener">
+        <div class="card-head"><span class="ct">The Mountain Mist</span><span class="cn">HSTK-002</span><span class="dot"></span></div>
+        <div class="rel-art"><div class="gart g2"></div>
+          <span class="play" aria-hidden="true"><svg width="10" height="12" viewBox="0 0 10 12" fill="currentColor"><path d="M0 0l10 6L0 12z"/></svg></span></div>
+        <div class="rel-foot"><span>Album · 2021</span><span class="go">Spotify ↗</span></div>
+      </a>
+      <a class="card rel-3 rv" href="https://open.spotify.com/album/2h37a3np4DtJKugqc1jqlX" target="_blank" rel="noopener">
+        <div class="card-head"><span class="ct">iamprogrammed</span><span class="cn">HSTK-003</span><span class="dot"></span></div>
+        <div class="rel-art"><div class="gart g3"></div>
+          <span class="play" aria-hidden="true"><svg width="10" height="12" viewBox="0 0 10 12" fill="currentColor"><path d="M0 0l10 6L0 12z"/></svg></span></div>
+        <div class="rel-foot"><span>EP · 2022</span><span class="go">Spotify ↗</span></div>
+      </a>
+      <a class="card rel-4 rv" href="https://open.spotify.com/album/4J0Hm3zyPmdud6o4Dy7zkj" target="_blank" rel="noopener">
+        <div class="card-head"><span class="ct">HẮC (HA666)</span><span class="cn">HSTK-004</span><span class="dot"></span></div>
+        <div class="rel-art"><div class="gart g4"></div>
+          <span class="play" aria-hidden="true"><svg width="10" height="12" viewBox="0 0 10 12" fill="currentColor"><path d="M0 0l10 6L0 12z"/></svg></span></div>
+        <div class="rel-foot"><span>EP · 2021</span><span class="go">Spotify ↗</span></div>
+      </a>
+      <a class="card rel-5 rv" href="https://open.spotify.com/album/4iI7lhGI8sTRwyZ6Zslqea" target="_blank" rel="noopener">
+        <div class="card-head"><span class="ct">Shea</span><span class="cn">HSTK-005</span><span class="dot"></span></div>
+        <div class="rel-art"><div class="gart g5"></div>
+          <span class="play" aria-hidden="true"><svg width="10" height="12" viewBox="0 0 10 12" fill="currentColor"><path d="M0 0l10 6L0 12z"/></svg></span></div>
+        <div class="rel-foot"><span>Single · 2022</span><span class="go">Spotify ↗</span></div>
+      </a>
+      <a class="card rel-6 rv" href="https://open.spotify.com/album/4yhetF2Rcg3EcWIY9FzSQS" target="_blank" rel="noopener">
+        <div class="card-head"><span class="ct">hausvn × technovn</span><span class="cn">HSTK-006</span><span class="dot"></span></div>
+        <div class="rel-art"><div class="gart g6"></div>
+          <span class="play" aria-hidden="true"><svg width="10" height="12" viewBox="0 0 10 12" fill="currentColor"><path d="M0 0l10 6L0 12z"/></svg></span></div>
+        <div class="rel-foot"><span>Album · 2022</span><span class="go">Spotify ↗</span></div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- BLOG -->
+<section id="blog" class="bg-blog">
+  <div class="wrap">
+    <div class="sec-head rv">
+      <p class="sec-eyebrow"><span>Blog</span><span class="sec-no">07 / NHẬT KÝ</span></p>
+      <h2 data-i18n="blog_h2">Chuyện nghề,<br><em>chuyện nhạc.</em></h2>
+    </div>
+    <div class="blog-grid">
+      <a class="card rv" href="https://www.facebook.com/haustek.agency" target="_blank" rel="noopener">
+        <div class="card-head"><span class="ct" data-i18n="tag_story">Câu chuyện</span><span class="cn">LOG-012</span><span class="dot"></span></div>
+        <div class="post-art"><div class="gart g2"></div></div>
+        <div class="post-body">
+          <p class="post-meta"><time datetime="2026-06-12">12.06.2026</time></p>
+          <h3 data-i18n="post1_h">The Day Pass cán mốc 276.000 lượt nghe — chuyện đằng sau một bản thu</h3>
+          <p data-i18n="post1_p">Từ bản demo thu trong phòng ngủ đến playlist editorial — nhìn lại chặng đường của bản nhạc đi xa nhất nhà Haustek.</p>
+          <span class="more" data-i18n="read_more">Đọc tiếp</span>
+        </div>
+      </a>
+      <a class="card rv" href="https://www.facebook.com/haustek.agency" target="_blank" rel="noopener">
+        <div class="card-head"><span class="ct" data-i18n="tag_event">Sự kiện</span><span class="cn">LOG-011</span><span class="dot"></span></div>
+        <div class="post-art"><div class="gart g3"></div></div>
+        <div class="post-body">
+          <p class="post-meta"><time datetime="2026-04-03">03.04.2026</time></p>
+          <h3 data-i18n="post2_h">United We Stream Asia — đêm Việt Nam lên sóng cùng thế giới</h3>
+          <p data-i18n="post2_p">Hậu trường chuỗi livestream đưa sân khấu điện tử Việt đến với khán giả năm châu.</p>
+          <span class="more" data-i18n="read_more">Đọc tiếp</span>
+        </div>
+      </a>
+      <a class="card rv" href="https://www.facebook.com/haustek.agency" target="_blank" rel="noopener">
+        <div class="card-head"><span class="ct" data-i18n="tag_guide">Cẩm nang</span><span class="cn">LOG-010</span><span class="dot"></span></div>
+        <div class="post-art"><div class="gart g6"></div></div>
+        <div class="post-body">
+          <p class="post-meta"><time datetime="2026-02-20">20.02.2026</time></p>
+          <h3 data-i18n="post3_h">7 việc cần làm trước ngày ra mắt single đầu tay</h3>
+          <p data-i18n="post3_p">Metadata, artwork, pitch playlist, teaser… — lo liệu chu đáo cho một khởi đầu xứng đáng.</p>
+          <span class="more" data-i18n="read_more">Đọc tiếp</span>
+        </div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section id="faq" class="bg-faq">
+  <div class="wrap">
+    <div class="sec-head rv">
+      <p class="sec-eyebrow"><span>FAQ</span><span class="sec-no">08 / HỎI ĐÁP</span></p>
+      <h2 data-i18n="faq_h2">Hỏi nhanh,<br><em>đáp gọn.</em></h2>
+    </div>
+    <div class="faq-list rv">
+      <details>
+        <summary><span data-i18n="q1">Gửi demo cho Haustek bằng cách nào?</span><span class="chev">+</span></summary>
+        <p class="ans" data-i18n="a1">Dùng trang <a href="#/submit">Gửi nhạc</a> ngay trên website, hoặc email <a href="mailto:info@haustek-agency.com">info@haustek-agency.com</a> kèm link nghe riêng tư (SoundCloud, Drive…) và vài dòng giới thiệu. Demo nào gửi tới, chúng tôi cũng nghe.</p>
+      </details>
+      <details>
+        <summary><span data-i18n="q2">Haustek phân phối nhạc lên những nền tảng nào?</span><span class="chev">+</span></summary>
+        <p class="ans" data-i18n="a2">Spotify, Apple Music, YouTube Music, <strong style="color:var(--paper)">TikTok</strong>, TIDAL, Deezer, Beatport, SoundCloud, và cả hai nền tảng lớn nhất Việt Nam là <strong style="color:var(--paper)">NhacCuaTui</strong> và <strong style="color:var(--paper)">Zing MP3</strong>. Chúng tôi làm việc trực tiếp với Believe, ADA và ONErpm để đưa nhạc đi khắp toàn cầu.</p>
+      </details>
+      <details>
+        <summary><span data-i18n="q3">Bao lâu thì nhạc của tôi lên sóng?</span><span class="chev">+</span></summary>
+        <p class="ans" data-i18n="a3">Thường 1–2 tuần sau khi hồ sơ phát hành hoàn tất. Bạn nên gửi sớm 3–4 tuần trước ngày ra mắt để còn kịp pitch playlist và chuẩn bị truyền thông.</p>
+      </details>
+      <details>
+        <summary><span data-i18n="q4">Tôi có còn giữ bản quyền nhạc của mình không?</span><span class="chev">+</span></summary>
+        <p class="ans" data-i18n="a4">Có. Tác phẩm vẫn thuộc về bạn; mọi điều khoản hợp tác và chia sẻ doanh thu đều được thống nhất rõ ràng trước khi phát hành — không có chữ nhỏ.</p>
+      </details>
+      <details>
+        <summary><span data-i18n="q5">Haustek có nhận booking sự kiện không?</span><span class="chev">+</span></summary>
+        <p class="ans" data-i18n="a5">Có — từ DJ set, live band đến trình diễn nghệ thuật kèm visual. Xem <a href="#/events">các sự kiện trước đây</a> hoặc email <a href="mailto:info@haustek-agency.com">info@haustek-agency.com</a>.</p>
+      </details>
+    </div>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section id="contact" class="bg-ct" style="border-bottom:0">
+  <div class="wrap">
+    <div class="sec-head rv">
+      <p class="sec-eyebrow"><span data-i18n="ct_label">Liên hệ</span><span class="sec-no">09 / LIÊN HỆ</span></p>
+      <h2 data-i18n="ct_h2">Bạn có bản nhạc?<br><em>Chúng tôi có sân khấu.</em></h2>
+    </div>
+    <a class="mailto-big rv" href="mailto:info@haustek-agency.com">info@haustek-agency.com</a>
+    <div class="plat-grid rv">
+      <a href="https://fanlink.to/HASpotify" target="_blank" rel="noopener">Spotify <span>↗</span></a>
+      <a href="https://fanlink.to/HAAppleMusic" target="_blank" rel="noopener">Apple Music <span>↗</span></a>
+      <a href="https://fanlink.to/HAYouTube" target="_blank" rel="noopener">YouTube <span>↗</span></a>
+      <a class="tiktok" href="https://www.tiktok.com/search?q=haustek" target="_blank" rel="noopener">TikTok <span>↗</span></a>
+      <a href="https://fanlink.to/HASoundcloud" target="_blank" rel="noopener">SoundCloud <span>↗</span></a>
+      <a href="https://fanlink.to/HABeatport" target="_blank" rel="noopener">Beatport <span>↗</span></a>
+      <a href="https://fanlink.to/HATidal" target="_blank" rel="noopener">TIDAL <span>↗</span></a>
+      <a href="https://fanlink.to/HADeezer" target="_blank" rel="noopener">Deezer <span>↗</span></a>
+      <a href="https://www.nhaccuatui.com/" target="_blank" rel="noopener">NhacCuaTui <span>↗</span></a>
+      <a href="https://zingmp3.vn/" target="_blank" rel="noopener">Zing MP3 <span>↗</span></a>
+    </div>
+    <div class="contact-line rv">
+      <a href="https://www.facebook.com/haustek.agency" target="_blank" rel="noopener">facebook.com/haustek.agency <span>FACEBOOK</span></a>
+      <a href="https://www.instagram.com/haustek.agency" target="_blank" rel="noopener">@haustek.agency <span>INSTAGRAM</span></a>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<!-- ===================== TRANG SỰ KIỆN ===================== -->
+<main id="page-events" class="page">
+<section class="pg-events" style="border-bottom:0;padding-top:100px">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="sec-eyebrow"><span data-i18n="evt_label">Sự kiện</span><span class="sec-no">EVENTS · SINCE 2017</span></p>
+      <h2 data-i18n="evt_h2">Những đêm mà<br><em>Haustek đứng sau âm thanh.</em></h2>
+      <p class="lead" style="margin-top:8px" data-i18n="evt_lead">Từ những đêm techno nhỏ ở Sài Gòn cho đến chuỗi livestream trải khắp châu Á — đây là những sân khấu chúng tôi đã dàn dựng, đã chơi, và đã lên sóng.</p>
+    </div>
+    <div class="evt-bento">
+      <article class="card evt-1">
+        <div class="card-head"><span class="ct">United We Stream Asia</span><span class="cn">EVT-001 · SERIES</span><span class="dot"></span></div>
+        <div class="evt-art"><div class="gart g3"></div><span class="badge live">HIGHLIGHT</span></div>
+        <div class="evt-body">
+          <div class="evt-meta"><span class="past" data-i18n="evt_past">Đã diễn ra</span><span>2020 · 2021</span><span>Livestream toàn cầu</span></div>
+          <h3 data-i18n="evt1_h">United We Stream Asia — Vietnam</h3>
+          <p data-i18n="evt1_p">Chuỗi livestream quy tụ nghệ sĩ điện tử Đông Nam Á, đưa sân khấu Việt Nam đến khán giả năm châu giữa những năm giãn cách. Haustek đảm trách phần lineup Việt: DJ set, visual và dàn dựng sân khấu ảo.</p>
+        </div>
+      </article>
+      <article class="card evt-2">
+        <div class="card-head"><span class="ct">Haustek Podcast</span><span class="cn">EVT-002</span><span class="dot"></span></div>
+        <div class="evt-art"><div class="gart g1"></div><span class="badge">SERIES</span></div>
+        <div class="evt-body">
+          <div class="evt-meta"><span>018+</span><span>Live sets</span></div>
+          <h3 data-i18n="evt2_h">Haustek Podcast Sessions</h3>
+          <p data-i18n="evt2_p">Chuỗi DJ set từ dàn resident Haustek — thu và phát hành như một album live trên Spotify.</p>
+        </div>
+      </article>
+      <article class="card evt-3">
+        <div class="card-head"><span class="ct">hausvn × technovn</span><span class="cn">EVT-003</span><span class="dot"></span></div>
+        <div class="evt-art"><div class="gart g4"></div><span class="badge">ANNIVERSARY</span></div>
+        <div class="evt-body">
+          <div class="evt-meta"><span class="past" data-i18n="evt_past">Đã diễn ra</span><span>2022</span></div>
+          <h3 data-i18n="evt3_h">5-Year Anniversary Night</h3>
+          <p data-i18n="evt3_p">Đêm kỷ niệm 5 năm, quy tụ nghệ sĩ nội bộ và khách mời — kèm album live phát hành sau đó.</p>
+        </div>
+      </article>
+      <article class="card evt-4">
+        <div class="card-head"><span class="ct" data-i18n="evt4_head">Show địa phương</span><span class="cn">EVT-004 · COLLECTION</span><span class="dot"></span></div>
+        <div class="evt-art"><div class="gart g6"></div><span class="badge">CLUB NIGHTS</span></div>
+        <div class="evt-body">
+          <div class="evt-meta"><span>Sài Gòn</span><span>Hà Nội</span><span>Đà Lạt</span></div>
+          <h3 data-i18n="evt4_h">Chuỗi đêm techno ở Việt Nam</h3>
+          <p data-i18n="evt4_p">Những đêm nhỏ ở các club và không gian ngầm khắp ba miền — nơi những gương mặt mới của Haustek lần đầu bước lên bàn mix.</p>
+        </div>
+      </article>
+      <article class="card evt-5">
+        <div class="card-head"><span class="ct" data-i18n="evt5_head">Brand event</span><span class="cn">EVT-005</span><span class="dot"></span></div>
+        <div class="evt-art"><div class="gart g2"></div><span class="badge">COMMERCIAL</span></div>
+        <div class="evt-body">
+          <div class="evt-meta"><span data-i18n="evt5_meta1">Đêm launch</span><span data-i18n="evt5_meta2">Campaign nhãn hàng</span></div>
+          <h3 data-i18n="evt5_h">Sự kiện thương hiệu &amp; launching</h3>
+          <p data-i18n="evt5_p">Haustek dựng phần âm nhạc và visual cho các đêm launch, showroom và campaign — trọn gói từ concept đến vận hành.</p>
+        </div>
+      </article>
+    </div>
+    <div style="margin-top:36px;padding:22px;border:1px solid var(--line);border-radius:16px;background:var(--glass);backdrop-filter:blur(12px);display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap">
+      <div>
+        <p style="font-family:var(--mono);font-size:11px;letter-spacing:.16em;color:var(--concrete);text-transform:uppercase;margin-bottom:6px" data-i18n="evt_cta_label">Muốn Haustek dựng đêm cho bạn?</p>
+        <p style="font-family:var(--display);font-size:19px;font-weight:600;letter-spacing:-.02em" data-i18n="evt_cta_h">Booking &amp; lineup theo yêu cầu.</p>
+      </div>
+      <a class="nav-submit" href="mailto:info@haustek-agency.com" style="font-size:12px;padding:12px 18px"><span data-i18n="evt_cta_btn">GỬI YÊU CẦU BOOKING</span></a>
+    </div>
+  </div>
+</section>
+</main>
+
+<!-- ===================== TRANG GỬI NHẠC ===================== -->
+<main id="page-submit" class="page">
+<section class="pg-submit" style="border-bottom:0;padding-top:100px">
+  <div class="submit-wrap">
+    <div class="sec-head">
+      <p class="sec-eyebrow"><span data-i18n="sb_label">Gửi nhạc</span><span class="sec-no">A&amp;R</span></p>
+      <h2 data-i18n="sb_h2">Demo của bạn,<br><em>đến thẳng bàn A&amp;R.</em></h2>
+      <p class="lead" style="margin-top:8px" data-i18n="sb_lead">Điền vài dòng bên dưới — bấm gửi, hộp thư sẽ mở sẵn email cho đội A&amp;R của Haustek. Demo nào gửi tới, chúng tôi cũng nghe.</p>
+    </div>
+    <div class="form-card">
+      <form id="demoForm" class="form-grid">
+        <div class="form-2">
+          <div class="field">
+            <label for="f-name" data-i18n="f_name">Nghệ danh</label>
+            <input id="f-name" name="name" type="text" required placeholder="VD: TARNOISE">
+          </div>
+          <div class="field">
+            <label for="f-mail" data-i18n="f_mail">Email của bạn</label>
+            <input id="f-mail" name="email" type="email" required placeholder="you@email.com">
+          </div>
+        </div>
+        <div class="form-2">
+          <div class="field">
+            <label for="f-genre" data-i18n="f_genre">Thể loại</label>
+            <select id="f-genre" name="genre">
+              <option>Techno</option><option>House</option><option>Ambient</option>
+              <option>Hip-hop / Rap</option><option>Pop</option><option>Indie / Band</option>
+              <option data-i18n="f_other">Khác</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="f-link" data-i18n="f_link">Link nghe riêng tư (SoundCloud / Drive)</label>
+            <input id="f-link" name="link" type="url" required placeholder="https://soundcloud.com/...">
+          </div>
+        </div>
+        <div class="field">
+          <label for="f-msg" data-i18n="f_msg">Vài dòng về bạn và bản nhạc</label>
+          <textarea id="f-msg" name="msg" data-i18n-ph="f_msg_ph" placeholder="Bạn là ai, bản nhạc này ra đời thế nào, bạn muốn cùng Haustek đi đến đâu…"></textarea>
+        </div>
+        <p class="form-note" data-i18n="f_note">* Đừng đính kèm file — hãy dán link nghe riêng tư. Mỗi demo được nghe trong vòng 7–14 ngày.</p>
+        <button class="submit-btn" type="submit">
+          <span data-i18n="f_send">GỬI DEMO</span>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </button>
+      </form>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer>
+  <img src="data:image/png;base64,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" alt="Haustek Agency" width="389" height="82">
+  <p>© 2026 HAUSTEK AGENCY · CALIFORNIA → VIỆT NAM · SINCE 2017</p>
+  <div class="fsoc">
+    <a href="https://www.facebook.com/haustek.agency" target="_blank" rel="noopener">FB</a>
+    <a href="https://www.instagram.com/haustek.agency" target="_blank" rel="noopener">IG</a>
+    <a href="https://fanlink.to/HASpotify" target="_blank" rel="noopener">SPOTIFY</a>
+    <a href="https://www.tiktok.com/search?q=haustek" target="_blank" rel="noopener">TIKTOK</a>
+    <a href="https://fanlink.to/HAYouTube" target="_blank" rel="noopener">YT</a>
+  </div>
+</footer>
+
+<script>
+/* ================= dữ liệu nghệ sĩ / collabs ================= */
+const ARTISTS = [
+  { name:"Tarnoise",     role:"Producer / DJ" },
+  { name:"hausvn",       role:"Collective" },
+  { name:"technovn",     role:"Collective" },
+  { name:"Tri Minh",     role:"Producer" },
+  { name:"HẮC",          role:"Alias · HA666" },
+  { name:"Shea",         role:"Vocalist" },
+  { name:"Dino Adagio",  role:"Producer" },
+  { name:"Kristina Bjorn", role:"Vocalist" },
+  { name:"Michael Thornton", role:"Producer" },
+  { name:"MUNI",         role:"Producer" },
+  { name:"Hazel Lewis",  role:"Vocalist" },
+  { name:"maro",         role:"Ambient" }
+];
+const COLLABS = [
+  { tag:"LIVESTREAM SERIES", name:"United We Stream Asia", yr:"2020 · 2021" },
+  { tag:"PLAYLIST", name:"Spotify — Ambient Relaxation", yr:"2021 →" },
+  { tag:"PLAYLIST", name:"Spotify — Êm Đềm", yr:"2021 →" },
+  { tag:"PLAYLIST", name:"Spotify — Vocal Ambient", yr:"2022 →" },
+  { tag:"PLAYLIST", name:"Spotify — TECHNO BUNKER", yr:"2022 →" },
+  { tag:"IN-HOUSE", name:"Haustek Podcast (018+)", yr:"2021 →" },
+  { tag:"DISTRIBUTION", name:"Believe", yr:"Global" },
+  { tag:"DISTRIBUTION", name:"ADA · Warner Group", yr:"Global" },
+  { tag:"DISTRIBUTION", name:"ONErpm", yr:"Global" },
+  { tag:"PLATFORM", name:"NhacCuaTui", yr:"Vietnam" },
+  { tag:"PLATFORM", name:"Zing MP3", yr:"Vietnam" },
+  { tag:"COMMUNITY", name:"Tarnoise Spaceman", yr:"Playlist" }
+];
+function renderArtists(){
+  const el=document.getElementById('artistGrid');
+  el.innerHTML = ARTISTS.map((a,i)=>{
+    const init = a.name.replace(/[^A-ZÀ-Ỹa-zà-ỹ0-9]/g,'').slice(0,2).toUpperCase();
+    return `<div class="artist" style="--seed:${i}">
+      <div class="av" data-init="${init}"></div>
+      <div class="a-name">${a.name}</div>
+      <div class="a-role">${a.role}</div>
+    </div>`;
+  }).join('');
+}
+function renderCollabs(){
+  const el=document.getElementById('collabGrid');
+  el.innerHTML = COLLABS.map(c=>`<div class="collab">
+    <div class="c-tag">${c.tag}</div>
+    <div class="c-name">${c.name}</div>
+    <div class="c-yr">${c.yr}</div>
+  </div>`).join('');
+}
+renderArtists();renderCollabs();
+
+/* ================= i18n ================= */
+const I18N = {
+  vi:{
+    _title:"Haustek Agency — Music Label & Distribution | Để nhạc Việt vang xa hơn",
+    _desc:"Haustek Agency — music label & distribution từ 2017. Đối tác Believe, ADA, ONErpm. Phát hành lên Spotify, TikTok, NhacCuaTui, Zing MP3 và mọi nền tảng streaming.",
+    nav_home:"Trang chủ",nav_events:"Sự kiện",nav_services:"Dịch vụ",nav_artists:"Nghệ sĩ",nav_releases:"Phát hành",nav_submit:"GỬI NHẠC",
+    hero_tag:"Đang phát sóng · Since 2017",
+    h1_l1:"Để nhạc Việt", h1_l2:"<em>vang xa hơn.</em>",
+    hero_sub:"<strong>Haustek Agency</strong> — music label &amp; distribution từ 2017. Nơi hội tụ của producer, DJ, rapper và những giọng ca Việt khắp trong nước lẫn hải ngoại: chúng tôi làm nhạc, phát hành và lo trọn đường đi của mỗi bản thu.",
+    play:"PLAY BEAT",stop:"STOP",bpm_note:"beat chạy thẳng trong trình duyệt",
+    hb_label_1:"Tổng lượt nghe",hb_note_1:"trên các nền tảng",
+    hb_label_2:"Thành lập",hb_label_3:"Nền tảng",hb_label_4:"Releases",
+    about_label:"Về Haustek",about_ct:"Hồ sơ label",
+    about_h2:"Bắt đầu ở California,<br><em>gắn bó với nhạc Việt.</em>",
+    about_p1:"Thành lập tại California năm 2017, Haustek đã cùng nghệ sĩ Việt đi qua đủ chặng đường: làm nhạc, dựng show từ những đêm diễn nhỏ đến sân khấu quốc tế, dàn dựng trình diễn nghệ thuật và sản xuất quảng cáo cho nhãn hàng.",
+    about_p2:"Với chúng tôi, mỗi lần phát hành là một lần bắc cầu — để tiếng kick dưới hầm techno hay dải ambient mỏng như sương của nghệ sĩ Việt chạm tới người nghe ở khắp nơi.",
+    stat_1:"The Day Pass — lượt nghe trên Spotify",
+    stat_monthly:"Nghe / tháng",
+    svc_label:"Dịch vụ",
+    svc_h2:"Bạn lo phần nhạc,<br><em>Haustek lo phần còn lại.</em>",
+    svc1_h:"Phát hành khắp mọi nơi có tai người nghe",
+    svc1_p:"Đưa nhạc của bạn lên Spotify, Apple Music, YouTube Music, TikTok, TIDAL, Beatport, NhacCuaTui, Zing MP3… — lên sóng đúng lịch, số liệu minh bạch, báo cáo rõ ràng.",
+    svc2_h:"Đồng hành nghệ sĩ",svc2_p:"Định hình chất riêng, xây hình ảnh nghệ sĩ và vạch lộ trình phát hành đường dài.",
+    svc3_h_head:"Sự kiện",svc3_h:"Show & trình diễn",
+    svc3_p:'Đêm diễn trong nước, chuỗi quốc tế như United We Stream Asia. <a href="#/events" style="color:var(--red)">Xem lịch sử →</a>',
+    svc4_h:"Booking nghệ sĩ",svc4_p:"DJ set, live band, trình diễn nghệ thuật kèm visual cho brand, festival và không gian riêng.",
+    svc5_h:"Sản xuất nhạc & quảng cáo",svc5_p:"Từ ý tưởng đến thành phẩm — nhạc phim, jingle, campaign cho nhãn hàng.",
+    prt_label:"Đối tác phân phối",
+    prt_h2:"Bên cạnh chúng tôi,<br><em>những cái tên lớn của ngành.</em>",
+    prt_lead:"Haustek kết nối với hệ thống phân phối toàn cầu và cả hai nền tảng streaming lớn nhất Việt Nam — để bản nhạc của bạn xuất hiện đúng nơi khán giả đang nghe.",
+    art_label:"Nghệ sĩ Haustek",
+    art_h2:"Cộng đồng của chúng tôi,<br><em>từ hầm techno đến ambient.</em>",
+    art_lead:"Producer, DJ, VJ, rapper, ban nhạc và giọng ca cùng chung mái nhà Haustek — trong nước và hải ngoại.",
+    col_label:"Sản phẩm hợp tác",
+    col_h2:"Đã cùng làm việc với<br><em>rất nhiều bên.</em>",
+    col_lead:"Nhãn hàng, không gian nghệ thuật, series livestream, media — một số đối tác Haustek đã hợp tác qua các dự án âm nhạc, sự kiện và sản xuất quảng cáo.",
+    rel_label:"Phát hành",rel_h2:"Catalog<br><em>Haustek.</em>",
+    blog_h2:"Chuyện nghề,<br><em>chuyện nhạc.</em>",
+    tag_story:"Câu chuyện",tag_event:"Sự kiện",tag_guide:"Cẩm nang",read_more:"Đọc tiếp",
+    post1_h:"The Day Pass cán mốc 276.000 lượt nghe — chuyện đằng sau một bản thu",
+    post1_p:"Từ bản demo thu trong phòng ngủ đến playlist editorial — nhìn lại chặng đường của bản nhạc đi xa nhất nhà Haustek.",
+    post2_h:"United We Stream Asia — đêm Việt Nam lên sóng cùng thế giới",
+    post2_p:"Hậu trường chuỗi livestream đưa sân khấu điện tử Việt đến với khán giả năm châu.",
+    post3_h:"7 việc cần làm trước ngày ra mắt single đầu tay",
+    post3_p:"Metadata, artwork, pitch playlist, teaser… — lo liệu chu đáo cho một khởi đầu xứng đáng.",
+    faq_h2:"Hỏi nhanh,<br><em>đáp gọn.</em>",
+    q1:"Gửi demo cho Haustek bằng cách nào?",
+    a1:'Dùng trang <a href="#/submit">Gửi nhạc</a> ngay trên website, hoặc email <a href="mailto:info@haustek-agency.com">info@haustek-agency.com</a> kèm link nghe riêng tư và vài dòng giới thiệu. Demo nào gửi tới, chúng tôi cũng nghe.',
+    q2:"Haustek phân phối nhạc lên những nền tảng nào?",
+    a2:'Spotify, Apple Music, YouTube Music, <strong style="color:var(--paper)">TikTok</strong>, TIDAL, Deezer, Beatport, SoundCloud, và cả hai nền tảng lớn nhất Việt Nam là <strong style="color:var(--paper)">NhacCuaTui</strong> và <strong style="color:var(--paper)">Zing MP3</strong>. Chúng tôi làm việc trực tiếp với Believe, ADA và ONErpm để đưa nhạc đi khắp toàn cầu.',
+    q3:"Bao lâu thì nhạc của tôi lên sóng?",
+    a3:"Thường 1–2 tuần sau khi hồ sơ phát hành hoàn tất. Bạn nên gửi sớm 3–4 tuần trước ngày ra mắt để còn kịp pitch playlist và chuẩn bị truyền thông.",
+    q4:"Tôi có còn giữ bản quyền nhạc của mình không?",
+    a4:"Có. Tác phẩm vẫn thuộc về bạn; mọi điều khoản hợp tác và chia sẻ doanh thu đều được thống nhất rõ ràng trước khi phát hành — không có chữ nhỏ.",
+    q5:"Haustek có nhận booking sự kiện không?",
+    a5:'Có — từ DJ set, live band đến trình diễn nghệ thuật kèm visual. Xem <a href="#/events">các sự kiện trước đây</a> hoặc email <a href="mailto:info@haustek-agency.com">info@haustek-agency.com</a>.',
+    ct_label:"Liên hệ",ct_h2:"Bạn có bản nhạc?<br><em>Chúng tôi có sân khấu.</em>",
+    evt_label:"Sự kiện",
+    evt_h2:"Những đêm mà<br><em>Haustek đứng sau âm thanh.</em>",
+    evt_lead:"Từ những đêm techno nhỏ ở Sài Gòn cho đến chuỗi livestream trải khắp châu Á — đây là những sân khấu chúng tôi đã dàn dựng, đã chơi, và đã lên sóng.",
+    evt_past:"Đã diễn ra",
+    evt1_h:"United We Stream Asia — Vietnam",
+    evt1_p:"Chuỗi livestream quy tụ nghệ sĩ điện tử Đông Nam Á, đưa sân khấu Việt Nam đến khán giả năm châu giữa những năm giãn cách. Haustek đảm trách phần lineup Việt: DJ set, visual và dàn dựng sân khấu ảo.",
+    evt2_h:"Haustek Podcast Sessions",
+    evt2_p:"Chuỗi DJ set từ dàn resident Haustek — thu và phát hành như một album live trên Spotify.",
+    evt3_h:"5-Year Anniversary Night",
+    evt3_p:"Đêm kỷ niệm 5 năm, quy tụ nghệ sĩ nội bộ và khách mời — kèm album live phát hành sau đó.",
+    evt4_head:"Show địa phương",
+    evt4_h:"Chuỗi đêm techno ở Việt Nam",
+    evt4_p:"Những đêm nhỏ ở các club và không gian ngầm khắp ba miền — nơi những gương mặt mới của Haustek lần đầu bước lên bàn mix.",
+    evt5_head:"Brand event",evt5_meta1:"Đêm launch",evt5_meta2:"Campaign nhãn hàng",
+    evt5_h:"Sự kiện thương hiệu & launching",
+    evt5_p:"Haustek dựng phần âm nhạc và visual cho các đêm launch, showroom và campaign — trọn gói từ concept đến vận hành.",
+    evt_cta_label:"Muốn Haustek dựng đêm cho bạn?",
+    evt_cta_h:"Booking & lineup theo yêu cầu.",
+    evt_cta_btn:"GỬI YÊU CẦU BOOKING",
+    sb_label:"Gửi nhạc",
+    sb_h2:"Demo của bạn,<br><em>đến thẳng bàn A&R.</em>",
+    sb_lead:"Điền vài dòng bên dưới — bấm gửi, hộp thư sẽ mở sẵn email cho đội A&R của Haustek. Demo nào gửi tới, chúng tôi cũng nghe.",
+    f_name:"Nghệ danh",f_mail:"Email của bạn",f_genre:"Thể loại",f_other:"Khác",
+    f_link:"Link nghe riêng tư (SoundCloud / Drive)",
+    f_msg:"Vài dòng về bạn và bản nhạc",
+    f_msg_ph:"Bạn là ai, bản nhạc này ra đời thế nào, bạn muốn cùng Haustek đi đến đâu…",
+    f_note:"* Đừng đính kèm file — hãy dán link nghe riêng tư. Mỗi demo được nghe trong vòng 7–14 ngày.",
+    f_send:"GỬI DEMO"
+  },
+  en:{
+    _title:"Haustek Agency — Music Label & Distribution | Vietnamese music, heard worldwide",
+    _desc:"Haustek Agency — music label & distribution since 2017. Partners with Believe, ADA, ONErpm. Releasing to Spotify, TikTok, NhacCuaTui, Zing MP3 and every streaming platform.",
+    nav_home:"Home",nav_events:"Events",nav_services:"Services",nav_artists:"Artists",nav_releases:"Releases",nav_submit:"SUBMIT",
+    hero_tag:"On air · Since 2017",
+    h1_l1:"Made in Vietnam.", h1_l2:"<em>Heard worldwide.</em>",
+    hero_sub:"<strong>Haustek Agency</strong> — music label &amp; distribution since 2017. Home to Vietnamese producers, DJs, rappers and vocalists at home and abroad: we make music, release it, and carry every track the whole way.",
+    play:"PLAY BEAT",stop:"STOP",bpm_note:"beat synthesized live in your browser",
+    hb_label_1:"Total streams",hb_note_1:"across platforms",
+    hb_label_2:"Founded",hb_label_3:"Platforms",hb_label_4:"Releases",
+    about_label:"About Haustek",about_ct:"Label profile",
+    about_h2:"Started in California,<br><em>devoted to Vietnamese music.</em>",
+    about_p1:"Founded in California in 2017, Haustek has walked every road with Vietnamese artists: making music, building shows from small club nights to international stages, staging performances and producing brand campaigns.",
+    about_p2:"To us, every release builds a bridge — carrying a bunker techno kick or a mist-thin ambient wash from a Vietnamese artist to listeners everywhere.",
+    stat_1:"The Day Pass — Spotify streams",
+    stat_monthly:"Monthly listeners",
+    svc_label:"Services",
+    svc_h2:"You handle the music,<br><em>Haustek handles the rest.</em>",
+    svc1_h:"Released wherever people are listening",
+    svc1_p:"We carry your music to Spotify, Apple Music, YouTube Music, TikTok, TIDAL, Beatport, NhacCuaTui, Zing MP3… — on schedule, transparent numbers, clear reporting.",
+    svc2_h:"Artist development",svc2_p:"Shape your sound, build your image and map a long-term release roadmap.",
+    svc3_h_head:"Events",svc3_h:"Shows & performance",
+    svc3_p:'Local club nights and international series like United We Stream Asia. <a href="#/events" style="color:var(--red)">See history →</a>',
+    svc4_h:"Artist booking",svc4_p:"DJ sets, live bands, art performances with visuals for brands, festivals and private spaces.",
+    svc5_h:"Music & brand production",svc5_p:"Idea to final cut — film music, jingles, brand campaigns.",
+    prt_label:"Distribution partners",
+    prt_h2:"Beside us,<br><em>the industry's biggest names.</em>",
+    prt_lead:"Haustek connects with global distribution networks and both of Vietnam's largest streaming platforms — so your track shows up exactly where audiences are already listening.",
+    art_label:"The Haustek roster",
+    art_h2:"Our community,<br><em>from techno bunkers to ambient.</em>",
+    art_lead:"Producers, DJs, VJs, rappers, bands and vocalists sharing the Haustek home — at home and abroad.",
+    col_label:"Collabs & partners",
+    col_h2:"We've worked with<br><em>a lot of people.</em>",
+    col_lead:"Brands, art spaces, livestream series, media — a few of the partners Haustek has collaborated with across music, events and brand production.",
+    rel_label:"Releases",rel_h2:"The Haustek<br><em>catalog.</em>",
+    blog_h2:"Notes from<br><em>the label.</em>",
+    tag_story:"Story",tag_event:"Event",tag_guide:"Guide",read_more:"Read more",
+    post1_h:"The Day Pass hits 276,000 streams — the story behind one track",
+    post1_p:"From a bedroom demo to editorial playlists — a look back at our farthest-travelled release.",
+    post2_h:"United We Stream Asia — the night Vietnam went live with the world",
+    post2_p:"Behind the livestream series that carried Vietnam's electronic stage to a global audience.",
+    post3_h:"7 things to do before your first single drops",
+    post3_p:"Metadata, artwork, playlist pitching, teasers… — prepare properly so your first track gets the start it deserves.",
+    faq_h2:"Quick questions,<br><em>straight answers.</em>",
+    q1:"How do I send Haustek a demo?",
+    a1:'Use the <a href="#/submit">Submit</a> page right here, or email <a href="mailto:info@haustek-agency.com">info@haustek-agency.com</a> with a private streaming link and a few lines about yourself. Every demo gets listened to.',
+    q2:"Which platforms does Haustek distribute to?",
+    a2:'Spotify, Apple Music, YouTube Music, <strong style="color:var(--paper)">TikTok</strong>, TIDAL, Deezer, Beatport, SoundCloud, plus both of Vietnam\'s biggest streaming platforms — <strong style="color:var(--paper)">NhacCuaTui</strong> and <strong style="color:var(--paper)">Zing MP3</strong>. We work directly with Believe, ADA and ONErpm to reach the world.',
+    q3:"How long until my music goes live?",
+    a3:"Usually 1–2 weeks once your release package is complete. Submit 3–4 weeks ahead of release day to leave room for playlist pitching and promo.",
+    q4:"Do I keep the rights to my music?",
+    a4:"Yes. Your work stays yours; every partnership and revenue-share term is agreed clearly before release — no fine print.",
+    q5:"Does Haustek take event bookings?",
+    a5:'Yes — DJ sets, live bands and visual performances. See <a href="#/events">past events</a> or email <a href="mailto:info@haustek-agency.com">info@haustek-agency.com</a>.',
+    ct_label:"Contact",ct_h2:"Got the track?<br><em>We've got the stage.</em>",
+    evt_label:"Events",
+    evt_h2:"The nights where<br><em>Haustek was behind the sound.</em>",
+    evt_lead:"From small techno nights in Saigon to livestream series stretched across Asia — these are the stages we've built, played and broadcast.",
+    evt_past:"Past",
+    evt1_h:"United We Stream Asia — Vietnam",
+    evt1_p:"A livestream series bringing together Southeast Asian electronic artists, carrying Vietnam's stage to a global audience through the lockdown years. Haustek ran the Vietnamese lineup: DJ sets, visuals and virtual stage design.",
+    evt2_h:"Haustek Podcast Sessions",
+    evt2_p:"DJ sets from the Haustek residents — recorded and released as live albums on Spotify.",
+    evt3_h:"5-Year Anniversary Night",
+    evt3_p:"A 5-year anniversary night with in-house artists and guests — followed by a live album release.",
+    evt4_head:"Local shows",
+    evt4_h:"Club nights across Vietnam",
+    evt4_p:"Small nights at clubs and underground spaces from north to south — where new Haustek faces first step behind the decks.",
+    evt5_head:"Brand event",evt5_meta1:"Launch nights",evt5_meta2:"Brand campaigns",
+    evt5_h:"Brand events & launches",
+    evt5_p:"Haustek runs the music and visual side of launch nights, showroom events and campaigns — end to end from concept to operations.",
+    evt_cta_label:"Want Haustek to run your night?",
+    evt_cta_h:"Booking & custom lineups.",
+    evt_cta_btn:"REQUEST BOOKING",
+    sb_label:"Submit",
+    sb_h2:"Your demo,<br><em>straight to A&R.</em>",
+    sb_lead:"Fill in a few lines below — hitting send opens a pre-written email to Haustek's A&R desk.",
+    f_name:"Artist name",f_mail:"Your email",f_genre:"Genre",f_other:"Other",
+    f_link:"Private streaming link (SoundCloud / Drive)",
+    f_msg:"A few lines about you and the track",
+    f_msg_ph:"Who you are, how this track came to life, where you want to take it with Haustek…",
+    f_note:"* No attachments — paste a private link instead. Every demo is reviewed within 7–14 days.",
+    f_send:"SEND DEMO"
+  }
+};
+let lang='vi';
+const langBtn=document.getElementById('langBtn');
+function setLang(l){
+  lang=l;const d=I18N[l];
+  document.querySelectorAll('[data-i18n]').forEach(el=>{const v=d[el.dataset.i18n];if(v!==undefined)el.innerHTML=v;});
+  /* split lines */
+  document.querySelectorAll('[data-i18n-split]').forEach(el=>{
+    const v=d[el.dataset.i18nSplit];if(v===undefined)return;
+    el.innerHTML=`<span class="row">${v}</span>`;
+    /* nếu đã reveal thì giữ nguyên */
+    if(el.closest('.in')||el.classList.contains('in')){el.classList.add('in');}
+  });
+  document.querySelectorAll('[data-i18n-ph]').forEach(el=>{const v=d[el.dataset.i18nPh];if(v!==undefined)el.placeholder=v;});
+  document.documentElement.lang=l;
+  document.title=d._title;
+  const md=document.querySelector('meta[name="description"]');
+  if(md)md.setAttribute('content',d._desc);
+  langBtn.textContent=l==='vi'?'EN':'VI';
+  syncPlayLabel();
+}
+langBtn.addEventListener('click',()=>setLang(lang==='vi'?'en':'vi'));
+
+/* ================= Router ================= */
+const pages={
+  home:document.getElementById('page-home'),
+  events:document.getElementById('page-events'),
+  submit:document.getElementById('page-submit')
+};
+function route(){
+  const h=location.hash||'#/';
+  const isEvt=h.startsWith('#/events');
+  const isSub=h.startsWith('#/submit');
+  pages.home.classList.toggle('active',!isEvt&&!isSub);
+  pages.events.classList.toggle('active',isEvt);
+  pages.submit.classList.toggle('active',isSub);
+  document.querySelectorAll('[data-nav]').forEach(a=>{
+    a.classList.toggle('on',
+      (a.dataset.nav==='home'&&!isEvt&&!isSub) ||
+      (a.dataset.nav==='events'&&isEvt)
+    );
+  });
+  window.scrollTo(0,0);
+}
+addEventListener('hashchange',route);route();
+
+/* ================= [FX 2] custom cursor ================= */
+const cur=document.querySelector('.cursor'),curD=document.querySelector('.cursor-dot');
+let cx=0,cy=0,tx=0,ty=0;
+if(cur&&!matchMedia('(hover:none)').matches){
+  addEventListener('pointermove',e=>{tx=e.clientX;ty=e.clientY;curD.style.transform=`translate(${tx-2.5}px,${ty-2.5}px)`;});
+  function curLoop(){cx+=(tx-cx)*.18;cy+=(ty-cy)*.18;cur.style.transform=`translate(${cx-14}px,${cy-14}px)`;requestAnimationFrame(curLoop);}
+  curLoop();
+  document.addEventListener('mouseover',e=>{
+    if(e.target.closest('a,button,summary,input,textarea,select'))cur.classList.add('hot');
+  });
+  document.addEventListener('mouseout',e=>{
+    if(e.target.closest('a,button,summary,input,textarea,select'))cur.classList.remove('hot');
+  });
+}
+
+/* ================= [FX 3] scroll progress (throttled bằng rAF) ================= */
+const sp=document.getElementById('sp');
+let spTicking=false;
+addEventListener('scroll',()=>{
+  if(spTicking)return;
+  spTicking=true;
+  requestAnimationFrame(()=>{
+    const h=document.documentElement;
+    const p=h.scrollTop/(h.scrollHeight-h.clientHeight);
+    sp.style.width=(p*100)+'%';
+    spTicking=false;
+  });
+},{passive:true});
+
+/* ================= [FX 4] scroll reveal + [FX 5] split title ================= */
+const io=new IntersectionObserver(es=>{
+  es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}});
+},{threshold:.1});
+document.querySelectorAll('.rv,.split').forEach(el=>io.observe(el));
+
+/* ================= [FX 7 + 8] card tilt + spotlight =================
+   CHỈ bật khi pointerType là 'mouse'. Trên điện thoại, vuốt để cuộn cũng
+   phát sinh sự kiện pointermove giống di chuột — nếu không chặn, mỗi lần
+   ngón tay lướt qua một card sẽ ép trình duyệt tính lại layout
+   (getBoundingClientRect) và vẽ lại giữa lúc đang cuộn, gây giật.
+   will-change cũng chỉ bật lúc đang hover thật, tránh giữ cả chục card
+   làm lớp compositor riêng suốt thời gian không tương tác. */
+document.querySelectorAll('.card').forEach(card=>{
+  let rect=null;
+  card.addEventListener('pointerenter',e=>{
+    if(e.pointerType!=='mouse')return;
+    rect=card.getBoundingClientRect();
+    card.style.willChange='transform';
+  });
+  card.addEventListener('pointermove',e=>{
+    if(e.pointerType!=='mouse'||!rect)return;
+    const x=(e.clientX-rect.left)/rect.width, y=(e.clientY-rect.top)/rect.height;
+    card.style.setProperty('--mx',(x*100)+'%');
+    card.style.setProperty('--my',(y*100)+'%');
+    const rx=(y-.5)*-4, ry=(x-.5)*4;
+    card.style.transform=`translateY(-4px) perspective(700px) rotateX(${rx}deg) rotateY(${ry}deg)`;
+  });
+  card.addEventListener('pointerleave',e=>{
+    if(e.pointerType!=='mouse')return;
+    card.style.transform='';
+    card.style.willChange='auto';
+    rect=null;
+  });
+});
+
+/* ================= counters ================= */
+const cIO=new IntersectionObserver(es=>{
+  es.forEach(e=>{
+    if(!e.isIntersecting)return;
+    const el=e.target, target=+el.dataset.count, suf=el.dataset.suffix||'';
+    const dur=1100,start=performance.now();
+    function tick(t){
+      const p=Math.min(1,(t-start)/dur);
+      const eased=1-Math.pow(1-p,3);
+      const v=Math.round(target*eased);
+      el.textContent=(v>=1000?v.toLocaleString('vi-VN'):v)+suf;
+      if(p<1)requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
+    cIO.unobserve(el);
+  });
+},{threshold:.4});
+document.querySelectorAll('[data-count]').forEach(el=>cIO.observe(el));
+
+/* ================= Hero: sóng loang + beat WebAudio ================= */
+const cv=document.getElementById('ripple');
+const ctx=cv.getContext('2d');
+const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
+let W,H;
+function size(){const r=cv.getBoundingClientRect();W=cv.width=r.width*devicePixelRatio;H=cv.height=r.height*devicePixelRatio;}
+size();addEventListener('resize',size);
+const rings=[];
+function spawn(x,y,big){
+  rings.push({x,y,r:0,v:(big?3.2:2.2)*devicePixelRatio,a:big?.8:.5,w:(big?2:1.3)*devicePixelRatio,c:Math.random()<.22?1:0});
+  if(rings.length>60)rings.shift();
+}
+for(let i=0;i<5;i++)spawn(Math.random()*innerWidth*devicePixelRatio,Math.random()*innerHeight*.6*devicePixelRatio,false);
+let moved=0;
+cv.parentElement.addEventListener('pointermove',e=>{
+  if(e.pointerType!=='mouse')return; /* vuốt cuộn trên mobile cũng là pointermove — bỏ qua để không giật khi cuộn */
+  const r=cv.getBoundingClientRect();
+  if(++moved%9===0)spawn((e.clientX-r.left)*devicePixelRatio,(e.clientY-r.top)*devicePixelRatio,false);
+},{passive:true});
+cv.parentElement.addEventListener('pointerdown',e=>{
+  const r=cv.getBoundingClientRect();
+  spawn((e.clientX-r.left)*devicePixelRatio,(e.clientY-r.top)*devicePixelRatio,true);
+},{passive:true});
+/* [PERF] dừng vẽ khi hero cuộn ra khỏi màn hình, chạy lại khi quay về */
+let heroVisible=true;
+new IntersectionObserver(es=>{
+  heroVisible=es[0].isIntersecting;
+  if(heroVisible)requestAnimationFrame(frame);
+},{threshold:0}).observe(cv);
+function frame(){
+  if(!heroVisible)return;
+  ctx.clearRect(0,0,W,H);
+  for(let i=rings.length-1;i>=0;i--){
+    const g=rings[i];
+    g.r+=g.v;g.a*=.985;
+    if(g.a<.01){rings.splice(i,1);continue;}
+    for(let k=0;k<3;k++){
+      ctx.beginPath();
+      ctx.arc(g.x,g.y,Math.max(g.r-k*14*devicePixelRatio,0),0,Math.PI*2);
+      ctx.strokeStyle=g.c
+        ?`rgba(255,46,76,${(g.a*(1-k*.3)).toFixed(3)})`
+        :`rgba(240,240,242,${(g.a*(1-k*.3)*.8).toFixed(3)})`;
+      ctx.lineWidth=g.w*(1-k*.25);
+      ctx.stroke();
+    }
+  }
+  if(!reduced)requestAnimationFrame(frame);
+}
+frame();
+if(reduced){for(let i=0;i<40;i++){rings.forEach(g=>{g.r+=g.v;g.a*=.985;});}frame();}
+
+let AC=null,playing=false,nextT=0,step=0,timer=null;
+const playBtn=document.getElementById('playBtn'),playIco=document.getElementById('playIco'),playLabel=document.getElementById('playLabel');
+const vuBars=document.querySelectorAll('.vu i');
+const SPB=60/124/2;
+function kick(t){
+  const o=AC.createOscillator(),g=AC.createGain();
+  o.frequency.setValueAtTime(150,t);o.frequency.exponentialRampToValueAtTime(45,t+.11);
+  g.gain.setValueAtTime(.9,t);g.gain.exponentialRampToValueAtTime(.001,t+.22);
+  o.connect(g).connect(AC.destination);o.start(t);o.stop(t+.25);
+}
+function hat(t,open){
+  const b=AC.createBuffer(1,AC.sampleRate*.06,AC.sampleRate),d=b.getChannelData(0);
+  for(let i=0;i<d.length;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/d.length,2);
+  const s=AC.createBufferSource(),f=AC.createBiquadFilter(),g=AC.createGain();
+  s.buffer=b;f.type='highpass';f.frequency.value=8000;
+  g.gain.value=open?.28:.16;
+  s.connect(f).connect(g).connect(AC.destination);s.start(t);
+}
+function schedule(){
+  while(nextT<AC.currentTime+.12){
+    const inBar=step%8;
+    if(inBar%2===0){
+      kick(nextT);
+      const dt=(nextT-AC.currentTime)*1000;
+      setTimeout(()=>{spawn(W*.5+(Math.random()-.5)*W*.5,H*.55+(Math.random()-.5)*H*.3,true);pulseVU();},Math.max(dt,0));
+    }
+    hat(nextT,inBar===6);
+    nextT+=SPB;step++;
+  }
+  timer=setTimeout(schedule,30);
+}
+function pulseVU(){
+  vuBars.forEach(b=>{b.style.height=(4+Math.random()*12)+'px';});
+  setTimeout(()=>vuBars.forEach(b=>b.style.height='4px'),120);
+}
+playBtn.addEventListener('click',()=>{
+  if(!AC)AC=new (window.AudioContext||window.webkitAudioContext)();
+  if(AC.state==='suspended')AC.resume();
+  playing=!playing;
+  playBtn.classList.toggle('playing',playing);
+  playBtn.setAttribute('aria-pressed',playing);
+  if(playing){
+    nextT=AC.currentTime+.05;step=0;schedule();
+    playIco.innerHTML='<path d="M0 0h3.5v12H0zM6.5 0H10v12H6.5z"/>';
+    playLabel.textContent=I18N[lang].stop;
+  }else{
+    clearTimeout(timer);
+    playIco.innerHTML='<path d="M0 0l10 6L0 12z"/>';
+    playLabel.textContent=I18N[lang].play;
+  }
+});
+function syncPlayLabel(){playLabel.textContent=playing?I18N[lang].stop:I18N[lang].play;}
+
+const tick=document.getElementById('tick');tick.innerHTML+=tick.innerHTML;
+
+document.getElementById('demoForm').addEventListener('submit',e=>{
+  e.preventDefault();
+  const f=e.target;
+  const subj=encodeURIComponent('[DEMO] '+f.name.value+' — '+f.genre.value);
+  const body=encodeURIComponent(
+'Artist: '+f.name.value+'\n'+
+'Email: '+f.email.value+'\n'+
+'Genre: '+f.genre.value+'\n'+
+'Link: '+f.link.value+'\n\n'+
+f.msg.value);
+  location.href='mailto:info@haustek-agency.com?subject='+subj+'&body='+body;
+});
+</script>
+</body>
+</html>
