@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Haustek Brand Playbook — v1.0 · 2026</title>
+<meta name="description" content="Bộ quy chuẩn thương hiệu và playbook marketing của Haustek Agency — nhận diện, giọng nói, màu sắc, typography, họa tiết, ứng dụng và chiến dịch phát hành.">
+<meta name="robots" content="noindex">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%230A0A0D'/%3E%3Cpath d='M20 15v34M44 15v34M20 31h24' stroke='%23FF2E4C' stroke-width='7' stroke-linecap='round' fill='none'/%3E%3C/svg%3E">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Be+Vietnam+Pro:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<style>
+:root{
+  --ink:#0A0A0D; --ink-2:#0D0D12;
+  --line:rgba(255,255,255,.1); --line-2:rgba(255,255,255,.2);
+  --glass:rgba(255,255,255,.04); --glass-2:rgba(255,255,255,.07);
+  --concrete:#9A9AA4; --paper:#F0F0F2;
+  --red:#FF2E4C; --ice:#7FD6E8;
+  --display:'Space Grotesk',sans-serif;
+  --body:'Be Vietnam Pro',sans-serif;
+  --mono:'IBM Plex Mono',monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:var(--ink);color:var(--paper);font-family:var(--body);font-weight:300;line-height:1.75;font-size:15px}
+body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:50;opacity:.04;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E")}
+::selection{background:var(--red);color:var(--paper)}
+a{color:var(--ice);text-decoration:none}
+a:hover{text-decoration:underline}
+
+.page{max-width:920px;margin:0 auto;padding:0 24px}
+
+/* ---------- COVER ---------- */
+.cover{min-height:100svh;display:flex;flex-direction:column;justify-content:space-between;padding:40px 24px;position:relative;overflow:hidden;border-bottom:1px solid var(--line)}
+.cover::before{content:"";position:absolute;inset:0;
+  background:radial-gradient(46% 40% at 84% 12%, rgba(255,46,76,.16), transparent 70%),
+             radial-gradient(50% 44% at 8% 92%, rgba(127,214,232,.1), transparent 70%)}
+.cover-rings{position:absolute;right:-140px;top:50%;transform:translateY(-50%);width:560px;height:560px;opacity:.5;pointer-events:none}
+.cover .meta{display:flex;justify-content:space-between;font-family:var(--mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--concrete);position:relative;z-index:2}
+.cover h1{font-family:var(--display);font-weight:600;font-size:clamp(46px,9vw,110px);line-height:1;letter-spacing:-.03em;position:relative;z-index:2}
+.cover h1 em{font-style:italic;font-weight:500;background:linear-gradient(92deg,var(--red),var(--ice));-webkit-background-clip:text;background-clip:text;color:transparent}
+.cover .sub{color:var(--concrete);max-width:520px;margin-top:18px;position:relative;z-index:2}
+.cover .foot{display:flex;justify-content:space-between;align-items:flex-end;font-family:var(--mono);font-size:11px;letter-spacing:.14em;color:var(--concrete);text-transform:uppercase;position:relative;z-index:2}
+
+/* ---------- TOC ---------- */
+.toc{padding:60px 0;border-bottom:1px solid var(--line)}
+.toc ol{list-style:none;columns:2;column-gap:40px}
+@media(max-width:640px){.toc ol{columns:1}}
+.toc li{break-inside:avoid;border-bottom:1px solid var(--line)}
+.toc a{display:flex;justify-content:space-between;gap:14px;padding:11px 2px;color:var(--paper);font-family:var(--display);font-weight:500;font-size:14.5px;letter-spacing:-.01em}
+.toc a:hover{color:var(--red);text-decoration:none}
+.toc a .no{font-family:var(--mono);font-size:11px;color:var(--concrete);letter-spacing:.1em}
+
+/* ---------- SECTION ---------- */
+section{padding:70px 0;border-bottom:1px solid var(--line);position:relative}
+.eyebrow{display:flex;align-items:center;gap:14px;font-family:var(--mono);font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--concrete);margin-bottom:14px}
+.eyebrow::before{content:"";width:26px;height:1px;background:var(--red)}
+.eyebrow .no{margin-left:auto;color:rgba(255,255,255,.22)}
+h2{font-family:var(--display);font-weight:600;font-size:clamp(28px,5.4vw,46px);line-height:1.05;letter-spacing:-.025em;margin-bottom:14px}
+h2 em{font-style:italic;font-weight:500;background:linear-gradient(92deg,var(--red),var(--ice));-webkit-background-clip:text;background-clip:text;color:transparent}
+h3{font-family:var(--display);font-weight:600;font-size:17px;letter-spacing:-.01em;margin:34px 0 10px}
+p{color:var(--concrete);max-width:640px}
+p strong,li strong{color:var(--paper);font-weight:500}
+.big-quote{font-family:var(--display);font-weight:500;font-size:clamp(19px,3.4vw,26px);line-height:1.4;letter-spacing:-.015em;color:var(--paper);max-width:720px;margin:26px 0;padding-left:20px;border-left:2px solid var(--red)}
+
+/* ---------- CARD SYSTEM (giống website) ---------- */
+.card{background:var(--glass);border:1px solid var(--line);border-radius:14px;overflow:hidden;margin:14px 0}
+.card-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 14px;border-bottom:1px solid var(--line);background:var(--glass-2)}
+.card-head .ct{font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--paper)}
+.card-head .cn{font-family:var(--mono);font-size:10px;color:var(--concrete)}
+.card-body{padding:16px}
+.grid-2{display:grid;gap:14px}
+.grid-3{display:grid;gap:14px}
+@media(min-width:680px){.grid-2{grid-template-columns:1fr 1fr}.grid-3{grid-template-columns:1fr 1fr 1fr}}
+
+/* do / don't */
+.dd .card-head .ct{color:var(--paper)}
+.dd.yes .card-head{border-bottom-color:rgba(127,214,232,.35)}
+.dd.yes .card-head .dot{width:7px;height:7px;border-radius:50%;background:var(--ice)}
+.dd.no .card-head{border-bottom-color:rgba(255,46,76,.35)}
+.dd.no .card-head .dot{width:7px;height:7px;border-radius:50%;background:var(--red)}
+.dd ul{list-style:none}
+.dd li{padding:7px 0;border-bottom:1px dashed var(--line);font-size:13.5px;color:var(--concrete)}
+.dd li:last-child{border-bottom:0}
+
+/* ---------- COLOR SWATCHES ---------- */
+.swatches{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin:16px 0}
+@media(min-width:680px){.swatches{grid-template-columns:repeat(4,1fr)}}
+.sw{border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.sw .chip{height:86px}
+.sw .info{padding:10px 12px;background:var(--glass)}
+.sw .info b{font-family:var(--display);font-weight:600;font-size:13px;display:block}
+.sw .info span{font-family:var(--mono);font-size:10.5px;color:var(--concrete);display:block}
+.ratio{display:flex;height:34px;border-radius:8px;overflow:hidden;border:1px solid var(--line);margin:14px 0;font-family:var(--mono);font-size:10px}
+.ratio div{display:flex;align-items:center;justify-content:center;letter-spacing:.06em}
+
+/* ---------- TYPE SPECIMEN ---------- */
+.type-spec{border:1px solid var(--line);border-radius:14px;padding:20px;margin:14px 0;background:var(--glass)}
+.type-spec .label{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--concrete);margin-bottom:8px;display:block}
+.spec-display{font-family:var(--display);font-weight:600;font-size:clamp(26px,5vw,40px);letter-spacing:-.025em;line-height:1.05}
+.spec-body{font-family:var(--body);font-weight:300;font-size:15px}
+.spec-mono{font-family:var(--mono);font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--concrete)}
+.type-scale{width:100%;border-collapse:collapse;font-size:13px;margin-top:8px}
+.type-scale td,.type-scale th{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;color:var(--concrete)}
+.type-scale th{font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--paper);font-weight:500}
+.type-scale td:first-child{color:var(--paper);font-weight:400}
+
+/* ---------- TIMELINE ---------- */
+.timeline{border:1px solid var(--line);border-radius:14px;overflow:hidden;margin:16px 0}
+.tl-row{display:grid;grid-template-columns:110px 1fr;border-bottom:1px solid var(--line)}
+.tl-row:last-child{border-bottom:0}
+.tl-when{padding:14px;background:var(--glass-2);font-family:var(--mono);font-size:11px;letter-spacing:.08em;color:var(--red);text-transform:uppercase;border-right:1px solid var(--line)}
+.tl-what{padding:14px;font-size:13.5px;color:var(--concrete)}
+.tl-what b{color:var(--paper);font-weight:500;display:block;font-family:var(--display);letter-spacing:-.01em;margin-bottom:2px}
+
+/* ---------- TABLE ---------- */
+table.spec{width:100%;border-collapse:collapse;font-size:13px;margin:14px 0}
+table.spec th,table.spec td{padding:9px 10px;border-bottom:1px solid var(--line);text-align:left}
+table.spec th{font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--paper);font-weight:500}
+table.spec td{color:var(--concrete)}
+table.spec td:first-child{color:var(--paper)}
+
+/* ---------- COPY BLOCK ---------- */
+.copyblock{background:rgba(0,0,0,.35);border:1px solid var(--line);border-radius:12px;padding:16px;font-size:13.5px;color:var(--concrete);margin:12px 0;position:relative}
+.copyblock .cb-label{position:absolute;top:-9px;left:14px;background:var(--ink);padding:0 8px;font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--ice)}
+.copyblock em{color:var(--paper);font-style:normal;font-weight:500}
+
+/* checklist */
+.check{list-style:none;margin:12px 0}
+.check li{padding:9px 0 9px 30px;border-bottom:1px dashed var(--line);position:relative;color:var(--concrete);font-size:13.5px}
+.check li::before{content:"";position:absolute;left:2px;top:13px;width:14px;height:14px;border:1.5px solid var(--concrete);border-radius:4px}
+
+/* footer */
+.docfoot{padding:44px 24px;display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap;font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;color:var(--concrete);text-transform:uppercase}
+
+/* ---------- PRINT ---------- */
+@media print{
+  :root{--ink:#ffffff;--ink-2:#f6f6f7;--paper:#111114;--concrete:#4a4a52;
+    --line:rgba(0,0,0,.16);--line-2:rgba(0,0,0,.3);--glass:rgba(0,0,0,.03);--glass-2:rgba(0,0,0,.05)}
+  body::after{display:none}
+  .cover{min-height:auto;padding:60px 24px}
+  section{page-break-inside:avoid}
+  a{color:#0b6b80}
+}
+</style>
+</head>
+<body>
+
+<!-- ===================== COVER ===================== -->
+<header class="cover">
+  <svg class="cover-rings" viewBox="0 0 560 560" fill="none" aria-hidden="true">
+    <circle cx="280" cy="280" r="70" stroke="#FF2E4C" stroke-width="1.5" opacity=".9"/>
+    <circle cx="280" cy="280" r="130" stroke="#F0F0F2" stroke-width="1.2" opacity=".5"/>
+    <circle cx="280" cy="280" r="190" stroke="#F0F0F2" stroke-width="1" opacity=".35"/>
+    <circle cx="280" cy="280" r="250" stroke="#7FD6E8" stroke-width="1" opacity=".3"/>
+  </svg>
+  <div class="meta"><span>HAUSTEK AGENCY</span><span>INTERNAL · V1.0</span></div>
+  <div>
+    <h1>Brand<br>Playbook<br><em>2026.</em></h1>
+    <p class="sub">Một nguồn chuẩn duy nhất cho mọi thứ mang tên Haustek — từ logo, màu sắc, giọng nói cho đến cách chạy một chiến dịch phát hành. Đọc trước khi thiết kế, viết, hay đăng bất cứ thứ gì.</p>
+  </div>
+  <div class="foot">
+    <span>Music Label &amp; Distribution · Est. 2017</span>
+    <span>California → Việt Nam</span>
+  </div>
+</header>
+
+<!-- ===================== TOC ===================== -->
+<nav class="toc"><div class="page">
+  <ol>
+    <li><a href="#s01"><span>Nền tảng thương hiệu</span><span class="no">01</span></a></li>
+    <li><a href="#s02"><span>Tính cách &amp; giọng nói</span><span class="no">02</span></a></li>
+    <li><a href="#s03"><span>Ngôn ngữ &amp; thông điệp</span><span class="no">03</span></a></li>
+    <li><a href="#s04"><span>Logo</span><span class="no">04</span></a></li>
+    <li><a href="#s05"><span>Màu sắc</span><span class="no">05</span></a></li>
+    <li><a href="#s06"><span>Typography</span><span class="no">06</span></a></li>
+    <li><a href="#s07"><span>Họa tiết &amp; hình ảnh</span><span class="no">07</span></a></li>
+    <li><a href="#s08"><span>Chuyển động</span><span class="no">08</span></a></li>
+    <li><a href="#s09"><span>Ứng dụng &amp; social</span><span class="no">09</span></a></li>
+    <li><a href="#s10"><span>Playbook chiến dịch phát hành</span><span class="no">10</span></a></li>
+    <li><a href="#s11"><span>Bộ copy mẫu</span><span class="no">11</span></a></li>
+    <li><a href="#s12"><span>Checklist trước khi đăng</span><span class="no">12</span></a></li>
+  </ol>
+</div></nav>
+
+<div class="page">
+
+<!-- ===================== 01 ===================== -->
+<section id="s01">
+  <p class="eyebrow"><span>Nền tảng thương hiệu</span><span class="no">01</span></p>
+  <h2>Haustek tồn tại<br><em>để làm gì.</em></h2>
+
+  <h3>Sứ mệnh</h3>
+  <p class="big-quote">Để nhạc Việt vang xa hơn — đưa mỗi bản thu của nghệ sĩ Việt, trong nước và hải ngoại, đến đúng nơi khán giả đang nghe.</p>
+
+  <h3>Định vị (positioning statement)</h3>
+  <p>Với <strong>nghệ sĩ Việt độc lập</strong> muốn phát hành chuyên nghiệp mà không đánh mất chất riêng, <strong>Haustek</strong> là music label &amp; distribution <strong>hiểu cả hai thế giới</strong> — hạ tầng phân phối toàn cầu (Believe, ADA, ONErpm) và mặt đất Việt Nam (NhacCuaTui, Zing MP3, cộng đồng club) — khác với các dịch vụ phân phối đại trà chỉ đẩy file lên rồi biến mất.</p>
+
+  <h3>Tagline</h3>
+  <div class="grid-2">
+    <div class="card"><div class="card-head"><span class="ct">Chính — Tiếng Việt</span><span class="cn">TAG-01</span></div>
+      <div class="card-body"><p style="font-family:var(--display);font-weight:600;font-size:22px;color:var(--paper);letter-spacing:-.02em">Để nhạc Việt vang xa hơn.</p></div></div>
+    <div class="card"><div class="card-head"><span class="ct">Chính — English</span><span class="cn">TAG-02</span></div>
+      <div class="card-body"><p style="font-family:var(--display);font-weight:600;font-size:22px;color:var(--paper);letter-spacing:-.02em">Made in Vietnam. Heard worldwide.</p></div></div>
+  </div>
+  <p style="font-size:13px">Chỉ dùng đúng hai câu trên. Không tự chế biến thể ("Đưa nhạc Việt ra biển lớn", "Vietnamese music to the world"…) — một thương hiệu, một câu nói.</p>
+
+  <h3>Bốn giá trị</h3>
+  <div class="grid-2">
+    <div class="card"><div class="card-head"><span class="ct">Minh bạch</span><span class="cn">VAL-01</span></div>
+      <div class="card-body"><p style="font-size:13.5px">Số liệu rõ ràng, điều khoản không chữ nhỏ, nghệ sĩ giữ quyền sở hữu tác phẩm. Mọi nội dung marketing phải phản ánh điều này.</p></div></div>
+    <div class="card"><div class="card-head"><span class="ct">Đồng hành</span><span class="cn">VAL-02</span></div>
+      <div class="card-body"><p style="font-size:13.5px">Không phải nền tảng tự phục vụ — là con người nghe từng demo. "Demo nào gửi tới, chúng tôi cũng nghe" là lời hứa, không phải slogan.</p></div></div>
+    <div class="card"><div class="card-head"><span class="ct">Hai thế giới</span><span class="cn">VAL-03</span></div>
+      <div class="card-body"><p style="font-size:13.5px">California ↔ Việt Nam. Chuẩn quốc tế trong vận hành, chất Việt trong âm nhạc. Luôn thể hiện cả hai, không chọn một.</p></div></div>
+    <div class="card"><div class="card-head"><span class="ct">Underground gốc</span><span class="cn">VAL-04</span></div>
+      <div class="card-body"><p style="font-size:13.5px">Sinh ra từ hầm techno và những đêm diễn nhỏ. Dù lớn đến đâu, thẩm mỹ và thái độ vẫn thuộc về văn hóa ngầm — không màu mè, không phô trương.</p></div></div>
+  </div>
+</section>
+
+<!-- ===================== 02 ===================== -->
+<section id="s02">
+  <p class="eyebrow"><span>Tính cách &amp; giọng nói</span><span class="no">02</span></p>
+  <h2>Haustek nói chuyện<br><em>như thế nào.</em></h2>
+
+  <h3>Tính cách: 4 trục</h3>
+  <table class="spec">
+    <tr><th>Haustek là</th><th>chứ không phải</th></tr>
+    <tr><td>Điềm tĩnh, tự tin</td><td>Ồn ào, gào thét khuyến mãi</td></tr>
+    <tr><td>Thẳng và ấm</td><td>Doanh nghiệp lạnh lùng, khách sáo</td></tr>
+    <tr><td>Trong nghề, nói chuyện nghề</td><td>Ra vẻ chuyên gia, thuật ngữ rối rắm</td></tr>
+    <tr><td>Tối giản, chắt lọc</td><td>Dài dòng, emoji dày đặc</td></tr>
+  </table>
+
+  <h3>Ba nguyên tắc viết</h3>
+  <p><strong>1 · Viết như người Việt nói.</strong> Không dịch cấu trúc câu tiếng Anh. Đọc to lên — nếu ngượng miệng thì viết lại.<br>
+  <strong>2 · Câu ngắn thắng câu dài.</strong> Một ý một câu. Cắt được từ nào, cắt.<br>
+  <strong>3 · Cụ thể thắng chung chung.</strong> "276.000 lượt nghe" thay vì "rất nhiều lượt nghe". "1–2 tuần" thay vì "nhanh chóng".</p>
+
+  <h3>Nói vậy / Đừng nói vậy</h3>
+  <div class="grid-2">
+    <div class="card dd yes"><div class="card-head"><span class="ct">Nói vậy</span><span class="dot"></span></div>
+      <div class="card-body"><ul>
+        <li>"Bạn lo phần nhạc, Haustek lo phần còn lại."</li>
+        <li>"Demo nào gửi tới, chúng tôi cũng nghe."</li>
+        <li>"Lên sóng đúng lịch. Số liệu rõ ràng."</li>
+        <li>"Đêm nay ở Sài Gòn. Cửa mở 21h."</li>
+      </ul></div></div>
+    <div class="card dd no"><div class="card-head"><span class="ct">Đừng nói vậy</span><span class="dot"></span></div>
+      <div class="card-body"><ul>
+        <li>"Chúng tôi cung cấp giải pháp phân phối âm nhạc toàn diện" — giọng công văn.</li>
+        <li>"🔥🔥 SIÊU PHẨM CỰC CHÁY 🔥🔥" — không phải chất Haustek.</li>
+        <li>"Hãy nhanh tay đăng ký ngay hôm nay!" — giục giã rẻ tiền.</li>
+        <li>"Empower your musical journey" — sáo rỗng, kể cả bằng tiếng Anh.</li>
+      </ul></div></div>
+  </div>
+
+  <h3>Tông giọng theo ngữ cảnh</h3>
+  <table class="spec">
+    <tr><th>Ngữ cảnh</th><th>Tông</th><th>Emoji</th></tr>
+    <tr><td>Thông báo phát hành</td><td>Trang trọng nhẹ, tự hào kín đáo</td><td>Tối đa 1 (▶ hoặc ●)</td></tr>
+    <tr><td>Sự kiện / club night</td><td>Gọn, nhịp, như flyer</td><td>Không</td></tr>
+    <tr><td>Trả lời nghệ sĩ (DM/email)</td><td>Ấm, xưng "mình – bạn", vào việc nhanh</td><td>Thoải mái vừa phải</td></tr>
+    <tr><td>Đối tác / báo chí</td><td>Chuyên nghiệp, xưng "chúng tôi"</td><td>Không</td></tr>
+  </table>
+</section>
+
+<!-- ===================== 03 ===================== -->
+<section id="s03">
+  <p class="eyebrow"><span>Ngôn ngữ &amp; thông điệp</span><span class="no">03</span></p>
+  <h2>Nói gì,<br><em>và nói bằng lời nào.</em></h2>
+
+  <h3>Boilerplate (giới thiệu chuẩn — copy nguyên văn)</h3>
+  <div class="copyblock"><span class="cb-label">Ngắn · ~30 từ</span>
+    <em>Haustek Agency</em> — music label &amp; distribution từ 2017, đưa nhạc của nghệ sĩ Việt trong nước và hải ngoại lên mọi nền tảng streaming trên thế giới.</div>
+  <div class="copyblock"><span class="cb-label">Vừa · ~70 từ</span>
+    <em>Haustek Agency</em> là music label &amp; distribution thành lập tại California năm 2017 — mái nhà của producer, DJ, rapper và những giọng ca Việt khắp trong nước lẫn hải ngoại. Haustek làm nhạc, phát hành và lo trọn đường đi của mỗi bản thu: từ Spotify, Apple Music, TikTok đến NhacCuaTui và Zing MP3, thông qua các đối tác phân phối Believe, ADA và ONErpm.</div>
+  <div class="copyblock"><span class="cb-label">EN · ~50 words</span>
+    <em>Haustek Agency</em> is a music label &amp; distribution company founded in California in 2017 — home to Vietnamese producers, DJs, rappers and vocalists at home and abroad. Haustek produces, releases and carries every track to listeners worldwide, from Spotify and TikTok to Vietnam's NhacCuaTui and Zing MP3, through partners Believe, ADA and ONErpm.</div>
+
+  <h3>Quy tắc song ngữ</h3>
+  <p>Tiếng Việt là ngôn ngữ chính. Tiếng Anh dùng cho: tên dịch vụ ngành (Music Distribution, A&amp;R, Booking), caption song song khi có khán giả quốc tế, và tài liệu gửi đối tác nước ngoài. <strong>Không trộn nửa câu Việt nửa câu Anh</strong> ("drop cực cháy trên các platform") — hoặc câu Việt trọn vẹn, hoặc câu Anh trọn vẹn.</p>
+
+  <h3>Từ điển chính tả nội bộ</h3>
+  <table class="spec">
+    <tr><th>Viết đúng</th><th>Không viết</th></tr>
+    <tr><td>Haustek / Haustek Agency</td><td>HAUSTEK (trong văn bản), Haustek agency, haus tek</td></tr>
+    <tr><td>nghệ sĩ, bản thu, phát hành, lên sóng</td><td>"sản phẩm âm nhạc" (trừ văn bản pháp lý)</td></tr>
+    <tr><td>TikTok, YouTube Music, NhacCuaTui, Zing MP3, TIDAL</td><td>Tik Tok, Youtube, Nhaccuatui, ZingMp3, Tidal</td></tr>
+    <tr><td>Believe · ADA · ONErpm</td><td>BELIEVE, Ada, OneRPM</td></tr>
+  </table>
+</section>
+
+<!-- ===================== 04 ===================== -->
+<section id="s04">
+  <p class="eyebrow"><span>Logo</span><span class="no">04</span></p>
+  <h2>Một wordmark,<br><em>dùng cho đúng.</em></h2>
+  <p>Wordmark HAUSTEK (chữ A vát chéo) là nhận diện chính. Chỉ có <strong>hai phiên bản màu</strong>: trắng trên nền tối và đen (than chì #1F1F23) trên nền sáng. Kèm theo là chấm đỏ tín hiệu (● #FF2E4C) đặt bên trái wordmark trong ngữ cảnh digital — tượng trưng đèn REC "đang phát sóng".</p>
+
+  <div class="grid-2">
+    <div class="card"><div class="card-head"><span class="ct">Trên nền tối (chính)</span><span class="cn">LOGO-A</span></div>
+      <div class="card-body" style="background:#0A0A0D;display:flex;align-items:center;gap:12px;padding:34px 16px">
+        <span style="width:9px;height:9px;border-radius:50%;background:#FF2E4C;box-shadow:0 0 10px #FF2E4C"></span>
+        <img src="data:image/png;base64,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" alt="Haustek wordmark trắng" style="height:16px;width:auto">
+      </div></div>
+    <div class="card"><div class="card-head"><span class="ct">Trên nền sáng</span><span class="cn">LOGO-B</span></div>
+      <div class="card-body" style="background:#F0F0F2;display:flex;align-items:center;gap:12px;padding:34px 16px">
+        <span style="width:9px;height:9px;border-radius:50%;background:#FF2E4C"></span>
+        <img src="data:image/png;base64,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" alt="Haustek wordmark đen" style="height:16px;width:auto;filter:invert(1) brightness(.25)">
+      </div></div>
+  </div>
+
+  <h3>Quy tắc</h3>
+  <table class="spec">
+    <tr><th>Thuộc tính</th><th>Quy định</th></tr>
+    <tr><td>Vùng an toàn</td><td>Bốn phía ≥ chiều cao chữ H của wordmark</td></tr>
+    <tr><td>Kích thước tối thiểu</td><td>Digital: cao ≥ 10px · In ấn: rộng ≥ 25mm</td></tr>
+    <tr><td>Nền đặt logo</td><td>Nền phẳng tối/sáng, hoặc vùng tối của ảnh; nếu ảnh nhiễu → thêm lớp phủ đen 40%</td></tr>
+    <tr><td>Chấm đỏ</td><td>Chỉ dùng trong ngữ cảnh digital (web, social); ấn phẩm in trang trọng có thể bỏ</td></tr>
+  </table>
+
+  <div class="card dd no"><div class="card-head"><span class="ct">Tuyệt đối không</span><span class="dot"></span></div>
+    <div class="card-body"><ul>
+      <li>Đổi màu wordmark sang đỏ, gradient hay bất kỳ màu nào khác trắng/đen</li>
+      <li>Kéo giãn, nghiêng, thêm viền, thêm bóng đổ, thêm hiệu ứng glow lên chữ</li>
+      <li>Đặt lên nền có độ tương phản kém hoặc vùng ảnh rối</li>
+      <li>Dùng logo chữ ký cọ (bản cũ trên banner YouTube) song song wordmark mới — chỉ giữ một nhận diện</li>
+    </ul></div></div>
+</section>
+
+<!-- ===================== 05 ===================== -->
+<section id="s05">
+  <p class="eyebrow"><span>Màu sắc</span><span class="no">05</span></p>
+  <h2>Đêm, giấy,<br><em>và một tia đỏ.</em></h2>
+
+  <div class="swatches">
+    <div class="sw"><div class="chip" style="background:#0A0A0D;border-bottom:1px solid var(--line)"></div><div class="info"><b>Ink — nền</b><span>#0A0A0D</span><span>Nền chính mọi ấn phẩm</span></div></div>
+    <div class="sw"><div class="chip" style="background:#F0F0F2"></div><div class="info"><b>Paper — chữ</b><span>#F0F0F2</span><span>Chữ chính trên nền tối</span></div></div>
+    <div class="sw"><div class="chip" style="background:#FF2E4C"></div><div class="info"><b>Signal Red — nhấn</b><span>#FF2E4C</span><span>CTA, trạng thái, điểm nhấn</span></div></div>
+    <div class="sw"><div class="chip" style="background:#7FD6E8"></div><div class="info"><b>Ice — phụ</b><span>#7FD6E8</span><span>Icon, link, chi tiết lạnh</span></div></div>
+  </div>
+  <div class="swatches" style="grid-template-columns:repeat(2,1fr)">
+    <div class="sw"><div class="chip" style="background:#9A9AA4"></div><div class="info"><b>Concrete — chữ phụ</b><span>#9A9AA4</span></div></div>
+    <div class="sw"><div class="chip" style="background:#0D0D12;border-bottom:1px solid var(--line)"></div><div class="info"><b>Ink-2 — nền xen kẽ</b><span>#0D0D12 · kính: trắng 4–7% + blur</span></div></div>
+  </div>
+
+  <h3>Tỉ lệ sử dụng</h3>
+  <div class="ratio">
+    <div style="flex:62;background:#0A0A0D;color:#9A9AA4">62 nền</div>
+    <div style="flex:25;background:#26262e;color:#F0F0F2">25 chữ/kính</div>
+    <div style="flex:8;background:#FF2E4C;color:#0A0A0D">8 đỏ</div>
+    <div style="flex:5;background:#7FD6E8;color:#0A0A0D">5 ice</div>
+  </div>
+  <p><strong>Đỏ là gia vị, không phải món chính.</strong> Một ấn phẩm chỉ có 1–2 yếu tố đỏ (một nút, một dòng nhấn, một chấm). Gradient duy nhất được phép: <strong>đỏ → ice</strong> trên chữ nhấn, dùng tối đa 1 lần mỗi ấn phẩm. Không bao giờ dùng nền trắng cho social — nền Haustek là đêm.</p>
+</section>
+
+<!-- ===================== 06 ===================== -->
+<section id="s06">
+  <p class="eyebrow"><span>Typography</span><span class="no">06</span></p>
+  <h2>Ba font,<br><em>ba vai trò.</em></h2>
+
+  <div class="type-spec"><span class="label">Display — Space Grotesk 600 · tiêu đề, con số lớn</span>
+    <p class="spec-display">Để nhạc Việt vang xa hơn.</p></div>
+  <div class="type-spec"><span class="label">Body — Be Vietnam Pro 300/400 · nội dung</span>
+    <p class="spec-body">Thiết kế riêng cho tiếng Việt, dấu thanh cân và rõ ở mọi cỡ chữ. Dùng weight 300 cho đoạn văn, 500–600 cho nhấn mạnh.</p></div>
+  <div class="type-spec"><span class="label">Mono — IBM Plex Mono 400/500 · nhãn, mã, metadata</span>
+    <p class="spec-mono">HSTK-001 · ALBUM · 2021 · SPOTIFY ↗</p></div>
+
+  <h3>Thang cỡ chữ (digital)</h3>
+  <table class="type-scale">
+    <tr><th>Cấp</th><th>Font / weight</th><th>Cỡ</th><th>Ghi chú</th></tr>
+    <tr><td>H1</td><td>Space Grotesk 600</td><td>46–124px · ls -0.025em</td><td>Chữ thường, không VIẾT HOA cả câu</td></tr>
+    <tr><td>H2</td><td>Space Grotesk 600</td><td>30–58px</td><td>Dòng nhấn nghiêng + gradient (tối đa 1)</td></tr>
+    <tr><td>H3</td><td>Space Grotesk 600</td><td>16–22px</td><td></td></tr>
+    <tr><td>Body</td><td>Be Vietnam Pro 300</td><td>14–15px · lh 1.7</td><td></td></tr>
+    <tr><td>Label</td><td>IBM Plex Mono 400</td><td>10–12px · ls .1–.22em · UPPERCASE</td><td>Chỉ nhãn mono mới viết hoa</td></tr>
+  </table>
+  <p><strong>Quy tắc vàng:</strong> tiếng Việt luôn đủ dấu, kể cả tiêu đề. Không dùng font thiếu bộ ký tự Việt cho bất kỳ chữ Việt nào — nếu một ứng dụng không có 3 font trên, thay bằng: Arial (body) và Arial Black (display), tuyệt đối không thay bằng font "gần giống".</p>
+</section>
+
+<!-- ===================== 07 ===================== -->
+<section id="s07">
+  <p class="eyebrow"><span>Họa tiết &amp; hình ảnh</span><span class="no">07</span></p>
+  <h2>Sóng loang<br><em>là chữ ký của Haustek.</em></h2>
+
+  <p>Họa tiết gốc lấy từ banner Haustek: những <strong>vòng sóng đồng tâm loang trên mặt nước</strong> — âm thanh lan tỏa. Đây là hoạ tiết nhận diện số một, xuất hiện dưới dạng: vòng tròn viền mảnh (1–2px) đồng tâm; sóng interference đơn sắc; hoặc canvas động trên web.</p>
+
+  <div class="card"><div class="card-head"><span class="ct">Họa tiết sóng — mẫu chuẩn</span><span class="cn">MOTIF-01</span></div>
+    <div class="card-body" style="background:#0A0A0D;padding:0;height:150px;position:relative;overflow:hidden">
+      <svg viewBox="0 0 900 150" style="width:100%;height:100%" aria-hidden="true">
+        <circle cx="200" cy="75" r="30" stroke="#F0F0F2" stroke-width="1.4" fill="none" opacity=".8"/>
+        <circle cx="200" cy="75" r="58" stroke="#F0F0F2" stroke-width="1.1" fill="none" opacity=".5"/>
+        <circle cx="200" cy="75" r="86" stroke="#F0F0F2" stroke-width="1" fill="none" opacity=".3"/>
+        <circle cx="620" cy="90" r="24" stroke="#FF2E4C" stroke-width="1.4" fill="none" opacity=".9"/>
+        <circle cx="620" cy="90" r="52" stroke="#F0F0F2" stroke-width="1" fill="none" opacity=".4"/>
+        <circle cx="620" cy="90" r="80" stroke="#7FD6E8" stroke-width="1" fill="none" opacity=".35"/>
+      </svg>
+    </div></div>
+
+  <h3>Hệ card &amp; nhãn thiết bị</h3>
+  <p>Mọi khối nội dung dùng <strong>card kính</strong> (trắng 4–7% + blur + viền 1px) với <strong>card head</strong>: tên khối (mono, uppercase) + mã catalog + chấm trạng thái. Hệ mã: <strong>HSTK-###</strong> (release), <strong>SVC-##</strong> (dịch vụ), <strong>EVT-###</strong> (sự kiện), <strong>LOG-###</strong> (blog). Mã mới cấp nối tiếp, không tái sử dụng.</p>
+
+  <h3>Định hướng ảnh</h3>
+  <div class="grid-2">
+    <div class="card dd yes"><div class="card-head"><span class="ct">Chụp / chọn</span><span class="dot"></span></div>
+      <div class="card-body"><ul>
+        <li>Ánh đèn sân khấu, khói, bóng người sau bàn mix — cảm giác "đang diễn"</li>
+        <li>Đơn sắc hoặc ngả tối, chấp nhận grain/nhiễu tự nhiên</li>
+        <li>Khoảnh khắc thật của đêm diễn, không dàn dựng</li>
+      </ul></div></div>
+    <div class="card dd no"><div class="card-head"><span class="ct">Tránh</span><span class="dot"></span></div>
+      <div class="card-body"><ul>
+        <li>Ảnh stock "người đeo tai nghe cười tươi"</li>
+        <li>Filter màu neon tím-hồng kiểu cyberpunk đại trà</li>
+        <li>Ảnh sáng trưng, nền trắng studio</li>
+      </ul></div></div>
+  </div>
+</section>
+
+<!-- ===================== 08 ===================== -->
+<section id="s08">
+  <p class="eyebrow"><span>Chuyển động</span><span class="no">08</span></p>
+  <h2>Chuyển động<br><em>theo nhịp, không theo mốt.</em></h2>
+  <p>Ba nguyên tắc: <strong>(1) Có nhịp</strong> — mọi animation lặp bám nhịp 124 BPM hoặc bội số (nhấp nháy đèn REC ≈ 1.6s); <strong>(2) Nhẹ tay</strong> — dịch chuyển ≤ 24px, nghiêng ≤ 4°, thời lượng 0.15–0.7s; <strong>(3) Tôn trọng người xem</strong> — mọi sản phẩm digital phải hỗ trợ <span style="font-family:var(--mono);font-size:12px">prefers-reduced-motion</span> và không autoplay âm thanh. Video social: cắt cảnh theo beat của chính bản nhạc đang quảng bá.</p>
+</section>
+
+<!-- ===================== 09 ===================== -->
+<section id="s09">
+  <p class="eyebrow"><span>Ứng dụng &amp; social</span><span class="no">09</span></p>
+  <h2>Một hệ thống,<br><em>mọi kích cỡ.</em></h2>
+
+  <h3>Khung bố cục chuẩn cho mọi ấn phẩm</h3>
+  <p>Bốn lớp, từ dưới lên: <strong>nền đêm</strong> (Ink hoặc ảnh phủ tối 40%) → <strong>họa tiết sóng</strong> (góc, mờ 30–50%) → <strong>nội dung</strong> (tiêu đề display + nhãn mono) → <strong>logo + chấm đỏ</strong> (góc trên trái hoặc dưới trái). Không thêm sticker, khung viền trang trí, hay font ngoài hệ thống.</p>
+
+  <h3>Thông số theo kênh</h3>
+  <table class="spec">
+    <tr><th>Kênh</th><th>Kích thước</th><th>Ghi chú</th></tr>
+    <tr><td>IG / FB post</td><td>1080×1350</td><td>Tiêu đề ≤ 6 từ; nhãn mono cho ngày/mã</td></tr>
+    <tr><td>IG Story / TikTok</td><td>1080×1920</td><td>Vùng an toàn 220px trên &amp; dưới; sóng loang theo beat</td></tr>
+    <tr><td>Bìa album/single</td><td>3000×3000</td><td>Nghệ sĩ tự do sáng tạo; chỉ ép: tên đọc được ở cỡ 60px</td></tr>
+    <tr><td>YouTube banner</td><td>2560×1440</td><td>Nội dung chính trong vùng 1546×423 giữa</td></tr>
+    <tr><td>FB cover</td><td>820×312</td><td>Sóng + wordmark, không nhồi chữ</td></tr>
+  </table>
+
+  <h3>Đồng thương hiệu (co-branding)</h3>
+  <p>Khi đứng cạnh Believe / ADA / ONErpm / NhacCuaTui / Zing MP3: logo đối tác cùng chiều cao với wordmark Haustek, cách nhau bằng dấu chấm giữa (·) hoặc vạch đứng mảnh, tất cả một màu (trắng hoặc đen). Không để logo đối tác to hơn, không dùng logo màu gốc của họ trên ấn phẩm Haustek trừ khi hợp đồng yêu cầu.</p>
+</section>
+
+<!-- ===================== 10 ===================== -->
+<section id="s10">
+  <p class="eyebrow"><span>Playbook chiến dịch</span><span class="no">10</span></p>
+  <h2>Sáu tuần<br><em>cho một lần phát hành.</em></h2>
+
+  <h3>Ba nhóm khán giả — ba thông điệp</h3>
+  <table class="spec">
+    <tr><th>Nhóm</th><th>Họ cần nghe</th><th>Kênh chính</th></tr>
+    <tr><td>Nghệ sĩ (muốn ký)</td><td>Minh bạch, giữ bản quyền, có người thật nghe demo</td><td>IG, TikTok, website /submit</td></tr>
+    <tr><td>Người nghe</td><td>Nhạc hay + câu chuyện đằng sau bản thu</td><td>TikTok, Spotify, YouTube</td></tr>
+    <tr><td>Brand / đối tác</td><td>Năng lực sản xuất, sự kiện đã làm, mạng lưới phân phối</td><td>Website /events, email, FB</td></tr>
+  </table>
+
+  <h3>Bốn trụ nội dung (tỉ lệ 40 / 25 / 20 / 15)</h3>
+  <p><strong>Âm nhạc</strong> (teaser, snippet, visualizer) · <strong>Hậu trường</strong> (studio, soundcheck, quá trình làm bản thu) · <strong>Giáo dục</strong> (cẩm nang phát hành, giải thích ngành — nuôi nhóm nghệ sĩ) · <strong>Cộng đồng</strong> (repost nghệ sĩ, khoảnh khắc đêm diễn, khán giả).</p>
+
+  <h3>Timeline chuẩn — đếm ngược từ ngày phát hành (D)</h3>
+  <div class="timeline">
+    <div class="tl-row"><div class="tl-when">D−42</div><div class="tl-what"><b>Chốt hồ sơ phát hành</b>Master, artwork 3000×3000, metadata, split sheet. Gửi lên hệ thống phân phối (Believe/ADA/ONErpm).</div></div>
+    <div class="tl-row"><div class="tl-when">D−28</div><div class="tl-what"><b>Pitch playlist</b>Spotify for Artists (trước ≥ 4 tuần), đồng thời pitch NhacCuaTui &amp; Zing MP3 qua đối tác. Chuẩn bị pre-save link.</div></div>
+    <div class="tl-row"><div class="tl-when">D−21</div><div class="tl-what"><b>Công bố</b>Post announce (IG + FB + TikTok) theo khung bố cục chuẩn: bìa + ngày + pre-save. Cập nhật card release trên website.</div></div>
+    <div class="tl-row"><div class="tl-when">D−14 → D−3</div><div class="tl-what"><b>Nhịp teaser</b>2–3 nội dung/tuần xoay 4 trụ: snippet 15s cắt theo beat, hậu trường, câu chuyện bản thu. Đưa snippet lên TikTok/CapCut làm sound trước ngày ra mắt.</div></div>
+    <div class="tl-row"><div class="tl-when">D-DAY</div><div class="tl-what"><b>Lên sóng</b>Post phát hành + story link mọi nền tảng (fanlink). Nghệ sĩ và team đồng loạt chia sẻ trong 24h đầu — thuật toán đo cửa sổ này.</div></div>
+    <div class="tl-row"><div class="tl-when">D+7 / D+30</div><div class="tl-what"><b>Nuôi &amp; tổng kết</b>D+7: nội dung phản hồi người nghe, video đêm diễn nếu có. D+30: post cột mốc số liệu (theo mẫu "The Day Pass — 276K"), báo cáo minh bạch gửi nghệ sĩ.</div></div>
+  </div>
+
+  <h3>Vai trò từng kênh &amp; KPI theo dõi</h3>
+  <table class="spec">
+    <tr><th>Kênh</th><th>Vai trò</th><th>KPI chính</th></tr>
+    <tr><td>TikTok</td><td>Khám phá — snippet, sound, trend theo beat</td><td>Lượt dùng sound, view 15s</td></tr>
+    <tr><td>Instagram</td><td>Bộ mặt thẩm mỹ — announce, hậu trường</td><td>Reach, save, follow nghệ sĩ</td></tr>
+    <tr><td>Facebook</td><td>Cộng đồng VN + sự kiện</td><td>Share, RSVP sự kiện</td></tr>
+    <tr><td>Spotify/nền tảng</td><td>Đích đến</td><td>Stream 28 ngày, save rate, playlist add</td></tr>
+    <tr><td>Website</td><td>Trung tâm — submit demo, booking</td><td>Demo gửi/tháng, yêu cầu booking</td></tr>
+  </table>
+  <p>Hashtag cố định: <span style="font-family:var(--mono);font-size:12px">#haustek #haustekagency #nhacviet</span> + 2–3 hashtag riêng theo bản thu. Không dùng quá 6 hashtag.</p>
+</section>
+
+<!-- ===================== 11 ===================== -->
+<section id="s11">
+  <p class="eyebrow"><span>Bộ copy mẫu</span><span class="no">11</span></p>
+  <h2>Điền vào chỗ trống,<br><em>giữ đúng giọng.</em></h2>
+
+  <div class="copyblock"><span class="cb-label">Caption announce</span>
+    [TÊN BẢN THU] — [nghệ sĩ].<br>
+    [Một câu về bản thu, ≤ 15 từ, không tính từ sáo rỗng.]<br>
+    ● [DD.MM] · mọi nền tảng. Pre-save ở bio.<br>
+    <span style="font-family:var(--mono);font-size:11px;color:var(--concrete)">HSTK-[###] · #haustek #nhacviet</span></div>
+
+  <div class="copyblock"><span class="cb-label">Caption D-Day</span>
+    Đã lên sóng: [TÊN BẢN THU] — [nghệ sĩ].<br>
+    Nghe ở bất cứ đâu bạn đang nghe nhạc — link ở bio.<br>
+    [1 câu cảm ơn hoặc câu chuyện, tùy nghệ sĩ viết.]</div>
+
+  <div class="copyblock"><span class="cb-label">Email trả lời demo (mẫu mở)</span>
+    Chào [tên],<br><br>
+    Cảm ơn bạn đã gửi nhạc cho Haustek — mình đã nghe [tên bản thu]. [1–2 câu nhận xét thật, cụ thể về bản thu]. [Bước tiếp theo / lý do chưa phù hợp lúc này, nói thẳng].<br><br>
+    Chúc bạn làm nhạc đều tay,<br>[Tên] · Haustek A&amp;R</div>
+
+  <div class="copyblock"><span class="cb-label">Chữ ký email</span>
+    [Họ tên]<br>[Chức danh] · Haustek Agency<br>
+    Music Label &amp; Distribution · Est. 2017<br>
+    haustek-agency.com · info@haustek-agency.com</div>
+
+  <div class="copyblock"><span class="cb-label">Khung thông cáo báo chí</span>
+    <em>Tiêu đề:</em> [Nghệ sĩ] phát hành [bản thu] cùng Haustek Agency<br>
+    <em>Đoạn 1:</em> Ai — gì — khi nào — ở đâu (nền tảng).<br>
+    <em>Đoạn 2:</em> Câu chuyện bản thu + 1 trích dẫn nghệ sĩ.<br>
+    <em>Đoạn 3:</em> 1 trích dẫn Haustek (giọng điềm tĩnh, có số liệu nếu đáng nói).<br>
+    <em>Kết:</em> Boilerplate ngắn (mục 03) + liên hệ báo chí.</div>
+</section>
+
+<!-- ===================== 12 ===================== -->
+<section id="s12" style="border-bottom:0">
+  <p class="eyebrow"><span>Checklist</span><span class="no">12</span></p>
+  <h2>Soát 10 điều<br><em>trước khi bấm đăng.</em></h2>
+  <ul class="check">
+    <li>Nền tối (Ink) — không nền trắng, không filter neon lạ</li>
+    <li>Chỉ dùng 3 font hệ thống, tiếng Việt đủ dấu kể cả tiêu đề</li>
+    <li>Tối đa 1–2 yếu tố đỏ; gradient đỏ→ice xuất hiện ≤ 1 lần</li>
+    <li>Logo đúng phiên bản trắng/đen, đủ vùng an toàn</li>
+    <li>Có mã catalog (HSTK/EVT/LOG) dạng nhãn mono nếu là release/sự kiện/bài viết</li>
+    <li>Đọc to caption — nghe như người Việt nói, không nửa Việt nửa Anh</li>
+    <li>Tagline nếu dùng: đúng nguyên văn một trong hai câu chuẩn</li>
+    <li>Số liệu cụ thể thay cho tính từ ("276K" thay vì "khủng")</li>
+    <li>≤ 6 hashtag, có #haustek</li>
+    <li>Link hoạt động: fanlink / pre-save / #/submit đã bấm thử</li>
+  </ul>
+  <p style="margin-top:26px;font-size:13px">Sai bất kỳ điều nào — sửa rồi mới đăng. Thương hiệu mạnh không nằm ở một ấn phẩm đẹp, mà ở một nghìn ấn phẩm giống nhau về kỷ luật.</p>
+</section>
+
+</div>
+
+<footer class="docfoot">
+  <span>© 2026 Haustek Agency — Brand Playbook v1.0</span>
+  <span>Cập nhật kế tiếp: khi có nhận diện phụ (sub-brand sự kiện)</span>
+</footer>
+
+</body>
+</html>
