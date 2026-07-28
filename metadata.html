@@ -1,0 +1,873 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Khai báo metadata phát hành — Haustek</title>
+<meta name="description" content="Biểu mẫu khai báo metadata bản phát hành cho nghệ sĩ Haustek — thông tin release, danh sách track, tác quyền và tỉ lệ chia.">
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%23070709'/%3E%3Ccircle cx='32' cy='32' r='9' stroke='%23FF2E4C' stroke-width='2.5' fill='none'/%3E%3Ccircle cx='32' cy='32' r='17' stroke='%23F0F0F2' stroke-width='1.6' fill='none' opacity='.6'/%3E%3C/svg%3E">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:ital,wdth,wght@0,62..125,300..900;1,62..125,300..900&family=Be+Vietnam+Pro:wght@300;400;500&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<style>
+:root{
+  --ink:#070709;--line:rgba(240,240,242,.12);--line-2:rgba(240,240,242,.22);
+  --concrete:#8E8E98;--paper:#F0F0F2;--red:#FF2E4C;--ice:#7FD6E8;--violet:#8B7BE8;--ok:#4ED88A;--warn:#E8A33D;
+  --disp:'Archivo',sans-serif;--body:'Be Vietnam Pro',sans-serif;--mono:'IBM Plex Mono',monospace;
+  --gut:clamp(20px,4vw,64px);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:var(--ink);color:var(--paper);font-family:var(--body);font-weight:300;line-height:1.75;font-size:15px;overflow-x:hidden}
+body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:120;opacity:.05;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E")}
+::selection{background:var(--red);color:var(--paper)}
+a{color:var(--ice);text-decoration:none}
+a:hover{text-decoration:underline}
+img{max-width:100%;display:block}
+
+/* NAV */
+.nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;gap:16px;
+  padding:14px var(--gut);background:rgba(7,7,9,.6);backdrop-filter:blur(16px) saturate(1.3);-webkit-backdrop-filter:blur(16px) saturate(1.3);
+  border-bottom:1px solid rgba(240,240,242,.07)}
+.logo{display:flex;align-items:center;gap:10px}
+.logo img{height:11px;width:auto}
+.rec{width:7px;height:7px;border-radius:50%;background:var(--red);box-shadow:0 0 10px rgba(255,46,76,.8);animation:blink 1.6s steps(2,end) infinite}
+@keyframes blink{50%{opacity:.25}}
+.nav a.back{font-family:var(--mono);font-size:11px;letter-spacing:.1em;color:var(--concrete);text-transform:uppercase}
+.nav a.back:hover{color:var(--paper);text-decoration:none}
+
+/* LAYOUT */
+main{padding:120px var(--gut) 90px;max-width:1000px;margin:0 auto;position:relative}
+.zone::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
+  background:radial-gradient(50% 40% at 92% 4%, rgba(139,123,232,.14), transparent 70%),
+             radial-gradient(48% 42% at 4% 92%, rgba(255,46,76,.1), transparent 70%)}
+.kicker{font-family:var(--mono);font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:var(--concrete);display:flex;align-items:center;gap:16px;margin-bottom:22px}
+.kicker i{font-style:normal;color:var(--red)}
+h1{font-family:var(--disp);font-weight:780;font-stretch:112%;font-size:clamp(34px,7vw,76px);line-height:1.02;letter-spacing:-.03em;text-wrap:balance}
+h1 em{font-style:italic;font-weight:600;color:var(--red)}
+.ln{display:inline-block}
+.lead{color:var(--concrete);font-size:14.5px;max-width:620px;margin-top:20px;text-wrap:pretty}
+
+.glass{background:rgba(240,240,242,.04);border:1px solid rgba(240,240,242,.1);border-radius:20px;
+  backdrop-filter:blur(14px) saturate(1.2);-webkit-backdrop-filter:blur(14px) saturate(1.2);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.07), 0 24px 60px rgba(0,0,0,.4)}
+
+/* STEP */
+.step{margin-top:34px;padding:30px}
+.step-head{display:flex;align-items:baseline;gap:16px;padding-bottom:18px;border-bottom:1px solid rgba(240,240,242,.1);margin-bottom:26px}
+.step-no{font-family:var(--mono);font-size:11px;letter-spacing:.16em;color:var(--red);flex:none}
+.step-head h2{font-family:var(--disp);font-weight:700;font-stretch:108%;font-size:clamp(19px,3.2vw,28px);letter-spacing:-.02em;line-height:1.15}
+.step-head p{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;color:var(--concrete);text-transform:uppercase;margin-left:auto;flex:none;text-align:right}
+@media(max-width:640px){.step{padding:22px 18px}.step-head{flex-wrap:wrap}.step-head p{margin-left:0;width:100%;text-align:left}}
+
+/* FIELDS */
+.grid{display:grid;gap:22px 26px}
+@media(min-width:700px){.g2{grid-template-columns:1fr 1fr}.g3{grid-template-columns:1fr 1fr 1fr}.g21{grid-template-columns:2fr 1fr}}
+.f{display:grid;gap:7px;align-content:start}
+.f label{font-family:var(--mono);font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--concrete);display:flex;gap:8px;align-items:baseline}
+.f label .req{color:var(--red)}
+.f .hint{font-family:var(--body);font-size:11.5px;letter-spacing:0;text-transform:none;color:rgba(142,142,152,.85);line-height:1.5;margin-top:-2px}
+.f input,.f select,.f textarea{
+  background:rgba(0,0,0,.28);border:1px solid rgba(240,240,242,.12);border-radius:10px;
+  color:var(--paper);font-family:var(--body);font-weight:400;font-size:14.5px;padding:12px 14px;
+  transition:border-color .2s,box-shadow .2s;appearance:none;width:100%;
+}
+.f select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238E8E98' stroke-width='1.6' fill='none'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 14px center;padding-right:36px}
+.f select option{background:#12121a;color:var(--paper)}
+.f textarea{min-height:92px;resize:vertical;line-height:1.65}
+.f input::placeholder,.f textarea::placeholder{color:rgba(240,240,242,.2)}
+.f input:focus,.f select:focus,.f textarea:focus{outline:none;border-color:var(--red);box-shadow:0 0 0 3px rgba(255,46,76,.14)}
+.f input.bad,.f select.bad,.f textarea.bad{border-color:var(--red);background:rgba(255,46,76,.07)}
+.f input[type=number]{-moz-appearance:textfield}
+.chk{display:flex;gap:12px;align-items:flex-start;padding:12px 0;border-bottom:1px dashed rgba(240,240,242,.1);font-size:13.5px;color:var(--concrete);cursor:pointer}
+.chk:last-of-type{border-bottom:0}
+.chk input{width:18px;height:18px;flex:none;margin-top:3px;accent-color:var(--red);cursor:pointer}
+.chk b{color:var(--paper);font-weight:500}
+
+/* TRACK CARD */
+.track{border:1px solid rgba(240,240,242,.11);border-radius:16px;padding:22px;margin-bottom:16px;background:rgba(240,240,242,.02);position:relative}
+.track-head{display:flex;align-items:center;gap:14px;margin-bottom:20px}
+.track-no{font-family:var(--disp);font-weight:800;font-stretch:114%;font-size:34px;letter-spacing:-.03em;color:var(--red);line-height:1}
+.track-title{font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--concrete);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.track-del{background:none;border:1px solid rgba(240,240,242,.15);color:var(--concrete);border-radius:100px;padding:7px 14px;
+  font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;cursor:pointer;transition:all .2s;flex:none}
+.track-del:hover{border-color:var(--red);color:var(--red)}
+.sub-h{font-family:var(--mono);font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--concrete);
+  margin:26px 0 14px;padding-top:16px;border-top:1px solid rgba(240,240,242,.09);display:flex;gap:10px;align-items:center}
+.sub-h::before{content:"";width:16px;height:1px;background:var(--red)}
+.split-bar{display:flex;align-items:center;gap:12px;margin-top:10px;font-family:var(--mono);font-size:11px;letter-spacing:.08em}
+.split-bar .track-meter{flex:1;height:5px;border-radius:100px;background:rgba(240,240,242,.1);overflow:hidden}
+.split-bar .track-meter i{display:block;height:100%;width:0;background:var(--warn);transition:width .3s,background .3s}
+.split-bar.ok .track-meter i{background:var(--ok)}
+.split-bar .val{color:var(--warn);white-space:nowrap}
+.split-bar.ok .val{color:var(--ok)}
+.writer-row{display:grid;gap:12px;grid-template-columns:1fr;margin-bottom:12px}
+@media(min-width:700px){.writer-row{grid-template-columns:1.6fr 1.2fr .7fr auto;align-items:end}}
+.mini-btn{background:rgba(240,240,242,.05);border:1px solid rgba(240,240,242,.15);color:var(--paper);border-radius:100px;
+  padding:11px 18px;font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;cursor:pointer;transition:all .25s}
+.mini-btn:hover{border-color:var(--line-2);background:rgba(240,240,242,.1)}
+.mini-btn.danger:hover{border-color:var(--red);color:var(--red)}
+
+.add-track{width:100%;margin-top:6px;padding:18px;border:1px dashed rgba(240,240,242,.2);border-radius:14px;background:none;
+  color:var(--concrete);font-family:var(--mono);font-size:11.5px;letter-spacing:.16em;text-transform:uppercase;cursor:pointer;transition:all .25s}
+.add-track:hover{border-color:var(--red);color:var(--red);background:rgba(255,46,76,.05)}
+
+/* SUBMIT AREA */
+.actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:26px}
+.btn{display:inline-flex;align-items:center;gap:12px;border-radius:100px;padding:17px 28px;cursor:pointer;
+  font-family:var(--mono);font-size:11.5px;letter-spacing:.16em;text-transform:uppercase;transition:all .3s;
+  background:rgba(240,240,242,.05);border:1px solid var(--line-2);color:var(--paper);backdrop-filter:blur(10px)}
+.btn:hover{background:rgba(240,240,242,.12)}
+.btn.primary{background:var(--red);border-color:var(--red)}
+.btn.primary:hover{box-shadow:0 12px 40px rgba(255,46,76,.35);background:#ff4560}
+.note{font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;color:var(--concrete);line-height:1.9;margin-top:18px}
+.msg{margin-top:20px;padding:16px 18px;border-radius:12px;font-size:13.5px;display:none}
+.msg.show{display:block}
+.msg.err{background:rgba(255,46,76,.1);border:1px solid rgba(255,46,76,.4);color:#ffb3bf}
+.msg.good{background:rgba(78,216,138,.1);border:1px solid rgba(78,216,138,.4);color:#a8f0c8}
+.msg ul{margin:8px 0 0 18px}
+.msg li{margin:3px 0}
+
+/* checklist */
+.spec{width:100%;border-collapse:collapse;font-size:13px;margin-top:6px}
+.spec td{padding:9px 0;border-bottom:1px solid rgba(240,240,242,.09);color:var(--concrete);vertical-align:top}
+.spec td:first-child{color:var(--paper);width:40%;padding-right:16px;font-weight:400}
+.spec tr:last-child td{border-bottom:0}
+
+footer{padding:40px var(--gut);border-top:1px solid var(--line);background:#060608;
+  font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;color:var(--concrete);text-transform:uppercase;
+  display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
+
+a:focus-visible,button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible{outline:2px solid var(--red);outline-offset:3px}
+@media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}html{scroll-behavior:auto}}
+</style>
+</head>
+<body class="zone">
+
+<header class="nav">
+  <a class="logo" href="index.html" aria-label="Haustek">
+    <span class="rec" aria-hidden="true"></span>
+    <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAZkAAABSCAYAAACG/akNAAA2bUlEQVR42u19d1gU59r3zOxsX5ay9A4CggKCBUFKLChiJ0GxxcgxMajReIw58UvOicZjzBsTo1FzEo0liSXGLiBRMPSqKAJBBKUJCAgs7AJbp7x/yObl+MnMLltYdH7XxYUuz8487a7P/dw3AFCgQIECBQoUKFCgQIECBQoUKFCgQIECBQoUKFCgQIECBQoUKFCgQIECBQoUKFCgQIECBQoUKFCgQIECBQoUKFCgQIECBQoUDA9Q3YY8Hg+cO3euE4PBgDEMw3AcB0Dw/74OwzANx3EgLS2trqWlBdN3xzkcDhAZGWnL4/FYAAAAKIpiGIZhAAAAEARBDAYDhiAIzMzMbGhoaECMYbKtra2hkJAQaxMTEzY4cPIAAACfAejo6Oi5cePGUwQxii4DQUFBXDc3NwGGYRio6iQAAEqlEsEwDDcxMWE3NjYK8/LyupVKpX43KwgCnp6ejEmTJtmjKIrhOA7gOI4DAPDXbxqNBgmFwr7c3NxOiUSi0/fTaDSATqcD9vb2dEtLS4alpSWHx+OxmEwm/fm2eD/6//3CsQxo+9dnIAiCcrlcWV5e/vTBgwcKTfsYGBjI9vHxsQFBEFDN0cA+DTKvIFkborG8qB3RZ6r/4jiOK5VK9P79+8L6+nqE7NkcDgcICQmx4PF4jGcs6BkPgiDor3058F0D9ytZX4navWjNBrYHQRCEIAik0WgQgiBoe3t7b0FBQbdcLid8HovFAqKiomzNzc15CoUCQVEUo9Fo0MDxsFgsRmFhYX15eblMn7TF5XKByZMnm3t4eNgOnJuBc4jjOC6XyxV0Oh2+efNmTX19vVpMCla3E1ZWVrSdO3f+aGtrOxYEQai/AxCO45jq30KhsO7p06fzW1paOvTN/Ph8PrR27dp3w8LC1kAQBKv6oeoLBEE0sVj8ZP369XMaGxtb+uXPsGL69OmOO3fuPGptbe0NgiCkmkdVnwEAAB48eJDa0tKSUFJSIiEjOr1rICAIrF69ev7ixYs/YzAY3IH9xDAM6Rfo8OXLl3eUlpb+2NXVpdcO02g0IDIy0mv79u2/sVgs0+cYBqb6XVRUdPrhw4fb6+rqdCKpeTweaGlpSYuIiHDx8fHxCA4Onm1vbz/G3NzcmU6ns2k0GkOX4xSJRE179ux5p7q6ulSTfQtBEBAdHR24YcOGQzwez3ogbQ6kD11gsOcN/PxFbQbueRzHMalU2v3FF1/EHz58uJxMsXJycmJ89tlnn3t5eU2FIIj2omcSvY+s70TPGezvA3khCIIQhmFIamrqvsrKym/b2toI59zMzAzasGHD5uDg4FUD10o1NhzHcZlMJvrqq69WlZeXF+mTziMjI20/+eST//Hx8ZkNQRANx3Fs4NhUbREEkScnJ+/Ozs6uU/f5sAabCjA1NbXn8/kOg7XBMAyh0+k0QzBACIJAExMTAZ/Pdxhsc+A4jqssrOEGnU4HFi5cuNDFxSWEwWDwBmvn6+s7PzY29lRFRUUqmSZkCPD5fHMzMzNnGIZZBG0sDNgfnpmZmfNgc4jjOGZmZmari3ex2WzA39+fl5CQEBcaGhpnZ2fnz2azzSEIgtVhSloQPUSn02FNv4fjOMDj8XgWFhZuLBbLbCS4UjAMQ8zNzU3VoVE2m02zt7cfY2lp6aWvudfV+slkMlyNsQMcDsfUxMTEbrA2DAaDy+Fw2Prsr6OjI23r1q3/CgwMjCOicwzDkLKysl/27t17/OHDh2pb2RoJGbKFhSAIlsvlBvHz0Gg0gMPhmJFpWwiCoMYgZOzt7eGAgIDZRAKmf1PxgoODZ5uYmNyUy+XDbn7BMMwgW3cEQZQKhQI3AEMCMAzD1WEwKIpq9S4zMzMwOjraef369f+YMGHCUjabbWHIeUcQBNF03+I4DtDpdAYwggCCIIQ+gzp7EYJhmGnMAgYAAEChUMiUSqVaQkZNhYOuR/oGwsPDncaPH7+ESMAAAABIpVLhmTNnDlRUVGjkZYE02AwAmclN5gPV8eYkfReGYQhuBBLG3NwcXL9+/Sw3N7cwNSw02N/ff15YWJgNjUYbdoLBcRzTtatF23Un6482/YUgCPDx8WHu2bNn5bfffns9NDQ0wdACRjVOLejCqJnwUMfaf2Y1osZGNh516E+fPDUiIsJ88+bNOzgcjiVZP3Jyco5cvXq1QibT7HhIowVT+eGNBWQCpF/IDHs//fz8+DNnzlxJZsUMEEpuMTEx8wUCwbATFIqiiDpM2xDKhbqvwHEcH2p33N3d6X//+9+XxMXFfTGcbhljUI6MDTiOAxiGocbez5HQRwB4dti/adOmBH9//xgyASMUCmuSk5PPtba2aiwDNLVkcF0xAmPSFvQJOp0OzJ8/P9zT03O6ugwLgiB46tSp8WFhYbYQBA03wWBqED9mQEaD66s/rq6u8Pbt29esWLHiG6KzPkMx1CFaYtBI0/ZfNoE6EsbDYrGApUuXek2bNm0Dk8nkE7Xt7e1tO3PmzMeXLl2qGMo5MaTrTQ8akZSh0WiM4e6Pvb09HBISMpfD4Qg0+Z6tra1vXFzcEjMzM5AiGPX7MyBKR6PnstlsYPHixePnzp37j+Fwjz1PQwwGg67pGCAIUoXTwsAIAmhsmqmW6Bf0Rt1HDw8P1ltvvbWJKOhARU/FxcVnDx8+nNTa2jok5U0jS0bTWHIj2LzQcG/gsWPHmru5uU3WlPAZDAYvJCRkqbu7O2ckMABDTbO6Qk+T/oAgCAQEBJi88cYb75qbm7sZgyXAZrNZQ1Cq1DqzMiZgGIbAMAyra7Ebu0BCUVTR767VGa/U9ZgZDAawYMGC8ePHj19MttclEknH2bNnf6ysrJQPVd+Eh4MBGJhJDtu7TU1NwbCwsECBQDBqKN+3trb2CQ0N9bxz5849Y7bAB9w7HJFwdnaG169fv8LX13eeOu0RBJF1dHRUNzU1lXZ1dT1RKpUyIuXmuftQ4MDP+gMrcAzD0Ge/MEwqlfY8fPjwsaZziqIoUFFRUXn9+vUvaDQa/Pw7BlyoHPT+DI1GgyEIoo0ePTrCzc0tgoiZVlRUJDY0NJSqziAGuUcCPv83VX9QFEUUCoWssrKyVh06VefgX6FQ9N66deuXnp6eTgRBFAP50oC7VIQXRp+/c/fcOMAXfRfDsGe3wTEMLS0tvTNcAoQMLBYLmDVrlu2KFSu2kR32KxSK3rS0tH1ZWVk12twz1EjIkC1w/+YxJHPDtOmvvjFx4kTzxYsX/0PdA//nwWQy+SEhIa+dPHmyVCgUUgfBekC/Vjd27ty5/+ByudZkWrdYLG7Oz8//6ejRo0du3brV1t7ejj6f6UBbGuh3e2n8HAzDgOPHjz84ceLErv5wb9L39GdN+D+GAMMAl8sFt2zZMvXTTz9NJ9BwO3fv3v3B+fPnH6veM5Q+D+U7ROjs7HwUHx+/uaamRjkcio8m49EkkEVX/fPy8mJt3br1n97e3tFk/LGqqir122+//aG6ulqhzTvhl52JDJd5bW5uDs6ZMyfMzs7OTxthFx4e/tbcuXOTfv3119rhSDWjzvwZqQULqrlO0JQpUyJMTU2dyNwgZWVlF0+cOPHluXPnyjs7OzF9rYc2WqMm94Ne9B4EQYDe3l6cyWSSuutoNBo08BlD2Qa63jooiiohCAKHa0sas0VPp9OB8PBwT39//wVE7nscx7Hu7u6Gw4cP7ygoKOjWWmnStSVDCZhnGmJwcLBldHT0WjLtmAw2NjZjV69evd7V1ZU+jPNoNOuu6zV1d3fn+vr6TicjupaWltIdO3ZsOXr0aGlbWxtmLLnl9CXkYBiGRxKtD+g7SkWrvZgnubu7M1auXLmJTKHCMAzJzc09fu3atUpdZB2BAAo6B5PJBEJCQvxcXFwmq7GBMBJtkREUFLQyPDzclYTu9bbB1WEoI5Ww3d3dBQ4ODuOI2vT09LRcuHBhd0ZGRptUKqU2OIURBwsLC2jjxo2LAgICYsnadnR0VF+8ePHX5uZmnWhSOhUyhr4vYaz3AaytreGwsLB5ZPHnfX19T+/evXtGLpeLidrxeDybqVOnTjM3Nzf4eEei8NDgPhLg5ubmyGQyTQZrgyCILCMj47szZ86k9fT0vDLnYmQWY39wg6H3ImAsF4NHEg325030WLhw4VYyniSRSDpSUlL2paam1ukqqzqk4WCNRqPtv/2LGEt/VIBhGIiMjHQPCAhYRJSdF8dxLCkpadd77723rrq6+ibZ3E6ZMmVJQECA+TBs8JfWioEgCJg2bdoiosAMkUjUuG/fvu/v3r3b96oIGAiCAEiNmGJDM3NczTDGl0zGaI2xY8ey161b9y8HB4cJRAoYhmFIenr6wV27dp3UZbkWnVsyBo4uMzrmZm1tTZs1a9YcMr9nV1dXXVJSUlJVVVVfdnb2b1KpVEjU3sbGZoy/v7+bofOZvczpTRgMBmBmZmZHdB4jl8t7u7q6ZNom3HyJLR5j0/qxl22OtaFBGIaBiIgIL09Pz2lq3InpTEtLu9rc3KzTwlD6EDIGs2RUcfAkJr3BqIDBYACxsbG+ERER8SSMS3zlypXPk5KSGrq6uvBjx44llZSUXCB6No/Hs1mxYsWW0aNHMw1J2GqmcRmRsohOp4NMJpNL1AZBELlEIqEkjHFYWCBImSka8aOFCxc6bN68+QDZzX4EQWQ5OTlHzp49W67rEiMj2pJRXWAzlkUVCARQTEzMaoFA4EHUTiQSNV27du2GysdfVVUlTU5O/lkmk3UTCUxvb++o6dOnj2axWAYbkzFJD113BcMw0vGBIAjSaDSKsRloTdQQMhoXFntV4enpyUxISNjk4uIyhWhecBzH6urqcs6cOXPi6dOnOuenI9KSYbPZgKmpKczhcEyNaVONHj2aP3bs2Nl0Op0wFUxlZeXN8vLy9gFmKpCUlFTS0NBQSCQ0WSyW2Zw5c2Lt7e3pBmQimD5T6w+zBQb09vZ2EPWfyWSaWFpasl5FJkU0L4b0WqhAo9FI87KBIAhiGIaPkPnVm6IHwzAQFRXlO3ny5DfJ5kwqlQp/+OGH/3f16tV6vSgH6jZU10zV174DQRBgMpnA+PHjOdu2bZu2e/fuLer4GQ1lXnO5XGDOnDmhZmZmzkTt5HK5OCUl5UxTU9N/+T0bGhoU+fn55xEEkRFpaZMnT14+a9YsLwNai9hwrrs+gaIoXl1dfRtF0UHdrqampo6RkZGBfD6fsmaGGRAEgQPLLg/SBn6ZjhGHqsB5eXkxV69e/TGXy7UioW+kpKTkwtGjR+/qK3pSkyzM6lR6Q/WhRbBYLCAkJMRk27Ztr/30008nt23blrhgwYJdRKWgDQ1HR0fGpEmTIomsGBzHsdbW1j/T09P/fP6+hVQqxfPy8nLFYnEz0XtMTU2dZs+evUiPxfJeGTeOTCYDysrK7ioUij4CS4YfExOzYeLEiWav2nGAsbme1HGXQRBEo9FoYH+y0P/66Y+aG9LPwLUHQRBgMIy3AKmpqSm4cuXK17y9vWeTWTEdHR3VZ8+e/V4sFutNMsN6IG6ddJbJZAKjRo1i+vj4WIaHhweFh4fHenp6TuNyuVbGlsqcTqcDs2bN8hkzZswsonYSiaTj4sWLX9bU1EheIKCB3Nzc+vLy8msRERHvDTZGGo3G8PPzmxUQELC/uLi4T99am7oH/wYUHrgOnwVUV1c3SiSSTh6PZzNYO09Pz2mrV69eUlVVdbS5ufmVCAIwxkgOdYSMqamp465duzYKhcI2hUIhV2UAGJAkEx/M2/Eir4eq0uhAiwLHcby4uPjehQsX6jStEqlv65/BYABLly71iYuL+5jMbS+VSoUXL178d3Jy8n19rpuuszBrffDPYrEAPz8/7vTp0/2WLVu2xcXFJcjExMSO6M4JiTam983v7OxMX7p06ToLCwt3onb379///cSJE6ldXV0vygIL1NTUKH7++efv/P3951tYWAyaudnJySkoLi5uelVVVbI+NRBNmI2x8SR1+1NdXd3V0NBw29raesxgbTgcjuWSJUv2/Pnnn/e+//77W6/SpUxjWnN1SktzOBzL2NjYrwe6mvor5GKDWWrPZcmGyKw5hULRe/LkyfeSkpLqZTKZUe0FFxcX+saNG3e7urqGErVDUVRRUFBwYufOneeGWidm2CwZTd1lIAgCMAwDJiYmoI+Pj8mUKVO8ly9fvsXd3T2Mx+PZGHsBJjqdDoSFhTl7eXlNIxKEGIYht2/f/r2urm5Q1QdBECAnJ6ehsrIyLSQkxIXImomMjHwzMTExOzs7W0Sxu/9f2VG3bXt7u7KioiJn/Pjxy4jWj8Fg8NatW/e1ubn5rgMHDqT19PTgUqkU749QoybdMEJGIxeequ1QFdTBQKPRGDAM042RF02dOnWUu7t7OBnfFAqFtRcuXNBLNJlWQkbXqfV5PB7o5eXFnjJlikdwcHBoUFBQjJ2dnT+Xy7XShT/YEPdkBAIBNHv27DkWFhbuRH3u6uqqu379eqZEIiF8XmNjo/LcuXM/BAQEvD5Yck0QBKHRo0fPjIuLm11UVPSbruPaXwY3jrqMXyQS4ZcuXUqOjIx8l+hGNAiCkIuLy5RNmzadmjFjxrXbt2//XlFRUSEUCsVisVjan4ECf956xnEcQFEU6+npUbS3t8s7OzuRnp4eXJtMy8bE9A1tybzK4yfD5MmT+e+88842ssquGIYhaWlph65cuVJpiH2o03oy6ggGEAQBFosFBAYGmkRHRwdFRUW96eHhEcHj8WxgGGbp8rDREKG13t7e/MDAwDlEmgOKooqHDx9mlZaWdpIxP4VCARQWFj568uRJqaen58zB2jGZTH5YWFisq6vr5aqqKsVwErYxnsmo2w5FUSAnJ+fplStXvlq9evVBorMZEAQhDodjOXHixDcDAgIWK5VKCYIgcoVC0adyyTznu1cV51JIpVJRZ2dnQ2Nj4/3i4uL8rKysipqaGolQKDTKi6xq3B+i7qNoP8e6dJPBCQkJK/z9/WPIeGJjY+Ot33777WJbW5tBNB1Y1wwJgqAXMiU2mw1YW1vDPj4+ZpMmTfKJjY3d5O7uHk5E1IZkSkM0m4GoqKjJDg4OgUTtxGJxc3Jy8k9Pnz5VK6vpw4cPJRUVFelubm7hMAyzBiNyV1fXkMDAQNuqqqrHrwpR6mM9RSIRfvLkyZRx48a9Fh4evkEdZYtOp3PIDlYH0TaROXPmdD5+/PhWTk7Ob0lJSWnFxcUdhiJ4CroBhmGYsSgHLBYLmDdvns/ChQu3kyXAFIlEjadOndqenZ3dZihrWufnHQNvR0MQBFhaWkKOjo6szZs3v+nt7R3i4ODgLxAIRjEYDJ6+tSF9hVSrBIyfnx87Njb2Q6JYdAzDkKKiotMXL168rW4kSnd3N37x4sXfgoKCltjZ2Y0bbJ64XK5VTEzM6+np6Qf05Vs1NheFPqLdcBwHiouL+w4cOPA/np6e4TY2Nr762psQBME8Hs/Gx8dnrqen54x58+ZVVlRUpP7000+HL1++3KBNtBIFg+1BTFVy2hAgo0FfX19ufHz8P8juxOA4jmVmZv7w3XffpXd3dxtMQur0TAbHcVxlybBYLCAgIIC3du3aJb6+vhF+fn4LmUwmX1vixXEcUygUvTKZTMTj8WzIMh3ry5IxMTEBY2NjQ52dnScTjUkqlQrT09OT6uvrFRqMESgsLGy6devWufnz548dbIw0Go0RFha2ys/P75f09HThMFYDxEf6uzAMAzIzM59cvHjx86VLl+4SCASeemYcEJ1O5zg4OEywtrb2sbKychWLxZvT0tKeKhQKYLihZrbjV/aCKoqiqC62oi7S+M+YMcPP29t7Fhlv7e3tbUtJSbmiywzLOhUy6swFm802mzZt2oTIyEg4ODh4tpubW5CDg8N4CIJgbYWLUqmUdHV11RcVFf2anp5+TSwW923cuHHnuHHjFg/27H4/uV4mbty4cabz5s1bS5Qmvj8nUP61a9dKNdVQGxoalMePHz8xceLE1x0dHScN1s7W1tbvgw8+2FxTU7Ozvr4eedmJW58CraOjA/vnP/95/u7du/e2bdt2aNSoUdMMEd1Ip9M5AQEBcQcPHnRITEzcv3///iRjWEscxzFjO3tRJ8VRX19fO4IgMlXfVWdlz3/3+RBmomcPnAcURRVyuVw23DKWzWYD8+fPd1q3bt1eDodjSda+t7e3LTc3t87Q/dQpAXG5XOv333//FI1GY+jCalEtaEdHR3Vubu7P6enp12/cuFHV0NCgtLa2pi1ZsqSGiBD0acn4+vo6ubi4BJEJxnv37t14/PixxqqpUqkEcnNzn9bV1d0iinqCIAgeN27cPB8fn4MNDQ3tr0I4rT5zqXV3d+Pnz59/aGVl9emGDRv2Ozo6TjIEo+0/YwtbtWqV05MnT57s2bOniHJMaQ6RSNS4e/fuJa2trR0q2kdRFBtwGfOvqDDw/0CoWOM4jsMwTFOlWIIgCGptbRVJJBJc33uZCC4uLoz333//E2dn52B19iiXy7UaP368XWVlZb3RChl1GLa2Ne1VLqbOzs6aysrK9MrKylsZGRkFqampLQPDf/sXnkG2gPoQMlwuF4iJiVlFltamq6ur/ubNm2lD3YxdXV14amrq2cDAwFiiAAmBQDAqMjIyJCsrK5EsRFofloOBK6Kq1Wdtlr2npwf/6quvCrOzs2e+/fbbsbNmzVpnaWnpqSvFiUjQmJubu23cuPEgCIKbDh06VNjXZ7y10oajaJkaa9d66dKlkpqaGiUwAjDUjcpkMoE1a9bMCggIeEPdPcnn8x2WLl26KiMj4/MnT54Y7EwJNqLJxpRKpaSpqenOjRs3fsjIyMgtKSlpa2trQyQSCf6iolFqhtfqtJ80Gg147bXXrMaOHTuLLGw5Pz//VGZmZoM2URx//PFH6erVq+8T3R1iMBi8iIiIWGtr65RXwWVmCGAYBty6davn0aNHP1+5ciVl2rRpwYsWLdpib28fQKfTOf13sPQicOzt7QPXrFmzs66ubs2lS5caEYRa0he5rV4VPC+IIAgCJkyYYDJ37twEsjsxzyM4OHhFfHz8HwcOHMg3VOaKYRcyKIoqxGJxc3Nzc2lGRsbpxMTE9Ly8POHzCSRfJGDINpw+NGwrKyvo9ddfn2NlZeVN9N6Ojo7qK1euXGhoaNCKQ1RXV/empKT8591335002PkPCIKQp6fn1Ndee82lsbGxRpdVHNU8AIaMjBGBOtqbQHt7O5aUlNSWlpZ29fLly5nh4eFjQ0NDZzk4OIwxNzd3otPprIECR7XnBvzGQRAE6XQ6h81mm3E4HEs1kjzCnp6eM5cvX74yPz9/T1NTk9HlSzNWZj+SCuj1ZzDQ+B6ag4MDLSEhYbmHh8c0TddBIBB4rFmzZve9e/cWp6SkPDXEXOk0ukyT5yAIImtsbLxdUVFxMzMz8/fCwsLqBw8e9IrFYlxdzW04oltCQ0PtwsPDlxNZMQiCyLKyso5lZWU1aPu+rq4u/Ny5c6mRkZFZ3t7e0YNtKhMTE7uFCxfGZmRk7H38+DGiQ6LF1GnzsgcayWQyIC8vT1RcXJz/yy+/FPH5fNjExITOYrFgFcMY6MMfaEmzWCyYz+ez/Pz8PMPCwub6+/vPs7S09CJjEJMmTVocHh5+5tdff20YBgYIGhv9qfu+kbIX1UmT87zLn06nAytXrgyKjo7eMtgdOjLlwMnJKWjJkiWLiouLjxrifpbBhYxSqZQ0Nzff/f3337+7cOHCjZycnC6lUjnURTKoNsVms4Hly5cvd3V1Jaw019PT03LlypXLjY2NWjN7DMOA/Px88blz577etm1b+GCXrSAIgqdNm7Zu2bJlWfv27SvUVRisQqGQq5NOCIZhEAAA3ABEqY4FopeoQgzDAKlUCvRbFigAABrl87l48WKzmZlZ1ptvvnnqo48+OmZnZzeOSFmxsbEZu27dug8vX778HnV/Rj1B038h/KWxZPqvbPxFzP7+/pwVK1Z8ZGlpOeSaUjAMs+bNm/eP1NTU1NOnT9fre5x6Xw3VWUtHR0f1nTt3Tp08efK9rVu3Lv3kk09+y87OHrKAGQ54eHiwxowZM5WsZszjx4+L79+//1TbG7UgCAIcDgewsrKCmEwmk4zZ83g8m6lTp87l8/mQMRG+LokSUoODGPP9je7ubvzkyZNl+/btS6iqqrqBYdigigiNRmN4eXm95u/vzzVGS8YYrYZnMgYaMWa1Oq5Ten/xKC6XC8ydO3eiq6triLbv5fP5DitWrPibQCDQO7no9UxGqVRKGhoaCoqLi69evXr1allZWVtDQ4NcIpFofSCvrj9TV2AymUB0dPQ4Z2fnIKKNIZFIOjIyMn6tqamRaTM2Z2dn2M/PTzBz5szQ8ePHz/Dx8ZnJYrHMyDSUwMDARZMnTz547dq1p4aaGwaDwaLRaAYRMkwmk0k0/6rzEWN2mXR3d+Pff/99cU9Pz4e7du0aRXS+Z2Vl5T137tygsrKyDENbM0Z41qZ2fsSXxZKBIAhmPgOwdOlSr/j4+M/J7sSo8ugRXVSHYZgVERHx7scff1y8d+/ea/qMNoM1mRA1XQqIQqHoffLkSWlGRsaJM2fOJP7555+ijo4ObCRnnnV2dqbPnDnzdSJGj+M4Vltbm3vt2rWc3t5ejaUojUYDbGxsaFOmTLGLj49/e8KECW+Ym5u7wjDMUvdSoEAg8JgxY0ZIWlraVW1dZv2ZhTEyC4rBYLAM4aKAIAhgMpnqhK1jxn74K5FIgMTExKqYmJgLkZGRW4ly1E2ZMmW2tbV1ji7P2kaqNaiLJL0jaTwqd1lgYCBvw4YNO8juxGAYhhQWFh6rqakpeeONN3YRCSQul2u9bNmyzyoqKh4cP3682igsGXUWsLKy8tqlS5cOFBUV/VlUVNTR0dEx4hP/0Wg0ICQkxNnX15ewnKlMJutOTU396d69e12aME4ejwc6OTkxQkND3UNCQqbMnTt3q0Ag8BjKbXMYhlnjxo0Ld3Z2Tnn06JHWvsimpqYmpVIpJRKuAoHAgc/n04RCoV6ZIJPJBK2srAhrDOE4jj19+rRBLpcbfYiRUCjECgoK0l577bX1REJm1KhRwVZWVgxDCpmRjJcp3Q2O4xgEQVBMTEzE6NGjZ5Lt/ba2tj+//vrrnSUlJU+9vLyCJk2atIroO1ZWVt4xMTFLz5079++hKMa6tmRIQ4alUqlwz549H5w9e7ZGqVTqvZiTobSW0aNHM99+++2/E1VPBAAAePToUeaRI0duCIVCsjTpAIvFAtzc3JjBwcEuMTExSz08PCY7OTlNZDKZ/KFEjQzExIkTl65duzbj008/vaati6W6urpRJBI1mZiY2A3WxtXVdZKLiwuvvr6+W5/rYGFhQQsICJhKRDQYhiE1NTX3JRKJ0Ss3SqUSqKura1IqlVI2mz1oOx6PZ21ubs4CAEACvOJ4mdxl6ghEBoPBe/vtt/ey2WxzsjsxUqlU+Ouvv26/fv36E7lcDhw7duyr0aNHzzAzM3MhUkqnT5++8Z133kn+8ccfS/QhaDRi0hAEETreEQSRd3Z29igUipemWiAEQUBgYKCdr68vac2YysrKnEePHimIxg6CIDBq1Cj62rVrA/bv3//ZF198cXnOnDn/8vb2nsPlcq21FTAA8CycOSoqarWjo6PW1fvq6+tFjY2N94jamJmZOTk6Oprpm7hNTU1hFxeXCUTrIJVKu2pqaupGQkAJjuOAUCjsVSgUfWR0x2AwaMbE/EYaMx/JQtXOzi7AzMzMhUzA1tbW5v7xxx8FUqkUwDAMyMrKqr13795lMnc3m822WLVq1T9CQkIs9DEGSNMBq8GUQWMiBG3B5/PB6OjoaCJNHgCe1YxJTU1NedG5E5PJBNzd3elLlixx+uGHH1YmJycn7t69O23GjBkfWFlZees6CSMIgpCXl1dkXFxcEIulncx68uSJvLq6+hbRRuVyuVZr167d4u3tzdTXOtjZ2UHvvPPOfCsrq9FE7Zqamu4WFxc3jJSoRaVSiSIIQmpuoiiKG5i5GZ0EUcebYuxBH3pSVrC2trY/Dx48+HFmZma76vOHDx8qPv7440/v3LlzmiiKEQRByNfXd+FHH320zdbWVufeIZ0+sD87qSEPJyE1Np1W77C3t2dMmjRpEVlJgerq6oyioqLHLxJSCQkJAfv37//o0KFDqfHx8YdHjx49m8PhWOoiO/VgYLFYZlOnTl1gY2OjlQATiUT4jRs30qRSqXCwNjQajTF58uS3Fi1aNJ7P5+ucwmEYBkJDQ+0XLFiwhehsSKlUSjIzM09rE9lnYKYJmJmZcZhMpglROwzDUARBMCPsv7EGB4wYKaOL9AQKhaI3KSnpq7Nnzz54Lr8jcPv27Z7jx49/2dPT00JCY6xJkyYti4qKcuuPmDZOIdMfWYYa02bSZsPBMAzMnDnTx8nJaSJZzZikpKTj9fX1chAEAT6fDwYHB/M2bdo07ueff/7o888/vzFv3rzPrKysvIdSTXEgJBJJR1NT0+2mpqbbKIoSho/5+PjMCAwMtNLmfQiCACUlJS1tbW33iawZJpPJX7169Y7Zs2c76jrSzNvbm5WQkPC+vb19AFG7np6elvz8/CKxWDwifLUwDAPu7u4OZEJGoVD0GVJ5M2aGrIZS+cr58B49epRx4cKFlBftewRBgJs3b1bfuXPnHJE1AwDP7tktX758jYeHh049EjrXog15MU/fGDNmDGvZsmUbyQ7cHjx4kHrmzJkiHo8Hrl27dsyXX3659OjRo6d27dr1+/z58z/jcrnWQ7VYVCG5Mpmsu7q6OvXQoUNvrV+/fv7nn3++urGx8RbRdy0tLT3nz58/W1uXWWNjo+LOnTuJZELN3d09YsOGDR96eXkxdCVobGxsoLVr184LCQlZTXReheM41tTUVPLnn3+2jRTmYGJiAk6ZMiWSrCZRQ0NDcXt7u9FZZyB1KDPscyiVSoWXL18+WFBQ0DlYm9raWuUvv/zyfXt7+wMiRRGCIDg0NHTNpk2bXhcIBDpbW02KlqmVKNGQ+07NSJMhdYjJZAILFiyY6Ofnt4CsLZvNNo2NjR0fFRW1ODQ09G2yS5PqCheFQtHb0dHxsKGhoTgjI+NCYmJiQXl5eZ9UKgUcHBw6IiIifnNycgoazJXHZDL5M2fOfDckJORKRkZGlxYbGfjjjz9+nzFjxgZzc3M3IpM7PDx8w/bt2x/++OOPp7KysrqGmqwTBEHAxcUF3rhx45xVq1Z9o84FtMLCwquPHz8eEa4yBoMBREVFOYeGhq4mC/a4devW9ebmZuXLxBz1yRPwV6GoEvDMPXz79u3TZ86cySWy3lEUBRITE2t9fHz+sX79+mNE58tcLtc6NjZ2R3Z2dv758+cbDJoB3M3NDW5tbS3HCSAUCmtnzJhhYYj+ODo60vLz849gGIYO1p/Ozs5HMTEx9kN5vqurK3z79u1fUBRV4iRAEETe09PTiiCIHNcSKIoqe3p6WsvKyi7++uuvG1esWOHq4+PDNDU1/a+cTHQ6HYiJibFvb2+vIpoDpVIp3bt37wJtz0oCAgLYWVlZB9SZD4lE0llUVHQ8OjraSiAQaJRLqv9WPzB+/HjO0aNH3+rs7HxEND78WcF1tLm5+e7ixYsdDZF5QEcCxjI9Pf0bsvkUiURNS5cudTYkT6fRaMC33377OlG/ent72/72t795GbJfM2bMsOju7n5M1K+WlpZSb29vxkgQEra2tlBhYeGxofAJDMPQBw8e/L5y5Uo3JpOpFl15enrSMzIy9pHRE4Ig8qtXr37i6OhoWGJydXWFW1paSkeSkOno6KiOiYmxHwohxMXFOZNtaF0CRVGlSCRqKi4uPrljx46pfn5+LA6HQ7pJs7KyDpAJt6qqqhvR0dFanc0wmUxg4cKFtnV1dTlkm1RFBC0tLaW//fbb5kWLFtmZmZmRChsWiwWEh4ebfvPNNwsrKioSFQpFnzpzJxQKa//973/PMDU1NWr3DQiCgLW1NRQfH+9ZV1eXQ7ZuCILI09PTv7GzszPoLfaRLmQ8PT3pL7uQkclkoi+++CKKy9UsrV18fLynUCisJXu+WCx+8v777wcwGNrLaxig8EJNMzw8PJgsbFlXLrG2trb7DQ0Nd9LT0y+kp6eXlJSUiHt7e0mt/u7ubqyoqOhGUFDQm0TRbw4ODgEBAQEe169fH3J5ZrlcDmRlZbVdunTpq3feeecHsrkBQRCytbX1j4mJ+TwwMHBOSkrK95cuXUpvaWmRdHV1oc+y1eAABEEAh8OBLC0tGaGhoZ6rVq3aMmbMmGh16q6o3GQZGRnfnzp1KkckEg25yqClpSVNoVDgGIbhg6yVWp+96HPVGEeNGmUSFxc3e/bs2eucnZ2DyULXRSJRY3Jy8umnT59iFFWqLSAZZmZmDDMzM0Ql2AcT+PoAhmEAiqJAX18fTpZGC8fxIWW2xzAMqaury/399981rpxaUFDQUFRUdJoolREAPAsCWLly5ZaCgoJ1xcXFfdqkBNO5kDHCrKwat4+IiLCYPn36Kl3fXxkoXKRSqbCmpiY7Ozv7t7S0tOz79+93Pn78WCmXq589Xi6XAzdv3iyMiYm54+HhMWOwdhwOx3L+/PnxP//88y1tEuF1d3fj//nPf3739PT8T3R09CfqXByl0+kcT0/PmRs3bpwWHx/f1t3d3djd3d3U19fX1f93lqmpqa25ubmLiYmJ7WClDAYjttra2qz9+/cfefjw4ZAStUEQBERFRdl+/PHHn/cXIAMxDEP7fft/FR5TrZuqvseLfqvaPv83BoPB5vP51jY2Nt4CgcCDSCEYiDt37lxITk4u12URupcd5ubmrocPH/6xp6eno399aQMVn4F3bVTnSi9SZojOnJ7X/vpTv9BAEIRkMllvUVHR9T179qS0t7djauxhjRe3tbW1/Mcff/z0zp07Ik2/+/DhQ8WXX36518nJyW/s2LELiZTEgICAxR999FH5hx9+uL+2tnbIZ4Ij2pLRx+Ejm80G5s6dG+Hm5haqa8GCIIhMqVRKHj16lJmamvrzpUuXsh48eNArEonwoWgKOI4Dd+7cERYVFV10dXUNJcp/5e3tHenj42P69OlToTaHeXV1dcrjx48fs7W19QgICFisbkg2BEEwn8934PP5Ds7OzjqZz4aGhvyffvppe2FhoUgbTcvW1tZ8woQJy3WRbWEwzVST6EIcx7G+vr723NzclKamJoWh6UodaxcfphKUZPPYn4l82XDyJbFY3I7jeIo686zpHCqVSsnNmzd/OHv27D1NrRgAeBYEkJub2/3LL7988cknn0zk8/kORFZhVFTU1gsXLpyrq6trGOpyj+h62bq+yAhBEBASEmIRGxv7sSYaNRnD6Onpaamrq8tJTEzcvnPnzvnr169f88knnyQXFBT0dHV14dowyM7OTvz8+fOXGxsbCW/lm5qaOsXHx8c5OjpqpVhgGAakpKS0fPDBB+8XFhaeUOe2uh5cEkhLS0vp3r173ztw4EC+Nrf7MQwDFAqFUld7aUCpgf/60eQZPT09LdeuXfvi5MmT+QMv1xlY0LwSEVr6gFwul8hkMlwPa4I9evQo48iRI2e18UggCAJcvHjxbkFBwc9EPAMEQYjL5VqvXLky3sXFBR6qTj9i78noUisb4FYCFyxYMNXOzm6cNkxHZbV0d3c35OfnH9m1a1fMW2+9tSAhIeGbb775pjAvL0+sq8qVAAAA2dnZbTdv3jxKxPBBEIRmzZq1ac6cOd7aLpFCoQDy8vJE//rXv/6ZnZ39nUwm6zbUeqIoqqirq8v58ssv40+cOFHe09OjNTFjGIaTXVQzFBQKRe/p06e3bt269VB9fT2VdXkEAkVRRNe8CQCeXcQ+f/783nv37om17ePjx4+VP/zww6HOzs5HZG3Dw8PXbtmyZZG1tfWQeKJOhYyhazmQJewcYNar9TyBQEDz8/MLU9dn/iLhIpPJupubm++kp6fv+/rrr1d88MEHHx48eLAoNzdX3NHRgekjp1ZPTw9eVFRUJBaLm4nWRiAQeMycOXOeLqKwMAwDCgoKuj/77LN/X716dYdIJGrURXluIshksu579+6d27t378bTp0+X6UrLH3imMswasLisrOzyiRMnkpqamtDhNCbUIRrK2hmUNjBdzw2GYUh1dfUf165du6WLfa9UKoG0tLSWzMzMI3K5nFBomZiY2MXFxX0WHh5uD8OaO0I0uYypVsEgGIYNImj6S/HS1GgHgiBIqjWAIAiMGzfO0tfXN3oo2rVYLG4uKSm5lJWVlXj79u3K0tJSYUdHB2qIkgcIggCZmZl1lZWVaaGhoaMGWycIguCgoKAlY8eO/U9eXp7W2pBCoQByc3NFtbW1hwoLC7OXLVu2cdy4cW/oytU4ULuvq6vLvX79+pGTJ0/eKC8vl+jSEkRRFBtmpoQ0NTUVnz59evv58+dzysvLpUagjRtdtMFgkX9G2E9UAz5GqvD150ZM3bFjx5aysrI+XfGTvr4+YNeuXf9hsVjcefPmfUbU1srKyjshIeH9kpKSj2tqajTSlHVaGROCIJjL5TKNZbE1OZy0sLAAlyxZEmNubu6qCXMQi8XN9+/fv56cnPxzSkrKvdLS0mFhEM3Nzcri4uK04ODgvxEdYFtaWnpOnDjRvaCg4J4uKpViGAY0NTWhhw4dKikpKdmyfv36sjlz5mzj8Xg2Olg/TCKRdOTl5R07cuTId2lpaU/0kZdsOEu2Iggiq6mpyTx8+PAnx44dKzGGvGsgCKo1JzQazaCei+FWBjRxl6mzpSAIUktRRhBEdv369R8zMjLadF2Cu6ysTHrq1Kmfpk+fvpEoqwYIglBQUNCK6dOnH3v8+PEDTTwysAbEgKMoqiSzZAy1EVAUBaRSqZjMwlAqlagaxAIEBgaaz549++9kEUYoiiokEklnTU1NdkVFRdbNmzfT8vLyGmpra5XDqfzJZDIgNTU1b/78+QXu7u6vDWbNwDDMioyMXHDjxo37Dx480Jk5gCAIkJOT033//v0DsbGxaSEhIWFBQUGLLC0tR3E4HAGLxTJTp9SsTCbrlkqlXa2trfcrKioybt++nZeYmHivurpaoS+LEIZh2lBdpEMRnHK5XCwSiZpqamry8vPzk69fv56flZUlNGgKDxJ6YJJcIwdVLgIKg3pP1GxLShMPHz784+zZszd1cf74Ig9VVlZWU05OzpHp06dvJooW5fF4Nps3b95TXV29Kjc3t1tdfqeRJSORSIQoiioGuz+CYRhiKHcZhmF4b2+vEMMwZGB/MAxDVAsnlUq7pVKpkow5WVlZQYsXL57D4XAEKt88hmEIiqKKgf/v7e19ev/+/dT09PSLqampd2trayXt7e1GU0/+1q1bHcnJyQfXrFkzhsvlWg22qSMiItYuWrQodd++fYWa3MtRx6ppb2/Hjh07VnH27Nn7np6ep9zd3QXjx4/3mzJlyjwXF5cJHA7Hgk6nc1QaHIqiSqVSKZHJZOKOjo7arKyssyUlJWVVVVVtdXV1fd3d3ZiutbfnQafTYQRBZPq6F6VUKiVSqbRLLBY/aW1tfVBeXp6VkZGRWVpa2tLQ0CA3tqzR/RF3CiJa709ZZFCpSKPRIKVSKVHn/Oz5NoY6L1YFkMAwDAIAgJPsOxBFUeVg84yiqEIkEjVevnz5QGlpaa+++tzW1oZ99dVXe/l8vtXEiRNXECnaHh4e0xISEt5sa2s7rK6SqrYmwufzwdjYWE86nQ5zuVz2QHMahmGYyWQyYBiGz507V1hZWSnX92JyuVxgxowZtl5eXk4AAAAKhULRf96G02g0CIIgSKlUIomJifcbGxsJRa69vT1t3rx5XhwOh6UyyxEEQZRKJaLyA+M4jre2tnYXFxd3dnZ2DqeHhdD8dnFxgadOnerG5XLZKlch1J/PhclkMlgsFhOCIKiwsLAiOzu7U98MXKWgcLlc0NHRkW5pacni8/lMHo/HgiAI7O3tlXd3d0u7u7sV7e3tis7OTsyQGj0IgoCPjw8zJiZmIgiCIIqiKIIgqOrwVjWHz6umAy5o/vVb9W9aP/rT62B9fX3SJ0+eCOvr60VNTU1ysViMG+P+GTgn06dPt5gwYYInjUaDFAqFcuBhNgzDMIZh2M2bNyvKyspkhuqTm5sbPSIiwsXKysqiXwhiz8/9gMwo/xWYMJhpofp4oGX2vJUGgiD4/D5QuQpVn6MoiqEoikIQBDU2NranpaW1SqVSUh4WExPjJhAITOl0Ol0ulytU7lvVfPf29krz8vIa6+rq9EoUDAYDGDNmDHvixInOTCaT0V9WAQRBEIRhmMZisZggCIIKhUIpk8nkaWlpVdXV1boVMv2SF1AxgIHau2o9GAwGoFQqAUMRkOq9g1kSDAYDQBCEtD8gCAIwDAMjpZqiNvOl+sEwDKCCg/57b6vM/xftbaJ9NpgbYuAzRtpcMxgMAEXRv/r9ojkxtKCEIAjAMOyv34PxA0Ph+TUdSF/qupJUPFVFk4ON2Rj4hmrNaTQaQGWhoECBAgUKFChQoECBAgUKFChQoECBAgUKFChQoECBAgUKFChQoECBAgUKFChQoECBAgUKFChQoECBAgUKFChQoECBAgUKFIwd/ws10JYZtbtCEQAAAABJRU5ErkJggg==" alt="Haustek" width="389" height="82">
+  </a>
+  <a class="back" href="index.html">← Về trang chủ</a>
+</header>
+
+<main>
+  <p class="kicker"><i>●</i><span>Khai báo metadata · Haustek Distribution</span></p>
+  <h1><span class="ln">Điền một lần,</span> <span class="ln"><em>lên sóng đúng hẹn.</em></span></h1>
+  <p class="lead">Đây là toàn bộ thông tin Haustek cần để đẩy bản thu của bạn lên hơn 200 cửa hàng nhạc số. Sai một chi tiết nhỏ ở đây thôi là cả bản phát hành có thể bị từ chối hoặc phải gỡ xuống làm lại, nên bạn dành ra 15 phút điền cho kỹ nhé. Dấu <span style="color:var(--red)">*</span> là bắt buộc.</p>
+
+  <form id="metaForm">
+
+    <!-- ===== BƯỚC 1 ===== -->
+    <section class="step glass">
+      <div class="step-head">
+        <span class="step-no">01</span>
+        <h2>Thông tin bản phát hành</h2>
+        <p>Release</p>
+      </div>
+
+      <div class="grid g2">
+        <div class="f">
+          <label for="r_type">Loại phát hành <span class="req">*</span></label>
+          <select id="r_type" name="r_type" required>
+            <option value="Single">Single — 1 đến 3 track</option>
+            <option value="EP">EP — 4 đến 6 track</option>
+            <option value="Album">Album — từ 7 track trở lên</option>
+            <option value="Compilation">Compilation — tuyển tập nhiều nghệ sĩ</option>
+          </select>
+        </div>
+        <div class="f">
+          <label for="r_title">Tên bản phát hành <span class="req">*</span></label>
+          <input id="r_title" name="r_title" type="text" required placeholder="Đêm Thành Phố">
+          <span class="hint">Viết hoa chữ đầu như bạn muốn nó hiện trên Spotify. Đừng viết HOA TOÀN BỘ, các cửa hàng sẽ từ chối.</span>
+        </div>
+      </div>
+
+      <div class="grid g2" style="margin-top:22px">
+        <div class="f">
+          <label for="r_version">Phiên bản</label>
+          <input id="r_version" name="r_version" type="text" placeholder="Deluxe / Remastered / Live">
+          <span class="hint">Bỏ trống nếu là bản gốc.</span>
+        </div>
+        <div class="f">
+          <label for="r_label">Nhãn phát hành <span class="req">*</span></label>
+          <input id="r_label" name="r_label" type="text" required value="Haustek">
+        </div>
+      </div>
+
+      <div class="grid g2" style="margin-top:22px">
+        <div class="f">
+          <label for="r_artist">Nghệ sĩ chính <span class="req">*</span></label>
+          <input id="r_artist" name="r_artist" type="text" required placeholder="Tarnoise">
+          <span class="hint">Nhiều nghệ sĩ chính thì ngăn bằng dấu phẩy. Viết đúng y hệt tên đã có trên Spotify.</span>
+        </div>
+        <div class="f">
+          <label for="r_feat">Nghệ sĩ khách mời (feat.)</label>
+          <input id="r_feat" name="r_feat" type="text" placeholder="Shea, Chin">
+        </div>
+      </div>
+
+      <div class="grid g2" style="margin-top:22px">
+        <div class="f">
+          <label for="r_spotify">Link Spotify của nghệ sĩ chính</label>
+          <input id="r_spotify" name="r_spotify" type="url" placeholder="https://open.spotify.com/artist/...">
+          <span class="hint">Rất quan trọng: không có link này, nhạc dễ bị đẩy nhầm sang hồ sơ nghệ sĩ trùng tên.</span>
+        </div>
+        <div class="f">
+          <label for="r_apple">Link Apple Music của nghệ sĩ chính</label>
+          <input id="r_apple" name="r_apple" type="url" placeholder="https://music.apple.com/artist/...">
+          <span class="hint">Bỏ trống nếu đây là lần đầu bạn phát hành.</span>
+        </div>
+      </div>
+
+      <div class="grid g3" style="margin-top:22px">
+        <div class="f">
+          <label for="r_genre">Thể loại chính <span class="req">*</span></label>
+          <select id="r_genre" name="r_genre" required>
+            <option value="">— Chọn —</option>
+            <option>Electronic</option><option>Dance</option><option>Techno</option><option>House</option>
+            <option>Ambient</option><option>Pop</option><option>Hip-Hop/Rap</option><option>R&amp;B/Soul</option>
+            <option>Rock</option><option>Indie</option><option>Alternative</option><option>Jazz</option>
+            <option>Classical</option><option>Folk</option><option>Soundtrack</option><option>World</option>
+            <option>Vietnamese Pop</option><option>Khác</option>
+          </select>
+        </div>
+        <div class="f">
+          <label for="r_genre2">Thể loại phụ</label>
+          <input id="r_genre2" name="r_genre2" type="text" placeholder="Melodic Techno">
+        </div>
+        <div class="f">
+          <label for="r_lang">Ngôn ngữ metadata <span class="req">*</span></label>
+          <select id="r_lang" name="r_lang" required>
+            <option value="vi">Tiếng Việt</option>
+            <option value="en">English</option>
+            <option value="ja">日本語</option>
+            <option value="ko">한국어</option>
+            <option value="zxx">Không lời / instrumental</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="grid g3" style="margin-top:22px">
+        <div class="f">
+          <label for="r_date">Ngày phát hành mong muốn <span class="req">*</span></label>
+          <input id="r_date" name="r_date" type="date" required>
+          <span class="hint">Nên chọn cách hôm nay ít nhất 21 ngày để kịp pitch playlist.</span>
+        </div>
+        <div class="f">
+          <label for="r_upc">UPC / EAN</label>
+          <input id="r_upc" name="r_upc" type="text" inputmode="numeric" placeholder="Bỏ trống nếu chưa có">
+          <span class="hint">Chưa có thì Haustek cấp cho bạn.</span>
+        </div>
+        <div class="f">
+          <label for="r_terr">Lãnh thổ phát hành <span class="req">*</span></label>
+          <select id="r_terr" name="r_terr" required>
+            <option value="Worldwide">Toàn thế giới</option>
+            <option value="Vietnam only">Chỉ Việt Nam</option>
+            <option value="Custom">Tùy chọn — ghi rõ ở phần ghi chú</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="grid g3" style="margin-top:22px">
+        <div class="f">
+          <label for="r_p">Dòng ℗ (bản ghi) <span class="req">*</span></label>
+          <input id="r_p" name="r_p" type="text" required placeholder="2026 Haustek">
+          <span class="hint">Năm + chủ sở hữu bản ghi âm.</span>
+        </div>
+        <div class="f">
+          <label for="r_c">Dòng © (tác phẩm) <span class="req">*</span></label>
+          <input id="r_c" name="r_c" type="text" required placeholder="2026 Haustek">
+          <span class="hint">Năm + chủ sở hữu tác phẩm.</span>
+        </div>
+        <div class="f">
+          <label for="r_prev">Ngày mở pre-save</label>
+          <input id="r_prev" name="r_prev" type="date">
+        </div>
+      </div>
+
+      <div class="f" style="margin-top:22px">
+        <label for="r_art">Link ảnh bìa <span class="req">*</span></label>
+        <input id="r_art" name="r_art" type="url" required placeholder="https://drive.google.com/...">
+        <span class="hint">Vuông 3000×3000 px, JPG hoặc PNG, hệ màu RGB, dưới 10MB. Ảnh không được mờ, không chứa logo cửa hàng nhạc (Spotify, Apple…), không chứa địa chỉ website hay mạng xã hội, không chứa chữ nào khác ngoài tên nghệ sĩ và tên bản phát hành. Nhớ mở quyền xem cho bất kỳ ai có link.</span>
+      </div>
+
+      <div class="f" style="margin-top:22px">
+        <label for="r_note">Ghi chú thêm cho đội phát hành</label>
+        <textarea id="r_note" name="r_note" placeholder="Ví dụ: muốn pitch vào playlist nào, ràng buộc ngày giờ, ghi chú về lãnh thổ tùy chọn…"></textarea>
+      </div>
+    </section>
+
+    <!-- ===== BƯỚC 2 ===== -->
+    <section class="step glass">
+      <div class="step-head">
+        <span class="step-no">02</span>
+        <h2>Danh sách track</h2>
+        <p id="trackCount">1 track</p>
+      </div>
+      <div id="tracks"></div>
+      <button type="button" class="add-track" id="addTrack">+ Thêm một track</button>
+    </section>
+
+    <!-- ===== BƯỚC 3 ===== -->
+    <section class="step glass">
+      <div class="step-head">
+        <span class="step-no">03</span>
+        <h2>Cam kết quyền</h2>
+        <p>Bắt buộc</p>
+      </div>
+
+      <label class="chk"><input type="checkbox" id="ck1" required>
+        <span><b>Tôi sở hữu hoặc được ủy quyền đầy đủ</b> đối với bản ghi và tác phẩm khai báo ở đây, và có quyền phát hành thương mại trên các nền tảng số.</span></label>
+      <label class="chk"><input type="checkbox" id="ck2" required>
+        <span><b>Bản thu không chứa sample, beat mua sẵn hay đoạn nhạc của người khác</b> mà chưa được cấp phép. Nếu có, tôi đã ghi rõ ở phần sample của từng track.</span></label>
+      <label class="chk"><input type="checkbox" id="ck3" required>
+        <span><b>Thông tin sáng tác và tỉ lệ chia là chính xác</b>, đã được tất cả những người liên quan đồng ý. Tôi hiểu rằng khai sai có thể dẫn tới tranh chấp bản quyền và bị gỡ nhạc.</span></label>
+      <label class="chk"><input type="checkbox" id="ck4" required>
+        <span><b>Ảnh bìa là của tôi hoặc tôi có quyền sử dụng</b>, không dùng ảnh lấy trên mạng, không có hình người nổi tiếng hay nhãn hiệu chưa xin phép.</span></label>
+
+      <div class="grid g3" style="margin-top:26px">
+        <div class="f">
+          <label for="s_name">Người khai <span class="req">*</span></label>
+          <input id="s_name" name="s_name" type="text" required placeholder="Họ tên đầy đủ">
+        </div>
+        <div class="f">
+          <label for="s_mail">Email liên hệ <span class="req">*</span></label>
+          <input id="s_mail" name="s_mail" type="email" required placeholder="you@email.com">
+        </div>
+        <div class="f">
+          <label for="s_phone">Số điện thoại</label>
+          <input id="s_phone" name="s_phone" type="tel" placeholder="09xx xxx xxx">
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== BƯỚC 4 ===== -->
+    <section class="step glass">
+      <div class="step-head">
+        <span class="step-no">04</span>
+        <h2>Gửi hồ sơ</h2>
+        <p>Xuất &amp; gửi</p>
+      </div>
+
+      <p class="lead" style="margin-top:0">Bấm <b style="color:var(--paper);font-weight:500">Kiểm tra &amp; xuất hồ sơ</b>. Nếu mọi thứ hợp lệ, máy sẽ tải về hai file: một file <b style="color:var(--paper);font-weight:500">.json</b> để Haustek nạp vào hệ thống và một file <b style="color:var(--paper);font-weight:500">.csv</b> mở được bằng Excel. Bạn gửi cả hai file này về <a href="mailto:mgmt@haustek-group.com">mgmt@haustek-group.com</a> kèm file WAV và ảnh bìa là xong.</p>
+
+      <div class="actions">
+        <button type="button" class="btn primary" id="btnExport">Kiểm tra &amp; xuất hồ sơ</button>
+        <button type="button" class="btn" id="btnCopy">Chép nội dung vào clipboard</button>
+        <button type="button" class="btn" id="btnMail">Mở sẵn email gửi Haustek</button>
+      </div>
+
+      <div class="msg err" id="msgErr"></div>
+      <div class="msg good" id="msgOk"></div>
+
+      <div class="sub-h" style="margin-top:34px">Yêu cầu file gửi kèm</div>
+      <table class="spec">
+        <tr><td>File nhạc</td><td>WAV, 16-bit hoặc 24-bit, tần số 44.1 kHz trở lên, stereo. Không gửi MP3. Không để tiếng bị vỡ (clipping) ở đỉnh.</td></tr>
+        <tr><td>Ảnh bìa</td><td>3000×3000 px, JPG hoặc PNG, RGB, dưới 10MB.</td></tr>
+        <tr><td>Cách gửi</td><td>Đẩy lên Google Drive hoặc Dropbox rồi dán link, đừng đính kèm trực tiếp vào email.</td></tr>
+        <tr><td>Đặt tên file</td><td><span style="font-family:var(--mono);font-size:12px">SốThứTự_TênNghệSĩ_TênTrack.wav</span> — ví dụ <span style="font-family:var(--mono);font-size:12px">01_Tarnoise_Dem Thanh Pho.wav</span></td></tr>
+      </table>
+
+      <p class="note">Sau khi nhận hồ sơ, Haustek kiểm tra trong 2–3 ngày làm việc và báo lại nếu cần bổ sung. Bản thu chỉ được đẩy lên hệ thống khi metadata đã sạch.</p>
+    </section>
+
+  </form>
+</main>
+
+<footer>
+  <span>© 2026 Haustek · Metadata Submission v1.0</span>
+  <span>mgmt@haustek-group.com</span>
+</footer>
+
+<script>
+/* =====================================================================
+   CẤU HÌNH — nếu sau này bạn muốn form gửi thẳng về server/email thay vì
+   tải file, chỉ cần dán endpoint (Formspree, Web3Forms, Google Apps Script,
+   Supabase…) vào đây. Để trống thì form hoạt động ở chế độ xuất file.
+   ===================================================================== */
+const ENDPOINT = "";
+const MAILTO   = "mgmt@haustek-group.com";
+
+/* ===================== TRACK BUILDER ===================== */
+const tracksEl = document.getElementById('tracks');
+let trackSeq = 0;
+
+function trackHTML(n){
+  return `
+  <div class="track" data-track>
+    <div class="track-head">
+      <span class="track-no">${String(n).padStart(2,'0')}</span>
+      <span class="track-title" data-title-echo>Track chưa đặt tên</span>
+      <button type="button" class="track-del" data-del>Xóa</button>
+    </div>
+
+    <div class="grid g21">
+      <div class="f">
+        <label>Tên track <span class="req">*</span></label>
+        <input type="text" data-k="title" required placeholder="Đêm Thành Phố">
+      </div>
+      <div class="f">
+        <label>Phiên bản / bản mix</label>
+        <input type="text" data-k="version" placeholder="Radio Edit / Extended Mix">
+      </div>
+    </div>
+
+    <div class="grid g3" style="margin-top:22px">
+      <div class="f">
+        <label>Nghệ sĩ chính <span class="req">*</span></label>
+        <input type="text" data-k="artist" required placeholder="Tarnoise">
+      </div>
+      <div class="f">
+        <label>Khách mời (feat.)</label>
+        <input type="text" data-k="feat" placeholder="Shea">
+      </div>
+      <div class="f">
+        <label>Remixer</label>
+        <input type="text" data-k="remixer" placeholder="Bỏ trống nếu không phải bản remix">
+      </div>
+    </div>
+
+    <div class="grid g3" style="margin-top:22px">
+      <div class="f">
+        <label>ISRC</label>
+        <input type="text" data-k="isrc" placeholder="Chưa có thì Haustek cấp">
+      </div>
+      <div class="f">
+        <label>Ngôn ngữ lời <span class="req">*</span></label>
+        <select data-k="lyric_lang" required>
+          <option value="vi">Tiếng Việt</option>
+          <option value="en">English</option>
+          <option value="zxx">Không lời</option>
+          <option value="ja">日本語</option>
+          <option value="ko">한국어</option>
+          <option value="other">Khác</option>
+        </select>
+      </div>
+      <div class="f">
+        <label>Nội dung nhạy cảm <span class="req">*</span></label>
+        <select data-k="explicit" required>
+          <option value="No">Không — lời sạch</option>
+          <option value="Yes">Có — lời tục / nội dung người lớn</option>
+          <option value="Cleaned">Bản đã kiểm duyệt (clean version)</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="grid g2" style="margin-top:22px">
+      <div class="f">
+        <label>Link file WAV <span class="req">*</span></label>
+        <input type="url" data-k="audio" required placeholder="https://drive.google.com/...">
+        <span class="hint">Nhớ mở quyền cho bất kỳ ai có link.</span>
+      </div>
+      <div class="f">
+        <label>Giây bắt đầu đoạn preview</label>
+        <input type="text" data-k="preview" placeholder="0:45">
+        <span class="hint">Đoạn 30 giây hay nhất, dùng cho TikTok và trang xem trước.</span>
+      </div>
+    </div>
+
+    <div class="sub-h">Tác quyền — ghi họ tên thật, không ghi nghệ danh</div>
+    <div data-writers></div>
+    <button type="button" class="mini-btn" data-add-writer>+ Thêm người sáng tác</button>
+    <div class="split-bar" data-splitbar>
+      <span>Tổng tỉ lệ chia</span>
+      <span class="track-meter"><i></i></span>
+      <span class="val" data-splitval>0%</span>
+    </div>
+
+    <div class="grid g2" style="margin-top:22px">
+      <div class="f">
+        <label>Nhà sản xuất (producer)</label>
+        <input type="text" data-k="producer" placeholder="Họ tên thật">
+      </div>
+      <div class="f">
+        <label>Đơn vị xuất bản / PRO</label>
+        <input type="text" data-k="publisher" placeholder="VCPMC, ASCAP, BMI… — bỏ trống nếu chưa có">
+      </div>
+    </div>
+
+    <div class="grid g2" style="margin-top:22px">
+      <div class="f">
+        <label>Bản thu có dùng sample hoặc là bản cover không?</label>
+        <select data-k="derivative">
+          <option value="No">Không — hoàn toàn nguyên gốc</option>
+          <option value="Sample">Có dùng sample</option>
+          <option value="Cover">Là bản cover / hát lại</option>
+          <option value="Remix">Là bản remix có phép</option>
+        </select>
+      </div>
+      <div class="f">
+        <label>Nếu có, ghi rõ nguồn gốc</label>
+        <input type="text" data-k="derivative_info" placeholder="Tên bài gốc, tác giả gốc, tình trạng xin phép">
+      </div>
+    </div>
+
+    <div class="f" style="margin-top:22px">
+      <label>Lời bài hát</label>
+      <textarea data-k="lyrics" placeholder="Dán nguyên lời bài hát. Có lời thì Apple Music và Spotify hiển thị karaoke, người nghe tìm thấy bài dễ hơn nhiều."></textarea>
+    </div>
+  </div>`;
+}
+
+function writerHTML(){
+  return `<div class="writer-row" data-writer>
+    <div class="f"><label>Họ tên thật <span class="req">*</span></label><input type="text" data-w="name" placeholder="Nguyễn Văn A"></div>
+    <div class="f"><label>Vai trò</label>
+      <select data-w="role">
+        <option value="Composer">Soạn nhạc</option>
+        <option value="Lyricist">Viết lời</option>
+        <option value="Composer & Lyricist">Soạn nhạc &amp; viết lời</option>
+        <option value="Arranger">Phối khí</option>
+      </select></div>
+    <div class="f"><label>Tỉ lệ %</label><input type="number" data-w="split" min="0" max="100" step="0.01" placeholder="50"></div>
+    <button type="button" class="mini-btn danger" data-del-writer>Xóa</button>
+  </div>`;
+}
+
+function renumber(){
+  const list=[...tracksEl.querySelectorAll('[data-track]')];
+  list.forEach((t,i)=>{t.querySelector('.track-no').textContent=String(i+1).padStart(2,'0');});
+  document.getElementById('trackCount').textContent = list.length + (list.length>1?' tracks':' track');
+  list.forEach(t=>{t.querySelector('[data-del]').style.display = list.length>1 ? '' : 'none';});
+}
+
+function updateSplit(track){
+  const rows=[...track.querySelectorAll('[data-writer]')];
+  let total=0;
+  rows.forEach(r=>{const v=parseFloat(r.querySelector('[data-w="split"]').value); if(!isNaN(v)) total+=v;});
+  total=Math.round(total*100)/100;
+  const bar=track.querySelector('[data-splitbar]');
+  bar.querySelector('[data-splitval]').textContent=total+'%';
+  bar.querySelector('.track-meter i').style.width=Math.min(total,100)+'%';
+  bar.classList.toggle('ok', total===100);
+  return total;
+}
+
+function addTrack(){
+  trackSeq++;
+  const wrap=document.createElement('div');
+  wrap.innerHTML=trackHTML(trackSeq);
+  const node=wrap.firstElementChild;
+  tracksEl.appendChild(node);
+  // 1 dòng sáng tác mặc định
+  node.querySelector('[data-writers]').insertAdjacentHTML('beforeend', writerHTML());
+  renumber();
+  updateSplit(node);
+  return node;
+}
+
+document.getElementById('addTrack').addEventListener('click',()=>{
+  const n=addTrack();
+  n.scrollIntoView({behavior:'smooth',block:'center'});
+});
+
+tracksEl.addEventListener('click',e=>{
+  const track=e.target.closest('[data-track]');
+  if(!track)return;
+  if(e.target.closest('[data-del]')){
+    if([...tracksEl.querySelectorAll('[data-track]')].length>1){track.remove();renumber();}
+    return;
+  }
+  if(e.target.closest('[data-add-writer]')){
+    track.querySelector('[data-writers]').insertAdjacentHTML('beforeend', writerHTML());
+    updateSplit(track);
+    return;
+  }
+  if(e.target.closest('[data-del-writer]')){
+    const rows=track.querySelectorAll('[data-writer]');
+    if(rows.length>1){e.target.closest('[data-writer]').remove();updateSplit(track);}
+    return;
+  }
+});
+
+tracksEl.addEventListener('input',e=>{
+  const track=e.target.closest('[data-track]');
+  if(!track)return;
+  if(e.target.matches('[data-w="split"]')) updateSplit(track);
+  if(e.target.matches('[data-k="title"]')){
+    const t=e.target.value.trim();
+    track.querySelector('[data-title-echo]').textContent = t || 'Track chưa đặt tên';
+  }
+  e.target.classList.remove('bad');
+});
+
+addTrack();
+
+/* ===================== THU THẬP + KIỂM TRA ===================== */
+function collect(){
+  const g=id=>document.getElementById(id);
+  const release={
+    loai_phat_hanh:g('r_type').value,
+    ten_ban_phat_hanh:g('r_title').value.trim(),
+    phien_ban:g('r_version').value.trim(),
+    nhan_phat_hanh:g('r_label').value.trim(),
+    nghe_si_chinh:g('r_artist').value.trim(),
+    nghe_si_khach_moi:g('r_feat').value.trim(),
+    spotify_artist:g('r_spotify').value.trim(),
+    apple_artist:g('r_apple').value.trim(),
+    the_loai_chinh:g('r_genre').value,
+    the_loai_phu:g('r_genre2').value.trim(),
+    ngon_ngu_metadata:g('r_lang').value,
+    ngay_phat_hanh:g('r_date').value,
+    ngay_pre_save:g('r_prev').value,
+    upc:g('r_upc').value.trim(),
+    lanh_tho:g('r_terr').value,
+    p_line:g('r_p').value.trim(),
+    c_line:g('r_c').value.trim(),
+    link_anh_bia:g('r_art').value.trim(),
+    ghi_chu:g('r_note').value.trim()
+  };
+  const tracks=[...tracksEl.querySelectorAll('[data-track]')].map((t,i)=>{
+    const k=key=>{const el=t.querySelector('[data-k="'+key+'"]');return el?el.value.trim():'';};
+    const writers=[...t.querySelectorAll('[data-writer]')].map(r=>({
+      ho_ten:r.querySelector('[data-w="name"]').value.trim(),
+      vai_tro:r.querySelector('[data-w="role"]').value,
+      ti_le:parseFloat(r.querySelector('[data-w="split"]').value)||0
+    })).filter(w=>w.ho_ten||w.ti_le);
+    return {
+      so_thu_tu:i+1,
+      ten_track:k('title'),
+      phien_ban:k('version'),
+      nghe_si_chinh:k('artist'),
+      khach_moi:k('feat'),
+      remixer:k('remixer'),
+      isrc:k('isrc'),
+      ngon_ngu_loi:k('lyric_lang'),
+      noi_dung_nhay_cam:k('explicit'),
+      link_wav:k('audio'),
+      preview_bat_dau:k('preview'),
+      nguoi_sang_tac:writers,
+      tong_ti_le:writers.reduce((s,w)=>s+w.ti_le,0),
+      nha_san_xuat:k('producer'),
+      xuat_ban_pro:k('publisher'),
+      sample_cover:k('derivative'),
+      thong_tin_goc:k('derivative_info'),
+      loi_bai_hat:k('lyrics')
+    };
+  });
+  const submitter={
+    nguoi_khai:g('s_name').value.trim(),
+    email:g('s_mail').value.trim(),
+    dien_thoai:g('s_phone').value.trim(),
+    thoi_diem_gui:new Date().toISOString()
+  };
+  return {release,tracks,submitter};
+}
+
+function validate(data){
+  const errs=[];
+  const mark=(id)=>{const el=document.getElementById(id);if(el)el.classList.add('bad');};
+  document.querySelectorAll('.bad').forEach(el=>el.classList.remove('bad'));
+
+  const r=data.release;
+  if(!r.ten_ban_phat_hanh){errs.push('Chưa điền tên bản phát hành.');mark('r_title');}
+  if(r.ten_ban_phat_hanh && r.ten_ban_phat_hanh===r.ten_ban_phat_hanh.toUpperCase() && /[A-Z]{4,}/.test(r.ten_ban_phat_hanh)){
+    errs.push('Tên bản phát hành đang viết hoa toàn bộ — các cửa hàng nhạc sẽ từ chối. Hãy viết hoa chữ đầu thôi.');mark('r_title');
+  }
+  if(!r.nghe_si_chinh){errs.push('Chưa điền nghệ sĩ chính.');mark('r_artist');}
+  if(!r.the_loai_chinh){errs.push('Chưa chọn thể loại chính.');mark('r_genre');}
+  if(!r.nhan_phat_hanh){errs.push('Chưa điền nhãn phát hành.');mark('r_label');}
+  if(!r.p_line){errs.push('Chưa điền dòng ℗.');mark('r_p');}
+  if(!r.c_line){errs.push('Chưa điền dòng ©.');mark('r_c');}
+  if(!r.link_anh_bia){errs.push('Chưa dán link ảnh bìa.');mark('r_art');}
+  if(!r.ngay_phat_hanh){errs.push('Chưa chọn ngày phát hành.');mark('r_date');}
+  else{
+    const d=new Date(r.ngay_phat_hanh),now=new Date();
+    const days=Math.round((d-now)/86400000);
+    if(days<0){errs.push('Ngày phát hành đang nằm ở quá khứ.');mark('r_date');}
+    else if(days<14){errs.push('Ngày phát hành chỉ còn '+days+' ngày nữa. Cần tối thiểu 14 ngày, và nên có 21 ngày để kịp pitch playlist.');mark('r_date');}
+  }
+  if(r.upc && !/^\d{12,14}$/.test(r.upc)){errs.push('UPC phải là dãy 12–14 chữ số. Chưa có thì cứ bỏ trống.');mark('r_upc');}
+
+  // track
+  const nTracks=data.tracks.length;
+  const type=r.loai_phat_hanh;
+  if(type==='Single'&&nTracks>3)errs.push('Single chỉ được tối đa 3 track. Bạn đang khai '+nTracks+' track — nên chuyển thành EP.');
+  if(type==='EP'&&(nTracks<4||nTracks>6))errs.push('EP cần từ 4 đến 6 track. Bạn đang khai '+nTracks+' track.');
+  if(type==='Album'&&nTracks<7)errs.push('Album cần từ 7 track trở lên. Bạn đang khai '+nTracks+' track.');
+
+  data.tracks.forEach(t=>{
+    const p='Track '+t.so_thu_tu+': ';
+    if(!t.ten_track)errs.push(p+'chưa điền tên track.');
+    if(!t.nghe_si_chinh)errs.push(p+'chưa điền nghệ sĩ chính.');
+    if(!t.link_wav)errs.push(p+'chưa dán link file WAV.');
+    if(t.isrc && !/^[A-Za-z]{2}[A-Za-z0-9]{3}\d{7}$/.test(t.isrc.replace(/-/g,'')))
+      errs.push(p+'mã ISRC sai định dạng (đúng phải dạng VNA012400001). Chưa có thì bỏ trống.');
+    const writers=t.nguoi_sang_tac;
+    if(!writers.length)errs.push(p+'chưa khai người sáng tác nào.');
+    else{
+      if(writers.some(w=>!w.ho_ten))errs.push(p+'có dòng sáng tác thiếu họ tên.');
+      const total=Math.round(writers.reduce((s,w)=>s+w.ti_le,0)*100)/100;
+      if(total!==100)errs.push(p+'tổng tỉ lệ chia đang là '+total+'%, phải đúng 100%.');
+      writers.forEach(w=>{
+        if(w.ho_ten && w.ho_ten===w.ho_ten.toLowerCase() && w.ho_ten.length>2 && !/\s/.test(w.ho_ten))
+          errs.push(p+'"'+w.ho_ten+'" trông giống nghệ danh. Phần sáng tác phải ghi họ tên thật đầy đủ.');
+      });
+    }
+    if(t.sample_cover!=='No' && !t.thong_tin_goc)
+      errs.push(p+'đã chọn có sample/cover/remix nhưng chưa ghi thông tin bài gốc.');
+  });
+
+  ['ck1','ck2','ck3','ck4'].forEach(id=>{
+    if(!document.getElementById(id).checked)errs.push('Chưa tích đủ các mục cam kết quyền ở bước 03.');
+  });
+  if(!data.submitter.nguoi_khai){errs.push('Chưa điền tên người khai.');mark('s_name');}
+  if(!data.submitter.email){errs.push('Chưa điền email liên hệ.');mark('s_mail');}
+
+  return [...new Set(errs)];
+}
+
+/* ===================== XUẤT FILE ===================== */
+function slug(s){
+  return (s||'haustek').normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+    .replace(/đ/g,'d').replace(/Đ/g,'D').replace(/[^a-zA-Z0-9]+/g,'-')
+    .replace(/^-+|-+$/g,'').toLowerCase().slice(0,50);
+}
+function download(name,content,type){
+  const blob=new Blob([content],{type:type+';charset=utf-8'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;a.download=name;document.body.appendChild(a);a.click();
+  document.body.removeChild(a);setTimeout(()=>URL.revokeObjectURL(url),1500);
+}
+function toCSV(data){
+  const cols=['so_thu_tu','ten_track','phien_ban','nghe_si_chinh','khach_moi','remixer','isrc',
+    'ngon_ngu_loi','noi_dung_nhay_cam','preview_bat_dau','nha_san_xuat','xuat_ban_pro',
+    'sample_cover','thong_tin_goc','link_wav','nguoi_sang_tac','loi_bai_hat'];
+  const rel=data.release;
+  const relCols=Object.keys(rel);
+  const esc=v=>{const s=String(v==null?'':v).replace(/"/g,'""');return '"'+s+'"';};
+  const head=[...relCols,...cols].map(esc).join(',');
+  const rows=data.tracks.map(t=>{
+    const writers=t.nguoi_sang_tac.map(w=>w.ho_ten+' ('+w.vai_tro+' '+w.ti_le+'%)').join(' | ');
+    return [...relCols.map(c=>rel[c]),...cols.map(c=>c==='nguoi_sang_tac'?writers:t[c])].map(esc).join(',');
+  });
+  return '\uFEFF'+[head,...rows].join('\r\n');
+}
+function toText(data){
+  const r=data.release;
+  let out='HỒ SƠ METADATA — HAUSTEK\n========================================\n\n[BẢN PHÁT HÀNH]\n';
+  Object.entries(r).forEach(([k,v])=>{if(v)out+=k.replace(/_/g,' ')+': '+v+'\n';});
+  data.tracks.forEach(t=>{
+    out+='\n[TRACK '+t.so_thu_tu+'] '+t.ten_track+'\n';
+    Object.entries(t).forEach(([k,v])=>{
+      if(k==='nguoi_sang_tac'){
+        out+='  sáng tác: '+t.nguoi_sang_tac.map(w=>w.ho_ten+' — '+w.vai_tro+' — '+w.ti_le+'%').join(' | ')+'\n';
+      }else if(k==='loi_bai_hat'){
+        if(v)out+='  lời bài hát: (có, xem file JSON)\n';
+      }else if(v&&k!=='so_thu_tu'&&k!=='ten_track'){
+        out+='  '+k.replace(/_/g,' ')+': '+v+'\n';
+      }
+    });
+  });
+  out+='\n[NGƯỜI KHAI]\n';
+  Object.entries(data.submitter).forEach(([k,v])=>{if(v)out+=k.replace(/_/g,' ')+': '+v+'\n';});
+  return out;
+}
+
+const msgErr=document.getElementById('msgErr'),msgOk=document.getElementById('msgOk');
+function showErr(list){
+  msgOk.classList.remove('show');
+  msgErr.innerHTML='<b>Còn '+list.length+' chỗ cần sửa trước khi gửi:</b><ul>'+list.map(e=>'<li>'+e+'</li>').join('')+'</ul>';
+  msgErr.classList.add('show');
+  msgErr.scrollIntoView({behavior:'smooth',block:'center'});
+}
+function showOk(html){
+  msgErr.classList.remove('show');
+  msgOk.innerHTML=html;
+  msgOk.classList.add('show');
+}
+
+document.getElementById('btnExport').addEventListener('click',async()=>{
+  const btn=document.getElementById('btnExport');
+  const data=collect();
+  const errs=validate(data);
+  if(errs.length){showErr(errs);return;}
+
+  const base='haustek-metadata_'+slug(data.release.nghe_si_chinh)+'_'+slug(data.release.ten_ban_phat_hanh);
+
+  // Luôn tải file về máy làm bản lưu của nghệ sĩ, kể cả khi gửi lên hệ thống thành công
+  download(base+'.json',JSON.stringify(data,null,2),'application/json');
+  setTimeout(()=>download(base+'.csv',toCSV(data),'text/csv'),400);
+
+  if(ENDPOINT){
+    btn.disabled=true;
+    const label=btn.textContent;
+    btn.textContent='Đang gửi…';
+    try{
+      /* Gửi dưới dạng text/plain là cố ý, không phải nhầm.
+         Google Apps Script không trả về header CORS cho yêu cầu "phức tạp".
+         Nếu đặt Content-Type: application/json, trình duyệt sẽ bắn một yêu cầu
+         OPTIONS thăm dò trước, Apps Script không trả lời được, và toàn bộ
+         lệnh gửi thất bại. Dùng text/plain thì đây là yêu cầu "đơn giản",
+         trình duyệt gửi thẳng, không thăm dò. Phía Apps Script vẫn đọc được
+         đúng JSON vì nó tự parse nội dung. */
+      const res=await fetch(ENDPOINT,{
+        method:'POST',
+        headers:{'Content-Type':'text/plain;charset=utf-8'},
+        body:JSON.stringify(data)
+      });
+      let out={};
+      try{ out=await res.json(); }catch(e){ out={ok:res.ok}; }
+
+      btn.disabled=false;btn.textContent=label;
+
+      if(out.ok){
+        showOk('<b>Đã gửi hồ sơ về Haustek.</b>'+
+          (out.submission_id?' Mã hồ sơ của bạn là <b style="font-family:var(--mono)">'+out.submission_id+'</b> — giữ lại mã này để tiện hỏi tình trạng sau.':'')+
+          ' Hai file cũng vừa tải về máy bạn làm bản lưu. Việc còn lại: gửi link file WAV và ảnh bìa về <a href="mailto:'+MAILTO+'">'+MAILTO+'</a> nếu bạn chưa dán link trong form. Đội phát hành phản hồi trong 2–3 ngày làm việc.');
+        return;
+      }
+      showErr(['Hệ thống nhận hồ sơ đang gặp trục trặc'+(out.error?' ('+out.error+')':'')+'. Hai file đã tải về máy bạn rồi — bạn gửi tạm hai file đó về '+MAILTO+' giúp mình nhé.']);
+      return;
+    }catch(err){
+      btn.disabled=false;btn.textContent=label;
+      showErr(['Không kết nối được tới hệ thống của Haustek (có thể do mạng). Nhưng hai file đã tải về máy bạn — bạn gửi hai file đó về '+MAILTO+' là được, không mất công điền lại.']);
+      return;
+    }
+  }
+
+  showOk('<b>Hồ sơ hợp lệ, đã tải về máy bạn 2 file.</b> Giờ bạn gửi hai file này về <a href="mailto:'+MAILTO+'">'+MAILTO+'</a>, kèm link file WAV và ảnh bìa. Đội phát hành sẽ phản hồi trong 2–3 ngày làm việc.');
+});
+
+document.getElementById('btnCopy').addEventListener('click',async()=>{
+  const data=collect();
+  const errs=validate(data);
+  if(errs.length){showErr(errs);return;}
+  try{
+    await navigator.clipboard.writeText(toText(data));
+    showOk('<b>Đã chép toàn bộ nội dung.</b> Bạn dán thẳng vào email hoặc tin nhắn gửi Haustek là được.');
+  }catch(err){
+    showErr(['Trình duyệt không cho phép chép tự động. Bạn dùng nút "Kiểm tra & xuất hồ sơ" để tải file về nhé.']);
+  }
+});
+
+document.getElementById('btnMail').addEventListener('click',()=>{
+  const data=collect();
+  const errs=validate(data);
+  if(errs.length){showErr(errs);return;}
+  const r=data.release;
+  const subj='[METADATA] '+r.nghe_si_chinh+' — '+r.ten_ban_phat_hanh+' ('+r.loai_phat_hanh+')';
+  let body='Chào đội A&R Haustek,\n\nMình gửi hồ sơ metadata cho bản phát hành sắp tới.\n\n';
+  body+='Nghệ sĩ: '+r.nghe_si_chinh+'\nBản phát hành: '+r.ten_ban_phat_hanh+'\n';
+  body+='Loại: '+r.loai_phat_hanh+'\nSố track: '+data.tracks.length+'\nNgày mong muốn: '+r.ngay_phat_hanh+'\n';
+  body+='Ảnh bìa: '+r.link_anh_bia+'\n\nDanh sách track:\n';
+  data.tracks.forEach(t=>{body+='  '+t.so_thu_tu+'. '+t.ten_track+(t.phien_ban?' ('+t.phien_ban+')':'')+' — '+t.link_wav+'\n';});
+  body+='\nFile JSON và CSV đầy đủ mình đính kèm trong mail này.\n\nCảm ơn,\n'+data.submitter.nguoi_khai;
+  const url='mailto:'+MAILTO+'?subject='+encodeURIComponent(subj)+'&body='+encodeURIComponent(body);
+  if(url.length>1900){
+    showErr(['Nội dung quá dài để mở sẵn trong email. Bạn dùng nút "Kiểm tra & xuất hồ sơ" để tải 2 file rồi đính kèm nhé.']);
+    return;
+  }
+  location.href=url;
+});
+</script>
+</body>
+</html>
