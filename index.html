@@ -5,15 +5,15 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <title>Haustek Agency — Music Label & Distribution | Để nhạc Việt vang xa hơn</title>
-<meta name="description" content="Haustek Agency — music label & distribution từ 2017. Làm nhạc, phát hành và đưa nhạc Việt lên Spotify, Apple Music, TikTok, YouTube Music, NhacCuaTui, Zing MP3 và hơn 150 cửa hàng nhạc số trên toàn thế giới.">
-<meta name="keywords" content="Haustek Agency, music label Việt Nam, music distribution, phát hành nhạc, Spotify, TikTok, NhacCuaTui, Zing MP3, techno Việt Nam, gửi demo">
-<meta name="author" content="Haustek Agency">
+<meta name="description" content="Haustek — music label & distribution từ 2017. Sự kiện, sản xuất, phát hành, quảng cáo và tư vấn chiến lược cho âm nhạc. Đưa nhạc Việt lên Spotify, Apple Music, TikTok, NhacCuaTui, Zing MP3 và hơn 200 cửa hàng nhạc số toàn cầu.">
+<meta name="keywords" content="Haustek, music label Việt Nam, music distribution, phát hành nhạc, Spotify, TikTok, NhacCuaTui, Zing MP3, tổ chức sự kiện, sản xuất âm nhạc, booking nghệ sĩ, gửi demo">
+<meta name="author" content="Haustek">
 <meta name="robots" content="index, follow">
 <link rel="canonical" href="https://haustek-agency.com/">
 <meta property="og:type" content="website">
-<meta property="og:site_name" content="Haustek Agency">
-<meta property="og:title" content="Haustek Agency — Music Label & Distribution">
-<meta property="og:description" content="Để nhạc Việt vang xa hơn. Music label & distribution từ 2017.">
+<meta property="og:site_name" content="Haustek">
+<meta property="og:title" content="Haustek — Music Label & Distribution">
+<meta property="og:description" content="Để nhạc Việt vang xa hơn. Từ sàn diễn underground đến hơn 200 nền tảng số toàn cầu.">
 <meta property="og:locale" content="vi_VN">
 <meta property="og:locale:alternate" content="en_US">
 <meta name="twitter:card" content="summary_large_image">
@@ -24,21 +24,19 @@
 {
   "@context": "https://schema.org",
   "@graph": [
-    { "@type": "Organization", "@id": "https://haustek-agency.com/#org", "name": "Haustek Agency", "url": "https://haustek-agency.com/", "email": "info@haustek-agency.com", "foundingDate": "2017", "foundingLocation": {"@type":"Place","name":"California, USA"}, "description": "Music label & distribution đồng hành cùng nghệ sĩ Việt trong nước và hải ngoại từ 2017.", "sameAs": ["https://www.facebook.com/haustek.agency","https://www.instagram.com/haustek.agency","https://open.spotify.com/artist/1jiigt5sMZ62es2sH1UwYU"] },
-    { "@type": "MusicGroup", "name": "Haustek Agency", "url": "https://haustek-agency.com/", "genre": ["Electronic","Techno","Ambient"], "foundingDate": "2017" }
+    { "@type": "Organization", "@id": "https://haustek-agency.com/#org", "name": "Haustek", "url": "https://haustek-agency.com/", "email": "mgmt@haustek-group.com", "foundingDate": "2017", "foundingLocation": {"@type":"Place","name":"Los Angeles, California, USA"}, "description": "Music label & distribution — sự kiện, sản xuất, phát hành, quảng cáo và tư vấn chiến lược cho âm nhạc, từ 2017.", "sameAs": ["https://www.facebook.com/haustek.agency","https://www.instagram.com/haustek.agency","https://open.spotify.com/artist/1jiigt5sMZ62es2sH1UwYU"] },
+    { "@type": "MusicGroup", "name": "Haustek", "url": "https://haustek-agency.com/", "genre": ["Electronic","Techno","House","Ambient"], "foundingDate": "2017" }
   ]
 }
 </script>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<!-- Archivo (variable width) / Be Vietnam Pro / IBM Plex Mono — đủ dấu tiếng Việt -->
 <link href="https://fonts.googleapis.com/css2?family=Archivo:ital,wdth,wght@0,62..125,300..900;1,62..125,300..900&family=Be+Vietnam+Pro:wght@300;400;500&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 
 <style>
 /* =========================================================
-   HAUSTEK v7 — CINEMATIC EDITORIAL
-   Không hộp. Không card. Chữ là thiết kế.
+   HAUSTEK v8 — CINEMATIC EDITORIAL
    ========================================================= */
 :root{
   --ink:#070709;
@@ -67,20 +65,16 @@ img{max-width:100%;display:block}
 a{color:inherit;text-decoration:none}
 a,button,summary{cursor:pointer;-webkit-tap-highlight-color:transparent}
 
-/* con trỏ */
 .cursor{position:fixed;top:0;left:0;width:10px;height:10px;border-radius:50%;background:var(--red);
-  pointer-events:none;z-index:9999;transform:translate(-50%,-50%);mix-blend-mode:normal;transition:width .25s,height .25s,opacity .25s}
+  pointer-events:none;z-index:9999;transform:translate(-50%,-50%);transition:width .25s,height .25s,opacity .25s}
 .cursor.hot{width:56px;height:56px;background:rgba(255,46,76,.14);border:1px solid var(--red)}
 @media(hover:none){.cursor{display:none}}
 
-/* =========================================================
-   NAV — tối giản, chỉ chữ
-   ========================================================= */
+/* ================= NAV ================= */
 .nav{
   position:fixed;top:0;left:0;right:0;z-index:100;
   display:flex;align-items:center;justify-content:space-between;gap:16px;
   padding:18px var(--gut);
-  mix-blend-mode:normal;
   background:linear-gradient(to bottom, rgba(7,7,9,.9), rgba(7,7,9,0));
 }
 .logo{display:flex;align-items:center;gap:10px;flex:none}
@@ -101,9 +95,7 @@ a,button,summary{cursor:pointer;-webkit-tap-highlight-color:transparent}
 .nav-submit:hover{background:var(--red);border-color:var(--red)}
 @media(min-width:1000px){.nav-links{display:flex}}
 
-/* =========================================================
-   KHUNG SECTION EDITORIAL
-   ========================================================= */
+/* ================= SECTION ================= */
 main.page{display:none}
 main.page.active{display:block;animation:pageIn .5s ease}
 @keyframes pageIn{from{opacity:0}to{opacity:1}}
@@ -127,7 +119,6 @@ h2{
   max-width:14ch;
 }
 h2 em,h1 em,.statement em{font-style:italic;font-weight:600;color:var(--red)}
-.out{color:transparent;-webkit-text-stroke:1.5px var(--paper)}
 .statement{
   font-family:var(--disp);font-weight:500;font-stretch:105%;
   font-size:clamp(21px,3.6vw,38px);line-height:1.35;letter-spacing:-.015em;
@@ -140,9 +131,7 @@ h2 em,h1 em,.statement em{font-style:italic;font-weight:600;color:var(--red)}
 .split .row{display:inline-block;transform:translateY(108%);transition:transform 1.1s cubic-bezier(.19,.8,.22,1)}
 .split.in .row{transform:none}
 
-/* =========================================================
-   HERO
-   ========================================================= */
+/* ================= HERO ================= */
 .hero{min-height:100svh;display:flex;flex-direction:column;justify-content:flex-end;padding-bottom:0}
 #ripple{position:absolute;inset:0;width:100%;height:100%;z-index:0}
 .hero::before{content:"";position:absolute;inset:0;z-index:1;pointer-events:none;
@@ -155,10 +144,9 @@ h1{
   font-size:clamp(52px,12.5vw,180px);line-height:.92;letter-spacing:-.035em;
 }
 .hero-row{display:flex;align-items:flex-end;justify-content:space-between;gap:36px;flex-wrap:wrap;margin-top:34px}
-.hero-sub{color:var(--concrete);font-size:14.5px;max-width:440px}
+.hero-sub{color:var(--concrete);font-size:14.5px;max-width:460px}
 .hero-sub strong{color:var(--paper);font-weight:500}
 
-/* bánh xe PLAY quay */
 .playwheel{position:relative;width:136px;height:136px;flex:none}
 .playwheel svg.ringtext{position:absolute;inset:0;animation:spin 16s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
@@ -173,7 +161,6 @@ h1{
 .playwheel .ringtext text{font-family:var(--mono);font-size:10.5px;letter-spacing:.34em;fill:var(--concrete);text-transform:uppercase}
 .playwheel.playing button{background:var(--red);color:var(--paper)}
 
-/* dải số hero */
 .hero-stats{
   position:relative;z-index:2;border-top:1px solid var(--line);
   display:grid;grid-template-columns:repeat(2,1fr);
@@ -188,9 +175,7 @@ h1{
   .hs:last-child{border-right:0}
 }
 
-/* =========================================================
-   MARQUEE track names
-   ========================================================= */
+/* ================= MARQUEE ================= */
 .ticker{overflow:hidden;white-space:nowrap;padding:20px 0;border-bottom:1px solid var(--line)}
 .ticker-track{display:inline-block;animation:scroll 36s linear infinite}
 .ticker:hover .ticker-track{animation-play-state:paused}
@@ -202,9 +187,7 @@ h1{
 .ticker i{color:var(--red);font-style:normal;font-size:.6em;vertical-align:middle}
 @keyframes scroll{to{transform:translateX(-50%)}}
 
-/* =========================================================
-   ABOUT — tuyên ngôn
-   ========================================================= */
+/* ================= ABOUT ================= */
 .about-grid{display:grid;gap:44px;margin-top:44px}
 @media(min-width:900px){.about-grid{grid-template-columns:1.25fr .75fr;align-items:start}}
 .fact-list{border-top:1px solid var(--line)}
@@ -212,9 +195,7 @@ h1{
 .fact b{font-family:var(--mono);font-weight:400;font-size:11px;letter-spacing:.16em;color:var(--concrete);text-transform:uppercase;padding-top:3px;flex:none}
 .fact span{color:var(--paper);text-align:right;max-width:60%}
 
-/* =========================================================
-   ROW LIST — dùng cho dịch vụ / phát hành / blog / sự kiện
-   ========================================================= */
+/* ================= ROW LIST ================= */
 .rowlist{border-top:1px solid var(--line);margin-top:50px}
 .row{
   display:grid;grid-template-columns:auto 1fr auto;align-items:baseline;gap:16px;
@@ -234,7 +215,7 @@ a.row:hover .ttl{color:var(--red)}
 .row .meta{font-family:var(--mono);font-size:11px;letter-spacing:.12em;color:var(--concrete);text-transform:uppercase;text-align:right;white-space:nowrap}
 .row .desc{grid-column:2 / -1;color:var(--concrete);font-size:13.5px;max-width:560px;margin-top:6px}
 
-/* dịch vụ dạng accordion editorial */
+/* dịch vụ accordion */
 .svc details{border-bottom:1px solid var(--line)}
 .svc details:first-of-type{border-top:1px solid var(--line);margin-top:50px}
 .svc summary{
@@ -244,7 +225,7 @@ a.row:hover .ttl{color:var(--red)}
 .svc summary::-webkit-details-marker{display:none}
 .svc summary:hover{padding-left:14px}
 .svc summary .idx{font-family:var(--mono);font-size:11px;color:var(--concrete);min-width:34px}
-.svc summary .ttl{font-family:var(--disp);font-weight:750;font-stretch:112%;font-size:clamp(24px,5.4vw,52px);letter-spacing:-.028em;line-height:1.02;transition:color .25s}
+.svc summary .ttl{font-family:var(--disp);font-weight:750;font-stretch:112%;font-size:clamp(22px,4.8vw,48px);letter-spacing:-.028em;line-height:1.02;transition:color .25s}
 .svc summary:hover .ttl,.svc details[open] .ttl{color:var(--red)}
 .svc summary .pm{font-family:var(--disp);font-weight:400;font-size:26px;color:var(--concrete);transition:transform .3s}
 .svc details[open] .pm{transform:rotate(45deg);color:var(--red)}
@@ -252,9 +233,7 @@ a.row:hover .ttl{color:var(--red)}
 .svc .body a{color:var(--ice)}
 @media(max-width:640px){.svc .body{padding-left:2px}}
 
-/* =========================================================
-   TYPE WALL — các cửa hàng nhạc số
-   ========================================================= */
+/* ================= TYPE WALL ================= */
 .typewall{margin-top:50px;overflow:hidden}
 .tw-row{overflow:hidden;white-space:nowrap;padding:6px 0}
 .tw-track{display:inline-block;animation:scroll var(--dur,40s) linear infinite}
@@ -271,42 +250,18 @@ a.row:hover .ttl{color:var(--red)}
 .tw-track i{font-style:normal;color:var(--red);font-size:.45em;vertical-align:middle;margin:0 4px}
 .tw-note{margin-top:26px;font-family:var(--mono);font-size:11.5px;letter-spacing:.12em;color:var(--concrete);text-transform:uppercase}
 
-/* =========================================================
-   RELEASES — index rows + preview bay theo chuột
-   ========================================================= */
-#preview{
-  position:fixed;width:250px;height:250px;border-radius:8px;pointer-events:none;z-index:90;
-  opacity:0;transform:scale(.9);transition:opacity .25s,transform .25s;
-  overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,.6);
-}
-#preview.on{opacity:1;transform:scale(1)}
-#preview .p{position:absolute;inset:0;opacity:0;transition:opacity .2s}
-#preview .p.show{opacity:1}
-@media(hover:none){#preview{display:none}}
-.g1{background:repeating-radial-gradient(circle at 30% 40%,rgba(240,240,242,.9) 0 2px,#070709 2px 14px)}
-.g2{background:repeating-radial-gradient(circle at 75% 25%,#070709 0 3px,rgba(127,214,232,.55) 3px 5px,#101318 5px 16px)}
-.g3{background:repeating-conic-gradient(from 0deg at 55% 60%,rgba(240,240,242,.85) 0 4deg,#070709 4deg 14deg)}
-.g4{background:repeating-radial-gradient(circle at 60% 80%,rgba(255,46,76,.7) 0 2px,#170a0f 2px 10px,#070709 10px 22px)}
-.g5{background:repeating-linear-gradient(100deg,#070709 0 6px,rgba(240,240,242,.5) 6px 8px,#070709 8px 26px)}
-.g6{background:repeating-radial-gradient(circle at 20% 20%,#070709 0 4px,rgba(127,214,232,.55) 4px 6px,#070709 6px 24px)}
-
-/* =========================================================
-   ARTISTS — dòng tên khổng lồ
-   ========================================================= */
+/* ================= ARTISTS ================= */
 .roster{margin-top:46px;max-width:1100px;line-height:1.18}
 .roster span{
   font-family:var(--disp);font-weight:750;font-stretch:114%;
-  font-size:clamp(30px,6.6vw,74px);letter-spacing:-.03em;color:var(--paper);
+  font-size:clamp(28px,6vw,68px);letter-spacing:-.03em;color:var(--paper);
   transition:color .2s,font-style .2s;display:inline;
 }
 .roster span:hover{color:var(--red);font-style:italic}
 .roster i{font-style:normal;color:var(--red);font-size:.4em;vertical-align:middle;margin:0 14px}
-.roster .role{display:none}
-.roster-note{margin-top:22px;font-family:var(--mono);font-size:11.5px;letter-spacing:.12em;color:var(--concrete);text-transform:uppercase}
+.roster-note{margin-top:22px;font-family:var(--mono);font-size:11.5px;letter-spacing:.12em;color:var(--concrete);text-transform:uppercase;max-width:640px;line-height:1.8}
 
-/* =========================================================
-   PULL QUOTE
-   ========================================================= */
+/* ================= PULL QUOTE ================= */
 .pull{
   font-family:var(--disp);font-weight:600;font-stretch:108%;
   font-size:clamp(26px,5vw,54px);line-height:1.2;letter-spacing:-.025em;
@@ -315,9 +270,7 @@ a.row:hover .ttl{color:var(--red)}
 .pull-sec{text-align:center;padding-top:clamp(110px,18vh,190px);padding-bottom:clamp(110px,18vh,190px)}
 .pull-by{margin-top:26px;font-family:var(--mono);font-size:11px;letter-spacing:.2em;color:var(--concrete);text-transform:uppercase}
 
-/* =========================================================
-   FAQ
-   ========================================================= */
+/* ================= FAQ ================= */
 .faq details{border-bottom:1px solid var(--line)}
 .faq details:first-of-type{border-top:1px solid var(--line);margin-top:50px}
 .faq summary{list-style:none;display:flex;justify-content:space-between;gap:20px;align-items:baseline;padding:20px 2px;transition:padding .3s}
@@ -330,12 +283,10 @@ a.row:hover .ttl{color:var(--red)}
 .faq .a{padding:0 2px 22px;color:var(--concrete);font-size:13.5px;max-width:620px}
 .faq .a a{color:var(--ice)}
 
-/* =========================================================
-   CONTACT + FOOTER
-   ========================================================= */
+/* ================= CONTACT + FOOTER ================= */
 .mail-giant{
   display:block;font-family:var(--disp);font-weight:800;font-stretch:116%;
-  font-size:clamp(26px,6.4vw,84px);letter-spacing:-.035em;line-height:1;
+  font-size:clamp(24px,6vw,80px);letter-spacing:-.035em;line-height:1;
   margin:36px 0 40px;transition:color .25s;word-break:break-all;
 }
 .mail-giant:hover{color:var(--red)}
@@ -347,7 +298,7 @@ footer{padding:60px var(--gut) 30px;border-top:1px solid var(--line);overflow:hi
   font-family:var(--disp);font-weight:800;font-stretch:122%;
   font-size:clamp(64px,17vw,260px);letter-spacing:-.04em;line-height:.85;
   color:transparent;-webkit-text-stroke:1.5px rgba(240,240,242,.28);
-  user-select:none;transition:color .6s,-webkit-text-stroke-color .6s;
+  user-select:none;transition:color .6s,-webkit-text-stroke-color .6s;display:inline-block;
 }
 .foot-giant:hover{color:var(--red);-webkit-text-stroke-color:var(--red)}
 .foot-row{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;margin-top:34px}
@@ -356,9 +307,7 @@ footer{padding:60px var(--gut) 30px;border-top:1px solid var(--line);overflow:hi
 .fsoc a{font-family:var(--mono);font-size:11px;color:var(--concrete);transition:color .2s;letter-spacing:.06em}
 .fsoc a:hover{color:var(--paper)}
 
-/* =========================================================
-   SUBMIT PAGE — form gạch chân
-   ========================================================= */
+/* ================= SUBMIT ================= */
 .form-ed{margin-top:56px;max-width:760px}
 .f-line{display:grid;gap:8px;margin-bottom:34px}
 .f-line label{font-family:var(--mono);font-size:10.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--concrete)}
@@ -388,29 +337,24 @@ a:focus-visible,button:focus-visible,summary:focus-visible,input:focus-visible,t
   *{animation:none!important;transition:none!important}
   .rv,.split .row{opacity:1;transform:none}
   html{scroll-behavior:auto}
-  .cursor,#preview{display:none}
+  .cursor{display:none}
 }
 </style>
 </head>
 <body>
 
 <div class="cursor" aria-hidden="true"></div>
-<div id="preview" aria-hidden="true">
-  <div class="p g1"></div><div class="p g2"></div><div class="p g3"></div>
-  <div class="p g4"></div><div class="p g5"></div><div class="p g6"></div>
-</div>
 
 <header class="nav">
-  <a class="logo" href="#/" aria-label="Haustek Agency">
+  <a class="logo" href="#/" aria-label="Haustek">
     <span class="rec" aria-hidden="true"></span>
-    <img src="data:image/png;base64,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" alt="Haustek Agency" width="389" height="82">
+    <img src="data:image/png;base64,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" alt="Haustek" width="389" height="82">
   </a>
   <nav class="nav-links" aria-label="Điều hướng">
     <a href="#/" data-nav="home" data-i18n="nav_home">Trang chủ</a>
     <a href="#/events" data-nav="events" data-i18n="nav_events">Sự kiện</a>
     <a href="#/#services" data-i18n="nav_services">Dịch vụ</a>
     <a href="#/#stores" data-i18n="nav_stores">Cửa hàng</a>
-    <a href="#/#releases" data-i18n="nav_releases">Phát hành</a>
     <a href="#/#artists" data-i18n="nav_artists">Nghệ sĩ</a>
   </nav>
   <div class="nav-right">
@@ -431,7 +375,7 @@ a:focus-visible,button:focus-visible,summary:focus-visible,input:focus-visible,t
       <span class="split" data-i18n-split="h1_l2"><span class="row"><em>vang xa</em> hơn.</span></span>
     </h1>
     <div class="hero-row">
-      <p class="hero-sub" data-i18n="hero_sub"><strong>Haustek</strong> làm nhạc, phát hành và lo trọn đường đi của mỗi bản thu — từ hầm techno Sài Gòn đến hơn 150 cửa hàng nhạc số trên thế giới.</p>
+      <p class="hero-sub" data-i18n="hero_sub"><strong>Haustek</strong> đưa âm nhạc đi xa hơn — từ sàn diễn underground đến hơn 200 nền tảng số toàn cầu. Sự kiện, sản xuất, phát hành, quảng cáo và tư vấn chiến lược cho âm nhạc — tất cả trong một hệ sinh thái.</p>
       <div class="playwheel" id="wheel">
         <svg class="ringtext" viewBox="0 0 136 136" aria-hidden="true">
           <defs><path id="circ" d="M68,68 m-56,0 a56,56 0 1,1 112,0 a56,56 0 1,1 -112,0"/></defs>
@@ -444,16 +388,16 @@ a:focus-visible,button:focus-visible,summary:focus-visible,input:focus-visible,t
     </div>
   </div>
   <div class="hero-stats">
-    <div class="hs"><b data-count="700000" data-suffix="+">0</b><span data-i18n="st_streams">Lượt nghe</span></div>
+    <div class="hs"><b data-count="114" data-suffix="M+">0</b><span data-i18n="st_streams">Lượt nghe</span></div>
     <div class="hs"><b>2017</b><span data-i18n="st_founded">Thành lập</span></div>
-    <div class="hs"><b data-count="150" data-suffix="+">0</b><span data-i18n="st_stores">Cửa hàng nhạc số</span></div>
-    <div class="hs"><b data-count="20" data-suffix="+">0</b><span>Releases</span></div>
+    <div class="hs"><b data-count="200" data-suffix="+">0</b><span data-i18n="st_stores">Cửa hàng nhạc số</span></div>
+    <div class="hs"><b data-count="7000" data-suffix="+">0</b><span>Releases</span></div>
   </div>
 </section>
 
 <div class="ticker" aria-hidden="true">
   <div class="ticker-track" id="tick">
-    <span>The Day Pass</span><i>●</i><span>Alone</span><i>●</i><span>Hey You</span><i>●</i>
+    <span>Đêm Thành Phố</span><i>●</i><span>The Day Pass</span><i>●</i><span>Alone</span><i>●</i><span>Hey You</span><i>●</i>
     <span>Heaven Drops</span><i>●</i><span>Time Stop</span><i>●</i><span>The Mountain Mist</span><i>●</i>
     <span>iamprogrammed</span><i>●</i><span>Shea</span><i>●</i><span>HẮC (HA666)</span><i>●</i>
     <span>Thập Thiên</span><i>●</i><span>Snow in Summer</span><i>●</i><span>Red River</span><i>●</i>
@@ -464,18 +408,18 @@ a:focus-visible,button:focus-visible,summary:focus-visible,input:focus-visible,t
 <section id="about">
   <div class="ghost" aria-hidden="true">01</div>
   <p class="kicker rv"><i>●</i><span data-i18n="ab_k">Về Haustek</span></p>
-  <h2 class="rv" data-i18n="ab_h">Sinh ở California.<br><em>Thuộc về</em> nhạc Việt.</h2>
+  <h2 class="rv" data-i18n="ab_h">Gốc rễ toàn cầu.<br><em>Thuộc về</em> nhạc Việt.</h2>
   <div class="about-grid">
     <div class="rv">
-      <p class="statement" data-i18n="ab_st">Chín năm — từ những đêm diễn nhỏ đến sân khấu quốc tế. Mỗi lần phát hành là một lần bắc cầu, để tiếng kick dưới hầm techno hay dải ambient mỏng như sương chạm tới người nghe ở khắp nơi.</p>
-      <p class="smallp" style="margin-top:22px" data-i18n="ab_p">Haustek là mái nhà của producer, DJ, VJ, rapper, ban nhạc và giọng ca Việt — trong nước và hải ngoại. Chúng tôi sản xuất âm nhạc, dựng show, dàn dựng trình diễn nghệ thuật và làm quảng cáo cho nhãn hàng.</p>
+      <p class="statement" data-i18n="ab_st">Gần một thập kỷ — từ những đêm diễn underground đến sân khấu quốc tế. Khởi đầu với techno và house, Haustek mang theo sứ mệnh đưa âm nhạc Việt Nam vươn ra toàn cầu.</p>
+      <p class="smallp" style="margin-top:22px" data-i18n="ab_p">Haustek quy tụ producer, DJ, VJ, rapper, ban nhạc và nghệ sĩ Việt trên khắp thế giới. Chúng tôi phân phối âm nhạc, sản xuất âm nhạc, tư vấn bản quyền, tổ chức sự kiện, dàn dựng trình diễn nghệ thuật và quảng cáo nhãn hàng — mỗi lần phát hành là một lần bắc cầu, để tiếng kick dưới hầm techno hay dải ambient mỏng như sương chạm tới người nghe ở khắp nơi.</p>
     </div>
     <div class="fact-list rv">
-      <div class="fact"><b data-i18n="f1b">Thành lập</b><span>California · 2017</span></div>
-      <div class="fact"><b data-i18n="f2b">Hoạt động</b><span data-i18n="f2s">Việt Nam &amp; hải ngoại</span></div>
-      <div class="fact"><b data-i18n="f3b">Chuyên môn</b><span>Distribution · Label · Events · Production</span></div>
-      <div class="fact"><b data-i18n="f4b">Bản thu đi xa nhất</b><span>The Day Pass — 276.000+</span></div>
-      <div class="fact"><b data-i18n="f5b">Người nghe</b><span data-i18n="f5s">5.000+ mỗi tháng</span></div>
+      <div class="fact"><b data-i18n="f1b">Thành lập</b><span>Los Angeles · 2017</span></div>
+      <div class="fact"><b data-i18n="f2b">Hoạt động</b><span data-i18n="f2s">Việt Nam &amp; toàn cầu</span></div>
+      <div class="fact"><b data-i18n="f3b">Chuyên môn</b><span>Distribution · Label · Events · Production · Consulting</span></div>
+      <div class="fact"><b data-i18n="f4b">Bản thu đi xa nhất</b><span>Đêm Thành Phố — 3.200.000+</span></div>
+      <div class="fact"><b data-i18n="f5b">Người nghe</b><span data-i18n="f5s">3.500.000+ mỗi tháng</span></div>
     </div>
   </div>
 </section>
@@ -484,27 +428,28 @@ a:focus-visible,button:focus-visible,summary:focus-visible,input:focus-visible,t
 <section id="services" class="svc">
   <div class="ghost" aria-hidden="true">02</div>
   <p class="kicker rv"><i>●</i><span data-i18n="sv_k">Chúng tôi làm gì</span></p>
-  <h2 class="rv" data-i18n="sv_h">Bạn lo phần nhạc.<br><em>Phần còn lại,</em> Haustek.</h2>
+  <h2 class="rv" data-i18n="sv_h">Bạn cần giải pháp?<br><em>Haustek cung cấp.</em></h2>
+  <p class="smallp rv" style="margin-top:18px" data-i18n="sv_lead">Âm nhạc, giải trí, sản xuất, quảng cáo và marketing — năm mảng dịch vụ, một hệ sinh thái.</p>
 
   <details class="rv" open>
-    <summary><span class="idx">01</span><span class="ttl">Distribution</span><span class="pm">+</span></summary>
-    <p class="body" data-i18n="sv1">Đưa nhạc của bạn lên hơn 150 cửa hàng nhạc số — Spotify, Apple Music, TikTok, YouTube Music, NhacCuaTui, Zing MP3… Lên sóng đúng lịch, số liệu minh bạch, báo cáo rõ ràng.</p>
+    <summary><span class="idx">01</span><span class="ttl" data-i18n="sv1t">Phân phối &amp; khai thác bản ghi</span><span class="pm">+</span></summary>
+    <p class="body" data-i18n="sv1">Đưa nhạc của bạn lên hơn 200 cửa hàng nhạc số — Spotify, Apple Music, TikTok, YouTube Music, NhacCuaTui, Zing MP3… — và khai thác bản ghi trên mọi kênh. Lên sóng đúng lịch, số liệu minh bạch, báo cáo rõ ràng.</p>
   </details>
   <details class="rv">
-    <summary><span class="idx">02</span><span class="ttl">Label &amp; A&amp;R</span><span class="pm">+</span></summary>
+    <summary><span class="idx">02</span><span class="ttl" data-i18n="sv2t">Nhãn thâu âm nhạc</span><span class="pm">+</span></summary>
     <p class="body" data-i18n="sv2">Định hình chất riêng, xây hình ảnh nghệ sĩ và vạch lộ trình phát hành đường dài — trong nước lẫn quốc tế. Demo nào gửi tới, chúng tôi cũng nghe.</p>
   </details>
   <details class="rv">
-    <summary><span class="idx">03</span><span class="ttl" data-i18n="sv3t">Sự kiện</span><span class="pm">+</span></summary>
+    <summary><span class="idx">03</span><span class="ttl" data-i18n="sv3t">Tổ chức sự kiện</span><span class="pm">+</span></summary>
     <p class="body" data-i18n="sv3">Từ đêm diễn trong nước đến chuỗi quốc tế như United We Stream Asia — nơi âm nhạc, visual và trình diễn quyện làm một. <a href="#/events">Xem các sự kiện đã làm →</a></p>
   </details>
   <details class="rv">
-    <summary><span class="idx">04</span><span class="ttl">Booking</span><span class="pm">+</span></summary>
-    <p class="body" data-i18n="sv4">DJ set, live band, trình diễn nghệ thuật kèm visual — cho brand, festival và không gian riêng.</p>
+    <summary><span class="idx">04</span><span class="ttl" data-i18n="sv4t">Sản xuất âm nhạc</span><span class="pm">+</span></summary>
+    <p class="body" data-i18n="sv4">Đội ngũ kỹ sư âm thanh và nhạc sĩ tốt nghiệp từ các nhạc viện, trường đại học trên thế giới — sản xuất nhạc và quảng cáo cho nhãn hàng, nhạc phim, jingle, campaign. Trọn gói từ ý tưởng đến thành phẩm.</p>
   </details>
   <details class="rv">
-    <summary><span class="idx">05</span><span class="ttl">Production</span><span class="pm">+</span></summary>
-    <p class="body" data-i18n="sv5">Sản xuất nhạc và quảng cáo cho nhãn hàng — nhạc phim, jingle, campaign. Trọn gói từ ý tưởng đến thành phẩm.</p>
+    <summary><span class="idx">05</span><span class="ttl" data-i18n="sv5t">Booking nghệ sĩ</span><span class="pm">+</span></summary>
+    <p class="body" data-i18n="sv5">DJ set, live band, trình diễn nghệ thuật kèm visual — cho brand, festival và không gian riêng.</p>
   </details>
 </section>
 
@@ -514,115 +459,71 @@ a:focus-visible,button:focus-visible,summary:focus-visible,input:focus-visible,t
   <p class="kicker rv"><i>●</i><span data-i18n="stw_k">Nhạc của bạn sẽ có mặt ở</span></p>
   <h2 class="rv" data-i18n="stw_h">Mọi nơi<br>người ta <em>đang nghe.</em></h2>
   <div class="typewall rv" aria-label="Các cửa hàng nhạc số">
-    <div class="tw-row"><div class="tw-track" style="--dur:44s">
-      <span>Spotify</span><i>●</i><span class="o">Apple Music</span><i>●</i><span>TikTok</span><i>●</i><span class="o">YouTube Music</span><i>●</i><span>Amazon Music</span><i>●</i><span class="o">Deezer</span><i>●</i>
+    <div class="tw-row"><div class="tw-track" style="--dur:46s">
+      <span>Spotify</span><i>●</i><span class="o">Apple Music</span><i>●</i><span>TikTok</span><i>●</i><span class="o">YouTube Music</span><i>●</i><span>Amazon Music</span><i>●</i><span class="o">Deezer</span><i>●</i><span>Snapchat</span><i>●</i>
     </div></div>
-    <div class="tw-row rev"><div class="tw-track" style="--dur:52s">
-      <span class="o">NhacCuaTui</span><i>●</i><span>Zing MP3</span><i>●</i><span class="o">TIDAL</span><i>●</i><span>SoundCloud</span><i>●</i><span class="o">Beatport</span><i>●</i><span>Pandora</span><i>●</i>
+    <div class="tw-row rev"><div class="tw-track" style="--dur:54s">
+      <span class="o">NhacCuaTui</span><i>●</i><span>Zing MP3</span><i>●</i><span class="o">TIDAL</span><i>●</i><span>SoundCloud</span><i>●</i><span class="o">Beatport</span><i>●</i><span>Pandora</span><i>●</i><span class="o">Alive</span><i>●</i>
     </div></div>
-    <div class="tw-row"><div class="tw-track" style="--dur:48s">
+    <div class="tw-row"><div class="tw-track" style="--dur:50s">
       <span>JOOX</span><i>●</i><span class="o">KKBOX</span><i>●</i><span>Boomplay</span><i>●</i><span class="o">Anghami</span><i>●</i><span>iHeartRadio</span><i>●</i><span class="o">Instagram &amp; Facebook</span><i>●</i>
     </div></div>
   </div>
-  <p class="tw-note rv" data-i18n="stw_note">— và hơn 150 cửa hàng nhạc số khác trên toàn thế giới.</p>
+  <p class="tw-note rv" data-i18n="stw_note">— và hơn 200 cửa hàng nhạc số khác trên toàn thế giới.</p>
 </section>
 
-<!-- 04 RELEASES -->
-<section id="releases">
-  <div class="ghost" aria-hidden="true">04</div>
-  <p class="kicker rv"><i>●</i><span data-i18n="rl_k">Catalog</span></p>
-  <h2 class="rv" data-i18n="rl_h">Những bản thu<br><em>đã lên sóng.</em></h2>
-  <div class="rowlist rv" id="relList">
-    <a class="row" data-p="1" href="https://open.spotify.com/album/0A7gytpSXrYXNPq32m61Qy" target="_blank" rel="noopener">
-      <span class="idx">001</span><span class="ttl">The Day You Are Gone</span><span class="meta">Album · 2021</span>
-    </a>
-    <a class="row" data-p="2" href="https://open.spotify.com/album/5JMXe1nCyAIfuisdM7UNKO" target="_blank" rel="noopener">
-      <span class="idx">002</span><span class="ttl">The Mountain Mist</span><span class="meta">Album · 2021</span>
-    </a>
-    <a class="row" data-p="4" href="https://open.spotify.com/album/4J0Hm3zyPmdud6o4Dy7zkj" target="_blank" rel="noopener">
-      <span class="idx">003</span><span class="ttl">HẮC (HA666)</span><span class="meta">EP · 2021</span>
-    </a>
-    <a class="row" data-p="3" href="https://open.spotify.com/album/2h37a3np4DtJKugqc1jqlX" target="_blank" rel="noopener">
-      <span class="idx">004</span><span class="ttl">iamprogrammed</span><span class="meta">EP · 2022</span>
-    </a>
-    <a class="row" data-p="5" href="https://open.spotify.com/album/4iI7lhGI8sTRwyZ6Zslqea" target="_blank" rel="noopener">
-      <span class="idx">005</span><span class="ttl">Shea</span><span class="meta">Single · 2022</span>
-    </a>
-    <a class="row" data-p="6" href="https://open.spotify.com/album/4yhetF2Rcg3EcWIY9FzSQS" target="_blank" rel="noopener">
-      <span class="idx">006</span><span class="ttl">hausvn × technovn</span><span class="meta">Album · 2022</span>
-    </a>
-  </div>
-</section>
-
-<!-- 05 ARTISTS -->
+<!-- 04 ARTISTS -->
 <section id="artists">
-  <div class="ghost" aria-hidden="true">05</div>
+  <div class="ghost" aria-hidden="true">04</div>
   <p class="kicker rv"><i>●</i><span data-i18n="ar_k">Nghệ sĩ</span></p>
-  <h2 class="rv" data-i18n="ar_h">Một mái nhà,<br><em>nhiều tần số.</em></h2>
+  <h2 class="rv" data-i18n="ar_h">Nghệ sĩ<br><em>hợp tác.</em></h2>
   <p class="roster rv" id="roster"></p>
-  <p class="roster-note rv" data-i18n="ar_note">Producer · DJ · VJ · Rapper · Band · Vocalist — trong nước &amp; hải ngoại</p>
+  <p class="roster-note rv" data-i18n="ar_note">— và các producer, songwriter, DJ, VJ, vocalist khác trong nước &amp; nước ngoài.</p>
 </section>
 
 <!-- PULL QUOTE -->
 <section class="pull-sec hairline">
-  <p class="pull rv" data-i18n="pq">"Demo nào gửi tới, <em>chúng tôi cũng nghe.</em>"</p>
-  <p class="pull-by rv" data-i18n="pq_by">Lời hứa của bàn A&amp;R — Haustek, từ 2017</p>
+  <p class="pull rv" data-i18n="pq">"Bạn lo phần sáng tạo. <em>Chúng tôi lo phần còn lại.</em>"</p>
+  <p class="pull-by rv" data-i18n="pq_by">Lời cam kết đến từ Haustek</p>
 </section>
 
-<!-- 06 BLOG -->
-<section id="blog">
-  <div class="ghost" aria-hidden="true">06</div>
-  <p class="kicker rv"><i>●</i><span data-i18n="bl_k">Nhật ký label</span></p>
-  <h2 class="rv" data-i18n="bl_h">Chuyện nghề,<br><em>chuyện nhạc.</em></h2>
-  <div class="rowlist rv">
-    <a class="row" href="https://www.facebook.com/haustek.agency" target="_blank" rel="noopener">
-      <span class="idx">1.</span><span class="ttl" style="font-size:clamp(19px,3.4vw,32px)" data-i18n="b1">The Day Pass cán mốc 276.000 lượt nghe</span><span class="meta">12.06.2026</span>
-      <span class="desc" data-i18n="b1d">Từ bản demo phòng ngủ đến playlist editorial — chặng đường của bản nhạc đi xa nhất nhà Haustek.</span>
-    </a>
-    <a class="row" href="https://www.facebook.com/haustek.agency" target="_blank" rel="noopener">
-      <span class="idx">2.</span><span class="ttl" style="font-size:clamp(19px,3.4vw,32px)" data-i18n="b2">United We Stream Asia — đêm Việt Nam lên sóng cùng thế giới</span><span class="meta">03.04.2026</span>
-      <span class="desc" data-i18n="b2d">Hậu trường chuỗi livestream đưa sân khấu điện tử Việt đến khán giả năm châu.</span>
-    </a>
-    <a class="row" href="https://www.facebook.com/haustek.agency" target="_blank" rel="noopener">
-      <span class="idx">3.</span><span class="ttl" style="font-size:clamp(19px,3.4vw,32px)" data-i18n="b3">7 việc cần làm trước ngày ra mắt single đầu tay</span><span class="meta">20.02.2026</span>
-      <span class="desc" data-i18n="b3d">Metadata, artwork, pitch playlist, teaser — lo liệu chu đáo cho một khởi đầu xứng đáng.</span>
-    </a>
-  </div>
-</section>
-
-<!-- 07 FAQ -->
+<!-- 05 FAQ -->
 <section id="faq" class="faq">
-  <div class="ghost" aria-hidden="true">07</div>
+  <div class="ghost" aria-hidden="true">05</div>
   <p class="kicker rv"><i>●</i>FAQ</p>
   <h2 class="rv" data-i18n="fq_h">Hỏi nhanh,<br><em>đáp gọn.</em></h2>
   <details class="rv">
     <summary><span class="q" data-i18n="q1">Gửi demo cho Haustek bằng cách nào?</span><span class="pm">+</span></summary>
-    <p class="a" data-i18n="a1">Dùng trang <a href="#/submit">Gửi nhạc</a> ngay trên website, hoặc email <a href="mailto:info@haustek-agency.com">info@haustek-agency.com</a> kèm link nghe riêng tư (SoundCloud, Drive…) và vài dòng giới thiệu.</p>
+    <p class="a" data-i18n="a1">Dùng trang <a href="#/submit">Gửi nhạc</a> ngay trên website, hoặc email <a href="mailto:mgmt@haustek-group.com">mgmt@haustek-group.com</a> kèm link nghe riêng tư (SoundCloud, Drive…) và vài dòng giới thiệu.</p>
   </details>
   <details class="rv">
     <summary><span class="q" data-i18n="q2">Nhạc của tôi sẽ lên những đâu?</span><span class="pm">+</span></summary>
-    <p class="a" data-i18n="a2">Spotify, Apple Music, TikTok, YouTube Music, Amazon Music, Deezer, TIDAL, SoundCloud, Beatport — và cả hai nền tảng lớn nhất Việt Nam: NhacCuaTui và Zing MP3. Tổng cộng hơn 150 cửa hàng nhạc số trên toàn thế giới.</p>
+    <p class="a" data-i18n="a2">Spotify, Apple Music, TikTok, YouTube Music, Amazon Music, Deezer, TIDAL, SoundCloud, Beatport — và cả hai nền tảng lớn nhất Việt Nam: NhacCuaTui và Zing MP3. Tổng cộng hơn 200 cửa hàng nhạc số trên toàn thế giới.</p>
   </details>
   <details class="rv">
     <summary><span class="q" data-i18n="q3">Bao lâu thì nhạc lên sóng?</span><span class="pm">+</span></summary>
-    <p class="a" data-i18n="a3">Thường 1–2 tuần sau khi hồ sơ phát hành hoàn tất. Nên gửi sớm 3–4 tuần trước ngày ra mắt để kịp pitch playlist và chuẩn bị truyền thông.</p>
+    <p class="a" data-i18n="a3">Nhanh nhất trong 24–36 giờ. Thường 1–2 tuần sau khi hồ sơ phát hành hoàn tất. Nên gửi sớm 3–4 tuần trước ngày ra mắt để kịp pitch playlist và chuẩn bị truyền thông.</p>
   </details>
   <details class="rv">
     <summary><span class="q" data-i18n="q4">Tôi có giữ bản quyền nhạc của mình không?</span><span class="pm">+</span></summary>
     <p class="a" data-i18n="a4">Có. Tác phẩm vẫn thuộc về bạn; mọi điều khoản hợp tác và chia sẻ doanh thu đều được thống nhất rõ ràng trước khi phát hành — không có chữ nhỏ.</p>
   </details>
   <details class="rv">
-    <summary><span class="q" data-i18n="q5">Haustek có nhận booking sự kiện không?</span><span class="pm">+</span></summary>
-    <p class="a" data-i18n="a5">Có — DJ set, live band, trình diễn kèm visual. Xem <a href="#/events">các sự kiện đã làm</a> hoặc email <a href="mailto:info@haustek-agency.com">info@haustek-agency.com</a>.</p>
+    <summary><span class="q" data-i18n="q5">Haustek có nhận booking và tổ chức sự kiện không?</span><span class="pm">+</span></summary>
+    <p class="a" data-i18n="a5">Có — DJ set, live band, trình diễn kèm visual. Xem <a href="#/events">các sự kiện đã làm</a> hoặc email <a href="mailto:mgmt@haustek-group.com">mgmt@haustek-group.com</a>.</p>
+  </details>
+  <details class="rv">
+    <summary><span class="q" data-i18n="q6">Có ý tưởng nhưng thiếu người hoàn thiện — Haustek giúp được không?</span><span class="pm">+</span></summary>
+    <p class="a" data-i18n="a6">Có. Đội ngũ kỹ sư âm thanh và nhạc sĩ tốt nghiệp từ các nhạc viện, trường đại học trên thế giới sẽ cung cấp đúng phần bạn đang thiếu — từ sản xuất, phối khí đến hoàn thiện bản thu.</p>
   </details>
 </section>
 
-<!-- 08 CONTACT -->
+<!-- 06 CONTACT -->
 <section id="contact">
-  <div class="ghost" aria-hidden="true">08</div>
+  <div class="ghost" aria-hidden="true">06</div>
   <p class="kicker rv"><i>●</i><span data-i18n="ct_k">Liên hệ</span></p>
   <h2 class="rv" data-i18n="ct_h">Bạn có bản nhạc?<br><em>Chúng tôi có sân khấu.</em></h2>
-  <a class="mail-giant rv" href="mailto:info@haustek-agency.com">info@haustek<span style="color:var(--red)">-</span>agency.com</a>
+  <a class="mail-giant rv" href="mailto:mgmt@haustek-group.com">mgmt@haustek<span style="color:var(--red)">-</span>group.com</a>
   <div class="store-links rv">
     <a href="https://fanlink.to/HASpotify" target="_blank" rel="noopener">Spotify ↗</a>
     <a href="https://fanlink.to/HAAppleMusic" target="_blank" rel="noopener">Apple Music ↗</a>
@@ -672,7 +573,7 @@ a:focus-visible,button:focus-visible,summary:focus-visible,input:focus-visible,t
     </div>
   </div>
 
-  <p class="statement" style="margin-top:70px" data-i18n="ev_cta">Muốn Haustek dựng đêm cho bạn? <a href="mailto:info@haustek-agency.com" style="color:var(--red)">Gửi yêu cầu booking →</a></p>
+  <p class="statement" style="margin-top:70px" data-i18n="ev_cta">Muốn Haustek dựng đêm cho bạn? <a href="mailto:mgmt@haustek-group.com" style="color:var(--red)">Gửi yêu cầu booking →</a></p>
 </section>
 </main>
 
@@ -725,7 +626,7 @@ a:focus-visible,button:focus-visible,summary:focus-visible,input:focus-visible,t
 <footer>
   <a class="foot-giant" href="#top" aria-label="Về đầu trang">HAUSTEK</a>
   <div class="foot-row">
-    <p>© 2026 Haustek Agency · California → Việt Nam · Since 2017</p>
+    <p>© 2026 Haustek · Los Angeles → Việt Nam · Since 2017</p>
     <div class="fsoc">
       <a href="https://www.facebook.com/haustek.agency" target="_blank" rel="noopener">FB</a>
       <a href="https://www.instagram.com/haustek.agency" target="_blank" rel="noopener">IG</a>
@@ -738,57 +639,59 @@ a:focus-visible,button:focus-visible,summary:focus-visible,input:focus-visible,t
 
 <script>
 /* ================= dữ liệu ================= */
-const ARTISTS=["Tarnoise","hausvn","technovn","Tri Minh","HẮC","Shea","Dino Adagio","Kristina Bjorn","Michael Thornton","MUNI","Hazel Lewis","maro"];
+const ARTISTS=["Tri Minh","Red Sheep","ling:chi","Chin","KONKRETE","Tarnoise Spaceman","Bách Phan","Jesilyn","Oumii","Attiss Ngo","blackvelvetz"];
 document.getElementById('roster').innerHTML =
   ARTISTS.map(a=>`<span>${a}</span>`).join('<i>●</i>');
 
 /* ================= i18n ================= */
 const I18N={
   vi:{
-    _title:"Haustek Agency — Music Label & Distribution | Để nhạc Việt vang xa hơn",
-    _desc:"Haustek Agency — music label & distribution từ 2017. Phát hành nhạc Việt lên Spotify, Apple Music, TikTok, NhacCuaTui, Zing MP3 và hơn 150 cửa hàng nhạc số toàn thế giới.",
-    nav_home:"Trang chủ",nav_events:"Sự kiện",nav_services:"Dịch vụ",nav_stores:"Cửa hàng",nav_releases:"Phát hành",nav_artists:"Nghệ sĩ",nav_submit:"Gửi nhạc",
+    _title:"Haustek — Music Label & Distribution | Để nhạc Việt vang xa hơn",
+    _desc:"Haustek — music label & distribution từ 2017. Sự kiện, sản xuất, phát hành, quảng cáo và tư vấn chiến lược cho âm nhạc. Hơn 200 cửa hàng nhạc số toàn cầu.",
+    nav_home:"Trang chủ",nav_events:"Sự kiện",nav_services:"Dịch vụ",nav_stores:"Cửa hàng",nav_artists:"Nghệ sĩ",nav_submit:"Gửi nhạc",
     hero_k:"Music label & distribution — est. 2017",
     h1_l1:"Để nhạc Việt", h1_l2:"<em>vang xa</em> hơn.",
-    hero_sub:"<strong>Haustek</strong> làm nhạc, phát hành và lo trọn đường đi của mỗi bản thu — từ hầm techno Sài Gòn đến hơn 150 cửa hàng nhạc số trên thế giới.",
+    hero_sub:"<strong>Haustek</strong> đưa âm nhạc đi xa hơn — từ sàn diễn underground đến hơn 200 nền tảng số toàn cầu. Sự kiện, sản xuất, phát hành, quảng cáo và tư vấn chiến lược cho âm nhạc — tất cả trong một hệ sinh thái.",
     ring:"NGHE THỬ BEAT · 124 BPM · HAUSTEK · ",
     st_streams:"Lượt nghe",st_founded:"Thành lập",st_stores:"Cửa hàng nhạc số",
     ab_k:"Về Haustek",
-    ab_h:"Sinh ở California.<br><em>Thuộc về</em> nhạc Việt.",
-    ab_st:"Chín năm — từ những đêm diễn nhỏ đến sân khấu quốc tế. Mỗi lần phát hành là một lần bắc cầu, để tiếng kick dưới hầm techno hay dải ambient mỏng như sương chạm tới người nghe ở khắp nơi.",
-    ab_p:"Haustek là mái nhà của producer, DJ, VJ, rapper, ban nhạc và giọng ca Việt — trong nước và hải ngoại. Chúng tôi sản xuất âm nhạc, dựng show, dàn dựng trình diễn nghệ thuật và làm quảng cáo cho nhãn hàng.",
-    f1b:"Thành lập",f2b:"Hoạt động",f2s:"Việt Nam & hải ngoại",f3b:"Chuyên môn",f4b:"Bản thu đi xa nhất",f5b:"Người nghe",f5s:"5.000+ mỗi tháng",
+    ab_h:"Gốc rễ toàn cầu.<br><em>Thuộc về</em> nhạc Việt.",
+    ab_st:"Gần một thập kỷ — từ những đêm diễn underground đến sân khấu quốc tế. Khởi đầu với techno và house, Haustek mang theo sứ mệnh đưa âm nhạc Việt Nam vươn ra toàn cầu.",
+    ab_p:"Haustek quy tụ producer, DJ, VJ, rapper, ban nhạc và nghệ sĩ Việt trên khắp thế giới. Chúng tôi phân phối âm nhạc, sản xuất âm nhạc, tư vấn bản quyền, tổ chức sự kiện, dàn dựng trình diễn nghệ thuật và quảng cáo nhãn hàng — mỗi lần phát hành là một lần bắc cầu, để tiếng kick dưới hầm techno hay dải ambient mỏng như sương chạm tới người nghe ở khắp nơi.",
+    f1b:"Thành lập",f2b:"Hoạt động",f2s:"Việt Nam & toàn cầu",f3b:"Chuyên môn",f4b:"Bản thu đi xa nhất",f5b:"Người nghe",f5s:"3.500.000+ mỗi tháng",
     sv_k:"Chúng tôi làm gì",
-    sv_h:"Bạn lo phần nhạc.<br><em>Phần còn lại,</em> Haustek.",
-    sv1:"Đưa nhạc của bạn lên hơn 150 cửa hàng nhạc số — Spotify, Apple Music, TikTok, YouTube Music, NhacCuaTui, Zing MP3… Lên sóng đúng lịch, số liệu minh bạch, báo cáo rõ ràng.",
+    sv_h:"Bạn cần giải pháp?<br><em>Haustek cung cấp.</em>",
+    sv_lead:"Âm nhạc, giải trí, sản xuất, quảng cáo và marketing — năm mảng dịch vụ, một hệ sinh thái.",
+    sv1t:"Phân phối & khai thác bản ghi",
+    sv1:"Đưa nhạc của bạn lên hơn 200 cửa hàng nhạc số — Spotify, Apple Music, TikTok, YouTube Music, NhacCuaTui, Zing MP3… — và khai thác bản ghi trên mọi kênh. Lên sóng đúng lịch, số liệu minh bạch, báo cáo rõ ràng.",
+    sv2t:"Nhãn thâu âm nhạc",
     sv2:"Định hình chất riêng, xây hình ảnh nghệ sĩ và vạch lộ trình phát hành đường dài — trong nước lẫn quốc tế. Demo nào gửi tới, chúng tôi cũng nghe.",
-    sv3t:"Sự kiện",
+    sv3t:"Tổ chức sự kiện",
     sv3:'Từ đêm diễn trong nước đến chuỗi quốc tế như United We Stream Asia — nơi âm nhạc, visual và trình diễn quyện làm một. <a href="#/events">Xem các sự kiện đã làm →</a>',
-    sv4:"DJ set, live band, trình diễn nghệ thuật kèm visual — cho brand, festival và không gian riêng.",
-    sv5:"Sản xuất nhạc và quảng cáo cho nhãn hàng — nhạc phim, jingle, campaign. Trọn gói từ ý tưởng đến thành phẩm.",
+    sv4t:"Sản xuất âm nhạc",
+    sv4:"Đội ngũ kỹ sư âm thanh và nhạc sĩ tốt nghiệp từ các nhạc viện, trường đại học trên thế giới — sản xuất nhạc và quảng cáo cho nhãn hàng, nhạc phim, jingle, campaign. Trọn gói từ ý tưởng đến thành phẩm.",
+    sv5t:"Booking nghệ sĩ",
+    sv5:"DJ set, live band, trình diễn nghệ thuật kèm visual — cho brand, festival và không gian riêng.",
     stw_k:"Nhạc của bạn sẽ có mặt ở",
     stw_h:"Mọi nơi<br>người ta <em>đang nghe.</em>",
-    stw_note:"— và hơn 150 cửa hàng nhạc số khác trên toàn thế giới.",
-    rl_k:"Catalog",rl_h:"Những bản thu<br><em>đã lên sóng.</em>",
-    ar_k:"Nghệ sĩ",ar_h:"Một mái nhà,<br><em>nhiều tần số.</em>",
-    ar_note:"Producer · DJ · VJ · Rapper · Band · Vocalist — trong nước & hải ngoại",
-    pq:'"Demo nào gửi tới, <em>chúng tôi cũng nghe.</em>"',
-    pq_by:"Lời hứa của bàn A&R — Haustek, từ 2017",
-    bl_k:"Nhật ký label",bl_h:"Chuyện nghề,<br><em>chuyện nhạc.</em>",
-    b1:"The Day Pass cán mốc 276.000 lượt nghe",b1d:"Từ bản demo phòng ngủ đến playlist editorial — chặng đường của bản nhạc đi xa nhất nhà Haustek.",
-    b2:"United We Stream Asia — đêm Việt Nam lên sóng cùng thế giới",b2d:"Hậu trường chuỗi livestream đưa sân khấu điện tử Việt đến khán giả năm châu.",
-    b3:"7 việc cần làm trước ngày ra mắt single đầu tay",b3d:"Metadata, artwork, pitch playlist, teaser — lo liệu chu đáo cho một khởi đầu xứng đáng.",
+    stw_note:"— và hơn 200 cửa hàng nhạc số khác trên toàn thế giới.",
+    ar_k:"Nghệ sĩ",ar_h:"Nghệ sĩ<br><em>hợp tác.</em>",
+    ar_note:"— và các producer, songwriter, DJ, VJ, vocalist khác trong nước & nước ngoài.",
+    pq:'"Bạn lo phần sáng tạo. <em>Chúng tôi lo phần còn lại.</em>"',
+    pq_by:"Lời cam kết đến từ Haustek",
     fq_h:"Hỏi nhanh,<br><em>đáp gọn.</em>",
     q1:"Gửi demo cho Haustek bằng cách nào?",
-    a1:'Dùng trang <a href="#/submit">Gửi nhạc</a> ngay trên website, hoặc email <a href="mailto:info@haustek-agency.com">info@haustek-agency.com</a> kèm link nghe riêng tư (SoundCloud, Drive…) và vài dòng giới thiệu.',
+    a1:'Dùng trang <a href="#/submit">Gửi nhạc</a> ngay trên website, hoặc email <a href="mailto:mgmt@haustek-group.com">mgmt@haustek-group.com</a> kèm link nghe riêng tư (SoundCloud, Drive…) và vài dòng giới thiệu.',
     q2:"Nhạc của tôi sẽ lên những đâu?",
-    a2:"Spotify, Apple Music, TikTok, YouTube Music, Amazon Music, Deezer, TIDAL, SoundCloud, Beatport — và cả hai nền tảng lớn nhất Việt Nam: NhacCuaTui và Zing MP3. Tổng cộng hơn 150 cửa hàng nhạc số trên toàn thế giới.",
+    a2:"Spotify, Apple Music, TikTok, YouTube Music, Amazon Music, Deezer, TIDAL, SoundCloud, Beatport — và cả hai nền tảng lớn nhất Việt Nam: NhacCuaTui và Zing MP3. Tổng cộng hơn 200 cửa hàng nhạc số trên toàn thế giới.",
     q3:"Bao lâu thì nhạc lên sóng?",
-    a3:"Thường 1–2 tuần sau khi hồ sơ phát hành hoàn tất. Nên gửi sớm 3–4 tuần trước ngày ra mắt để kịp pitch playlist và chuẩn bị truyền thông.",
+    a3:"Nhanh nhất trong 24–36 giờ. Thường 1–2 tuần sau khi hồ sơ phát hành hoàn tất. Nên gửi sớm 3–4 tuần trước ngày ra mắt để kịp pitch playlist và chuẩn bị truyền thông.",
     q4:"Tôi có giữ bản quyền nhạc của mình không?",
     a4:"Có. Tác phẩm vẫn thuộc về bạn; mọi điều khoản hợp tác và chia sẻ doanh thu đều được thống nhất rõ ràng trước khi phát hành — không có chữ nhỏ.",
-    q5:"Haustek có nhận booking sự kiện không?",
-    a5:'Có — DJ set, live band, trình diễn kèm visual. Xem <a href="#/events">các sự kiện đã làm</a> hoặc email <a href="mailto:info@haustek-agency.com">info@haustek-agency.com</a>.',
+    q5:"Haustek có nhận booking và tổ chức sự kiện không?",
+    a5:'Có — DJ set, live band, trình diễn kèm visual. Xem <a href="#/events">các sự kiện đã làm</a> hoặc email <a href="mailto:mgmt@haustek-group.com">mgmt@haustek-group.com</a>.',
+    q6:"Có ý tưởng nhưng thiếu người hoàn thiện — Haustek giúp được không?",
+    a6:"Có. Đội ngũ kỹ sư âm thanh và nhạc sĩ tốt nghiệp từ các nhạc viện, trường đại học trên thế giới sẽ cung cấp đúng phần bạn đang thiếu — từ sản xuất, phối khí đến hoàn thiện bản thu.",
     ct_k:"Liên hệ",ct_h:"Bạn có bản nhạc?<br><em>Chúng tôi có sân khấu.</em>",
     ev_k:"Sự kiện · từ 2017",
     ev_h:"Những đêm mà Haustek<br><em>đứng sau âm thanh.</em>",
@@ -801,7 +704,7 @@ const I18N={
     ev4d:"Những đêm nhỏ ở club và không gian ngầm khắp ba miền — nơi những gương mặt mới của Haustek lần đầu bước lên bàn mix.",
     ev5t:"Brand events",ev5m:"Launch · Campaign",
     ev5d:"Haustek dựng phần âm nhạc và visual cho các đêm launch, showroom và campaign — trọn gói từ concept đến vận hành.",
-    ev_cta:'Muốn Haustek dựng đêm cho bạn? <a href="mailto:info@haustek-agency.com" style="color:var(--red)">Gửi yêu cầu booking →</a>',
+    ev_cta:'Muốn Haustek dựng đêm cho bạn? <a href="mailto:mgmt@haustek-group.com" style="color:var(--red)">Gửi yêu cầu booking →</a>',
     sb_k:"Gửi nhạc",sb_h:"Demo của bạn,<br><em>đến thẳng</em> bàn A&R.",
     sb_p:"Điền vài dòng bên dưới — bấm gửi, hộp thư sẽ mở sẵn email cho đội A&R của Haustek. Demo nào gửi tới, chúng tôi cũng nghe.",
     f_name:"Nghệ danh",f_mail:"Email",f_genre:"Thể loại",f_other:"Khác",f_link:"Link nghe riêng tư",
@@ -811,50 +714,52 @@ const I18N={
     f_send:"Gửi demo"
   },
   en:{
-    _title:"Haustek Agency — Music Label & Distribution | Vietnamese music, heard worldwide",
-    _desc:"Haustek Agency — music label & distribution since 2017. Releasing Vietnamese music to Spotify, Apple Music, TikTok, NhacCuaTui, Zing MP3 and 150+ digital music stores worldwide.",
-    nav_home:"Home",nav_events:"Events",nav_services:"Services",nav_stores:"Stores",nav_releases:"Releases",nav_artists:"Artists",nav_submit:"Submit",
+    _title:"Haustek — Music Label & Distribution | Vietnamese music, heard worldwide",
+    _desc:"Haustek — music label & distribution since 2017. Events, production, releases, advertising and strategic consulting for music. 200+ digital music stores worldwide.",
+    nav_home:"Home",nav_events:"Events",nav_services:"Services",nav_stores:"Stores",nav_artists:"Artists",nav_submit:"Submit",
     hero_k:"Music label & distribution — est. 2017",
     h1_l1:"Made in Vietnam.", h1_l2:"<em>Heard</em> worldwide.",
-    hero_sub:"<strong>Haustek</strong> makes music, releases it and carries every track the whole way — from a Saigon techno bunker to 150+ digital music stores worldwide.",
+    hero_sub:"<strong>Haustek</strong> carries music further — from underground stages to 200+ digital platforms worldwide. Events, production, releases, advertising and strategic consulting for music — all in one ecosystem.",
     ring:"PLAY THE BEAT · 124 BPM · HAUSTEK · ",
     st_streams:"Streams",st_founded:"Founded",st_stores:"Music stores",
     ab_k:"About Haustek",
-    ab_h:"Born in California.<br><em>Devoted to</em> Vietnamese music.",
-    ab_st:"Nine years — from small club nights to international stages. Every release builds a bridge, carrying a bunker techno kick or a mist-thin ambient wash to listeners everywhere.",
-    ab_p:"Haustek is home to Vietnamese producers, DJs, VJs, rappers, bands and vocalists — at home and abroad. We produce music, build shows, stage performances and craft brand campaigns.",
-    f1b:"Founded",f2b:"Based",f2s:"Vietnam & abroad",f3b:"Practice",f4b:"Farthest-travelled track",f5b:"Listeners",f5s:"5,000+ monthly",
+    ab_h:"Global roots.<br><em>Devoted to</em> Vietnamese music.",
+    ab_st:"Nearly a decade — from underground nights to international stages. Starting from techno and house, Haustek carries one mission: bringing Vietnamese music to the world.",
+    ab_p:"Haustek gathers Vietnamese producers, DJs, VJs, rappers, bands and artists worldwide. We distribute music, produce music, consult on rights, run events, stage performances and craft brand campaigns — every release builds a bridge, carrying a bunker techno kick or a mist-thin ambient wash to listeners everywhere.",
+    f1b:"Founded",f2b:"Based",f2s:"Vietnam & worldwide",f3b:"Practice",f4b:"Farthest-travelled track",f5b:"Listeners",f5s:"3,500,000+ monthly",
     sv_k:"What we do",
-    sv_h:"You handle the music.<br><em>The rest,</em> Haustek.",
-    sv1:"We carry your music to 150+ digital stores — Spotify, Apple Music, TikTok, YouTube Music, NhacCuaTui, Zing MP3… On schedule, transparent numbers, clear reporting.",
+    sv_h:"Need a solution?<br><em>Haustek delivers.</em>",
+    sv_lead:"Music, entertainment, production, advertising and marketing — five practices, one ecosystem.",
+    sv1t:"Distribution & recordings",
+    sv1:"We carry your music to 200+ digital stores — Spotify, Apple Music, TikTok, YouTube Music, NhacCuaTui, Zing MP3… — and monetise recordings on every channel. On schedule, transparent numbers, clear reporting.",
+    sv2t:"Music label",
     sv2:"Shape your sound, build your image and map a long-term release roadmap — at home and abroad. Every demo gets listened to.",
-    sv3t:"Events",
+    sv3t:"Event production",
     sv3:'From local club nights to international series like United We Stream Asia — where music, visuals and performance become one. <a href="#/events">See past events →</a>',
-    sv4:"DJ sets, live bands, art performances with visuals — for brands, festivals and private spaces.",
-    sv5:"Music and brand production — film scores, jingles, campaigns. End to end, idea to final cut.",
+    sv4t:"Music production",
+    sv4:"Sound engineers and musicians trained at conservatories and universities worldwide — producing music and brand work: film scores, jingles, campaigns. End to end, idea to final cut.",
+    sv5t:"Artist booking",
+    sv5:"DJ sets, live bands, art performances with visuals — for brands, festivals and private spaces.",
     stw_k:"Your music will be on",
     stw_h:"Everywhere<br>people are <em>listening.</em>",
-    stw_note:"— and 150+ more digital music stores worldwide.",
-    rl_k:"Catalog",rl_h:"The tracks<br><em>already on air.</em>",
-    ar_k:"Artists",ar_h:"One home,<br><em>many frequencies.</em>",
-    ar_note:"Producer · DJ · VJ · Rapper · Band · Vocalist — at home & abroad",
-    pq:'"Every demo sent, <em>gets listened to.</em>"',
-    pq_by:"The A&R desk promise — Haustek, since 2017",
-    bl_k:"Label notes",bl_h:"Notes from<br><em>the label.</em>",
-    b1:"The Day Pass hits 276,000 streams",b1d:"From a bedroom demo to editorial playlists — the journey of our farthest-travelled release.",
-    b2:"United We Stream Asia — the night Vietnam went live with the world",b2d:"Behind the livestream series that carried Vietnam's electronic stage worldwide.",
-    b3:"7 things to do before your first single drops",b3d:"Metadata, artwork, playlist pitching, teasers — prepare properly for a proper start.",
+    stw_note:"— and 200+ more digital music stores worldwide.",
+    ar_k:"Artists",ar_h:"Collaborating<br><em>artists.</em>",
+    ar_note:"— and more producers, songwriters, DJs, VJs and vocalists at home & abroad.",
+    pq:'"You handle the creative. <em>We handle the rest.</em>"',
+    pq_by:"A commitment from Haustek",
     fq_h:"Quick questions,<br><em>straight answers.</em>",
     q1:"How do I send Haustek a demo?",
-    a1:'Use the <a href="#/submit">Submit</a> page right here, or email <a href="mailto:info@haustek-agency.com">info@haustek-agency.com</a> with a private streaming link and a few lines about yourself.',
+    a1:'Use the <a href="#/submit">Submit</a> page right here, or email <a href="mailto:mgmt@haustek-group.com">mgmt@haustek-group.com</a> with a private streaming link and a few lines about yourself.',
     q2:"Where will my music be available?",
-    a2:"Spotify, Apple Music, TikTok, YouTube Music, Amazon Music, Deezer, TIDAL, SoundCloud, Beatport — plus Vietnam's two biggest platforms: NhacCuaTui and Zing MP3. Over 150 digital music stores worldwide.",
+    a2:"Spotify, Apple Music, TikTok, YouTube Music, Amazon Music, Deezer, TIDAL, SoundCloud, Beatport — plus Vietnam's two biggest platforms: NhacCuaTui and Zing MP3. Over 200 digital music stores worldwide.",
     q3:"How long until my music goes live?",
-    a3:"Usually 1–2 weeks once your release package is complete. Submit 3–4 weeks ahead of release day to leave room for playlist pitching and promo.",
+    a3:"As fast as 24–36 hours. Usually 1–2 weeks once your release package is complete. Submit 3–4 weeks ahead of release day to leave room for playlist pitching and promo.",
     q4:"Do I keep the rights to my music?",
     a4:"Yes. Your work stays yours; every partnership and revenue-share term is agreed clearly before release — no fine print.",
-    q5:"Does Haustek take event bookings?",
-    a5:'Yes — DJ sets, live bands and visual performances. See <a href="#/events">past events</a> or email <a href="mailto:info@haustek-agency.com">info@haustek-agency.com</a>.',
+    q5:"Does Haustek take bookings and produce events?",
+    a5:'Yes — DJ sets, live bands and visual performances. See <a href="#/events">past events</a> or email <a href="mailto:mgmt@haustek-group.com">mgmt@haustek-group.com</a>.',
+    q6:"Got an idea but missing the hands to finish it — can Haustek help?",
+    a6:"Yes. Our sound engineers and musicians, trained at conservatories and universities worldwide, provide exactly the part you are missing — from production and arrangement to the finished record.",
     ct_k:"Contact",ct_h:"Got the track?<br><em>We have the stage.</em>",
     ev_k:"Events · since 2017",
     ev_h:"The nights where Haustek<br><em>was behind the sound.</em>",
@@ -867,7 +772,7 @@ const I18N={
     ev4d:"Small nights at clubs and underground spaces across the country — where new Haustek faces first stepped behind the decks.",
     ev5t:"Brand events",ev5m:"Launch · Campaign",
     ev5d:"Haustek runs the music and visual side of launch nights, showrooms and campaigns — concept to operations.",
-    ev_cta:'Want Haustek to run your night? <a href="mailto:info@haustek-agency.com" style="color:var(--red)">Request a booking →</a>',
+    ev_cta:'Want Haustek to run your night? <a href="mailto:mgmt@haustek-group.com" style="color:var(--red)">Request a booking →</a>',
     sb_k:"Submit",sb_h:"Your demo,<br><em>straight to</em> the A&R desk.",
     sb_p:"Fill in a few lines below — hitting send opens a pre-written email to the Haustek A&R desk. Every demo gets listened to.",
     f_name:"Artist name",f_mail:"Email",f_genre:"Genre",f_other:"Other",f_link:"Private streaming link",
@@ -944,27 +849,7 @@ const cIO=new IntersectionObserver(es=>{
 },{threshold:.4});
 document.querySelectorAll('[data-count]').forEach(el=>cIO.observe(el));
 
-/* ================= preview bay theo chuột (release rows) ================= */
-const pv=document.getElementById('preview');
-if(pv&&!matchMedia('(hover:none)').matches){
-  const panes=pv.querySelectorAll('.p');
-  let px=0,py=0,pxT=0,pyT=0,pvOn=false;
-  addEventListener('pointermove',e=>{pxT=e.clientX+24;pyT=e.clientY-125;});
-  (function loop(){px+=(pxT-px)*.12;py+=(pyT-py)*.12;pv.style.left=px+"px";pv.style.top=py+"px";requestAnimationFrame(loop);})();
-  document.querySelectorAll('#relList .row').forEach(row=>{
-    row.addEventListener('pointerenter',e=>{
-      if(e.pointerType!=="mouse")return;
-      panes.forEach((p,i)=>p.classList.toggle('show',i===+row.dataset.p-1));
-      pv.classList.add('on');
-    });
-    row.addEventListener('pointerleave',e=>{
-      if(e.pointerType!=="mouse")return;
-      pv.classList.remove('on');
-    });
-  });
-}
-
-/* ================= marquees liền mạch ================= */
+/* ================= marquees ================= */
 document.querySelectorAll('.ticker-track,.tw-track').forEach(t=>{t.innerHTML+=t.innerHTML;});
 
 /* ================= ripple + beat ================= */
@@ -1067,7 +952,7 @@ document.getElementById('demoForm').addEventListener('submit',e=>{
 "Email: "+f.email.value+"\n"+
 "Genre: "+f.genre.value+"\n"+
 "Link: "+f.link.value+"\n\n"+f.msg.value);
-  location.href="mailto:info@haustek-agency.com?subject="+subj+"&body="+body;
+  location.href="mailto:mgmt@haustek-group.com?subject="+subj+"&body="+body;
 });
 </script>
 </body>
