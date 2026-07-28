@@ -450,6 +450,7 @@ a:focus-visible,button:focus-visible,summary:focus-visible,input:focus-visible,t
     <a href="#/#services" data-i18n="nav_services">Dịch vụ</a>
     <a href="#/#stores" data-i18n="nav_stores">Cửa hàng</a>
     <a href="#/#artists" data-i18n="nav_artists">Nghệ sĩ</a>
+    <a href="metadata.html" data-i18n="nav_meta">Metadata</a>
   </nav>
   <div class="nav-right">
     <button class="lang-toggle" id="langBtn" aria-label="Switch to English">EN</button>
@@ -712,6 +713,7 @@ a:focus-visible,button:focus-visible,summary:focus-visible,input:focus-visible,t
       <label for="f-msg" data-i18n="f_msg">Vài dòng về bạn và bản nhạc</label>
       <textarea id="f-msg" name="msg" data-i18n-ph="f_ph" placeholder="Bạn là ai, bản nhạc này ra đời thế nào, bạn muốn đi tới đâu cùng Haustek…"></textarea>
     </div>
+    <p class="f-note" data-i18n="f_meta_link" style="margin-bottom:6px">Đã được Haustek nhận rồi? Sang thẳng <a href="metadata.html" style="color:var(--red)">trang khai báo metadata →</a></p>
     <p class="f-note" data-i18n="f_note">* Đừng đính kèm file — dán một link nghe riêng tư là được. Mỗi demo đều được nghe trong vòng 7–14 ngày.</p>
     <button class="send-btn" type="submit">
       <span data-i18n="f_send">Gửi demo</span>
@@ -750,7 +752,7 @@ const I18N={
   vi:{
     _title:"Haustek — Music Label & Distribution | Để nhạc Việt vang xa hơn",
     _desc:"Haustek — music label & distribution từ 2017. Làm sự kiện, sản xuất, phát hành, quảng bá và tư vấn chiến lược cho âm nhạc. Hơn 200 cửa hàng nhạc số khắp thế giới.",
-    nav_home:"Trang chủ",nav_events:"Sự kiện",nav_services:"Dịch vụ",nav_stores:"Cửa hàng",nav_artists:"Nghệ sĩ",nav_submit:"Gửi nhạc",
+    nav_home:"Trang chủ",nav_events:"Sự kiện",nav_services:"Dịch vụ",nav_stores:"Cửa hàng",nav_artists:"Nghệ sĩ",nav_meta:"Metadata",nav_submit:"Gửi nhạc",
     hero_k:"Music label & distribution — est. 2017",
     h1_l1:"Để nhạc Việt", h1_l2:"<em>vang xa</em> hơn.",
     hero_sub:"<strong>Haustek</strong> đưa nhạc đi xa hơn — từ sàn diễn underground ra hơn 200 nền tảng số khắp thế giới. Làm sự kiện, sản xuất, phát hành, quảng bá và tư vấn chiến lược: trọn một hệ sinh thái, một đầu mối.",
@@ -815,13 +817,14 @@ const I18N={
     f_name:"Nghệ danh",f_mail:"Email",f_genre:"Thể loại",f_other:"Khác",f_link:"Link nghe riêng tư",
     f_msg:"Vài dòng về bạn và bản nhạc",
     f_ph:"Bạn là ai, bản nhạc này ra đời thế nào, bạn muốn đi tới đâu cùng Haustek…",
+    f_meta_link:'Đã được Haustek nhận rồi? Sang thẳng <a href="metadata.html" style="color:var(--red)">trang khai báo metadata →</a>',
     f_note:"* Đừng đính kèm file — dán một link nghe riêng tư là được. Mỗi demo đều được nghe trong vòng 7–14 ngày.",
     f_send:"Gửi demo"
   },
   en:{
     _title:"Haustek — Music Label & Distribution | Vietnamese music, heard worldwide",
     _desc:"Haustek — music label & distribution since 2017. Events, production, releases, promotion and strategic consulting for music. 200+ digital music stores worldwide.",
-    nav_home:"Home",nav_events:"Events",nav_services:"Services",nav_stores:"Stores",nav_artists:"Artists",nav_submit:"Submit",
+    nav_home:"Home",nav_events:"Events",nav_services:"Services",nav_stores:"Stores",nav_artists:"Artists",nav_meta:"Metadata",nav_submit:"Submit",
     hero_k:"Music label & distribution — est. 2017",
     h1_l1:"Made in Vietnam.", h1_l2:"<em>Heard</em> worldwide.",
     hero_sub:"<strong>Haustek</strong> carries music further — from underground stages to 200+ digital platforms worldwide. Events, production, releases, promotion and strategy: one ecosystem, one place to talk to.",
@@ -886,6 +889,7 @@ const I18N={
     f_name:"Artist name",f_mail:"Email",f_genre:"Genre",f_other:"Other",f_link:"Private streaming link",
     f_msg:"A few lines about you and the track",
     f_ph:"Who you are, how this track came about, where you want to go with Haustek…",
+    f_meta_link:'Already signed with Haustek? Go straight to the <a href="metadata.html" style="color:var(--red)">metadata form →</a>',
     f_note:"* No attachments — just paste a private link. Every demo is listened to within 7–14 days.",
     f_send:"Send demo"
   }
