@@ -4,16 +4,17 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Haustek Agency — Music Label & Distribution | Để nhạc Việt vang xa hơn</title>
-<meta name="description" content="Haustek — music label & distribution từ 2017. Sự kiện, sản xuất, phát hành, quảng cáo và tư vấn chiến lược cho âm nhạc. Đưa nhạc Việt lên Spotify, Apple Music, TikTok, NhacCuaTui, Zing MP3 và hơn 200 cửa hàng nhạc số toàn cầu.">
-<meta name="keywords" content="Haustek, music label Việt Nam, music distribution, phát hành nhạc, Spotify, TikTok, NhacCuaTui, Zing MP3, tổ chức sự kiện, sản xuất âm nhạc, booking nghệ sĩ, gửi demo">
+<title>Haustek — Music Label & Distribution | Để nhạc Việt vang xa hơn</title>
+<meta name="description" content="Haustek — music label & distribution từ 2017. Làm sự kiện, sản xuất, phát hành, quảng bá và tư vấn chiến lược cho âm nhạc. Đưa nhạc Việt lên Spotify, Apple Music, TikTok, NhacCuaTui, Zing MP3 và hơn 200 cửa hàng nhạc số khắp thế giới.">
+<meta name="keywords" content="Haustek, haustek group, music label Việt Nam, music distribution, phát hành nhạc, Spotify, TikTok, NhacCuaTui, Zing MP3, tổ chức sự kiện, sản xuất âm nhạc, booking nghệ sĩ, gửi demo">
 <meta name="author" content="Haustek">
 <meta name="robots" content="index, follow">
-<link rel="canonical" href="https://haustek-agency.com/">
+<link rel="canonical" href="https://haustek-group.com/">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Haustek">
 <meta property="og:title" content="Haustek — Music Label & Distribution">
-<meta property="og:description" content="Để nhạc Việt vang xa hơn. Từ sàn diễn underground đến hơn 200 nền tảng số toàn cầu.">
+<meta property="og:description" content="Để nhạc Việt vang xa hơn. Từ sàn diễn underground ra hơn 200 nền tảng số khắp thế giới.">
+<meta property="og:url" content="https://haustek-group.com/">
 <meta property="og:locale" content="vi_VN">
 <meta property="og:locale:alternate" content="en_US">
 <meta name="twitter:card" content="summary_large_image">
@@ -24,8 +25,8 @@
 {
   "@context": "https://schema.org",
   "@graph": [
-    { "@type": "Organization", "@id": "https://haustek-agency.com/#org", "name": "Haustek", "url": "https://haustek-agency.com/", "email": "mgmt@haustek-group.com", "foundingDate": "2017", "foundingLocation": {"@type":"Place","name":"Los Angeles, California, USA"}, "description": "Music label & distribution — sự kiện, sản xuất, phát hành, quảng cáo và tư vấn chiến lược cho âm nhạc, từ 2017.", "sameAs": ["https://www.facebook.com/haustek.agency","https://www.instagram.com/haustek.agency","https://open.spotify.com/artist/1jiigt5sMZ62es2sH1UwYU"] },
-    { "@type": "MusicGroup", "name": "Haustek", "url": "https://haustek-agency.com/", "genre": ["Electronic","Techno","House","Ambient"], "foundingDate": "2017" }
+    { "@type": "Organization", "@id": "https://haustek-group.com/#org", "name": "Haustek", "url": "https://haustek-group.com/", "email": "mgmt@haustek-group.com", "foundingDate": "2017", "foundingLocation": {"@type":"Place","name":"Los Angeles, California, USA"}, "description": "Music label & distribution — sự kiện, sản xuất, phát hành, quảng bá và tư vấn chiến lược cho âm nhạc, từ 2017.", "sameAs": ["https://www.facebook.com/haustek.agency","https://www.instagram.com/haustek.agency","https://open.spotify.com/artist/1jiigt5sMZ62es2sH1UwYU"] },
+    { "@type": "MusicGroup", "name": "Haustek", "url": "https://haustek-group.com/", "genre": ["Electronic","Techno","House","Ambient"], "foundingDate": "2017" }
   ]
 }
 </script>
@@ -36,26 +37,30 @@
 
 <style>
 /* =========================================================
-   HAUSTEK v8 — CINEMATIC EDITORIAL
+   HAUSTEK v9 — CINEMATIC EDITORIAL + COLOR ZONES + GLASS
    ========================================================= */
 :root{
   --ink:#070709;
   --line:rgba(240,240,242,.12);
-  --line-soft:rgba(240,240,242,.07);
+  --line-2:rgba(240,240,242,.22);
   --concrete:#8E8E98;
   --paper:#F0F0F2;
   --red:#FF2E4C;
   --ice:#7FD6E8;
+  --violet:#8B7BE8;
+  --amber:#E8A33D;
   --disp:'Archivo',sans-serif;
   --body:'Be Vietnam Pro',sans-serif;
   --mono:'IBM Plex Mono',monospace;
   --gut:clamp(20px,4vw,64px);
+  /* màu chủ đạo đổi theo từng section */
+  --accent:var(--red);
 }
 *{margin:0;padding:0;box-sizing:border-box}
 html{scroll-behavior:smooth}
 body{
   background:var(--ink);color:var(--paper);
-  font-family:var(--body);font-weight:300;line-height:1.7;font-size:15px;
+  font-family:var(--body);font-weight:300;line-height:1.75;font-size:15px;
   overflow-x:hidden;
 }
 body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:120;opacity:.05;
@@ -74,12 +79,14 @@ a,button,summary{cursor:pointer;-webkit-tap-highlight-color:transparent}
 .nav{
   position:fixed;top:0;left:0;right:0;z-index:100;
   display:flex;align-items:center;justify-content:space-between;gap:16px;
-  padding:18px var(--gut);
-  background:linear-gradient(to bottom, rgba(7,7,9,.9), rgba(7,7,9,0));
+  padding:14px var(--gut);
+  background:rgba(7,7,9,.55);
+  backdrop-filter:blur(16px) saturate(1.3);-webkit-backdrop-filter:blur(16px) saturate(1.3);
+  border-bottom:1px solid rgba(240,240,242,.07);
 }
 .logo{display:flex;align-items:center;gap:10px;flex:none}
 .logo img{height:11px;width:auto}
-.rec{width:7px;height:7px;border-radius:50%;background:var(--red);animation:blink 1.6s steps(2,end) infinite}
+.rec{width:7px;height:7px;border-radius:50%;background:var(--red);animation:blink 1.6s steps(2,end) infinite;box-shadow:0 0 10px rgba(255,46,76,.8)}
 @keyframes blink{50%{opacity:.25}}
 .nav-links{display:none;gap:26px}
 .nav-links a{font-family:var(--mono);font-size:11.5px;letter-spacing:.08em;color:var(--concrete);text-transform:uppercase;transition:color .2s}
@@ -89,42 +96,98 @@ a,button,summary{cursor:pointer;-webkit-tap-highlight-color:transparent}
 .lang-toggle:hover{color:var(--paper)}
 .nav-submit{
   font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;
-  color:var(--paper);border:1px solid var(--line);border-radius:100px;padding:9px 18px;
+  color:var(--paper);border:1px solid var(--line-2);border-radius:100px;padding:9px 18px;
+  background:rgba(240,240,242,.05);backdrop-filter:blur(8px);
   transition:all .25s;
 }
 .nav-submit:hover{background:var(--red);border-color:var(--red)}
 @media(min-width:1000px){.nav-links{display:flex}}
 
-/* ================= SECTION ================= */
+/* ================= SECTION + COLOR ZONES ================= */
 main.page{display:none}
 main.page.active{display:block;animation:pageIn .5s ease}
 @keyframes pageIn{from{opacity:0}to{opacity:1}}
-section{padding:clamp(90px,14vh,150px) var(--gut);position:relative;overflow:hidden;content-visibility:auto;contain-intrinsic-size:1px 800px}
+section{
+  padding:clamp(90px,14vh,150px) var(--gut);position:relative;overflow:hidden;
+  content-visibility:auto;contain-intrinsic-size:1px 800px;
+}
 section.hero{content-visibility:visible}
-.hairline{border-top:1px solid var(--line)}
+/* lớp màu nền riêng của từng khu vực */
+.zone::before{content:"";position:absolute;inset:0;z-index:0;pointer-events:none}
+.zone>*{position:relative;z-index:1}
+
+.z-about{background:#08080D}
+.z-about::before{background:
+  radial-gradient(58% 46% at 88% 6%, rgba(139,123,232,.16), transparent 68%),
+  radial-gradient(52% 44% at 4% 96%, rgba(127,214,232,.09), transparent 70%)}
+
+.z-svc{background:#070A0C}
+.z-svc::before{background:
+  radial-gradient(50% 42% at 6% 10%, rgba(127,214,232,.13), transparent 70%),
+  radial-gradient(46% 40% at 94% 88%, rgba(255,46,76,.09), transparent 70%)}
+
+.z-stores{background:#0A0709}
+.z-stores::before{background:
+  radial-gradient(70% 56% at 50% 46%, rgba(255,46,76,.13), transparent 72%)}
+
+.z-artists{background:#0A0810}
+.z-artists::before{background:
+  radial-gradient(54% 46% at 14% 12%, rgba(232,163,61,.11), transparent 70%),
+  radial-gradient(56% 48% at 92% 92%, rgba(139,123,232,.13), transparent 70%)}
+
+.z-pull{background:#060608}
+.z-pull::before{background:
+  radial-gradient(46% 60% at 50% 50%, rgba(127,214,232,.1), transparent 70%)}
+
+.z-faq{background:#08090D}
+.z-faq::before{background:
+  radial-gradient(48% 40% at 96% 8%, rgba(255,46,76,.11), transparent 70%)}
+
+.z-contact{background:#09070E}
+.z-contact::before{background:
+  radial-gradient(56% 48% at 8% 8%, rgba(255,46,76,.16), transparent 70%),
+  radial-gradient(58% 50% at 94% 94%, rgba(127,214,232,.14), transparent 70%)}
+
+.z-page{background:#08080D}
+.z-page::before{background:
+  radial-gradient(54% 44% at 90% 6%, rgba(139,123,232,.15), transparent 70%),
+  radial-gradient(50% 44% at 4% 94%, rgba(255,46,76,.1), transparent 70%)}
+
+/* ================= GLASS ================= */
+.glass{
+  background:rgba(240,240,242,.04);
+  border:1px solid rgba(240,240,242,.1);
+  border-radius:20px;
+  backdrop-filter:blur(14px) saturate(1.2);-webkit-backdrop-filter:blur(14px) saturate(1.2);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.07), 0 24px 60px rgba(0,0,0,.4);
+}
+
+/* ================= TYPO ================= */
 .ghost{
-  position:absolute;right:-.06em;top:0;line-height:.8;pointer-events:none;user-select:none;
+  position:absolute;right:-.06em;top:0;line-height:.8;pointer-events:none;user-select:none;z-index:0;
   font-family:var(--disp);font-weight:800;font-stretch:120%;
   font-size:clamp(120px,26vw,340px);
-  color:transparent;-webkit-text-stroke:1px rgba(240,240,242,.06);
+  color:transparent;-webkit-text-stroke:1px rgba(240,240,242,.055);
 }
 .kicker{
   font-family:var(--mono);font-size:11px;letter-spacing:.3em;text-transform:uppercase;
   color:var(--concrete);display:flex;align-items:center;gap:16px;margin-bottom:26px;
 }
-.kicker i{font-style:normal;color:var(--red)}
+.kicker i{font-style:normal;color:var(--accent)}
 h2{
   font-family:var(--disp);font-weight:750;font-stretch:112%;
-  font-size:clamp(38px,8.5vw,104px);line-height:.96;letter-spacing:-.03em;
-  max-width:14ch;
+  font-size:clamp(36px,8vw,96px);line-height:1.0;letter-spacing:-.03em;
+  max-width:16ch;text-wrap:balance;
 }
-h2 em,h1 em,.statement em{font-style:italic;font-weight:600;color:var(--red)}
+/* mỗi cụm từ là một khối — không bao giờ gãy giữa cụm */
+h1 .ln,h2 .ln,.statement .ln,.pull .ln{display:inline-block}
+h2 em,h1 em,.statement em,.pull em{font-style:italic;font-weight:600;color:var(--accent)}
 .statement{
-  font-family:var(--disp);font-weight:500;font-stretch:105%;
-  font-size:clamp(21px,3.6vw,38px);line-height:1.35;letter-spacing:-.015em;
-  max-width:30ch;color:var(--paper);
+  font-family:var(--disp);font-weight:500;font-stretch:104%;
+  font-size:clamp(20px,3.3vw,34px);line-height:1.4;letter-spacing:-.012em;
+  max-width:32ch;color:var(--paper);text-wrap:pretty;
 }
-.smallp{color:var(--concrete);font-size:14.5px;max-width:520px}
+.smallp{color:var(--concrete);font-size:14.5px;max-width:540px;text-wrap:pretty}
 .rv{opacity:0;transform:translateY(30px);transition:opacity .9s ease,transform .9s ease}
 .rv.in{opacity:1;transform:none}
 .split{display:block;overflow:hidden}
@@ -132,19 +195,22 @@ h2 em,h1 em,.statement em{font-style:italic;font-weight:600;color:var(--red)}
 .split.in .row{transform:none}
 
 /* ================= HERO ================= */
-.hero{min-height:100svh;display:flex;flex-direction:column;justify-content:flex-end;padding-bottom:0}
+.hero{min-height:100svh;display:flex;flex-direction:column;justify-content:flex-end;padding-bottom:0;background:#070709}
 #ripple{position:absolute;inset:0;width:100%;height:100%;z-index:0}
 .hero::before{content:"";position:absolute;inset:0;z-index:1;pointer-events:none;
-  background:linear-gradient(to bottom, rgba(7,7,9,.5), transparent 35%, rgba(7,7,9,.92) 92%)}
+  background:
+    radial-gradient(46% 40% at 84% 16%, rgba(255,46,76,.17), transparent 70%),
+    radial-gradient(50% 44% at 8% 60%, rgba(127,214,232,.1), transparent 70%),
+    linear-gradient(to bottom, rgba(7,7,9,.55), transparent 34%, rgba(7,7,9,.93) 92%)}
 .hero-inner{position:relative;z-index:2;padding-bottom:26px}
 .hero-kicker{font-family:var(--mono);font-size:11px;letter-spacing:.32em;text-transform:uppercase;color:var(--concrete);margin-bottom:22px;display:flex;gap:14px;align-items:center}
 .hero-kicker .pulse{width:6px;height:6px;border-radius:50%;background:var(--red);animation:blink 1.6s steps(2,end) infinite}
 h1{
   font-family:var(--disp);font-weight:800;font-stretch:118%;
-  font-size:clamp(52px,12.5vw,180px);line-height:.92;letter-spacing:-.035em;
+  font-size:clamp(50px,12vw,172px);line-height:.94;letter-spacing:-.035em;
 }
 .hero-row{display:flex;align-items:flex-end;justify-content:space-between;gap:36px;flex-wrap:wrap;margin-top:34px}
-.hero-sub{color:var(--concrete);font-size:14.5px;max-width:460px}
+.hero-sub{color:var(--concrete);font-size:14.5px;max-width:480px;text-wrap:pretty}
 .hero-sub strong{color:var(--paper);font-weight:500}
 
 .playwheel{position:relative;width:136px;height:136px;flex:none}
@@ -152,31 +218,35 @@ h1{
 @keyframes spin{to{transform:rotate(360deg)}}
 .playwheel:hover svg.ringtext{animation-duration:6s}
 .playwheel button{
-  position:absolute;inset:24px;border-radius:50%;border:1px solid var(--line);
+  position:absolute;inset:24px;border-radius:50%;border:1px solid rgba(240,240,242,.18);
   background:var(--paper);color:var(--ink);display:flex;align-items:center;justify-content:center;
-  transition:transform .2s,background .25s,color .25s;
+  transition:transform .2s,background .25s,color .25s,box-shadow .25s;
 }
-.playwheel button:hover{background:var(--red);color:var(--paper);transform:scale(1.05)}
+.playwheel button:hover{background:var(--red);color:var(--paper);transform:scale(1.05);box-shadow:0 0 40px rgba(255,46,76,.5)}
 .playwheel button:active{transform:scale(.96)}
 .playwheel .ringtext text{font-family:var(--mono);font-size:10.5px;letter-spacing:.34em;fill:var(--concrete);text-transform:uppercase}
-.playwheel.playing button{background:var(--red);color:var(--paper)}
+.playwheel.playing button{background:var(--red);color:var(--paper);box-shadow:0 0 40px rgba(255,46,76,.5)}
 
+/* dải số — glass */
 .hero-stats{
-  position:relative;z-index:2;border-top:1px solid var(--line);
-  display:grid;grid-template-columns:repeat(2,1fr);
+  position:relative;z-index:2;margin:0 0 22px;
+  display:grid;grid-template-columns:repeat(2,1fr);overflow:hidden;
 }
-.hs{padding:18px 4px;border-bottom:1px solid var(--line)}
-.hs:nth-child(odd){border-right:1px solid var(--line)}
-.hs b{font-family:var(--disp);font-weight:800;font-stretch:115%;font-size:clamp(30px,7vw,64px);letter-spacing:-.03em;display:block;line-height:1}
-.hs span{font-family:var(--mono);font-size:10px;letter-spacing:.18em;color:var(--concrete);text-transform:uppercase}
+.hs{padding:20px 18px;border-bottom:1px solid rgba(240,240,242,.09)}
+.hs:nth-child(odd){border-right:1px solid rgba(240,240,242,.09)}
+.hs:nth-child(n+3){border-bottom:0}
+.hs b{font-family:var(--disp);font-weight:800;font-stretch:115%;font-size:clamp(28px,6.4vw,58px);letter-spacing:-.03em;display:block;line-height:1}
+.hs span{font-family:var(--mono);font-size:10px;letter-spacing:.18em;color:var(--concrete);text-transform:uppercase;margin-top:6px;display:block}
+.hs:nth-child(1) b{color:var(--red)}
+.hs:nth-child(3) b{color:var(--ice)}
 @media(min-width:820px){
   .hero-stats{grid-template-columns:repeat(4,1fr)}
-  .hs{border-bottom:0;border-right:1px solid var(--line);padding:22px 20px}
+  .hs{border-bottom:0;border-right:1px solid rgba(240,240,242,.09);padding:24px 22px}
   .hs:last-child{border-right:0}
 }
 
 /* ================= MARQUEE ================= */
-.ticker{overflow:hidden;white-space:nowrap;padding:20px 0;border-bottom:1px solid var(--line)}
+.ticker{overflow:hidden;white-space:nowrap;padding:20px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);background:#060608}
 .ticker-track{display:inline-block;animation:scroll 36s linear infinite}
 .ticker:hover .ticker-track{animation-play-state:paused}
 .ticker span{
@@ -188,52 +258,57 @@ h1{
 @keyframes scroll{to{transform:translateX(-50%)}}
 
 /* ================= ABOUT ================= */
-.about-grid{display:grid;gap:44px;margin-top:44px}
-@media(min-width:900px){.about-grid{grid-template-columns:1.25fr .75fr;align-items:start}}
-.fact-list{border-top:1px solid var(--line)}
-.fact{display:flex;justify-content:space-between;gap:20px;padding:15px 2px;border-bottom:1px solid var(--line);font-size:13.5px}
+.z-about{--accent:var(--violet)}
+.about-grid{display:grid;gap:40px;margin-top:44px}
+@media(min-width:900px){.about-grid{grid-template-columns:1.2fr .8fr;align-items:start}}
+.fact-list{padding:8px 24px}
+.fact{display:flex;justify-content:space-between;gap:20px;padding:16px 0;border-bottom:1px solid rgba(240,240,242,.09);font-size:13.5px}
+.fact:last-child{border-bottom:0}
 .fact b{font-family:var(--mono);font-weight:400;font-size:11px;letter-spacing:.16em;color:var(--concrete);text-transform:uppercase;padding-top:3px;flex:none}
-.fact span{color:var(--paper);text-align:right;max-width:60%}
+.fact span{color:var(--paper);text-align:right;max-width:62%;text-wrap:pretty}
 
 /* ================= ROW LIST ================= */
 .rowlist{border-top:1px solid var(--line);margin-top:50px}
 .row{
   display:grid;grid-template-columns:auto 1fr auto;align-items:baseline;gap:16px;
-  padding:22px 2px;border-bottom:1px solid var(--line);position:relative;
+  padding:24px 2px;border-bottom:1px solid var(--line);position:relative;
   transition:padding .3s;
 }
 a.row:hover{padding-left:14px}
-a.row::after{content:"";position:absolute;left:0;top:0;bottom:0;width:0;background:var(--red);transition:width .3s}
+a.row::after{content:"";position:absolute;left:0;top:0;bottom:0;width:0;background:var(--accent);transition:width .3s}
 a.row:hover::after{width:3px}
-.row .idx{font-family:var(--mono);font-size:11px;color:var(--concrete);letter-spacing:.1em;min-width:34px}
+.row .idx{font-family:var(--mono);font-size:11px;color:var(--concrete);letter-spacing:.1em;min-width:38px}
 .row .ttl{
   font-family:var(--disp);font-weight:700;font-stretch:112%;
-  font-size:clamp(22px,4.6vw,44px);letter-spacing:-.025em;line-height:1.05;
-  transition:color .25s;
+  font-size:clamp(21px,4.2vw,40px);letter-spacing:-.025em;line-height:1.08;
+  transition:color .25s;text-wrap:balance;
 }
-a.row:hover .ttl{color:var(--red)}
+a.row:hover .ttl{color:var(--accent)}
 .row .meta{font-family:var(--mono);font-size:11px;letter-spacing:.12em;color:var(--concrete);text-transform:uppercase;text-align:right;white-space:nowrap}
-.row .desc{grid-column:2 / -1;color:var(--concrete);font-size:13.5px;max-width:560px;margin-top:6px}
+.row .desc{grid-column:2 / -1;color:var(--concrete);font-size:13.5px;max-width:580px;margin-top:8px;text-wrap:pretty}
 
 /* dịch vụ accordion */
-.svc details{border-bottom:1px solid var(--line)}
-.svc details:first-of-type{border-top:1px solid var(--line);margin-top:50px}
+.z-svc{--accent:var(--ice)}
+.svc-wrap{margin-top:50px;padding:6px 26px}
+.svc details{border-bottom:1px solid rgba(240,240,242,.09)}
+.svc details:last-of-type{border-bottom:0}
 .svc summary{
-  list-style:none;display:grid;grid-template-columns:auto 1fr auto;align-items:baseline;gap:16px;
-  padding:24px 2px;transition:padding .3s;
+  list-style:none;display:grid;grid-template-columns:auto 1fr auto;align-items:baseline;gap:18px;
+  padding:26px 0;transition:padding .3s;
 }
 .svc summary::-webkit-details-marker{display:none}
-.svc summary:hover{padding-left:14px}
+.svc summary:hover{padding-left:10px}
 .svc summary .idx{font-family:var(--mono);font-size:11px;color:var(--concrete);min-width:34px}
-.svc summary .ttl{font-family:var(--disp);font-weight:750;font-stretch:112%;font-size:clamp(22px,4.8vw,48px);letter-spacing:-.028em;line-height:1.02;transition:color .25s}
-.svc summary:hover .ttl,.svc details[open] .ttl{color:var(--red)}
-.svc summary .pm{font-family:var(--disp);font-weight:400;font-size:26px;color:var(--concrete);transition:transform .3s}
-.svc details[open] .pm{transform:rotate(45deg);color:var(--red)}
-.svc .body{padding:0 2px 26px 50px;color:var(--concrete);font-size:14px;max-width:600px}
+.svc summary .ttl{font-family:var(--disp);font-weight:750;font-stretch:110%;font-size:clamp(21px,4.4vw,44px);letter-spacing:-.028em;line-height:1.06;transition:color .25s;text-wrap:balance}
+.svc summary:hover .ttl,.svc details[open] .ttl{color:var(--accent)}
+.svc summary .pm{font-family:var(--disp);font-weight:300;font-size:26px;color:var(--concrete);transition:transform .3s,color .3s}
+.svc details[open] .pm{transform:rotate(45deg);color:var(--accent)}
+.svc .body{padding:0 0 28px 52px;color:var(--concrete);font-size:14px;max-width:620px;text-wrap:pretty}
 .svc .body a{color:var(--ice)}
-@media(max-width:640px){.svc .body{padding-left:2px}}
+@media(max-width:640px){.svc .body{padding-left:0}.svc-wrap{padding:6px 18px}}
 
 /* ================= TYPE WALL ================= */
+.z-stores{--accent:var(--red)}
 .typewall{margin-top:50px;overflow:hidden}
 .tw-row{overflow:hidden;white-space:nowrap;padding:6px 0}
 .tw-track{display:inline-block;animation:scroll var(--dur,40s) linear infinite}
@@ -241,95 +316,114 @@ a.row:hover .ttl{color:var(--red)}
 .typewall:hover .tw-track{animation-play-state:paused}
 .tw-track span{
   font-family:var(--disp);font-weight:800;font-stretch:120%;
-  font-size:clamp(34px,7.4vw,84px);letter-spacing:-.03em;line-height:1.05;
+  font-size:clamp(32px,7vw,80px);letter-spacing:-.03em;line-height:1.1;
   margin:0 26px;color:var(--paper);transition:color .2s;
 }
 .tw-track span:hover{color:var(--red)}
 .tw-track span.o{color:transparent;-webkit-text-stroke:1.3px rgba(240,240,242,.5)}
 .tw-track span.o:hover{-webkit-text-stroke-color:var(--red)}
 .tw-track i{font-style:normal;color:var(--red);font-size:.45em;vertical-align:middle;margin:0 4px}
-.tw-note{margin-top:26px;font-family:var(--mono);font-size:11.5px;letter-spacing:.12em;color:var(--concrete);text-transform:uppercase}
+.tw-note{margin-top:30px;display:inline-block;padding:14px 22px;font-family:var(--mono);font-size:11.5px;letter-spacing:.12em;color:var(--paper);text-transform:uppercase}
 
 /* ================= ARTISTS ================= */
-.roster{margin-top:46px;max-width:1100px;line-height:1.18}
+.z-artists{--accent:var(--amber)}
+.roster{margin-top:46px;max-width:1100px;line-height:1.22}
 .roster span{
   font-family:var(--disp);font-weight:750;font-stretch:114%;
-  font-size:clamp(28px,6vw,68px);letter-spacing:-.03em;color:var(--paper);
-  transition:color .2s,font-style .2s;display:inline;
+  font-size:clamp(26px,5.6vw,64px);letter-spacing:-.03em;color:var(--paper);
+  transition:color .2s;display:inline-block;
 }
-.roster span:hover{color:var(--red);font-style:italic}
-.roster i{font-style:normal;color:var(--red);font-size:.4em;vertical-align:middle;margin:0 14px}
-.roster-note{margin-top:22px;font-family:var(--mono);font-size:11.5px;letter-spacing:.12em;color:var(--concrete);text-transform:uppercase;max-width:640px;line-height:1.8}
+.roster span:hover{color:var(--amber)}
+.roster i{font-style:normal;color:var(--amber);font-size:.4em;vertical-align:middle;margin:0 14px}
+.roster-note{margin-top:30px;display:inline-block;padding:16px 24px;font-family:var(--mono);font-size:11.5px;letter-spacing:.1em;color:var(--concrete);text-transform:uppercase;max-width:660px;line-height:1.9}
 
 /* ================= PULL QUOTE ================= */
 .pull{
-  font-family:var(--disp);font-weight:600;font-stretch:108%;
-  font-size:clamp(26px,5vw,54px);line-height:1.2;letter-spacing:-.025em;
-  max-width:22ch;margin:0 auto;text-align:center;
+  font-family:var(--disp);font-weight:600;font-stretch:106%;
+  font-size:clamp(25px,4.6vw,50px);line-height:1.24;letter-spacing:-.025em;
+  max-width:24ch;margin:0 auto;text-align:center;text-wrap:balance;
 }
-.pull-sec{text-align:center;padding-top:clamp(110px,18vh,190px);padding-bottom:clamp(110px,18vh,190px)}
-.pull-by{margin-top:26px;font-family:var(--mono);font-size:11px;letter-spacing:.2em;color:var(--concrete);text-transform:uppercase}
+.z-pull{--accent:var(--ice);text-align:center;padding-top:clamp(110px,18vh,190px);padding-bottom:clamp(110px,18vh,190px)}
+.pull-by{margin-top:28px;font-family:var(--mono);font-size:11px;letter-spacing:.2em;color:var(--concrete);text-transform:uppercase}
 
 /* ================= FAQ ================= */
-.faq details{border-bottom:1px solid var(--line)}
-.faq details:first-of-type{border-top:1px solid var(--line);margin-top:50px}
-.faq summary{list-style:none;display:flex;justify-content:space-between;gap:20px;align-items:baseline;padding:20px 2px;transition:padding .3s}
+.z-faq{--accent:var(--red)}
+.faq-wrap{margin-top:50px;padding:6px 26px}
+.faq details{border-bottom:1px solid rgba(240,240,242,.09)}
+.faq details:last-of-type{border-bottom:0}
+.faq summary{list-style:none;display:flex;justify-content:space-between;gap:20px;align-items:baseline;padding:22px 0;transition:padding .3s}
 .faq summary::-webkit-details-marker{display:none}
-.faq summary:hover{padding-left:14px}
-.faq summary .q{font-family:var(--disp);font-weight:600;font-stretch:108%;font-size:clamp(16px,2.8vw,24px);letter-spacing:-.015em;transition:color .2s}
-.faq summary:hover .q,.faq details[open] .q{color:var(--red)}
-.faq summary .pm{font-family:var(--disp);font-size:22px;color:var(--concrete);flex:none;transition:transform .3s}
-.faq details[open] .pm{transform:rotate(45deg);color:var(--red)}
-.faq .a{padding:0 2px 22px;color:var(--concrete);font-size:13.5px;max-width:620px}
+.faq summary:hover{padding-left:10px}
+.faq summary .q{font-family:var(--disp);font-weight:600;font-stretch:106%;font-size:clamp(16px,2.7vw,23px);letter-spacing:-.015em;transition:color .2s;text-wrap:balance}
+.faq summary:hover .q,.faq details[open] .q{color:var(--accent)}
+.faq summary .pm{font-family:var(--disp);font-weight:300;font-size:22px;color:var(--concrete);flex:none;transition:transform .3s,color .3s}
+.faq details[open] .pm{transform:rotate(45deg);color:var(--accent)}
+.faq .a{padding:0 0 24px;color:var(--concrete);font-size:13.5px;max-width:640px;text-wrap:pretty}
 .faq .a a{color:var(--ice)}
+@media(max-width:640px){.faq-wrap{padding:6px 18px}}
 
-/* ================= CONTACT + FOOTER ================= */
+/* ================= CONTACT ================= */
+.z-contact{--accent:var(--red)}
 .mail-giant{
-  display:block;font-family:var(--disp);font-weight:800;font-stretch:116%;
-  font-size:clamp(24px,6vw,80px);letter-spacing:-.035em;line-height:1;
-  margin:36px 0 40px;transition:color .25s;word-break:break-all;
+  display:inline-block;font-family:var(--disp);font-weight:800;font-stretch:114%;
+  font-size:clamp(22px,5.4vw,72px);letter-spacing:-.035em;line-height:1.1;
+  margin:36px 0 40px;transition:color .25s;
+  overflow-wrap:anywhere;
 }
 .mail-giant:hover{color:var(--red)}
-.store-links{display:flex;flex-wrap:wrap;gap:10px 26px;border-top:1px solid var(--line);padding-top:22px}
-.store-links a{font-family:var(--mono);font-size:11.5px;letter-spacing:.1em;color:var(--concrete);text-transform:uppercase;transition:color .2s;padding:4px 0}
-.store-links a:hover{color:var(--paper)}
-footer{padding:60px var(--gut) 30px;border-top:1px solid var(--line);overflow:hidden}
-.foot-giant{
-  font-family:var(--disp);font-weight:800;font-stretch:122%;
-  font-size:clamp(64px,17vw,260px);letter-spacing:-.04em;line-height:.85;
-  color:transparent;-webkit-text-stroke:1.5px rgba(240,240,242,.28);
-  user-select:none;transition:color .6s,-webkit-text-stroke-color .6s;display:inline-block;
+.store-links{display:flex;flex-wrap:wrap;gap:8px}
+.store-links a{
+  font-family:var(--mono);font-size:11px;letter-spacing:.1em;color:var(--concrete);text-transform:uppercase;
+  padding:11px 18px;border-radius:100px;
+  background:rgba(240,240,242,.035);border:1px solid rgba(240,240,242,.1);
+  backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  transition:all .25s;
 }
-.foot-giant:hover{color:var(--red);-webkit-text-stroke-color:var(--red)}
-.foot-row{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;margin-top:34px}
+.store-links a:hover{color:var(--paper);border-color:var(--line-2);background:rgba(240,240,242,.09);transform:translateY(-2px)}
+
+/* ================= FOOTER ================= */
+footer{padding:56px var(--gut) 32px;border-top:1px solid var(--line);background:#060608}
+/* wordmark dựng bằng SVG — không bao giờ bị cắt chân/đỉnh chữ */
+.foot-mark{display:block;width:100%;margin-bottom:34px}
+.foot-mark svg{width:100%;height:auto;display:block;overflow:visible}
+.foot-mark text{
+  font-family:var(--disp);font-weight:800;font-stretch:122%;font-size:150px;letter-spacing:-4px;
+  fill:none;stroke:rgba(240,240,242,.3);stroke-width:1.6;
+  transition:stroke .5s,fill .5s;
+}
+.foot-mark:hover text{stroke:var(--red);fill:rgba(255,46,76,.1)}
+.foot-row{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}
 .foot-row p{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;color:var(--concrete);text-transform:uppercase}
 .fsoc{display:flex;gap:22px}
 .fsoc a{font-family:var(--mono);font-size:11px;color:var(--concrete);transition:color .2s;letter-spacing:.06em}
 .fsoc a:hover{color:var(--paper)}
 
 /* ================= SUBMIT ================= */
-.form-ed{margin-top:56px;max-width:760px}
-.f-line{display:grid;gap:8px;margin-bottom:34px}
+.form-ed{margin-top:50px;max-width:780px;padding:34px}
+.f-line{display:grid;gap:8px;margin-bottom:32px}
 .f-line label{font-family:var(--mono);font-size:10.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--concrete)}
 .f-line input,.f-line select,.f-line textarea{
-  background:transparent;border:0;border-bottom:1px solid var(--line);
-  color:var(--paper);font-family:var(--disp);font-weight:600;font-stretch:108%;
-  font-size:clamp(19px,3.4vw,30px);letter-spacing:-.015em;padding:8px 0 14px;border-radius:0;
+  background:transparent;border:0;border-bottom:1px solid rgba(240,240,242,.14);
+  color:var(--paper);font-family:var(--disp);font-weight:600;font-stretch:106%;
+  font-size:clamp(18px,3.2vw,28px);letter-spacing:-.015em;padding:8px 0 14px;border-radius:0;
   transition:border-color .25s;appearance:none;width:100%;
 }
-.f-line textarea{font-family:var(--body);font-weight:300;font-size:16px;min-height:110px;resize:vertical;line-height:1.6}
-.f-line input::placeholder,.f-line textarea::placeholder{color:rgba(240,240,242,.22)}
+.f-line select option{background:#12121a;color:var(--paper)}
+.f-line textarea{font-family:var(--body);font-weight:300;font-size:16px;min-height:110px;resize:vertical;line-height:1.7}
+.f-line input::placeholder,.f-line textarea::placeholder{color:rgba(240,240,242,.2)}
 .f-line input:focus,.f-line select:focus,.f-line textarea:focus{outline:none;border-bottom-color:var(--red)}
-.f-2{display:grid;gap:0 44px}
+.f-2{display:grid;gap:0 40px}
 @media(min-width:680px){.f-2{grid-template-columns:1fr 1fr}}
 .send-btn{
-  display:inline-flex;align-items:center;gap:16px;background:none;border:1px solid var(--line);
+  display:inline-flex;align-items:center;gap:16px;
+  background:rgba(240,240,242,.05);border:1px solid var(--line-2);
   color:var(--paper);border-radius:100px;padding:20px 34px;
   font-family:var(--mono);font-size:12px;letter-spacing:.18em;text-transform:uppercase;
-  transition:all .3s;
+  backdrop-filter:blur(10px);transition:all .3s;
 }
-.send-btn:hover{background:var(--red);border-color:var(--red)}
-.f-note{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;color:var(--concrete);margin:18px 0 26px}
+.send-btn:hover{background:var(--red);border-color:var(--red);box-shadow:0 12px 40px rgba(255,46,76,.3)}
+.f-note{font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;color:var(--concrete);margin:16px 0 28px;line-height:1.8}
+@media(max-width:640px){.form-ed{padding:24px 20px}}
 
 a:focus-visible,button:focus-visible,summary:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible{outline:2px solid var(--red);outline-offset:3px}
 
@@ -375,7 +469,7 @@ a:focus-visible,button:focus-visible,summary:focus-visible,input:focus-visible,t
       <span class="split" data-i18n-split="h1_l2"><span class="row"><em>vang xa</em> hơn.</span></span>
     </h1>
     <div class="hero-row">
-      <p class="hero-sub" data-i18n="hero_sub"><strong>Haustek</strong> đưa âm nhạc đi xa hơn — từ sàn diễn underground đến hơn 200 nền tảng số toàn cầu. Sự kiện, sản xuất, phát hành, quảng cáo và tư vấn chiến lược cho âm nhạc — tất cả trong một hệ sinh thái.</p>
+      <p class="hero-sub" data-i18n="hero_sub"><strong>Haustek</strong> đưa nhạc đi xa hơn — từ sàn diễn underground ra hơn 200 nền tảng số khắp thế giới. Làm sự kiện, sản xuất, phát hành, quảng bá và tư vấn chiến lược: trọn một hệ sinh thái, một đầu mối.</p>
       <div class="playwheel" id="wheel">
         <svg class="ringtext" viewBox="0 0 136 136" aria-hidden="true">
           <defs><path id="circ" d="M68,68 m-56,0 a56,56 0 1,1 112,0 a56,56 0 1,1 -112,0"/></defs>
@@ -387,11 +481,11 @@ a:focus-visible,button:focus-visible,summary:focus-visible,input:focus-visible,t
       </div>
     </div>
   </div>
-  <div class="hero-stats">
+  <div class="hero-stats glass">
     <div class="hs"><b data-count="114" data-suffix="M+">0</b><span data-i18n="st_streams">Lượt nghe</span></div>
     <div class="hs"><b>2017</b><span data-i18n="st_founded">Thành lập</span></div>
     <div class="hs"><b data-count="200" data-suffix="+">0</b><span data-i18n="st_stores">Cửa hàng nhạc số</span></div>
-    <div class="hs"><b data-count="7000" data-suffix="+">0</b><span>Releases</span></div>
+    <div class="hs"><b data-count="7000" data-suffix="+">0</b><span data-i18n="st_rel">Bản phát hành</span></div>
   </div>
 </section>
 
@@ -405,59 +499,61 @@ a:focus-visible,button:focus-visible,summary:focus-visible,input:focus-visible,t
 </div>
 
 <!-- 01 ABOUT -->
-<section id="about">
+<section id="about" class="zone z-about">
   <div class="ghost" aria-hidden="true">01</div>
   <p class="kicker rv"><i>●</i><span data-i18n="ab_k">Về Haustek</span></p>
-  <h2 class="rv" data-i18n="ab_h">Gốc rễ toàn cầu.<br><em>Thuộc về</em> nhạc Việt.</h2>
+  <h2 class="rv" data-i18n="ab_h"><span class="ln">Gốc rễ toàn cầu,</span> <span class="ln"><em>thuộc về</em> nhạc Việt.</span></h2>
   <div class="about-grid">
     <div class="rv">
-      <p class="statement" data-i18n="ab_st">Gần một thập kỷ — từ những đêm diễn underground đến sân khấu quốc tế. Khởi đầu với techno và house, Haustek mang theo sứ mệnh đưa âm nhạc Việt Nam vươn ra toàn cầu.</p>
-      <p class="smallp" style="margin-top:22px" data-i18n="ab_p">Haustek quy tụ producer, DJ, VJ, rapper, ban nhạc và nghệ sĩ Việt trên khắp thế giới. Chúng tôi phân phối âm nhạc, sản xuất âm nhạc, tư vấn bản quyền, tổ chức sự kiện, dàn dựng trình diễn nghệ thuật và quảng cáo nhãn hàng — mỗi lần phát hành là một lần bắc cầu, để tiếng kick dưới hầm techno hay dải ambient mỏng như sương chạm tới người nghe ở khắp nơi.</p>
+      <p class="statement" data-i18n="ab_st"><span class="ln">Gần một thập kỷ,</span> <span class="ln">từ những đêm underground</span> <span class="ln">đến sân khấu quốc tế.</span> <span class="ln">Bắt đầu bằng techno và house,</span> <span class="ln">Haustek đi theo một điều duy nhất:</span> <span class="ln">đưa nhạc Việt ra thế giới.</span></p>
+      <p class="smallp" style="margin-top:24px" data-i18n="ab_p">Ở đây có producer, DJ, VJ, rapper, ban nhạc và ca sĩ người Việt từ khắp nơi. Chúng tôi phát hành nhạc, sản xuất nhạc, tư vấn bản quyền, dựng sự kiện, dàn dựng trình diễn và làm quảng cáo cho nhãn hàng. Mỗi bản thu ra mắt là thêm một nhịp cầu — để tiếng kick dưới hầm techno hay dải ambient mỏng như sương tìm được người nghe của nó.</p>
     </div>
-    <div class="fact-list rv">
+    <div class="fact-list glass rv">
       <div class="fact"><b data-i18n="f1b">Thành lập</b><span>Los Angeles · 2017</span></div>
-      <div class="fact"><b data-i18n="f2b">Hoạt động</b><span data-i18n="f2s">Việt Nam &amp; toàn cầu</span></div>
-      <div class="fact"><b data-i18n="f3b">Chuyên môn</b><span>Distribution · Label · Events · Production · Consulting</span></div>
-      <div class="fact"><b data-i18n="f4b">Bản thu đi xa nhất</b><span>Đêm Thành Phố — 3.200.000+</span></div>
+      <div class="fact"><b data-i18n="f2b">Địa bàn</b><span data-i18n="f2s">Việt Nam &amp; toàn cầu</span></div>
+      <div class="fact"><b data-i18n="f3b">Mảng làm</b><span data-i18n="f3s">Phát hành · Label · Sự kiện · Sản xuất · Tư vấn</span></div>
+      <div class="fact"><b data-i18n="f4b">Đi xa nhất</b><span>Đêm Thành Phố — 3.200.000+</span></div>
       <div class="fact"><b data-i18n="f5b">Người nghe</b><span data-i18n="f5s">3.500.000+ mỗi tháng</span></div>
     </div>
   </div>
 </section>
 
 <!-- 02 SERVICES -->
-<section id="services" class="svc">
+<section id="services" class="zone z-svc svc">
   <div class="ghost" aria-hidden="true">02</div>
   <p class="kicker rv"><i>●</i><span data-i18n="sv_k">Chúng tôi làm gì</span></p>
-  <h2 class="rv" data-i18n="sv_h">Bạn cần giải pháp?<br><em>Haustek cung cấp.</em></h2>
-  <p class="smallp rv" style="margin-top:18px" data-i18n="sv_lead">Âm nhạc, giải trí, sản xuất, quảng cáo và marketing — năm mảng dịch vụ, một hệ sinh thái.</p>
+  <h2 class="rv" data-i18n="sv_h"><span class="ln">Bạn cần gì cho âm nhạc,</span> <span class="ln"><em>Haustek có ở đây.</em></span></h2>
+  <p class="smallp rv" style="margin-top:20px" data-i18n="sv_lead">Âm nhạc, giải trí, sản xuất, quảng cáo, marketing — năm mảng việc nằm chung một mái nhà, nên bạn chỉ cần nói chuyện với một nơi.</p>
 
-  <details class="rv" open>
-    <summary><span class="idx">01</span><span class="ttl" data-i18n="sv1t">Phân phối &amp; khai thác bản ghi</span><span class="pm">+</span></summary>
-    <p class="body" data-i18n="sv1">Đưa nhạc của bạn lên hơn 200 cửa hàng nhạc số — Spotify, Apple Music, TikTok, YouTube Music, NhacCuaTui, Zing MP3… — và khai thác bản ghi trên mọi kênh. Lên sóng đúng lịch, số liệu minh bạch, báo cáo rõ ràng.</p>
-  </details>
-  <details class="rv">
-    <summary><span class="idx">02</span><span class="ttl" data-i18n="sv2t">Nhãn thâu âm nhạc</span><span class="pm">+</span></summary>
-    <p class="body" data-i18n="sv2">Định hình chất riêng, xây hình ảnh nghệ sĩ và vạch lộ trình phát hành đường dài — trong nước lẫn quốc tế. Demo nào gửi tới, chúng tôi cũng nghe.</p>
-  </details>
-  <details class="rv">
-    <summary><span class="idx">03</span><span class="ttl" data-i18n="sv3t">Tổ chức sự kiện</span><span class="pm">+</span></summary>
-    <p class="body" data-i18n="sv3">Từ đêm diễn trong nước đến chuỗi quốc tế như United We Stream Asia — nơi âm nhạc, visual và trình diễn quyện làm một. <a href="#/events">Xem các sự kiện đã làm →</a></p>
-  </details>
-  <details class="rv">
-    <summary><span class="idx">04</span><span class="ttl" data-i18n="sv4t">Sản xuất âm nhạc</span><span class="pm">+</span></summary>
-    <p class="body" data-i18n="sv4">Đội ngũ kỹ sư âm thanh và nhạc sĩ tốt nghiệp từ các nhạc viện, trường đại học trên thế giới — sản xuất nhạc và quảng cáo cho nhãn hàng, nhạc phim, jingle, campaign. Trọn gói từ ý tưởng đến thành phẩm.</p>
-  </details>
-  <details class="rv">
-    <summary><span class="idx">05</span><span class="ttl" data-i18n="sv5t">Booking nghệ sĩ</span><span class="pm">+</span></summary>
-    <p class="body" data-i18n="sv5">DJ set, live band, trình diễn nghệ thuật kèm visual — cho brand, festival và không gian riêng.</p>
-  </details>
+  <div class="svc-wrap glass rv">
+    <details open>
+      <summary><span class="idx">01</span><span class="ttl" data-i18n="sv1t">Phát hành &amp; khai thác bản ghi</span><span class="pm">+</span></summary>
+      <p class="body" data-i18n="sv1">Nhạc của bạn có mặt ở hơn 200 cửa hàng số — Spotify, Apple Music, TikTok, YouTube Music, NhacCuaTui, Zing MP3 và nhiều nơi khác. Chúng tôi lo luôn phần khai thác bản ghi: lên sóng đúng hẹn, số liệu công khai, báo cáo rõ từng khoản.</p>
+    </details>
+    <details>
+      <summary><span class="idx">02</span><span class="ttl" data-i18n="sv2t">Nhãn thu âm</span><span class="pm">+</span></summary>
+      <p class="body" data-i18n="sv2">Cùng bạn tìm ra chất riêng, dựng hình ảnh nghệ sĩ và vạch lộ trình ra nhạc cho cả chặng đường dài, trong nước lẫn ngoài nước. Gửi demo tới đây, chắc chắn có người ngồi nghe.</p>
+    </details>
+    <details>
+      <summary><span class="idx">03</span><span class="ttl" data-i18n="sv3t">Tổ chức sự kiện</span><span class="pm">+</span></summary>
+      <p class="body" data-i18n="sv3">Từ đêm diễn trong nước đến chuỗi quốc tế như United We Stream Asia — nơi âm nhạc, hình ảnh và trình diễn hòa vào làm một. <a href="#/events">Xem những đêm đã làm →</a></p>
+    </details>
+    <details>
+      <summary><span class="idx">04</span><span class="ttl" data-i18n="sv4t">Sản xuất âm nhạc</span><span class="pm">+</span></summary>
+      <p class="body" data-i18n="sv4">Đội kỹ sư âm thanh và nhạc sĩ được đào tạo tại các nhạc viện, đại học trong và ngoài nước. Nhận làm nhạc phim, jingle, nhạc quảng cáo cho nhãn hàng — theo bạn từ lúc còn là ý tưởng đến khi có bản master.</p>
+    </details>
+    <details>
+      <summary><span class="idx">05</span><span class="ttl" data-i18n="sv5t">Booking nghệ sĩ</span><span class="pm">+</span></summary>
+      <p class="body" data-i18n="sv5">DJ set, live band, trình diễn nghệ thuật kèm visual — cho nhãn hàng, festival hay không gian riêng của bạn.</p>
+    </details>
+  </div>
 </section>
 
 <!-- 03 STORES -->
-<section id="stores">
+<section id="stores" class="zone z-stores">
   <div class="ghost" aria-hidden="true">03</div>
-  <p class="kicker rv"><i>●</i><span data-i18n="stw_k">Nhạc của bạn sẽ có mặt ở</span></p>
-  <h2 class="rv" data-i18n="stw_h">Mọi nơi<br>người ta <em>đang nghe.</em></h2>
+  <p class="kicker rv"><i>●</i><span data-i18n="stw_k">Nhạc của bạn sẽ nằm ở</span></p>
+  <h2 class="rv" data-i18n="stw_h"><span class="ln">Mọi nơi người ta</span> <span class="ln"><em>đang nghe nhạc.</em></span></h2>
   <div class="typewall rv" aria-label="Các cửa hàng nhạc số">
     <div class="tw-row"><div class="tw-track" style="--dur:46s">
       <span>Spotify</span><i>●</i><span class="o">Apple Music</span><i>●</i><span>TikTok</span><i>●</i><span class="o">YouTube Music</span><i>●</i><span>Amazon Music</span><i>●</i><span class="o">Deezer</span><i>●</i><span>Snapchat</span><i>●</i>
@@ -469,60 +565,62 @@ a:focus-visible,button:focus-visible,summary:focus-visible,input:focus-visible,t
       <span>JOOX</span><i>●</i><span class="o">KKBOX</span><i>●</i><span>Boomplay</span><i>●</i><span class="o">Anghami</span><i>●</i><span>iHeartRadio</span><i>●</i><span class="o">Instagram &amp; Facebook</span><i>●</i>
     </div></div>
   </div>
-  <p class="tw-note rv" data-i18n="stw_note">— và hơn 200 cửa hàng nhạc số khác trên toàn thế giới.</p>
+  <p class="tw-note glass rv" data-i18n="stw_note">Và hơn 200 cửa hàng nhạc số khác trên toàn thế giới</p>
 </section>
 
 <!-- 04 ARTISTS -->
-<section id="artists">
+<section id="artists" class="zone z-artists">
   <div class="ghost" aria-hidden="true">04</div>
   <p class="kicker rv"><i>●</i><span data-i18n="ar_k">Nghệ sĩ</span></p>
-  <h2 class="rv" data-i18n="ar_h">Nghệ sĩ<br><em>hợp tác.</em></h2>
+  <h2 class="rv" data-i18n="ar_h"><span class="ln">Những người</span> <span class="ln">đã <em>cùng làm nhạc.</em></span></h2>
   <p class="roster rv" id="roster"></p>
-  <p class="roster-note rv" data-i18n="ar_note">— và các producer, songwriter, DJ, VJ, vocalist khác trong nước &amp; nước ngoài.</p>
+  <p class="roster-note glass rv" data-i18n="ar_note">Cùng nhiều producer, songwriter, DJ, VJ và ca sĩ khác, trong nước lẫn ngoài nước</p>
 </section>
 
 <!-- PULL QUOTE -->
-<section class="pull-sec hairline">
-  <p class="pull rv" data-i18n="pq">"Bạn lo phần sáng tạo. <em>Chúng tôi lo phần còn lại.</em>"</p>
+<section class="zone z-pull">
+  <p class="pull rv" data-i18n="pq"><span class="ln">“Bạn lo phần sáng tạo.</span> <span class="ln"><em>Chúng tôi lo phần còn lại.”</em></span></p>
   <p class="pull-by rv" data-i18n="pq_by">Lời cam kết đến từ Haustek</p>
 </section>
 
 <!-- 05 FAQ -->
-<section id="faq" class="faq">
+<section id="faq" class="zone z-faq faq">
   <div class="ghost" aria-hidden="true">05</div>
   <p class="kicker rv"><i>●</i>FAQ</p>
-  <h2 class="rv" data-i18n="fq_h">Hỏi nhanh,<br><em>đáp gọn.</em></h2>
-  <details class="rv">
-    <summary><span class="q" data-i18n="q1">Gửi demo cho Haustek bằng cách nào?</span><span class="pm">+</span></summary>
-    <p class="a" data-i18n="a1">Dùng trang <a href="#/submit">Gửi nhạc</a> ngay trên website, hoặc email <a href="mailto:mgmt@haustek-group.com">mgmt@haustek-group.com</a> kèm link nghe riêng tư (SoundCloud, Drive…) và vài dòng giới thiệu.</p>
-  </details>
-  <details class="rv">
-    <summary><span class="q" data-i18n="q2">Nhạc của tôi sẽ lên những đâu?</span><span class="pm">+</span></summary>
-    <p class="a" data-i18n="a2">Spotify, Apple Music, TikTok, YouTube Music, Amazon Music, Deezer, TIDAL, SoundCloud, Beatport — và cả hai nền tảng lớn nhất Việt Nam: NhacCuaTui và Zing MP3. Tổng cộng hơn 200 cửa hàng nhạc số trên toàn thế giới.</p>
-  </details>
-  <details class="rv">
-    <summary><span class="q" data-i18n="q3">Bao lâu thì nhạc lên sóng?</span><span class="pm">+</span></summary>
-    <p class="a" data-i18n="a3">Nhanh nhất trong 24–36 giờ. Thường 1–2 tuần sau khi hồ sơ phát hành hoàn tất. Nên gửi sớm 3–4 tuần trước ngày ra mắt để kịp pitch playlist và chuẩn bị truyền thông.</p>
-  </details>
-  <details class="rv">
-    <summary><span class="q" data-i18n="q4">Tôi có giữ bản quyền nhạc của mình không?</span><span class="pm">+</span></summary>
-    <p class="a" data-i18n="a4">Có. Tác phẩm vẫn thuộc về bạn; mọi điều khoản hợp tác và chia sẻ doanh thu đều được thống nhất rõ ràng trước khi phát hành — không có chữ nhỏ.</p>
-  </details>
-  <details class="rv">
-    <summary><span class="q" data-i18n="q5">Haustek có nhận booking và tổ chức sự kiện không?</span><span class="pm">+</span></summary>
-    <p class="a" data-i18n="a5">Có — DJ set, live band, trình diễn kèm visual. Xem <a href="#/events">các sự kiện đã làm</a> hoặc email <a href="mailto:mgmt@haustek-group.com">mgmt@haustek-group.com</a>.</p>
-  </details>
-  <details class="rv">
-    <summary><span class="q" data-i18n="q6">Có ý tưởng nhưng thiếu người hoàn thiện — Haustek giúp được không?</span><span class="pm">+</span></summary>
-    <p class="a" data-i18n="a6">Có. Đội ngũ kỹ sư âm thanh và nhạc sĩ tốt nghiệp từ các nhạc viện, trường đại học trên thế giới sẽ cung cấp đúng phần bạn đang thiếu — từ sản xuất, phối khí đến hoàn thiện bản thu.</p>
-  </details>
+  <h2 class="rv" data-i18n="fq_h"><span class="ln">Hỏi nhanh,</span> <span class="ln"><em>đáp gọn.</em></span></h2>
+  <div class="faq-wrap glass rv">
+    <details>
+      <summary><span class="q" data-i18n="q1">Gửi demo cho Haustek bằng cách nào?</span><span class="pm">+</span></summary>
+      <p class="a" data-i18n="a1">Điền vào trang <a href="#/submit">Gửi nhạc</a> ngay trên website, hoặc gửi mail tới <a href="mailto:mgmt@haustek-group.com">mgmt@haustek-group.com</a> kèm một link nghe riêng tư (SoundCloud, Drive…) và vài dòng về bạn.</p>
+    </details>
+    <details>
+      <summary><span class="q" data-i18n="q2">Nhạc của tôi sẽ lên những đâu?</span><span class="pm">+</span></summary>
+      <p class="a" data-i18n="a2">Spotify, Apple Music, TikTok, YouTube Music, Amazon Music, Deezer, TIDAL, SoundCloud, Beatport — cùng hai nền tảng lớn nhất Việt Nam là NhacCuaTui và Zing MP3. Tính chung là hơn 200 cửa hàng nhạc số trên toàn thế giới.</p>
+    </details>
+    <details>
+      <summary><span class="q" data-i18n="q3">Bao lâu thì nhạc lên sóng?</span><span class="pm">+</span></summary>
+      <p class="a" data-i18n="a3">Nhanh nhất là 24–36 giờ, thường thì 1–2 tuần kể từ khi hồ sơ phát hành đầy đủ. Bạn nên gửi trước ngày ra mắt khoảng 3–4 tuần để còn kịp pitch playlist và chuẩn bị truyền thông.</p>
+    </details>
+    <details>
+      <summary><span class="q" data-i18n="q4">Tôi có giữ bản quyền nhạc của mình không?</span><span class="pm">+</span></summary>
+      <p class="a" data-i18n="a4">Có. Tác phẩm vẫn là của bạn. Mọi điều khoản hợp tác và cách chia doanh thu đều thống nhất rõ ràng trước khi phát hành — không có dòng chữ nhỏ nào.</p>
+    </details>
+    <details>
+      <summary><span class="q" data-i18n="q5">Haustek có nhận booking và tổ chức sự kiện không?</span><span class="pm">+</span></summary>
+      <p class="a" data-i18n="a5">Có — DJ set, live band, trình diễn kèm visual. Bạn xem thử <a href="#/events">những đêm đã làm</a>, hoặc mail thẳng cho <a href="mailto:mgmt@haustek-group.com">mgmt@haustek-group.com</a>.</p>
+    </details>
+    <details>
+      <summary><span class="q" data-i18n="q6">Tôi có ý tưởng nhưng chưa đủ người làm, Haustek giúp được không?</span><span class="pm">+</span></summary>
+      <p class="a" data-i18n="a6">Được. Đội kỹ sư âm thanh và nhạc sĩ của Haustek, được đào tạo tại các nhạc viện và đại học trong lẫn ngoài nước, sẽ bù đúng phần bạn đang thiếu — từ sản xuất, phối khí cho đến lúc bản thu hoàn chỉnh.</p>
+    </details>
+  </div>
 </section>
 
 <!-- 06 CONTACT -->
-<section id="contact">
+<section id="contact" class="zone z-contact">
   <div class="ghost" aria-hidden="true">06</div>
   <p class="kicker rv"><i>●</i><span data-i18n="ct_k">Liên hệ</span></p>
-  <h2 class="rv" data-i18n="ct_h">Bạn có bản nhạc?<br><em>Chúng tôi có sân khấu.</em></h2>
+  <h2 class="rv" data-i18n="ct_h"><span class="ln">Bạn có bản nhạc?</span> <span class="ln"><em>Chúng tôi có sân khấu.</em></span></h2>
   <a class="mail-giant rv" href="mailto:mgmt@haustek-group.com">mgmt@haustek<span style="color:var(--red)">-</span>group.com</a>
   <div class="store-links rv">
     <a href="https://fanlink.to/HASpotify" target="_blank" rel="noopener">Spotify ↗</a>
@@ -544,48 +642,48 @@ a:focus-visible,button:focus-visible,summary:focus-visible,input:focus-visible,t
 
 <!-- ===================== EVENTS ===================== -->
 <main id="page-events" class="page">
-<section style="padding-top:140px">
+<section class="zone z-page" style="padding-top:140px">
   <div class="ghost" aria-hidden="true">EV</div>
   <p class="kicker"><i>●</i><span data-i18n="ev_k">Sự kiện · từ 2017</span></p>
-  <h2 data-i18n="ev_h">Những đêm mà Haustek<br><em>đứng sau âm thanh.</em></h2>
-  <p class="smallp" style="margin-top:18px" data-i18n="ev_p">Từ những đêm techno nhỏ ở Sài Gòn đến chuỗi livestream trải khắp châu Á — những sân khấu chúng tôi đã dàn dựng, đã chơi, và đã lên sóng.</p>
+  <h2 data-i18n="ev_h"><span class="ln">Những đêm Haustek</span> <span class="ln"><em>đứng sau âm thanh.</em></span></h2>
+  <p class="smallp" style="margin-top:20px" data-i18n="ev_p">Từ những đêm techno nhỏ ở Sài Gòn cho tới chuỗi livestream trải khắp châu Á — đây là những sân khấu chúng tôi đã dựng, đã chơi và đã lên sóng.</p>
 
   <div class="rowlist">
     <div class="row">
       <span class="idx">2020<br>·21</span><span class="ttl">United We Stream Asia</span><span class="meta" data-i18n="ev1m">Livestream toàn cầu</span>
-      <span class="desc" data-i18n="ev1d">Chuỗi livestream quy tụ nghệ sĩ điện tử Đông Nam Á giữa những năm giãn cách. Haustek đảm trách lineup Việt: DJ set, visual và dàn dựng sân khấu ảo.</span>
+      <span class="desc" data-i18n="ev1d">Chuỗi livestream gom nghệ sĩ điện tử Đông Nam Á lại với nhau giữa những năm giãn cách. Haustek lo phần lineup Việt Nam: DJ set, visual và dựng sân khấu ảo.</span>
     </div>
     <div class="row">
       <span class="idx">2021→</span><span class="ttl">Haustek Podcast Sessions</span><span class="meta">18+ live sets</span>
-      <span class="desc" data-i18n="ev2d">Chuỗi DJ set từ dàn resident Haustek — thu và phát hành như album live trên các nền tảng.</span>
+      <span class="desc" data-i18n="ev2d">Chuỗi DJ set của dàn nghệ sĩ nhà Haustek — thu lại rồi phát hành như một album live trên các nền tảng.</span>
     </div>
     <div class="row">
       <span class="idx">2022</span><span class="ttl">5-Year Anniversary</span><span class="meta">hausvn × technovn</span>
-      <span class="desc" data-i18n="ev3d">Đêm kỷ niệm 5 năm, quy tụ nghệ sĩ nội bộ và khách mời — kèm album live phát hành sau đó.</span>
+      <span class="desc" data-i18n="ev3d">Đêm kỷ niệm 5 năm với nghệ sĩ trong nhà và khách mời, sau đó có luôn một album live ra mắt.</span>
     </div>
     <div class="row">
       <span class="idx">2017→</span><span class="ttl" data-i18n="ev4t">Club nights Việt Nam</span><span class="meta">SG · HN · Đà Lạt</span>
-      <span class="desc" data-i18n="ev4d">Những đêm nhỏ ở club và không gian ngầm khắp ba miền — nơi những gương mặt mới của Haustek lần đầu bước lên bàn mix.</span>
+      <span class="desc" data-i18n="ev4d">Những đêm nhỏ ở các club và không gian ngầm khắp ba miền — nơi nhiều gương mặt mới của Haustek lần đầu đứng sau bàn mix.</span>
     </div>
     <div class="row">
       <span class="idx">—</span><span class="ttl" data-i18n="ev5t">Brand events</span><span class="meta" data-i18n="ev5m">Launch · Campaign</span>
-      <span class="desc" data-i18n="ev5d">Haustek dựng phần âm nhạc và visual cho các đêm launch, showroom và campaign — trọn gói từ concept đến vận hành.</span>
+      <span class="desc" data-i18n="ev5d">Haustek lo phần âm nhạc và hình ảnh cho các đêm ra mắt, showroom và campaign — từ concept cho tới lúc chạy thật.</span>
     </div>
   </div>
 
-  <p class="statement" style="margin-top:70px" data-i18n="ev_cta">Muốn Haustek dựng đêm cho bạn? <a href="mailto:mgmt@haustek-group.com" style="color:var(--red)">Gửi yêu cầu booking →</a></p>
+  <p class="statement" style="margin-top:70px" data-i18n="ev_cta">Muốn Haustek dựng một đêm cho bạn? <a href="mailto:mgmt@haustek-group.com" style="color:var(--red)">Gửi yêu cầu booking →</a></p>
 </section>
 </main>
 
 <!-- ===================== SUBMIT ===================== -->
 <main id="page-submit" class="page">
-<section style="padding-top:140px">
+<section class="zone z-page" style="padding-top:140px">
   <div class="ghost" aria-hidden="true">A&amp;R</div>
   <p class="kicker"><i>●</i><span data-i18n="sb_k">Gửi nhạc</span></p>
-  <h2 data-i18n="sb_h">Demo của bạn,<br><em>đến thẳng</em> bàn A&amp;R.</h2>
-  <p class="smallp" style="margin-top:18px" data-i18n="sb_p">Điền vài dòng bên dưới — bấm gửi, hộp thư sẽ mở sẵn email cho đội A&amp;R của Haustek. Demo nào gửi tới, chúng tôi cũng nghe.</p>
+  <h2 data-i18n="sb_h"><span class="ln">Demo của bạn,</span> <span class="ln"><em>gửi thẳng bàn A&amp;R.</em></span></h2>
+  <p class="smallp" style="margin-top:20px" data-i18n="sb_p">Điền vài dòng bên dưới rồi bấm gửi — hộp thư của bạn sẽ mở sẵn một email cho đội A&amp;R. Demo nào gửi tới, chúng tôi cũng nghe.</p>
 
-  <form id="demoForm" class="form-ed">
+  <form id="demoForm" class="form-ed glass">
     <div class="f-2">
       <div class="f-line">
         <label for="f-name" data-i18n="f_name">Nghệ danh</label>
@@ -612,9 +710,9 @@ a:focus-visible,button:focus-visible,summary:focus-visible,input:focus-visible,t
     </div>
     <div class="f-line">
       <label for="f-msg" data-i18n="f_msg">Vài dòng về bạn và bản nhạc</label>
-      <textarea id="f-msg" name="msg" data-i18n-ph="f_ph" placeholder="Bạn là ai, bản nhạc này ra đời thế nào, bạn muốn cùng Haustek đi đến đâu…"></textarea>
+      <textarea id="f-msg" name="msg" data-i18n-ph="f_ph" placeholder="Bạn là ai, bản nhạc này ra đời thế nào, bạn muốn đi tới đâu cùng Haustek…"></textarea>
     </div>
-    <p class="f-note" data-i18n="f_note">* Đừng đính kèm file — hãy dán link nghe riêng tư. Mỗi demo được nghe trong vòng 7–14 ngày.</p>
+    <p class="f-note" data-i18n="f_note">* Đừng đính kèm file — dán một link nghe riêng tư là được. Mỗi demo đều được nghe trong vòng 7–14 ngày.</p>
     <button class="send-btn" type="submit">
       <span data-i18n="f_send">Gửi demo</span>
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
@@ -624,7 +722,11 @@ a:focus-visible,button:focus-visible,summary:focus-visible,input:focus-visible,t
 </main>
 
 <footer>
-  <a class="foot-giant" href="#top" aria-label="Về đầu trang">HAUSTEK</a>
+  <a class="foot-mark" href="#top" aria-label="Về đầu trang">
+    <svg viewBox="0 0 1000 170" preserveAspectRatio="xMidYMid meet" role="img" aria-hidden="true">
+      <text x="500" y="130" text-anchor="middle">HAUSTEK</text>
+    </svg>
+  </a>
   <div class="foot-row">
     <p>© 2026 Haustek · Los Angeles → Việt Nam · Since 2017</p>
     <div class="fsoc">
@@ -647,138 +749,144 @@ document.getElementById('roster').innerHTML =
 const I18N={
   vi:{
     _title:"Haustek — Music Label & Distribution | Để nhạc Việt vang xa hơn",
-    _desc:"Haustek — music label & distribution từ 2017. Sự kiện, sản xuất, phát hành, quảng cáo và tư vấn chiến lược cho âm nhạc. Hơn 200 cửa hàng nhạc số toàn cầu.",
+    _desc:"Haustek — music label & distribution từ 2017. Làm sự kiện, sản xuất, phát hành, quảng bá và tư vấn chiến lược cho âm nhạc. Hơn 200 cửa hàng nhạc số khắp thế giới.",
     nav_home:"Trang chủ",nav_events:"Sự kiện",nav_services:"Dịch vụ",nav_stores:"Cửa hàng",nav_artists:"Nghệ sĩ",nav_submit:"Gửi nhạc",
     hero_k:"Music label & distribution — est. 2017",
     h1_l1:"Để nhạc Việt", h1_l2:"<em>vang xa</em> hơn.",
-    hero_sub:"<strong>Haustek</strong> đưa âm nhạc đi xa hơn — từ sàn diễn underground đến hơn 200 nền tảng số toàn cầu. Sự kiện, sản xuất, phát hành, quảng cáo và tư vấn chiến lược cho âm nhạc — tất cả trong một hệ sinh thái.",
+    hero_sub:"<strong>Haustek</strong> đưa nhạc đi xa hơn — từ sàn diễn underground ra hơn 200 nền tảng số khắp thế giới. Làm sự kiện, sản xuất, phát hành, quảng bá và tư vấn chiến lược: trọn một hệ sinh thái, một đầu mối.",
     ring:"NGHE THỬ BEAT · 124 BPM · HAUSTEK · ",
-    st_streams:"Lượt nghe",st_founded:"Thành lập",st_stores:"Cửa hàng nhạc số",
+    st_streams:"Lượt nghe",st_founded:"Thành lập",st_stores:"Cửa hàng nhạc số",st_rel:"Bản phát hành",
     ab_k:"Về Haustek",
-    ab_h:"Gốc rễ toàn cầu.<br><em>Thuộc về</em> nhạc Việt.",
-    ab_st:"Gần một thập kỷ — từ những đêm diễn underground đến sân khấu quốc tế. Khởi đầu với techno và house, Haustek mang theo sứ mệnh đưa âm nhạc Việt Nam vươn ra toàn cầu.",
-    ab_p:"Haustek quy tụ producer, DJ, VJ, rapper, ban nhạc và nghệ sĩ Việt trên khắp thế giới. Chúng tôi phân phối âm nhạc, sản xuất âm nhạc, tư vấn bản quyền, tổ chức sự kiện, dàn dựng trình diễn nghệ thuật và quảng cáo nhãn hàng — mỗi lần phát hành là một lần bắc cầu, để tiếng kick dưới hầm techno hay dải ambient mỏng như sương chạm tới người nghe ở khắp nơi.",
-    f1b:"Thành lập",f2b:"Hoạt động",f2s:"Việt Nam & toàn cầu",f3b:"Chuyên môn",f4b:"Bản thu đi xa nhất",f5b:"Người nghe",f5s:"3.500.000+ mỗi tháng",
+    ab_h:'<span class="ln">Gốc rễ toàn cầu,</span> <span class="ln"><em>thuộc về</em> nhạc Việt.</span>',
+    ab_st:'<span class="ln">Gần một thập kỷ,</span> <span class="ln">từ những đêm underground</span> <span class="ln">đến sân khấu quốc tế.</span> <span class="ln">Bắt đầu bằng techno và house,</span> <span class="ln">Haustek đi theo một điều duy nhất:</span> <span class="ln">đưa nhạc Việt ra thế giới.</span>',
+    ab_p:"Ở đây có producer, DJ, VJ, rapper, ban nhạc và ca sĩ người Việt từ khắp nơi. Chúng tôi phát hành nhạc, sản xuất nhạc, tư vấn bản quyền, dựng sự kiện, dàn dựng trình diễn và làm quảng cáo cho nhãn hàng. Mỗi bản thu ra mắt là thêm một nhịp cầu — để tiếng kick dưới hầm techno hay dải ambient mỏng như sương tìm được người nghe của nó.",
+    f1b:"Thành lập",f2b:"Địa bàn",f2s:"Việt Nam & toàn cầu",f3b:"Mảng làm",f3s:"Phát hành · Label · Sự kiện · Sản xuất · Tư vấn",f4b:"Đi xa nhất",f5b:"Người nghe",f5s:"3.500.000+ mỗi tháng",
     sv_k:"Chúng tôi làm gì",
-    sv_h:"Bạn cần giải pháp?<br><em>Haustek cung cấp.</em>",
-    sv_lead:"Âm nhạc, giải trí, sản xuất, quảng cáo và marketing — năm mảng dịch vụ, một hệ sinh thái.",
-    sv1t:"Phân phối & khai thác bản ghi",
-    sv1:"Đưa nhạc của bạn lên hơn 200 cửa hàng nhạc số — Spotify, Apple Music, TikTok, YouTube Music, NhacCuaTui, Zing MP3… — và khai thác bản ghi trên mọi kênh. Lên sóng đúng lịch, số liệu minh bạch, báo cáo rõ ràng.",
-    sv2t:"Nhãn thâu âm nhạc",
-    sv2:"Định hình chất riêng, xây hình ảnh nghệ sĩ và vạch lộ trình phát hành đường dài — trong nước lẫn quốc tế. Demo nào gửi tới, chúng tôi cũng nghe.",
+    sv_h:'<span class="ln">Bạn cần gì cho âm nhạc,</span> <span class="ln"><em>Haustek có ở đây.</em></span>',
+    sv_lead:"Âm nhạc, giải trí, sản xuất, quảng cáo, marketing — năm mảng việc nằm chung một mái nhà, nên bạn chỉ cần nói chuyện với một nơi.",
+    sv1t:"Phát hành & khai thác bản ghi",
+    sv1:"Nhạc của bạn có mặt ở hơn 200 cửa hàng số — Spotify, Apple Music, TikTok, YouTube Music, NhacCuaTui, Zing MP3 và nhiều nơi khác. Chúng tôi lo luôn phần khai thác bản ghi: lên sóng đúng hẹn, số liệu công khai, báo cáo rõ từng khoản.",
+    sv2t:"Nhãn thu âm",
+    sv2:"Cùng bạn tìm ra chất riêng, dựng hình ảnh nghệ sĩ và vạch lộ trình ra nhạc cho cả chặng đường dài, trong nước lẫn ngoài nước. Gửi demo tới đây, chắc chắn có người ngồi nghe.",
     sv3t:"Tổ chức sự kiện",
-    sv3:'Từ đêm diễn trong nước đến chuỗi quốc tế như United We Stream Asia — nơi âm nhạc, visual và trình diễn quyện làm một. <a href="#/events">Xem các sự kiện đã làm →</a>',
+    sv3:'Từ đêm diễn trong nước đến chuỗi quốc tế như United We Stream Asia — nơi âm nhạc, hình ảnh và trình diễn hòa vào làm một. <a href="#/events">Xem những đêm đã làm →</a>',
     sv4t:"Sản xuất âm nhạc",
-    sv4:"Đội ngũ kỹ sư âm thanh và nhạc sĩ tốt nghiệp từ các nhạc viện, trường đại học trên thế giới — sản xuất nhạc và quảng cáo cho nhãn hàng, nhạc phim, jingle, campaign. Trọn gói từ ý tưởng đến thành phẩm.",
+    sv4:"Đội kỹ sư âm thanh và nhạc sĩ được đào tạo tại các nhạc viện, đại học trong và ngoài nước. Nhận làm nhạc phim, jingle, nhạc quảng cáo cho nhãn hàng — theo bạn từ lúc còn là ý tưởng đến khi có bản master.",
     sv5t:"Booking nghệ sĩ",
-    sv5:"DJ set, live band, trình diễn nghệ thuật kèm visual — cho brand, festival và không gian riêng.",
-    stw_k:"Nhạc của bạn sẽ có mặt ở",
-    stw_h:"Mọi nơi<br>người ta <em>đang nghe.</em>",
-    stw_note:"— và hơn 200 cửa hàng nhạc số khác trên toàn thế giới.",
-    ar_k:"Nghệ sĩ",ar_h:"Nghệ sĩ<br><em>hợp tác.</em>",
-    ar_note:"— và các producer, songwriter, DJ, VJ, vocalist khác trong nước & nước ngoài.",
-    pq:'"Bạn lo phần sáng tạo. <em>Chúng tôi lo phần còn lại.</em>"',
+    sv5:"DJ set, live band, trình diễn nghệ thuật kèm visual — cho nhãn hàng, festival hay không gian riêng của bạn.",
+    stw_k:"Nhạc của bạn sẽ nằm ở",
+    stw_h:'<span class="ln">Mọi nơi người ta</span> <span class="ln"><em>đang nghe nhạc.</em></span>',
+    stw_note:"Và hơn 200 cửa hàng nhạc số khác trên toàn thế giới",
+    ar_k:"Nghệ sĩ",
+    ar_h:'<span class="ln">Những người</span> <span class="ln">đã <em>cùng làm nhạc.</em></span>',
+    ar_note:"Cùng nhiều producer, songwriter, DJ, VJ và ca sĩ khác, trong nước lẫn ngoài nước",
+    pq:'<span class="ln">“Bạn lo phần sáng tạo.</span> <span class="ln"><em>Chúng tôi lo phần còn lại.”</em></span>',
     pq_by:"Lời cam kết đến từ Haustek",
-    fq_h:"Hỏi nhanh,<br><em>đáp gọn.</em>",
+    fq_h:'<span class="ln">Hỏi nhanh,</span> <span class="ln"><em>đáp gọn.</em></span>',
     q1:"Gửi demo cho Haustek bằng cách nào?",
-    a1:'Dùng trang <a href="#/submit">Gửi nhạc</a> ngay trên website, hoặc email <a href="mailto:mgmt@haustek-group.com">mgmt@haustek-group.com</a> kèm link nghe riêng tư (SoundCloud, Drive…) và vài dòng giới thiệu.',
+    a1:'Điền vào trang <a href="#/submit">Gửi nhạc</a> ngay trên website, hoặc gửi mail tới <a href="mailto:mgmt@haustek-group.com">mgmt@haustek-group.com</a> kèm một link nghe riêng tư (SoundCloud, Drive…) và vài dòng về bạn.',
     q2:"Nhạc của tôi sẽ lên những đâu?",
-    a2:"Spotify, Apple Music, TikTok, YouTube Music, Amazon Music, Deezer, TIDAL, SoundCloud, Beatport — và cả hai nền tảng lớn nhất Việt Nam: NhacCuaTui và Zing MP3. Tổng cộng hơn 200 cửa hàng nhạc số trên toàn thế giới.",
+    a2:"Spotify, Apple Music, TikTok, YouTube Music, Amazon Music, Deezer, TIDAL, SoundCloud, Beatport — cùng hai nền tảng lớn nhất Việt Nam là NhacCuaTui và Zing MP3. Tính chung là hơn 200 cửa hàng nhạc số trên toàn thế giới.",
     q3:"Bao lâu thì nhạc lên sóng?",
-    a3:"Nhanh nhất trong 24–36 giờ. Thường 1–2 tuần sau khi hồ sơ phát hành hoàn tất. Nên gửi sớm 3–4 tuần trước ngày ra mắt để kịp pitch playlist và chuẩn bị truyền thông.",
+    a3:"Nhanh nhất là 24–36 giờ, thường thì 1–2 tuần kể từ khi hồ sơ phát hành đầy đủ. Bạn nên gửi trước ngày ra mắt khoảng 3–4 tuần để còn kịp pitch playlist và chuẩn bị truyền thông.",
     q4:"Tôi có giữ bản quyền nhạc của mình không?",
-    a4:"Có. Tác phẩm vẫn thuộc về bạn; mọi điều khoản hợp tác và chia sẻ doanh thu đều được thống nhất rõ ràng trước khi phát hành — không có chữ nhỏ.",
+    a4:"Có. Tác phẩm vẫn là của bạn. Mọi điều khoản hợp tác và cách chia doanh thu đều thống nhất rõ ràng trước khi phát hành — không có dòng chữ nhỏ nào.",
     q5:"Haustek có nhận booking và tổ chức sự kiện không?",
-    a5:'Có — DJ set, live band, trình diễn kèm visual. Xem <a href="#/events">các sự kiện đã làm</a> hoặc email <a href="mailto:mgmt@haustek-group.com">mgmt@haustek-group.com</a>.',
-    q6:"Có ý tưởng nhưng thiếu người hoàn thiện — Haustek giúp được không?",
-    a6:"Có. Đội ngũ kỹ sư âm thanh và nhạc sĩ tốt nghiệp từ các nhạc viện, trường đại học trên thế giới sẽ cung cấp đúng phần bạn đang thiếu — từ sản xuất, phối khí đến hoàn thiện bản thu.",
-    ct_k:"Liên hệ",ct_h:"Bạn có bản nhạc?<br><em>Chúng tôi có sân khấu.</em>",
+    a5:'Có — DJ set, live band, trình diễn kèm visual. Bạn xem thử <a href="#/events">những đêm đã làm</a>, hoặc mail thẳng cho <a href="mailto:mgmt@haustek-group.com">mgmt@haustek-group.com</a>.',
+    q6:"Tôi có ý tưởng nhưng chưa đủ người làm, Haustek giúp được không?",
+    a6:"Được. Đội kỹ sư âm thanh và nhạc sĩ của Haustek, được đào tạo tại các nhạc viện và đại học trong lẫn ngoài nước, sẽ bù đúng phần bạn đang thiếu — từ sản xuất, phối khí cho đến lúc bản thu hoàn chỉnh.",
+    ct_k:"Liên hệ",
+    ct_h:'<span class="ln">Bạn có bản nhạc?</span> <span class="ln"><em>Chúng tôi có sân khấu.</em></span>',
     ev_k:"Sự kiện · từ 2017",
-    ev_h:"Những đêm mà Haustek<br><em>đứng sau âm thanh.</em>",
-    ev_p:"Từ những đêm techno nhỏ ở Sài Gòn đến chuỗi livestream trải khắp châu Á — những sân khấu chúng tôi đã dàn dựng, đã chơi, và đã lên sóng.",
+    ev_h:'<span class="ln">Những đêm Haustek</span> <span class="ln"><em>đứng sau âm thanh.</em></span>',
+    ev_p:"Từ những đêm techno nhỏ ở Sài Gòn cho tới chuỗi livestream trải khắp châu Á — đây là những sân khấu chúng tôi đã dựng, đã chơi và đã lên sóng.",
     ev1m:"Livestream toàn cầu",
-    ev1d:"Chuỗi livestream quy tụ nghệ sĩ điện tử Đông Nam Á giữa những năm giãn cách. Haustek đảm trách lineup Việt: DJ set, visual và dàn dựng sân khấu ảo.",
-    ev2d:"Chuỗi DJ set từ dàn resident Haustek — thu và phát hành như album live trên các nền tảng.",
-    ev3d:"Đêm kỷ niệm 5 năm, quy tụ nghệ sĩ nội bộ và khách mời — kèm album live phát hành sau đó.",
+    ev1d:"Chuỗi livestream gom nghệ sĩ điện tử Đông Nam Á lại với nhau giữa những năm giãn cách. Haustek lo phần lineup Việt Nam: DJ set, visual và dựng sân khấu ảo.",
+    ev2d:"Chuỗi DJ set của dàn nghệ sĩ nhà Haustek — thu lại rồi phát hành như một album live trên các nền tảng.",
+    ev3d:"Đêm kỷ niệm 5 năm với nghệ sĩ trong nhà và khách mời, sau đó có luôn một album live ra mắt.",
     ev4t:"Club nights Việt Nam",
-    ev4d:"Những đêm nhỏ ở club và không gian ngầm khắp ba miền — nơi những gương mặt mới của Haustek lần đầu bước lên bàn mix.",
+    ev4d:"Những đêm nhỏ ở các club và không gian ngầm khắp ba miền — nơi nhiều gương mặt mới của Haustek lần đầu đứng sau bàn mix.",
     ev5t:"Brand events",ev5m:"Launch · Campaign",
-    ev5d:"Haustek dựng phần âm nhạc và visual cho các đêm launch, showroom và campaign — trọn gói từ concept đến vận hành.",
-    ev_cta:'Muốn Haustek dựng đêm cho bạn? <a href="mailto:mgmt@haustek-group.com" style="color:var(--red)">Gửi yêu cầu booking →</a>',
-    sb_k:"Gửi nhạc",sb_h:"Demo của bạn,<br><em>đến thẳng</em> bàn A&R.",
-    sb_p:"Điền vài dòng bên dưới — bấm gửi, hộp thư sẽ mở sẵn email cho đội A&R của Haustek. Demo nào gửi tới, chúng tôi cũng nghe.",
+    ev5d:"Haustek lo phần âm nhạc và hình ảnh cho các đêm ra mắt, showroom và campaign — từ concept cho tới lúc chạy thật.",
+    ev_cta:'Muốn Haustek dựng một đêm cho bạn? <a href="mailto:mgmt@haustek-group.com" style="color:var(--red)">Gửi yêu cầu booking →</a>',
+    sb_k:"Gửi nhạc",
+    sb_h:'<span class="ln">Demo của bạn,</span> <span class="ln"><em>gửi thẳng bàn A&R.</em></span>',
+    sb_p:"Điền vài dòng bên dưới rồi bấm gửi — hộp thư của bạn sẽ mở sẵn một email cho đội A&R. Demo nào gửi tới, chúng tôi cũng nghe.",
     f_name:"Nghệ danh",f_mail:"Email",f_genre:"Thể loại",f_other:"Khác",f_link:"Link nghe riêng tư",
     f_msg:"Vài dòng về bạn và bản nhạc",
-    f_ph:"Bạn là ai, bản nhạc này ra đời thế nào, bạn muốn cùng Haustek đi đến đâu…",
-    f_note:"* Đừng đính kèm file — hãy dán link nghe riêng tư. Mỗi demo được nghe trong vòng 7–14 ngày.",
+    f_ph:"Bạn là ai, bản nhạc này ra đời thế nào, bạn muốn đi tới đâu cùng Haustek…",
+    f_note:"* Đừng đính kèm file — dán một link nghe riêng tư là được. Mỗi demo đều được nghe trong vòng 7–14 ngày.",
     f_send:"Gửi demo"
   },
   en:{
     _title:"Haustek — Music Label & Distribution | Vietnamese music, heard worldwide",
-    _desc:"Haustek — music label & distribution since 2017. Events, production, releases, advertising and strategic consulting for music. 200+ digital music stores worldwide.",
+    _desc:"Haustek — music label & distribution since 2017. Events, production, releases, promotion and strategic consulting for music. 200+ digital music stores worldwide.",
     nav_home:"Home",nav_events:"Events",nav_services:"Services",nav_stores:"Stores",nav_artists:"Artists",nav_submit:"Submit",
     hero_k:"Music label & distribution — est. 2017",
     h1_l1:"Made in Vietnam.", h1_l2:"<em>Heard</em> worldwide.",
-    hero_sub:"<strong>Haustek</strong> carries music further — from underground stages to 200+ digital platforms worldwide. Events, production, releases, advertising and strategic consulting for music — all in one ecosystem.",
+    hero_sub:"<strong>Haustek</strong> carries music further — from underground stages to 200+ digital platforms worldwide. Events, production, releases, promotion and strategy: one ecosystem, one place to talk to.",
     ring:"PLAY THE BEAT · 124 BPM · HAUSTEK · ",
-    st_streams:"Streams",st_founded:"Founded",st_stores:"Music stores",
+    st_streams:"Streams",st_founded:"Founded",st_stores:"Music stores",st_rel:"Releases",
     ab_k:"About Haustek",
-    ab_h:"Global roots.<br><em>Devoted to</em> Vietnamese music.",
-    ab_st:"Nearly a decade — from underground nights to international stages. Starting from techno and house, Haustek carries one mission: bringing Vietnamese music to the world.",
-    ab_p:"Haustek gathers Vietnamese producers, DJs, VJs, rappers, bands and artists worldwide. We distribute music, produce music, consult on rights, run events, stage performances and craft brand campaigns — every release builds a bridge, carrying a bunker techno kick or a mist-thin ambient wash to listeners everywhere.",
-    f1b:"Founded",f2b:"Based",f2s:"Vietnam & worldwide",f3b:"Practice",f4b:"Farthest-travelled track",f5b:"Listeners",f5s:"3,500,000+ monthly",
+    ab_h:'<span class="ln">Global roots,</span> <span class="ln"><em>devoted to</em> Vietnamese music.</span>',
+    ab_st:'<span class="ln">Nearly a decade,</span> <span class="ln">from underground nights</span> <span class="ln">to international stages.</span> <span class="ln">Starting with techno and house,</span> <span class="ln">Haustek follows one thing:</span> <span class="ln">taking Vietnamese music to the world.</span>',
+    ab_p:"Here you will find Vietnamese producers, DJs, VJs, rappers, bands and vocalists from everywhere. We release music, produce music, advise on rights, run events, stage performances and craft brand campaigns. Every record we put out is another bridge — so a bunker techno kick or a mist-thin ambient wash can find the ears it belongs to.",
+    f1b:"Founded",f2b:"Based",f2s:"Vietnam & worldwide",f3b:"Practice",f3s:"Distribution · Label · Events · Production · Consulting",f4b:"Farthest reach",f5b:"Listeners",f5s:"3,500,000+ monthly",
     sv_k:"What we do",
-    sv_h:"Need a solution?<br><em>Haustek delivers.</em>",
-    sv_lead:"Music, entertainment, production, advertising and marketing — five practices, one ecosystem.",
+    sv_h:'<span class="ln">Whatever your music needs,</span> <span class="ln"><em>Haustek has it here.</em></span>',
+    sv_lead:"Music, entertainment, production, advertising, marketing — five practices under one roof, so you only ever talk to one team.",
     sv1t:"Distribution & recordings",
-    sv1:"We carry your music to 200+ digital stores — Spotify, Apple Music, TikTok, YouTube Music, NhacCuaTui, Zing MP3… — and monetise recordings on every channel. On schedule, transparent numbers, clear reporting.",
-    sv2t:"Music label",
-    sv2:"Shape your sound, build your image and map a long-term release roadmap — at home and abroad. Every demo gets listened to.",
+    sv1:"Your music lands in 200+ digital stores — Spotify, Apple Music, TikTok, YouTube Music, NhacCuaTui, Zing MP3 and many more. We handle the monetisation too: on schedule, open numbers, every line of the report explained.",
+    sv2t:"Record label",
+    sv2:"We help you find your own sound, build your artist image and map a release path for the long run, at home and abroad. Send a demo here and someone really will sit down and listen.",
     sv3t:"Event production",
-    sv3:'From local club nights to international series like United We Stream Asia — where music, visuals and performance become one. <a href="#/events">See past events →</a>',
+    sv3:'From local club nights to international series like United We Stream Asia — where music, visuals and performance become one thing. <a href="#/events">See the nights we have built →</a>',
     sv4t:"Music production",
-    sv4:"Sound engineers and musicians trained at conservatories and universities worldwide — producing music and brand work: film scores, jingles, campaigns. End to end, idea to final cut.",
+    sv4:"Sound engineers and musicians trained at conservatories and universities at home and abroad. Film scores, jingles, brand music — we stay with you from the first idea to the finished master.",
     sv5t:"Artist booking",
-    sv5:"DJ sets, live bands, art performances with visuals — for brands, festivals and private spaces.",
-    stw_k:"Your music will be on",
-    stw_h:"Everywhere<br>people are <em>listening.</em>",
-    stw_note:"— and 200+ more digital music stores worldwide.",
-    ar_k:"Artists",ar_h:"Collaborating<br><em>artists.</em>",
-    ar_note:"— and more producers, songwriters, DJs, VJs and vocalists at home & abroad.",
-    pq:'"You handle the creative. <em>We handle the rest.</em>"',
+    sv5:"DJ sets, live bands, art performances with visuals — for brands, festivals or your own space.",
+    stw_k:"Your music will live on",
+    stw_h:'<span class="ln">Everywhere people</span> <span class="ln"><em>are listening.</em></span>',
+    stw_note:"And 200+ more digital music stores around the world",
+    ar_k:"Artists",
+    ar_h:'<span class="ln">The people</span> <span class="ln">we have <em>made music with.</em></span>',
+    ar_note:"Along with many more producers, songwriters, DJs, VJs and vocalists at home and abroad",
+    pq:'<span class="ln">“You handle the creative.</span> <span class="ln"><em>We handle the rest.”</em></span>',
     pq_by:"A commitment from Haustek",
-    fq_h:"Quick questions,<br><em>straight answers.</em>",
+    fq_h:'<span class="ln">Quick questions,</span> <span class="ln"><em>straight answers.</em></span>',
     q1:"How do I send Haustek a demo?",
-    a1:'Use the <a href="#/submit">Submit</a> page right here, or email <a href="mailto:mgmt@haustek-group.com">mgmt@haustek-group.com</a> with a private streaming link and a few lines about yourself.',
+    a1:'Fill in the <a href="#/submit">Submit</a> page right here, or email <a href="mailto:mgmt@haustek-group.com">mgmt@haustek-group.com</a> with a private streaming link (SoundCloud, Drive…) and a few lines about yourself.',
     q2:"Where will my music be available?",
-    a2:"Spotify, Apple Music, TikTok, YouTube Music, Amazon Music, Deezer, TIDAL, SoundCloud, Beatport — plus Vietnam's two biggest platforms: NhacCuaTui and Zing MP3. Over 200 digital music stores worldwide.",
+    a2:"Spotify, Apple Music, TikTok, YouTube Music, Amazon Music, Deezer, TIDAL, SoundCloud, Beatport — plus Vietnam's two biggest platforms, NhacCuaTui and Zing MP3. Over 200 digital music stores in total, worldwide.",
     q3:"How long until my music goes live?",
-    a3:"As fast as 24–36 hours. Usually 1–2 weeks once your release package is complete. Submit 3–4 weeks ahead of release day to leave room for playlist pitching and promo.",
+    a3:"As fast as 24–36 hours, though usually 1–2 weeks once your release package is complete. Send it 3–4 weeks before release day so there is room for playlist pitching and promo.",
     q4:"Do I keep the rights to my music?",
-    a4:"Yes. Your work stays yours; every partnership and revenue-share term is agreed clearly before release — no fine print.",
+    a4:"Yes. The work stays yours. Every term of the partnership and the revenue split is agreed clearly before release — there is no fine print.",
     q5:"Does Haustek take bookings and produce events?",
-    a5:'Yes — DJ sets, live bands and visual performances. See <a href="#/events">past events</a> or email <a href="mailto:mgmt@haustek-group.com">mgmt@haustek-group.com</a>.',
-    q6:"Got an idea but missing the hands to finish it — can Haustek help?",
-    a6:"Yes. Our sound engineers and musicians, trained at conservatories and universities worldwide, provide exactly the part you are missing — from production and arrangement to the finished record.",
-    ct_k:"Contact",ct_h:"Got the track?<br><em>We have the stage.</em>",
+    a5:'Yes — DJ sets, live bands, performances with visuals. Have a look at <a href="#/events">the nights we have done</a>, or write straight to <a href="mailto:mgmt@haustek-group.com">mgmt@haustek-group.com</a>.',
+    q6:"I have an idea but not enough people to finish it. Can Haustek help?",
+    a6:"Yes. Our sound engineers and musicians, trained at conservatories and universities at home and abroad, fill in exactly the part you are missing — from production and arrangement through to the finished record.",
+    ct_k:"Contact",
+    ct_h:'<span class="ln">Got the track?</span> <span class="ln"><em>We have the stage.</em></span>',
     ev_k:"Events · since 2017",
-    ev_h:"The nights where Haustek<br><em>was behind the sound.</em>",
-    ev_p:"From small techno nights in Saigon to livestream series stretched across Asia — the stages we built, played and broadcast.",
+    ev_h:'<span class="ln">The nights Haustek</span> <span class="ln"><em>stood behind the sound.</em></span>',
+    ev_p:"From small techno nights in Saigon to livestream series stretched across Asia — these are the stages we built, played and broadcast.",
     ev1m:"Global livestream",
-    ev1d:"A livestream series uniting Southeast Asian electronic artists through the lockdown years. Haustek ran the Vietnamese lineup: DJ sets, visuals and virtual stage design.",
-    ev2d:"DJ sets from the Haustek residents — recorded and released as live albums across platforms.",
-    ev3d:"A 5-year anniversary night with in-house artists and guests — followed by a live album.",
+    ev1d:"A livestream series that brought Southeast Asian electronic artists together through the lockdown years. Haustek handled the Vietnamese lineup: DJ sets, visuals and virtual stage design.",
+    ev2d:"DJ sets from the Haustek family — recorded and then released as a live album across platforms.",
+    ev3d:"A fifth anniversary night with in-house artists and guests, followed by a live album release.",
     ev4t:"Club nights Vietnam",
-    ev4d:"Small nights at clubs and underground spaces across the country — where new Haustek faces first stepped behind the decks.",
+    ev4d:"Small nights at clubs and underground spaces across the country — where many new Haustek faces first stood behind the decks.",
     ev5t:"Brand events",ev5m:"Launch · Campaign",
-    ev5d:"Haustek runs the music and visual side of launch nights, showrooms and campaigns — concept to operations.",
-    ev_cta:'Want Haustek to run your night? <a href="mailto:mgmt@haustek-group.com" style="color:var(--red)">Request a booking →</a>',
-    sb_k:"Submit",sb_h:"Your demo,<br><em>straight to</em> the A&R desk.",
-    sb_p:"Fill in a few lines below — hitting send opens a pre-written email to the Haustek A&R desk. Every demo gets listened to.",
+    ev5d:"Haustek takes care of the music and visuals for launch nights, showrooms and campaigns — from the concept to the night itself.",
+    ev_cta:'Want Haustek to build a night for you? <a href="mailto:mgmt@haustek-group.com" style="color:var(--red)">Request a booking →</a>',
+    sb_k:"Submit",
+    sb_h:'<span class="ln">Your demo,</span> <span class="ln"><em>straight to the A&R desk.</em></span>',
+    sb_p:"Fill in a few lines below and hit send — your mail app will open a ready-written email to the A&R desk. Every demo gets listened to.",
     f_name:"Artist name",f_mail:"Email",f_genre:"Genre",f_other:"Other",f_link:"Private streaming link",
     f_msg:"A few lines about you and the track",
-    f_ph:"Who you are, how this track came to life, where you want to take it with Haustek…",
-    f_note:"* No attachments — paste a private link instead. Every demo is reviewed within 7–14 days.",
+    f_ph:"Who you are, how this track came about, where you want to go with Haustek…",
+    f_note:"* No attachments — just paste a private link. Every demo is listened to within 7–14 days.",
     f_send:"Send demo"
   }
 };
