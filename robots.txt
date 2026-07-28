@@ -1,0 +1,11 @@
+# Haustek — robots.txt
+# https://haustek-group.com
+
+User-agent: *
+Allow: /
+
+# Trang khai báo metadata là biểu mẫu nội bộ cho nghệ sĩ đã hợp tác,
+# không cần xuất hiện trên kết quả tìm kiếm.
+Disallow: /metadata.html
+
+Sitemap: https://haustek-group.com/sitemap.xml
