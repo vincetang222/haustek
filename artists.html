@@ -98,10 +98,15 @@ h1 em{font-style:italic;font-weight:600;color:var(--amber)}
 .card:hover::after{transform:scaleX(1)}
 
 /* ảnh — khi chưa có thì rơi về khối chữ, vẫn ra dáng chứ không phải ô trống */
-.shot{position:relative;aspect-ratio:4/5;overflow:hidden;background:#0b0b12}
-.shot img{width:100%;height:100%;object-fit:cover;filter:grayscale(1) contrast(1.06);
+/* Ảnh nghệ sĩ đều là ảnh vuông 1:1 nên khung để vuông, không cắt mất gì.
+   Khử màu vừa phải chứ không đen trắng hoàn toàn: bộ ảnh này rất khác nhau
+   về phong cách (chân dung studio, ảnh nhóm, artwork glitch), khử bớt màu
+   giúp lưới nhìn liền mạch mà vẫn giữ được không khí riêng của từng ảnh. */
+.shot{position:relative;aspect-ratio:1/1;overflow:hidden;background:#0b0b12}
+.shot img{width:100%;height:100%;object-fit:cover;
+  filter:grayscale(.55) contrast(1.04) brightness(.95);
   transition:filter .45s,transform .6s cubic-bezier(.19,.8,.22,1)}
-.card:hover .shot img{filter:grayscale(0) contrast(1);transform:scale(1.05)}
+.card:hover .shot img{filter:grayscale(0) contrast(1) brightness(1);transform:scale(1.045)}
 .shot .fallback{position:absolute;inset:0;display:grid;place-items:center;overflow:hidden}
 .shot .fallback svg{position:absolute;inset:0;width:100%;height:100%;opacity:.5}
 .shot .initials{position:relative;font-family:var(--disp);font-weight:800;font-stretch:120%;
@@ -398,27 +403,29 @@ l-1242 0 -30 29 -29 29 0 745 c0 768 1 796 40 817 12 6 374 10 984 10 929 0
      role     Vai trò, để bộ lọc chạy: producer · dj · vocalist · band ·
               songwriter · vj. Để trống thì card không hiện thẻ vai trò và
               thanh lọc tự ẩn đi. Nhiều vai trò thì cách nhau bằng dấu cách.
-     photo    Đường dẫn ảnh, ví dụ "artists/tuan-hung.jpg". Để trống thì card
-              dùng khối chữ viết tắt trên nền sóng, vẫn ra dáng.
+     photo    Đường dẫn ảnh, ví dụ "artists/tuan-hung.webp".
+              Ảnh phải VUÔNG (1:1), nên xuất ở 800x800 và lưu dạng .webp.
+              Bỏ tất cả vào thư mục artists/ nằm cạnh file này.
+              Để trống thì card dùng khối chữ viết tắt trên nền sóng.
 
    Thứ tự trong bảng không quan trọng — trang tự sắp theo lượt nghe.
    ===================================================================== */
 
 const ARTISTS = [
-  { name:"Tuấn Hưng", track:"Tìm Lại Bầu Trời", kind:"track", id:"6yzR1NyNiAs7FzKJIijEqm", streams:13236991, role:"", photo:"" },
-  { name:"Tùng Dương", track:"Ngày Chưa Giông Bão", kind:"track", id:"6HadFlwa50dsTUXD2joxEb", streams:2370798, role:"", photo:"" },
-  { name:"HƯƠNGMYBÔNG", track:"Say Một Đời Vì Em", version:"Phiên Bản Nam", kind:"track", id:"36HDVYZL4whJgqHte9NHBx", streams:1219194, role:"", photo:"" },
+  { name:"Tuấn Hưng", track:"Tìm Lại Bầu Trời", kind:"track", id:"6yzR1NyNiAs7FzKJIijEqm", streams:13236991, role:"", photo:"artists/tuan-hung.webp" },
+  { name:"Tùng Dương", track:"Ngày Chưa Giông Bão", kind:"track", id:"6HadFlwa50dsTUXD2joxEb", streams:2370798, role:"", photo:"artists/tung-duong.webp" },
+  { name:"HƯƠNGMYBÔNG", track:"Say Một Đời Vì Em", version:"Phiên Bản Nam", kind:"track", id:"36HDVYZL4whJgqHte9NHBx", streams:1219194, role:"", photo:"artists/huongmybong.webp" },
   { name:"Trí Minh", track:"Để Gió Cuốn Đi", kind:"track", id:"3hGOyaXpY13pVSHyEd2KVM", streams:312775, role:"", photo:"" },
-  { name:"nae & de'lay ft. Phùng Khánh Linh", track:"Đắp Chăn Bông", kind:"track", id:"6CMROH0r43Pot5yE955p2T", streams:308131, role:"", photo:"" },
-  { name:"JesiLyn", track:"Chờ Lời Anh Nói", kind:"track", id:"5f0xDqDRQWxVj3SaZWb4wl", streams:177485, role:"", photo:"" },
-  { name:"Cáp Anh Tài", track:"Đừng Trách Câu Ví Dặm", kind:"track", id:"1xxnXjoLN5uqmsERgrFaAM", streams:107771, role:"", photo:"" },
-  { name:"Hà Quỳnh Như", track:"Giận Mà Thương", kind:"track", id:"66ScpKLaHz6t0gAHh2XmWp", streams:105312, role:"", photo:"" },
+  { name:"nae & de'lay ft. Phùng Khánh Linh", track:"Đắp Chăn Bông", kind:"track", id:"6CMROH0r43Pot5yE955p2T", streams:308131, role:"", photo:"artists/nae-delay.webp" },
+  { name:"JesiLyn", track:"Chờ Lời Anh Nói", kind:"track", id:"5f0xDqDRQWxVj3SaZWb4wl", streams:177485, role:"", photo:"artists/jesilyn.webp" },
+  { name:"Cáp Anh Tài", track:"Đừng Trách Câu Ví Dặm", kind:"track", id:"1xxnXjoLN5uqmsERgrFaAM", streams:107771, role:"", photo:"artists/cap-anh-tai.webp" },
+  { name:"Hà Quỳnh Như", track:"Giận Mà Thương", kind:"track", id:"66ScpKLaHz6t0gAHh2XmWp", streams:105312, role:"", photo:"artists/ha-quynh-nhu.webp" },
   { name:"ResQ", track:"Lọ Vương", kind:"track", id:"445akPqedFnhwIE3wUbyjy", streams:63434, role:"", photo:"" },
-  { name:"Bách Phan", track:"Love Me Right", kind:"track", id:"4GKnPHsQ2iJBUNUCXsRqK5", streams:42752, role:"", photo:"" },
-  { name:"Lope Dope", track:"Vịnh Người Cá", kind:"track", id:"5jCbdXPhwhYuR0wRSHLybq", streams:20989, role:"", photo:"" },
-  { name:"blackvelvetz", track:"am i in love?", kind:"track", id:"3aRylVsspIDlhX1FrcP8xQ", streams:17892, role:"", photo:"" },
-  { name:"Rosewood", track:"Mùa hè bất tận", kind:"track", id:"3UzdWJdc97NL7IBCDyYObU", streams:12200, role:"", photo:"" },
-  { name:"Qinie", track:"Xe Đạp", kind:"track", id:"0pbZKr7yHnzVSuhNRUqTmg", streams:2509, role:"", photo:"" },
+  { name:"Bách Phan", track:"Love Me Right", kind:"track", id:"4GKnPHsQ2iJBUNUCXsRqK5", streams:42752, role:"", photo:"artists/bach-phan.webp" },
+  { name:"Lope Dope", track:"Vịnh Người Cá", kind:"track", id:"5jCbdXPhwhYuR0wRSHLybq", streams:20989, role:"", photo:"artists/lope-dope.webp" },
+  { name:"blackvelvetz", track:"am i in love?", kind:"track", id:"3aRylVsspIDlhX1FrcP8xQ", streams:17892, role:"", photo:"artists/blackvelvetz.webp" },
+  { name:"Rosewood", track:"Mùa hè bất tận", kind:"track", id:"3UzdWJdc97NL7IBCDyYObU", streams:12200, role:"", photo:"artists/rosewood.webp" },
+  { name:"Qinie", track:"Xe Đạp", kind:"track", id:"0pbZKr7yHnzVSuhNRUqTmg", streams:2509, role:"", photo:"artists/qinie.webp" },
   { name:"Lazy noize", track:"Tao Muốn Ngủ Ngon", kind:"track", id:"1kFP2NHQXJjgldl2Fz4VVn", streams:2410, role:"", photo:"" }
 ];
 
@@ -480,14 +487,14 @@ function initials(name){
    Mỗi nghệ sĩ lệch tâm khác nhau để không card nào giống card nào. */
 function fallbackSVG(seed){
   let s=0; for(const ch of seed) s=(s*31+ch.charCodeAt(0))>>>0;
-  const cx=25+(s%50), cy=22+((s>>3)%56);
+  const cx=25+(s%50), cy=20+((s>>3)%60);
   const hue=[["255,46,76"],["127,214,232"],["139,123,232"],["232,163,61"]][s%4][0];
   let rings="";
   for(let i=1;i<=6;i++){
     rings+=`<circle cx="${cx}" cy="${cy}" r="${i*13}" fill="none" stroke="rgba(${hue},${(0.30-i*0.035).toFixed(3)})" stroke-width="0.7"/>`;
   }
-  return `<svg viewBox="0 0 100 125" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
-    <rect width="100" height="125" fill="#0a0a11"/>
+  return `<svg viewBox="0 0 100 100" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+    <rect width="100" height="100" fill="#0a0a11"/>
     <circle cx="${cx}" cy="${cy}" r="4" fill="rgba(${hue},.55)"/>${rings}</svg>`;
 }
 
@@ -515,7 +522,7 @@ function cardHTML(a, idx){
   const title=a.track + (a.version ? ` (${a.version})` : "");
 
   const shot = a.photo
-    ? `<img src="${a.photo}" alt="${a.name}" loading="lazy" width="800" height="1000">`
+    ? `<img src="${a.photo}" alt="${a.name}" loading="lazy" decoding="async" width="800" height="800">`
     : `<div class="fallback">${fallbackSVG(a.name)}<span class="initials">${initials(a.name)}</span></div>`;
 
   /* Nút phát chỉ là lớp giả — bấm vào mới nạp iframe của Spotify.
