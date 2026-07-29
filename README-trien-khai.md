@@ -11,7 +11,8 @@ Cập nhật: 29.07.2026 · Website: **haustek-group.com** · Liên hệ: **mgmt
 | File | Nội dung |
 |---|---|
 | `index.html` | Trang chủ. Gồm luôn trang Sự kiện ở đường dẫn `#/events` |
-| `metadata.html` | Trang nghệ sĩ khai báo metadata phát hành. Nút "Gửi nhạc" trỏ vào đây |
+| `artists.html` | Trang nghệ sĩ, dạng lưới card. **Bảng dữ liệu nằm ngay đầu phần script trong file** |
+| `metadata.html` | Trang nghệ sĩ khai báo metadata phát hành. Nút "Gửi nhạc" trỏ vào đây. Có nút đổi VI/EN |
 | `legal.html` | 4 mục pháp lý: điều khoản, quyền riêng tư, cookie, khả năng tiếp cận |
 | `404.html` | Trang báo không tìm thấy |
 
@@ -99,7 +100,33 @@ Sau đó mỗi hồ sơ nghệ sĩ gửi sẽ tự động vào 3 tab: `Releases
 
 ---
 
-## 5. Khi có video nền cho trang chủ
+## 5. Điền dữ liệu cho trang nghệ sĩ
+
+Mở `artists.html`, tìm khối `const ARTISTS = [` ở đầu phần script. Mỗi nghệ sĩ một dòng:
+
+```js
+{ name:"Tri Minh", role:"producer", photo:"artists/tri-minh.jpg",
+  track:"Đêm Thành Phố", url:"https://open.spotify.com/track/...", streams:3200000 },
+```
+
+Giải thích các trường:
+
+| Trường | Ghi gì |
+|---|---|
+| `name` | Tên hiển thị |
+| `role` | Dùng đúng từ khoá để bộ lọc chạy: `producer` `dj` `vocalist` `band` `songwriter` `vj`. Nhiều vai trò thì cách nhau bằng dấu cách |
+| `photo` | Đường dẫn ảnh, ví dụ `artists/ten-nghe-si.jpg`. **Để trống cũng được** — card tự chuyển sang khối chữ viết tắt trên nền sóng |
+| `track` | Tên bài tiêu biểu |
+| `url` | Link Spotify của bài đó |
+| `streams` | Số lượt nghe, ghi **số thuần** như `3200000`. Trang tự rút gọn thành `3,2M`. Để `null` nếu chưa có |
+
+Ảnh nghệ sĩ nên cắt dọc tỉ lệ 4:5, khoảng 800×1000px, nặng dưới 300KB, bỏ vào thư mục `artists/`.
+
+**Đừng ghi số ước lượng vào `streams`.** Con số sai trên trang công khai thì nghệ sĩ và đối tác đều nhận ra ngay. Chưa có số thật thì để `null`, card sẽ ghi "Đang cập nhật" — trông đàng hoàng hơn nhiều so với một con số bịa.
+
+---
+
+## 6. Khi có video nền cho trang chủ
 
 Mở `index.html`, tìm dòng gần đầu phần script:
 
@@ -119,9 +146,9 @@ Code đã tự xử lý: tắt video nếu người dùng bật chế độ gi�
 
 ---
 
-## 6. Việc còn lại, xếp theo thứ tự nên làm
+## 7. Việc còn lại, xếp theo thứ tự nên làm
 
-1. **Ảnh thật** — chân dung nghệ sĩ, ảnh đêm diễn, artwork các bản phát hành. Đây là khoảng trống lớn nhất; có ảnh rồi thì phần Nghệ sĩ và Sự kiện đổi hẳn diện mạo
+1. **Ảnh nghệ sĩ và số liệu stream** — điền vào bảng `ARTISTS` trong `artists.html`. Đây là khoảng trống lớn nhất hiện nay
 2. **Đưa web lên và gắn Google Sheets** — hai việc này làm xong là đã dùng thật được
 3. **Chạy SQL Supabase** và gắn cron chống ngủ
 4. **Giao diện dashboard nghệ sĩ** — đọc từ 4 view đã tạo sẵn trong file SQL
@@ -131,10 +158,12 @@ Code đã tự xử lý: tắt video nếu người dùng bật chế độ gi�
 
 ---
 
-## 7. Vài điều đã cố ý làm, đừng vô tình gỡ
+## 8. Vài điều đã cố ý làm, đừng vô tình gỡ
 
 - **Không có cookie theo dõi, không Google Analytics, không pixel quảng cáo.** Chính sách cookie đã công bố điều này. Nếu sau này thêm công cụ đo, phải cập nhật lại `legal.html`
 - **Không tự động phát âm thanh.** Beat chỉ chạy khi người dùng bấm nút
 - **Toàn bộ hiệu ứng tự tắt** khi máy người dùng bật chế độ giảm chuyển động
 - **Hiệu ứng theo chuột không chạy trên điện thoại** — đây là bản vá cho lỗi cuộn bị giật, đừng bỏ điều kiện kiểm tra `pointerType`
 - **`metadata.html` bị chặn khỏi Google** trong `robots.txt` vì là biểu mẫu nội bộ
+- **Các thẻ `<option>` trong `metadata.html` đều có `value` cố định bằng tiếng Việt.** Đổi sang tiếng Anh chỉ đổi chữ hiển thị, dữ liệu gửi về Google Sheets vẫn nhất quán. Nếu thêm option mới, nhớ gán `value` cho nó
+- **Logo trên web là SVG vector dò từ chính file logo gốc**, không phải font. Đừng thay bằng chữ đánh máy, sẽ không khớp

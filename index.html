@@ -313,14 +313,14 @@ h1{
 .rm-track{display:inline-block;animation:scroll var(--dur,50s) linear infinite}
 .rm-row.rev .rm-track{animation-direction:reverse}
 .roster-marquee:hover .rm-track{animation-play-state:paused}
-.rm-track span{
+.rm-track a{
   font-family:var(--disp);font-weight:770;font-stretch:114%;
   font-size:clamp(28px,6vw,68px);letter-spacing:-.03em;line-height:1.16;
   margin:0 22px;color:var(--paper);transition:color .2s;
 }
-.rm-track span:hover{color:var(--amber)}
-.rm-track span.o{color:transparent;-webkit-text-stroke:1.2px rgba(240,240,242,.42)}
-.rm-track span.o:hover{-webkit-text-stroke-color:var(--amber)}
+.rm-track a:hover{color:var(--amber)}
+.rm-track a.o{color:transparent;-webkit-text-stroke:1.2px rgba(240,240,242,.42)}
+.rm-track a.o:hover{-webkit-text-stroke-color:var(--amber)}
 .rm-track i{font-style:normal;color:var(--amber);font-size:.36em;vertical-align:middle;margin:0 6px}
 
 /* ================= ABOUT ================= */
@@ -402,6 +402,13 @@ a.row:hover .ttl{color:var(--accent)}
 }
 .roster span:hover{color:var(--amber)}
 .roster i{font-style:normal;color:var(--amber);font-size:.4em;vertical-align:middle;margin:0 14px}
+.see-all{display:inline-flex;align-items:center;gap:14px;margin-top:30px;padding:17px 28px;border-radius:100px;
+  background:rgba(240,240,242,.05);border:1px solid var(--line-2);color:var(--paper);
+  font-family:var(--mono);font-size:11.5px;letter-spacing:.16em;text-transform:uppercase;
+  backdrop-filter:blur(10px);transition:all .3s}
+.see-all:hover{background:var(--amber);border-color:var(--amber);color:#1a1206;transform:translateY(-2px)}
+.see-all svg{transition:transform .3s}
+.see-all:hover svg{transform:translateX(4px)}
 .roster-note{margin-top:30px;display:inline-block;padding:16px 24px;font-family:var(--mono);font-size:11.5px;letter-spacing:.1em;color:var(--concrete);text-transform:uppercase;max-width:660px;line-height:1.9}
 
 /* ================= PULL QUOTE ================= */
@@ -662,7 +669,7 @@ l-1242 0 -30 29 -29 29 0 745 c0 768 1 796 40 817 12 6 374 10 984 10 929 0
     <a href="#/events" data-nav="events" data-i18n="nav_events">Sự kiện</a>
     <a href="#/#services" data-i18n="nav_services">Dịch vụ</a>
     <a href="#/#stores" data-i18n="nav_stores">Cửa hàng</a>
-    <a href="#/#artists" data-i18n="nav_artists">Nghệ sĩ</a>
+    <a href="artists.html" data-i18n="nav_artists">Nghệ sĩ</a>
     
   </nav>
   <div class="nav-right">
@@ -803,6 +810,10 @@ l-1242 0 -30 29 -29 29 0 745 c0 768 1 796 40 817 12 6 374 10 984 10 929 0
   <h2 class="rv" data-i18n="ar_h"><span class="ln">Những người</span> <span class="ln">đã <em>cùng làm nhạc.</em></span></h2>
   <div class="roster-marquee rv" id="roster" aria-label="Nghệ sĩ đã hợp tác"></div>
   <p class="roster-note glass rv" data-i18n="ar_note">Cùng nhiều producer, songwriter, DJ, VJ và ca sĩ khác, trong nước lẫn ngoài nước</p>
+  <div class="rv"><a class="see-all" href="artists.html">
+    <span data-i18n="ar_all">Xem hồ sơ từng nghệ sĩ</span>
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+  </a></div>
 </section>
 
 <!-- PULL QUOTE -->
@@ -1056,6 +1067,7 @@ l-1242 0 -30 29 -29 29 0 745 c0 768 1 796 40 817 12 6 374 10 984 10 929 0
     <a href="legal.html#privacy" data-i18n="lg_privacy">Chính sách quyền riêng tư</a>
     <a href="legal.html#cookies" data-i18n="lg_cookies">Chính sách cookie</a>
     <a href="legal.html#accessibility" data-i18n="lg_a11y">Khả năng tiếp cận</a>
+    <a href="artists.html" data-i18n="lg_artists">Nghệ sĩ</a>
     <a href="metadata.html" data-i18n="lg_submit">Gửi nhạc</a>
   </nav>
   <div class="foot-row">
@@ -1108,7 +1120,7 @@ const ARTISTS=["Tri Minh","Red Sheep","ling:chi","Chin","KONKRETE","Tarnoise Spa
   const half=Math.ceil(ARTISTS.length/2);
   const rows=[ARTISTS.slice(0,half),ARTISTS.slice(half)];
   el.innerHTML=rows.map((names,ri)=>{
-    const inner=names.map((a,i)=>`<span class="${(i+ri)%2?'o':''}">${a}</span>`).join('<i>●</i>');
+    const inner=names.map((a,i)=>`<a href="artists.html" class="${(i+ri)%2?'o':''}">${a}</a>`).join('<i>●</i>');
     return `<div class="rm-row${ri?' rev':''}"><div class="rm-track" style="--dur:${ri?58:48}s">${inner}<i>●</i></div></div>`;
   }).join('');
 })();
@@ -1148,6 +1160,7 @@ const I18N={
     ar_k:"Nghệ sĩ",
     ar_h:'<span class="ln">Những người</span> <span class="ln">đã <em>cùng làm nhạc.</em></span>',
     ar_note:"Cùng nhiều producer, songwriter, DJ, VJ và ca sĩ khác, trong nước lẫn ngoài nước",
+    ar_all:"Xem hồ sơ từng nghệ sĩ",
     pq:'<span class="ln">“Bạn lo phần sáng tạo.</span> <span class="ln"><em>Chúng tôi lo phần còn lại.”</em></span>',
     pq_by:"Lời cam kết đến từ Haustek",
     fq_h:'<span class="ln">Hỏi nhanh,</span> <span class="ln"><em>đáp gọn.</em></span>',
@@ -1186,7 +1199,7 @@ const I18N={
     f_meta_link:'Đã được Haustek nhận rồi? Sang thẳng <a href="metadata.html" style="color:var(--red)">trang khai báo metadata →</a>',
     f_note:"* Đừng đính kèm file — dán một link nghe riêng tư là được. Mỗi demo đều được nghe trong vòng 7–14 ngày.",
     f_send:"Gửi demo",
-    lg_terms:"Điều khoản sử dụng",lg_privacy:"Chính sách quyền riêng tư",lg_cookies:"Chính sách cookie",lg_a11y:"Khả năng tiếp cận",lg_submit:"Gửi nhạc"
+    lg_terms:"Điều khoản sử dụng",lg_privacy:"Chính sách quyền riêng tư",lg_cookies:"Chính sách cookie",lg_a11y:"Khả năng tiếp cận",lg_artists:"Nghệ sĩ",lg_submit:"Gửi nhạc"
   },
   en:{
     _title:"Haustek — Music Label & Distribution | Vietnamese music, heard worldwide",
@@ -1221,6 +1234,7 @@ const I18N={
     ar_k:"Artists",
     ar_h:'<span class="ln">The people</span> <span class="ln">we have <em>made music with.</em></span>',
     ar_note:"Along with many more producers, songwriters, DJs, VJs and vocalists at home and abroad",
+    ar_all:"See each artist profile",
     pq:'<span class="ln">“You handle the creative.</span> <span class="ln"><em>We handle the rest.”</em></span>',
     pq_by:"A commitment from Haustek",
     fq_h:'<span class="ln">Quick questions,</span> <span class="ln"><em>straight answers.</em></span>',
@@ -1259,7 +1273,7 @@ const I18N={
     f_meta_link:'Already signed with Haustek? Go straight to the <a href="metadata.html" style="color:var(--red)">metadata form →</a>',
     f_note:"* No attachments — just paste a private link. Every demo is listened to within 7–14 days.",
     f_send:"Send demo",
-    lg_terms:"Terms of use",lg_privacy:"Privacy policy",lg_cookies:"Cookie policy",lg_a11y:"Accessibility",lg_submit:"Submit music"
+    lg_terms:"Terms of use",lg_privacy:"Privacy policy",lg_cookies:"Cookie policy",lg_a11y:"Accessibility",lg_artists:"Artists",lg_submit:"Submit music"
   }
 };
 let lang="vi";

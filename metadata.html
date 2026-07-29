@@ -44,6 +44,10 @@ img{max-width:100%;display:block}
 .logo .wordmark{height:12px;width:auto;color:var(--paper);display:block}
 .rec{width:7px;height:7px;border-radius:50%;background:var(--red);box-shadow:0 0 10px rgba(255,46,76,.8);animation:blink 1.6s steps(2,end) infinite}
 @keyframes blink{50%{opacity:.25}}
+.nav-right{display:flex;align-items:center;gap:14px}
+.lang-toggle{font-family:var(--mono);font-size:11px;letter-spacing:.1em;background:none;border:0;color:var(--concrete);
+  text-transform:uppercase;transition:color .2s;padding:6px 2px;cursor:pointer}
+.lang-toggle:hover{color:var(--paper)}
 .nav a.back{font-family:var(--mono);font-size:11px;letter-spacing:.1em;color:var(--concrete);text-transform:uppercase}
 .nav a.back:hover{color:var(--paper);text-decoration:none}
 
@@ -346,7 +350,10 @@ l-1242 0 -30 29 -29 29 0 745 c0 768 1 796 40 817 12 6 374 10 984 10 929 0
 -93 -69 -24 0 -38 6 -45 19 -7 12 -11 546 -11 1577 l0 1559 -25 23 c-26 22
 -29 22 -313 22 -220 -1 -294 -4 -318 -14z"/></g></svg>
   </a>
-  <a class="back" href="index.html">← Về trang chủ</a>
+  <div class="nav-right">
+    <button class="lang-toggle" id="langBtn" aria-label="Switch language">EN</button>
+    <a class="back" href="index.html">← Về trang chủ</a>
+  </div>
 </header>
 
 <main>
@@ -438,7 +445,7 @@ l-1242 0 -30 29 -29 29 0 745 c0 768 1 796 40 817 12 6 374 10 984 10 929 0
             <option>Ambient</option><option>Pop</option><option>Hip-Hop/Rap</option><option>R&amp;B/Soul</option>
             <option>Rock</option><option>Indie</option><option>Alternative</option><option>Jazz</option>
             <option>Classical</option><option>Folk</option><option>Soundtrack</option><option>World</option>
-            <option>Vietnamese Pop</option><option>Khác</option>
+            <option>Vietnamese Pop</option><option value="Khác">Khác</option>
           </select>
         </div>
         <div class="f">
@@ -540,9 +547,9 @@ l-1242 0 -30 29 -29 29 0 745 c0 768 1 796 40 817 12 6 374 10 984 10 929 0
           <div class="f">
             <label for="s_role">Bạn là</label>
             <select id="s_role" name="s_role">
-              <option>Nghệ sĩ</option><option>Quản lý nghệ sĩ</option>
-              <option>Nhà sản xuất</option><option>Nhạc sĩ</option>
-              <option>Đại diện nhãn</option><option>Khác</option>
+              <option value="Nghệ sĩ">Nghệ sĩ</option><option value="Quản lý nghệ sĩ">Quản lý nghệ sĩ</option>
+              <option value="Nhà sản xuất">Nhà sản xuất</option><option value="Nhạc sĩ">Nhạc sĩ</option>
+              <option value="Đại diện nhãn">Đại diện nhãn</option><option value="Khác">Khác</option>
             </select>
           </div>
         </div>
@@ -654,6 +661,293 @@ l-1242 0 -30 29 -29 29 0 745 c0 768 1 796 40 817 12 6 374 10 984 10 929 0
    ===================================================================== */
 const ENDPOINT = "";
 const MAILTO   = "mgmt@haustek-group.com";
+
+let lang = "vi";
+
+/* =====================================================================
+   SONG NGỮ CHO TRANG METADATA
+
+   Trang này có gần 200 chuỗi, gắn thuộc tính cho từng cái thì rối mắt và
+   dễ sót. Cách dùng ở đây: một từ điển tra theo chính câu tiếng Việt, cộng
+   một bộ duyệt qua các nút văn bản của trang để thay chữ.
+
+   Nhờ vậy khi thêm câu mới vào HTML, chỉ cần thêm một dòng vào từ điển,
+   không phải sửa markup.
+
+   Lưu ý: các thẻ <option> đều đã có value cố định bằng tiếng Việt, nên đổi
+   ngôn ngữ chỉ đổi chữ hiển thị, dữ liệu gửi đi không thay đổi.
+   ===================================================================== */
+
+const TR = {
+  " chỗ cần sửa trước khi gửi:":" things to fix before sending:",
+  "Còn ":"There are ",
+  "Track ":"Track ",
+  "đã chọn có sample/cover/remix nhưng chưa ghi thông tin bài gốc.":"a sample/cover/remix is selected but the original source is not filled in.",
+  "\" trông giống nghệ danh. Phần sáng tác phải ghi họ tên thật đầy đủ.":"\" looks like a stage name. Songwriting credits need full legal names.",
+  "%, phải đúng 100%.":"%, it must be exactly 100%.",
+  "tổng tỉ lệ chia đang là ":"the split total is ",
+  "có dòng sáng tác thiếu họ tên.":"a writer row is missing a name.",
+  "chưa khai người sáng tác nào.":"no writer has been declared.",
+  "mã ISRC sai định dạng (đúng phải dạng VNA012400001). Chưa có thì bỏ trống.":"the ISRC format is wrong (it should look like VNA012400001). Leave it empty if you do not have one.",
+  "chưa dán link file WAV.":"the WAV file link is missing.",
+  "chưa điền nghệ sĩ chính.":"primary artist is missing.",
+  "chưa điền tên track.":"track title is missing.",
+  "Album cần từ 7 track trở lên. Bạn đang khai ":"An album needs 7 tracks or more. You have declared ",
+  " track.":" tracks.",
+  "EP cần từ 4 đến 6 track. Bạn đang khai ":"An EP needs 4 to 6 tracks. You have declared ",
+  " track — nên chuyển thành EP.":" — consider making it an EP.",
+  "Single chỉ được tối đa 3 track. Bạn đang khai ":"A single allows at most 3 tracks. You have declared ",
+  "Chưa tích đủ các mục cam kết quyền ở bước 03.":"Not all rights declarations in step 4 are ticked.",
+  "Bước 3: số điện thoại trông chưa đủ chữ số.":"Step 3: that phone number looks too short.",
+  "Bước 3: chưa điền số điện thoại. Chúng tôi cần số để gọi khi hồ sơ có chỗ phải hỏi lại.":"Step 3: phone number is missing. We need it to call you when something in the submission needs checking.",
+  "Bước 3: chưa điền email.":"Step 3: email is missing.",
+  "Bước 3: chưa điền họ tên người khai.":"Step 3: your full name is missing.",
+  "UPC phải là dãy 12–14 chữ số. Chưa có thì cứ bỏ trống.":"UPC must be 12–14 digits. Leave it empty if you do not have one.",
+  "Ngày phát hành đang nằm ở quá khứ.":"The release date is in the past.",
+  "Chưa chọn ngày phát hành.":"No release date selected.",
+  "Chưa dán link ảnh bìa.":"The artwork link is missing.",
+  "Chưa điền dòng ©.":"The © line is missing.",
+  "Chưa điền dòng ℗.":"The ℗ line is missing.",
+  "Chưa điền nhãn phát hành.":"Label is missing.",
+  "Chưa chọn thể loại chính.":"Primary genre is not selected.",
+  "Chưa điền nghệ sĩ chính.":"Primary artist is missing.",
+  "Tên bản phát hành đang viết hoa toàn bộ — các cửa hàng nhạc sẽ từ chối. Hãy viết hoa chữ đầu thôi.":"The release title is in ALL CAPS — stores will reject it. Capitalise only the first letters.",
+  "Chưa điền tên bản phát hành.":"Release title is missing.",
+  // ---------- điều hướng, tiêu đề ----------
+  "← Về trang chủ":"← Back to home",
+  "Khai báo metadata · Haustek Distribution":"Metadata submission · Haustek Distribution",
+  "Điền một lần,":"Fill it in once,",
+  "lên sóng đúng hẹn.":"go live on time.",
+  "là bắt buộc.":"is required.",
+  "Bản phát hành":"Release",
+  "Track":"Tracks",
+  "Liên lạc":"Contact",
+  "Cam kết":"Consent",
+  "Gửi đi":"Send",
+
+  // ---------- tiêu đề bước ----------
+  "Thông tin bản phát hành":"Release information",
+  "Danh sách track":"Track list",
+  "Liên lạc với bạn":"How we reach you",
+  "Cam kết quyền":"Rights declaration",
+  "Gửi hồ sơ":"Send the submission",
+  "Bắt buộc":"Required",
+  "Bước cuối":"Final step",
+  "1 track":"1 track",
+
+  // ---------- bước 1 ----------
+  "Loại phát hành":"Release type",
+  "Single — 1 đến 3 track":"Single — 1 to 3 tracks",
+  "EP — 4 đến 6 track":"EP — 4 to 6 tracks",
+  "Album — từ 7 track trở lên":"Album — 7 tracks or more",
+  "Compilation — tuyển tập nhiều nghệ sĩ":"Compilation — various artists",
+  "Tên bản phát hành":"Release title",
+  "Viết hoa chữ đầu như bạn muốn nó hiện trên Spotify. Đừng viết HOA TOÀN BỘ, các cửa hàng sẽ từ chối.":
+    "Capitalise it the way you want it to appear on Spotify. Do not use ALL CAPS — stores will reject it.",
+  "Phiên bản":"Version",
+  "Bỏ trống nếu là bản gốc.":"Leave empty for the original version.",
+  "Nhãn phát hành":"Label",
+  "Nghệ sĩ chính":"Primary artist",
+  "Nhiều nghệ sĩ chính thì ngăn bằng dấu phẩy. Viết đúng y hệt tên đã có trên Spotify.":
+    "Separate multiple primary artists with commas. Spell it exactly as it appears on Spotify.",
+  "Nghệ sĩ khách mời (feat.)":"Featured artists",
+  "Link Spotify của nghệ sĩ chính":"Primary artist Spotify link",
+  "Rất quan trọng: không có link này, nhạc dễ bị đẩy nhầm sang hồ sơ nghệ sĩ trùng tên.":
+    "Important: without this, your music can end up on a different artist profile with the same name.",
+  "Link Apple Music của nghệ sĩ chính":"Primary artist Apple Music link",
+  "Bỏ trống nếu đây là lần đầu bạn phát hành.":"Leave empty if this is your first release.",
+  "Thể loại chính":"Primary genre",
+  "— Chọn —":"— Select —",
+  "Khác":"Other",
+  "Thể loại phụ":"Secondary genre",
+  "Ngôn ngữ metadata":"Metadata language",
+  "Tiếng Việt":"Vietnamese",
+  "Không lời / instrumental":"No lyrics / instrumental",
+  "Ngày phát hành mong muốn":"Preferred release date",
+  "Nên chọn cách hôm nay ít nhất 21 ngày để kịp pitch playlist.":
+    "Choose a date at least 21 days out so there is room to pitch playlists.",
+  "UPC / EAN":"UPC / EAN",
+  "Bỏ trống nếu chưa có":"Leave empty if you do not have one",
+  "Chưa có thì Haustek cấp cho bạn.":"If you do not have one, Haustek will assign it.",
+  "Lãnh thổ phát hành":"Territories",
+  "Toàn thế giới":"Worldwide",
+  "Chỉ Việt Nam":"Vietnam only",
+  "Tùy chọn — ghi rõ ở phần ghi chú":"Custom — specify in the notes",
+  "Dòng ℗ (bản ghi)":"℗ line (recording)",
+  "Năm + chủ sở hữu bản ghi âm.":"Year + owner of the sound recording.",
+  "Dòng © (tác phẩm)":"© line (composition)",
+  "Năm + chủ sở hữu tác phẩm.":"Year + owner of the composition.",
+  "Ngày mở pre-save":"Pre-save date",
+  "Link ảnh bìa":"Artwork link",
+  "Vuông 3000×3000 px, JPG hoặc PNG, hệ màu RGB, dưới 10MB. Ảnh không được mờ, không chứa logo cửa hàng nhạc (Spotify, Apple…), không chứa địa chỉ website hay mạng xã hội, không chứa chữ nào khác ngoài tên nghệ sĩ và tên bản phát hành. Nhớ mở quyền xem cho bất kỳ ai có link.":
+    "Square 3000×3000 px, JPG or PNG, RGB, under 10MB. No blur, no store logos (Spotify, Apple…), no website or social handles, and no text other than the artist name and release title. Remember to allow access to anyone with the link.",
+  "Ghi chú thêm cho đội phát hành":"Notes for the release team",
+  "Ví dụ: muốn pitch vào playlist nào, ràng buộc ngày giờ, ghi chú về lãnh thổ tùy chọn…":
+    "For example: playlists to pitch, timing constraints, notes about custom territories…",
+
+  // ---------- bước 2 (template track) ----------
+  "+ Thêm một track":"+ Add another track",
+  "+ Thêm người sáng tác":"+ Add a writer",
+  "Xóa":"Remove",
+  "Track chưa đặt tên":"Untitled track",
+  "Tên track":"Track title",
+  "Phiên bản / bản mix":"Version / mix",
+  "Khách mời (feat.)":"Featured (feat.)",
+  "Remixer":"Remixer",
+  "Bỏ trống nếu không phải bản remix":"Leave empty if this is not a remix",
+  "ISRC":"ISRC",
+  "Chưa có thì Haustek cấp":"Haustek will assign one if you do not have it",
+  "Ngôn ngữ lời":"Lyrics language",
+  "Không lời":"Instrumental",
+  "Nội dung nhạy cảm":"Explicit content",
+  "Không — lời sạch":"No — clean lyrics",
+  "Có — lời tục / nội dung người lớn":"Yes — explicit lyrics / adult content",
+  "Bản đã kiểm duyệt (clean version)":"Cleaned version",
+  "Link file WAV":"WAV file link",
+  "Nhớ mở quyền cho bất kỳ ai có link.":"Remember to allow access to anyone with the link.",
+  "Giây bắt đầu đoạn preview":"Preview start time",
+  "Đoạn 30 giây hay nhất, dùng cho TikTok và trang xem trước.":
+    "Your best 30 seconds, used for TikTok and preview players.",
+  "Tác quyền — ghi họ tên thật, không ghi nghệ danh":"Songwriting — use real legal names, not stage names",
+  "Vai trò":"Role",
+  "Soạn nhạc":"Composer",
+  "Viết lời":"Lyricist",
+  "Soạn nhạc & viết lời":"Composer & lyricist",
+  "Phối khí":"Arranger",
+  "Tỉ lệ %":"Split %",
+  "Tổng tỉ lệ chia":"Total split",
+  "Nhà sản xuất (producer)":"Producer",
+  "Họ tên thật":"Full legal name",
+  "Đơn vị xuất bản / PRO":"Publisher / PRO",
+  "VCPMC, ASCAP, BMI… — bỏ trống nếu chưa có":"VCPMC, ASCAP, BMI… — leave empty if none",
+  "Bản thu có dùng sample hoặc là bản cover không?":"Does this recording use a sample, or is it a cover?",
+  "Không — hoàn toàn nguyên gốc":"No — entirely original",
+  "Có dùng sample":"Uses a sample",
+  "Là bản cover / hát lại":"It is a cover",
+  "Là bản remix có phép":"It is a licensed remix",
+  "Nếu có, ghi rõ nguồn gốc":"If so, give the source",
+  "Tên bài gốc, tác giả gốc, tình trạng xin phép":"Original title, original writer, clearance status",
+  "Lời bài hát":"Lyrics",
+  "Dán nguyên lời bài hát. Có lời thì Apple Music và Spotify hiển thị karaoke, người nghe tìm thấy bài dễ hơn nhiều.":
+    "Paste the full lyrics. With lyrics, Apple Music and Spotify can show them in sync, and listeners find the song far more easily.",
+
+  // ---------- bước 3 ----------
+  "Hồ sơ metadata gần như lần nào cũng có một chi tiết cần hỏi lại — sai chính tả tên người sáng tác, link file hỏng, ngày phát hành trùng lịch. Có số của bạn thì chúng tôi gọi một cuộc là xong, thay vì email qua lại mất ba ngày.":
+    "There is almost always one detail we need to check — a misspelled writer name, a broken file link, a release date that clashes. With your number we settle it in one call instead of three days of emails.",
+  "Họ tên người khai":"Your full name",
+  "Ghi tên thật, không ghi nghệ danh.":"Use your real name, not your stage name.",
+  "Bạn là":"You are",
+  "Nghệ sĩ":"Artist",
+  "Quản lý nghệ sĩ":"Artist manager",
+  "Nhà sản xuất":"Producer",
+  "Nhạc sĩ":"Songwriter",
+  "Đại diện nhãn":"Label representative",
+  "Số điện thoại":"Phone number",
+  "Số gọi được và có Zalo thì tốt nhất.":"A number we can actually call — with Zalo is best.",
+  "Email":"Email",
+  "Giờ nào gọi bạn tiện nhất":"Best time to call you",
+  "Giờ nào cũng được":"Any time is fine",
+  "Buổi sáng (9h – 12h)":"Morning (9am – 12pm)",
+  "Buổi chiều (13h – 18h)":"Afternoon (1pm – 6pm)",
+  "Buổi tối (18h – 21h)":"Evening (6pm – 9pm)",
+  "Đừng gọi, nhắn tin thôi":"Do not call, message only",
+  "Facebook hoặc Instagram của bạn":"Your Facebook or Instagram",
+  "facebook.com/... hoặc @tenban":"facebook.com/... or @yourhandle",
+  "Để chúng tôi nhắn được khi không gọi được máy.":"So we can message you when a call does not go through.",
+  "Người liên hệ dự phòng":"Backup contact",
+  "Tên và số điện thoại quản lý, hoặc người trong nhóm":"Name and number of your manager or a bandmate",
+  "Bỏ trống cũng được. Hữu ích khi bạn đi tour hoặc ra nước ngoài.":
+    "Optional. Useful when you are on tour or abroad.",
+
+  // ---------- bước 4 ----------
+  "Tôi sở hữu hoặc được ủy quyền đầy đủ":"I own or am fully authorised for",
+  "đối với bản ghi và tác phẩm khai báo ở đây, và có quyền phát hành thương mại trên các nền tảng số.":
+    "the recording and composition declared here, and have the right to release them commercially on digital platforms.",
+  "Bản thu không chứa sample, beat mua sẵn hay đoạn nhạc của người khác":
+    "The recording contains no sample, purchased beat or third-party music",
+  "mà chưa được cấp phép. Nếu có, tôi đã ghi rõ ở phần sample của từng track.":
+    "that has not been cleared. If it does, I have declared it in the sample field of each track.",
+  "Thông tin sáng tác và tỉ lệ chia là chính xác":"The songwriting credits and splits are accurate",
+  ", đã được tất cả những người liên quan đồng ý. Tôi hiểu rằng khai sai có thể dẫn tới tranh chấp bản quyền và bị gỡ nhạc.":
+    ", and agreed by everyone involved. I understand that false information can lead to rights disputes and takedowns.",
+  "Ảnh bìa là của tôi hoặc tôi có quyền sử dụng":"The artwork is mine or I have the right to use it",
+  ", không dùng ảnh lấy trên mạng, không có hình người nổi tiếng hay nhãn hiệu chưa xin phép.":
+    ", not taken from the internet, with no unlicensed images of public figures or trademarks.",
+
+  // ---------- bước 5 ----------
+  "Bấm nút đỏ bên dưới. Máy sẽ soát lại toàn bộ hồ sơ, chỗ nào còn thiếu hay sai sẽ báo rõ để bạn sửa. Khi mọi thứ đã đủ, hồ sơ được gửi thẳng về Haustek và bạn nhận một mã hồ sơ để tiện hỏi lại sau này.":
+    "Press the red button below. Everything gets checked, and anything missing or wrong is pointed out clearly so you can fix it. Once it is complete, the submission goes straight to Haustek and you receive a reference code for follow-up.",
+  "Gửi hồ sơ cho Haustek":"Send to Haustek",
+  "Gửi bằng email của tôi":"Send from my own email",
+  "Tải bản lưu về máy":"Download a copy",
+  "Yêu cầu file gửi kèm":"File requirements",
+  "File nhạc":"Audio file",
+  "WAV, 16-bit hoặc 24-bit, tần số 44.1 kHz trở lên, stereo. Không gửi MP3. Không để tiếng bị vỡ (clipping) ở đỉnh.":
+    "WAV, 16-bit or 24-bit, 44.1 kHz or higher, stereo. No MP3. No clipping on the peaks.",
+  "Ảnh bìa":"Artwork",
+  "3000×3000 px, JPG hoặc PNG, RGB, dưới 10MB.":"3000×3000 px, JPG or PNG, RGB, under 10MB.",
+  "Cách gửi":"How to send",
+  "Đẩy lên Google Drive hoặc Dropbox rồi dán link vào biểu mẫu. File nhạc thường quá nặng để đính kèm thẳng vào email.":
+    "Upload to Google Drive or Dropbox and paste the link into the form. Audio files are usually too large to email directly.",
+  "Đặt tên file":"File naming",
+  "Sau khi nhận hồ sơ, Haustek kiểm tra trong 2–3 ngày làm việc và gọi hoặc nhắn cho bạn nếu cần bổ sung. Bản thu chỉ được đẩy lên hệ thống khi metadata đã sạch.":
+    "Once received, Haustek reviews within 2–3 working days and will call or message you if anything is missing. Nothing goes out to stores until the metadata is clean.",
+
+  // ---------- chân trang ----------
+  "Haustek · Metadata Submission v1.0":"Haustek · Metadata Submission v1.0"
+};
+
+/* Tra cứu cho chuỗi sinh từ JavaScript */
+function t(s){ return (lang === "en" && TR[s]) ? TR[s] : s; }
+
+/* Duyệt qua trang và thay chữ.
+   Chỉ động vào nút văn bản, placeholder và title — không chạm tới giá trị
+   người dùng đã gõ, vì giá trị nằm ở thuộc tính value chứ không phải nút văn bản. */
+function applyLang(){
+  const root = document.body;
+
+  // nút văn bản
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+    acceptNode(n){
+      if(!n.nodeValue || !n.nodeValue.trim()) return NodeFilter.FILTER_REJECT;
+      const p = n.parentElement;
+      if(!p || p.closest('script,style')) return NodeFilter.FILTER_REJECT;
+      return NodeFilter.FILTER_ACCEPT;
+    }
+  });
+  const nodes = [];
+  while(walker.nextNode()) nodes.push(walker.currentNode);
+
+  nodes.forEach(n => {
+    if(!n._vi) n._vi = n.nodeValue;            // nhớ bản tiếng Việt gốc
+    const key = n._vi.trim();
+    const hit = TR[key];
+    if(lang === "en" && hit){
+      n.nodeValue = n._vi.replace(key, hit);
+    }else{
+      n.nodeValue = n._vi;
+    }
+  });
+
+  // placeholder và title
+  document.querySelectorAll('[placeholder],[title]').forEach(el => {
+    ['placeholder','title'].forEach(attr => {
+      if(!el.hasAttribute(attr)) return;
+      const memo = '_vi_' + attr;
+      if(!el[memo]) el[memo] = el.getAttribute(attr);
+      const hit = TR[el[memo]];
+      el.setAttribute(attr, (lang === "en" && hit) ? hit : el[memo]);
+    });
+  });
+
+  document.documentElement.lang = lang;
+  document.title = lang === "en"
+    ? "Release metadata submission — Haustek"
+    : "Khai báo metadata phát hành — Haustek";
+  const b = document.getElementById('langBtn');
+  if(b) b.textContent = lang === "vi" ? "EN" : "VI";
+}
+
 
 /* ===================== TRACK BUILDER ===================== */
 const tracksEl = document.getElementById('tracks');
@@ -794,7 +1088,8 @@ function writerHTML(){
 function renumber(){
   const list=[...tracksEl.querySelectorAll('[data-track]')];
   list.forEach((t,i)=>{t.querySelector('.track-no').textContent=String(i+1).padStart(2,'0');});
-  document.getElementById('trackCount').textContent = list.length + (list.length>1?' tracks':' track');
+  document.getElementById('trackCount').textContent =
+    list.length + (lang==='en' ? (list.length>1?' tracks':' track') : ' track');
   list.forEach(t=>{t.querySelector('[data-del]').style.display = list.length>1 ? '' : 'none';});
 }
 
@@ -820,6 +1115,7 @@ function addTrack(){
   node.querySelector('[data-writers]').insertAdjacentHTML('beforeend', writerHTML());
   renumber();
   updateSplit(node);
+  applyLang();          /* track vừa thêm cũng phải theo ngôn ngữ đang chọn */
   return node;
 }
 
@@ -838,6 +1134,7 @@ tracksEl.addEventListener('click',e=>{
   if(e.target.closest('[data-add-writer]')){
     track.querySelector('[data-writers]').insertAdjacentHTML('beforeend', writerHTML());
     updateSplit(track);
+    applyLang();
     return;
   }
   if(e.target.closest('[data-del-writer]')){
@@ -931,62 +1228,62 @@ function validate(data){
   document.querySelectorAll('.bad').forEach(el=>el.classList.remove('bad'));
 
   const r=data.release;
-  if(!r.ten_ban_phat_hanh){errs.push('Chưa điền tên bản phát hành.');mark('r_title');}
+  if(!r.ten_ban_phat_hanh){errs.push(t('Chưa điền tên bản phát hành.'));mark('r_title');}
   if(r.ten_ban_phat_hanh && r.ten_ban_phat_hanh===r.ten_ban_phat_hanh.toUpperCase() && /[A-Z]{4,}/.test(r.ten_ban_phat_hanh)){
-    errs.push('Tên bản phát hành đang viết hoa toàn bộ — các cửa hàng nhạc sẽ từ chối. Hãy viết hoa chữ đầu thôi.');mark('r_title');
+    errs.push(t('Tên bản phát hành đang viết hoa toàn bộ — các cửa hàng nhạc sẽ từ chối. Hãy viết hoa chữ đầu thôi.'));mark('r_title');
   }
-  if(!r.nghe_si_chinh){errs.push('Chưa điền nghệ sĩ chính.');mark('r_artist');}
-  if(!r.the_loai_chinh){errs.push('Chưa chọn thể loại chính.');mark('r_genre');}
-  if(!r.nhan_phat_hanh){errs.push('Chưa điền nhãn phát hành.');mark('r_label');}
-  if(!r.p_line){errs.push('Chưa điền dòng ℗.');mark('r_p');}
-  if(!r.c_line){errs.push('Chưa điền dòng ©.');mark('r_c');}
-  if(!r.link_anh_bia){errs.push('Chưa dán link ảnh bìa.');mark('r_art');}
-  if(!r.ngay_phat_hanh){errs.push('Chưa chọn ngày phát hành.');mark('r_date');}
+  if(!r.nghe_si_chinh){errs.push(t('Chưa điền nghệ sĩ chính.'));mark('r_artist');}
+  if(!r.the_loai_chinh){errs.push(t('Chưa chọn thể loại chính.'));mark('r_genre');}
+  if(!r.nhan_phat_hanh){errs.push(t('Chưa điền nhãn phát hành.'));mark('r_label');}
+  if(!r.p_line){errs.push(t('Chưa điền dòng ℗.'));mark('r_p');}
+  if(!r.c_line){errs.push(t('Chưa điền dòng ©.'));mark('r_c');}
+  if(!r.link_anh_bia){errs.push(t('Chưa dán link ảnh bìa.'));mark('r_art');}
+  if(!r.ngay_phat_hanh){errs.push(t('Chưa chọn ngày phát hành.'));mark('r_date');}
   else{
     const d=new Date(r.ngay_phat_hanh),now=new Date();
     const days=Math.round((d-now)/86400000);
-    if(days<0){errs.push('Ngày phát hành đang nằm ở quá khứ.');mark('r_date');}
+    if(days<0){errs.push(t('Ngày phát hành đang nằm ở quá khứ.'));mark('r_date');}
     else if(days<14){errs.push('Ngày phát hành chỉ còn '+days+' ngày nữa. Cần tối thiểu 14 ngày, và nên có 21 ngày để kịp pitch playlist.');mark('r_date');}
   }
-  if(r.upc && !/^\d{12,14}$/.test(r.upc)){errs.push('UPC phải là dãy 12–14 chữ số. Chưa có thì cứ bỏ trống.');mark('r_upc');}
+  if(r.upc && !/^\d{12,14}$/.test(r.upc)){errs.push(t('UPC phải là dãy 12–14 chữ số. Chưa có thì cứ bỏ trống.'));mark('r_upc');}
 
   // track
   const nTracks=data.tracks.length;
   const type=r.loai_phat_hanh;
-  if(type==='Single'&&nTracks>3)errs.push('Single chỉ được tối đa 3 track. Bạn đang khai '+nTracks+' track — nên chuyển thành EP.');
-  if(type==='EP'&&(nTracks<4||nTracks>6))errs.push('EP cần từ 4 đến 6 track. Bạn đang khai '+nTracks+' track.');
-  if(type==='Album'&&nTracks<7)errs.push('Album cần từ 7 track trở lên. Bạn đang khai '+nTracks+' track.');
+  if(type==='Single'&&nTracks>3)errs.push(t('Single chỉ được tối đa 3 track. Bạn đang khai ')+nTracks+t(' track — nên chuyển thành EP.'));
+  if(type==='EP'&&(nTracks<4||nTracks>6))errs.push(t('EP cần từ 4 đến 6 track. Bạn đang khai ')+nTracks+t(' track.'));
+  if(type==='Album'&&nTracks<7)errs.push(t('Album cần từ 7 track trở lên. Bạn đang khai ')+nTracks+t(' track.'));
 
   data.tracks.forEach(t=>{
-    const p='Track '+t.so_thu_tu+': ';
-    if(!t.ten_track)errs.push(p+'chưa điền tên track.');
-    if(!t.nghe_si_chinh)errs.push(p+'chưa điền nghệ sĩ chính.');
-    if(!t.link_wav)errs.push(p+'chưa dán link file WAV.');
+    const p=t('Track ')+t.so_thu_tu+': ';
+    if(!t.ten_track)errs.push(p+t('chưa điền tên track.'));
+    if(!t.nghe_si_chinh)errs.push(p+t('chưa điền nghệ sĩ chính.'));
+    if(!t.link_wav)errs.push(p+t('chưa dán link file WAV.'));
     if(t.isrc && !/^[A-Za-z]{2}[A-Za-z0-9]{3}\d{7}$/.test(t.isrc.replace(/-/g,'')))
-      errs.push(p+'mã ISRC sai định dạng (đúng phải dạng VNA012400001). Chưa có thì bỏ trống.');
+      errs.push(p+t('mã ISRC sai định dạng (đúng phải dạng VNA012400001). Chưa có thì bỏ trống.'));
     const writers=t.nguoi_sang_tac;
-    if(!writers.length)errs.push(p+'chưa khai người sáng tác nào.');
+    if(!writers.length)errs.push(p+t('chưa khai người sáng tác nào.'));
     else{
-      if(writers.some(w=>!w.ho_ten))errs.push(p+'có dòng sáng tác thiếu họ tên.');
+      if(writers.some(w=>!w.ho_ten))errs.push(p+t('có dòng sáng tác thiếu họ tên.'));
       const total=Math.round(writers.reduce((s,w)=>s+w.ti_le,0)*100)/100;
-      if(total!==100)errs.push(p+'tổng tỉ lệ chia đang là '+total+'%, phải đúng 100%.');
+      if(total!==100)errs.push(p+t('tổng tỉ lệ chia đang là ')+total+t('%, phải đúng 100%.'));
       writers.forEach(w=>{
         if(w.ho_ten && w.ho_ten===w.ho_ten.toLowerCase() && w.ho_ten.length>2 && !/\s/.test(w.ho_ten))
-          errs.push(p+'"'+w.ho_ten+'" trông giống nghệ danh. Phần sáng tác phải ghi họ tên thật đầy đủ.');
+          errs.push(p+'"'+w.ho_ten+t('" trông giống nghệ danh. Phần sáng tác phải ghi họ tên thật đầy đủ.'));
       });
     }
     if(t.sample_cover!=='No' && !t.thong_tin_goc)
-      errs.push(p+'đã chọn có sample/cover/remix nhưng chưa ghi thông tin bài gốc.');
+      errs.push(p+t('đã chọn có sample/cover/remix nhưng chưa ghi thông tin bài gốc.'));
   });
 
   ['ck1','ck2','ck3','ck4'].forEach(id=>{
-    if(!document.getElementById(id).checked)errs.push('Chưa tích đủ các mục cam kết quyền ở bước 03.');
+    if(!document.getElementById(id).checked)errs.push(t('Chưa tích đủ các mục cam kết quyền ở bước 03.'));
   });
-  if(!data.submitter.nguoi_khai){errs.push('Bước 3: chưa điền họ tên người khai.');mark('s_name');}
-  if(!data.submitter.email){errs.push('Bước 3: chưa điền email.');mark('s_mail');}
+  if(!data.submitter.nguoi_khai){errs.push(t('Bước 3: chưa điền họ tên người khai.'));mark('s_name');}
+  if(!data.submitter.email){errs.push(t('Bước 3: chưa điền email.'));mark('s_mail');}
   const ph=data.submitter.dien_thoai.replace(/[^0-9+]/g,'');
-  if(!ph){errs.push('Bước 3: chưa điền số điện thoại. Chúng tôi cần số để gọi khi hồ sơ có chỗ phải hỏi lại.');mark('s_phone');}
-  else if(ph.length<9){errs.push('Bước 3: số điện thoại trông chưa đủ chữ số.');mark('s_phone');}
+  if(!ph){errs.push(t('Bước 3: chưa điền số điện thoại. Chúng tôi cần số để gọi khi hồ sơ có chỗ phải hỏi lại.'));mark('s_phone');}
+  else if(ph.length<9){errs.push(t('Bước 3: số điện thoại trông chưa đủ chữ số.'));mark('s_phone');}
 
   return [...new Set(errs)];
 }
@@ -1052,7 +1349,7 @@ function toText(data){
 const msgErr=document.getElementById('msgErr'),msgOk=document.getElementById('msgOk');
 function showErr(list){
   msgOk.classList.remove('show');
-  msgErr.innerHTML='<b>Còn '+list.length+' chỗ cần sửa trước khi gửi:</b><ul>'+list.map(e=>'<li>'+e+'</li>').join('')+'</ul>';
+  msgErr.innerHTML='<b>'+t('Còn ')+list.length+t(' chỗ cần sửa trước khi gửi:')+'</b><ul>'+list.map(e=>'<li>'+e+'</li>').join('')+'</ul>';
   msgErr.classList.add('show');
   msgErr.scrollIntoView({behavior:'smooth',block:'center'});
 }
@@ -1187,6 +1484,13 @@ document.getElementById('btnSave').addEventListener('click',()=>{
   saveText(data);
   showOk('<b>Đã tải bản lưu về máy bạn.</b> Đây là file chữ thường, mở bằng Notepad hoặc Word đều đọc được. Giữ lại phòng khi cần đối chiếu.');
 });
+
+/* ===================== KÍCH HOẠT SONG NGỮ ===================== */
+document.getElementById('langBtn').addEventListener('click',()=>{
+  lang = (lang === "vi") ? "en" : "vi";
+  applyLang();
+});
+applyLang();
 </script>
 </body>
 </html>
