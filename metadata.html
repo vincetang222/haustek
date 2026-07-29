@@ -41,7 +41,7 @@ img{max-width:100%;display:block}
   padding:14px var(--gut);background:rgba(7,7,9,.6);backdrop-filter:blur(16px) saturate(1.3);-webkit-backdrop-filter:blur(16px) saturate(1.3);
   border-bottom:1px solid rgba(240,240,242,.07)}
 .logo{display:flex;align-items:center;gap:10px}
-.logo img{height:11px;width:auto}
+.logo .wordmark{height:12px;width:auto;color:var(--paper);display:block}
 .rec{width:7px;height:7px;border-radius:50%;background:var(--red);box-shadow:0 0 10px rgba(255,46,76,.8);animation:blink 1.6s steps(2,end) infinite}
 @keyframes blink{50%{opacity:.25}}
 .nav a.back{font-family:var(--mono);font-size:11px;letter-spacing:.1em;color:var(--concrete);text-transform:uppercase}
@@ -63,26 +63,57 @@ h1 em{font-style:italic;font-weight:600;color:var(--red)}
   backdrop-filter:blur(14px) saturate(1.2);-webkit-backdrop-filter:blur(14px) saturate(1.2);
   box-shadow:inset 0 1px 0 rgba(255,255,255,.07), 0 24px 60px rgba(0,0,0,.4)}
 
-/* STEP */
-.step{margin-top:34px;padding:30px}
-.step-head{display:flex;align-items:baseline;gap:16px;padding-bottom:18px;border-bottom:1px solid rgba(240,240,242,.1);margin-bottom:26px}
-.step-no{font-family:var(--mono);font-size:11px;letter-spacing:.16em;color:var(--red);flex:none}
-.step-head h2{font-family:var(--disp);font-weight:700;font-stretch:108%;font-size:clamp(19px,3.2vw,28px);letter-spacing:-.02em;line-height:1.15}
-.step-head p{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;color:var(--concrete);text-transform:uppercase;margin-left:auto;flex:none;text-align:right}
-@media(max-width:640px){.step{padding:22px 18px}.step-head{flex-wrap:wrap}.step-head p{margin-left:0;width:100%;text-align:left}}
+/* ---------- THANH TIẾN TRÌNH ---------- */
+.progress{position:sticky;top:52px;z-index:60;margin:0 calc(var(--gut)*-1);padding:0 var(--gut);
+  background:rgba(7,7,9,.9);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.progress ol{display:flex;list-style:none;gap:0;overflow-x:auto;scrollbar-width:none}
+.progress ol::-webkit-scrollbar{display:none}
+.progress li{flex:none}
+.progress a{display:flex;align-items:center;gap:9px;padding:15px 20px 13px;text-decoration:none;
+  border-bottom:2px solid transparent;transition:all .25s;white-space:nowrap}
+.progress b{width:22px;height:22px;border-radius:50%;display:grid;place-items:center;flex:none;
+  font-family:var(--mono);font-size:10px;font-weight:500;
+  background:rgba(240,240,242,.08);color:var(--concrete);border:1px solid rgba(240,240,242,.14);transition:all .25s}
+.progress span{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--concrete);transition:color .25s}
+.progress a:hover span{color:var(--paper)}
+.progress a.on{border-bottom-color:var(--red)}
+.progress a.on b{background:var(--red);color:var(--paper);border-color:var(--red)}
+.progress a.on span{color:var(--paper)}
+.progress a.done b{background:rgba(78,216,138,.16);border-color:rgba(78,216,138,.5);color:var(--ok)}
+
+/* ---------- BƯỚC: nền sáng dần theo tầng để mắt bám được ---------- */
+.step{margin-top:40px;padding:0;overflow:hidden;
+  background:rgba(240,240,242,.055);           /* sáng hơn nền trang rõ rệt */
+  border:1px solid rgba(240,240,242,.16)}
+.step-head{display:flex;align-items:center;gap:18px;padding:22px 30px;
+  background:rgba(240,240,242,.05);            /* đầu bước sáng hơn thân bước */
+  border-bottom:1px solid rgba(240,240,242,.14);
+  border-left:3px solid var(--red)}
+.step-no{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;flex:none;
+  background:var(--red);color:var(--paper);font-family:var(--mono);font-size:13px;font-weight:500}
+.step-head h2{font-family:var(--disp);font-weight:750;font-stretch:108%;font-size:clamp(19px,3.2vw,27px);letter-spacing:-.02em;line-height:1.1}
+.step-head .sh-note{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;color:var(--concrete);text-transform:uppercase;margin-left:auto;flex:none;text-align:right}
+.step-body{padding:30px}
+@media(max-width:640px){
+  .step-head{padding:18px 18px;gap:13px}
+  .step-body{padding:22px 18px}
+  .step-head .sh-note{display:none}
+}
 
 /* FIELDS */
 .grid{display:grid;gap:22px 26px}
 @media(min-width:700px){.g2{grid-template-columns:1fr 1fr}.g3{grid-template-columns:1fr 1fr 1fr}.g21{grid-template-columns:2fr 1fr}}
 .f{display:grid;gap:7px;align-content:start}
-.f label{font-family:var(--mono);font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--concrete);display:flex;gap:8px;align-items:baseline}
+.f label{font-family:var(--mono);font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--paper);display:flex;gap:8px;align-items:baseline}
 .f label .req{color:var(--red)}
 .f .hint{font-family:var(--body);font-size:11.5px;letter-spacing:0;text-transform:none;color:rgba(142,142,152,.85);line-height:1.5;margin-top:-2px}
 .f input,.f select,.f textarea{
-  background:rgba(0,0,0,.28);border:1px solid rgba(240,240,242,.12);border-radius:10px;
-  color:var(--paper);font-family:var(--body);font-weight:400;font-size:14.5px;padding:12px 14px;
-  transition:border-color .2s,box-shadow .2s;appearance:none;width:100%;
+  background:rgba(0,0,0,.5);border:1px solid rgba(240,240,242,.2);border-radius:10px;
+  color:var(--paper);font-family:var(--body);font-weight:400;font-size:15px;padding:13px 15px;
+  transition:border-color .2s,box-shadow .2s,background .2s;appearance:none;width:100%;
 }
+.f input:hover,.f select:hover,.f textarea:hover{border-color:rgba(240,240,242,.34)}
 .f select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238E8E98' stroke-width='1.6' fill='none'/%3E%3C/svg%3E");
   background-repeat:no-repeat;background-position:right 14px center;padding-right:36px}
 .f select option{background:#12121a;color:var(--paper)}
@@ -97,7 +128,9 @@ h1 em{font-style:italic;font-weight:600;color:var(--red)}
 .chk b{color:var(--paper);font-weight:500}
 
 /* TRACK CARD */
-.track{border:1px solid rgba(240,240,242,.11);border-radius:16px;padding:22px;margin-bottom:16px;background:rgba(240,240,242,.02);position:relative}
+.track{border:1px solid rgba(240,240,242,.18);border-left:3px solid var(--ice);border-radius:14px;
+  padding:24px;margin-bottom:18px;background:rgba(0,0,0,.32);position:relative}
+.track:focus-within{border-left-color:var(--red)}
 .track-head{display:flex;align-items:center;gap:14px;margin-bottom:20px}
 .track-no{font-family:var(--disp);font-weight:800;font-stretch:114%;font-size:34px;letter-spacing:-.03em;color:var(--red);line-height:1}
 .track-title{font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--concrete);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -170,7 +203,148 @@ a:focus-visible,button:focus-visible,input:focus-visible,textarea:focus-visible,
 <header class="nav">
   <a class="logo" href="index.html" aria-label="Haustek">
     <span class="rec" aria-hidden="true"></span>
-    <img src="data:image/png;base64,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" alt="Haustek" width="389" height="82">
+    <svg class="wordmark" viewBox="0 0 1000 157.62" role="img" aria-label="Haustek"><g transform="translate(0,157.62) scale(0.322997,-0.322997)" fill="currentColor"><path d="M80 4793 c-19 -2 -45 -6 -57 -8 l-23 -5 0 -2344 0 -2344 83 -6 c45
+-3 198 -8 340 -11 247 -5 258 -4 277 15 20 20 20 34 20 752 l0 732 46 43 c30
+27 65 49 97 58 28 8 119 48 202 89 82 40 175 79 205 86 66 15 217 79 260 110
+32 23 191 87 298 121 35 11 77 29 95 39 18 10 56 28 86 40 30 11 65 29 78 40
+14 10 102 44 196 75 107 35 226 82 314 126 158 78 218 92 271 65 41 -21 56
+-75 48 -176 -3 -41 -7 -542 -8 -1112 -2 -1152 -6 -1077 64 -1096 18 -4 158 -6
+310 -3 248 5 279 8 295 24 17 17 18 127 21 2325 1 1269 0 2317 -3 2328 -10 41
+-45 45 -346 42 -295 -3 -315 -6 -336 -48 -5 -8 -8 -330 -9 -715 0 -385 -2
+-708 -2 -717 -4 -39 -60 -84 -125 -102 -36 -10 -93 -35 -128 -57 -35 -21 -68
+-39 -72 -39 -5 0 -41 -15 -80 -34 -40 -19 -102 -40 -139 -46 -46 -8 -81 -22
+-109 -42 -22 -16 -60 -35 -84 -42 -24 -8 -58 -25 -76 -39 -19 -14 -61 -33 -93
+-42 -32 -10 -80 -27 -105 -40 -25 -12 -68 -28 -96 -34 -27 -7 -68 -23 -91 -36
+-23 -13 -64 -33 -93 -44 -28 -12 -68 -32 -88 -45 -23 -16 -78 -34 -141 -47
+-73 -16 -120 -32 -160 -57 -31 -19 -73 -40 -93 -47 -20 -7 -51 -21 -69 -30
+-18 -10 -61 -25 -94 -35 -34 -10 -87 -28 -118 -39 -64 -24 -98 -18 -120 21
+-10 18 -12 248 -10 1165 l3 1142 -25 26 -25 25 -278 -2 c-153 0 -294 -3 -313
+-5z"/><path d="M6532 4789 c-27 -8 -38 -22 -72 -89 -22 -44 -40 -85 -40 -91 0 -7
+-34 -81 -75 -165 -68 -138 -105 -239 -105 -285 0 -9 -15 -39 -33 -65 -19 -27
+-40 -67 -47 -89 -7 -22 -25 -60 -40 -85 -15 -25 -36 -70 -45 -100 -10 -30 -30
+-80 -45 -110 -15 -30 -33 -73 -40 -95 -11 -37 -46 -100 -106 -197 -13 -20 -32
+-72 -43 -115 -23 -88 -80 -226 -117 -280 -13 -20 -32 -62 -41 -92 -8 -31 -26
+-76 -38 -101 -12 -25 -30 -70 -40 -100 -10 -30 -29 -69 -42 -86 -13 -17 -31
+-53 -40 -80 -9 -27 -29 -68 -44 -92 -15 -23 -30 -59 -34 -80 -4 -20 -19 -59
+-35 -87 -15 -27 -35 -74 -44 -104 -9 -30 -41 -99 -71 -154 -31 -54 -71 -143
+-89 -196 -46 -134 -83 -217 -121 -272 -18 -26 -37 -68 -44 -94 -7 -26 -23 -69
+-36 -95 -13 -26 -29 -69 -36 -96 -6 -27 -21 -65 -32 -84 -60 -103 -127 -247
+-137 -295 -6 -30 -24 -78 -39 -107 -15 -29 -34 -69 -41 -88 -7 -19 -26 -53
+-42 -75 -25 -36 -43 -82 -114 -289 -13 -38 -30 -76 -38 -85 -22 -25 -66 -118
+-66 -140 0 -11 7 -27 16 -36 15 -15 52 -16 358 -13 l341 3 65 28 c137 59 311
+127 324 127 8 0 79 33 158 74 86 44 167 79 203 86 60 12 223 80 300 125 23 13
+70 31 105 40 35 9 80 25 99 35 20 10 56 23 81 29 25 7 113 45 196 86 84 41
+183 83 221 93 38 11 91 31 118 44 28 14 66 31 85 38 19 8 51 24 70 37 20 12
+67 33 105 46 39 14 88 33 110 44 22 11 66 28 97 37 32 9 72 25 90 35 18 10 51
+24 73 31 22 7 65 28 97 47 62 38 157 55 195 34 27 -14 89 -125 124 -221 67
+-186 91 -243 130 -322 23 -45 50 -94 59 -108 10 -14 26 -55 35 -90 9 -35 23
+-76 31 -92 8 -15 28 -66 45 -114 23 -63 43 -98 73 -129 l41 -42 330 -6 c194
+-3 336 -2 346 4 29 15 33 48 10 78 -46 58 -55 75 -67 141 -14 72 -91 246 -129
+292 -13 15 -28 51 -35 80 -7 29 -25 76 -40 103 -15 28 -34 75 -43 105 -9 30
+-27 70 -41 88 -13 18 -29 53 -35 77 -6 25 -25 66 -41 92 -17 27 -38 73 -47
+103 -8 30 -26 75 -38 100 -12 25 -28 63 -35 85 -7 22 -38 85 -70 140 -35 60
+-67 130 -79 177 -24 85 -81 213 -134 301 -19 31 -38 74 -42 94 -4 20 -19 62
+-35 93 -16 31 -36 85 -45 120 -9 36 -25 77 -36 92 -40 56 -108 198 -124 259
+-8 35 -44 118 -79 185 -35 67 -69 139 -76 160 -17 56 -75 188 -114 264 -19 36
+-41 90 -50 121 -9 31 -23 62 -32 69 -22 19 -40 58 -48 105 -4 22 -18 58 -31
+80 -13 22 -30 67 -39 99 -8 33 -28 78 -44 100 -57 82 -103 179 -118 252 -14
+65 -101 259 -135 301 -6 6 -19 38 -29 70 -38 121 -97 247 -124 268 -26 19 -43
+20 -309 22 -157 1 -296 -3 -315 -8z m340 -1106 c9 -10 26 -38 38 -63 12 -25
+44 -81 70 -125 27 -44 53 -100 60 -125 7 -24 22 -65 35 -90 13 -25 31 -73 40
+-105 9 -33 30 -80 46 -105 16 -25 35 -66 44 -90 9 -25 27 -61 40 -81 13 -21
+31 -66 40 -100 17 -70 82 -218 127 -290 15 -25 35 -70 44 -100 9 -30 24 -67
+34 -84 10 -16 25 -56 33 -88 9 -33 22 -66 31 -76 8 -9 25 -39 37 -66 12 -28
+35 -69 51 -92 34 -47 39 -99 14 -137 -10 -16 -50 -38 -120 -65 -57 -23 -111
+-41 -119 -41 -19 0 -199 -92 -234 -120 -14 -11 -38 -23 -52 -26 -122 -27 -203
+-50 -241 -70 -112 -57 -218 -103 -250 -109 -19 -4 -55 -18 -79 -31 -24 -13
+-64 -30 -90 -38 -57 -17 -213 -91 -262 -123 -19 -13 -67 -32 -106 -43 -39 -11
+-86 -28 -105 -39 -18 -10 -57 -24 -86 -30 -60 -13 -85 -24 -125 -57 -36 -30
+-87 -32 -113 -3 -31 34 -24 87 24 181 23 45 50 108 61 138 46 134 84 224 151
+355 39 77 77 166 85 198 7 31 22 72 33 90 65 105 182 363 215 474 15 51 70
+158 110 216 11 16 32 73 48 128 30 103 78 209 122 267 14 19 31 57 37 85 7 29
+23 70 36 93 12 22 28 63 35 90 14 57 41 115 62 132 8 7 25 40 37 73 35 92 103
+136 142 92z"/><path d="M10113 4793 c-13 -2 -32 -16 -43 -31 l-21 -26 6 -1501 c7 -1655 5
+-1615 70 -1810 18 -55 36 -120 40 -145 4 -25 22 -79 40 -120 18 -41 38 -92 45
+-113 7 -21 24 -53 40 -70 15 -18 33 -43 40 -56 6 -13 26 -43 44 -66 17 -24 51
+-70 75 -104 73 -98 310 -315 392 -356 39 -20 101 -63 171 -117 27 -20 73 -44
+104 -53 31 -9 67 -23 80 -31 12 -9 60 -22 105 -30 46 -8 112 -26 148 -40 89
+-36 310 -50 566 -36 164 9 187 13 232 35 28 14 81 31 119 38 38 6 94 22 124
+34 30 13 74 28 97 34 23 6 61 26 85 44 45 34 169 110 228 140 87 44 334 296
+415 423 28 43 65 95 83 115 18 20 41 61 51 90 10 30 26 68 35 84 9 17 23 64
+32 105 9 41 30 100 46 130 18 35 35 95 48 165 11 61 24 126 30 145 6 22 10
+565 10 1560 1 1519 0 1525 -20 1542 -28 23 -79 26 -378 25 l-264 -2 -19 -24
+c-19 -23 -19 -61 -19 -1555 0 -842 -4 -1547 -9 -1566 -5 -19 -16 -55 -25 -80
+-9 -25 -22 -70 -31 -100 -9 -36 -45 -101 -100 -185 -104 -158 -222 -282 -310
+-326 -33 -17 -98 -52 -145 -79 -129 -75 -135 -77 -282 -94 -171 -20 -215 -20
+-386 0 -143 16 -163 23 -287 94 -38 22 -95 53 -126 69 -30 16 -62 37 -70 47
+-8 9 -33 29 -56 43 -23 14 -65 57 -95 95 -29 38 -71 92 -92 120 -22 28 -48 70
+-58 93 -10 23 -31 56 -45 74 -19 22 -30 52 -39 103 -7 39 -19 103 -28 141 -14
+62 -16 235 -15 1579 l0 1509 -21 21 c-20 20 -31 21 -308 22 -158 1 -297 -1
+-309 -3z"/><path d="M15710 4789 c-60 -4 -128 -16 -160 -28 -30 -11 -99 -29 -153 -40
+-100 -20 -134 -36 -252 -121 -27 -20 -63 -43 -79 -51 -45 -22 -234 -208 -264
+-259 -43 -72 -88 -142 -122 -186 -42 -54 -109 -232 -120 -321 -5 -40 -20 -92
+-32 -115 -20 -37 -23 -61 -26 -183 -3 -124 -1 -148 18 -205 12 -36 30 -111 40
+-166 20 -111 77 -266 122 -329 59 -82 98 -141 122 -185 26 -48 73 -96 121
+-125 17 -10 50 -42 75 -71 32 -38 65 -63 117 -88 39 -19 74 -39 77 -45 4 -6
+37 -20 75 -31 37 -11 76 -29 86 -40 10 -11 44 -28 74 -36 31 -9 88 -28 126
+-42 l70 -26 510 -6 c311 -5 522 -11 540 -18 74 -25 186 -85 200 -105 8 -12 45
+-48 83 -80 60 -49 74 -68 111 -146 39 -82 43 -97 51 -211 6 -78 6 -156 0 -218
+-9 -85 -16 -107 -62 -201 -42 -84 -60 -109 -92 -130 -22 -14 -56 -42 -76 -63
+-59 -57 -140 -106 -210 -125 -60 -17 -134 -18 -1037 -18 -960 0 -972 0 -987
+-20 -19 -24 -18 -7 -18 -358 0 -255 1 -291 16 -305 15 -15 96 -16 954 -14 578
+1 975 6 1037 13 55 6 131 21 170 35 39 14 90 31 115 38 25 7 63 21 85 31 22 9
+66 28 98 40 34 14 84 48 125 84 37 33 86 68 107 77 53 21 73 40 101 96 13 26
+31 51 39 56 9 4 37 29 63 54 35 35 59 74 96 155 27 59 62 128 77 153 16 25 35
+73 42 107 8 33 27 92 43 129 28 68 28 71 28 284 l1 215 -32 75 c-17 42 -38
+110 -48 153 -11 50 -27 89 -45 112 -15 19 -33 49 -40 67 -27 68 -92 165 -152
+230 -35 37 -75 82 -90 101 -15 19 -59 55 -97 81 -39 25 -71 50 -71 55 0 19
+-116 95 -171 111 -32 10 -86 32 -121 48 -35 17 -119 47 -188 68 l-125 37 -450
+8 c-247 4 -478 13 -513 19 -119 20 -277 114 -326 193 -12 19 -34 50 -49 68
+-45 54 -106 163 -116 210 -6 24 -11 114 -11 199 0 181 1 181 109 330 85 117
+122 154 186 187 28 14 68 39 91 55 28 20 68 35 135 48 89 19 141 20 927 20
+l834 0 29 29 29 30 -1 283 c0 155 -5 290 -10 299 -5 9 -23 22 -40 28 -38 13
+-1599 13 -1769 0z"/><path d="M18764 4794 c-12 -3 -30 -14 -40 -25 -16 -18 -18 -46 -18 -308 l-1
+-289 24 -26 24 -26 649 0 c628 0 650 -1 688 -20 21 -11 41 -24 45 -30 3 -5 6
+-895 5 -1978 0 -1913 0 -1970 18 -1992 l19 -24 285 1 c156 0 294 4 305 7 12 4
+24 14 27 23 4 9 6 902 6 1984 l0 1969 20 20 c12 12 32 25 45 30 15 6 294 10
+666 10 394 1 650 5 666 11 52 19 52 23 53 332 0 274 -1 288 -20 307 -19 19
+-33 20 -518 20 -274 0 -1045 2 -1713 4 -668 3 -1224 3 -1235 0z"/><path d="M24665 4790 c-819 -3 -1496 -9 -1503 -13 -7 -5 -17 -19 -22 -32 -10
+-27 -26 -4578 -16 -4618 3 -15 15 -31 26 -37 14 -8 504 -11 1627 -10 1374 0
+1610 2 1629 15 21 14 22 19 26 312 3 164 1 306 -4 316 -25 50 38 48 -1297 47
+l-1242 0 -30 29 -29 29 0 745 c0 768 1 796 40 817 12 6 374 10 984 10 929 0
+967 1 985 19 16 16 19 42 24 232 3 118 5 247 4 287 -2 67 -5 76 -30 98 l-28
+24 -950 0 c-1046 0 -996 -3 -1018 61 -7 22 -11 179 -11 484 0 440 1 453 20
+478 12 15 35 29 53 32 18 3 579 7 1247 8 668 2 1223 7 1233 11 41 19 45 49 48
+342 2 154 0 285 -4 292 -13 21 -80 32 -177 30 -52 -2 -765 -5 -1585 -8z"/><path d="M27354 4786 c-18 -8 -34 -18 -38 -24 -3 -5 -6 -1053 -6 -2328 -1
+-2040 1 -2319 14 -2333 23 -23 90 -26 380 -21 l268 5 38 43 c21 23 59 86 85
+138 27 56 62 110 85 133 23 22 48 60 60 93 11 31 28 62 36 69 9 7 27 36 41 63
+32 63 76 130 119 178 18 20 38 54 43 75 6 21 19 50 28 64 47 69 59 86 86 118
+16 19 36 51 44 70 8 20 28 54 44 78 16 23 33 53 39 68 11 28 89 144 126 185
+12 14 27 42 34 63 7 21 25 53 40 70 15 18 34 46 43 62 19 37 54 70 84 80 18 5
+29 0 49 -22 37 -40 94 -131 110 -175 7 -21 42 -73 79 -117 36 -44 71 -94 77
+-113 13 -39 72 -137 109 -182 34 -41 103 -155 140 -231 16 -33 51 -89 79 -125
+28 -36 59 -83 70 -106 11 -22 28 -52 39 -66 11 -13 31 -49 44 -79 13 -30 49
+-83 80 -118 39 -43 62 -80 74 -117 20 -63 100 -166 146 -187 48 -22 675 -32
+723 -12 46 19 45 50 -7 115 -23 29 -50 73 -61 98 -12 26 -31 61 -43 77 -13 17
+-32 48 -44 70 -12 22 -46 72 -76 110 -30 39 -62 92 -71 118 -9 27 -28 63 -43
+80 -59 69 -134 189 -190 304 -17 34 -35 64 -40 68 -22 13 -119 163 -133 206
+-9 25 -40 76 -69 112 -54 68 -102 143 -159 249 -16 31 -43 72 -58 90 -38 45
+-112 158 -112 172 0 6 -18 37 -40 70 -22 32 -40 65 -40 72 0 7 -13 28 -29 46
+-45 52 -118 179 -131 228 -25 93 7 202 89 305 22 28 57 79 76 115 96 173 157
+272 197 317 27 29 118 185 118 200 0 7 15 30 33 50 53 62 124 175 137 219 7
+23 39 75 72 115 32 41 72 101 88 134 54 111 90 168 182 288 16 21 39 58 50 84
+24 54 100 174 122 193 15 12 65 99 123 214 14 27 40 70 59 94 40 53 42 65 12
+86 -19 14 -71 16 -360 16 -212 0 -347 -4 -365 -11 -48 -18 -121 -98 -144 -159
+-11 -30 -46 -87 -77 -127 -31 -40 -73 -102 -92 -137 -19 -36 -52 -95 -72 -133
+-20 -37 -61 -98 -91 -136 -30 -37 -62 -89 -72 -115 -10 -26 -30 -65 -45 -87
+-109 -165 -135 -203 -152 -221 -10 -12 -28 -45 -39 -75 -11 -30 -32 -66 -46
+-80 -36 -39 -90 -118 -114 -169 -12 -25 -32 -59 -45 -76 -13 -18 -34 -56 -48
+-85 -13 -30 -51 -87 -84 -126 -40 -49 -63 -88 -71 -119 -7 -25 -25 -65 -42
+-87 -16 -23 -44 -62 -62 -86 -52 -71 -94 -141 -131 -217 -19 -40 -39 -75 -45
+-78 -18 -11 -99 -123 -126 -173 -59 -112 -144 -247 -191 -305 -12 -15 -29 -49
+-38 -75 -10 -29 -42 -79 -81 -126 -36 -43 -74 -100 -86 -128 -24 -56 -42 -69
+-93 -69 -24 0 -38 6 -45 19 -7 12 -11 546 -11 1577 l0 1559 -25 23 c-26 22
+-29 22 -313 22 -220 -1 -294 -4 -318 -14z"/></g></svg>
   </a>
   <a class="back" href="index.html">← Về trang chủ</a>
 </header>
@@ -180,15 +354,26 @@ a:focus-visible,button:focus-visible,input:focus-visible,textarea:focus-visible,
   <h1><span class="ln">Điền một lần,</span> <span class="ln"><em>lên sóng đúng hẹn.</em></span></h1>
   <p class="lead">Đây là toàn bộ thông tin Haustek cần để đẩy bản thu của bạn lên hơn 200 cửa hàng nhạc số. Sai một chi tiết nhỏ ở đây thôi là cả bản phát hành có thể bị từ chối hoặc phải gỡ xuống làm lại, nên bạn dành ra 15 phút điền cho kỹ nhé. Dấu <span style="color:var(--red)">*</span> là bắt buộc.</p>
 
+  <nav class="progress" aria-label="Các bước">
+    <ol>
+      <li><a href="#step1"><b>1</b><span>Bản phát hành</span></a></li>
+      <li><a href="#step2"><b>2</b><span>Track</span></a></li>
+      <li><a href="#step3"><b>3</b><span>Liên lạc</span></a></li>
+      <li><a href="#step4"><b>4</b><span>Cam kết</span></a></li>
+      <li><a href="#step5"><b>5</b><span>Gửi đi</span></a></li>
+    </ol>
+  </nav>
+
   <form id="metaForm">
 
     <!-- ===== BƯỚC 1 ===== -->
-    <section class="step glass">
+    <section class="step" id="step1">
       <div class="step-head">
-        <span class="step-no">01</span>
+        <span class="step-no">1</span>
         <h2>Thông tin bản phát hành</h2>
-        <p>Release</p>
+        <span class="sh-note">Release</span>
       </div>
+      <div class="step-body">
 
       <div class="grid g2">
         <div class="f">
@@ -320,26 +505,94 @@ a:focus-visible,button:focus-visible,input:focus-visible,textarea:focus-visible,
         <label for="r_note">Ghi chú thêm cho đội phát hành</label>
         <textarea id="r_note" name="r_note" placeholder="Ví dụ: muốn pitch vào playlist nào, ràng buộc ngày giờ, ghi chú về lãnh thổ tùy chọn…"></textarea>
       </div>
+      </div>
     </section>
 
     <!-- ===== BƯỚC 2 ===== -->
-    <section class="step glass">
+    <section class="step" id="step2">
       <div class="step-head">
-        <span class="step-no">02</span>
+        <span class="step-no">2</span>
         <h2>Danh sách track</h2>
-        <p id="trackCount">1 track</p>
+        <span class="sh-note" id="trackCount">1 track</span>
       </div>
-      <div id="tracks"></div>
-      <button type="button" class="add-track" id="addTrack">+ Thêm một track</button>
+      <div class="step-body">
+        <div id="tracks"></div>
+        <button type="button" class="add-track" id="addTrack">+ Thêm một track</button>
+      </div>
     </section>
 
-    <!-- ===== BƯỚC 3 ===== -->
-    <section class="step glass">
+    <!-- ===== BƯỚC 3: LIÊN LẠC ===== -->
+    <section class="step" id="step3">
       <div class="step-head">
-        <span class="step-no">03</span>
-        <h2>Cam kết quyền</h2>
-        <p>Bắt buộc</p>
+        <span class="step-no">3</span>
+        <h2>Liên lạc với bạn</h2>
+        <span class="sh-note">Bắt buộc</span>
       </div>
+      <div class="step-body">
+        <p class="lead" style="margin-top:0;margin-bottom:26px">Hồ sơ metadata gần như lần nào cũng có một chi tiết cần hỏi lại — sai chính tả tên người sáng tác, link file hỏng, ngày phát hành trùng lịch. Có số của bạn thì chúng tôi gọi một cuộc là xong, thay vì email qua lại mất ba ngày.</p>
+
+        <div class="grid g2">
+          <div class="f">
+            <label for="s_name">Họ tên người khai <span class="req">*</span></label>
+            <input id="s_name" name="s_name" type="text" required placeholder="Nguyễn Văn A">
+            <span class="hint">Ghi tên thật, không ghi nghệ danh.</span>
+          </div>
+          <div class="f">
+            <label for="s_role">Bạn là</label>
+            <select id="s_role" name="s_role">
+              <option>Nghệ sĩ</option><option>Quản lý nghệ sĩ</option>
+              <option>Nhà sản xuất</option><option>Nhạc sĩ</option>
+              <option>Đại diện nhãn</option><option>Khác</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="grid g2" style="margin-top:22px">
+          <div class="f">
+            <label for="s_phone">Số điện thoại <span class="req">*</span></label>
+            <input id="s_phone" name="s_phone" type="tel" required placeholder="09xx xxx xxx">
+            <span class="hint">Số gọi được và có Zalo thì tốt nhất.</span>
+          </div>
+          <div class="f">
+            <label for="s_mail">Email <span class="req">*</span></label>
+            <input id="s_mail" name="s_mail" type="email" required placeholder="ban@email.com">
+          </div>
+        </div>
+
+        <div class="grid g2" style="margin-top:22px">
+          <div class="f">
+            <label for="s_when">Giờ nào gọi bạn tiện nhất</label>
+            <select id="s_when" name="s_when">
+              <option value="Bất kỳ">Giờ nào cũng được</option>
+              <option value="Sáng 9-12">Buổi sáng (9h – 12h)</option>
+              <option value="Chiều 13-18">Buổi chiều (13h – 18h)</option>
+              <option value="Tối 18-21">Buổi tối (18h – 21h)</option>
+              <option value="Chi nhan tin">Đừng gọi, nhắn tin thôi</option>
+            </select>
+          </div>
+          <div class="f">
+            <label for="s_social">Facebook hoặc Instagram của bạn</label>
+            <input id="s_social" name="s_social" type="text" placeholder="facebook.com/... hoặc @tenban">
+            <span class="hint">Để chúng tôi nhắn được khi không gọi được máy.</span>
+          </div>
+        </div>
+
+        <div class="f" style="margin-top:22px">
+          <label for="s_backup">Người liên hệ dự phòng</label>
+          <input id="s_backup" name="s_backup" type="text" placeholder="Tên và số điện thoại quản lý, hoặc người trong nhóm">
+          <span class="hint">Bỏ trống cũng được. Hữu ích khi bạn đi tour hoặc ra nước ngoài.</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== BƯỚC 4: CAM KẾT ===== -->
+    <section class="step" id="step4">
+      <div class="step-head">
+        <span class="step-no">4</span>
+        <h2>Cam kết quyền</h2>
+        <span class="sh-note">Bắt buộc</span>
+      </div>
+      <div class="step-body">
 
       <label class="chk"><input type="checkbox" id="ck1" required>
         <span><b>Tôi sở hữu hoặc được ủy quyền đầy đủ</b> đối với bản ghi và tác phẩm khai báo ở đây, và có quyền phát hành thương mại trên các nền tảng số.</span></label>
@@ -350,36 +603,24 @@ a:focus-visible,button:focus-visible,input:focus-visible,textarea:focus-visible,
       <label class="chk"><input type="checkbox" id="ck4" required>
         <span><b>Ảnh bìa là của tôi hoặc tôi có quyền sử dụng</b>, không dùng ảnh lấy trên mạng, không có hình người nổi tiếng hay nhãn hiệu chưa xin phép.</span></label>
 
-      <div class="grid g3" style="margin-top:26px">
-        <div class="f">
-          <label for="s_name">Người khai <span class="req">*</span></label>
-          <input id="s_name" name="s_name" type="text" required placeholder="Họ tên đầy đủ">
-        </div>
-        <div class="f">
-          <label for="s_mail">Email liên hệ <span class="req">*</span></label>
-          <input id="s_mail" name="s_mail" type="email" required placeholder="you@email.com">
-        </div>
-        <div class="f">
-          <label for="s_phone">Số điện thoại</label>
-          <input id="s_phone" name="s_phone" type="tel" placeholder="09xx xxx xxx">
-        </div>
       </div>
     </section>
 
-    <!-- ===== BƯỚC 4 ===== -->
-    <section class="step glass">
+    <!-- ===== BƯỚC 5: GỬI ===== -->
+    <section class="step" id="step5">
       <div class="step-head">
-        <span class="step-no">04</span>
+        <span class="step-no">5</span>
         <h2>Gửi hồ sơ</h2>
-        <p>Xuất &amp; gửi</p>
+        <span class="sh-note">Bước cuối</span>
       </div>
+      <div class="step-body">
 
-      <p class="lead" style="margin-top:0">Bấm <b style="color:var(--paper);font-weight:500">Kiểm tra &amp; xuất hồ sơ</b>. Nếu mọi thứ hợp lệ, máy sẽ tải về hai file: một file <b style="color:var(--paper);font-weight:500">.json</b> để Haustek nạp vào hệ thống và một file <b style="color:var(--paper);font-weight:500">.csv</b> mở được bằng Excel. Bạn gửi cả hai file này về <a href="mailto:mgmt@haustek-group.com">mgmt@haustek-group.com</a> kèm file WAV và ảnh bìa là xong.</p>
+      <p class="lead" style="margin-top:0">Bấm nút đỏ bên dưới. Máy sẽ soát lại toàn bộ hồ sơ, chỗ nào còn thiếu hay sai sẽ báo rõ để bạn sửa. Khi mọi thứ đã đủ, hồ sơ được gửi thẳng về Haustek và bạn nhận một mã hồ sơ để tiện hỏi lại sau này.</p>
 
       <div class="actions">
-        <button type="button" class="btn primary" id="btnExport">Kiểm tra &amp; xuất hồ sơ</button>
-        <button type="button" class="btn" id="btnCopy">Chép nội dung vào clipboard</button>
-        <button type="button" class="btn" id="btnMail">Mở sẵn email gửi Haustek</button>
+        <button type="button" class="btn primary" id="btnExport">Gửi hồ sơ cho Haustek</button>
+        <button type="button" class="btn" id="btnMail">Gửi bằng email của tôi</button>
+        <button type="button" class="btn" id="btnSave">Tải bản lưu về máy</button>
       </div>
 
       <div class="msg err" id="msgErr"></div>
@@ -389,11 +630,12 @@ a:focus-visible,button:focus-visible,input:focus-visible,textarea:focus-visible,
       <table class="spec">
         <tr><td>File nhạc</td><td>WAV, 16-bit hoặc 24-bit, tần số 44.1 kHz trở lên, stereo. Không gửi MP3. Không để tiếng bị vỡ (clipping) ở đỉnh.</td></tr>
         <tr><td>Ảnh bìa</td><td>3000×3000 px, JPG hoặc PNG, RGB, dưới 10MB.</td></tr>
-        <tr><td>Cách gửi</td><td>Đẩy lên Google Drive hoặc Dropbox rồi dán link, đừng đính kèm trực tiếp vào email.</td></tr>
+        <tr><td>Cách gửi</td><td>Đẩy lên Google Drive hoặc Dropbox rồi dán link vào biểu mẫu. File nhạc thường quá nặng để đính kèm thẳng vào email.</td></tr>
         <tr><td>Đặt tên file</td><td><span style="font-family:var(--mono);font-size:12px">SốThứTự_TênNghệSĩ_TênTrack.wav</span> — ví dụ <span style="font-family:var(--mono);font-size:12px">01_Tarnoise_Dem Thanh Pho.wav</span></td></tr>
       </table>
 
-      <p class="note">Sau khi nhận hồ sơ, Haustek kiểm tra trong 2–3 ngày làm việc và báo lại nếu cần bổ sung. Bản thu chỉ được đẩy lên hệ thống khi metadata đã sạch.</p>
+      <p class="note">Sau khi nhận hồ sơ, Haustek kiểm tra trong 2–3 ngày làm việc và gọi hoặc nhắn cho bạn nếu cần bổ sung. Bản thu chỉ được đẩy lên hệ thống khi metadata đã sạch.</p>
+      </div>
     </section>
 
   </form>
@@ -672,8 +914,12 @@ function collect(){
   });
   const submitter={
     nguoi_khai:g('s_name').value.trim(),
-    email:g('s_mail').value.trim(),
+    vai_tro:g('s_role').value,
     dien_thoai:g('s_phone').value.trim(),
+    email:g('s_mail').value.trim(),
+    gio_tien_goi:g('s_when').value,
+    mang_xa_hoi:g('s_social').value.trim(),
+    lien_he_du_phong:g('s_backup').value.trim(),
     thoi_diem_gui:new Date().toISOString()
   };
   return {release,tracks,submitter};
@@ -736,8 +982,11 @@ function validate(data){
   ['ck1','ck2','ck3','ck4'].forEach(id=>{
     if(!document.getElementById(id).checked)errs.push('Chưa tích đủ các mục cam kết quyền ở bước 03.');
   });
-  if(!data.submitter.nguoi_khai){errs.push('Chưa điền tên người khai.');mark('s_name');}
-  if(!data.submitter.email){errs.push('Chưa điền email liên hệ.');mark('s_mail');}
+  if(!data.submitter.nguoi_khai){errs.push('Bước 3: chưa điền họ tên người khai.');mark('s_name');}
+  if(!data.submitter.email){errs.push('Bước 3: chưa điền email.');mark('s_mail');}
+  const ph=data.submitter.dien_thoai.replace(/[^0-9+]/g,'');
+  if(!ph){errs.push('Bước 3: chưa điền số điện thoại. Chúng tôi cần số để gọi khi hồ sơ có chỗ phải hỏi lại.');mark('s_phone');}
+  else if(ph.length<9){errs.push('Bước 3: số điện thoại trông chưa đủ chữ số.');mark('s_phone');}
 
   return [...new Set(errs)];
 }
@@ -755,39 +1004,49 @@ function download(name,content,type){
   a.href=url;a.download=name;document.body.appendChild(a);a.click();
   document.body.removeChild(a);setTimeout(()=>URL.revokeObjectURL(url),1500);
 }
-function toCSV(data){
-  const cols=['so_thu_tu','ten_track','phien_ban','nghe_si_chinh','khach_moi','remixer','isrc',
-    'ngon_ngu_loi','noi_dung_nhay_cam','preview_bat_dau','nha_san_xuat','xuat_ban_pro',
-    'sample_cover','thong_tin_goc','link_wav','nguoi_sang_tac','loi_bai_hat'];
-  const rel=data.release;
-  const relCols=Object.keys(rel);
-  const esc=v=>{const s=String(v==null?'':v).replace(/"/g,'""');return '"'+s+'"';};
-  const head=[...relCols,...cols].map(esc).join(',');
-  const rows=data.tracks.map(t=>{
-    const writers=t.nguoi_sang_tac.map(w=>w.ho_ten+' ('+w.vai_tro+' '+w.ti_le+'%)').join(' | ');
-    return [...relCols.map(c=>rel[c]),...cols.map(c=>c==='nguoi_sang_tac'?writers:t[c])].map(esc).join(',');
-  });
-  return '\uFEFF'+[head,...rows].join('\r\n');
-}
+/* Bản lưu cho nghệ sĩ: chữ thường, đọc được bằng mắt, mở bằng Notepad.
+   Cố ý KHÔNG dùng JSON — nhạc sĩ không có lý do gì phải hiểu định dạng đó. */
+const LABELS={
+  loai_phat_hanh:'Loại phát hành', ten_ban_phat_hanh:'Tên bản phát hành', phien_ban:'Phiên bản',
+  nhan_phat_hanh:'Nhãn phát hành', nghe_si_chinh:'Nghệ sĩ chính', nghe_si_khach_moi:'Khách mời',
+  spotify_artist:'Spotify nghệ sĩ', apple_artist:'Apple Music nghệ sĩ', the_loai_chinh:'Thể loại chính',
+  the_loai_phu:'Thể loại phụ', ngon_ngu_metadata:'Ngôn ngữ', ngay_phat_hanh:'Ngày phát hành',
+  ngay_pre_save:'Ngày pre-save', upc:'UPC', lanh_tho:'Lãnh thổ', p_line:'Dòng ℗', c_line:'Dòng ©',
+  link_anh_bia:'Link ảnh bìa', ghi_chu:'Ghi chú',
+  ten_track:'Tên track', khach_moi:'Khách mời', remixer:'Remixer', isrc:'ISRC',
+  ngon_ngu_loi:'Ngôn ngữ lời', noi_dung_nhay_cam:'Nội dung nhạy cảm', link_wav:'Link file WAV',
+  preview_bat_dau:'Preview bắt đầu', nha_san_xuat:'Nhà sản xuất', xuat_ban_pro:'Xuất bản / PRO',
+  sample_cover:'Sample hoặc cover', thong_tin_goc:'Thông tin bài gốc', tong_ti_le:'Tổng tỉ lệ',
+  nguoi_khai:'Họ tên', vai_tro:'Vai trò', dien_thoai:'Điện thoại', email:'Email',
+  gio_tien_goi:'Giờ tiện gọi', mang_xa_hoi:'Mạng xã hội', lien_he_du_phong:'Liên hệ dự phòng',
+  thoi_diem_gui:'Thời điểm gửi'
+};
+function line(k,v){return '  '+((LABELS[k]||k.replace(/_/g,' '))+':').padEnd(24)+v;}
 function toText(data){
   const r=data.release;
-  let out='HỒ SƠ METADATA — HAUSTEK\n========================================\n\n[BẢN PHÁT HÀNH]\n';
-  Object.entries(r).forEach(([k,v])=>{if(v)out+=k.replace(/_/g,' ')+': '+v+'\n';});
+  const L=[];
+  L.push('HỒ SƠ METADATA PHÁT HÀNH — HAUSTEK');
+  L.push('='.repeat(52),'');
+  L.push('BẢN PHÁT HÀNH');
+  Object.entries(r).forEach(([k,v])=>{if(v)L.push(line(k,v));});
+  L.push('');
   data.tracks.forEach(t=>{
-    out+='\n[TRACK '+t.so_thu_tu+'] '+t.ten_track+'\n';
+    L.push('TRACK '+t.so_thu_tu+' — '+(t.ten_track||'(chưa đặt tên)'));
     Object.entries(t).forEach(([k,v])=>{
+      if(k==='so_thu_tu'||k==='ten_track')return;
       if(k==='nguoi_sang_tac'){
-        out+='  sáng tác: '+t.nguoi_sang_tac.map(w=>w.ho_ten+' — '+w.vai_tro+' — '+w.ti_le+'%').join(' | ')+'\n';
+        L.push('  Người sáng tác:');
+        t.nguoi_sang_tac.forEach(w=>L.push('     · '+w.ho_ten+' — '+w.vai_tro+' — '+w.ti_le+'%'));
       }else if(k==='loi_bai_hat'){
-        if(v)out+='  lời bài hát: (có, xem file JSON)\n';
-      }else if(v&&k!=='so_thu_tu'&&k!=='ten_track'){
-        out+='  '+k.replace(/_/g,' ')+': '+v+'\n';
-      }
+        if(v){L.push('  Lời bài hát:');v.split(/\r?\n/).forEach(x=>L.push('     '+x));}
+      }else if(v){L.push(line(k,v));}
     });
+    L.push('');
   });
-  out+='\n[NGƯỜI KHAI]\n';
-  Object.entries(data.submitter).forEach(([k,v])=>{if(v)out+=k.replace(/_/g,' ')+': '+v+'\n';});
-  return out;
+  L.push('NGƯỜI GỬI');
+  Object.entries(data.submitter).forEach(([k,v])=>{if(v)L.push(line(k,v));});
+  L.push('','Gửi kèm email này: file WAV và ảnh bìa (hoặc link tải).');
+  return L.join('\r\n');
 }
 
 const msgErr=document.getElementById('msgErr'),msgOk=document.getElementById('msgOk');
@@ -809,82 +1068,124 @@ document.getElementById('btnExport').addEventListener('click',async()=>{
   const errs=validate(data);
   if(errs.length){showErr(errs);return;}
 
-  const base='haustek-metadata_'+slug(data.release.nghe_si_chinh)+'_'+slug(data.release.ten_ban_phat_hanh);
+  if(!ENDPOINT){
+    // Chưa nối hệ thống nhận hồ sơ -> chuyển sang gửi bằng email
+    openMail(data, true);
+    return;
+  }
 
-  // Luôn tải file về máy làm bản lưu của nghệ sĩ, kể cả khi gửi lên hệ thống thành công
-  download(base+'.json',JSON.stringify(data,null,2),'application/json');
-  setTimeout(()=>download(base+'.csv',toCSV(data),'text/csv'),400);
+  btn.disabled=true;
+  const label=btn.textContent;
+  btn.textContent='Đang gửi…';
+  try{
+    /* Gửi dưới dạng text/plain là cố ý: Google Apps Script không trả header
+       CORS cho yêu cầu "phức tạp". Nếu để application/json, trình duyệt sẽ
+       bắn một yêu cầu OPTIONS thăm dò trước, Apps Script không trả lời được,
+       và cả lệnh gửi thất bại. text/plain là yêu cầu "đơn giản" nên đi thẳng. */
+    const res=await fetch(ENDPOINT,{
+      method:'POST',
+      headers:{'Content-Type':'text/plain;charset=utf-8'},
+      body:JSON.stringify(data)
+    });
+    let out={};
+    try{ out=await res.json(); }catch(e){ out={ok:res.ok}; }
+    btn.disabled=false;btn.textContent=label;
 
-  if(ENDPOINT){
-    btn.disabled=true;
-    const label=btn.textContent;
-    btn.textContent='Đang gửi…';
-    try{
-      /* Gửi dưới dạng text/plain là cố ý, không phải nhầm.
-         Google Apps Script không trả về header CORS cho yêu cầu "phức tạp".
-         Nếu đặt Content-Type: application/json, trình duyệt sẽ bắn một yêu cầu
-         OPTIONS thăm dò trước, Apps Script không trả lời được, và toàn bộ
-         lệnh gửi thất bại. Dùng text/plain thì đây là yêu cầu "đơn giản",
-         trình duyệt gửi thẳng, không thăm dò. Phía Apps Script vẫn đọc được
-         đúng JSON vì nó tự parse nội dung. */
-      const res=await fetch(ENDPOINT,{
-        method:'POST',
-        headers:{'Content-Type':'text/plain;charset=utf-8'},
-        body:JSON.stringify(data)
-      });
-      let out={};
-      try{ out=await res.json(); }catch(e){ out={ok:res.ok}; }
-
-      btn.disabled=false;btn.textContent=label;
-
-      if(out.ok){
-        showOk('<b>Đã gửi hồ sơ về Haustek.</b>'+
-          (out.submission_id?' Mã hồ sơ của bạn là <b style="font-family:var(--mono)">'+out.submission_id+'</b> — giữ lại mã này để tiện hỏi tình trạng sau.':'')+
-          ' Hai file cũng vừa tải về máy bạn làm bản lưu. Việc còn lại: gửi link file WAV và ảnh bìa về <a href="mailto:'+MAILTO+'">'+MAILTO+'</a> nếu bạn chưa dán link trong form. Đội phát hành phản hồi trong 2–3 ngày làm việc.');
-        return;
-      }
-      showErr(['Hệ thống nhận hồ sơ đang gặp trục trặc'+(out.error?' ('+out.error+')':'')+'. Hai file đã tải về máy bạn rồi — bạn gửi tạm hai file đó về '+MAILTO+' giúp mình nhé.']);
-      return;
-    }catch(err){
-      btn.disabled=false;btn.textContent=label;
-      showErr(['Không kết nối được tới hệ thống của Haustek (có thể do mạng). Nhưng hai file đã tải về máy bạn — bạn gửi hai file đó về '+MAILTO+' là được, không mất công điền lại.']);
+    if(out.ok){
+      showOk('<b>Đã gửi hồ sơ cho Haustek.</b>'+
+        (out.submission_id?' Mã hồ sơ của bạn: <b style="font-family:var(--mono);letter-spacing:.06em">'+out.submission_id+'</b> — chụp lại hoặc ghi ra để tiện hỏi tình trạng sau này.':'')+
+        '<br><br>Việc còn lại: nếu bạn chưa dán link file WAV và ảnh bìa trong biểu mẫu, gửi thêm về <a href="mailto:'+MAILTO+'">'+MAILTO+'</a>. Chúng tôi kiểm tra trong 2–3 ngày làm việc và sẽ gọi cho bạn nếu có chỗ cần hỏi lại.');
       return;
     }
-  }
-
-  showOk('<b>Hồ sơ hợp lệ, đã tải về máy bạn 2 file.</b> Giờ bạn gửi hai file này về <a href="mailto:'+MAILTO+'">'+MAILTO+'</a>, kèm link file WAV và ảnh bìa. Đội phát hành sẽ phản hồi trong 2–3 ngày làm việc.');
-});
-
-document.getElementById('btnCopy').addEventListener('click',async()=>{
-  const data=collect();
-  const errs=validate(data);
-  if(errs.length){showErr(errs);return;}
-  try{
-    await navigator.clipboard.writeText(toText(data));
-    showOk('<b>Đã chép toàn bộ nội dung.</b> Bạn dán thẳng vào email hoặc tin nhắn gửi Haustek là được.');
+    showErr(['Hệ thống nhận hồ sơ đang trục trặc'+(out.error?' ('+out.error+')':'')+'. Bạn bấm nút "Gửi bằng email của tôi" để gửi thẳng, không mất công điền lại đâu.']);
   }catch(err){
-    showErr(['Trình duyệt không cho phép chép tự động. Bạn dùng nút "Kiểm tra & xuất hồ sơ" để tải file về nhé.']);
+    btn.disabled=false;btn.textContent=label;
+    showErr(['Không kết nối được tới hệ thống của Haustek, có thể do mạng. Bạn bấm nút "Gửi bằng email của tôi" bên cạnh là gửi được ngay, hồ sơ vẫn còn nguyên.']);
   }
 });
+
+/* --- Gửi bằng email: mở sẵn thư đã điền đủ nội dung --- */
+function openMail(data, quiet){
+  const r=data.release;
+  const subj='[METADATA] '+r.nghe_si_chinh+' — '+r.ten_ban_phat_hanh;
+  let body='Chào đội A&R Haustek,\n\nMình gửi hồ sơ metadata cho bản phát hành sắp tới.\n\n';
+  body+='Nghệ sĩ: '+r.nghe_si_chinh+'\n';
+  body+='Bản phát hành: '+r.ten_ban_phat_hanh+' ('+r.loai_phat_hanh+', '+data.tracks.length+' track)\n';
+  body+='Ngày mong muốn: '+r.ngay_phat_hanh+'\n';
+  body+='Ảnh bìa: '+r.link_anh_bia+'\n\nTrack:\n';
+  data.tracks.forEach(t=>{
+    body+='  '+t.so_thu_tu+'. '+t.ten_track+(t.phien_ban?' ('+t.phien_ban+')':'')+'\n';
+    body+='     WAV: '+t.link_wav+'\n';
+    body+='     Sáng tác: '+t.nguoi_sang_tac.map(w=>w.ho_ten+' '+w.ti_le+'%').join(', ')+'\n';
+  });
+  body+='\nLiên lạc: '+data.submitter.nguoi_khai+' — '+data.submitter.dien_thoai;
+  if(data.submitter.gio_tien_goi)body+=' (tiện gọi: '+data.submitter.gio_tien_goi+')';
+  body+='\n\nMình đính kèm bản lưu đầy đủ trong thư này.\n';
+
+  const url='mailto:'+MAILTO+'?subject='+encodeURIComponent(subj)+'&body='+encodeURIComponent(body);
+  if(url.length>1900){
+    saveText(data);
+    showOk('<b>Hồ sơ hơi dài để nhét vừa vào thư soạn sẵn, nên máy vừa tải bản lưu về cho bạn.</b> Bạn mở email, gửi về <a href="mailto:'+MAILTO+'">'+MAILTO+'</a> và đính kèm file vừa tải là xong.');
+    return;
+  }
+  saveText(data);
+  location.href=url;
+  if(!quiet)return;
+  showOk('<b>Hộp thư của bạn vừa được mở sẵn một email gửi Haustek</b>, đã điền đủ nội dung. Máy cũng tải một bản lưu về để bạn đính kèm vào thư. Bấm Gửi trong hộp thư là xong.');
+}
 
 document.getElementById('btnMail').addEventListener('click',()=>{
   const data=collect();
   const errs=validate(data);
   if(errs.length){showErr(errs);return;}
-  const r=data.release;
-  const subj='[METADATA] '+r.nghe_si_chinh+' — '+r.ten_ban_phat_hanh+' ('+r.loai_phat_hanh+')';
-  let body='Chào đội A&R Haustek,\n\nMình gửi hồ sơ metadata cho bản phát hành sắp tới.\n\n';
-  body+='Nghệ sĩ: '+r.nghe_si_chinh+'\nBản phát hành: '+r.ten_ban_phat_hanh+'\n';
-  body+='Loại: '+r.loai_phat_hanh+'\nSố track: '+data.tracks.length+'\nNgày mong muốn: '+r.ngay_phat_hanh+'\n';
-  body+='Ảnh bìa: '+r.link_anh_bia+'\n\nDanh sách track:\n';
-  data.tracks.forEach(t=>{body+='  '+t.so_thu_tu+'. '+t.ten_track+(t.phien_ban?' ('+t.phien_ban+')':'')+' — '+t.link_wav+'\n';});
-  body+='\nFile JSON và CSV đầy đủ mình đính kèm trong mail này.\n\nCảm ơn,\n'+data.submitter.nguoi_khai;
-  const url='mailto:'+MAILTO+'?subject='+encodeURIComponent(subj)+'&body='+encodeURIComponent(body);
-  if(url.length>1900){
-    showErr(['Nội dung quá dài để mở sẵn trong email. Bạn dùng nút "Kiểm tra & xuất hồ sơ" để tải 2 file rồi đính kèm nhé.']);
-    return;
+  openMail(data, true);
+});
+
+/* --- Tải bản lưu dạng chữ, mở bằng Notepad hay Word đều được --- */
+function saveText(data){
+  const base='haustek_'+slug(data.release.nghe_si_chinh)+'_'+slug(data.release.ten_ban_phat_hanh);
+  download(base+'.txt', toText(data), 'text/plain');
+}
+
+/* --- Thanh tiến trình: sáng lên theo vị trí cuộn, tick xanh khi bước đã đủ --- */
+(function progressBar(){
+  const links=[...document.querySelectorAll('.progress a')];
+  const steps=links.map(a=>document.querySelector(a.getAttribute('href'))).filter(Boolean);
+  if(!steps.length)return;
+  const io=new IntersectionObserver(es=>{
+    es.forEach(e=>{
+      if(!e.isIntersecting)return;
+      links.forEach(a=>a.classList.toggle('on',a.getAttribute('href')==='#'+e.target.id));
+    });
+  },{rootMargin:'-25% 0px -65% 0px'});
+  steps.forEach(s=>io.observe(s));
+
+  function refresh(){
+    steps.forEach((s,i)=>{
+      const req=[...s.querySelectorAll('input[required],select[required],textarea[required]')];
+      const boxes=[...s.querySelectorAll('input[type=checkbox][required]')];
+      const filled=req.length>0 && req.every(el=>el.type==='checkbox'?el.checked:el.value.trim()!=='');
+      const ok=(i===1)  /* bước Track kiểm tra riêng: cần đủ tên + link + split 100 */
+        ? [...document.querySelectorAll('[data-track]')].every(t=>{
+            const a=t.querySelector('[data-k="title"]').value.trim();
+            const b=t.querySelector('[data-k="audio"]').value.trim();
+            return a&&b&&updateSplit(t)===100;
+          })
+        : filled;
+      links[i].classList.toggle('done', !!ok);
+    });
   }
-  location.href=url;
+  document.addEventListener('input',refresh);
+  document.addEventListener('change',refresh);
+  refresh();
+})();
+
+document.getElementById('btnSave').addEventListener('click',()=>{
+  const data=collect();
+  const errs=validate(data);
+  if(errs.length){showErr(errs);return;}
+  saveText(data);
+  showOk('<b>Đã tải bản lưu về máy bạn.</b> Đây là file chữ thường, mở bằng Notepad hoặc Word đều đọc được. Giữ lại phòng khi cần đối chiếu.');
 });
 </script>
 </body>

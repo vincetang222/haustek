@@ -64,7 +64,8 @@ const NOTIFY_EMAIL = 'mgmt@haustek-group.com';   // để trống '' nếu khôn
 const TABS = {
   releases: {
     name: 'Releases',
-    headers: ['submission_id','thoi_diem_gui','trang_thai','nguoi_khai','email','dien_thoai',
+    headers: ['submission_id','thoi_diem_gui','trang_thai','nguoi_khai','vai_tro','dien_thoai','email',
+      'gio_tien_goi','mang_xa_hoi','lien_he_du_phong',
       'loai_phat_hanh','ten_ban_phat_hanh','phien_ban','nhan_phat_hanh','nghe_si_chinh',
       'nghe_si_khach_moi','spotify_artist','apple_artist','the_loai_chinh','the_loai_phu',
       'ngon_ngu_metadata','ngay_phat_hanh','ngay_pre_save','upc','lanh_tho','p_line','c_line',
@@ -107,7 +108,8 @@ function doPost(e) {
 
     // --- tab Releases: 1 dòng ---
     sheetOf(ss, TABS.releases).appendRow([
-      subId, now, 'Mới nhận', sub.nguoi_khai || '', sub.email || '', sub.dien_thoai || '',
+      subId, now, 'Mới nhận', sub.nguoi_khai || '', sub.vai_tro || '', sub.dien_thoai || '',
+      sub.email || '', sub.gio_tien_goi || '', sub.mang_xa_hoi || '', sub.lien_he_du_phong || '',
       rel.loai_phat_hanh || '', rel.ten_ban_phat_hanh || '', rel.phien_ban || '',
       rel.nhan_phat_hanh || '', rel.nghe_si_chinh || '', rel.nghe_si_khach_moi || '',
       rel.spotify_artist || '', rel.apple_artist || '', rel.the_loai_chinh || '',
@@ -209,7 +211,12 @@ function notify(subId, rel, tracks, sub) {
       'Nghệ sĩ:       ' + (rel.nghe_si_chinh || '') + '\n' +
       'Bản phát hành: ' + (rel.ten_ban_phat_hanh || '') + ' (' + (rel.loai_phat_hanh || '') + ', ' + tracks.length + ' track)\n' +
       'Ngày mong muốn:' + (rel.ngay_phat_hanh || '') + '\n' +
-      'Người khai:    ' + (sub.nguoi_khai || '') + ' — ' + (sub.email || '') + '\n' +
+      'Người khai:    ' + (sub.nguoi_khai || '') + ' (' + (sub.vai_tro || '') + ')\n' +
+      'Điện thoại:    ' + (sub.dien_thoai || '') +
+        (sub.gio_tien_goi ? '  — tiện gọi: ' + sub.gio_tien_goi : '') + '\n' +
+      'Email:         ' + (sub.email || '') + '\n' +
+      (sub.mang_xa_hoi ? 'Mạng xã hội:   ' + sub.mang_xa_hoi + '\n' : '') +
+      (sub.lien_he_du_phong ? 'Dự phòng:      ' + sub.lien_he_du_phong + '\n' : '') +
       'Ảnh bìa:       ' + (rel.link_anh_bia || '') + '\n\n' +
       'Track:\n' + list + '\n\n' +
       (rel.ghi_chu ? 'Ghi chú: ' + rel.ghi_chu + '\n\n' : '') +
