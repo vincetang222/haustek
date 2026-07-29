@@ -669,12 +669,12 @@ l-1242 0 -30 29 -29 29 0 745 c0 768 1 796 40 817 12 6 374 10 984 10 929 0
     <a href="#/events" data-nav="events" data-i18n="nav_events">Sự kiện</a>
     <a href="#/#services" data-i18n="nav_services">Dịch vụ</a>
     <a href="#/#stores" data-i18n="nav_stores">Cửa hàng</a>
-    <a href="artists.html" data-i18n="nav_artists">Nghệ sĩ</a>
+    <a href="/artists" data-i18n="nav_artists">Nghệ sĩ</a>
     
   </nav>
   <div class="nav-right">
     <button class="lang-toggle" id="langBtn" aria-label="Switch to English">EN</button>
-    <a class="nav-submit" href="metadata.html" data-i18n="nav_submit">Gửi nhạc</a>
+    <a class="nav-submit" href="/metadata" data-i18n="nav_submit">Gửi nhạc</a>
   </div>
 </header>
 
@@ -810,7 +810,7 @@ l-1242 0 -30 29 -29 29 0 745 c0 768 1 796 40 817 12 6 374 10 984 10 929 0
   <h2 class="rv" data-i18n="ar_h"><span class="ln">Những người</span> <span class="ln">đã <em>cùng làm nhạc.</em></span></h2>
   <div class="roster-marquee rv" id="roster" aria-label="Nghệ sĩ đã hợp tác"></div>
   <p class="roster-note glass rv" data-i18n="ar_note">Cùng nhiều producer, songwriter, DJ, VJ và ca sĩ khác, trong nước lẫn ngoài nước</p>
-  <div class="rv"><a class="see-all" href="artists.html">
+  <div class="rv"><a class="see-all" href="/artists">
     <span data-i18n="ar_all">Xem hồ sơ từng nghệ sĩ</span>
     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
   </a></div>
@@ -830,7 +830,7 @@ l-1242 0 -30 29 -29 29 0 745 c0 768 1 796 40 817 12 6 374 10 984 10 929 0
   <div class="faq-wrap glass rv">
     <details>
       <summary><span class="q" data-i18n="q1">Gửi demo cho Haustek bằng cách nào?</span><span class="pm">+</span></summary>
-      <p class="a" data-i18n="a1">Điền vào trang <a href="metadata.html">Gửi nhạc</a> ngay trên website, hoặc gửi mail tới <a href="mailto:mgmt@haustek-group.com">mgmt@haustek-group.com</a> kèm một link nghe riêng tư (SoundCloud, Drive…) và vài dòng về bạn.</p>
+      <p class="a" data-i18n="a1">Điền vào trang <a href="/metadata">Gửi nhạc</a> ngay trên website, hoặc gửi mail tới <a href="mailto:mgmt@haustek-group.com">mgmt@haustek-group.com</a> kèm một link nghe riêng tư (SoundCloud, Drive…) và vài dòng về bạn.</p>
     </details>
     <details>
       <summary><span class="q" data-i18n="q2">Nhạc của tôi sẽ lên những đâu?</span><span class="pm">+</span></summary>
@@ -1063,12 +1063,12 @@ l-1242 0 -30 29 -29 29 0 745 c0 768 1 796 40 817 12 6 374 10 984 10 929 0
 -29 22 -313 22 -220 -1 -294 -4 -318 -14z"/></g></svg>
   </a>
   <nav class="foot-legal" aria-label="Thông tin pháp lý">
-    <a href="legal.html#terms" data-i18n="lg_terms">Điều khoản sử dụng</a>
-    <a href="legal.html#privacy" data-i18n="lg_privacy">Chính sách quyền riêng tư</a>
-    <a href="legal.html#cookies" data-i18n="lg_cookies">Chính sách cookie</a>
-    <a href="legal.html#accessibility" data-i18n="lg_a11y">Khả năng tiếp cận</a>
-    <a href="artists.html" data-i18n="lg_artists">Nghệ sĩ</a>
-    <a href="metadata.html" data-i18n="lg_submit">Gửi nhạc</a>
+    <a href="/legal#terms" data-i18n="lg_terms">Điều khoản sử dụng</a>
+    <a href="/legal#privacy" data-i18n="lg_privacy">Chính sách quyền riêng tư</a>
+    <a href="/legal#cookies" data-i18n="lg_cookies">Chính sách cookie</a>
+    <a href="/legal#accessibility" data-i18n="lg_a11y">Khả năng tiếp cận</a>
+    <a href="/artists" data-i18n="lg_artists">Nghệ sĩ</a>
+    <a href="/metadata" data-i18n="lg_submit">Gửi nhạc</a>
   </nav>
   <div class="foot-row">
     <p>© 2026 Haustek · Los Angeles → Việt Nam · Since 2017</p>
@@ -1121,7 +1121,7 @@ const ARTISTS=["Tuấn Hưng","Tùng Dương","HƯƠNGMYBÔNG","Trí Minh","nae 
   const half=Math.ceil(ARTISTS.length/2);
   const rows=[ARTISTS.slice(0,half),ARTISTS.slice(half)];
   el.innerHTML=rows.map((names,ri)=>{
-    const inner=names.map((a,i)=>`<a href="artists.html" class="${(i+ri)%2?'o':''}">${a}</a>`).join('<i>●</i>');
+    const inner=names.map((a,i)=>`<a href="/artists" class="${(i+ri)%2?'o':''}">${a}</a>`).join('<i>●</i>');
     return `<div class="rm-row${ri?' rev':''}"><div class="rm-track" style="--dur:${ri?58:48}s">${inner}<i>●</i></div></div>`;
   }).join('');
 })();
@@ -1166,7 +1166,7 @@ const I18N={
     pq_by:"Lời cam kết đến từ Haustek",
     fq_h:'<span class="ln">Hỏi nhanh,</span> <span class="ln"><em>đáp gọn.</em></span>',
     q1:"Gửi demo cho Haustek bằng cách nào?",
-    a1:'Điền vào trang <a href="metadata.html">Gửi nhạc</a> ngay trên website, hoặc gửi mail tới <a href="mailto:mgmt@haustek-group.com">mgmt@haustek-group.com</a> kèm một link nghe riêng tư (SoundCloud, Drive…) và vài dòng về bạn.',
+    a1:'Điền vào trang <a href="/metadata">Gửi nhạc</a> ngay trên website, hoặc gửi mail tới <a href="mailto:mgmt@haustek-group.com">mgmt@haustek-group.com</a> kèm một link nghe riêng tư (SoundCloud, Drive…) và vài dòng về bạn.',
     q2:"Nhạc của tôi sẽ lên những đâu?",
     a2:"Spotify, Apple Music, TikTok, YouTube Music, Amazon Music, Snapchat, Alive, Deezer, TIDAL, SoundCloud, Beatport — cùng hai nền tảng lớn nhất Việt Nam là NhacCuaTui và Zing MP3. Tính chung là hơn 200 cửa hàng nhạc số trên toàn thế giới.",
     q3:"Bao lâu thì nhạc lên sóng?",
@@ -1197,7 +1197,7 @@ const I18N={
     f_name:"Nghệ danh",f_mail:"Email",f_genre:"Thể loại",f_other:"Khác",f_link:"Link nghe riêng tư",
     f_msg:"Vài dòng về bạn và bản nhạc",
     f_ph:"Bạn là ai, bản nhạc này ra đời thế nào, bạn muốn đi tới đâu cùng Haustek…",
-    f_meta_link:'Đã được Haustek nhận rồi? Sang thẳng <a href="metadata.html" style="color:var(--red)">trang khai báo metadata →</a>',
+    f_meta_link:'Đã được Haustek nhận rồi? Sang thẳng <a href="/metadata" style="color:var(--red)">trang khai báo metadata →</a>',
     f_note:"* Đừng đính kèm file — dán một link nghe riêng tư là được. Mỗi demo đều được nghe trong vòng 7–14 ngày.",
     f_send:"Gửi demo",
     lg_terms:"Điều khoản sử dụng",lg_privacy:"Chính sách quyền riêng tư",lg_cookies:"Chính sách cookie",lg_a11y:"Khả năng tiếp cận",lg_artists:"Nghệ sĩ",lg_submit:"Gửi nhạc"
@@ -1240,7 +1240,7 @@ const I18N={
     pq_by:"A commitment from Haustek",
     fq_h:'<span class="ln">Quick questions,</span> <span class="ln"><em>straight answers.</em></span>',
     q1:"How do I send Haustek a demo?",
-    a1:'Fill in the <a href="metadata.html">Submit</a> page right here, or email <a href="mailto:mgmt@haustek-group.com">mgmt@haustek-group.com</a> with a private streaming link (SoundCloud, Drive…) and a few lines about yourself.',
+    a1:'Fill in the <a href="/metadata">Submit</a> page right here, or email <a href="mailto:mgmt@haustek-group.com">mgmt@haustek-group.com</a> with a private streaming link (SoundCloud, Drive…) and a few lines about yourself.',
     q2:"Where will my music be available?",
     a2:"Spotify, Apple Music, TikTok, YouTube Music, Amazon Music, Snapchat, Alive, Deezer, TIDAL, SoundCloud, Beatport — plus Vietnam's two biggest platforms, NhacCuaTui and Zing MP3. Over 200 digital music stores in total, worldwide.",
     q3:"How long until my music goes live?",
@@ -1271,7 +1271,7 @@ const I18N={
     f_name:"Artist name",f_mail:"Email",f_genre:"Genre",f_other:"Other",f_link:"Private streaming link",
     f_msg:"A few lines about you and the track",
     f_ph:"Who you are, how this track came about, where you want to go with Haustek…",
-    f_meta_link:'Already signed with Haustek? Go straight to the <a href="metadata.html" style="color:var(--red)">metadata form →</a>',
+    f_meta_link:'Already signed with Haustek? Go straight to the <a href="/metadata" style="color:var(--red)">metadata form →</a>',
     f_note:"* No attachments — just paste a private link. Every demo is listened to within 7–14 days.",
     f_send:"Send demo",
     lg_terms:"Terms of use",lg_privacy:"Privacy policy",lg_cookies:"Cookie policy",lg_a11y:"Accessibility",lg_artists:"Artists",lg_submit:"Submit music"
@@ -1301,7 +1301,7 @@ const pages={home:document.getElementById('page-home'),events:document.getElemen
 function route(){
   const hash=location.hash||"#/";
   /* Ai còn giữ link cũ #/submit thì đưa thẳng sang trang gửi nhạc mới */
-  if(hash.startsWith("#/submit")){location.replace("metadata.html");return;}
+  if(hash.startsWith("#/submit")){location.replace("/metadata");return;}
   const isEvt=hash.startsWith("#/events");
   pages.home.classList.toggle('active',!isEvt);
   pages.events.classList.toggle('active',isEvt);

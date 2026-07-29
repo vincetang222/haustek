@@ -12,6 +12,8 @@ Cập nhật: 29.07.2026 · Website: **haustek-group.com** · Liên hệ: **mgmt
 |---|---|
 | `index.html` | Trang chủ. Gồm luôn trang Sự kiện ở đường dẫn `#/events` |
 | `artists.html` | Trang nghệ sĩ, dạng lưới card. **Bảng dữ liệu nằm ngay đầu phần script trong file** |
+| `artists/` | Thư mục ảnh nghệ sĩ, định dạng `.webp` vuông 800×800 |
+| `vercel.json` | Cấu hình cho Vercel: bỏ đuôi `.html`, cache ảnh, header bảo mật |
 | `metadata.html` | Trang nghệ sĩ khai báo metadata phát hành. Nút "Gửi nhạc" trỏ vào đây. Có nút đổi VI/EN |
 | `legal.html` | 4 mục pháp lý: điều khoản, quyền riêng tư, cookie, khả năng tiếp cận |
 | `404.html` | Trang báo không tìm thấy |
@@ -48,6 +50,32 @@ Cập nhật: 29.07.2026 · Website: **haustek-group.com** · Liên hệ: **mgmt
 
 ## 2. Đưa website lên mạng
 
+### Link không có đuôi .html
+
+Trong bộ file có sẵn `vercel.json`. Chỉ cần để nó ở thư mục gốc cùng các file
+HTML là Vercel tự bỏ đuôi `.html` khỏi mọi đường dẫn:
+
+| Trước | Sau |
+|---|---|
+| `/artists.html` | `/artists` |
+| `/metadata.html` | `/metadata` |
+| `/legal.html` | `/legal` |
+
+Ai vào bằng link cũ có đuôi `.html` vẫn tới đúng nơi, Vercel tự chuyển hướng.
+File này cũng đặt sẵn vài đường dẫn tiếng Việt cho dễ đọc khi in lên card hay
+poster: `/gui-nhac` và `/nghe-si`.
+
+Nếu bạn đổi sang **Cloudflare Pages**, không cần `vercel.json` — Cloudflare bỏ
+đuôi `.html` mặc định. Còn **Netlify** thì tạo một file tên `netlify.toml` với
+nội dung:
+
+```toml
+[[redirects]]
+  from = "/*.html"
+  to = "/:splat"
+  status = 301
+```
+
 ### Cách đơn giản nhất: Cloudflare Pages (miễn phí)
 
 1. Tạo một thư mục trên máy, bỏ tất cả file ở nhóm "Trang web", "Ảnh và biểu tượng", "Cho công cụ tìm kiếm" vào đó
@@ -63,6 +91,8 @@ Netlify và Vercel làm y hệt, cũng miễn phí. Nếu dùng hosting truyền
 - [ ] Mở `haustek-group.com` — trang chủ hiện đúng
 - [ ] Biểu tượng nhỏ hiện ở tab trình duyệt
 - [ ] Mở `haustek-group.com/mot-duong-dan-bay-ba` — phải ra trang 404, không phải lỗi của hosting
+- [ ] Mở `/artists` (không có `.html`) — phải ra trang nghệ sĩ
+- [ ] Ảnh 13 nghệ sĩ hiện đủ, không ai bị ô trống
 - [ ] Bấm nút "Gửi nhạc" trên đầu trang → sang được trang metadata
 - [ ] Bốn link pháp lý dưới chân trang → sang được `legal.html` đúng mục
 - [ ] Chuyển VI/EN ở góc trên phải → toàn trang đổi ngôn ngữ
@@ -120,7 +150,9 @@ Giải thích các trường:
 | `url` | Link Spotify của bài đó |
 | `streams` | Số lượt nghe, ghi **số thuần** như `3200000`. Trang tự rút gọn thành `3,2M`. Để `null` nếu chưa có |
 
-Ảnh nghệ sĩ nên cắt dọc tỉ lệ 4:5, khoảng 800×1000px, nặng dưới 300KB, bỏ vào thư mục `artists/`.
+Ảnh nghệ sĩ phải **vuông 1:1**, xuất 800×800 và lưu dạng `.webp`, bỏ vào thư mục `artists/`.
+Ảnh gốc chụp ra thường 3000×3000 và nặng vài MB — nén xuống webp 800px thì chỉ còn
+khoảng 20–100KB mỗi ảnh mà nhìn vẫn nét, tải nhanh hơn rất nhiều trên mạng di động.
 
 **Đừng ghi số ước lượng vào `streams`.** Con số sai trên trang công khai thì nghệ sĩ và đối tác đều nhận ra ngay. Chưa có số thật thì để `null`, card sẽ ghi "Đang cập nhật" — trông đàng hoàng hơn nhiều so với một con số bịa.
 

@@ -9,7 +9,7 @@
   </url>
 
   <url>
-    <loc>https://haustek-group.com/artists.html</loc>
+    <loc>https://haustek-group.com/artists</loc>
     <lastmod>2026-07-29</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
@@ -23,7 +23,7 @@
   </url>
 
   <url>
-    <loc>https://haustek-group.com/legal.html</loc>
+    <loc>https://haustek-group.com/legal</loc>
     <lastmod>2026-07-29</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>

@@ -6,6 +6,6 @@ Allow: /
 
 # Trang khai báo metadata là biểu mẫu nội bộ cho nghệ sĩ đã hợp tác,
 # không cần xuất hiện trên kết quả tìm kiếm.
-Disallow: /metadata.html
+Disallow: /metadata
 
 Sitemap: https://haustek-group.com/sitemap.xml
