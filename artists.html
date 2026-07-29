@@ -112,6 +112,25 @@ h1 em{font-style:italic;font-weight:600;color:var(--amber)}
   letter-spacing:.16em;text-transform:uppercase;color:var(--paper);padding:6px 11px;border-radius:100px;
   background:rgba(7,7,9,.72);backdrop-filter:blur(8px);border:1px solid rgba(240,240,242,.16)}
 
+/* ---------- trình phát Spotify: chỉ tải khi người xem bấm ---------- */
+.shot .play{position:absolute;inset:0;z-index:3;border:0;background:none;cursor:pointer;
+  display:grid;place-items:center;padding:0}
+.shot .play .btn{width:56px;height:56px;border-radius:50%;display:grid;place-items:center;
+  background:rgba(7,7,9,.66);border:1px solid rgba(240,240,242,.28);backdrop-filter:blur(10px);
+  transition:all .3s;transform:translateY(4px);opacity:.92}
+.card:hover .play .btn{background:var(--spotify);border-color:var(--spotify);transform:translateY(0);opacity:1}
+.shot .play svg{width:19px;height:19px;fill:var(--paper);margin-left:3px}
+.shot.playing .play,.shot.playing .fallback,.shot.playing img,.shot.playing .tag{display:none}
+.shot iframe{position:absolute;inset:0;width:100%;height:100%;border:0;border-radius:0}
+.shot .loading{position:absolute;inset:0;display:grid;place-items:center;z-index:4;
+  font-family:var(--mono);font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--concrete);
+  background:#0a0a11}
+
+/* ---------- thanh sắp xếp ---------- */
+.sortbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;padding:26px var(--gut) 0}
+.sortbar .lbl{font-family:var(--mono);font-size:10px;letter-spacing:.2em;text-transform:uppercase;
+  color:var(--concrete);margin-right:6px}
+
 .body{padding:18px 18px 20px;display:flex;flex-direction:column;gap:12px;flex:1}
 .aname{font-family:var(--disp);font-weight:760;font-stretch:110%;font-size:clamp(19px,2.6vw,25px);
   letter-spacing:-.022em;line-height:1.1;text-wrap:balance}
@@ -321,6 +340,7 @@ l-1242 0 -30 29 -29 29 0 745 c0 768 1 796 40 817 12 6 374 10 984 10 929 0
 </section>
 
 <div class="filters" id="filters"></div>
+<div class="sortbar" id="sortbar"></div>
 <div class="grid" id="grid"></div>
 
 <div class="tail">
@@ -360,18 +380,46 @@ l-1242 0 -30 29 -29 29 0 745 c0 768 1 796 40 817 12 6 374 10 984 10 929 0
    thì nghệ sĩ và đối tác đều nhận ra ngay.
    ===================================================================== */
 
+/* =====================================================================
+   BẢNG DỮ LIỆU NGHỆ SĨ — CHỖ DUY NHẤT BẠN CẦN SỬA
+
+     name     Tên nghệ sĩ hiển thị trên card.
+     track    Bài tiêu biểu.
+     version  Phiên bản của bài, ví dụ "Phiên Bản Nam". Bỏ đi nếu không có.
+     kind     "track" hoặc "album" — lấy từ chính link Spotify:
+              open.spotify.com/track/...  -> kind:"track"
+              open.spotify.com/album/...  -> kind:"album"
+     id       Đoạn mã trong link Spotify, phần nằm sau /track/ hoặc /album/
+              và TRƯỚC dấu ?. Ví dụ với
+              open.spotify.com/track/6yzR1NyN...?si=ea1d68
+              thì id là 6yzR1NyN...  (bỏ hẳn phần ?si=, đó chỉ là mã theo dõi
+              lượt chia sẻ, không cần và không nên đưa lên web).
+     streams  Số lượt nghe, ghi SỐ THUẦN không dấu phẩy: 13236991
+     role     Vai trò, để bộ lọc chạy: producer · dj · vocalist · band ·
+              songwriter · vj. Để trống thì card không hiện thẻ vai trò và
+              thanh lọc tự ẩn đi. Nhiều vai trò thì cách nhau bằng dấu cách.
+     photo    Đường dẫn ảnh, ví dụ "artists/tuan-hung.jpg". Để trống thì card
+              dùng khối chữ viết tắt trên nền sóng, vẫn ra dáng.
+
+   Thứ tự trong bảng không quan trọng — trang tự sắp theo lượt nghe.
+   ===================================================================== */
+
 const ARTISTS = [
-  { name:"Tri Minh",          role:"producer",        photo:"", track:"", url:"", streams:null },
-  { name:"Red Sheep",         role:"band",            photo:"", track:"", url:"", streams:null },
-  { name:"ling:chi",          role:"producer dj",     photo:"", track:"", url:"", streams:null },
-  { name:"Chin",              role:"vocalist",        photo:"", track:"", url:"", streams:null },
-  { name:"KONKRETE",          role:"producer dj",     photo:"", track:"", url:"", streams:null },
-  { name:"Tarnoise Spaceman", role:"producer dj",     photo:"", track:"", url:"", streams:null },
-  { name:"Bách Phan",         role:"producer",        photo:"", track:"", url:"", streams:null },
-  { name:"Jesilyn",           role:"vocalist",        photo:"", track:"", url:"", streams:null },
-  { name:"Oumii",             role:"vocalist",        photo:"", track:"", url:"", streams:null },
-  { name:"Attiss Ngo",        role:"producer",        photo:"", track:"", url:"", streams:null },
-  { name:"blackvelvetz",      role:"producer dj",     photo:"", track:"", url:"", streams:null }
+  { name:"Tuấn Hưng", track:"Tìm Lại Bầu Trời", kind:"track", id:"6yzR1NyNiAs7FzKJIijEqm", streams:13236991, role:"", photo:"" },
+  { name:"Tùng Dương", track:"Ngày Chưa Giông Bão", kind:"track", id:"6HadFlwa50dsTUXD2joxEb", streams:2370798, role:"", photo:"" },
+  { name:"HƯƠNGMYBÔNG", track:"Say Một Đời Vì Em", version:"Phiên Bản Nam", kind:"album", id:"1oGWuvlJpamcRoL1uk0IEU", streams:1219194, role:"", photo:"" },
+  { name:"Trí Minh", track:"Để Gió Cuốn Đi", kind:"track", id:"3hGOyaXpY13pVSHyEd2KVM", streams:312775, role:"", photo:"" },
+  { name:"nae & de'lay ft. Phùng Khánh Linh", track:"Đắp Chăn Bông", kind:"track", id:"6CMROH0r43Pot5yE955p2T", streams:308131, role:"", photo:"" },
+  { name:"JesiLyn", track:"Chờ Lời Anh Nói", kind:"album", id:"6HaEIdRjS8AolGqUb6BKgi", streams:177485, role:"", photo:"" },
+  { name:"Cáp Anh Tài", track:"Đừng Trách Câu Ví Dặm", kind:"track", id:"1xxnXjoLN5uqmsERgrFaAM", streams:107771, role:"", photo:"" },
+  { name:"Hà Quỳnh Như", track:"Giận Mà Thương", kind:"track", id:"66ScpKLaHz6t0gAHh2XmWp", streams:105312, role:"", photo:"" },
+  { name:"ResQ", track:"Lọ Vương", kind:"track", id:"445akPqedFnhwIE3wUbyjy", streams:63434, role:"", photo:"" },
+  { name:"Bách Phan", track:"Love Me Right", kind:"track", id:"4GKnPHsQ2iJBUNUCXsRqK5", streams:42752, role:"", photo:"" },
+  { name:"Lope Dope", track:"Vịnh Người Cá", kind:"track", id:"5jCbdXPhwhYuR0wRSHLybq", streams:20989, role:"", photo:"" },
+  { name:"blackvelvetz", track:"am i in love?", kind:"track", id:"3aRylVsspIDlhX1FrcP8xQ", streams:17892, role:"", photo:"" },
+  { name:"Rosewood", track:"Mùa hè bất tận", kind:"track", id:"3UzdWJdc97NL7IBCDyYObU", streams:12200, role:"", photo:"" },
+  { name:"Qinie", track:"Xe Đạp", kind:"track", id:"0pbZKr7yHnzVSuhNRUqTmg", streams:2509, role:"", photo:"" },
+  { name:"Lazy noize", track:"Tao Muốn Ngủ Ngon", kind:"track", id:"1kFP2NHQXJjgldl2Fz4VVn", streams:2410, role:"", photo:"" }
 ];
 
 /* ===================== SONG NGỮ ===================== */
@@ -385,8 +433,10 @@ const I18N={
     cta:"Gửi nhạc cho Haustek",
     all:"Tất cả", producer:"Producer", dj:"DJ", vocalist:"Vocalist",
     band:"Ban nhạc", songwriter:"Songwriter", vj:"VJ",
-    streams:"Lượt nghe", updating:"Đang cập nhật", track_lbl:"Bài tiêu biểu",
-    no_track:"Đang cập nhật", listen:"Nghe trên Spotify"
+    streams:"Lượt nghe trên Spotify", updating:"Đang cập nhật", track_lbl:"Bài tiêu biểu",
+    no_track:"Đang cập nhật", listen:"Mở trong Spotify",
+    play_aria:"Nghe thử %s", loading:"Đang tải trình phát…",
+    sort_lbl:"Sắp xếp", sort_streams:"Nhiều lượt nghe nhất", sort_name:"A → Z"
   },
   en:{
     _title:"Collaborating artists — Haustek",
@@ -397,8 +447,10 @@ const I18N={
     cta:"Send your music to Haustek",
     all:"All", producer:"Producer", dj:"DJ", vocalist:"Vocalist",
     band:"Band", songwriter:"Songwriter", vj:"VJ",
-    streams:"Streams", updating:"Coming soon", track_lbl:"Featured track",
-    no_track:"Coming soon", listen:"Listen on Spotify"
+    streams:"Spotify streams", updating:"Coming soon", track_lbl:"Featured track",
+    no_track:"Coming soon", listen:"Open in Spotify",
+    play_aria:"Play %s", loading:"Loading player…",
+    sort_lbl:"Sort by", sort_streams:"Most streamed", sort_name:"A → Z"
   }
 };
 let lang="vi";
@@ -406,13 +458,15 @@ let lang="vi";
 /* ===================== TIỆN ÍCH ===================== */
 
 /* Rút gọn số: 3200000 -> "3,2M" (tiếng Việt dùng dấu phẩy thập phân) */
+/* Từ 1 triệu trở lên thì rút gọn cho gọn mắt (13,2M).
+   Dưới 1 triệu giữ nguyên số đầy đủ vì con số chính xác đáng tin hơn,
+   và 308.131 vẫn đọc nhanh như thường. */
 function fmtStreams(n){
   if(n===null||n===undefined||isNaN(n))return null;
-  const dec = lang==="vi" ? "," : ".";
-  if(n>=1e9) return String((n/1e9).toFixed(1)).replace(".",dec)+"B";
-  if(n>=1e6) return String((n/1e6).toFixed(1)).replace(".",dec)+"M";
-  if(n>=1e3) return String(Math.round(n/1e3))+"K";
-  return String(n);
+  const vi = lang==="vi";
+  if(n>=1e9) return String((n/1e9).toFixed(1)).replace(".", vi?",":".")+"B";
+  if(n>=1e6) return String((n/1e6).toFixed(1)).replace(".", vi?",":".")+"M";
+  return n.toLocaleString(vi?"vi-VN":"en-US");
 }
 
 /* Chữ viết tắt cho card chưa có ảnh: lấy 2 ký tự đầu của 2 từ đầu */
@@ -437,22 +491,40 @@ function fallbackSVG(seed){
     <circle cx="${cx}" cy="${cy}" r="4" fill="rgba(${hue},.55)"/>${rings}</svg>`;
 }
 
+const PLAY_ICON='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 3l16 9-16 9z"/></svg>';
 const SPOTIFY_ICON='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.52 17.34c-.24.36-.66.48-1.02.24-2.82-1.74-6.36-2.1-10.56-1.14-.42.12-.78-.18-.9-.54-.12-.42.18-.78.54-.9 4.56-1.02 8.52-.6 11.64 1.32.42.18.48.66.3 1.02zm1.44-3.3c-.3.42-.84.6-1.26.3-3.24-1.98-8.16-2.58-11.94-1.38-.48.12-1.02-.12-1.14-.6-.12-.48.12-1.02.6-1.14 4.38-1.32 9.78-.66 13.5 1.62.36.18.54.78.24 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.1 9.3c-.6.18-1.2-.18-1.38-.72-.18-.6.18-1.2.72-1.38 4.32-1.32 11.4-1.02 15.9 1.62.54.3.72 1.02.42 1.56-.3.42-1.02.6-1.56.3z"/></svg>';
 
 /* ===================== DỰNG LƯỚI ===================== */
 const gridEl=document.getElementById('grid');
 const filterEl=document.getElementById('filters');
+const sortEl=document.getElementById('sortbar');
 let activeFilter="all";
 
-function cardHTML(a){
+/* Link mở thẳng Spotify. Bỏ tham số ?si= vì đó chỉ là mã theo dõi lượt
+   chia sẻ, không cần thiết cho người nghe. */
+function spotifyUrl(a){
+  return a.id ? `https://open.spotify.com/${a.kind||'track'}/${a.id}` : "";
+}
+
+function cardHTML(a, idx){
   const d=I18N[lang];
   const s=fmtStreams(a.streams);
   const roleKey=(a.role||"").split(/\s+/)[0];
   const roleLabel=d[roleKey]||roleKey||"";
+  const url=spotifyUrl(a);
+  const title=a.track + (a.version ? ` (${a.version})` : "");
 
   const shot = a.photo
     ? `<img src="${a.photo}" alt="${a.name}" loading="lazy" width="800" height="1000">`
     : `<div class="fallback">${fallbackSVG(a.name)}<span class="initials">${initials(a.name)}</span></div>`;
+
+  /* Nút phát chỉ là lớp giả — bấm vào mới nạp iframe của Spotify.
+     Nhờ vậy trang không gọi tới máy chủ Spotify khi chưa ai muốn nghe. */
+  const play = a.id
+    ? `<button class="play" data-id="${a.id}" data-kind="${a.kind||'track'}"
+         aria-label="${d.play_aria.replace('%s', title)}">
+         <span class="btn">${PLAY_ICON}</span></button>`
+    : "";
 
   const stat = s
     ? `<div class="stat"><b>${s}</b><span>${d.streams}</span></div>`
@@ -460,14 +532,14 @@ function cardHTML(a){
 
   const trackInner=`<span class="ico">${SPOTIFY_ICON}</span>
       <span class="meta"><span class="lbl">${d.track_lbl}</span>
-      <span class="ttl">${a.track || d.no_track}</span></span>`;
+      <span class="ttl">${title || d.no_track}</span></span>`;
 
-  const track = (a.track && a.url)
-    ? `<a class="track" href="${a.url}" target="_blank" rel="noopener" title="${d.listen}">${trackInner}</a>`
+  const track = (a.track && url)
+    ? `<a class="track" href="${url}" target="_blank" rel="noopener" title="${d.listen}">${trackInner}</a>`
     : `<div class="track${a.track?'':' empty'}">${trackInner}</div>`;
 
   return `<article class="card rv" data-role="${a.role||''}">
-    <div class="shot">${roleLabel?`<span class="tag">${roleLabel}</span>`:''}${shot}</div>
+    <div class="shot">${roleLabel?`<span class="tag">${roleLabel}</span>`:''}${shot}${play}</div>
     <div class="body">
       <h2 class="aname">${a.name}</h2>
       ${stat}
@@ -476,27 +548,76 @@ function cardHTML(a){
   </article>`;
 }
 
+let sortMode="streams";
+
 function renderGrid(){
-  const list = activeFilter==="all"
-    ? ARTISTS
+  let list = activeFilter==="all"
+    ? ARTISTS.slice()
     : ARTISTS.filter(a=>(a.role||"").split(/\s+/).includes(activeFilter));
+
+  if(sortMode==="streams"){
+    list.sort((a,b)=>(b.streams||0)-(a.streams||0));
+  }else{
+    list.sort((a,b)=>a.name.localeCompare(b.name,'vi'));
+  }
   gridEl.innerHTML = list.map(cardHTML).join("");
   observeCards();
 }
 
+/* Thanh lọc vai trò chỉ hiện khi bảng dữ liệu có điền vai trò.
+   Chưa điền thì ẩn hẳn, đỡ bày ra một hàng nút vô nghĩa. */
 function renderFilters(){
   const d=I18N[lang];
   const roles=[...new Set(ARTISTS.flatMap(a=>(a.role||"").split(/\s+/).filter(Boolean)))];
-  filterEl.innerHTML =
-    [`<button class="chip${activeFilter==="all"?" on":""}" data-f="all">${d.all}</button>`]
-    .concat(roles.map(r=>`<button class="chip${activeFilter===r?" on":""}" data-f="${r}">${d[r]||r}</button>`))
-    .join("");
+  if(!roles.length){ filterEl.innerHTML=""; filterEl.style.display="none"; }
+  else{
+    filterEl.style.display="";
+    filterEl.innerHTML =
+      [`<button class="chip${activeFilter==="all"?" on":""}" data-f="all">${d.all}</button>`]
+      .concat(roles.map(r=>`<button class="chip${activeFilter===r?" on":""}" data-f="${r}">${d[r]||r}</button>`))
+      .join("");
+  }
+  sortEl.innerHTML =
+    `<span class="lbl">${d.sort_lbl}</span>`+
+    `<button class="chip${sortMode==="streams"?" on":""}" data-s="streams">${d.sort_streams}</button>`+
+    `<button class="chip${sortMode==="name"?" on":""}" data-s="name">${d.sort_name}</button>`;
 }
 
 filterEl.addEventListener('click',e=>{
   const b=e.target.closest('.chip'); if(!b)return;
   activeFilter=b.dataset.f;
   renderFilters(); renderGrid();
+});
+
+sortEl.addEventListener('click',e=>{
+  const b=e.target.closest('.chip'); if(!b)return;
+  sortMode=b.dataset.s;
+  renderFilters(); renderGrid();
+});
+
+/* ---------- nạp trình phát Spotify khi người xem bấm ----------
+   Cố ý KHÔNG nhúng sẵn 15 iframe lúc tải trang. Hai lý do:
+   1. Mỗi iframe là một kết nối tới máy chủ Spotify kèm cookie của họ.
+      Chính sách cookie của Haustek cam kết không có cookie bên thứ ba khi
+      người dùng chưa chủ động đồng ý — nhúng sẵn là phá cam kết đó.
+   2. 15 iframe cùng lúc làm trang nặng và chậm hẳn trên mạng di động. */
+gridEl.addEventListener('click',e=>{
+  const btn=e.target.closest('.play'); if(!btn)return;
+  const shot=btn.closest('.shot');
+  if(shot.classList.contains('playing'))return;
+
+  const d=I18N[lang];
+  shot.insertAdjacentHTML('beforeend',`<div class="loading">${d.loading}</div>`);
+  shot.classList.add('playing');
+
+  const kind=btn.dataset.kind==='album'?'album':'track';
+  const fr=document.createElement('iframe');
+  fr.src=`https://open.spotify.com/embed/${kind}/${btn.dataset.id}?utm_source=generator&theme=0`;
+  fr.allow='autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture';
+  fr.loading='lazy';
+  fr.title='Spotify';
+  fr.addEventListener('load',()=>{const l=shot.querySelector('.loading');if(l)l.remove();});
+  shot.appendChild(fr);
 });
 
 /* hiện dần khi cuộn tới */
