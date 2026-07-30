@@ -138,6 +138,44 @@ h1 em{font-style:italic;font-weight:600;color:var(--red)}
 .yt-loading{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
   font-family:var(--mono);font-size:10.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--concrete)}
 
+/* ---------- section "toàn bộ set đã ghi hình" ---------- */
+.sets-hero{padding:70px var(--gut) 0;position:relative}
+.sets-hero .kicker{color:var(--concrete)}
+.sets-hero .kicker i{color:var(--ice)}
+.sets-hero h2{font-family:var(--disp);font-weight:780;font-stretch:112%;
+  font-size:clamp(30px,6.4vw,64px);line-height:1.02;letter-spacing:-.03em;text-wrap:balance}
+.sets-hero h2 em{font-style:italic;font-weight:600;color:var(--ice)}
+.sets-hero .lead{margin-top:16px}
+
+.set-group{padding:44px var(--gut) 0}
+.set-group-head{display:flex;align-items:baseline;justify-content:space-between;gap:16px;flex-wrap:wrap;
+  padding-bottom:16px;border-bottom:1px solid var(--line);margin-bottom:20px}
+.set-group-head h3{font-family:var(--disp);font-weight:750;font-stretch:110%;
+  font-size:clamp(21px,3.4vw,32px);letter-spacing:-.02em}
+.set-group-head span{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--concrete)}
+
+.set-grid{display:grid;gap:12px;grid-template-columns:repeat(auto-fill,minmax(min(100%,220px),1fr))}
+.set-card{position:relative;border-radius:14px;overflow:hidden;background:rgba(240,240,242,.035);
+  border:1px solid rgba(240,240,242,.1);transition:transform .3s cubic-bezier(.19,.8,.22,1),border-color .3s;
+  display:flex;flex-direction:column;cursor:pointer}
+.set-card:hover{transform:translateY(-3px);border-color:rgba(240,240,242,.24)}
+.set-shot{position:relative;aspect-ratio:16/9;overflow:hidden;background:#0b0b12}
+.set-shot img{width:100%;height:100%;object-fit:cover;filter:contrast(1.02) brightness(.88);
+  transition:transform .5s cubic-bezier(.19,.8,.22,1)}
+.set-card:hover .set-shot img{transform:scale(1.06)}
+.set-shot .play{position:absolute;inset:0;display:grid;place-items:center;pointer-events:none}
+.set-shot .play .btn{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;
+  background:rgba(7,7,9,.66);border:1px solid rgba(240,240,242,.26);backdrop-filter:blur(8px);
+  transition:all .25s}
+.set-card:hover .set-shot .play .btn{background:var(--youtube);border-color:var(--youtube)}
+.set-shot .play svg{width:12px;height:12px;fill:var(--paper);margin-left:2px}
+.set-body{padding:12px 13px 14px}
+.set-name{font-family:var(--disp);font-weight:700;font-stretch:108%;font-size:15.5px;
+  letter-spacing:-.01em;line-height:1.25;min-height:2.5em;display:-webkit-box;
+  -webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.set-tag{font-family:var(--mono);font-size:9.5px;letter-spacing:.08em;color:var(--concrete);
+  line-height:1.5;margin-top:5px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+
 .tail{padding:0 var(--gut) 100px;margin-top:-56px}
 .tail p{font-family:var(--disp);font-weight:500;font-stretch:105%;font-size:clamp(20px,3.2vw,32px);
   line-height:1.35;letter-spacing:-.015em;max-width:30ch;text-wrap:pretty}
@@ -320,6 +358,15 @@ l-1242 0 -30 29 -29 29 0 745 c0 768 1 796 40 817 12 6 374 10 984 10 929 0
 
 <div class="grid" id="grid"></div>
 
+<section class="sets-hero">
+  <div class="ghost-line" aria-hidden="true"></div>
+  <p class="kicker"><i>●</i><span data-i18n="sets_k">Xem lại toàn bộ</span></p>
+  <h2 data-i18n="sets_h"><span class="ln">Từng set,</span> <span class="ln"><em>từng đêm diễn.</em></span></h2>
+  <p class="lead" data-i18n="sets_p">21 set trực tiếp từ chính kênh YouTube của Haustek — chưa cắt, chưa dựng lại. Bấm vào tên nghệ sĩ để xem.</p>
+</section>
+
+<div id="setGroups"></div>
+
 <!-- Modal video — một cái duy nhất, tái dùng cho mọi card -->
 <div class="yt-modal" id="ytModal" aria-hidden="true">
   <div class="yt-box" role="dialog" aria-modal="true" aria-label="Trình phát video">
@@ -366,32 +413,72 @@ const EVENTS = [
     video:"EvZ06FtYpPQ", thumb:"" },
     // Attiss Ngo (live) - United We Stream 2020 — youtube.com/watch?v=EvZ06FtYpPQ
 
-  { title:"Haustek Podcast Sessions", when:"2021→", tag:"18+ live sets",
-    desc:"Chuỗi DJ set của dàn nghệ sĩ nhà Haustek — thu lại rồi phát hành như một album live trên các nền tảng.",
-    video:"", thumb:"" },
-    // Có thật (Haustek Podcast 017/018 phát hành 2021 trên Apple Music/Spotify)
-    // nhưng chưa tìm thấy video YouTube riêng đúng tên này — để trống, đừng
-    // gán tạm video khác vào cho đủ số.
-
   { title:"5-Year Anniversary", when:"2022", tag:"hausvn × technovn",
     desc:"Đêm kỷ niệm 5 năm với nghệ sĩ trong nhà và khách mời, sau đó có luôn một album live ra mắt.",
     video:"2fIl2XCUpdw", thumb:"" },
     // Chin (live) - hausvn x technovn | 5-Year Anniversary tại Aura Saigon
     // — youtube.com/watch?v=2fIl2XCUpdw
-    // Còn nhiều lựa chọn khác cùng đêm nếu muốn đổi: Ro-TUNE b2b B.A
-    // (8udcP8T8NKc), Tarnoise Spaceman (SbmeKJTS5uA), ELEK (HYwSjS9IZ4s),
-    // ling:chi (ly2BHO-DlzU).
 
   { title:"Club nights Việt Nam", when:"2017→", tag:"SG · HN · Đà Lạt",
     desc:"Những đêm nhỏ ở các club và không gian ngầm khắp ba miền — nơi nhiều gương mặt mới của Haustek lần đầu đứng sau bàn mix.",
-    video:"aUroUUtBvWs", thumb:"" },
+    video:"aUroUUtBvWs", thumb:"" }
     // Minoto | Boiler Room Ho Chi Minh City: Khu 13 x Haustek Agency
     // — youtube.com/watch?v=aUroUUtBvWs
+];
 
-  { title:"Brand events", when:"—", tag:"Launch · Campaign",
-    desc:"Haustek lo phần âm nhạc và hình ảnh cho các đêm ra mắt, showroom và campaign — từ concept cho tới lúc chạy thật.",
-    video:"", thumb:"" }
-    // Chưa tìm thấy clip công khai phù hợp — để trống.
+/* =====================================================================
+   TOÀN BỘ SET ĐÃ GHI HÌNH — chia theo chuỗi sự kiện, xếp theo đúng thứ tự
+   dưới đây. Mỗi mục:
+     title   Tên nghệ sĩ trình diễn.
+     tag     Địa điểm hoặc một dòng giới thiệu ngắn.
+     video   ID video YouTube (đoạn sau "v=" trong link).
+   Toàn bộ 21 video đều lấy trực tiếp từ kênh youtube.com/@HaustekAgency,
+   không có video tự bịa. Muốn thêm set mới thì chỉ cần thêm một dòng vào
+   đúng nhóm tương ứng.
+   ===================================================================== */
+const SET_GROUPS = [
+  {
+    key:"uws",
+    title:"United We Stream Vietnam",
+    sub:"Haustek x Hanoi Rock City · Haustek x Khu 13, Hồ Chí Minh City — 2020",
+    items:[
+      { title:"Ro-TUNE", tag:"Khu 13, Hồ Chí Minh City — mở màn United We Stream Asia tại Việt Nam", video:"Jfyle0LPSjE" },
+      { title:"Attiss Ngo", tag:"Hanoi Rock City — dàn synth analog, đào tạo tại nhạc viện San Francisco", video:"EvZ06FtYpPQ" },
+      { title:"Trí Minh × Đào Anh Khánh", tag:"Hanoi Rock City — kết hợp cùng nghệ sĩ thử nghiệm Đào Anh Khánh", video:"Lh1n7h85rqA" },
+      { title:"Dee.F", tag:"Hanoi Rock City — đồng sáng lập techno.vn & Hanoi Rock City", video:"AZxj7PMV78w" },
+      { title:"Limebócx", tag:"Hanoi Rock City", video:"E2yhUf07Zy0" }
+    ]
+  },
+  {
+    key:"br",
+    title:"Boiler Room Ho Chi Minh City",
+    sub:"Khu 13 x Haustek Agency — 2020",
+    items:[
+      { title:"Attiss Ngo", tag:"Boiler Room debut — Khu 13, Hồ Chí Minh City", video:"4uWVMfVGcWc" },
+      { title:"Minoto", tag:"BassGang từ Berlin, trình diễn ngay tại quê nhà Việt Nam", video:"aUroUUtBvWs" },
+      { title:"Demon Slayer", tag:"Việt kiều Los Angeles", video:"WHt0Q2xr1Uc" },
+      { title:"ling:chi", tag:"Gia nhập Haustek từ 2018, khi đó mới 18 tuổi", video:"fls5TxX6JW4" },
+      { title:"Levi Oi", tag:"Boiler Room debut", video:"Q65b-r7G-Qg" },
+      { title:"MYLE", tag:"Die Empathie", video:"pbN3lCU3sSg" },
+      { title:"Larria.", tag:"Nhà sản xuất trẻ tại Sài Gòn", video:"yI2BjdsZYoE" },
+      { title:"Trung Hoang", tag:"techno.vn · Savage resident, Hà Nội", video:"loUEdeNQxpU" },
+      { title:"Tung Tim", tag:"Đồng sáng lập techno.vn", video:"9hmO9abfQis" },
+      { title:"My Nguyen", tag:"Đồng sáng lập techno.vn, đại diện nữ DJ techno Việt", video:"9lcgbT4Rn2E" },
+      { title:"Jase", tag:"Khu 13, Hồ Chí Minh City", video:"kNaLjRTe5X4" }
+    ]
+  },
+  {
+    key:"anniv",
+    title:"5 năm hausvn × technovn",
+    sub:"Aura Saigon · Savage Hanoi — 2022",
+    items:[
+      { title:"Chin", tag:"Aura Saigon", video:"2fIl2XCUpdw" },
+      { title:"Ro-TUNE b2b B.A", tag:"Aura Saigon", video:"8udcP8T8NKc" },
+      { title:"ELEK", tag:"Aura Saigon — trình diễn hybrid", video:"HYwSjS9IZ4s" },
+      { title:"Tarnoise Spaceman", tag:"Savage Hanoi", video:"SbmeKJTS5uA" },
+      { title:"ling:chi", tag:"hausvn × technovn", video:"ly2BHO-DlzU" }
+    ]
+  }
 ];
 
 /* ===================== SONG NGỮ ===================== */
@@ -402,7 +489,14 @@ const I18N={
     h1:'<span class="ln">Những đêm Haustek</span> <span class="ln"><em>đứng sau âm thanh.</em></span>',
     lead:"Từ những đêm techno nhỏ ở Sài Gòn cho tới chuỗi livestream trải khắp châu Á — đây là những sân khấu chúng tôi đã dựng, đã chơi và đã lên sóng. Bấm vào một tiết mục để xem lại.",
     cta:'Muốn Haustek dựng một đêm cho bạn? <a href="mailto:mgmt@haustek-group.com">Gửi yêu cầu booking →</a>',
-    watch:"Xem lại", soon:"Video sắp có", loading:"Đang tải video…"
+    watch:"Xem lại", soon:"Video sắp có", loading:"Đang tải video…",
+    sets_k:"Xem lại toàn bộ",
+    sets_h:'<span class="ln">Từng set,</span> <span class="ln"><em>từng đêm diễn.</em></span>',
+    sets_p:"21 set trực tiếp từ chính kênh YouTube của Haustek — chưa cắt, chưa dựng lại. Bấm vào tên nghệ sĩ để xem.",
+    grp_uws:"United We Stream Vietnam", sub_uws:"Haustek x Hanoi Rock City · Haustek x Khu 13, Hồ Chí Minh City — 2020",
+    grp_br:"Boiler Room Ho Chi Minh City", sub_br:"Khu 13 x Haustek Agency — 2020",
+    grp_anniv:"5 năm hausvn × technovn", sub_anniv:"Aura Saigon · Savage Hanoi — 2022",
+    n_videos:"video"
   },
   en:{
     _title:"Events — Haustek",
@@ -410,7 +504,14 @@ const I18N={
     h1:'<span class="ln">The nights Haustek</span> <span class="ln"><em>stood behind the sound.</em></span>',
     lead:"From small techno nights in Saigon to livestream series stretched across Asia — these are the stages we built, played and broadcast. Tap a card to watch.",
     cta:'Want Haustek to build a night for you? <a href="mailto:mgmt@haustek-group.com">Request a booking →</a>',
-    watch:"Watch", soon:"Video coming soon", loading:"Loading video…"
+    watch:"Watch", soon:"Video coming soon", loading:"Loading video…",
+    sets_k:"Watch it all back",
+    sets_h:'<span class="ln">Every set,</span> <span class="ln"><em>every night.</em></span>',
+    sets_p:"21 live sets straight from Haustek's own YouTube channel — uncut, unedited. Tap a name to watch.",
+    grp_uws:"United We Stream Vietnam", sub_uws:"Haustek x Hanoi Rock City · Haustek x Khu 13, Ho Chi Minh City — 2020",
+    grp_br:"Boiler Room Ho Chi Minh City", sub_br:"Khu 13 x Haustek Agency — 2020",
+    grp_anniv:"5 Years of hausvn × technovn", sub_anniv:"Aura Saigon · Savage Hanoi — 2022",
+    n_videos:"videos"
   }
 };
 let lang="vi";
@@ -466,13 +567,57 @@ function renderGrid(){
   observeCards();
 }
 
+/* ===================== DỰNG CÁC NHÓM SET NHẠC ===================== */
+const setGroupsEl=document.getElementById('setGroups');
+
+function setCardHTML(item){
+  const thumb=`https://i.ytimg.com/vi/${item.video}/hqdefault.jpg`;
+  return `<div class="set-card rv" data-video="${item.video}" data-title="${item.title}" tabindex="0" role="button">
+    <div class="set-shot">
+      <img src="${thumb}" alt="${item.title}" loading="lazy" decoding="async" width="320" height="180">
+      <div class="play"><span class="btn">${PLAY_ICON}</span></div>
+    </div>
+    <div class="set-body">
+      <div class="set-name">${item.title}</div>
+      <div class="set-tag">${item.tag||''}</div>
+    </div>
+  </div>`;
+}
+
+function renderSetGroups(){
+  const d=I18N[lang];
+  setGroupsEl.innerHTML = SET_GROUPS.map(g=>`
+    <section class="set-group">
+      <div class="set-group-head">
+        <h3>${d['grp_'+g.key]||g.title}</h3>
+        <span>${d['sub_'+g.key]||g.sub} · ${g.items.length} ${d.n_videos}</span>
+      </div>
+      <div class="set-grid">${g.items.map(setCardHTML).join('')}</div>
+    </section>
+  `).join('');
+  observeCards();
+}
+
+/* Cả card bấm được, không chỉ riêng nút play — mật độ 21 video nên đơn giản
+   hoá thao tác, không cần nhắm đúng nút tròn nhỏ. */
+setGroupsEl.addEventListener('click',e=>{
+  const c=e.target.closest('.set-card'); if(!c)return;
+  openVideo(c.dataset.video, c.dataset.title);
+});
+setGroupsEl.addEventListener('keydown',e=>{
+  if(e.key!=='Enter' && e.key!==' ')return;
+  const c=e.target.closest('.set-card'); if(!c)return;
+  e.preventDefault();
+  openVideo(c.dataset.video, c.dataset.title);
+});
+
 let io=null;
 function observeCards(){
   if(io)io.disconnect();
   io=new IntersectionObserver(es=>{
     es.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); } });
   },{threshold:.1});
-  document.querySelectorAll('.card').forEach(c=>io.observe(c));
+  document.querySelectorAll('.card,.set-card').forEach(c=>io.observe(c));
 }
 
 /* ===================== MODAL VIDEO ====================
@@ -524,10 +669,12 @@ function setLang(l){
   document.title=d._title;
   langBtn.textContent = l==="vi" ? "EN" : "VI";
   renderGrid();
+  renderSetGroups();
 }
 langBtn.addEventListener('click',()=>setLang(lang==="vi"?"en":"vi"));
 
 renderGrid();
+renderSetGroups();
 </script>
 </body>
 </html>
