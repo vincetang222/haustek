@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Sự kiện — Haustek</title>
-<meta name="description" content="Những đêm mà Haustek đứng sau âm thanh — từ club nights ở Việt Nam đến chuỗi livestream quốc tế United We Stream Asia.">
+<meta name="description" content="Những đêm mà Haustek đứng sau ánh đèn sân khấu — từ club nights ở Việt Nam đến chuỗi livestream quốc tế United We Stream Asia và Boiler Room.">
 <link rel="canonical" href="https://haustek-group.com/events">
 <link rel="icon" type="image/svg+xml" href="/favicon.svg">
 <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png">
@@ -137,6 +137,18 @@ h1 em{font-style:italic;font-weight:600;color:var(--red)}
 .yt-close:hover{background:var(--red);border-color:var(--red)}
 .yt-loading{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
   font-family:var(--mono);font-size:10.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--concrete)}
+/* Khi YouTube chặn nhúng (thường do bị hãng đĩa claim bản quyền nhạc trong
+   set) — thay vì để lộ màn hình lỗi mặc định xấu xí của YouTube ngay trong
+   modal, hiện một thông báo gọn cùng phong cách trang, kèm link mở thẳng
+   video đó trên YouTube (phát trực tiếp trên YouTube vẫn xem được bình
+   thường, chỉ riêng việc nhúng vào trang ngoài là bị chặn). */
+.yt-fail{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;
+  justify-content:center;gap:16px;text-align:center;padding:30px;background:#0b0b11}
+.yt-fail p{font-family:var(--body);font-size:14px;color:var(--concrete);max-width:38ch;line-height:1.6}
+.yt-fail a{display:inline-flex;align-items:center;gap:10px;padding:13px 24px;border-radius:100px;
+  background:rgba(240,240,242,.06);border:1px solid var(--line-2);color:var(--paper);
+  font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;transition:all .25s}
+.yt-fail a:hover{background:var(--youtube);border-color:var(--youtube)}
 
 /* ---------- section "toàn bộ set đã ghi hình" ---------- */
 .sets-hero{padding:70px var(--gut) 0;position:relative}
@@ -352,7 +364,7 @@ l-1242 0 -30 29 -29 29 0 745 c0 768 1 796 40 817 12 6 374 10 984 10 929 0
 <section class="hero">
   <div class="aurora" aria-hidden="true"><i></i><i></i><i></i></div>
   <p class="kicker"><i>●</i><span data-i18n="kicker">Sự kiện · từ 2017</span></p>
-  <h1 data-i18n="h1"><span class="ln">Những đêm Haustek</span> <span class="ln"><em>đứng sau âm thanh.</em></span></h1>
+  <h1 data-i18n="h1"><span class="ln">Những đêm Haustek</span> <span class="ln"><em>đứng sau ánh đèn sân khấu.</em></span></h1>
   <p class="lead" data-i18n="lead">Từ những đêm techno nhỏ ở Sài Gòn cho tới chuỗi livestream trải khắp châu Á — đây là những sân khấu chúng tôi đã dựng, đã chơi và đã lên sóng. Bấm vào một tiết mục để xem lại.</p>
 </section>
 
@@ -408,19 +420,22 @@ l-1242 0 -30 29 -29 29 0 745 c0 768 1 796 40 817 12 6 374 10 984 10 929 0
 /* Video thật, lấy từ chính kênh youtube.com/@HaustekAgency — không bịa ID.
    Nguồn từng clip ghi ngay cạnh để sau này bạn đối chiếu hoặc đổi ý dễ dàng. */
 const EVENTS = [
-  { title:"United We Stream Asia", when:"2020–21", tag:"Livestream toàn cầu",
-    desc:"Chuỗi livestream gom nghệ sĩ điện tử Đông Nam Á lại với nhau giữa những năm giãn cách. Haustek lo phần lineup Việt Nam: DJ set, visual và dựng sân khấu ảo.",
+  { title:"United We Stream Asia", when:"2020–21", tag:"Livestream toàn cầu", tagEn:"Global livestream",
+    desc:"Chuỗi livestream nối nghệ sĩ điện tử Đông Nam Á lại với nhau giữa những năm giãn cách vì dịch. Haustek phụ trách lineup Việt Nam — DJ set, hình ảnh và cả sân khấu ảo.",
+    descEn:"A livestream series that connected Southeast Asian electronic artists through the pandemic years. Haustek ran the Vietnamese lineup — DJ sets, visuals and a virtual stage.",
     video:"EvZ06FtYpPQ", thumb:"" },
     // Attiss Ngo (live) - United We Stream 2020 — youtube.com/watch?v=EvZ06FtYpPQ
 
-  { title:"5-Year Anniversary", when:"2022", tag:"hausvn × technovn",
-    desc:"Đêm kỷ niệm 5 năm với nghệ sĩ trong nhà và khách mời, sau đó có luôn một album live ra mắt.",
+  { title:"5-Year Anniversary", when:"2022", tag:"hausvn × technovn", tagEn:"hausvn × technovn",
+    desc:"Đêm kỷ niệm 5 năm quy tụ nghệ sĩ trong nhà và khách mời, khép lại bằng một album live ra mắt ngay sau đó.",
+    descEn:"A fifth-anniversary night bringing together in-house artists and guests, followed by a live album released right after.",
     video:"2fIl2XCUpdw", thumb:"" },
     // Chin (live) - hausvn x technovn | 5-Year Anniversary tại Aura Saigon
     // — youtube.com/watch?v=2fIl2XCUpdw
 
-  { title:"Club nights Việt Nam", when:"2017→", tag:"SG · HN · Đà Lạt",
-    desc:"Những đêm nhỏ ở các club và không gian ngầm khắp ba miền — nơi nhiều gương mặt mới của Haustek lần đầu đứng sau bàn mix.",
+  { title:"Club nights Việt Nam", when:"2017→", tag:"SG · HN · Đà Lạt", tagEn:"SG · HN · Đà Lạt",
+    desc:"Những đêm nhỏ ở club và không gian ngầm khắp ba miền — nơi nhiều gương mặt mới của Haustek lần đầu ngồi sau bàn mix.",
+    descEn:"Small nights at clubs and underground spaces across the country — where many new Haustek names first sat behind the decks.",
     video:"aUroUUtBvWs", thumb:"" }
     // Minoto | Boiler Room Ho Chi Minh City: Khu 13 x Haustek Agency
     // — youtube.com/watch?v=aUroUUtBvWs
@@ -442,29 +457,31 @@ const SET_GROUPS = [
     title:"United We Stream Vietnam",
     sub:"Haustek x Hanoi Rock City · Haustek x Khu 13, Hồ Chí Minh City — 2020",
     items:[
-      { title:"Ro-TUNE", tag:"Khu 13, Hồ Chí Minh City — mở màn United We Stream Asia tại Việt Nam", video:"Jfyle0LPSjE" },
-      { title:"Attiss Ngo", tag:"Hanoi Rock City — dàn synth analog, đào tạo tại nhạc viện San Francisco", video:"EvZ06FtYpPQ" },
-      { title:"Trí Minh × Đào Anh Khánh", tag:"Hanoi Rock City — kết hợp cùng nghệ sĩ thử nghiệm Đào Anh Khánh", video:"Lh1n7h85rqA" },
-      { title:"Dee.F", tag:"Hanoi Rock City — đồng sáng lập techno.vn & Hanoi Rock City", video:"AZxj7PMV78w" },
-      { title:"Limebócx", tag:"Hanoi Rock City", video:"E2yhUf07Zy0" }
+      { title:"Ro-TUNE", tag:"Khu 13, Hồ Chí Minh City — mở màn United We Stream Asia tại Việt Nam", tagEn:"Khu 13, Ho Chi Minh City — opened United We Stream Asia's Vietnam edition", video:"Jfyle0LPSjE" },
+      { title:"Attiss Ngo", tag:"Hanoi Rock City — dàn synth analog, đào tạo tại nhạc viện San Francisco", tagEn:"Hanoi Rock City — analog synth rig, trained at the San Francisco Conservatory", video:"EvZ06FtYpPQ" },
+      { title:"Trí Minh × Đào Anh Khánh", tag:"Hanoi Rock City — kết hợp cùng nghệ sĩ thử nghiệm Đào Anh Khánh", tagEn:"Hanoi Rock City — with experimental artist Đào Anh Khánh", video:"Lh1n7h85rqA" },
+      { title:"Dee.F", tag:"Hanoi Rock City — đồng sáng lập techno.vn", tagEn:"Hanoi Rock City — co-founder of techno.vn", video:"AZxj7PMV78w" },
+      { title:"Limebócx", tag:"Hanoi Rock City", tagEn:"Hanoi Rock City", video:"E2yhUf07Zy0" },
+      { title:"Tiny Giant", tag:"Golden Bridge, Đà Nẵng — cùng 9 Blocks Creative", tagEn:"Golden Bridge, Da Nang — with 9 Blocks Creative", video:"SfuSNY4CEW0" }
     ]
   },
   {
     key:"br",
     title:"Boiler Room Ho Chi Minh City",
-    sub:"Khu 13 x Haustek Agency — 2020",
+    sub:"Khu 13 x Haustek Agency — 2019",
     items:[
-      { title:"Attiss Ngo", tag:"Boiler Room debut — Khu 13, Hồ Chí Minh City", video:"4uWVMfVGcWc" },
-      { title:"Minoto", tag:"BassGang từ Berlin, trình diễn ngay tại quê nhà Việt Nam", video:"aUroUUtBvWs" },
-      { title:"Demon Slayer", tag:"Việt kiều Los Angeles", video:"WHt0Q2xr1Uc" },
-      { title:"ling:chi", tag:"Gia nhập Haustek từ 2018, khi đó mới 18 tuổi", video:"fls5TxX6JW4" },
-      { title:"Levi Oi", tag:"Boiler Room debut", video:"Q65b-r7G-Qg" },
-      { title:"MYLE", tag:"Die Empathie", video:"pbN3lCU3sSg" },
-      { title:"Larria.", tag:"Nhà sản xuất trẻ tại Sài Gòn", video:"yI2BjdsZYoE" },
-      { title:"Trung Hoang", tag:"techno.vn · Savage resident, Hà Nội", video:"loUEdeNQxpU" },
-      { title:"Tung Tim", tag:"Đồng sáng lập techno.vn", video:"9hmO9abfQis" },
-      { title:"My Nguyen", tag:"Đồng sáng lập techno.vn, đại diện nữ DJ techno Việt", video:"9lcgbT4Rn2E" },
-      { title:"Jase", tag:"Khu 13, Hồ Chí Minh City", video:"kNaLjRTe5X4" }
+      { title:"Attiss Ngo", tag:"Boiler Room debut — Khu 13, Hồ Chí Minh City", tagEn:"Boiler Room debut — Khu 13, Ho Chi Minh City", video:"4uWVMfVGcWc" },
+      { title:"Minoto", tag:"BassGang từ Berlin, trình diễn ngay tại quê nhà Việt Nam", tagEn:"BassGang from Berlin, playing in his home country Vietnam", video:"aUroUUtBvWs" },
+      { title:"Demon Slayer", tag:"Việt kiều Los Angeles", tagEn:"Vietnamese-American, based in Los Angeles", video:"WHt0Q2xr1Uc" },
+      { title:"ling:chi", tag:"Gia nhập Haustek từ 2018, khi đó mới 18 tuổi", tagEn:"Joined Haustek in 2018, aged just 18", video:"fls5TxX6JW4" },
+      { title:"Levi Oi", tag:"Boiler Room debut", tagEn:"Boiler Room debut", video:"Q65b-r7G-Qg" },
+      { title:"MYLE", tag:"Die Empathie", tagEn:"Die Empathie", video:"pbN3lCU3sSg" },
+      { title:"Larria.", tag:"Nhà sản xuất trẻ tại Sài Gòn", tagEn:"Young producer based in Saigon", video:"yI2BjdsZYoE" },
+      { title:"Trung Hoang", tag:"techno.vn · Savage resident, Hà Nội", tagEn:"techno.vn · Savage resident, Hanoi", video:"loUEdeNQxpU" },
+      { title:"Tung Tim", tag:"Đồng sáng lập techno.vn", tagEn:"Co-founder of techno.vn", video:"9hmO9abfQis" },
+      { title:"My Nguyen", tag:"Đồng sáng lập techno.vn, đại diện nữ DJ techno Việt", tagEn:"Co-founder of techno.vn, a leading voice for female techno DJs in Vietnam", video:"9lcgbT4Rn2E" },
+      { title:"Jase", tag:"Khu 13, Hồ Chí Minh City", tagEn:"Khu 13, Ho Chi Minh City", video:"kNaLjRTe5X4" },
+      { title:"Chin", tag:"Một trong những tay techno kỳ cựu nhất Việt Nam", tagEn:"One of Vietnam's most seasoned techno veterans", video:"qX_YM0XmclI" }
     ]
   },
   {
@@ -472,11 +489,11 @@ const SET_GROUPS = [
     title:"5 năm hausvn × technovn",
     sub:"Aura Saigon · Savage Hanoi — 2022",
     items:[
-      { title:"Chin", tag:"Aura Saigon", video:"2fIl2XCUpdw" },
-      { title:"Ro-TUNE b2b B.A", tag:"Aura Saigon", video:"8udcP8T8NKc" },
-      { title:"ELEK", tag:"Aura Saigon — trình diễn hybrid", video:"HYwSjS9IZ4s" },
-      { title:"Tarnoise Spaceman", tag:"Savage Hanoi", video:"SbmeKJTS5uA" },
-      { title:"ling:chi", tag:"hausvn × technovn", video:"ly2BHO-DlzU" }
+      { title:"Chin", tag:"Aura Saigon", tagEn:"Aura Saigon", video:"2fIl2XCUpdw" },
+      { title:"Ro-TUNE b2b B.A", tag:"Aura Saigon", tagEn:"Aura Saigon", video:"8udcP8T8NKc" },
+      { title:"ELEK", tag:"Aura Saigon — trình diễn hybrid", tagEn:"Aura Saigon — hybrid performance", video:"HYwSjS9IZ4s" },
+      { title:"Tarnoise Spaceman", tag:"Savage Hanoi", tagEn:"Savage Hanoi", video:"SbmeKJTS5uA" },
+      { title:"ling:chi", tag:"hausvn × technovn", tagEn:"hausvn × technovn", video:"ly2BHO-DlzU" }
     ]
   }
 ];
@@ -486,30 +503,36 @@ const I18N={
   vi:{
     _title:"Sự kiện — Haustek",
     back:"← Về trang chủ", kicker:"Sự kiện · từ 2017",
-    h1:'<span class="ln">Những đêm Haustek</span> <span class="ln"><em>đứng sau âm thanh.</em></span>',
-    lead:"Từ những đêm techno nhỏ ở Sài Gòn cho tới chuỗi livestream trải khắp châu Á — đây là những sân khấu chúng tôi đã dựng, đã chơi và đã lên sóng. Bấm vào một tiết mục để xem lại.",
+    h1:'<span class="ln">Những đêm Haustek</span> <span class="ln"><em>đứng sau ánh đèn sân khấu.</em></span>',
+    lead:"Từ những đêm techno nhỏ ở Sài Gòn đến các chuỗi livestream khắp châu Á, Haustek luôn có mặt phía sau — dựng sân khấu, chạy chương trình, đưa buổi diễn lên sóng. Bấm vào một tiết mục để xem lại.",
     cta:'Muốn Haustek dựng một đêm cho bạn? <a href="mailto:mgmt@haustek-group.com">Gửi yêu cầu booking →</a>',
     watch:"Xem lại", soon:"Video sắp có", loading:"Đang tải video…",
+    blocked:"Video này hiện không thể phát tại đây do vướng bản quyền âm nhạc. Bạn xem trực tiếp trên YouTube nhé.",
+    failed:"Video này hiện chưa mở được. Bạn thử lại trên YouTube nhé.",
+    openYT:"Mở trên YouTube",
     sets_k:"Xem lại toàn bộ",
     sets_h:'<span class="ln">Từng set,</span> <span class="ln"><em>từng đêm diễn.</em></span>',
-    sets_p:"21 set trực tiếp từ chính kênh YouTube của Haustek — chưa cắt, chưa dựng lại. Bấm vào tên nghệ sĩ để xem.",
+    sets_p:"21 set quay trực tiếp, lấy nguyên từ kênh YouTube của Haustek — không cắt, không dựng lại. Bấm vào tên nghệ sĩ để xem.",
     grp_uws:"United We Stream Vietnam", sub_uws:"Haustek x Hanoi Rock City · Haustek x Khu 13, Hồ Chí Minh City — 2020",
-    grp_br:"Boiler Room Ho Chi Minh City", sub_br:"Khu 13 x Haustek Agency — 2020",
+    grp_br:"Boiler Room Ho Chi Minh City", sub_br:"Khu 13 x Haustek Agency — 2019",
     grp_anniv:"5 năm hausvn × technovn", sub_anniv:"Aura Saigon · Savage Hanoi — 2022",
     n_videos:"video"
   },
   en:{
     _title:"Events — Haustek",
     back:"← Back to home", kicker:"Events · since 2017",
-    h1:'<span class="ln">The nights Haustek</span> <span class="ln"><em>stood behind the sound.</em></span>',
-    lead:"From small techno nights in Saigon to livestream series stretched across Asia — these are the stages we built, played and broadcast. Tap a card to watch.",
+    h1:'<span class="ln">The nights Haustek</span> <span class="ln"><em>stood behind the stage lights.</em></span>',
+    lead:"From small techno nights in Saigon to livestream series across Asia, Haustek has always been the one behind it — building the stage, running the show, putting it on air. Tap a card to watch.",
     cta:'Want Haustek to build a night for you? <a href="mailto:mgmt@haustek-group.com">Request a booking →</a>',
     watch:"Watch", soon:"Video coming soon", loading:"Loading video…",
+    blocked:"This video can't be played here right now due to a music licensing claim. You can watch it directly on YouTube instead.",
+    failed:"This video isn't loading right now. Try watching it on YouTube instead.",
+    openYT:"Open on YouTube",
     sets_k:"Watch it all back",
     sets_h:'<span class="ln">Every set,</span> <span class="ln"><em>every night.</em></span>',
-    sets_p:"21 live sets straight from Haustek's own YouTube channel — uncut, unedited. Tap a name to watch.",
+    sets_p:"21 sets filmed live, taken straight from Haustek's YouTube channel — uncut, unedited. Tap a name to watch.",
     grp_uws:"United We Stream Vietnam", sub_uws:"Haustek x Hanoi Rock City · Haustek x Khu 13, Ho Chi Minh City — 2020",
-    grp_br:"Boiler Room Ho Chi Minh City", sub_br:"Khu 13 x Haustek Agency — 2020",
+    grp_br:"Boiler Room Ho Chi Minh City", sub_br:"Khu 13 x Haustek Agency — 2019",
     grp_anniv:"5 Years of hausvn × technovn", sub_anniv:"Aura Saigon · Savage Hanoi — 2022",
     n_videos:"videos"
   }
@@ -539,6 +562,8 @@ function cardHTML(ev,i){
   const d=I18N[lang];
   const hasVideo=!!ev.video;
   const thumb = ev.thumb ? ev.thumb : (hasVideo ? `https://i.ytimg.com/vi/${ev.video}/hqdefault.jpg` : "");
+  const tag = (lang==='en' ? ev.tagEn : ev.tag) || ev.tag || '';
+  const desc = (lang==='en' ? ev.descEn : ev.desc) || ev.desc || '';
 
   const shot = thumb
     ? `<img src="${thumb}" alt="${ev.title}" loading="lazy" decoding="async" width="640" height="360">`
@@ -550,14 +575,14 @@ function cardHTML(ev,i){
 
   return `<article class="card rv" style="transition-delay:${Math.min(i*40,240)}ms">
     <div class="shot">
-      <span class="tag">${ev.tag||''}</span>
+      <span class="tag">${tag}</span>
       <span class="when">${ev.when||''}</span>
       ${shot}
       ${play}
     </div>
     <div class="body">
       <h2 class="ename">${ev.title}</h2>
-      <p class="edesc">${ev.desc||''}</p>
+      <p class="edesc">${desc}</p>
     </div>
   </article>`;
 }
@@ -572,6 +597,7 @@ const setGroupsEl=document.getElementById('setGroups');
 
 function setCardHTML(item){
   const thumb=`https://i.ytimg.com/vi/${item.video}/hqdefault.jpg`;
+  const tag=(lang==='en'?item.tagEn:item.tag)||item.tag||'';
   return `<div class="set-card rv" data-video="${item.video}" data-title="${item.title}" tabindex="0" role="button">
     <div class="set-shot">
       <img src="${thumb}" alt="${item.title}" loading="lazy" decoding="async" width="320" height="180">
@@ -579,7 +605,7 @@ function setCardHTML(item){
     </div>
     <div class="set-body">
       <div class="set-name">${item.title}</div>
-      <div class="set-tag">${item.tag||''}</div>
+      <div class="set-tag">${tag}</div>
     </div>
   </div>`;
 }
@@ -630,24 +656,64 @@ const ytModal=document.getElementById('ytModal');
 const ytSlot=document.getElementById('ytSlot');
 const ytClose=document.getElementById('ytClose');
 
-function openVideo(id,title){
+/* Dùng YouTube IFrame Player API thay vì <iframe src="..."> thô — lý do
+   duy nhất: API này báo được lỗi (onError) khi một video bị chặn nhúng,
+   ví dụ do hãng đĩa claim bản quyền nhạc trong set (mã lỗi 101/150 — rất
+   hay gặp với video DJ set có chơi nhạc thương mại, và có thể xảy ra với
+   bất kỳ video nào, kể cả sau này). Bắt được lỗi thì mình thay bằng thông
+   báo gọn + link mở thẳng YouTube, thay vì để lộ màn hình lỗi mặc định
+   của YouTube ngay trong modal của trang. */
+let ytApiPromise=null;
+function loadYouTubeAPI(){
+  if(window.YT && window.YT.Player) return Promise.resolve();
+  if(ytApiPromise) return ytApiPromise;
+  ytApiPromise=new Promise(resolve=>{
+    const prev=window.onYouTubeIframeAPIReady;
+    window.onYouTubeIframeAPIReady=()=>{ if(prev)prev(); resolve(); };
+    const s=document.createElement('script');
+    s.src='https://www.youtube.com/iframe_api';
+    document.head.appendChild(s);
+  });
+  return ytApiPromise;
+}
+
+let ytPlayer=null;
+async function openVideo(id,title){
   const d=I18N[lang];
-  ytSlot.innerHTML=`<div class="yt-loading">${d.loading}</div>`;
-  const fr=document.createElement('iframe');
-  fr.src=`https://www.youtube-nocookie.com/embed/${id}?autoplay=1&rel=0`;
-  fr.title=title||'YouTube';
-  fr.allow='accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
-  fr.allowFullscreen=true;
-  fr.addEventListener('load',()=>{const l=ytSlot.querySelector('.yt-loading');if(l)l.remove();});
-  ytSlot.appendChild(fr);
   ytModal.classList.add('on');
   ytModal.setAttribute('aria-hidden','false');
   ytClose.focus();
+  ytSlot.innerHTML=`<div class="yt-loading">${d.loading}</div>`;
+
+  try{
+    await loadYouTubeAPI();
+  }catch(e){
+    ytSlot.innerHTML=`<div class="yt-fail"><p>${d.failed}</p><a href="https://www.youtube.com/watch?v=${id}" target="_blank" rel="noopener">${d.openYT} ↗</a></div>`;
+    return;
+  }
+
+  ytSlot.innerHTML=`<div id="ytPlayerHost" style="position:absolute;inset:0;width:100%;height:100%"></div><div class="yt-loading" id="ytLoadingTag">${d.loading}</div>`;
+
+  ytPlayer=new YT.Player('ytPlayerHost',{
+    videoId:id,
+    host:'https://www.youtube-nocookie.com',
+    playerVars:{autoplay:1, rel:0},
+    events:{
+      onReady:()=>{ const l=document.getElementById('ytLoadingTag'); if(l)l.remove(); },
+      onError:(e)=>{
+        const blocked=[101,150].includes(e.data);
+        const msg = blocked ? d.blocked : d.failed;
+        ytSlot.innerHTML=`<div class="yt-fail"><p>${msg}</p><a href="https://www.youtube.com/watch?v=${id}" target="_blank" rel="noopener">${d.openYT} ↗</a></div>`;
+      }
+    }
+  });
 }
 function closeVideo(){
   ytModal.classList.remove('on');
   ytModal.setAttribute('aria-hidden','true');
-  ytSlot.innerHTML='';   /* gỡ hẳn iframe — dừng phát, dừng luôn kết nối tới YouTube */
+  /* Gỡ hẳn player — dừng phát, dừng luôn kết nối tới YouTube, không chỉ ẩn đi */
+  if(ytPlayer && ytPlayer.destroy){ try{ ytPlayer.destroy(); }catch(e){} ytPlayer=null; }
+  ytSlot.innerHTML='';
 }
 ytClose.addEventListener('click',closeVideo);
 ytModal.addEventListener('click',e=>{ if(e.target===ytModal) closeVideo(); });
