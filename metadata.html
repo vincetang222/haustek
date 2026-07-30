@@ -13,7 +13,7 @@
 <link rel="alternate icon" href="/favicon.ico">
 <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
 <link rel="manifest" href="/site.webmanifest">
-<meta name="theme-color" content="#070709">
+<meta name="theme-color" content="#08080C">
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -21,14 +21,44 @@
 
 <style>
 :root{
-  --ink:#070709;--line:rgba(240,240,242,.12);--line-2:rgba(240,240,242,.22);
-  --concrete:#8E8E98;--paper:#F0F0F2;--red:#FF2E4C;--ice:#7FD6E8;--violet:#8B7BE8;--ok:#4ED88A;--warn:#E8A33D;
+  /* ---------- THANG NỀN ----------
+     Trước đây các lớp nền xếp bằng rgba trong suốt nên dồn hết vào khoảng
+     RGB 7–31: thân bước so với nền trang chỉ chênh nhau 1.09 lần, ô nhập so
+     với khung chứa 1.08 — mắt gần như không tách được đâu là khối gì.
+     Giờ dùng hex tường minh, mỗi bậc cách nhau khoảng 5–6 điểm độ sáng cảm
+     nhận (L*), là mức mắt thấy rõ ranh giới. Ô nhập cố tình TỐI HƠN khung
+     chứa để tạo cảm giác lõm vào, đúng quy ước của ô điền liệu. */
+  --s0:#08080C;          /* nền trang            L* 2.3 */
+  --s1:#16161F;          /* thân bước            L* 7.6 */
+  --s2:#23232F;          /* đầu bước, tiêu đề    L* 14.2 */
+  --s3:#2E2E3C;          /* trạng thái hover     L* 19.5 */
+  --field:#06060A;       /* ô nhập, tối hơn khung */
+  --field-hi:#0C0C13;    /* ô nhập khi hover */
+
+  /* ---------- VIỀN ----------
+     Tính ngược từ ngưỡng WCAG 3:1 cho ranh giới thành phần giao diện.
+     #5C5C6A đạt 3.08 với ô nhập — dưới mức này viền sẽ mờ đến mức
+     không nhìn ra ô điền nằm ở đâu. */
+  --bd:#5C5C6A;
+  --bd-soft:#3A3A46;     /* viền phân cách nhẹ giữa các khối */
+
+  /* ---------- CHỮ ---------- */
+  --paper:#F0F0F2;       /* chữ chính     17.8:1 */
+  --hint:#A6A8B4;        /* chữ gợi ý      7.6:1 */
+  --placeholder:#7A7A82; /* chữ mờ         4.8:1 */
+  --concrete:#8E8E98;
+
+  /* ---------- MÀU NHẤN ---------- */
+  --red:#FF2E4C;--ice:#7FD6E8;--violet:#8B7BE8;--ok:#4ED88A;--warn:#E8A33D;
+  --ink:#08080C;
+  --line:rgba(240,240,242,.12);--line-2:rgba(240,240,242,.22);
+
   --disp:'Archivo',sans-serif;--body:'Be Vietnam Pro',sans-serif;--mono:'IBM Plex Mono',monospace;
   --gut:clamp(20px,4vw,64px);
 }
 *{margin:0;padding:0;box-sizing:border-box}
 html{scroll-behavior:smooth}
-body{background:var(--ink);color:var(--paper);font-family:var(--body);font-weight:300;line-height:1.75;font-size:15px;overflow-x:hidden}
+body{background:var(--s0);color:var(--paper);font-family:var(--body);font-weight:300;line-height:1.75;font-size:15px;overflow-x:hidden}
 body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:120;opacity:.05;
   background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E")}
 ::selection{background:var(--red);color:var(--paper)}
@@ -39,7 +69,7 @@ img{max-width:100%;display:block}
 /* NAV */
 .nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;gap:16px;
   padding:14px var(--gut);background:rgba(7,7,9,.6);backdrop-filter:blur(16px) saturate(1.3);-webkit-backdrop-filter:blur(16px) saturate(1.3);
-  border-bottom:1px solid rgba(240,240,242,.07)}
+  border-bottom:1px solid var(--bd-soft)}
 .logo{display:flex;align-items:center;gap:10px}
 .logo .wordmark{height:12px;width:auto;color:var(--paper);display:block}
 .rec{width:7px;height:7px;border-radius:50%;background:var(--red);box-shadow:0 0 10px rgba(255,46,76,.8);animation:blink 1.6s steps(2,end) infinite}
@@ -63,7 +93,7 @@ h1 em{font-style:italic;font-weight:600;color:var(--red)}
 .ln{display:inline-block}
 .lead{color:var(--concrete);font-size:14.5px;max-width:620px;margin-top:20px;text-wrap:pretty}
 
-.glass{background:rgba(240,240,242,.04);border:1px solid rgba(240,240,242,.1);border-radius:20px;
+.glass{background:var(--s1);border:1px solid var(--bd-soft);border-radius:20px;
   backdrop-filter:blur(14px) saturate(1.2);-webkit-backdrop-filter:blur(14px) saturate(1.2);
   box-shadow:inset 0 1px 0 rgba(255,255,255,.07), 0 24px 60px rgba(0,0,0,.4)}
 
@@ -84,7 +114,7 @@ h1 em{font-style:italic;font-weight:600;color:var(--red)}
   border-bottom:2px solid transparent;transition:all .25s;white-space:nowrap}
 .progress b{width:23px;height:23px;border-radius:50%;display:grid;place-items:center;flex:none;
   font-family:var(--mono);font-size:10px;font-weight:500;
-  background:rgba(240,240,242,.07);color:var(--concrete);border:1.5px solid rgba(240,240,242,.16);
+  background:var(--s2);color:var(--hint);border:1.5px solid var(--bd-soft);
   transition:all .25s}
 .progress span{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--concrete);transition:color .25s}
 .progress a:hover span{color:var(--paper)}
@@ -99,15 +129,22 @@ h1 em{font-style:italic;font-weight:600;color:var(--red)}
 .progress a.done span{color:var(--ok)}
 
 /* ---------- BƯỚC: nền sáng dần theo tầng để mắt bám được ---------- */
-.step{margin-top:40px;padding:0;overflow:hidden;
-  background:rgba(240,240,242,.055);           /* sáng hơn nền trang rõ rệt */
-  border:1px solid rgba(240,240,242,.16)}
-.step-head{display:flex;align-items:center;gap:18px;padding:22px 30px;
-  background:rgba(240,240,242,.05);            /* đầu bước sáng hơn thân bước */
-  border-bottom:1px solid rgba(240,240,242,.14);
-  border-left:3px solid var(--red)}
+/* Mỗi bước một màu nhấn riêng — đi tới đâu biết ngay đang ở phần nào,
+   thay vì năm khối đỏ giống hệt nhau. Cùng bộ màu với trang chủ. */
+.step{margin-top:40px;padding:0;overflow:hidden;border-radius:16px;
+  background:var(--s1);
+  border:1px solid var(--bd-soft);
+  --accent:var(--red)}
+.step:nth-of-type(2){--accent:var(--ice)}
+.step:nth-of-type(3){--accent:var(--violet)}
+.step:nth-of-type(4){--accent:var(--warn)}
+.step:nth-of-type(5){--accent:var(--ok)}
+.step-head{display:flex;align-items:center;gap:18px;padding:22px 28px;
+  background:var(--s2);
+  border-bottom:1px solid var(--bd-soft);
+  border-left:4px solid var(--accent)}
 .step-no{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;flex:none;
-  background:var(--red);color:var(--paper);font-family:var(--mono);font-size:13px;font-weight:500}
+  background:var(--accent);color:#0A0A10;font-family:var(--mono);font-size:13px;font-weight:600}
 .step-head h2{font-family:var(--disp);font-weight:750;font-stretch:108%;font-size:clamp(19px,3.2vw,27px);letter-spacing:-.02em;line-height:1.1}
 .step-head .sh-note{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;color:var(--concrete);text-transform:uppercase;margin-left:auto;flex:none;text-align:right}
 .step-body{padding:30px}
@@ -121,15 +158,15 @@ h1 em{font-style:italic;font-weight:600;color:var(--red)}
 .grid{display:grid;gap:22px 26px}
 @media(min-width:700px){.g2{grid-template-columns:1fr 1fr}.g3{grid-template-columns:1fr 1fr 1fr}.g21{grid-template-columns:2fr 1fr}}
 .f{display:grid;gap:7px;align-content:start}
-.f label{font-family:var(--mono);font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--paper);display:flex;gap:8px;align-items:baseline}
-.f .label-static{font-family:var(--mono);font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--paper);display:flex;gap:8px;align-items:baseline}
+.f label{font-family:var(--mono);font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--paper);display:flex;gap:8px;align-items:baseline;line-height:1.4}
+.f .label-static{font-family:var(--mono);font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--paper);display:flex;gap:8px;align-items:baseline;line-height:1.4}
 
 /* ---------- danh sách tên có thể thêm/xoá từng dòng ---------- */
 .name-list{display:flex;flex-direction:column;gap:8px}
 .name-row{display:flex;gap:8px;align-items:center}
 .name-row input{flex:1}
-.name-del{flex:none;width:38px;height:44px;border-radius:9px;background:rgba(240,240,242,.05);
-  border:1px solid rgba(240,240,242,.16);color:var(--concrete);cursor:pointer;font-size:17px;
+.name-del{flex:none;width:38px;height:44px;border-radius:9px;background:var(--s2);
+  border:1px solid var(--bd-soft);color:var(--hint);cursor:pointer;font-size:17px;
   display:grid;place-items:center;transition:all .2s;line-height:1}
 .name-del:hover{border-color:var(--red);color:var(--red);background:rgba(255,46,76,.07)}
 .name-row:only-child .name-del{opacity:.35;pointer-events:none}
@@ -137,8 +174,8 @@ h1 em{font-style:italic;font-weight:600;color:var(--red)}
 
 /* dòng tick bật/tắt một tuỳ chọn */
 .tick-row{display:flex;align-items:center;gap:11px;padding:12px 14px;border-radius:10px;cursor:pointer;
-  background:rgba(0,0,0,.32);border:1px solid rgba(240,240,242,.16);transition:all .2s}
-.tick-row:hover{border-color:rgba(240,240,242,.28)}
+  background:var(--field);border:1px solid var(--bd);transition:all .2s}
+.tick-row:hover{border-color:#7A7A8C;background:var(--field-hi)}
 .tick-row input{width:18px;height:18px;flex:none;accent-color:var(--red);cursor:pointer}
 .tick-row span{font-family:var(--body);font-size:14px;color:var(--paper)}
 
@@ -147,14 +184,14 @@ h1 em{font-style:italic;font-weight:600;color:var(--red)}
    ngay trong trình duyệt thì được — và đó mới là phần hữu ích: kiểm tra hộ
    người dùng ảnh có đúng 3000x3000 chưa, WAV có đúng tần số chưa, TRƯỚC khi
    họ gửi đi. File không đi đâu cả, chỉ đọc tại máy. */
-.filecheck{margin-top:10px;border:1px dashed rgba(240,240,242,.22);border-radius:11px;padding:13px 14px;
-  background:rgba(0,0,0,.22)}
-.filecheck-btn{display:inline-flex;align-items:center;gap:9px;background:rgba(240,240,242,.06);
-  border:1px solid rgba(240,240,242,.18);color:var(--paper);border-radius:100px;padding:9px 16px;
+.filecheck{margin-top:10px;border:1px dashed var(--bd);border-radius:11px;padding:13px 14px;
+  background:var(--s0)}
+.filecheck-btn{display:inline-flex;align-items:center;gap:9px;background:var(--s2);
+  border:1px solid var(--bd);color:var(--paper);border-radius:100px;padding:9px 16px;
   font-family:var(--body);font-size:12.5px;cursor:pointer;transition:all .2s}
 .filecheck-btn:hover{border-color:var(--ice);color:var(--ice)}
 .filecheck input[type=file]{display:none}
-.filecheck-note{font-family:var(--body);font-size:11.5px;color:#9EA0AA;line-height:1.5;margin-top:8px}
+.filecheck-note{font-family:var(--body);font-size:12px;color:var(--hint);line-height:1.5;margin-top:8px}
 .fc-result{margin-top:11px;display:none}
 .fc-result.on{display:block}
 .fc-row{display:flex;align-items:flex-start;gap:9px;font-family:var(--body);font-size:12.5px;
@@ -168,77 +205,86 @@ h1 em{font-style:italic;font-weight:600;color:var(--red)}
   border:1px solid rgba(240,240,242,.18);flex:none}
 .fc-preview audio{width:100%;max-width:320px;height:36px}
 .f label .req{color:var(--red)}
-.f .hint{font-family:var(--body);font-size:12px;letter-spacing:0;text-transform:none;color:#9EA0AA;line-height:1.55;margin-top:-2px}
+.f .hint{font-family:var(--body);font-size:12.5px;letter-spacing:0;text-transform:none;color:var(--hint);line-height:1.6;margin-top:-1px}
 .f input,.f select,.f textarea{
-  background:rgba(0,0,0,.5);border:1px solid rgba(240,240,242,.2);border-radius:10px;
+  background:var(--field);border:1px solid var(--bd);border-radius:10px;
   color:var(--paper);font-family:var(--body);font-weight:400;font-size:15px;padding:13px 15px;
-  transition:border-color .2s,box-shadow .2s,background .2s;appearance:none;width:100%;
+  transition:border-color .18s,box-shadow .18s,background .18s;appearance:none;width:100%;
 }
-.f input:hover,.f select:hover,.f textarea:hover{border-color:rgba(240,240,242,.34)}
+.f input:hover,.f select:hover,.f textarea:hover{border-color:#7A7A8C;background:var(--field-hi)}
 .f select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238E8E98' stroke-width='1.6' fill='none'/%3E%3C/svg%3E");
   background-repeat:no-repeat;background-position:right 14px center;padding-right:36px}
 .f select option{background:#12121a;color:var(--paper)}
 
 /* ---------- khối chọn lãnh thổ ---------- */
-.terr-box{background:rgba(0,0,0,.32);border:1px solid rgba(240,240,242,.18);border-radius:12px;overflow:hidden}
+.terr-box{background:var(--s0);border:1px solid var(--bd);border-radius:12px;overflow:hidden}
 .terr-box.bad{border-color:var(--red)}
 /* Dòng "toàn thế giới" tách hẳn bằng nền sáng hơn, để thấy rõ đây là công tắc
    chính chứ không phải một quốc gia trong danh sách. */
 .terr-all{display:flex;align-items:center;gap:13px;padding:15px 16px;cursor:pointer;
-  background:rgba(240,240,242,.05);transition:background .2s}
-.terr-all:hover{background:rgba(240,240,242,.08)}
+  background:var(--s2);transition:background .2s}
+.terr-all:hover{background:var(--s3)}
 .terr-all input{width:19px;height:19px;flex:none;accent-color:var(--ok);cursor:pointer}
 .terr-all span{font-family:var(--body);font-size:14.5px;color:var(--paper);font-weight:400}
-.terr-picker{border-top:1px solid rgba(240,240,242,.14);padding:14px 16px 16px}
+.terr-picker{border-top:1px solid var(--bd-soft);padding:14px 16px 16px}
 .terr-tools{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
-.terr-search{flex:1;min-width:150px;background:rgba(0,0,0,.45);border:1px solid rgba(240,240,242,.16);
+.terr-search{flex:1;min-width:150px;background:var(--field);border:1px solid var(--bd);
   border-radius:8px;color:var(--paper);font-family:var(--body);font-size:13.5px;padding:10px 12px}
+.terr-search::placeholder{color:var(--placeholder)}
 .terr-search:focus{outline:none;border-color:var(--red)}
-.terr-mini{background:rgba(240,240,242,.06);border:1px solid rgba(240,240,242,.16);color:var(--concrete);
+.terr-mini{background:var(--s2);border:1px solid var(--bd-soft);color:var(--hint);
   border-radius:100px;padding:8px 14px;font-family:var(--body);font-size:12.5px;cursor:pointer;transition:all .2s}
-.terr-mini:hover{color:var(--paper);border-color:rgba(240,240,242,.3)}
+.terr-mini:hover{color:var(--paper);border-color:var(--bd);background:var(--s3)}
 
 /* Nhóm theo khu vực — không ai muốn cuộn qua 125 ô lẻ để tìm vài nước */
 .terr-scroll{max-height:340px;overflow-y:auto;padding-right:4px}
 .terr-region{margin-bottom:14px}
 .terr-region:last-child{margin-bottom:0}
-.terr-region-head{display:flex;align-items:center;gap:11px;padding:9px 10px;border-radius:8px;
-  background:rgba(240,240,242,.04);cursor:pointer;margin-bottom:6px}
-.terr-region-head:hover{background:rgba(240,240,242,.07)}
+.terr-region-head{display:flex;align-items:center;gap:11px;padding:10px 11px;border-radius:8px;
+  background:var(--s2);cursor:pointer;margin-bottom:6px;border:1px solid var(--bd-soft)}
+.terr-region-head:hover{background:var(--s3);border-color:var(--bd)}
 .terr-region-head input{width:16px;height:16px;flex:none;accent-color:var(--red);cursor:pointer}
 .terr-region-head b{font-family:var(--body);font-size:13px;font-weight:500;color:var(--paper);flex:1}
 .terr-region-head em{font-family:var(--mono);font-size:10px;font-style:normal;color:var(--concrete)}
 .terr-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:1px 10px;padding:0 4px}
 .terr-grid label{display:flex;align-items:center;gap:9px;padding:7px;border-radius:6px;cursor:pointer;transition:background .15s}
-.terr-grid label:hover{background:rgba(240,240,242,.05)}
+.terr-grid label:hover{background:var(--s2)}
 .terr-grid input{width:15px;height:15px;flex:none;accent-color:var(--red);cursor:pointer}
-.terr-grid span{font-family:var(--body);font-size:13px;color:var(--concrete);
+.terr-grid span{font-family:var(--body);font-size:13px;color:var(--hint);
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .terr-count{font-family:var(--body);font-size:12.5px;color:var(--ok);padding:12px 4px 0;
-  border-top:1px solid rgba(240,240,242,.1);margin-top:12px}
+  border-top:1px solid var(--bd-soft);margin-top:12px}
 .f textarea{min-height:92px;resize:vertical;line-height:1.65}
-.f input::placeholder,.f textarea::placeholder{color:rgba(240,240,242,.2)}
-.f input:focus,.f select:focus,.f textarea:focus{outline:none;border-color:var(--red);box-shadow:0 0 0 3px rgba(255,46,76,.14)}
+.f input::placeholder,.f textarea::placeholder{color:var(--placeholder)}
+/* Focus dùng màu nhấn của bước đang đứng, viền dày lên để thấy rõ đang ở ô nào */
+.f input:focus,.f select:focus,.f textarea:focus{outline:none;border-color:var(--accent);
+  box-shadow:0 0 0 3px color-mix(in srgb, var(--accent) 26%, transparent);background:var(--field-hi)}
 .f input.bad,.f select.bad,.f textarea.bad{border-color:var(--red);background:rgba(255,46,76,.07)}
 .terr-box.bad{border-color:var(--red);background:rgba(255,46,76,.05)}
 .f input[type=number]{-moz-appearance:textfield}
-.chk{display:flex;gap:12px;align-items:flex-start;padding:12px 0;border-bottom:1px dashed rgba(240,240,242,.1);font-size:13.5px;color:var(--concrete);cursor:pointer}
-.chk:last-of-type{border-bottom:0}
-.chk input{width:18px;height:18px;flex:none;margin-top:3px;accent-color:var(--red);cursor:pointer}
+/* Cam kết quyền: mỗi dòng thành một ô riêng có nền, dễ tick và dễ đọc hơn
+   danh sách gạch chân liền nhau — 8 dòng chữ dài xếp sát nhau rất mỏi mắt. */
+.chk{display:flex;gap:13px;align-items:flex-start;padding:14px 16px;margin-bottom:8px;
+  background:var(--s0);border:1px solid var(--bd-soft);border-radius:10px;
+  font-size:13.5px;color:var(--hint);cursor:pointer;line-height:1.65;transition:all .18s}
+.chk:hover{border-color:var(--bd);background:var(--field-hi)}
+.chk:has(input:checked){border-color:rgba(78,216,138,.45);background:rgba(78,216,138,.06)}
+
+.chk input{width:18px;height:18px;flex:none;margin-top:1px;accent-color:var(--ok);cursor:pointer}
 .chk b{color:var(--paper);font-weight:500}
 
 /* TRACK CARD */
-.track{border:1px solid rgba(240,240,242,.18);border-left:3px solid var(--ice);border-radius:14px;
-  padding:24px;margin-bottom:18px;background:rgba(0,0,0,.32);position:relative}
-.track:focus-within{border-left-color:var(--red)}
+.track{border:1px solid var(--bd-soft);border-left:4px solid var(--accent);border-radius:14px;
+  padding:24px;margin-bottom:18px;background:var(--s0);position:relative;transition:border-color .2s}
+.track:focus-within{border-color:var(--bd)}
 .track-head{display:flex;align-items:center;gap:14px;margin-bottom:20px}
 .track-no{font-family:var(--disp);font-weight:800;font-stretch:114%;font-size:34px;letter-spacing:-.03em;color:var(--red);line-height:1}
 .track-title{font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--concrete);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.track-del{background:none;border:1px solid rgba(240,240,242,.15);color:var(--concrete);border-radius:100px;padding:7px 14px;
+.track-del{background:var(--s2);border:1px solid var(--bd-soft);color:var(--hint);border-radius:100px;padding:7px 14px;
   font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;cursor:pointer;transition:all .2s;flex:none}
 .track-del:hover{border-color:var(--red);color:var(--red)}
 .sub-h{font-family:var(--mono);font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--concrete);
-  margin:26px 0 14px;padding-top:16px;border-top:1px solid rgba(240,240,242,.09);display:flex;gap:10px;align-items:center}
+  margin:26px 0 14px;padding-top:16px;border-top:1px solid var(--bd-soft);display:flex;gap:10px;align-items:center}
 .sub-h::before{content:"";width:16px;height:1px;background:var(--red)}
 .split-bar{display:flex;align-items:center;gap:12px;margin-top:10px;font-family:var(--mono);font-size:11px;letter-spacing:.08em}
 .split-bar .track-meter{flex:1;height:5px;border-radius:100px;background:rgba(240,240,242,.1);overflow:hidden}
@@ -249,12 +295,12 @@ h1 em{font-style:italic;font-weight:600;color:var(--red)}
 .writer-row{display:grid;gap:12px;grid-template-columns:1fr;margin-bottom:12px}
 @media(min-width:700px){.writer-row{grid-template-columns:1.5fr 1.1fr .9fr .6fr auto;align-items:end}}
 @media(min-width:700px) and (max-width:1000px){.writer-row{grid-template-columns:1fr 1fr;align-items:end}}
-.mini-btn{background:rgba(240,240,242,.05);border:1px solid rgba(240,240,242,.15);color:var(--paper);border-radius:100px;
+.mini-btn{background:var(--s2);border:1px solid var(--bd-soft);color:var(--paper);border-radius:100px;
   padding:11px 18px;font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;cursor:pointer;transition:all .25s}
 .mini-btn:hover{border-color:var(--line-2);background:rgba(240,240,242,.1)}
 .mini-btn.danger:hover{border-color:var(--red);color:var(--red)}
 
-.add-track{width:100%;margin-top:6px;padding:18px;border:1px dashed rgba(240,240,242,.2);border-radius:14px;background:none;
+.add-track{width:100%;margin-top:6px;padding:18px;border:1px dashed var(--bd);border-radius:14px;background:var(--s0);
   color:var(--concrete);font-family:var(--mono);font-size:11.5px;letter-spacing:.16em;text-transform:uppercase;cursor:pointer;transition:all .25s}
 .add-track:hover{border-color:var(--red);color:var(--red);background:rgba(255,46,76,.05)}
 
@@ -262,11 +308,11 @@ h1 em{font-style:italic;font-weight:600;color:var(--red)}
 .actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:26px}
 .btn{display:inline-flex;align-items:center;gap:12px;border-radius:100px;padding:17px 28px;cursor:pointer;
   font-family:var(--mono);font-size:11.5px;letter-spacing:.16em;text-transform:uppercase;transition:all .3s;
-  background:rgba(240,240,242,.05);border:1px solid var(--line-2);color:var(--paper);backdrop-filter:blur(10px)}
-.btn:hover{background:rgba(240,240,242,.12)}
+  background:var(--s2);border:1px solid var(--bd);color:var(--paper)}
+.btn:hover{background:var(--s3);border-color:#7A7A8C}
 .btn.primary{background:var(--red);border-color:var(--red)}
 .btn.primary:hover{box-shadow:0 12px 40px rgba(255,46,76,.35);background:#ff4560}
-.note{font-family:var(--body);font-size:13px;letter-spacing:0;color:#9EA0AA;line-height:1.7;margin-top:18px}
+.note{font-family:var(--body);font-size:13.5px;letter-spacing:0;color:var(--hint);line-height:1.75;margin-top:18px}
 .msg{margin-top:20px;padding:16px 18px;border-radius:12px;font-size:13.5px;display:none}
 .msg.show{display:block}
 .msg.err{background:rgba(255,46,76,.1);border:1px solid rgba(255,46,76,.4);color:#ffb3bf}
@@ -276,7 +322,7 @@ h1 em{font-style:italic;font-weight:600;color:var(--red)}
 
 /* checklist */
 .spec{width:100%;border-collapse:collapse;font-size:13px;margin-top:6px}
-.spec td{padding:9px 0;border-bottom:1px solid rgba(240,240,242,.09);color:var(--concrete);vertical-align:top}
+.spec td{padding:11px 0;border-bottom:1px solid var(--bd-soft);color:var(--hint);vertical-align:top;line-height:1.6}
 .spec td:first-child{color:var(--paper);width:40%;padding-right:16px;font-weight:400}
 .spec tr:last-child td{border-bottom:0}
 
@@ -590,7 +636,7 @@ l-1242 0 -30 29 -29 29 0 745 c0 768 1 796 40 817 12 6 374 10 984 10 929 0
             <option>16:00</option><option>17:00</option><option>18:00</option><option>19:00</option>
             <option>20:00</option><option>21:00</option><option>22:00</option><option>23:00</option>
           </select>
-          <span class="hint">Không tích thì mặc định lên sóng đầu ngày phát hành. Theo giờ Việt Nam. Nhiều nhà phát hành (như Believe) chỉ cho đặt giờ tròn — muốn 19h30 thì phải sửa tay trong hệ thống của họ, nên danh sách chỉ để giờ tròn.</span>
+          <span class="hint">Không tích thì mặc định lên sóng đầu ngày phát hành. Theo giờ Việt Nam. Phần lớn hệ thống phân phối chỉ nhận giờ tròn, nên danh sách chỉ để giờ tròn — cần phút lẻ thì ghi vào phần ghi chú, Haustek xử lý tay.</span>
         </div>
       </div>
 
@@ -1282,7 +1328,7 @@ const TR = {
   "Nhạc này đã từng phát hành trước đây":"This music has been released before",
   "Ngày mở cho người nghe lưu trước. Bỏ trống nếu không làm pre-save.":"When listeners can start pre-saving. Leave empty if you are not doing a pre-save.",
   "Gõ theo thứ tự ngày / tháng / năm — máy tự chèn dấu gạch. Nên chọn cách hôm nay ít nhất 21 ngày để kịp pitch playlist.":"Type day / month / year in that order — slashes are added automatically. Aim for at least 21 days from today to leave room for playlist pitching.",
-  "Không tích thì mặc định lên sóng đầu ngày phát hành. Theo giờ Việt Nam. Nhiều nhà phát hành (như Believe) chỉ cho đặt giờ tròn — muốn 19h30 thì phải sửa tay trong hệ thống của họ, nên danh sách chỉ để giờ tròn.":"Leave unticked and it goes live at the start of the release day. Vietnam time. Many distributors (like Believe) only allow whole hours — for 19:30 you would have to adjust it manually in their system, so this list only offers whole hours.",
+  "Không tích thì mặc định lên sóng đầu ngày phát hành. Theo giờ Việt Nam. Phần lớn hệ thống phân phối chỉ nhận giờ tròn, nên danh sách chỉ để giờ tròn — cần phút lẻ thì ghi vào phần ghi chú, Haustek xử lý tay.":"Leave unticked and it goes live at the start of the release day. Vietnam time. Most distribution systems only accept whole hours, so this list only offers whole hours — if you need an odd time, note it in the comments and Haustek will handle it manually.",
   "Kiểm tra hộ bạn kích thước, tỉ lệ, định dạng và dung lượng trước khi gửi. Ảnh chỉ được đọc ngay trên máy bạn, không tải lên đâu cả — vẫn phải dán link ở trên để Haustek nhận file.":"Checks the dimensions, aspect ratio, format and file size for you before you send. The image is only read on your own machine, never uploaded — you still need to paste the link above so Haustek can get the file.",
   "Kiểm tra hộ bạn định dạng, tần số lấy mẫu và độ dài, đồng thời nghe thử tại chỗ. File chỉ đọc trên máy bạn, không tải lên đâu cả.":"Checks the format, sample rate and duration for you, and lets you listen right here. The file is only read on your machine, never uploaded.",
   "Chọn file nhạc để tự kiểm tra":"Pick your audio file to self-check",
@@ -1555,8 +1601,6 @@ const TR = {
     "Worldwide is the default. Uncheck \"Worldwide\" if you only want to release in specific countries.",
   "Giờ phát hành (nếu cần)":"Release time (optional)",
   "Không cần giờ cụ thể":"No specific time needed",
-  "Theo giờ Việt Nam. Nhiều nhà phát hành (như Believe) chỉ cho chọn giờ tròn, không có phút lẻ — nên danh sách chỉ để giờ tròn cho chắc.":
-    "Vietnam time. Many distributors (like Believe) only allow on-the-hour releases, no minutes — so this list only offers whole hours to be safe.",
   "Đã bỏ tích \"Toàn thế giới\" nhưng chưa chọn quốc gia nào. Tích lại \"Toàn thế giới\" hoặc chọn ít nhất 1 quốc gia.":
     "You unchecked \"Worldwide\" but haven't picked any country yet. Recheck \"Worldwide\" or select at least one country.",
   "Chỉ Việt Nam":"Vietnam only",
@@ -1604,11 +1648,11 @@ const TR = {
   "Link file WAV":"WAV file link",
   "Nhớ mở quyền cho bất kỳ ai có link.":"Remember to allow access to anyone with the link.",
   "Giây bắt đầu đoạn preview":"Preview start time",
-  "Ghi mốc bắt đầu đoạn hay nhất của bài, dùng cho TikTok và trang xem trước. Hầu hết nhà phát hành mặc định lấy":
-    "Mark where the best part of the song starts — used for TikTok and preview players. Most distributors default to taking",
+  "Ghi mốc bắt đầu đoạn hay nhất của bài, dùng cho TikTok và trang xem trước. Thông thường hệ thống lấy":
+    "Mark where the best part of the song starts — used for TikTok and preview players. Systems typically take",
   "giây":"seconds",
-  "tính từ mốc này (riêng ADA cho chọn độ dài) — nên chọn mốc sao cho 60 giây sau đó là phần đắt nhất của bài.":
-    "from this point (ADA lets you choose the length) — so pick a point where the following 60 seconds is the strongest part of the track.",
+  "tính từ mốc này — nên chọn mốc sao cho 60 giây sau đó là phần đắt nhất của bài.":
+    "from this point — so pick a point where the following 60 seconds is the strongest part of the track.",
   "Đoạn preview bắt đầu từ phút giây nào":"Preview starts at",
   "Tác quyền — ghi họ tên thật, không ghi nghệ danh":"Songwriting — use real legal names, not stage names",
   "Vai trò":"Role",
@@ -1866,7 +1910,7 @@ function trackHTML(n){
       <div class="f">
         <label>Đoạn preview bắt đầu từ phút giây nào</label>
         <input type="text" data-k="preview" placeholder="1:12">
-        <span class="hint">Ghi mốc bắt đầu đoạn hay nhất của bài, dùng cho TikTok và trang xem trước. Hầu hết nhà phát hành mặc định lấy <b style="color:var(--paper);font-weight:500">60 giây</b> tính từ mốc này (riêng ADA cho chọn độ dài) — nên chọn mốc sao cho 60 giây sau đó là phần đắt nhất của bài.</span>
+        <span class="hint">Ghi mốc bắt đầu đoạn hay nhất của bài, dùng cho TikTok và trang xem trước. Thông thường hệ thống lấy <b>60 giây</b> tính từ mốc này — nên chọn mốc sao cho 60 giây sau đó là phần đắt nhất của bài.</span>
       </div>
     </div>
 
