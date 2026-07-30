@@ -117,7 +117,7 @@ h1 em{font-style:italic;font-weight:600;color:var(--amber)}
   letter-spacing:.16em;text-transform:uppercase;color:var(--paper);padding:6px 11px;border-radius:100px;
   background:rgba(7,7,9,.72);backdrop-filter:blur(8px);border:1px solid rgba(240,240,242,.16)}
 
-/* ---------- trình phát Spotify: chỉ tải khi người xem bấm ---------- */
+/* ---------- nút phát trên card: chỉ mở modal, không nhúng gì vào ô vuông ---------- */
 .shot .play{position:absolute;inset:0;z-index:3;border:0;background:none;cursor:pointer;
   display:grid;place-items:center;padding:0}
 .shot .play .btn{width:56px;height:56px;border-radius:50%;display:grid;place-items:center;
@@ -125,16 +125,34 @@ h1 em{font-style:italic;font-weight:600;color:var(--amber)}
   transition:all .3s;transform:translateY(4px);opacity:.92}
 .card:hover .play .btn{background:var(--spotify);border-color:var(--spotify);transform:translateY(0);opacity:1}
 .shot .play svg{width:19px;height:19px;fill:var(--paper);margin-left:3px}
-.shot.playing .play,.shot.playing .fallback,.shot.playing img,.shot.playing .tag{display:none}
-.shot iframe{position:absolute;inset:0;width:100%;height:100%;border:0;border-radius:0}
-.shot .loading{position:absolute;inset:0;display:grid;place-items:center;z-index:4;
-  font-family:var(--mono);font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--concrete);
-  background:#0a0a11}
+
+/* ---------- modal trình phát ----------
+   Trình phát đầy đủ của Spotify (ảnh bìa lớn, nút Save, nút "…") được chính
+   Spotify thiết kế cho khung cao khoảng 352px. Ô vuông của card chỉ khoảng
+   250–300px — rơi đúng vào khoảng lưng chừng khiến Spotify tự bẻ bố cục nội
+   bộ và bị cắt góc. Vì đây là nội dung trong iframe của Spotify (nguồn khác
+   miền), mình không chỉnh CSS xuyên vào bên trong được. Cách chắc ăn: bật
+   trình phát ra giữa màn hình, cấp đúng khung 352px mà Spotify cần, để nó
+   tự vẽ trọn vẹn không bị bó hẹp — đồng thời card trong lưới không bị đổi
+   hình dạng, không kéo lệch chiều cao các card cùng hàng. */
+.sp-modal{position:fixed;inset:0;z-index:200;display:none;align-items:center;justify-content:center;
+  padding:24px;background:rgba(6,6,8,.78);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+.sp-modal.on{display:flex}
+.sp-box{position:relative;width:100%;max-width:360px;border-radius:18px;overflow:hidden;
+  background:#0b0b11;border:1px solid rgba(240,240,242,.14);box-shadow:0 30px 80px rgba(0,0,0,.55)}
+.sp-box iframe{display:block;width:100%;height:352px;border:0}
+.sp-close{position:absolute;top:10px;right:10px;z-index:2;width:34px;height:34px;border-radius:50%;
+  display:grid;place-items:center;background:rgba(7,7,9,.7);border:1px solid rgba(240,240,242,.22);
+  color:var(--paper);cursor:pointer;backdrop-filter:blur(8px);transition:all .2s}
+.sp-close:hover{background:var(--red);border-color:var(--red)}
+.sp-loading{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  font-family:var(--mono);font-size:10.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--concrete)}
 
 /* ---------- thanh sắp xếp ---------- */
 .sortbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;padding:26px var(--gut) 0}
 .sortbar .lbl{font-family:var(--mono);font-size:10px;letter-spacing:.2em;text-transform:uppercase;
   color:var(--concrete);margin-right:6px}
+
 
 .body{padding:18px 18px 20px;display:flex;flex-direction:column;gap:12px;flex:1}
 /* Tên có khi 1 dòng (Qinie), có khi 2 dòng (HƯƠNGMYBÔNG ở màn hình hẹp).
@@ -357,6 +375,16 @@ l-1242 0 -30 29 -29 29 0 745 c0 768 1 796 40 817 12 6 374 10 984 10 929 0
 <div class="filters" id="filters"></div>
 <div class="sortbar" id="sortbar"></div>
 <div class="grid" id="grid"></div>
+
+<!-- Modal trình phát — một cái duy nhất, tái dùng cho mọi card -->
+<div class="sp-modal" id="spModal" aria-hidden="true">
+  <div class="sp-box" role="dialog" aria-modal="true" aria-label="Trình phát Spotify">
+    <button class="sp-close" id="spClose" aria-label="Đóng" type="button">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3"><path d="M6 6l12 12M18 6L6 18"/></svg>
+    </button>
+    <div id="spSlot"></div>
+  </div>
+</div>
 
 <div class="tail">
   <p data-i18n="tail">Cùng nhiều producer, songwriter, DJ, VJ và vocalist khác chưa kể hết ở đây</p>
@@ -612,29 +640,46 @@ sortEl.addEventListener('click',e=>{
   renderFilters(); renderGrid();
 });
 
-/* ---------- nạp trình phát Spotify khi người xem bấm ----------
+/* ---------- mở trình phát Spotify trong modal khi người xem bấm ----------
    Cố ý KHÔNG nhúng sẵn 15 iframe lúc tải trang. Hai lý do:
    1. Mỗi iframe là một kết nối tới máy chủ Spotify kèm cookie của họ.
       Chính sách cookie của Haustek cam kết không có cookie bên thứ ba khi
       người dùng chưa chủ động đồng ý — nhúng sẵn là phá cam kết đó.
-   2. 15 iframe cùng lúc làm trang nặng và chậm hẳn trên mạng di động. */
+   2. 15 iframe cùng lúc làm trang nặng và chậm hẳn trên mạng di động.
+
+   Trình phát mở giữa màn hình thay vì nhúng trong ô vuông của card, vì
+   Spotify thiết kế trình phát đầy đủ cho khung cao 352px — nhúng vào ô
+   vuông ~250-300px của card khiến nó tự bẻ bố cục và bị cắt góc. Cách này
+   vừa hiển thị trọn vẹn, vừa không làm card đổi hình dạng giữa lưới. */
+const spModal=document.getElementById('spModal');
+const spSlot=document.getElementById('spSlot');
+const spClose=document.getElementById('spClose');
+
+function openPlayer(id,kind){
+  const d=I18N[lang];
+  spSlot.innerHTML=`<div class="sp-loading">${d.loading}</div>`;
+  const fr=document.createElement('iframe');
+  fr.src=`https://open.spotify.com/embed/${kind==='album'?'album':'track'}/${id}?utm_source=generator&theme=0`;
+  fr.allow='autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture';
+  fr.title='Spotify';
+  fr.addEventListener('load',()=>{const l=spSlot.querySelector('.sp-loading');if(l)l.remove();});
+  spSlot.appendChild(fr);
+  spModal.classList.add('on');
+  spModal.setAttribute('aria-hidden','false');
+  spClose.focus();
+}
+function closePlayer(){
+  spModal.classList.remove('on');
+  spModal.setAttribute('aria-hidden','true');
+  spSlot.innerHTML='';   /* gỡ hẳn iframe — ngừng phát và ngừng mọi kết nối tới Spotify */
+}
+spClose.addEventListener('click',closePlayer);
+spModal.addEventListener('click',e=>{ if(e.target===spModal) closePlayer(); });
+document.addEventListener('keydown',e=>{ if(e.key==='Escape' && spModal.classList.contains('on')) closePlayer(); });
+
 gridEl.addEventListener('click',e=>{
   const btn=e.target.closest('.play'); if(!btn)return;
-  const shot=btn.closest('.shot');
-  if(shot.classList.contains('playing'))return;
-
-  const d=I18N[lang];
-  shot.insertAdjacentHTML('beforeend',`<div class="loading">${d.loading}</div>`);
-  shot.classList.add('playing');
-
-  const kind=btn.dataset.kind==='album'?'album':'track';
-  const fr=document.createElement('iframe');
-  fr.src=`https://open.spotify.com/embed/${kind}/${btn.dataset.id}?utm_source=generator&theme=0`;
-  fr.allow='autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture';
-  fr.loading='lazy';
-  fr.title='Spotify';
-  fr.addEventListener('load',()=>{const l=shot.querySelector('.loading');if(l)l.remove();});
-  shot.appendChild(fr);
+  openPlayer(btn.dataset.id, btn.dataset.kind);
 });
 
 /* hiện dần khi cuộn tới */
