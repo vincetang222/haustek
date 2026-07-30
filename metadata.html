@@ -176,7 +176,7 @@ h1 em{font-style:italic;font-weight:600;color:var(--red)}
 .tick-row{display:flex;align-items:center;gap:11px;padding:12px 14px;border-radius:10px;cursor:pointer;
   background:var(--field);border:1px solid var(--bd);transition:all .2s}
 .tick-row:hover{border-color:#7A7A8C;background:var(--field-hi)}
-.tick-row input{width:18px;height:18px;flex:none;accent-color:var(--red);cursor:pointer}
+.tick-row input[type=checkbox]{width:18px;height:18px;flex:none;accent-color:var(--red);cursor:pointer}
 .tick-row span{font-family:var(--body);font-size:14px;color:var(--paper)}
 
 /* ---------- khối tự kiểm tra file tại máy ----------
@@ -210,6 +210,17 @@ h1 em{font-style:italic;font-weight:600;color:var(--red)}
   background:var(--field);border:1px solid var(--bd);border-radius:10px;
   color:var(--paper);font-family:var(--body);font-weight:400;font-size:15px;padding:13px 15px;
   transition:border-color .18s,box-shadow .18s,background .18s;appearance:none;width:100%;
+}
+/* Quy tắc ngay trên viết cho ô nhập chữ, nhưng .f input khớp cả checkbox nằm
+   trong .f — appearance:none xoá mất dấu tích của trình duyệt (và làm
+   accent-color vô hiệu), còn padding/nền/viền bo biến ô tick thành khối
+   chữ nhật. Trả lại hình dạng gốc ở đây.
+   Cố tình KHÔNG đặt width/height: kích thước do từng khối tự quyết
+   (.tick-row 18px, .terr-all 19px, .terr-region-head 16px, .terr-grid 15px) —
+   đặt ở đây sẽ đè lên chúng vì độ ưu tiên cao hơn. */
+.f input[type=checkbox]{
+  appearance:auto;-webkit-appearance:auto;
+  padding:0;border:0;border-radius:0;background:none;
 }
 .f input:hover,.f select:hover,.f textarea:hover{border-color:#7A7A8C;background:var(--field-hi)}
 .f select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238E8E98' stroke-width='1.6' fill='none'/%3E%3C/svg%3E");
