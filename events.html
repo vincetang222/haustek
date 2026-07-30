@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sự kiện — Haustek</title>
+<meta name="description" content="Những đêm mà Haustek đứng sau âm thanh — từ club nights ở Việt Nam đến chuỗi livestream quốc tế United We Stream Asia.">
+<link rel="canonical" href="https://haustek-group.com/events">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png">
+<link rel="alternate icon" href="/favicon.ico">
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="manifest" href="/site.webmanifest">
+<meta name="theme-color" content="#070709">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Haustek">
+<meta property="og:title" content="Sự kiện — Haustek">
+<meta property="og:url" content="https://haustek-group.com/events">
+<meta property="og:locale" content="vi_VN">
+<meta name="twitter:card" content="summary_large_image">
+<meta property="og:image" content="https://haustek-group.com/og-image.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:ital,wdth,wght@0,62..125,300..900;1,62..125,300..900&family=Be+Vietnam+Pro:wght@300;400;500&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<style>
+:root{
+  --ink:#070709;--line:rgba(240,240,242,.12);--line-2:rgba(240,240,242,.22);
+  --concrete:#8E8E98;--paper:#F0F0F2;--red:#FF2E4C;--ice:#7FD6E8;--violet:#8B7BE8;--amber:#E8A33D;
+  --youtube:#FF0000;
+  --disp:'Archivo',sans-serif;--body:'Be Vietnam Pro',sans-serif;--mono:'IBM Plex Mono',monospace;
+  --gut:clamp(20px,4vw,64px);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:var(--ink);color:var(--paper);font-family:var(--body);font-weight:300;line-height:1.75;font-size:15px;overflow-x:hidden}
+body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:120;opacity:.05;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E")}
+::selection{background:var(--red);color:var(--paper)}
+a{color:inherit;text-decoration:none}
+img{max-width:100%;display:block}
+
+/* NAV — gọn, thống nhất với header mới của index */
+.nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;
+  gap:16px;padding:14px var(--gut);background:rgba(7,7,9,.6);backdrop-filter:blur(16px) saturate(1.3);
+  -webkit-backdrop-filter:blur(16px) saturate(1.3);border-bottom:1px solid rgba(240,240,242,.07)}
+.logo{display:flex;align-items:center;gap:10px}
+.logo .wordmark{height:12px;width:auto;color:var(--paper);display:block}
+.rec{width:7px;height:7px;border-radius:50%;background:var(--red);box-shadow:0 0 10px rgba(255,46,76,.8);animation:blink 1.6s steps(2,end) infinite}
+@keyframes blink{50%{opacity:.25}}
+.nav-right{display:flex;align-items:center;gap:14px}
+.lang-toggle{font-family:var(--mono);font-size:11px;letter-spacing:.1em;background:none;border:0;color:var(--concrete);
+  text-transform:uppercase;transition:color .2s;padding:6px 2px;cursor:pointer}
+.lang-toggle:hover{color:var(--paper)}
+.nav .back{font-family:var(--mono);font-size:11px;letter-spacing:.1em;color:var(--concrete);text-transform:uppercase}
+.nav .back:hover{color:var(--paper)}
+
+/* HERO */
+.hero{padding:128px var(--gut) 40px;position:relative;overflow:hidden}
+.aurora{position:absolute;inset:-30%;z-index:0;pointer-events:none;overflow:hidden;filter:blur(72px);opacity:.42}
+.aurora i{position:absolute;display:block;border-radius:50%;mix-blend-mode:screen;will-change:transform}
+.aurora i:nth-child(1){width:44vw;height:44vw;left:6%;top:4%;background:radial-gradient(circle,rgba(255,46,76,.5),transparent 66%);animation:d1 28s ease-in-out infinite}
+.aurora i:nth-child(2){width:50vw;height:50vw;right:-4%;top:18%;background:radial-gradient(circle,rgba(139,123,232,.42),transparent 66%);animation:d2 34s ease-in-out infinite}
+.aurora i:nth-child(3){width:36vw;height:36vw;left:38%;bottom:-10%;background:radial-gradient(circle,rgba(127,214,232,.4),transparent 66%);animation:d3 30s ease-in-out infinite}
+@keyframes d1{0%,100%{transform:translate3d(0,0,0) scale(1)}50%{transform:translate3d(12vw,6vh,0) scale(1.16)}}
+@keyframes d2{0%,100%{transform:translate3d(0,0,0) scale(1.1)}50%{transform:translate3d(-10vw,-8vh,0) scale(.92)}}
+@keyframes d3{0%,100%{transform:translate3d(0,0,0) scale(.96)}50%{transform:translate3d(8vw,-9vh,0) scale(1.2)}}
+.hero>*{position:relative;z-index:1}
+.kicker{font-family:var(--mono);font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:var(--concrete);
+  display:flex;gap:16px;align-items:center;margin-bottom:20px}
+.kicker i{font-style:normal;color:var(--red)}
+h1{font-family:var(--disp);font-weight:780;font-stretch:112%;font-size:clamp(34px,7.4vw,80px);line-height:1.0;
+  letter-spacing:-.032em;text-wrap:balance}
+h1 em{font-style:italic;font-weight:600;color:var(--red)}
+.ln{display:inline-block}
+.lead{color:var(--concrete);font-size:14.5px;max-width:600px;margin-top:20px;text-wrap:pretty}
+
+/* LƯỚI CARD */
+.grid{display:grid;gap:16px;padding:36px var(--gut) 90px;
+  grid-template-columns:repeat(auto-fill,minmax(min(100%,300px),1fr))}
+
+.card{position:relative;border-radius:18px;overflow:hidden;background:rgba(240,240,242,.04);
+  border:1px solid rgba(240,240,242,.11);transition:transform .35s cubic-bezier(.19,.8,.22,1),border-color .3s;
+  display:flex;flex-direction:column}
+.card:hover{transform:translateY(-5px);border-color:rgba(240,240,242,.26)}
+.card::after{content:"";position:absolute;left:0;right:0;top:0;height:2px;background:var(--red);
+  transform:scaleX(0);transform-origin:left;transition:transform .4s}
+.card:hover::after{transform:scaleX(1)}
+
+/* ảnh nền 16:9 — video có thumbnail lấy từ chính YouTube, chưa có thì rơi về khối chữ */
+.shot{position:relative;aspect-ratio:16/9;overflow:hidden;background:#0b0b12}
+.shot img{width:100%;height:100%;object-fit:cover;filter:contrast(1.04) brightness(.9);
+  transition:transform .6s cubic-bezier(.19,.8,.22,1)}
+.card:hover .shot img{transform:scale(1.05)}
+.shot .fallback{position:absolute;inset:0;display:flex;align-items:flex-end;padding:18px;overflow:hidden}
+.shot .fallback svg{position:absolute;inset:0;width:100%;height:100%;opacity:.55}
+.shot .fallback .yr{position:relative;font-family:var(--disp);font-weight:800;font-stretch:120%;
+  font-size:clamp(34px,7vw,54px);letter-spacing:-.03em;color:transparent;-webkit-text-stroke:1.3px rgba(240,240,242,.4)}
+.shot .tag{position:absolute;left:12px;top:12px;z-index:2;font-family:var(--mono);font-size:9px;
+  letter-spacing:.16em;text-transform:uppercase;color:var(--paper);padding:6px 11px;border-radius:100px;
+  background:rgba(7,7,9,.72);backdrop-filter:blur(8px);border:1px solid rgba(240,240,242,.16)}
+.shot .when{position:absolute;right:12px;top:12px;z-index:2;font-family:var(--mono);font-size:9px;
+  letter-spacing:.14em;text-transform:uppercase;color:var(--concrete);padding:6px 10px;border-radius:100px;
+  background:rgba(7,7,9,.6);backdrop-filter:blur(8px)}
+
+.shot .play{position:absolute;inset:0;z-index:3;border:0;background:none;cursor:pointer;
+  display:grid;place-items:center;padding:0}
+.shot .play .btn{width:56px;height:56px;border-radius:50%;display:grid;place-items:center;
+  background:rgba(7,7,9,.66);border:1px solid rgba(240,240,242,.28);backdrop-filter:blur(10px);
+  transition:all .3s;transform:translateY(4px);opacity:.92}
+.card:hover .play .btn{background:var(--youtube);border-color:var(--youtube);transform:translateY(0);opacity:1}
+.shot .play svg{width:19px;height:19px;fill:var(--paper);margin-left:3px}
+.shot .play.disabled{cursor:default}
+.shot .play.disabled .btn{opacity:.4;background:rgba(7,7,9,.5)}
+.card:hover .play.disabled .btn{background:rgba(7,7,9,.5);border-color:rgba(240,240,242,.28)}
+
+.body{padding:20px 20px 22px;display:flex;flex-direction:column;gap:10px;flex:1}
+.ename{font-family:var(--disp);font-weight:760;font-stretch:110%;font-size:clamp(19px,2.6vw,25px);
+  letter-spacing:-.022em;line-height:1.16;text-wrap:balance;
+  min-height:2.32em;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.emeta{font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--red)}
+.edesc{color:var(--concrete);font-size:13px;line-height:1.65;flex:1}
+
+/* modal video — 16:9 giữa màn hình, chỉ nạp khi bấm */
+.yt-modal{position:fixed;inset:0;z-index:200;display:none;align-items:center;justify-content:center;
+  padding:24px;background:rgba(6,6,8,.82);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+.yt-modal.on{display:flex}
+.yt-box{position:relative;width:100%;max-width:920px;border-radius:16px;overflow:hidden;
+  background:#0b0b11;border:1px solid rgba(240,240,242,.14);box-shadow:0 30px 90px rgba(0,0,0,.6)}
+.yt-box .frame{position:relative;aspect-ratio:16/9;width:100%}
+.yt-box iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+.yt-close{position:absolute;top:-46px;right:0;z-index:2;width:36px;height:36px;border-radius:50%;
+  display:grid;place-items:center;background:rgba(7,7,9,.7);border:1px solid rgba(240,240,242,.22);
+  color:var(--paper);cursor:pointer;backdrop-filter:blur(8px);transition:all .2s}
+.yt-close:hover{background:var(--red);border-color:var(--red)}
+.yt-loading{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  font-family:var(--mono);font-size:10.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--concrete)}
+
+.tail{padding:0 var(--gut) 100px;margin-top:-56px}
+.tail p{font-family:var(--disp);font-weight:500;font-stretch:105%;font-size:clamp(20px,3.2vw,32px);
+  line-height:1.35;letter-spacing:-.015em;max-width:30ch;text-wrap:pretty}
+.tail p a{color:var(--red)}
+.tail p a:hover{text-decoration:underline}
+
+footer{padding:40px var(--gut);border-top:1px solid var(--line);background:#060608;display:flex;
+  justify-content:space-between;gap:14px;flex-wrap:wrap;font-family:var(--mono);font-size:10.5px;
+  letter-spacing:.1em;color:var(--concrete);text-transform:uppercase}
+footer a:hover{color:var(--paper)}
+
+.rv{opacity:0;transform:translateY(24px);transition:opacity .7s ease,transform .7s ease}
+.rv.in{opacity:1;transform:none}
+
+a:focus-visible,button:focus-visible{outline:2px solid var(--red);outline-offset:3px}
+@media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}
+  .rv{opacity:1;transform:none}html{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+
+<header class="nav">
+  <a class="logo" href="/" aria-label="Haustek">
+    <span class="rec" aria-hidden="true"></span>
+    <svg class="wordmark" viewBox="0 0 1000 157.62" role="img" aria-label="Haustek"><g transform="translate(0,157.62) scale(0.032300,-0.032300)" fill="currentColor"><path d="M80 4793 c-19 -2 -45 -6 -57 -8 l-23 -5 0 -2344 0 -2344 83 -6 c45
+-3 198 -8 340 -11 247 -5 258 -4 277 15 20 20 20 34 20 752 l0 732 46 43 c30
+27 65 49 97 58 28 8 119 48 202 89 82 40 175 79 205 86 66 15 217 79 260 110
+32 23 191 87 298 121 35 11 77 29 95 39 18 10 56 28 86 40 30 11 65 29 78 40
+14 10 102 44 196 75 107 35 226 82 314 126 158 78 218 92 271 65 41 -21 56
+-75 48 -176 -3 -41 -7 -542 -8 -1112 -2 -1152 -6 -1077 64 -1096 18 -4 158 -6
+310 -3 248 5 279 8 295 24 17 17 18 127 21 2325 1 1269 0 2317 -3 2328 -10 41
+-45 45 -346 42 -295 -3 -315 -6 -336 -48 -5 -8 -8 -330 -9 -715 0 -385 -2
+-708 -2 -717 -4 -39 -60 -84 -125 -102 -36 -10 -93 -35 -128 -57 -35 -21 -68
+-39 -72 -39 -5 0 -41 -15 -80 -34 -40 -19 -102 -40 -139 -46 -46 -8 -81 -22
+-109 -42 -22 -16 -60 -35 -84 -42 -24 -8 -58 -25 -76 -39 -19 -14 -61 -33 -93
+-42 -32 -10 -80 -27 -105 -40 -25 -12 -68 -28 -96 -34 -27 -7 -68 -23 -91 -36
+-23 -13 -64 -33 -93 -44 -28 -12 -68 -32 -88 -45 -23 -16 -78 -34 -141 -47
+-73 -16 -120 -32 -160 -57 -31 -19 -73 -40 -93 -47 -20 -7 -51 -21 -69 -30
+-18 -10 -61 -25 -94 -35 -34 -10 -87 -28 -118 -39 -64 -24 -98 -18 -120 21
+-10 18 -12 248 -10 1165 l3 1142 -25 26 -25 25 -278 -2 c-153 0 -294 -3 -313
+-5z"/><path d="M6532 4789 c-27 -8 -38 -22 -72 -89 -22 -44 -40 -85 -40 -91 0 -7
+-34 -81 -75 -165 -68 -138 -105 -239 -105 -285 0 -9 -15 -39 -33 -65 -19 -27
+-40 -67 -47 -89 -7 -22 -25 -60 -40 -85 -15 -25 -36 -70 -45 -100 -10 -30 -30
+-80 -45 -110 -15 -30 -33 -73 -40 -95 -11 -37 -46 -100 -106 -197 -13 -20 -32
+-72 -43 -115 -23 -88 -80 -226 -117 -280 -13 -20 -32 -62 -41 -92 -8 -31 -26
+-76 -38 -101 -12 -25 -30 -70 -40 -100 -10 -30 -29 -69 -42 -86 -13 -17 -31
+-53 -40 -80 -9 -27 -29 -68 -44 -92 -15 -23 -30 -59 -34 -80 -4 -20 -19 -59
+-35 -87 -15 -27 -35 -74 -44 -104 -9 -30 -41 -99 -71 -154 -31 -54 -71 -143
+-89 -196 -46 -134 -83 -217 -121 -272 -18 -26 -37 -68 -44 -94 -7 -26 -23 -69
+-36 -95 -13 -26 -29 -69 -36 -96 -6 -27 -21 -65 -32 -84 -60 -103 -127 -247
+-137 -295 -6 -30 -24 -78 -39 -107 -15 -29 -34 -69 -41 -88 -7 -19 -26 -53
+-42 -75 -25 -36 -43 -82 -114 -289 -13 -38 -30 -76 -38 -85 -22 -25 -66 -118
+-66 -140 0 -11 7 -27 16 -36 15 -15 52 -16 358 -13 l341 3 65 28 c137 59 311
+127 324 127 8 0 79 33 158 74 86 44 167 79 203 86 60 12 223 80 300 125 23 13
+70 31 105 40 35 9 80 25 99 35 20 10 56 23 81 29 25 7 113 45 196 86 84 41
+183 83 221 93 38 11 91 31 118 44 28 14 66 31 85 38 19 8 51 24 70 37 20 12
+67 33 105 46 39 14 88 33 110 44 22 11 66 28 97 37 32 9 72 25 90 35 18 10 51
+24 73 31 22 7 65 28 97 47 62 38 157 55 195 34 27 -14 89 -125 124 -221 67
+-186 91 -243 130 -322 23 -45 50 -94 59 -108 10 -14 26 -55 35 -90 9 -35 23
+-76 31 -92 8 -15 28 -66 45 -114 23 -63 43 -98 73 -129 l41 -42 330 -6 c194
+-3 336 -2 346 4 29 15 33 48 10 78 -46 58 -55 75 -67 141 -14 72 -91 246 -129
+292 -13 15 -28 51 -35 80 -7 29 -25 76 -40 103 -15 28 -34 75 -43 105 -9 30
+-27 70 -41 88 -13 18 -29 53 -35 77 -6 25 -25 66 -41 92 -17 27 -38 73 -47
+103 -8 30 -26 75 -38 100 -12 25 -28 63 -35 85 -7 22 -38 85 -70 140 -35 60
+-67 130 -79 177 -24 85 -81 213 -134 301 -19 31 -38 74 -42 94 -4 20 -19 62
+-35 93 -16 31 -36 85 -45 120 -9 36 -25 77 -36 92 -40 56 -108 198 -124 259
+-8 35 -44 118 -79 185 -35 67 -69 139 -76 160 -17 56 -75 188 -114 264 -19 36
+-41 90 -50 121 -9 31 -23 62 -32 69 -22 19 -40 58 -48 105 -4 22 -18 58 -31
+80 -13 22 -30 67 -39 99 -8 33 -28 78 -44 100 -57 82 -103 179 -118 252 -14
+65 -101 259 -135 301 -6 6 -19 38 -29 70 -38 121 -97 247 -124 268 -26 19 -43
+20 -309 22 -157 1 -296 -3 -315 -8z m340 -1106 c9 -10 26 -38 38 -63 12 -25
+44 -81 70 -125 27 -44 53 -100 60 -125 7 -24 22 -65 35 -90 13 -25 31 -73 40
+-105 9 -33 30 -80 46 -105 16 -25 35 -66 44 -90 9 -25 27 -61 40 -81 13 -21
+31 -66 40 -100 17 -70 82 -218 127 -290 15 -25 35 -70 44 -100 9 -30 24 -67
+34 -84 10 -16 25 -56 33 -88 9 -33 22 -66 31 -76 8 -9 25 -39 37 -66 12 -28
+35 -69 51 -92 34 -47 39 -99 14 -137 -10 -16 -50 -38 -120 -65 -57 -23 -111
+-41 -119 -41 -19 0 -199 -92 -234 -120 -14 -11 -38 -23 -52 -26 -122 -27 -203
+-50 -241 -70 -112 -57 -218 -103 -250 -109 -19 -4 -55 -18 -79 -31 -24 -13
+-64 -30 -90 -38 -57 -17 -213 -91 -262 -123 -19 -13 -67 -32 -106 -43 -39 -11
+-86 -28 -105 -39 -18 -10 -57 -24 -86 -30 -60 -13 -85 -24 -125 -57 -36 -30
+-87 -32 -113 -3 -31 34 -24 87 24 181 23 45 50 108 61 138 46 134 84 224 151
+355 39 77 77 166 85 198 7 31 22 72 33 90 65 105 182 363 215 474 15 51 70
+158 110 216 11 16 32 73 48 128 30 103 78 209 122 267 14 19 31 57 37 85 7 29
+23 70 36 93 12 22 28 63 35 90 14 57 41 115 62 132 8 7 25 40 37 73 35 92 103
+136 142 92z"/><path d="M10113 4793 c-13 -2 -32 -16 -43 -31 l-21 -26 6 -1501 c7 -1655 5
+-1615 70 -1810 18 -55 36 -120 40 -145 4 -25 22 -79 40 -120 18 -41 38 -92 45
+-113 7 -21 24 -53 40 -70 15 -18 33 -43 40 -56 6 -13 26 -43 44 -66 17 -24 51
+-70 75 -104 73 -98 310 -315 392 -356 39 -20 101 -63 171 -117 27 -20 73 -44
+104 -53 31 -9 67 -23 80 -31 12 -9 60 -22 105 -30 46 -8 112 -26 148 -40 89
+-36 310 -50 566 -36 164 9 187 13 232 35 28 14 81 31 119 38 38 6 94 22 124
+34 30 13 74 28 97 34 23 6 61 26 85 44 45 34 169 110 228 140 87 44 334 296
+415 423 28 43 65 95 83 115 18 20 41 61 51 90 10 30 26 68 35 84 9 17 23 64
+32 105 9 41 30 100 46 130 18 35 35 95 48 165 11 61 24 126 30 145 6 22 10
+565 10 1560 1 1519 0 1525 -20 1542 -28 23 -79 26 -378 25 l-264 -2 -19 -24
+c-19 -23 -19 -61 -19 -1555 0 -842 -4 -1547 -9 -1566 -5 -19 -16 -55 -25 -80
+-9 -25 -22 -70 -31 -100 -9 -36 -45 -101 -100 -185 -104 -158 -222 -282 -310
+-326 -33 -17 -98 -52 -145 -79 -129 -75 -135 -77 -282 -94 -171 -20 -215 -20
+-386 0 -143 16 -163 23 -287 94 -38 22 -95 53 -126 69 -30 16 -62 37 -70 47
+-8 9 -33 29 -56 43 -23 14 -65 57 -95 95 -29 38 -71 92 -92 120 -22 28 -48 70
+-58 93 -10 23 -31 56 -45 74 -19 22 -30 52 -39 103 -7 39 -19 103 -28 141 -14
+62 -16 235 -15 1579 l0 1509 -21 21 c-20 20 -31 21 -308 22 -158 1 -297 -1
+-309 -3z"/><path d="M15710 4789 c-60 -4 -128 -16 -160 -28 -30 -11 -99 -29 -153 -40
+-100 -20 -134 -36 -252 -121 -27 -20 -63 -43 -79 -51 -45 -22 -234 -208 -264
+-259 -43 -72 -88 -142 -122 -186 -42 -54 -109 -232 -120 -321 -5 -40 -20 -92
+-32 -115 -20 -37 -23 -61 -26 -183 -3 -124 -1 -148 18 -205 12 -36 30 -111 40
+-166 20 -111 77 -266 122 -329 59 -82 98 -141 122 -185 26 -48 73 -96 121
+-125 17 -10 50 -42 75 -71 32 -38 65 -63 117 -88 39 -19 74 -39 77 -45 4 -6
+37 -20 75 -31 37 -11 76 -29 86 -40 10 -11 44 -28 74 -36 31 -9 88 -28 126
+-42 l70 -26 510 -6 c311 -5 522 -11 540 -18 74 -25 186 -85 200 -105 8 -12 45
+-48 83 -80 60 -49 74 -68 111 -146 39 -82 43 -97 51 -211 6 -78 6 -156 0 -218
+-9 -85 -16 -107 -62 -201 -42 -84 -60 -109 -92 -130 -22 -14 -56 -42 -76 -63
+-59 -57 -140 -106 -210 -125 -60 -17 -134 -18 -1037 -18 -960 0 -972 0 -987
+-20 -19 -24 -18 -7 -18 -358 0 -255 1 -291 16 -305 15 -15 96 -16 954 -14 578
+1 975 6 1037 13 55 6 131 21 170 35 39 14 90 31 115 38 25 7 63 21 85 31 22 9
+66 28 98 40 34 14 84 48 125 84 37 33 86 68 107 77 53 21 73 40 101 96 13 26
+31 51 39 56 9 4 37 29 63 54 35 35 59 74 96 155 27 59 62 128 77 153 16 25 35
+73 42 107 8 33 27 92 43 129 28 68 28 71 28 284 l1 215 -32 75 c-17 42 -38
+110 -48 153 -11 50 -27 89 -45 112 -15 19 -33 49 -40 67 -27 68 -92 165 -152
+230 -35 37 -75 82 -90 101 -15 19 -59 55 -97 81 -39 25 -71 50 -71 55 0 19
+-116 95 -171 111 -32 10 -86 32 -121 48 -35 17 -119 47 -188 68 l-125 37 -450
+8 c-247 4 -478 13 -513 19 -119 20 -277 114 -326 193 -12 19 -34 50 -49 68
+-45 54 -106 163 -116 210 -6 24 -11 114 -11 199 0 181 1 181 109 330 85 117
+122 154 186 187 28 14 68 39 91 55 28 20 68 35 135 48 89 19 141 20 927 20
+l834 0 29 29 29 30 -1 283 c0 155 -5 290 -10 299 -5 9 -23 22 -40 28 -38 13
+-1599 13 -1769 0z"/><path d="M18764 4794 c-12 -3 -30 -14 -40 -25 -16 -18 -18 -46 -18 -308 l-1
+-289 24 -26 24 -26 649 0 c628 0 650 -1 688 -20 21 -11 41 -24 45 -30 3 -5 6
+-895 5 -1978 0 -1913 0 -1970 18 -1992 l19 -24 285 1 c156 0 294 4 305 7 12 4
+24 14 27 23 4 9 6 902 6 1984 l0 1969 20 20 c12 12 32 25 45 30 15 6 294 10
+666 10 394 1 650 5 666 11 52 19 52 23 53 332 0 274 -1 288 -20 307 -19 19
+-33 20 -518 20 -274 0 -1045 2 -1713 4 -668 3 -1224 3 -1235 0z"/><path d="M24665 4790 c-819 -3 -1496 -9 -1503 -13 -7 -5 -17 -19 -22 -32 -10
+-27 -26 -4578 -16 -4618 3 -15 15 -31 26 -37 14 -8 504 -11 1627 -10 1374 0
+1610 2 1629 15 21 14 22 19 26 312 3 164 1 306 -4 316 -25 50 38 48 -1297 47
+l-1242 0 -30 29 -29 29 0 745 c0 768 1 796 40 817 12 6 374 10 984 10 929 0
+967 1 985 19 16 16 19 42 24 232 3 118 5 247 4 287 -2 67 -5 76 -30 98 l-28
+24 -950 0 c-1046 0 -996 -3 -1018 61 -7 22 -11 179 -11 484 0 440 1 453 20
+478 12 15 35 29 53 32 18 3 579 7 1247 8 668 2 1223 7 1233 11 41 19 45 49 48
+342 2 154 0 285 -4 292 -13 21 -80 32 -177 30 -52 -2 -765 -5 -1585 -8z"/><path d="M27354 4786 c-18 -8 -34 -18 -38 -24 -3 -5 -6 -1053 -6 -2328 -1
+-2040 1 -2319 14 -2333 23 -23 90 -26 380 -21 l268 5 38 43 c21 23 59 86 85
+138 27 56 62 110 85 133 23 22 48 60 60 93 11 31 28 62 36 69 9 7 27 36 41 63
+32 63 76 130 119 178 18 20 38 54 43 75 6 21 19 50 28 64 47 69 59 86 86 118
+16 19 36 51 44 70 8 20 28 54 44 78 16 23 33 53 39 68 11 28 89 144 126 185
+12 14 27 42 34 63 7 21 25 53 40 70 15 18 34 46 43 62 19 37 54 70 84 80 18 5
+29 0 49 -22 37 -40 94 -131 110 -175 7 -21 42 -73 79 -117 36 -44 71 -94 77
+-113 13 -39 72 -137 109 -182 34 -41 103 -155 140 -231 16 -33 51 -89 79 -125
+28 -36 59 -83 70 -106 11 -22 28 -52 39 -66 11 -13 31 -49 44 -79 13 -30 49
+-83 80 -118 39 -43 62 -80 74 -117 20 -63 100 -166 146 -187 48 -22 675 -32
+723 -12 46 19 45 50 -7 115 -23 29 -50 73 -61 98 -12 26 -31 61 -43 77 -13 17
+-32 48 -44 70 -12 22 -46 72 -76 110 -30 39 -62 92 -71 118 -9 27 -28 63 -43
+80 -59 69 -134 189 -190 304 -17 34 -35 64 -40 68 -22 13 -119 163 -133 206
+-9 25 -40 76 -69 112 -54 68 -102 143 -159 249 -16 31 -43 72 -58 90 -38 45
+-112 158 -112 172 0 6 -18 37 -40 70 -22 32 -40 65 -40 72 0 7 -13 28 -29 46
+-45 52 -118 179 -131 228 -25 93 7 202 89 305 22 28 57 79 76 115 96 173 157
+272 197 317 27 29 118 185 118 200 0 7 15 30 33 50 53 62 124 175 137 219 7
+23 39 75 72 115 32 41 72 101 88 134 54 111 90 168 182 288 16 21 39 58 50 84
+24 54 100 174 122 193 15 12 65 99 123 214 14 27 40 70 59 94 40 53 42 65 12
+86 -19 14 -71 16 -360 16 -212 0 -347 -4 -365 -11 -48 -18 -121 -98 -144 -159
+-11 -30 -46 -87 -77 -127 -31 -40 -73 -102 -92 -137 -19 -36 -52 -95 -72 -133
+-20 -37 -61 -98 -91 -136 -30 -37 -62 -89 -72 -115 -10 -26 -30 -65 -45 -87
+-109 -165 -135 -203 -152 -221 -10 -12 -28 -45 -39 -75 -11 -30 -32 -66 -46
+-80 -36 -39 -90 -118 -114 -169 -12 -25 -32 -59 -45 -76 -13 -18 -34 -56 -48
+-85 -13 -30 -51 -87 -84 -126 -40 -49 -63 -88 -71 -119 -7 -25 -25 -65 -42
+-87 -16 -23 -44 -62 -62 -86 -52 -71 -94 -141 -131 -217 -19 -40 -39 -75 -45
+-78 -18 -11 -99 -123 -126 -173 -59 -112 -144 -247 -191 -305 -12 -15 -29 -49
+-38 -75 -10 -29 -42 -79 -81 -126 -36 -43 -74 -100 -86 -128 -24 -56 -42 -69
+-93 -69 -24 0 -38 6 -45 19 -7 12 -11 546 -11 1577 l0 1559 -25 23 c-26 22
+-29 22 -313 22 -220 -1 -294 -4 -318 -14z"/></g></svg>
+  </a>
+  <div class="nav-right">
+    <button class="lang-toggle" id="langBtn" aria-label="Switch language">EN</button>
+    <a class="back" href="/" data-i18n="back">← Về trang chủ</a>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="aurora" aria-hidden="true"><i></i><i></i><i></i></div>
+  <p class="kicker"><i>●</i><span data-i18n="kicker">Sự kiện · từ 2017</span></p>
+  <h1 data-i18n="h1"><span class="ln">Những đêm Haustek</span> <span class="ln"><em>đứng sau âm thanh.</em></span></h1>
+  <p class="lead" data-i18n="lead">Từ những đêm techno nhỏ ở Sài Gòn cho tới chuỗi livestream trải khắp châu Á — đây là những sân khấu chúng tôi đã dựng, đã chơi và đã lên sóng. Bấm vào một tiết mục để xem lại.</p>
+</section>
+
+<div class="grid" id="grid"></div>
+
+<!-- Modal video — một cái duy nhất, tái dùng cho mọi card -->
+<div class="yt-modal" id="ytModal" aria-hidden="true">
+  <div class="yt-box" role="dialog" aria-modal="true" aria-label="Trình phát video">
+    <button class="yt-close" id="ytClose" aria-label="Đóng" type="button">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3"><path d="M6 6l12 12M18 6L6 18"/></svg>
+    </button>
+    <div class="frame" id="ytSlot"></div>
+  </div>
+</div>
+
+<div class="tail rv">
+  <p data-i18n="cta">Muốn Haustek dựng một đêm cho bạn? <a href="mailto:mgmt@haustek-group.com">Gửi yêu cầu booking →</a></p>
+</div>
+
+<footer>
+  <span>© 2026 Haustek · Los Angeles → Việt Nam · Since 2017</span>
+  <span><a href="/">Trang chủ</a> · <a href="/artists">Nghệ sĩ</a> · <a href="/legal">Pháp lý</a></span>
+</footer>
+
+<script>
+/* =====================================================================
+   BẢNG DỮ LIỆU SỰ KIỆN — CHỖ DUY NHẤT BẠN CẦN SỬA
+
+   Mỗi sự kiện một khối:
+     title     Tên sự kiện.
+     when      Mốc thời gian hiện góc card, ví dụ "2020–21" hoặc "2017→".
+     tag       Nhãn nhỏ hiện góc trái ảnh, ví dụ "Livestream toàn cầu".
+     desc      Mô tả ngắn 1-3 câu.
+     video     ID video YouTube — là đoạn ký tự sau "v=" trong link, ví dụ
+               với youtube.com/watch?v=dQw4w9WgXcQ thì video là "dQw4w9WgXcQ".
+               Để trống thì card vẫn hiện đầy đủ, chỉ là nút phát mờ đi và
+               không bấm được — dùng khi bạn chưa có clip cho sự kiện đó.
+     thumb     Để trống thì tự lấy ảnh bìa thẳng từ YouTube (không tốn dung
+               lượng lưu trên server). Chỉ điền khi muốn dùng ảnh riêng.
+
+   Thứ tự trong bảng không quan trọng — hiện theo đúng thứ tự bạn xếp ở đây.
+   ===================================================================== */
+
+const EVENTS = [
+  { title:"United We Stream Asia", when:"2020–21", tag:"Livestream toàn cầu",
+    desc:"Chuỗi livestream gom nghệ sĩ điện tử Đông Nam Á lại với nhau giữa những năm giãn cách. Haustek lo phần lineup Việt Nam: DJ set, visual và dựng sân khấu ảo.",
+    video:"", thumb:"" },
+
+  { title:"Haustek Podcast Sessions", when:"2021→", tag:"18+ live sets",
+    desc:"Chuỗi DJ set của dàn nghệ sĩ nhà Haustek — thu lại rồi phát hành như một album live trên các nền tảng.",
+    video:"", thumb:"" },
+
+  { title:"5-Year Anniversary", when:"2022", tag:"hausvn × technovn",
+    desc:"Đêm kỷ niệm 5 năm với nghệ sĩ trong nhà và khách mời, sau đó có luôn một album live ra mắt.",
+    video:"", thumb:"" },
+
+  { title:"Club nights Việt Nam", when:"2017→", tag:"SG · HN · Đà Lạt",
+    desc:"Những đêm nhỏ ở các club và không gian ngầm khắp ba miền — nơi nhiều gương mặt mới của Haustek lần đầu đứng sau bàn mix.",
+    video:"", thumb:"" },
+
+  { title:"Brand events", when:"—", tag:"Launch · Campaign",
+    desc:"Haustek lo phần âm nhạc và hình ảnh cho các đêm ra mắt, showroom và campaign — từ concept cho tới lúc chạy thật.",
+    video:"", thumb:"" }
+];
+
+/* ===================== SONG NGỮ ===================== */
+const I18N={
+  vi:{
+    _title:"Sự kiện — Haustek",
+    back:"← Về trang chủ", kicker:"Sự kiện · từ 2017",
+    h1:'<span class="ln">Những đêm Haustek</span> <span class="ln"><em>đứng sau âm thanh.</em></span>',
+    lead:"Từ những đêm techno nhỏ ở Sài Gòn cho tới chuỗi livestream trải khắp châu Á — đây là những sân khấu chúng tôi đã dựng, đã chơi và đã lên sóng. Bấm vào một tiết mục để xem lại.",
+    cta:'Muốn Haustek dựng một đêm cho bạn? <a href="mailto:mgmt@haustek-group.com">Gửi yêu cầu booking →</a>',
+    watch:"Xem lại", soon:"Video sắp có", loading:"Đang tải video…"
+  },
+  en:{
+    _title:"Events — Haustek",
+    back:"← Back to home", kicker:"Events · since 2017",
+    h1:'<span class="ln">The nights Haustek</span> <span class="ln"><em>stood behind the sound.</em></span>',
+    lead:"From small techno nights in Saigon to livestream series stretched across Asia — these are the stages we built, played and broadcast. Tap a card to watch.",
+    cta:'Want Haustek to build a night for you? <a href="mailto:mgmt@haustek-group.com">Request a booking →</a>',
+    watch:"Watch", soon:"Video coming soon", loading:"Loading video…"
+  }
+};
+let lang="vi";
+
+/* ===================== TIỆN ÍCH ===================== */
+function fallbackSVG(seed){
+  let s=0; for(const ch of seed) s=(s*31+ch.charCodeAt(0))>>>0;
+  const cx=20+(s%60), cy=15+((s>>3)%40);
+  const hue=[["255,46,76"],["127,214,232"],["139,123,232"],["232,163,61"]][s%4][0];
+  let rings="";
+  for(let i=1;i<=5;i++){
+    rings+=`<circle cx="${cx}" cy="${cy}" r="${i*13}" fill="none" stroke="rgba(${hue},${(0.32-i*0.04).toFixed(3)})" stroke-width="0.7"/>`;
+  }
+  return `<svg viewBox="0 0 160 90" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+    <rect width="160" height="90" fill="#0a0a11"/>
+    <circle cx="${cx}" cy="${cy}" r="3.5" fill="rgba(${hue},.6)"/>${rings}</svg>`;
+}
+
+const PLAY_ICON='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 3l16 9-16 9z"/></svg>';
+
+/* ===================== DỰNG LƯỚI ===================== */
+const gridEl=document.getElementById('grid');
+
+function cardHTML(ev,i){
+  const d=I18N[lang];
+  const hasVideo=!!ev.video;
+  const thumb = ev.thumb ? ev.thumb : (hasVideo ? `https://i.ytimg.com/vi/${ev.video}/hqdefault.jpg` : "");
+
+  const shot = thumb
+    ? `<img src="${thumb}" alt="${ev.title}" loading="lazy" decoding="async" width="640" height="360">`
+    : `<div class="fallback">${fallbackSVG(ev.title)}<span class="yr">${(ev.when||'').replace(/[^0-9]/g,'').slice(0,4)||'HSTK'}</span></div>`;
+
+  const play = hasVideo
+    ? `<button class="play" data-video="${ev.video}" data-title="${ev.title}" aria-label="${d.watch}: ${ev.title}"><span class="btn">${PLAY_ICON}</span></button>`
+    : `<div class="play disabled" title="${d.soon}"><span class="btn">${PLAY_ICON}</span></div>`;
+
+  return `<article class="card rv" style="transition-delay:${Math.min(i*40,240)}ms">
+    <div class="shot">
+      <span class="tag">${ev.tag||''}</span>
+      <span class="when">${ev.when||''}</span>
+      ${shot}
+      ${play}
+    </div>
+    <div class="body">
+      <h2 class="ename">${ev.title}</h2>
+      <p class="edesc">${ev.desc||''}</p>
+    </div>
+  </article>`;
+}
+
+function renderGrid(){
+  gridEl.innerHTML = EVENTS.map(cardHTML).join("");
+  observeCards();
+}
+
+let io=null;
+function observeCards(){
+  if(io)io.disconnect();
+  io=new IntersectionObserver(es=>{
+    es.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); } });
+  },{threshold:.1});
+  document.querySelectorAll('.card').forEach(c=>io.observe(c));
+}
+
+/* ===================== MODAL VIDEO ====================
+   Giống hệt cách làm với trình phát Spotify ở trang Nghệ sĩ: KHÔNG nhúng sẵn
+   iframe của YouTube vào từng card lúc tải trang — chỉ tạo iframe khi người
+   xem chủ động bấm nút phát, và gỡ bỏ hoàn toàn khi đóng. Mỗi iframe YouTube
+   kéo theo cookie của Google, nhúng sẵn hàng loạt sẽ phá đúng cam kết "không
+   cookie bên thứ ba khi chưa được đồng ý" trong chính sách của Haustek. */
+const ytModal=document.getElementById('ytModal');
+const ytSlot=document.getElementById('ytSlot');
+const ytClose=document.getElementById('ytClose');
+
+function openVideo(id,title){
+  const d=I18N[lang];
+  ytSlot.innerHTML=`<div class="yt-loading">${d.loading}</div>`;
+  const fr=document.createElement('iframe');
+  fr.src=`https://www.youtube-nocookie.com/embed/${id}?autoplay=1&rel=0`;
+  fr.title=title||'YouTube';
+  fr.allow='accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
+  fr.allowFullscreen=true;
+  fr.addEventListener('load',()=>{const l=ytSlot.querySelector('.yt-loading');if(l)l.remove();});
+  ytSlot.appendChild(fr);
+  ytModal.classList.add('on');
+  ytModal.setAttribute('aria-hidden','false');
+  ytClose.focus();
+}
+function closeVideo(){
+  ytModal.classList.remove('on');
+  ytModal.setAttribute('aria-hidden','true');
+  ytSlot.innerHTML='';   /* gỡ hẳn iframe — dừng phát, dừng luôn kết nối tới YouTube */
+}
+ytClose.addEventListener('click',closeVideo);
+ytModal.addEventListener('click',e=>{ if(e.target===ytModal) closeVideo(); });
+document.addEventListener('keydown',e=>{ if(e.key==='Escape' && ytModal.classList.contains('on')) closeVideo(); });
+
+gridEl.addEventListener('click',e=>{
+  const btn=e.target.closest('.play'); if(!btn || btn.classList.contains('disabled'))return;
+  openVideo(btn.dataset.video, btn.dataset.title);
+});
+
+/* ===================== ĐỔI NGÔN NGỮ ===================== */
+const langBtn=document.getElementById('langBtn');
+function setLang(l){
+  lang=l; const d=I18N[l];
+  document.querySelectorAll('[data-i18n]').forEach(el=>{
+    const v=d[el.dataset.i18n]; if(v!==undefined)el.innerHTML=v;
+  });
+  document.documentElement.lang=l;
+  document.title=d._title;
+  langBtn.textContent = l==="vi" ? "EN" : "VI";
+  renderGrid();
+}
+langBtn.addEventListener('click',()=>setLang(lang==="vi"?"en":"vi"));
+
+renderGrid();
+</script>
+</body>
+</html>

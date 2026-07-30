@@ -100,10 +100,46 @@ a,button,summary{cursor:pointer;-webkit-tap-highlight-color:transparent}
 .logo img{height:11px;width:auto}
 .rec{width:7px;height:7px;border-radius:50%;background:var(--red);animation:blink 1.6s steps(2,end) infinite;box-shadow:0 0 10px rgba(255,46,76,.8)}
 @keyframes blink{50%{opacity:.25}}
-.nav-links{display:none;gap:26px}
-.nav-links a{font-family:var(--mono);font-size:11.5px;letter-spacing:.08em;color:var(--concrete);text-transform:uppercase;transition:color .2s}
-.nav-links a:hover,.nav-links a.on{color:var(--paper)}
+/* Nav gọn lại: chỉ logo + đổi ngôn ngữ + nút Gửi nhạc + một hamburger duy nhất
+   mở bảng điều hướng lớn — dùng chung một kiểu cho mọi kích thước màn hình,
+   thay vì phải giữ hai bộ nav khác nhau cho desktop/mobile. */
 .nav-right{display:flex;align-items:center;gap:14px}
+
+.menu-btn{position:relative;width:38px;height:38px;flex:none;border-radius:100px;
+  background:rgba(240,240,242,.05);border:1px solid var(--line-2);cursor:pointer;
+  display:flex;align-items:center;justify-content:center;transition:background .25s}
+.menu-btn:hover{background:rgba(240,240,242,.11)}
+.menu-btn span{position:absolute;left:10px;right:10px;height:1.5px;background:var(--paper);
+  transition:transform .32s cubic-bezier(.65,0,.35,1),opacity .2s,top .32s cubic-bezier(.65,0,.35,1)}
+.menu-btn span:nth-child(1){top:14px}
+.menu-btn span:nth-child(2){top:18.5px}
+.menu-btn span:nth-child(3){top:23px}
+.menu-btn.on span:nth-child(1){top:18.5px;transform:rotate(45deg)}
+.menu-btn.on span:nth-child(2){opacity:0}
+.menu-btn.on span:nth-child(3){top:18.5px;transform:rotate(-45deg)}
+
+/* Bảng điều hướng — phủ toàn màn hình, chữ lớn cùng ngôn ngữ thiết kế với
+   H2 các section, không phải danh sách link nhỏ nhàm chán. */
+.full-menu{position:fixed;inset:0;z-index:150;background:rgba(6,6,8,.97);backdrop-filter:blur(18px);
+  -webkit-backdrop-filter:blur(18px);display:flex;flex-direction:column;justify-content:space-between;
+  padding:110px var(--gut) 40px;opacity:0;visibility:hidden;transform:translateY(-14px);
+  transition:opacity .4s ease,transform .4s cubic-bezier(.19,.8,.22,1),visibility 0s linear .4s}
+.full-menu.on{opacity:1;visibility:visible;transform:none;transition:opacity .4s ease,transform .4s cubic-bezier(.19,.8,.22,1),visibility 0s}
+.full-menu::before{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;
+  background:radial-gradient(50% 44% at 88% 10%, rgba(139,123,232,.16), transparent 70%),
+             radial-gradient(46% 40% at 6% 92%, rgba(255,46,76,.12), transparent 70%)}
+.fm-links{display:flex;flex-direction:column;gap:2px}
+.fm-links a{font-family:var(--disp);font-weight:750;font-stretch:112%;
+  font-size:clamp(34px,8.5vw,84px);line-height:1.08;letter-spacing:-.03em;
+  color:var(--paper);opacity:.42;transition:opacity .3s,color .3s;padding:4px 0}
+.fm-links a:hover{opacity:1;color:var(--red)}
+.fm-links a b{font-family:var(--mono);font-weight:400;font-size:14px;letter-spacing:.06em;
+  color:var(--concrete);margin-right:18px;vertical-align:middle}
+.fm-foot{display:flex;flex-wrap:wrap;gap:10px 22px;padding-top:26px;border-top:1px solid var(--line)}
+.fm-foot a{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--concrete);transition:color .2s}
+.fm-foot a:hover{color:var(--paper)}
+body.menu-open{overflow:hidden}
 .lang-toggle{font-family:var(--mono);font-size:11px;letter-spacing:.1em;background:none;border:0;color:var(--concrete);text-transform:uppercase;transition:color .2s;padding:6px 2px}
 .lang-toggle:hover{color:var(--paper)}
 .nav-submit{
@@ -519,7 +555,7 @@ a:focus-visible,button:focus-visible,summary:focus-visible,input:focus-visible,t
 <div class="cursor" aria-hidden="true"></div>
 
 <header class="nav">
-  <a class="logo" href="#/" aria-label="Haustek">
+  <a class="logo" href="/" aria-label="Haustek">
     <span class="rec" aria-hidden="true"></span>
     <svg class="wordmark" viewBox="0 0 1000 157.62" role="img" aria-label="Haustek"><g transform="translate(0,157.62) scale(0.032300,-0.032300)" fill="currentColor"><path d="M80 4793 c-19 -2 -45 -6 -57 -8 l-23 -5 0 -2344 0 -2344 83 -6 c45
 -3 198 -8 340 -11 247 -5 258 -4 277 15 20 20 20 34 20 752 l0 732 46 43 c30
@@ -664,19 +700,30 @@ l-1242 0 -30 29 -29 29 0 745 c0 768 1 796 40 817 12 6 374 10 984 10 929 0
 -93 -69 -24 0 -38 6 -45 19 -7 12 -11 546 -11 1577 l0 1559 -25 23 c-26 22
 -29 22 -313 22 -220 -1 -294 -4 -318 -14z"/></g></svg>
   </a>
-  <nav class="nav-links" aria-label="Điều hướng">
-    <a href="#/" data-nav="home" data-i18n="nav_home">Trang chủ</a>
-    <a href="#/events" data-nav="events" data-i18n="nav_events">Sự kiện</a>
-    <a href="#/#services" data-i18n="nav_services">Dịch vụ</a>
-    <a href="#/#stores" data-i18n="nav_stores">Cửa hàng</a>
-    <a href="/artists" data-i18n="nav_artists">Nghệ sĩ</a>
-    
-  </nav>
   <div class="nav-right">
     <button class="lang-toggle" id="langBtn" aria-label="Switch to English">EN</button>
     <a class="nav-submit" href="/metadata" data-i18n="nav_submit">Gửi nhạc</a>
+    <button class="menu-btn" id="menuBtn" aria-label="Mở menu" aria-expanded="false" aria-controls="fullMenu">
+      <span></span><span></span><span></span>
+    </button>
   </div>
 </header>
+
+<nav class="full-menu" id="fullMenu" aria-hidden="true" aria-label="Điều hướng đầy đủ">
+  <div class="fm-links">
+    <a href="/" data-i18n="fm_home"><b>01</b>Trang chủ</a>
+    <a href="#services" data-fm-anchor data-i18n="fm_services"><b>02</b>Dịch vụ</a>
+    <a href="#stores" data-fm-anchor data-i18n="fm_stores"><b>03</b>Cửa hàng</a>
+    <a href="/artists" data-i18n="fm_artists"><b>04</b>Nghệ sĩ</a>
+    <a href="/events" data-i18n="fm_events"><b>05</b>Sự kiện</a>
+    <a href="/metadata" data-i18n="fm_submit"><b>06</b>Gửi nhạc</a>
+  </div>
+  <div class="fm-foot">
+    <a href="/legal#terms" data-i18n="fm_terms">Điều khoản</a>
+    <a href="/legal#privacy" data-i18n="fm_privacy">Quyền riêng tư</a>
+    <a href="mailto:mgmt@haustek-group.com">mgmt@haustek-group.com</a>
+  </div>
+</nav>
 
 <!-- ===================== HOME ===================== -->
 <main id="page-home" class="page active">
@@ -881,39 +928,7 @@ l-1242 0 -30 29 -29 29 0 745 c0 768 1 796 40 817 12 6 374 10 984 10 929 0
 </main>
 
 <!-- ===================== EVENTS ===================== -->
-<main id="page-events" class="page">
-<section class="zone z-page" style="padding-top:140px">
-  <div class="ghost" aria-hidden="true">EV</div>
-  <p class="kicker"><i>●</i><span data-i18n="ev_k">Sự kiện · từ 2017</span></p>
-  <h2 data-i18n="ev_h"><span class="ln">Những đêm Haustek</span> <span class="ln"><em>đứng sau âm thanh.</em></span></h2>
-  <p class="smallp" style="margin-top:20px" data-i18n="ev_p">Từ những đêm techno nhỏ ở Sài Gòn cho tới chuỗi livestream trải khắp châu Á — đây là những sân khấu chúng tôi đã dựng, đã chơi và đã lên sóng.</p>
 
-  <div class="rowlist">
-    <div class="row">
-      <span class="idx">2020<br>·21</span><span class="ttl">United We Stream Asia</span><span class="meta" data-i18n="ev1m">Livestream toàn cầu</span>
-      <span class="desc" data-i18n="ev1d">Chuỗi livestream gom nghệ sĩ điện tử Đông Nam Á lại với nhau giữa những năm giãn cách. Haustek lo phần lineup Việt Nam: DJ set, visual và dựng sân khấu ảo.</span>
-    </div>
-    <div class="row">
-      <span class="idx">2021→</span><span class="ttl">Haustek Podcast Sessions</span><span class="meta">18+ live sets</span>
-      <span class="desc" data-i18n="ev2d">Chuỗi DJ set của dàn nghệ sĩ nhà Haustek — thu lại rồi phát hành như một album live trên các nền tảng.</span>
-    </div>
-    <div class="row">
-      <span class="idx">2022</span><span class="ttl">5-Year Anniversary</span><span class="meta">hausvn × technovn</span>
-      <span class="desc" data-i18n="ev3d">Đêm kỷ niệm 5 năm với nghệ sĩ trong nhà và khách mời, sau đó có luôn một album live ra mắt.</span>
-    </div>
-    <div class="row">
-      <span class="idx">2017→</span><span class="ttl" data-i18n="ev4t">Club nights Việt Nam</span><span class="meta">SG · HN · Đà Lạt</span>
-      <span class="desc" data-i18n="ev4d">Những đêm nhỏ ở các club và không gian ngầm khắp ba miền — nơi nhiều gương mặt mới của Haustek lần đầu đứng sau bàn mix.</span>
-    </div>
-    <div class="row">
-      <span class="idx">—</span><span class="ttl" data-i18n="ev5t">Brand events</span><span class="meta" data-i18n="ev5m">Launch · Campaign</span>
-      <span class="desc" data-i18n="ev5d">Haustek lo phần âm nhạc và hình ảnh cho các đêm ra mắt, showroom và campaign — từ concept cho tới lúc chạy thật.</span>
-    </div>
-  </div>
-
-  <p class="statement" style="margin-top:70px" data-i18n="ev_cta">Muốn Haustek dựng một đêm cho bạn? <a href="mailto:mgmt@haustek-group.com" style="color:var(--red)">Gửi yêu cầu booking →</a></p>
-</section>
-</main>
 
 
 
@@ -1131,7 +1146,9 @@ const I18N={
   vi:{
     _title:"Haustek — Music Label & Distribution | Để nhạc Việt vang xa hơn",
     _desc:"Haustek — music label & distribution từ 2017. Làm sự kiện, sản xuất, phát hành, quảng bá và tư vấn chiến lược cho âm nhạc. Hơn 200 cửa hàng nhạc số khắp thế giới.",
-    nav_home:"Trang chủ",nav_events:"Sự kiện",nav_services:"Dịch vụ",nav_stores:"Cửa hàng",nav_artists:"Nghệ sĩ",nav_submit:"Gửi nhạc",
+    nav_submit:"Gửi nhạc",
+    fm_home:"Trang chủ",fm_services:"Dịch vụ",fm_stores:"Cửa hàng",fm_artists:"Nghệ sĩ",fm_events:"Sự kiện",fm_submit:"Gửi nhạc",
+    fm_terms:"Điều khoản",fm_privacy:"Quyền riêng tư",
     hero_k:"Music label & distribution — est. 2017",
     h1_l1:"Để nhạc Việt", h1_l2:"<em>vang xa</em> hơn.",
     hero_sub:"Từ sàn diễn underground ra hơn <strong>200 cửa hàng nhạc số</strong>.<br>Phát hành · Label · Sự kiện · Sản xuất — một đầu mối.",
@@ -1205,7 +1222,9 @@ const I18N={
   en:{
     _title:"Haustek — Music Label & Distribution | Vietnamese music, heard worldwide",
     _desc:"Haustek — music label & distribution since 2017. Events, production, releases, promotion and strategic consulting for music. 200+ digital music stores worldwide.",
-    nav_home:"Home",nav_events:"Events",nav_services:"Services",nav_stores:"Stores",nav_artists:"Artists",nav_submit:"Submit",
+    nav_submit:"Submit",
+    fm_home:"Home",fm_services:"Services",fm_stores:"Stores",fm_artists:"Artists",fm_events:"Events",fm_submit:"Submit music",
+    fm_terms:"Terms",fm_privacy:"Privacy",
     hero_k:"Music label & distribution — est. 2017",
     h1_l1:"Made in Vietnam.", h1_l2:"<em>Heard</em> worldwide.",
     hero_sub:"From underground stages to <strong>200+ digital music stores</strong>.<br>Distribution · Label · Events · Production — one place.",
@@ -1296,21 +1315,48 @@ function setLang(l){
 }
 langBtn.addEventListener('click',()=>setLang(lang==="vi"?"en":"vi"));
 
-/* ================= Router ================= */
-const pages={home:document.getElementById('page-home'),events:document.getElementById('page-events')};
-function route(){
-  const hash=location.hash||"#/";
-  /* Ai còn giữ link cũ #/submit thì đưa thẳng sang trang gửi nhạc mới */
-  if(hash.startsWith("#/submit")){location.replace("/metadata");return;}
-  const isEvt=hash.startsWith("#/events");
-  pages.home.classList.toggle('active',!isEvt);
-  pages.events.classList.toggle('active',isEvt);
-  document.querySelectorAll('[data-nav]').forEach(a=>{
-    a.classList.toggle('on',(a.dataset.nav==="home"&&!isEvt)||(a.dataset.nav==="events"&&isEvt));
-  });
-  window.scrollTo(0,0);
+/* ================= Bảng điều hướng (hamburger) =================
+   Trước đây trang có 2 "màn" (home/events) chuyển qua lại bằng hash router.
+   Giờ Sự kiện đã tách thành trang riêng (/events) nên index.html chỉ còn
+   một màn duy nhất — không cần router nữa. Chỉ giữ lại việc đưa link cũ
+   #/submit về đúng trang, phòng khi ai đó vẫn còn lưu link từ trước. */
+if(location.hash.startsWith('#/submit')) location.replace('/metadata');
+
+const menuBtn=document.getElementById('menuBtn');
+const fullMenu=document.getElementById('fullMenu');
+
+function openMenu(){
+  fullMenu.classList.add('on');
+  fullMenu.setAttribute('aria-hidden','false');
+  menuBtn.classList.add('on');
+  menuBtn.setAttribute('aria-expanded','true');
+  menuBtn.setAttribute('aria-label', lang==='vi' ? 'Đóng menu' : 'Close menu');
+  document.body.classList.add('menu-open');
 }
-addEventListener('hashchange',route);route();
+function closeMenu(){
+  fullMenu.classList.remove('on');
+  fullMenu.setAttribute('aria-hidden','true');
+  menuBtn.classList.remove('on');
+  menuBtn.setAttribute('aria-expanded','false');
+  menuBtn.setAttribute('aria-label', lang==='vi' ? 'Mở menu' : 'Open menu');
+  document.body.classList.remove('menu-open');
+}
+menuBtn.addEventListener('click',()=>{
+  fullMenu.classList.contains('on') ? closeMenu() : openMenu();
+});
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape' && fullMenu.classList.contains('on')) closeMenu();
+});
+/* Link nhảy neo trong cùng trang (#services, #stores): đóng bảng trước rồi
+   mới để trình duyệt cuộn tới, không thì panel che mất phần vừa cuộn tới. */
+fullMenu.querySelectorAll('[data-fm-anchor]').forEach(a=>{
+  a.addEventListener('click',()=>{ closeMenu(); });
+});
+/* Link sang trang khác (Trang chủ, Nghệ sĩ, Sự kiện, Gửi nhạc…): không cần
+   xử lý gì thêm, trình duyệt tự điều hướng khi panel đang đóng lại. */
+fullMenu.querySelectorAll('a:not([data-fm-anchor])').forEach(a=>{
+  a.addEventListener('click',closeMenu);
+});
 
 /* ================= custom cursor ================= */
 const cur=document.querySelector('.cursor');
