@@ -69,22 +69,34 @@ h1 em{font-style:italic;font-weight:600;color:var(--red)}
 
 /* ---------- THANH TIẾN TRÌNH ---------- */
 .progress{position:sticky;top:52px;z-index:60;margin:0 calc(var(--gut)*-1);padding:0 var(--gut);
-  background:rgba(7,7,9,.9);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  background:rgba(7,7,9,.94);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
   border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
-.progress ol{display:flex;list-style:none;gap:0;overflow-x:auto;scrollbar-width:none}
+.progress ol{display:flex;list-style:none;gap:0;overflow-x:auto;scrollbar-width:none;position:relative}
 .progress ol::-webkit-scrollbar{display:none}
-.progress li{flex:none}
+/* Vạch nền + vạch tiến độ thật — trước đây chỉ có màu số đổi, giờ có
+   thêm một thước đo phần trăm nhìn là hiểu ngay đang đi được bao xa. */
+.progress ol::before{content:"";position:absolute;left:20px;right:20px;bottom:0;height:2px;
+  background:rgba(240,240,242,.1)}
+.progress-fill{position:absolute;left:20px;bottom:0;height:2px;width:0;
+  background:linear-gradient(90deg,var(--ok),var(--ok));transition:width .45s cubic-bezier(.19,.8,.22,1);z-index:1}
+.progress li{flex:none;position:relative;z-index:2}
 .progress a{display:flex;align-items:center;gap:9px;padding:15px 20px 13px;text-decoration:none;
   border-bottom:2px solid transparent;transition:all .25s;white-space:nowrap}
-.progress b{width:22px;height:22px;border-radius:50%;display:grid;place-items:center;flex:none;
+.progress b{width:23px;height:23px;border-radius:50%;display:grid;place-items:center;flex:none;
   font-family:var(--mono);font-size:10px;font-weight:500;
-  background:rgba(240,240,242,.08);color:var(--concrete);border:1px solid rgba(240,240,242,.14);transition:all .25s}
+  background:rgba(240,240,242,.07);color:var(--concrete);border:1.5px solid rgba(240,240,242,.16);
+  transition:all .25s}
 .progress span{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--concrete);transition:color .25s}
 .progress a:hover span{color:var(--paper)}
+/* Đang làm — đậm hẳn, không mập mờ với trạng thái chưa tới */
 .progress a.on{border-bottom-color:var(--red)}
-.progress a.on b{background:var(--red);color:var(--paper);border-color:var(--red)}
-.progress a.on span{color:var(--paper)}
-.progress a.done b{background:rgba(78,216,138,.16);border-color:rgba(78,216,138,.5);color:var(--ok)}
+.progress a.on b{background:var(--red);color:var(--paper);border-color:var(--red);
+  box-shadow:0 0 0 3px rgba(255,46,76,.18)}
+.progress a.on span{color:var(--paper);font-weight:500}
+/* Đã xong — tô đặc hẳn màu xanh thay vì chỉ nhuốm màu nhạt như trước,
+   và đổi số thành dấu tích: nhận ra ngay không cần nhìn kỹ màu sắc */
+.progress a.done b{background:var(--ok);color:#062012;border-color:var(--ok)}
+.progress a.done span{color:var(--ok)}
 
 /* ---------- BƯỚC: nền sáng dần theo tầng để mắt bám được ---------- */
 .step{margin-top:40px;padding:0;overflow:hidden;
@@ -363,6 +375,7 @@ l-1242 0 -30 29 -29 29 0 745 c0 768 1 796 40 817 12 6 374 10 984 10 929 0
 
   <nav class="progress" aria-label="Các bước">
     <ol>
+      <div class="progress-fill" id="progressFill" aria-hidden="true"></div>
       <li><a href="#step1"><b>1</b><span>Bản phát hành</span></a></li>
       <li><a href="#step2"><b>2</b><span>Track</span></a></li>
       <li><a href="#step3"><b>3</b><span>Liên lạc</span></a></li>
@@ -502,10 +515,17 @@ l-1242 0 -30 29 -29 29 0 745 c0 768 1 796 40 817 12 6 374 10 984 10 929 0
         </div>
       </div>
 
-      <div class="f" style="margin-top:22px">
-        <label for="r_art">Link ảnh bìa <span class="req">*</span></label>
-        <input id="r_art" name="r_art" type="url" required placeholder="https://drive.google.com/...">
-        <span class="hint">Vuông 3000×3000 px, JPG hoặc PNG, hệ màu RGB, dưới 10MB. Ảnh không được mờ, không chứa logo cửa hàng nhạc (Spotify, Apple…), không chứa địa chỉ website hay mạng xã hội, không chứa chữ nào khác ngoài tên nghệ sĩ và tên bản phát hành. Nhớ mở quyền xem cho bất kỳ ai có link.</span>
+      <div class="grid g2" style="margin-top:22px">
+        <div class="f">
+          <label for="r_art">Link ảnh bìa <span class="req">*</span></label>
+          <input id="r_art" name="r_art" type="url" required placeholder="https://drive.google.com/...">
+          <span class="hint">Vuông 3000×3000 px, JPG hoặc PNG, hệ màu RGB, dưới 10MB. Ảnh không được mờ, không chứa logo cửa hàng nhạc (Spotify, Apple…), không chứa địa chỉ website hay mạng xã hội, không chứa chữ nào khác ngoài tên nghệ sĩ và tên bản phát hành. Nhớ mở quyền xem cho bất kỳ ai có link.</span>
+        </div>
+        <div class="f">
+          <label for="r_designer">Người thiết kế / minh hoạ ảnh bìa</label>
+          <input id="r_designer" name="r_designer" type="text" placeholder="Họ tên hoặc tên studio">
+          <span class="hint">Để credit đúng người trên trang thông tin bài hát ở Spotify/Apple Music. Bỏ trống nếu tự làm hoặc không cần ghi.</span>
+        </div>
       </div>
 
       <div class="f" style="margin-top:22px">
@@ -784,6 +804,10 @@ const TR = {
   "Ghi chú thêm cho đội phát hành":"Notes for the release team",
   "Ví dụ: muốn pitch vào playlist nào, ràng buộc ngày giờ, ghi chú về lãnh thổ tùy chọn…":
     "For example: playlists to pitch, timing constraints, notes about custom territories…",
+  "Người thiết kế / minh hoạ ảnh bìa":"Artwork designer / illustrator",
+  "Họ tên hoặc tên studio":"Name or studio",
+  "Để credit đúng người trên trang thông tin bài hát ở Spotify/Apple Music. Bỏ trống nếu tự làm hoặc không cần ghi.":
+    "So the right person gets credited on the Spotify/Apple Music song page. Leave empty if you made it yourself or don't need a credit.",
 
   // ---------- bước 2 (template track) ----------
   "+ Thêm một track":"+ Add another track",
@@ -792,6 +816,12 @@ const TR = {
   "Track chưa đặt tên":"Untitled track",
   "Tên track":"Track title",
   "Phiên bản / bản mix":"Version / mix",
+  "— Bản gốc, không ghi gì thêm —":"— Original, nothing to add —",
+  "Live":"Live","Acoustic":"Acoustic","Cover":"Cover","Extended":"Extended",
+  "Radio Edit":"Radio Edit","Remix":"Remix","Remastered":"Remastered","Instrumental":"Instrumental",
+  "Khác — ghi rõ ở ô bên dưới":"Other — specify below",
+  "Ghi rõ tên phiên bản":"Specify the version name",
+  "Ví dụ: Lo-fi Version, Piano Version…":"E.g. Lo-fi Version, Piano Version…",
   "Khách mời (feat.)":"Featured (feat.)",
   "Remixer":"Remixer",
   "Bỏ trống nếu không phải bản remix":"Leave empty if this is not a remix",
@@ -817,6 +847,10 @@ const TR = {
   "Tỉ lệ %":"Split %",
   "Tổng tỉ lệ chia":"Total split",
   "Nhà sản xuất (producer)":"Producer",
+  "Kỹ sư phối âm (mixing)":"Mixing engineer",
+  "Bỏ trống nếu trùng với producer":"Leave empty if same as producer",
+  "Kỹ sư mastering":"Mastering engineer",
+  "Bỏ trống nếu chưa master riêng":"Leave empty if not separately mastered",
   "Họ tên thật":"Full legal name",
   "Đơn vị xuất bản / PRO":"Publisher / PRO",
   "VCPMC, ASCAP, BMI… — bỏ trống nếu chưa có":"VCPMC, ASCAP, BMI… — leave empty if none",
@@ -825,6 +859,13 @@ const TR = {
   "Có dùng sample":"Uses a sample",
   "Là bản cover / hát lại":"It is a cover",
   "Là bản remix có phép":"It is a licensed remix",
+  "Mức độ dùng AI khi làm bản thu này":"Level of AI use in making this recording",
+  "Hoàn toàn do con người làm, không dùng AI":"Fully human-made, no AI",
+  "Do con người làm, có công cụ AI hỗ trợ một phần":"Human-made, partially AI-assisted",
+  "Do con người làm, một phần do AI tạo ra":"Human-made, partially AI-generated",
+  "Toàn bộ do AI tạo ra":"Fully AI-generated",
+  "Nhiều nền tảng nhạc số (Spotify, Apple Music…) đang bắt đầu yêu cầu khai báo này. Khai sai có thể khiến hồ sơ bị trì hoãn hoặc bị hạn chế sau này — không phải cứ dùng AI là bị từ chối, quan trọng là khai đúng.":
+    "Many streaming platforms (Spotify, Apple Music…) are starting to require this. Getting it wrong can delay your submission or cause restrictions later — using AI isn't automatically rejected, accurate disclosure is what matters.",
   "Nếu có, ghi rõ nguồn gốc":"If so, give the source",
   "Tên bài gốc, tác giả gốc, tình trạng xin phép":"Original title, original writer, clearance status",
   "Lời bài hát":"Lyrics",
@@ -969,8 +1010,23 @@ function trackHTML(n){
       </div>
       <div class="f">
         <label>Phiên bản / bản mix</label>
-        <input type="text" data-k="version" placeholder="Radio Edit / Extended Mix">
+        <select data-k="version">
+          <option value="">— Bản gốc, không ghi gì thêm —</option>
+          <option>Live</option>
+          <option>Acoustic</option>
+          <option>Cover</option>
+          <option>Extended</option>
+          <option>Radio Edit</option>
+          <option>Remix</option>
+          <option>Remastered</option>
+          <option>Instrumental</option>
+          <option value="Khác">Khác — ghi rõ ở ô bên dưới</option>
+        </select>
       </div>
+    </div>
+    <div class="f" data-version-custom-wrap style="display:none;margin-top:14px">
+      <label>Ghi rõ tên phiên bản</label>
+      <input type="text" data-k="version_custom" placeholder="Ví dụ: Lo-fi Version, Piano Version…">
     </div>
 
     <div class="grid g3" style="margin-top:22px">
@@ -1049,6 +1105,17 @@ function trackHTML(n){
 
     <div class="grid g2" style="margin-top:22px">
       <div class="f">
+        <label>Kỹ sư phối âm (mixing)</label>
+        <input type="text" data-k="mixer" placeholder="Bỏ trống nếu trùng với producer">
+      </div>
+      <div class="f">
+        <label>Kỹ sư mastering</label>
+        <input type="text" data-k="masterer" placeholder="Bỏ trống nếu chưa master riêng">
+      </div>
+    </div>
+
+    <div class="grid g2" style="margin-top:22px">
+      <div class="f">
         <label>Bản thu có dùng sample hoặc là bản cover không?</label>
         <select data-k="derivative">
           <option value="No">Không — hoàn toàn nguyên gốc</option>
@@ -1061,6 +1128,17 @@ function trackHTML(n){
         <label>Nếu có, ghi rõ nguồn gốc</label>
         <input type="text" data-k="derivative_info" placeholder="Tên bài gốc, tác giả gốc, tình trạng xin phép">
       </div>
+    </div>
+
+    <div class="f" style="margin-top:22px">
+      <label>Mức độ dùng AI khi làm bản thu này</label>
+      <select data-k="ai_use">
+        <option value="Human Created, No AI">Hoàn toàn do con người làm, không dùng AI</option>
+        <option value="Human Created, AI-Assisted">Do con người làm, có công cụ AI hỗ trợ một phần</option>
+        <option value="Human Created, Partially AI-Generated">Do con người làm, một phần do AI tạo ra</option>
+        <option value="Fully AI-Generated">Toàn bộ do AI tạo ra</option>
+      </select>
+      <span class="hint">Nhiều nền tảng nhạc số (Spotify, Apple Music…) đang bắt đầu yêu cầu khai báo này. Khai sai có thể khiến hồ sơ bị trì hoãn hoặc bị hạn chế sau này — không phải cứ dùng AI là bị từ chối, quan trọng là khai đúng.</span>
     </div>
 
     <div class="f" style="margin-top:22px">
@@ -1155,6 +1233,13 @@ tracksEl.addEventListener('input',e=>{
   e.target.classList.remove('bad');
 });
 
+tracksEl.addEventListener('change',e=>{
+  if(!e.target.matches('[data-k="version"]'))return;
+  const track=e.target.closest('[data-track]');
+  const wrap=track.querySelector('[data-version-custom-wrap]');
+  if(wrap) wrap.style.display = e.target.value==='Khác' ? '' : 'none';
+});
+
 addTrack();
 
 /* ===================== THU THẬP + KIỂM TRA ===================== */
@@ -1179,6 +1264,7 @@ function collect(){
     p_line:g('r_p').value.trim(),
     c_line:g('r_c').value.trim(),
     link_anh_bia:g('r_art').value.trim(),
+    nguoi_thiet_ke_bia:g('r_designer').value.trim(),
     ghi_chu:g('r_note').value.trim()
   };
   const tracks=[...tracksEl.querySelectorAll('[data-track]')].map((t,i)=>{
@@ -1191,7 +1277,7 @@ function collect(){
     return {
       so_thu_tu:i+1,
       ten_track:k('title'),
-      phien_ban:k('version'),
+      phien_ban:(k('version')==='Khác'?k('version_custom'):k('version')),
       nghe_si_chinh:k('artist'),
       khach_moi:k('feat'),
       remixer:k('remixer'),
@@ -1203,9 +1289,12 @@ function collect(){
       nguoi_sang_tac:writers,
       tong_ti_le:writers.reduce((s,w)=>s+w.ti_le,0),
       nha_san_xuat:k('producer'),
+      ky_su_mix:k('mixer'),
+      ky_su_mastering:k('masterer'),
       xuat_ban_pro:k('publisher'),
       sample_cover:k('derivative'),
       thong_tin_goc:k('derivative_info'),
+      muc_do_dung_ai:k('ai_use'),
       loi_bai_hat:k('lyrics')
     };
   });
@@ -1309,11 +1398,13 @@ const LABELS={
   spotify_artist:'Spotify nghệ sĩ', apple_artist:'Apple Music nghệ sĩ', the_loai_chinh:'Thể loại chính',
   the_loai_phu:'Thể loại phụ', ngon_ngu_metadata:'Ngôn ngữ', ngay_phat_hanh:'Ngày phát hành',
   ngay_pre_save:'Ngày pre-save', upc:'UPC', lanh_tho:'Lãnh thổ', p_line:'Dòng ℗', c_line:'Dòng ©',
-  link_anh_bia:'Link ảnh bìa', ghi_chu:'Ghi chú',
+  link_anh_bia:'Link ảnh bìa', nguoi_thiet_ke_bia:'Người thiết kế ảnh bìa', ghi_chu:'Ghi chú',
   ten_track:'Tên track', khach_moi:'Khách mời', remixer:'Remixer', isrc:'ISRC',
   ngon_ngu_loi:'Ngôn ngữ lời', noi_dung_nhay_cam:'Nội dung nhạy cảm', link_wav:'Link file WAV',
-  preview_bat_dau:'Preview bắt đầu', nha_san_xuat:'Nhà sản xuất', xuat_ban_pro:'Xuất bản / PRO',
+  preview_bat_dau:'Preview bắt đầu', nha_san_xuat:'Nhà sản xuất', ky_su_mix:'Kỹ sư phối âm',
+  ky_su_mastering:'Kỹ sư mastering', xuat_ban_pro:'Xuất bản / PRO',
   sample_cover:'Sample hoặc cover', thong_tin_goc:'Thông tin bài gốc', tong_ti_le:'Tổng tỉ lệ',
+  muc_do_dung_ai:'Mức độ dùng AI',
   nguoi_khai:'Họ tên', vai_tro:'Vai trò', dien_thoai:'Điện thoại', email:'Email',
   gio_tien_goi:'Giờ tiện gọi', mang_xa_hoi:'Mạng xã hội', lien_he_du_phong:'Liên hệ dự phòng',
   thoi_diem_gui:'Thời điểm gửi'
@@ -1449,6 +1540,7 @@ function saveText(data){
   const links=[...document.querySelectorAll('.progress a')];
   const steps=links.map(a=>document.querySelector(a.getAttribute('href'))).filter(Boolean);
   if(!steps.length)return;
+  const fill=document.getElementById('progressFill');
   const io=new IntersectionObserver(es=>{
     es.forEach(e=>{
       if(!e.isIntersecting)return;
@@ -1458,6 +1550,7 @@ function saveText(data){
   steps.forEach(s=>io.observe(s));
 
   function refresh(){
+    let doneCount=0;
     steps.forEach((s,i)=>{
       const req=[...s.querySelectorAll('input[required],select[required],textarea[required]')];
       const boxes=[...s.querySelectorAll('input[type=checkbox][required]')];
@@ -1470,7 +1563,12 @@ function saveText(data){
           })
         : filled;
       links[i].classList.toggle('done', !!ok);
+      const numEl=links[i].querySelector('b');
+      /* Đổi hẳn sang dấu tích khi xong — nhận ra ngay không cần soi màu sắc */
+      numEl.textContent = ok ? '✓' : String(i+1);
+      if(ok) doneCount++;
     });
+    if(fill) fill.style.width = (doneCount/steps.length*100) + '%';
   }
   document.addEventListener('input',refresh);
   document.addEventListener('change',refresh);
