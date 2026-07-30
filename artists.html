@@ -107,6 +107,12 @@ h1 em{font-style:italic;font-weight:600;color:var(--amber)}
   filter:grayscale(.55) contrast(1.04) brightness(.95);
   transition:filter .45s,transform .6s cubic-bezier(.19,.8,.22,1)}
 .card:hover .shot img{filter:grayscale(0) contrast(1) brightness(1);transform:scale(1.045)}
+/* Thiết bị cảm ứng không có "hover" — rê chuột không tồn tại trên điện thoại/
+   máy tính bảng, nên hiệu ứng khử-màu-rồi-lên-màu-khi-rê sẽ không bao giờ kích
+   hoạt được, khiến ảnh mãi mãi xám xịt. Ở đây hiện màu đầy đủ ngay từ đầu. */
+@media (hover:none){
+  .shot img{filter:none}
+}
 .shot .fallback{position:absolute;inset:0;display:grid;place-items:center;overflow:hidden}
 .shot .fallback svg{position:absolute;inset:0;width:100%;height:100%;opacity:.5}
 .shot .initials{position:relative;font-family:var(--disp);font-weight:800;font-stretch:120%;
