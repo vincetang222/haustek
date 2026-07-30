@@ -100,9 +100,17 @@ a,button,summary{cursor:pointer;-webkit-tap-highlight-color:transparent}
 .logo img{height:11px;width:auto}
 .rec{width:7px;height:7px;border-radius:50%;background:var(--red);animation:blink 1.6s steps(2,end) infinite;box-shadow:0 0 10px rgba(255,46,76,.8)}
 @keyframes blink{50%{opacity:.25}}
-/* Nav gọn lại: chỉ logo + đổi ngôn ngữ + nút Gửi nhạc + một hamburger duy nhất
-   mở bảng điều hướng lớn — dùng chung một kiểu cho mọi kích thước màn hình,
-   thay vì phải giữ hai bộ nav khác nhau cho desktop/mobile. */
+/* Nav chia hai kiểu theo kích thước màn hình:
+   - Desktop (≥1000px): dãy link gọn, chỉ 3 mục thật sự cần — không nhét
+     "Trang chủ" (logo đã làm việc đó) và không còn "Cửa hàng" (anchor
+     nhảy xuống, không phải điểm đến độc lập, bỏ cho gọn theo yêu cầu).
+   - Mobile (<1000px): dãy link ẩn hẳn, thay bằng một hamburger duy nhất
+     mở bảng điều hướng phủ toàn màn hình — vì màn hình hẹp không đủ chỗ
+     xếp ngang, và trước đây mobile hoàn toàn không có cách điều hướng nào. */
+.nav-links{display:none;gap:28px}
+.nav-links a{font-family:var(--mono);font-size:11.5px;letter-spacing:.1em;color:var(--concrete);
+  text-transform:uppercase;transition:color .2s}
+.nav-links a:hover{color:var(--paper)}
 .nav-right{display:flex;align-items:center;gap:14px}
 
 .menu-btn{position:relative;width:38px;height:38px;flex:none;border-radius:100px;
@@ -118,8 +126,9 @@ a,button,summary{cursor:pointer;-webkit-tap-highlight-color:transparent}
 .menu-btn.on span:nth-child(2){opacity:0}
 .menu-btn.on span:nth-child(3){top:18.5px;transform:rotate(-45deg)}
 
-/* Bảng điều hướng — phủ toàn màn hình, chữ lớn cùng ngôn ngữ thiết kế với
-   H2 các section, không phải danh sách link nhỏ nhàm chán. */
+/* Bảng điều hướng full-screen — CHỈ dùng trên mobile giờ, nhưng giữ nguyên
+   kiểu chữ lớn thay vì thu nhỏ lại, vì đây vẫn là trải nghiệm chính của
+   người dùng điện thoại, không phải "phương án dự phòng". */
 .full-menu{position:fixed;inset:0;z-index:150;background:rgba(6,6,8,.97);backdrop-filter:blur(18px);
   -webkit-backdrop-filter:blur(18px);display:flex;flex-direction:column;justify-content:space-between;
   padding:110px var(--gut) 40px;opacity:0;visibility:hidden;transform:translateY(-14px);
@@ -149,7 +158,12 @@ body.menu-open{overflow:hidden}
   transition:all .25s;
 }
 .nav-submit:hover{background:var(--red);border-color:var(--red)}
-@media(min-width:1000px){.nav-links{display:flex}}
+/* Đổi chỗ ở đúng một mốc: dưới 1000px thấy hamburger, từ 1000px trở lên
+   thấy dãy link và ẩn hamburger đi — không bao giờ thấy cả hai cùng lúc. */
+@media(min-width:1000px){
+  .nav-links{display:flex}
+  .menu-btn{display:none}
+}
 
 /* ================= SECTION + COLOR ZONES ================= */
 main.page{display:none}
@@ -700,6 +714,11 @@ l-1242 0 -30 29 -29 29 0 745 c0 768 1 796 40 817 12 6 374 10 984 10 929 0
 -93 -69 -24 0 -38 6 -45 19 -7 12 -11 546 -11 1577 l0 1559 -25 23 c-26 22
 -29 22 -313 22 -220 -1 -294 -4 -318 -14z"/></g></svg>
   </a>
+  <nav class="nav-links" aria-label="Điều hướng">
+    <a href="#services" data-i18n="nav_services">Dịch vụ</a>
+    <a href="/artists" data-i18n="nav_artists">Nghệ sĩ</a>
+    <a href="/events" data-i18n="nav_events">Sự kiện</a>
+  </nav>
   <div class="nav-right">
     <button class="lang-toggle" id="langBtn" aria-label="Switch to English">EN</button>
     <a class="nav-submit" href="/metadata" data-i18n="nav_submit">Gửi nhạc</a>
@@ -713,10 +732,9 @@ l-1242 0 -30 29 -29 29 0 745 c0 768 1 796 40 817 12 6 374 10 984 10 929 0
   <div class="fm-links">
     <a href="/" data-i18n="fm_home"><b>01</b>Trang chủ</a>
     <a href="#services" data-fm-anchor data-i18n="fm_services"><b>02</b>Dịch vụ</a>
-    <a href="#stores" data-fm-anchor data-i18n="fm_stores"><b>03</b>Cửa hàng</a>
-    <a href="/artists" data-i18n="fm_artists"><b>04</b>Nghệ sĩ</a>
-    <a href="/events" data-i18n="fm_events"><b>05</b>Sự kiện</a>
-    <a href="/metadata" data-i18n="fm_submit"><b>06</b>Gửi nhạc</a>
+    <a href="/artists" data-i18n="fm_artists"><b>03</b>Nghệ sĩ</a>
+    <a href="/events" data-i18n="fm_events"><b>04</b>Sự kiện</a>
+    <a href="/metadata" data-i18n="fm_submit"><b>05</b>Gửi nhạc</a>
   </div>
   <div class="fm-foot">
     <a href="/legal#terms" data-i18n="fm_terms">Điều khoản</a>
@@ -1146,8 +1164,8 @@ const I18N={
   vi:{
     _title:"Haustek — Music Label & Distribution | Để nhạc Việt vang xa hơn",
     _desc:"Haustek — music label & distribution từ 2017. Làm sự kiện, sản xuất, phát hành, quảng bá và tư vấn chiến lược cho âm nhạc. Hơn 200 cửa hàng nhạc số khắp thế giới.",
-    nav_submit:"Gửi nhạc",
-    fm_home:"Trang chủ",fm_services:"Dịch vụ",fm_stores:"Cửa hàng",fm_artists:"Nghệ sĩ",fm_events:"Sự kiện",fm_submit:"Gửi nhạc",
+    nav_services:"Dịch vụ",nav_artists:"Nghệ sĩ",nav_events:"Sự kiện",nav_submit:"Gửi nhạc",
+    fm_home:"Trang chủ",fm_services:"Dịch vụ",fm_artists:"Nghệ sĩ",fm_events:"Sự kiện",fm_submit:"Gửi nhạc",
     fm_terms:"Điều khoản",fm_privacy:"Quyền riêng tư",
     hero_k:"Music label & distribution — est. 2017",
     h1_l1:"Để nhạc Việt", h1_l2:"<em>vang xa</em> hơn.",
@@ -1222,8 +1240,8 @@ const I18N={
   en:{
     _title:"Haustek — Music Label & Distribution | Vietnamese music, heard worldwide",
     _desc:"Haustek — music label & distribution since 2017. Events, production, releases, promotion and strategic consulting for music. 200+ digital music stores worldwide.",
-    nav_submit:"Submit",
-    fm_home:"Home",fm_services:"Services",fm_stores:"Stores",fm_artists:"Artists",fm_events:"Events",fm_submit:"Submit music",
+    nav_services:"Services",nav_artists:"Artists",nav_events:"Events",nav_submit:"Submit",
+    fm_home:"Home",fm_services:"Services",fm_artists:"Artists",fm_events:"Events",fm_submit:"Submit music",
     fm_terms:"Terms",fm_privacy:"Privacy",
     hero_k:"Music label & distribution — est. 2017",
     h1_l1:"Made in Vietnam.", h1_l2:"<em>Heard</em> worldwide.",
