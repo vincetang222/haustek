@@ -177,6 +177,30 @@ section.hero{content-visibility:visible}
 /* lớp màu nền riêng của từng khu vực */
 .zone::before{content:"";position:absolute;inset:0;z-index:0;pointer-events:none}
 .zone>*{position:relative;z-index:1}
+/* canvas đồ hoạ nằm dưới nội dung nhưng trên màu nền zone */
+.zone .bg-gfx{position:absolute;inset:0;width:100%;height:100%;z-index:0;pointer-events:none;display:block}
+
+/* 02 — chuỗi tín hiệu: 5 dịch vụ = 5 nút trên một đường truyền */
+#svcSignal{display:block;width:100%;height:96px;margin-top:38px}
+
+/* 03 — quả cầu điểm: bản phát hành đáp xuống khắp thế giới */
+.stores-top{display:flex;align-items:center;justify-content:space-between;gap:36px;flex-wrap:wrap}
+#globe{width:min(330px,72vw);aspect-ratio:1;flex:none;display:block}
+
+/* 05 — đèn quét sân khấu: chỉ transform/opacity, chạy trên compositor */
+.beams{position:absolute;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+.beams i{position:absolute;top:-12%;width:16vw;height:130%;transform-origin:top center;
+  background:linear-gradient(to bottom, rgba(255,46,76,.13), rgba(255,46,76,.03) 55%, transparent 80%);
+  filter:blur(6px);mix-blend-mode:screen;will-change:transform}
+.beams i:nth-child(1){left:16%;animation:sweep1 13s ease-in-out infinite alternate}
+.beams i:nth-child(2){left:66%;background:linear-gradient(to bottom, rgba(127,214,232,.1), rgba(127,214,232,.02) 55%, transparent 80%);animation:sweep2 17s ease-in-out infinite alternate}
+@keyframes sweep1{from{transform:rotate(-14deg)}to{transform:rotate(11deg)}}
+@keyframes sweep2{from{transform:rotate(12deg)}to{transform:rotate(-9deg)}}
+@media(prefers-reduced-motion:reduce){.beams i{animation:none;transform:rotate(-4deg)}}
+
+/* 06 — FAQ: texture đục lỗ tĩnh, khu vực đọc giữ yên có chủ đích */
+.z-faq::before{background:radial-gradient(rgba(240,240,242,.05) 1px, transparent 1.4px);background-size:26px 26px;
+  mask-image:linear-gradient(to bottom, transparent, #000 18%, #000 82%, transparent)}
 
 .z-about{background:#08080D}
 .z-about::before{background:
@@ -285,18 +309,18 @@ h2 em,h1 em,.statement em,.pull em{font-style:italic;font-weight:600;color:var(-
 
 /* ================= HERO ================= */
 .hero{min-height:100svh;display:flex;flex-direction:column;justify-content:flex-end;padding-bottom:0;background:#070709}
-#ripple{position:absolute;inset:0;width:100%;height:100%;z-index:0}
+#terrain{position:absolute;inset:0;width:100%;height:100%;z-index:0;display:block}
 .hero::before{content:"";position:absolute;inset:0;z-index:1;pointer-events:none;
   background:
-    radial-gradient(46% 40% at 84% 16%, rgba(255,46,76,.17), transparent 70%),
-    radial-gradient(50% 44% at 8% 60%, rgba(127,214,232,.1), transparent 70%),
-    linear-gradient(to bottom, rgba(7,7,9,.55), transparent 34%, rgba(7,7,9,.93) 92%)}
+    radial-gradient(46% 40% at 84% 16%, rgba(255,46,76,.14), transparent 70%),
+    radial-gradient(50% 44% at 8% 60%, rgba(127,214,232,.08), transparent 70%),
+    linear-gradient(to bottom, rgba(7,7,9,.5), transparent 32%, rgba(7,7,9,.9) 92%)}
 .hero-inner{position:relative;z-index:2;padding-bottom:26px}
 .hero-kicker{font-family:var(--mono);font-size:11px;letter-spacing:.32em;text-transform:uppercase;color:var(--concrete);margin-bottom:22px;display:flex;gap:14px;align-items:center}
 .hero-kicker .pulse{width:6px;height:6px;border-radius:50%;background:var(--red);animation:blink 1.6s steps(2,end) infinite}
 h1{
   font-family:var(--disp);font-weight:800;font-stretch:118%;
-  font-size:clamp(50px,12vw,172px);line-height:.94;letter-spacing:-.035em;
+  font-size:clamp(52px,13.2vw,192px);line-height:.92;letter-spacing:-.035em;
 }
 .hero-row{display:flex;align-items:flex-end;justify-content:space-between;gap:36px;flex-wrap:wrap;margin-top:34px}
 .hero-sub{color:var(--concrete);font-size:14.5px;max-width:480px;text-wrap:pretty}
@@ -772,8 +796,7 @@ l-1242 0 -30 29 -29 29 0 745 c0 768 1 796 40 817 12 6 374 10 984 10 929 0
 <main id="page-home" class="page active">
 
 <section class="hero" id="top">
-  <div class="aurora" aria-hidden="true"><i></i><i></i><i></i></div>
-  <canvas id="ripple" aria-hidden="true"></canvas>
+  <canvas id="terrain" aria-hidden="true"></canvas>
   <div class="hero-inner">
     <p class="hero-kicker"><span class="pulse"></span><span data-i18n="hero_k">Music label &amp; distribution — est. 2017</span></p>
     <h1>
@@ -781,7 +804,7 @@ l-1242 0 -30 29 -29 29 0 745 c0 768 1 796 40 817 12 6 374 10 984 10 929 0
       <span class="split" data-i18n-split="h1_l2"><span class="row"><em>vang xa</em> hơn.</span></span>
     </h1>
     <div class="hero-row">
-      <p class="hero-sub" data-i18n="hero_sub">Từ sàn diễn underground ra hơn <strong>200 cửa hàng nhạc số</strong>.<br>Phát hành · Label · Sự kiện · Sản xuất — một đầu mối.</p>
+      <p class="hero-sub" data-i18n="hero_sub">Phát hành · Label · Sự kiện · Sản xuất — <strong>một đầu mối</strong>.</p>
       <div class="playwheel" id="wheel">
         <svg class="ringtext" viewBox="0 0 136 136" aria-hidden="true">
           <defs><path id="circ" d="M68,68 m-56,0 a56,56 0 1,1 112,0 a56,56 0 1,1 -112,0"/></defs>
@@ -820,7 +843,6 @@ l-1242 0 -30 29 -29 29 0 745 c0 768 1 796 40 817 12 6 374 10 984 10 929 0
   <div class="about-grid">
     <div class="rv">
       <p class="statement" data-i18n="ab_st"><span class="ln">Gần một thập kỷ</span> <span class="ln">đưa nhạc Việt ra thế giới.</span> <span class="ln">Bắt đầu từ techno và house,</span> <span class="ln">dưới hầm, giữa Sài Gòn.</span></p>
-      <p class="smallp" style="margin-top:24px" data-i18n="ab_p">Producer, DJ, VJ, rapper, ban nhạc, ca sĩ — người Việt từ khắp nơi. Mỗi bản thu ra mắt là thêm một nhịp cầu, để tiếng kick dưới hầm techno tìm được người nghe của nó.</p>
     </div>
     <div class="rv">
       <div class="pulse" aria-hidden="true">
@@ -843,7 +865,8 @@ l-1242 0 -30 29 -29 29 0 745 c0 768 1 796 40 817 12 6 374 10 984 10 929 0
   <div class="ghost" aria-hidden="true">02</div>
   <p class="kicker rv"><i>●</i><span data-i18n="sv_k">Chúng tôi làm gì</span></p>
   <h2 class="rv" data-i18n="sv_h"><span class="ln">Bạn cần gì cho âm nhạc,</span> <span class="ln"><em>Haustek có ở đây.</em></span></h2>
-  <p class="smallp rv" style="margin-top:20px" data-i18n="sv_lead">Năm mảng việc, một mái nhà. Bạn chỉ cần nói chuyện với một nơi.</p>
+  <p class="smallp rv" style="margin-top:20px" data-i18n="sv_lead">Năm mảng việc, một mái nhà.</p>
+  <canvas id="svcSignal" class="rv" aria-hidden="true"></canvas>
 
   <div class="svc-wrap glass rv">
     <details open>
@@ -875,7 +898,10 @@ l-1242 0 -30 29 -29 29 0 745 c0 768 1 796 40 817 12 6 374 10 984 10 929 0
 <section id="stores" class="zone z-stores">
   <div class="ghost" aria-hidden="true">03</div>
   <p class="kicker rv"><i>●</i><span data-i18n="stw_k">Nhạc của bạn sẽ nằm ở</span></p>
-  <h2 class="rv" data-i18n="stw_h"><span class="ln">Mọi nơi người ta</span> <span class="ln"><em>đang nghe nhạc.</em></span></h2>
+  <div class="stores-top">
+    <h2 class="rv" data-i18n="stw_h"><span class="ln">Mọi nơi người ta</span> <span class="ln"><em>đang nghe nhạc.</em></span></h2>
+    <canvas id="globe" class="rv" aria-hidden="true"></canvas>
+  </div>
   <div class="typewall rv" aria-label="Các cửa hàng nhạc số">
     <div class="tw-row"><div class="tw-track" style="--dur:46s">
       <span>Spotify</span><i>●</i><span class="o">Apple Music</span><i>●</i><span>TikTok</span><i>●</i><span class="o">YouTube Music</span><i>●</i><span>Amazon Music</span><i>●</i><span class="o">Deezer</span><i>●</i><span>Snapchat</span><i>●</i>
@@ -908,10 +934,10 @@ l-1242 0 -30 29 -29 29 0 745 c0 768 1 796 40 817 12 6 374 10 984 10 929 0
 
 <!-- 05 EVENTS -->
 <section id="events-teaser" class="zone z-events">
+  <div class="beams" aria-hidden="true"><i></i><i></i></div>
   <div class="ghost" aria-hidden="true">05</div>
   <p class="kicker rv"><i>●</i><span data-i18n="et_k">Sự kiện</span></p>
   <h2 class="rv" data-i18n="et_h"><span class="ln">Sân khấu</span> <span class="ln">chúng tôi từng <em>dàn dựng.</em></span></h2>
-  <p class="statement rv" style="margin-top:22px;color:var(--concrete);font-weight:400;font-size:clamp(16px,2.2vw,20px)" data-i18n="et_st">Từ United We Stream Asia đến Boiler Room Ho Chi Minh City — đây là những cái tên đã đứng trên sân khấu của Haustek.</p>
   <div class="event-marquee rv" id="eventRoster" aria-label="Nghệ sĩ đã biểu diễn tại sự kiện Haustek"></div>
   <div class="rv" style="margin-top:30px"><a class="see-all" href="/events">
     <span data-i18n="et_all">Xem toàn bộ sự kiện &amp; video</span>
@@ -960,7 +986,7 @@ l-1242 0 -30 29 -29 29 0 745 c0 768 1 796 40 817 12 6 374 10 984 10 929 0
 
 <!-- 06 CONTACT -->
 <section id="contact" class="zone z-contact">
-  <div class="aurora" aria-hidden="true"><i></i><i></i><i></i></div>
+  <canvas id="converge" class="bg-gfx" aria-hidden="true"></canvas>
   <div class="ghost" aria-hidden="true">07</div>
   <p class="kicker rv"><i>●</i><span data-i18n="ct_k">Liên hệ</span></p>
   <h2 class="rv" data-i18n="ct_h"><span class="ln">Bạn có bản nhạc?</span> <span class="ln"><em>Chúng tôi có sân khấu.</em></span></h2>
@@ -1153,6 +1179,7 @@ l-1242 0 -30 29 -29 29 0 745 c0 768 1 796 40 817 12 6 374 10 984 10 929 0
   </div>
 </footer>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script>
 /* =====================================================================
    KHE CẮM VIDEO NỀN
@@ -1225,17 +1252,16 @@ const I18N={
     fm_terms:"Điều khoản",fm_privacy:"Quyền riêng tư",
     hero_k:"Music label & distribution — est. 2017",
     h1_l1:"Để nhạc Việt", h1_l2:"<em>vang xa</em> hơn.",
-    hero_sub:"Từ sàn diễn underground ra hơn <strong>200 cửa hàng nhạc số</strong>.<br>Phát hành · Label · Sự kiện · Sản xuất — một đầu mối.",
+    hero_sub:"Phát hành · Label · Sự kiện · Sản xuất — <strong>một đầu mối</strong>.",
     ring:"NGHE THỬ BEAT · 124 BPM · HAUSTEK · ",
     st_streams:"Lượt nghe",st_founded:"Thành lập",st_stores:"Cửa hàng nhạc số",st_rel:"Bản phát hành",
     ab_k:"Về Haustek",
     ab_h:'<span class="ln">Gốc rễ toàn cầu,</span> <span class="ln"><em>thuộc về</em> nhạc Việt.</span>',
     ab_st:'<span class="ln">Gần một thập kỷ</span> <span class="ln">đưa nhạc Việt ra thế giới.</span> <span class="ln">Bắt đầu từ techno và house,</span> <span class="ln">dưới hầm, giữa Sài Gòn.</span>',
-    ab_p:"Producer, DJ, VJ, rapper, ban nhạc, ca sĩ — người Việt từ khắp nơi. Mỗi bản thu ra mắt là thêm một nhịp cầu, để tiếng kick dưới hầm techno tìm được người nghe của nó.",
     f1b:"Thành lập",f2b:"Địa bàn",f2s:"Việt Nam & toàn cầu",f3b:"Mảng làm",f3s:"Phát hành · Label · Sự kiện · Sản xuất · Tư vấn",f4b:"Đi xa nhất",f5b:"Người nghe",f5s:"3.500.000+ mỗi tháng",
     sv_k:"Chúng tôi làm gì",
     sv_h:'<span class="ln">Bạn cần gì cho âm nhạc,</span> <span class="ln"><em>Haustek có ở đây.</em></span>',
-    sv_lead:"Năm mảng việc, một mái nhà. Bạn chỉ cần nói chuyện với một nơi.",
+    sv_lead:"Năm mảng việc, một mái nhà.",
     sv1t:"Phát hành & khai thác bản ghi",
     sv1:"Nhạc của bạn có mặt ở hơn 200 cửa hàng số — Spotify, Apple Music, TikTok, Snapchat, Alive, NhacCuaTui, Zing MP3 và nhiều nơi khác. Lên sóng đúng hẹn, số liệu công khai, báo cáo rõ từng khoản.",
     sv2t:"Nhãn thu âm",
@@ -1255,7 +1281,6 @@ const I18N={
     ar_all:"Xem hồ sơ từng nghệ sĩ",
     et_k:"Sự kiện",
     et_h:'<span class="ln">Sân khấu</span> <span class="ln">chúng tôi từng <em>dàn dựng.</em></span>',
-    et_st:"Từ United We Stream Asia đến Boiler Room Ho Chi Minh City — đây là những cái tên đã đứng trên sân khấu của Haustek.",
     et_all:"Xem toàn bộ sự kiện & video",
     pq:'<span class="ln">“Bạn lo phần sáng tạo.</span> <span class="ln"><em>Chúng tôi lo phần còn lại.”</em></span>',
     pq_by:"Lời cam kết đến từ Haustek",
@@ -1305,17 +1330,16 @@ const I18N={
     fm_terms:"Terms",fm_privacy:"Privacy",
     hero_k:"Music label & distribution — est. 2017",
     h1_l1:"Made in Vietnam.", h1_l2:"<em>Heard</em> worldwide.",
-    hero_sub:"From underground stages to <strong>200+ digital music stores</strong>.<br>Distribution · Label · Events · Production — one place.",
+    hero_sub:"Distribution · Label · Events · Production — <strong>one place</strong>.",
     ring:"PLAY THE BEAT · 124 BPM · HAUSTEK · ",
     st_streams:"Streams",st_founded:"Founded",st_stores:"Music stores",st_rel:"Releases",
     ab_k:"About Haustek",
     ab_h:'<span class="ln">Global roots,</span> <span class="ln"><em>devoted to</em> Vietnamese music.</span>',
     ab_st:'<span class="ln">Nearly a decade</span> <span class="ln">taking Vietnamese music worldwide.</span> <span class="ln">It started with techno and house,</span> <span class="ln">underground, in Saigon.</span>',
-    ab_p:"Producers, DJs, VJs, rappers, bands, vocalists — Vietnamese, from everywhere. Every record we put out is another bridge, so a bunker techno kick can find the ears it belongs to.",
     f1b:"Founded",f2b:"Based",f2s:"Vietnam & worldwide",f3b:"Practice",f3s:"Distribution · Label · Events · Production · Consulting",f4b:"Farthest reach",f5b:"Listeners",f5s:"3,500,000+ monthly",
     sv_k:"What we do",
     sv_h:'<span class="ln">Whatever your music needs,</span> <span class="ln"><em>Haustek has it here.</em></span>',
-    sv_lead:"Five practices, one roof. You only ever talk to one team.",
+    sv_lead:"Five practices, one roof.",
     sv1t:"Distribution & recordings",
     sv1:"Your music lands in 200+ digital stores — Spotify, Apple Music, TikTok, Snapchat, Alive, NhacCuaTui, Zing MP3 and more. On schedule, open numbers, every line explained.",
     sv2t:"Record label",
@@ -1335,7 +1359,6 @@ const I18N={
     ar_all:"See each artist profile",
     et_k:"Events",
     et_h:'<span class="ln">Stages</span> <span class="ln">we\'ve <em>built.</em></span>',
-    et_st:"From United We Stream Asia to Boiler Room Ho Chi Minh City — these are the names who've stood on Haustek's stage.",
     et_all:"See all events & videos",
     pq:'<span class="ln">“You handle the creative.</span> <span class="ln"><em>We handle the rest.”</em></span>',
     pq_by:"A commitment from Haustek",
@@ -1516,51 +1539,152 @@ if(eq){
 /* ================= marquees ================= */
 document.querySelectorAll('.ticker-track,.tw-track,.rm-track,.em-track').forEach(t=>{t.innerHTML+=t.innerHTML;});
 
-/* ================= ripple + beat ================= */
-const cv=document.getElementById('ripple');
-const ctx=cv.getContext('2d');
+/* ================= mặt sàn âm thanh (3D) =================
+   Cùng triết lý với mọi canvas khác trên trang: vẽ thời gian thực, không phải
+   hình minh hoạ — nhưng lần này có chiều sâu. Một cánh đồng điểm nhìn từ góc
+   thấp, phập phồng chậm như sub-bass lăn qua phòng tối. Bật beat (nút play):
+   mỗi tiếng kick nổ một vòng sóng đỏ lan qua địa hình. Rê / bấm chuột cũng
+   tạo sóng nhỏ. Giữ nguyên tên spawn/W/H/reduced để khối beat phía dưới
+   không phải đổi một dòng nào. Nếu CDN three.js không tải được, hero chỉ
+   còn nền gradient — trang vẫn chạy bình thường. */
+const cv=document.getElementById('terrain');
 const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
-let W,H;
-function size(){const r=cv.getBoundingClientRect();W=cv.width=r.width*devicePixelRatio;H=cv.height=r.height*devicePixelRatio;}
-size();addEventListener('resize',size);
-const rings=[];
-function spawn(x,y,big){
-  rings.push({x,y,r:0,v:(big?3.2:2.2)*devicePixelRatio,a:big?.75:.45,w:(big?1.8:1.2)*devicePixelRatio,c:Math.random()<.2?1:0});
-  if(rings.length>60)rings.shift();
-}
-for(let i=0;i<5;i++)spawn(Math.random()*innerWidth*devicePixelRatio,Math.random()*innerHeight*.6*devicePixelRatio,false);
-let moved=0;
-cv.parentElement.addEventListener('pointermove',e=>{
-  if(e.pointerType!=="mouse")return;
-  const r=cv.getBoundingClientRect();
-  if(++moved%9===0)spawn((e.clientX-r.left)*devicePixelRatio,(e.clientY-r.top)*devicePixelRatio,false);
-},{passive:true});
-cv.parentElement.addEventListener('pointerdown',e=>{
-  const r=cv.getBoundingClientRect();
-  spawn((e.clientX-r.left)*devicePixelRatio,(e.clientY-r.top)*devicePixelRatio,true);
-},{passive:true});
+let W=innerWidth*devicePixelRatio,H=innerHeight*devicePixelRatio;
+let spawn=function(){};              /* no-op mặc định — gán lại bên dưới khi 3D sẵn sàng */
+const kickHooks=[];                  /* các đồ hoạ khác đăng ký vào đây để nhảy theo tiếng kick */
 let heroVisible=true;
-new IntersectionObserver(es=>{heroVisible=es[0].isIntersecting;if(heroVisible)requestAnimationFrame(frame);},{threshold:0}).observe(cv);
-function frame(){
-  if(!heroVisible)return;
-  ctx.clearRect(0,0,W,H);
-  for(let i=rings.length-1;i>=0;i--){
-    const g=rings[i];g.r+=g.v;g.a*=.985;
-    if(g.a<.01){rings.splice(i,1);continue;}
-    for(let k=0;k<3;k++){
-      ctx.beginPath();
-      ctx.arc(g.x,g.y,Math.max(g.r-k*14*devicePixelRatio,0),0,Math.PI*2);
-      ctx.strokeStyle=g.c
-        ?`rgba(255,46,76,${(g.a*(1-k*.3)).toFixed(3)})`
-        :`rgba(240,240,242,${(g.a*(1-k*.3)*.8).toFixed(3)})`;
-      ctx.lineWidth=g.w*(1-k*.25);
-      ctx.stroke();
-    }
+
+(function(){
+  if(!window.THREE||!cv)return;
+  const DPR=Math.min(devicePixelRatio||1,2);
+  const mobile=matchMedia('(max-width:760px)').matches;
+  const renderer=new THREE.WebGLRenderer({canvas:cv,antialias:false,alpha:true,powerPreference:'low-power'});
+  renderer.setPixelRatio(DPR);
+  const scene=new THREE.Scene();
+  scene.fog=new THREE.Fog(0x08080c,24,96);
+  const cam=new THREE.PerspectiveCamera(54,1,.1,200);
+  const CAMY=7.4,CAMZ=30;
+  cam.position.set(0,CAMY,CAMZ);
+  cam.lookAt(0,1.2,-14);
+
+  /* lưới điểm: rộng hơn khung nhìn để không lộ mép khi camera lắc */
+  const NX=mobile?96:150, NZ=mobile?60:96, SX=128, SZ=96;
+  const N=NX*NZ;
+  const pos=new Float32Array(N*3), col=new Float32Array(N*3);
+  const gx=new Float32Array(N), gz=new Float32Array(N);
+  let i=0;
+  for(let zi=0;zi<NZ;zi++)for(let xi=0;xi<NX;xi++,i++){
+    const x=(xi/(NX-1)-.5)*SX, z=-(zi/(NZ-1))*SZ+8;
+    gx[i]=x; gz[i]=z;
+    pos[i*3]=x; pos[i*3+1]=0; pos[i*3+2]=z;
   }
-  if(!reduced)requestAnimationFrame(frame);
-}
-frame();
-if(reduced){for(let i=0;i<40;i++){rings.forEach(g=>{g.r+=g.v;g.a*=.985;});}frame();}
+  const geo=new THREE.BufferGeometry();
+  geo.setAttribute('position',new THREE.BufferAttribute(pos,3).setUsage(THREE.DynamicDrawUsage));
+  geo.setAttribute('color',new THREE.BufferAttribute(col,3).setUsage(THREE.DynamicDrawUsage));
+  const mat=new THREE.PointsMaterial({size:mobile?.4:.28,vertexColors:true,transparent:true,opacity:.9,
+    blending:THREE.AdditiveBlending,depthWrite:false,sizeAttenuation:true});
+  scene.add(new THREE.Points(geo,mat));
+
+  /* sóng xung kích: kick → đỏ mạnh, con trỏ → trắng nhỏ */
+  const waves=[];
+  function impulse(wx,wz,big){
+    waves.push({x:wx,z:wz,t0:tNow,red:big,amp:big?3.1:.8,spd:big?26:20,wd:big?15:9,dk:big?1.5:2.4});
+    if(waves.length>10)waves.shift();
+  }
+  /* API cũ: spawn(px,py,big) với toạ độ pixel màn hình — quy về toạ độ địa hình */
+  spawn=function(px,py,big){
+    const nx=Math.min(Math.max(px/Math.max(W,1),0),1);
+    const ny=Math.min(Math.max(py/Math.max(H,1),0),1);
+    impulse((nx-.5)*SX*.72, -6-ny*30, big);
+  };
+
+  /* năng lượng: bật beat thì biên độ toàn sàn dâng lên, tắt thì lắng xuống */
+  let energy=0, tNow=0;
+  const wheelEl=()=>document.getElementById('wheel');
+
+  /* parallax nhẹ theo chuột */
+  let px=0,py=0;
+  cv.parentElement.addEventListener('pointermove',e=>{
+    if(e.pointerType!=="mouse")return;
+    const r=cv.getBoundingClientRect();
+    px=(e.clientX-r.left)/r.width-.5;
+    py=(e.clientY-r.top)/r.height-.5;
+    if(Math.random()<.06)impulse((px)*SX*.7,-8-((py+.5)*26),false);
+  },{passive:true});
+  cv.parentElement.addEventListener('pointerdown',e=>{
+    const r=cv.getBoundingClientRect();
+    impulse(((e.clientX-r.left)/r.width-.5)*SX*.72, -6-((e.clientY-r.top)/r.height)*30, true);
+  },{passive:true});
+
+  function size(){
+    const r=cv.getBoundingClientRect();
+    renderer.setSize(r.width,r.height,false);
+    cam.aspect=r.width/r.height; cam.updateProjectionMatrix();
+    W=r.width*DPR; H=r.height*DPR;
+  }
+  size(); addEventListener('resize',size);
+
+  /* màu thương hiệu */
+  const PR=240/255,PG=240/255,PB=242/255;           /* paper  */
+  const RR=255/255,RG=46/255,RB=76/255;             /* đỏ nhấn */
+
+  function update(t){
+    tNow=t;
+    const playing=wheelEl()?.classList.contains('playing');
+    energy+=((playing?1:0)-energy)*.03;
+    const amp=.9+energy*1.7, flow=t*(.9+energy*.9);
+    for(let k=waves.length-1;k>=0;k--){if(t-waves[k].t0>4.2)waves.splice(k,1);}
+    for(let i=0;i<N;i++){
+      const x=gx[i], z=gz[i];
+      /* nền phập phồng: 3 lớp sin lệch pha, trôi chậm về phía người xem */
+      let y=Math.sin(x*.105+flow*.6)*.65
+           +Math.sin(z*.155-flow*.85)*.85
+           +Math.sin((x+z)*.06+flow*.35)*.5;
+      y*=amp;
+      let red=0;
+      for(let k=0;k<waves.length;k++){
+        const w=waves[k], dt=t-w.t0;
+        const d=Math.hypot(x-w.x,z-w.z);
+        const ring=Math.exp(-((d-w.spd*dt)*(d-w.spd*dt))/w.wd)*Math.exp(-dt*w.dk)*w.amp;
+        if(ring>.01){y+=ring; if(w.red)red=Math.max(red,Math.min(ring*.5,1));}
+      }
+      pos[i*3+1]=y;
+      /* sáng theo độ cao — đỉnh sóng nổi, đáy chìm vào nền */
+      const h=Math.min(Math.max((y+2.4)/6,0),1);
+      const b=.16+h*.6+energy*.1;
+      col[i*3]  =PR*b+(RR-PR*b)*red;
+      col[i*3+1]=PG*b+(RG-PG*b)*red;
+      col[i*3+2]=PB*b+(RB-PB*b)*red;
+    }
+    geo.attributes.position.needsUpdate=true;
+    geo.attributes.color.needsUpdate=true;
+    cam.position.x+=((px*2.4)-cam.position.x)*.04;
+    cam.position.y+=((CAMY-py*1.6+Math.sin(t*.18)*.35)-cam.position.y)*.04;
+    cam.lookAt(0,1.2,-14);
+  }
+
+  new IntersectionObserver(es=>{heroVisible=es[0].isIntersecting;if(heroVisible&&!reduced)requestAnimationFrame(loop);},{threshold:0}).observe(cv);
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden&&heroVisible&&!reduced)requestAnimationFrame(loop);});
+
+  let t0=null;
+  function loop(ts){
+    if(!heroVisible||document.hidden||reduced)return;
+    if(t0===null)t0=ts;
+    update((ts-t0)/1000);
+    renderer.render(scene,cam);
+    requestAnimationFrame(loop);
+  }
+
+  if(reduced){
+    /* một khung tĩnh: gieo sẵn hai vòng sóng để ảnh đứng vẫn có hồn */
+    tNow=0; impulse(-18,-22,true); impulse(24,-34,false);
+    waves.forEach(w=>{w.t0=-0.9;});
+    update(0); renderer.render(scene,cam);
+    addEventListener('resize',()=>{update(0);renderer.render(scene,cam);});
+  }else{
+    requestAnimationFrame(loop);
+  }
+})();
 
 let AC=null,playing=false,nextT=0,step=0,timer=null;
 const wheel=document.getElementById('wheel'),playBtn=document.getElementById('playBtn'),playIco=document.getElementById('playIco');
@@ -1589,6 +1713,7 @@ function schedule(){
         eqBoost=1;                       /* mỗi tiếng kick đẩy dải equalizer nhảy lên */
         pulseKick=true;                  /* và phát một vòng sóng ở phần giới thiệu */
         eqBars.forEach(b=>{if(Math.random()<.45)b.t=Math.random()*.6+.4;});
+        kickHooks.forEach(f=>f());       /* quả cầu ping, chuỗi tín hiệu dồn xung... */
       },Math.max(dt,0));
     }
     hat(nextT,inBar===6);
@@ -1673,6 +1798,180 @@ document.querySelectorAll('.timebar .tb').forEach(tb=>{
     }
   }
   draw();addEventListener('resize',draw);
+});
+
+/* ================= bộ máy render chung =================
+   Một vòng requestAnimationFrame duy nhất cho mọi canvas section.
+   Section nào ngoài màn hình thì ngủ (IntersectionObserver), tab ẩn thì
+   cả bộ dừng. prefers-reduced-motion: mỗi module vẽ đúng một khung tĩnh.
+   Nhờ vậy thêm bao nhiêu đồ hoạ, chi phí mỗi frame vẫn chỉ là những gì
+   đang thật sự hiện trên màn hình. */
+const Bus=[];
+function busAdd(canvas,setup){
+  if(!canvas)return;
+  const c2=canvas.getContext('2d');
+  const m={on:false,draw:null,resize:null};
+  function fit(){
+    const r=canvas.getBoundingClientRect();
+    const d=Math.min(devicePixelRatio||1,2);
+    canvas.width=Math.max(r.width*d,1);canvas.height=Math.max(r.height*d,1);
+    m.d=d;m.w=canvas.width;m.h=canvas.height;
+    if(m.resize)m.resize();
+  }
+  fit();addEventListener('resize',fit);
+  setup(c2,m);
+  new IntersectionObserver(es=>{m.on=es[0].isIntersecting;},{threshold:0}).observe(canvas);
+  Bus.push(m);
+  if(reduced&&m.draw){m.on=true;m.draw(1.4);m.on=false;}
+}
+if(!reduced){
+  let busT0=null;
+  (function busLoop(ts){
+    requestAnimationFrame(busLoop);
+    if(document.hidden)return;
+    if(busT0===null)busT0=ts;
+    const t=(ts-busT0)/1000;
+    for(const m of Bus)if(m.on&&m.draw)m.draw(t);
+  })(0);
+}
+
+/* ---------- 02: chuỗi tín hiệu — 5 dịch vụ trên một đường truyền ----------
+   Xung sáng chạy trái → phải qua 5 nút. Mở mục nào trong accordion,
+   nút đó phát vòng đỏ. Bật beat: mỗi kick bắn thêm một xung. */
+busAdd(document.getElementById('svcSignal'),(c,m)=>{
+  const pulses=[{p:0,v:.16}];
+  const rings=[];
+  const wrap=()=>document.querySelector('.svc-wrap');
+  let openIdx=0;
+  document.querySelectorAll('.svc-wrap details').forEach((d,i)=>{
+    d.addEventListener('toggle',()=>{if(d.open){openIdx=i;rings.push({i,r:0,a:.85});}});
+  });
+  kickHooks.push(()=>{if(m.on){pulses.push({p:0,v:.5});if(pulses.length>6)pulses.shift();}});
+  m.draw=(t)=>{
+    const {w,h,d}=m;c.clearRect(0,0,w,h);
+    const y=h*.56, x0=w*.03, x1=w*.97, span=x1-x0;
+    /* đường truyền gợn nhẹ */
+    c.beginPath();
+    for(let x=x0;x<=x1;x+=6*d){
+      const yy=y+Math.sin(x/(46*d)+t*1.4)*2.2*d;
+      x===x0?c.moveTo(x,yy):c.lineTo(x,yy);
+    }
+    c.strokeStyle='rgba(240,240,242,.18)';c.lineWidth=1*d;c.stroke();
+    /* xung chạy dọc đường */
+    for(let k=pulses.length-1;k>=0;k--){
+      const p=pulses[k];p.p+=p.v/60;
+      if(p.p>1.06){if(pulses.length>1)pulses.splice(k,1);else p.p=0;continue;}
+      const px=x0+span*p.p, py=y+Math.sin(px/(46*d)+t*1.4)*2.2*d;
+      const g=c.createRadialGradient(px,py,0,px,py,16*d);
+      g.addColorStop(0,'rgba(255,46,76,.85)');g.addColorStop(1,'rgba(255,46,76,0)');
+      c.fillStyle=g;c.beginPath();c.arc(px,py,16*d,0,Math.PI*2);c.fill();
+    }
+    /* 5 nút */
+    for(let i=0;i<5;i++){
+      const nx=x0+span*(i+.5)/5;
+      const hot=i===openIdx;
+      c.beginPath();c.arc(nx,y,(hot?4.6:3.2)*d,0,Math.PI*2);
+      c.fillStyle=hot?'#FF2E4C':'rgba(240,240,242,.5)';c.fill();
+      c.font=`${10*d}px "IBM Plex Mono",monospace`;
+      c.fillStyle=hot?'rgba(255,46,76,.9)':'rgba(142,142,152,.7)';
+      c.textAlign='center';c.fillText('0'+(i+1),nx,y-14*d);
+    }
+    /* vòng lan từ nút vừa mở */
+    for(let k=rings.length-1;k>=0;k--){
+      const r=rings[k];r.r+=1.1*d;r.a*=.955;
+      if(r.a<.02){rings.splice(k,1);continue;}
+      const nx=x0+span*(r.i+.5)/5;
+      c.beginPath();c.arc(nx,y,r.r,0,Math.PI*2);
+      c.strokeStyle=`rgba(255,46,76,${r.a.toFixed(3)})`;c.lineWidth=1.3*d;c.stroke();
+    }
+  };
+});
+
+/* ---------- 03: quả cầu điểm — bản phát hành đáp xuống khắp thế giới ----------
+   ~800 điểm xếp xoắn Fibonacci trên mặt cầu, xoay chậm; ping đỏ nổ ngẫu
+   nhiên (dày hơn khi beat đang chạy) = một bản nhạc vừa chạm một nơi nào đó. */
+busAdd(document.getElementById('globe'),(c,m)=>{
+  const N=800,pts=[];
+  const GA=Math.PI*(3-Math.sqrt(5));
+  for(let i=0;i<N;i++){
+    const yy=1-(i/(N-1))*2, r=Math.sqrt(1-yy*yy), th=GA*i;
+    pts.push([Math.cos(th)*r,yy,Math.sin(th)*r]);
+  }
+  const pings=[];let lastPing=0;
+  kickHooks.push(()=>{if(m.on)pings.push({i:(Math.random()*N)|0,r:0,a:.9});});
+  m.draw=(t)=>{
+    const {w,h,d}=m;c.clearRect(0,0,w,h);
+    const cx=w/2,cy=h/2,R=Math.min(w,h)*.42;
+    const ry=t*.22, tilt=.36;
+    const sy=Math.sin(tilt),cyt=Math.cos(tilt);
+    if(t-lastPing>2.6){pings.push({i:(Math.random()*N)|0,r:0,a:.7});lastPing=t;}
+    if(pings.length>7)pings.shift();
+    const proj=[];
+    for(let i=0;i<N;i++){
+      const[x,y,z]=pts[i];
+      const x1=x*Math.cos(ry)+z*Math.sin(ry), z1=-x*Math.sin(ry)+z*Math.cos(ry);
+      const y1=y*cyt-z1*sy, z2=y*sy+z1*cyt;
+      proj[i]=[cx+x1*R, cy-y1*R, z2];
+      const front=z2>0;
+      const b=front?.28+z2*.5:.08;
+      c.beginPath();c.arc(cx+x1*R,cy-y1*R,(front?1.3:.9)*d,0,Math.PI*2);
+      c.fillStyle=`rgba(240,240,242,${b.toFixed(3)})`;c.fill();
+    }
+    for(let k=pings.length-1;k>=0;k--){
+      const p=pings[k];p.r+=.55*d;p.a*=.965;
+      const[px,py,pz]=proj[p.i];
+      if(p.a<.03){pings.splice(k,1);continue;}
+      if(pz<=0)continue;
+      c.beginPath();c.arc(px,py,p.r,0,Math.PI*2);
+      c.strokeStyle=`rgba(255,46,76,${(p.a*Math.min(pz+.3,1)).toFixed(3)})`;
+      c.lineWidth=1.2*d;c.stroke();
+      c.beginPath();c.arc(px,py,1.8*d,0,Math.PI*2);
+      c.fillStyle=`rgba(255,46,76,${p.a.toFixed(3)})`;c.fill();
+    }
+  };
+});
+
+/* ---------- 07: hội tụ — mọi tín hiệu về một đầu mối ----------
+   Hạt trôi từ hai mép màn về đúng tâm dòng email (đo vị trí thật), càng
+   gần càng ngả đỏ rồi tan biến ngay trước khi chạm chữ — đúng nghĩa đen
+   lời hứa "một đầu mối", không kẻ trục để khỏi thành gạch ngang email. */
+busAdd(document.getElementById('converge'),(c,m)=>{
+  const K=46,ps=[];
+  let cyy=.52;                       /* tỉ lệ chiều cao — cập nhật theo dòng mail */
+  m.resize=()=>{
+    const cvEl=document.getElementById('converge');
+    const mail=document.querySelector('.z-contact .mail-giant');
+    if(cvEl&&mail){
+      const cr=cvEl.getBoundingClientRect(), mr=mail.getBoundingClientRect();
+      if(cr.height>0)cyy=((mr.top+mr.bottom)/2-cr.top)/cr.height;
+    }
+  };
+  m.resize();
+  function seed(p){
+    p.side=Math.random()<.5?-1:1;
+    p.y0=.1+Math.random()*.8;
+    p.t=Math.random();
+    p.v=.0016+Math.random()*.0022;
+    p.curve=(Math.random()-.5)*.3;
+  }
+  for(let i=0;i<K;i++){const p={};seed(p);p.t=Math.random();ps.push(p);}
+  m.draw=()=>{
+    const {w,h,d}=m;c.clearRect(0,0,w,h);
+    const ty=cyy*h;
+    for(const p of ps){
+      p.t+=p.v;
+      if(p.t>.86){seed(p);p.t=0;}         /* tan trước khi chạm vùng chữ */
+      const e=p.t*p.t*(3-2*p.t);
+      const x=p.side<0? e*w*.5 : w-e*w*.5;
+      const y=(p.y0*h)*(1-e)+(ty+Math.sin(p.t*6.3)*p.curve*h*.05)*e;
+      const red=Math.max(0,e-.5)/.5;
+      const fade=1-Math.pow(Math.max(p.t-.68,0)/.18,2);   /* mờ dần đoạn cuối */
+      const a=(.12+e*.3)*Math.max(fade,0);
+      c.beginPath();c.arc(x,y,(1+e*1.4)*d,0,Math.PI*2);
+      c.fillStyle=`rgba(${240+red*15|0},${240-red*194|0},${242-red*166|0},${a.toFixed(3)})`;
+      c.fill();
+    }
+  };
 });
 
 
