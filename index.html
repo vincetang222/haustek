@@ -184,8 +184,13 @@ section.hero{content-visibility:visible}
 #svcSignal{display:block;width:100%;height:96px;margin-top:38px}
 
 /* 03 — quả cầu điểm: bản phát hành đáp xuống khắp thế giới */
-.stores-top{display:flex;align-items:center;justify-content:space-between;gap:36px;flex-wrap:wrap}
-#globe{width:min(330px,72vw);aspect-ratio:1;flex:none;display:block}
+.stores-top{display:flex;align-items:center;justify-content:space-between;gap:28px}
+.stores-top h2{flex:1;min-width:0}
+#globe{width:clamp(180px,17vw,250px);aspect-ratio:1;flex:none;display:block}
+@media(max-width:760px){
+  .stores-top{flex-wrap:wrap}
+  #globe{width:min(260px,62vw);margin:6px auto 0}
+}
 
 /* 05 — đèn quét sân khấu: chỉ transform/opacity, chạy trên compositor */
 .beams{position:absolute;inset:0;z-index:0;pointer-events:none;overflow:hidden}
@@ -198,9 +203,15 @@ section.hero{content-visibility:visible}
 @keyframes sweep2{from{transform:rotate(12deg)}to{transform:rotate(-9deg)}}
 @media(prefers-reduced-motion:reduce){.beams i{animation:none;transform:rotate(-4deg)}}
 
-/* 06 — FAQ: texture đục lỗ tĩnh, khu vực đọc giữ yên có chủ đích */
-.z-faq::before{background:radial-gradient(rgba(240,240,242,.05) 1px, transparent 1.4px);background-size:26px 26px;
-  mask-image:linear-gradient(to bottom, transparent, #000 18%, #000 82%, transparent)}
+/* 04 — trường sóng nghệ sĩ: mỗi người một tâm sóng sinh từ chính tên họ,
+   cùng ngôn ngữ với card dự phòng trên trang /artists */
+#rippleField{position:absolute;inset:0;width:100%;height:100%;z-index:0;pointer-events:none;display:block}
+
+/* Pull quote — đường tiếng nói: gói sóng chạy ngang dưới lời cam kết */
+#voiceline{display:block;width:min(560px,86%);height:64px;margin:26px auto 0}
+
+/* 06 — dải nhịp FAQ: đường phẳng, mở/đóng câu hỏi nào phát một nhịp */
+#faqPulse{display:block;width:100%;height:44px;margin:26px 0 -12px}
 
 .z-about{background:#08080D}
 .z-about::before{background:
@@ -232,8 +243,11 @@ section.hero{content-visibility:visible}
   radial-gradient(46% 60% at 50% 50%, rgba(127,214,232,.1), transparent 70%)}
 
 .z-faq{background:#08090D}
+/* texture đục lỗ tĩnh gộp chung một lớp với màu nền — khu vực đọc, giữ yên */
 .z-faq::before{background:
-  radial-gradient(48% 40% at 96% 8%, rgba(255,46,76,.11), transparent 70%)}
+  radial-gradient(rgba(240,240,242,.045) 1px, transparent 1.4px),
+  radial-gradient(48% 40% at 96% 8%, rgba(255,46,76,.11), transparent 70%);
+  background-size:26px 26px, 100% 100%}
 
 .z-contact{background:#09070E}
 .z-contact::before{background:
@@ -921,6 +935,7 @@ l-1242 0 -30 29 -29 29 0 745 c0 768 1 796 40 817 12 6 374 10 984 10 929 0
 <!-- 04 ARTISTS -->
 <section id="artists" class="zone z-artists">
   <div class="aurora" aria-hidden="true"><i></i><i></i><i></i></div>
+  <canvas id="rippleField" aria-hidden="true"></canvas>
   <div class="ghost" aria-hidden="true">04</div>
   <p class="kicker rv"><i>●</i><span data-i18n="ar_k">Nghệ sĩ</span></p>
   <h2 class="rv" data-i18n="ar_h"><span class="ln">Những người</span> <span class="ln">đã <em>cùng làm nhạc.</em></span></h2>
@@ -949,6 +964,7 @@ l-1242 0 -30 29 -29 29 0 745 c0 768 1 796 40 817 12 6 374 10 984 10 929 0
 <section class="zone z-pull">
   <p class="pull rv" data-i18n="pq"><span class="ln">“Bạn lo phần sáng tạo.</span> <span class="ln"><em>Chúng tôi lo phần còn lại.”</em></span></p>
   <p class="pull-by rv" data-i18n="pq_by">Lời cam kết đến từ Haustek</p>
+  <canvas id="voiceline" class="rv" aria-hidden="true"></canvas>
 </section>
 
 <!-- 06 FAQ -->
@@ -956,6 +972,7 @@ l-1242 0 -30 29 -29 29 0 745 c0 768 1 796 40 817 12 6 374 10 984 10 929 0
   <div class="ghost" aria-hidden="true">06</div>
   <p class="kicker rv"><i>●</i>FAQ</p>
   <h2 class="rv" data-i18n="fq_h"><span class="ln">Hỏi nhanh,</span> <span class="ln"><em>đáp gọn.</em></span></h2>
+  <canvas id="faqPulse" class="rv" aria-hidden="true"></canvas>
   <div class="faq-wrap glass rv">
     <details>
       <summary><span class="q" data-i18n="q1">Gửi demo cho Haustek bằng cách nào?</span><span class="pm">+</span></summary>
@@ -1956,6 +1973,103 @@ busAdd(document.getElementById('globe'),(c,m)=>{
       c.lineWidth=1.2*d;c.stroke();
       c.beginPath();c.arc(px,py,1.8*d,0,Math.PI*2);
       c.fillStyle=`rgba(255,46,76,${p.a.toFixed(3)})`;c.fill();
+    }
+  };
+});
+
+/* ---------- 04: trường sóng nghệ sĩ ----------
+   Mỗi nghệ sĩ trong ARTISTS một tâm sóng, toạ độ sinh từ hash chính tên họ —
+   cùng ý tưởng với card dự phòng trên /artists. Vòng lan chậm đan nhau,
+   kick → một tâm ngẫu nhiên phát vòng đỏ. */
+busAdd(document.getElementById('rippleField'),(c,m)=>{
+  function hash(s){let h=0;for(let i=0;i<s.length;i++){h=(h*31+s.charCodeAt(i))>>>0;}return h;}
+  const seeds=(typeof ARTISTS!=='undefined'?ARTISTS:[]).map(n=>{
+    const h=hash(n);
+    return {x:.06+((h%1000)/1000)*.88, y:.12+(((h>>10)%1000)/1000)*.76, next:Math.random()*5};
+  });
+  const rings=[];
+  kickHooks.push(()=>{
+    if(m.on&&seeds.length){
+      const s=seeds[(Math.random()*seeds.length)|0];
+      rings.push({x:s.x,y:s.y,r:0,a:.8,red:true});
+    }
+  });
+  m.draw=(t)=>{
+    const {w,h,d}=m;c.clearRect(0,0,w,h);
+    for(const s of seeds){
+      if(t>s.next){rings.push({x:s.x,y:s.y,r:0,a:.5,red:false});s.next=t+3+Math.random()*4;}
+    }
+    if(rings.length>34)rings.splice(0,rings.length-34);
+    const max=Math.max(w,h)*.3;
+    for(let i=rings.length-1;i>=0;i--){
+      const g=rings[i];g.r+=.75*d;g.a*=.995;
+      if(g.r>max||g.a<.02){rings.splice(i,1);continue;}
+      for(let k=0;k<2;k++){                      /* vòng chính + một vòng dội */
+        const rr=g.r-k*16*d; if(rr<=0)continue;
+        const aa=g.a*(1-k*.45);
+        c.beginPath();c.arc(g.x*w,g.y*h,rr,0,Math.PI*2);
+        c.strokeStyle=g.red?`rgba(255,46,76,${aa.toFixed(3)})`
+                           :`rgba(240,240,242,${(aa*.7).toFixed(3)})`;
+        c.lineWidth=1.2*d;c.stroke();
+      }
+    }
+  };
+});
+
+/* ---------- Pull quote: đường tiếng nói ----------
+   Lời cam kết vẽ thành dạng sóng: một gói sóng "giọng nói" chạy dọc
+   đường phẳng, tâm gói ngả đỏ. Kick đẩy biên độ dâng lên. */
+busAdd(document.getElementById('voiceline'),(c,m)=>{
+  let boost=0;
+  kickHooks.push(()=>{if(m.on)boost=1;});
+  m.draw=(t)=>{
+    const {w,h,d}=m;c.clearRect(0,0,w,h);
+    boost*=.94;
+    const mid=h/2, pos=((t*.14)%1.3)-.15;      /* tâm gói chạy trái → phải rồi lặp */
+    c.beginPath();
+    for(let x=0;x<=w;x+=2*d){
+      const u=x/w;
+      const env=Math.exp(-Math.pow((u-pos)/.09,2));           /* cửa sổ gauss */
+      const y=mid+Math.sin(u*90+t*7)*env*(h*.3)*(0.75+boost*.8)
+                 +Math.sin(u*23+t*2.4)*env*(h*.1);
+      x===0?c.moveTo(x,y):c.lineTo(x,y);
+    }
+    c.strokeStyle='rgba(240,240,242,.4)';c.lineWidth=1.1*d;c.stroke();
+    /* chấm đỏ ở tâm gói */
+    if(pos>=0&&pos<=1){
+      const px=pos*w;
+      c.beginPath();c.arc(px,mid,2.2*d,0,Math.PI*2);
+      c.fillStyle='rgba(255,46,76,.85)';c.fill();
+    }
+  };
+});
+
+/* ---------- 06: dải nhịp FAQ ----------
+   Đường phẳng nằm im — mở hay đóng một câu hỏi thì phát đúng một nhịp
+   chạy dọc dải, như máy đo bắt được tín hiệu. Không tự động nhảy nhót:
+   khu vực đọc chỉ động khi người đọc động. */
+busAdd(document.getElementById('faqPulse'),(c,m)=>{
+  const blips=[];
+  document.querySelectorAll('.faq-wrap details').forEach(dt=>{
+    dt.addEventListener('toggle',()=>{blips.push({p:0});if(blips.length>4)blips.shift();});
+  });
+  m.draw=()=>{
+    const {w,h,d}=m;c.clearRect(0,0,w,h);
+    const mid=h/2;
+    c.beginPath();c.moveTo(0,mid);c.lineTo(w,mid);
+    c.strokeStyle='rgba(240,240,242,.26)';c.lineWidth=1.5*d;c.stroke();
+    for(let k=blips.length-1;k>=0;k--){
+      const b=blips[k];b.p+=.012;
+      if(b.p>1.05){blips.splice(k,1);continue;}
+      const cx=b.p*w, fade=1-b.p;
+      c.beginPath();
+      for(let x=Math.max(cx-70*d,0);x<=Math.min(cx+70*d,w);x+=2*d){
+        const u=(x-cx)/(28*d);
+        const y=mid-Math.exp(-u*u)*Math.cos(u*3.1)*h*.34*fade;
+        x<=Math.max(cx-70*d,0)+2*d?c.moveTo(x,y):c.lineTo(x,y);
+      }
+      c.strokeStyle=`rgba(255,46,76,${(.75*fade).toFixed(3)})`;
+      c.lineWidth=1.3*d;c.stroke();
     }
   };
 });
