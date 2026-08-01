@@ -538,6 +538,39 @@ a.row:hover .ttl{color:var(--accent)}
 @media(prefers-reduced-motion:reduce){.vr-card img{animation:none;transform:scale(1.03)}}
 @media(max-width:760px){.video-reel{grid-template-columns:1fr;gap:10px}}
 
+/* ============ QUỐC TẾ ĐÃ ĐƯA VỀ (trong section 05) ============ */
+.intl{margin-top:56px}
+.intl-lead{font-family:var(--mono);font-size:10.5px;letter-spacing:.24em;text-transform:uppercase;
+  color:var(--concrete);margin-bottom:20px;display:flex;align-items:center;gap:12px}
+.intl-lead::after{content:"";flex:1;height:1px;background:rgba(240,240,242,.14)}
+.intl-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:10px}
+.intl-card{position:relative;display:block;padding:20px 18px 16px;border-radius:12px;
+  background:rgba(240,240,242,.035);border:1px solid rgba(240,240,242,.1);
+  transition:border-color .25s,background .25s,transform .25s}
+.intl-card:hover{border-color:var(--accent);background:rgba(240,240,242,.06);transform:translateY(-3px)}
+.intl-name{display:block;font-family:var(--disp);font-weight:750;font-stretch:110%;
+  font-size:clamp(19px,2.1vw,26px);letter-spacing:-.02em;line-height:1.1;color:var(--paper)}
+.intl-note{display:block;margin-top:8px;font-family:var(--body);font-size:12.5px;
+  color:var(--concrete);line-height:1.45;text-wrap:pretty}
+.intl-meta{display:block;margin-top:12px;font-family:var(--mono);font-size:10px;
+  letter-spacing:.1em;color:var(--concrete);opacity:.8}
+.intl-src{display:inline-block;margin-top:10px;font-family:var(--mono);font-size:10px;
+  letter-spacing:.14em;text-transform:uppercase;color:var(--accent)}
+.intl-foot{margin-top:18px;font-family:var(--body);font-size:12.5px;color:var(--concrete)}
+.intl-more{margin-top:26px;font-family:var(--mono);font-size:10px;letter-spacing:.22em;
+  text-transform:uppercase;color:var(--concrete);opacity:.75}
+.intl-roll{margin-top:10px;font-family:var(--disp);font-weight:600;font-stretch:104%;
+  font-size:clamp(15px,1.9vw,21px);line-height:1.7;color:var(--concrete);letter-spacing:-.01em}
+.intl-roll i{font-style:normal;color:var(--accent);font-size:.42em;vertical-align:middle;margin:0 9px;opacity:.65}
+.intl-stats{display:flex;flex-wrap:wrap;gap:10px;margin-top:24px}
+.istat{flex:1;min-width:150px;padding:14px 16px;border-radius:11px;
+  background:rgba(240,240,242,.035);border:1px solid rgba(240,240,242,.1)}
+.istat b{display:block;font-family:var(--disp);font-weight:800;font-stretch:112%;
+  font-size:clamp(22px,2.6vw,32px);letter-spacing:-.02em;color:var(--accent);line-height:1}
+.istat span{display:block;margin-top:6px;font-family:var(--mono);font-size:9.5px;
+  letter-spacing:.14em;text-transform:uppercase;color:var(--concrete)}
+@media(max-width:640px){.intl-grid{grid-template-columns:1fr}.intl{margin-top:40px}}
+
 /* ================= FAQ ================= */
 .z-faq{--accent:var(--red)}
 .faq-wrap{margin-top:38px;padding:4px 22px}
@@ -845,10 +878,11 @@ l-1242 0 -30 29 -29 29 0 745 c0 768 1 796 40 817 12 6 374 10 984 10 929 0
 
 <div class="ticker" aria-hidden="true">
   <div class="ticker-track" id="tick">
-    <span>Đêm Thành Phố</span><i>●</i><span>The Day Pass</span><i>●</i><span>Alone</span><i>●</i><span>Hey You</span><i>●</i>
-    <span>Heaven Drops</span><i>●</i><span>Time Stop</span><i>●</i><span>The Mountain Mist</span><i>●</i>
-    <span>iamprogrammed</span><i>●</i><span>Shea</span><i>●</i><span>HẮC (HA666)</span><i>●</i>
-    <span>Thập Thiên</span><i>●</i><span>Snow in Summer</span><i>●</i><span>Red River</span><i>●</i>
+    <span>Đêm Thành Phố</span><i>●</i><span>Say Một Đời Vì Em</span><i>●</i><span>ĐÀ LẠT CÒN MƯA KHÔNG EM</span><i>●</i><span>Tìm Lại</span><i>●</i><span>Để Gió Cuốn Đi</span><i>●</i>
+    <span>Đắp Chăn Bông</span><i>●</i><span>Chờ Lời Anh Nói</span><i>●</i><span>Harla</span><i>●</i><span>Đừng Trách Câu Ví Dặm</span><i>●</i><span>Giận Mà Thương</span><i>●</i>
+    <span>Lọ Vương</span><i>●</i><span>Love Me Right</span><i>●</i><span>am i in love?</span><i>●</i><span>Mùa hè bất tận</span><i>●</i><span>Stuck!</span><i>●</i>
+    <span>Xe Đạp</span><i>●</i><span>Tao Muốn Ngủ Ngon</span><i>●</i><span>Natural Order of Life</span><i>●</i><span>Exfoliating</span><i>●</i><span>Under the Floor</span><i>●</i>
+    <span>Remote Land</span><i>●</i><span>skin to skin</span><i>●</i><span>Thin Tails</span><i>●</i><span>Long Way Home</span><i>●</i><span>Đành Thôi Xa Cách</span><i>●</i>
   </div>
 </div>
 
@@ -861,7 +895,7 @@ l-1242 0 -30 29 -29 29 0 745 c0 768 1 796 40 817 12 6 374 10 984 10 929 0
   <h2 class="rv" data-i18n="ab_h"><span class="ln">Gốc rễ toàn cầu,</span> <span class="ln"><em>thuộc về</em> nhạc Việt.</span></h2>
   <div class="about-grid">
     <div class="rv">
-      <p class="statement" data-i18n="ab_st"><span class="ln">Gần một thập kỷ</span> <span class="ln">đưa nhạc Việt ra thế giới.</span> <span class="ln">Bắt đầu từ techno và house,</span> <span class="ln">dưới hầm, giữa Sài Gòn.</span></p>
+      <p class="statement" data-i18n="ab_st"><span class="ln">Gần một thập kỷ</span> <span class="ln">đưa nhạc Việt ra thế giới.</span> <span class="ln">Khởi đầu từ những đêm techno và house</span> <span class="ln">ở sàn ngầm Sài Gòn.</span></p>
     </div>
     <div class="rv">
       <div class="pulse" aria-hidden="true">
@@ -994,6 +1028,61 @@ l-1242 0 -30 29 -29 29 0 745 c0 768 1 796 40 817 12 6 374 10 984 10 929 0
       <span class="vr-cap">Club nights Việt Nam</span>
     </a>
   </div>
+  <div class="intl rv">
+    <p class="intl-lead"><span data-i18n="intl_k">Những cái tên quốc tế Haustek đã đưa về Việt Nam</span></p>
+    <div class="intl-grid">
+      <a class="intl-card" href="https://ra.co/events/1309879" target="_blank" rel="noopener">
+        <span class="intl-name">Boiler Room</span>
+        <span class="intl-note" data-i18n="intl_1">Boiler Room chọn Sài Gòn — Haustek đồng tổ chức, 18 nghệ sĩ trong hai ngày tại Khu 13.</span>
+        <span class="intl-meta">Khu 13 · 19.10.2019</span>
+        <span class="intl-src">Resident Advisor ↗</span>
+      </a>
+      <a class="intl-card" href="https://mixmag.asia/read/huyn-thoi-nhc-trance-cosmic-gate-ln-u-tien-chi-nhc-ti-sai-gon-trong-tour-din-asia-qung-ba-album-mi-mosaiik-2-vit-nam" target="_blank" rel="noopener">
+        <span class="intl-name">Cosmic Gate</span>
+        <span class="intl-note" data-i18n="intl_2">Lần đầu chơi tại Sài Gòn, trong tour châu Á album Mosaiik 2. Cháy vé.</span>
+        <span class="intl-meta">Boujee.SGN · 16.09.2023</span>
+        <span class="intl-src">Mixmag Asia ↗</span>
+      </a>
+      <a class="intl-card" href="https://ra.co/events/1592369" target="_blank" rel="noopener">
+        <span class="intl-name">Nick Warren</span>
+        <span class="intl-note" data-i18n="intl_3">Đêm ra mắt chính thức của Mixmag Asia Việt Nam. Cháy vé.</span>
+        <span class="intl-meta">Aura Saigon · 25.11.2022</span>
+        <span class="intl-src">Resident Advisor ↗</span>
+      </a>
+      <a class="intl-card" href="https://ra.co/events/1250083" target="_blank" rel="noopener">
+        <span class="intl-name">Ben Böhmer</span>
+        <span class="intl-note" data-i18n="intl_4">Live set của gương mặt Anjunadeep, hai đêm liên tiếp tại Sài Gòn.</span>
+        <span class="intl-meta">Anjunadeep · 05.2019</span>
+        <span class="intl-src">Resident Advisor ↗</span>
+      </a>
+      <a class="intl-card" href="https://ra.co/events/1601605" target="_blank" rel="noopener">
+        <span class="intl-name">Oliver Smith</span>
+        <span class="intl-note" data-i18n="intl_5">Nghệ sĩ đầu tiên ký với Anjunabeats, từng chơi Tomorrowland và Creamfields.</span>
+        <span class="intl-meta">Aura Saigon · 09.12.2022</span>
+        <span class="intl-src">Resident Advisor ↗</span>
+      </a>
+      <a class="intl-card" href="https://ra.co/events/1563942" target="_blank" rel="noopener">
+        <span class="intl-name">Roy Rosenfeld</span>
+        <span class="intl-note" data-i18n="intl_6">Gương mặt All Day I Dream, extended set trong đêm hausvn × Aura.</span>
+        <span class="intl-meta">Aura Saigon · 19.08.2022</span>
+        <span class="intl-src">Resident Advisor ↗</span>
+      </a>
+    </div>
+
+    <p class="intl-more" data-i18n="intl_more">Và nhiều tên tuổi khác</p>
+    <div class="intl-roll" aria-label="Các nghệ sĩ quốc tế khác">
+      <span>Marsh</span><i>●</i><span>John 00 Fleming</span><i>●</i><span>Solarstone</span><i>●</i><span>Paul Thomas</span><i>●</i><span>Alex M.O.R.P.H.</span><i>●</i><span>Truncate</span><i>●</i><span>Xhin</span><i>●</i><span>Jeremy Olander</span><i>●</i><span>Juliet Fox</span><i>●</i><span>Exos</span><i>●</i><span>Khen</span><i>●</i><span>David Hohme</span><i>●</i><span>Double Touch</span><i>●</i><span>Viken Arman</span><i>●</i><span>James Trystan</span><i>●</i><span>Aldrin</span><i>●</i><span>Das Pharaoh</span><i>●</i><span>Derek Nielsen</span><i>●</i><span>Blanche</span>
+    </div>
+
+    <div class="intl-stats">
+      <div class="istat"><b>200</b><span data-i18n="istat1">sự kiện trên Resident Advisor</span></div>
+      <div class="istat"><b>2018–2023</b><span data-i18n="istat2">liên tục tổ chức</span></div>
+      <div class="istat"><b>4</b><span data-i18n="istat3">đêm cháy vé</span></div>
+    </div>
+
+    <p class="intl-foot" data-i18n="intl_foot">Toàn bộ nằm trong hồ sơ promoter của Haustek Agency trên Resident Advisor. Được Mixmag Asia đưa tin.</p>
+  </div>
+
   <div class="rv" style="margin-top:30px"><a class="see-all" href="/events">
     <span data-i18n="et_all">Xem toàn bộ sự kiện &amp; video</span>
     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
@@ -1305,7 +1394,7 @@ const I18N={
     st_streams:"Lượt nghe",st_founded:"Thành lập",st_stores:"Cửa hàng nhạc số",st_rel:"Bản phát hành",
     ab_k:"Về Haustek",
     ab_h:'<span class="ln">Gốc rễ toàn cầu,</span> <span class="ln"><em>thuộc về</em> nhạc Việt.</span>',
-    ab_st:'<span class="ln">Gần một thập kỷ</span> <span class="ln">đưa nhạc Việt ra thế giới.</span> <span class="ln">Bắt đầu từ techno và house,</span> <span class="ln">dưới hầm, giữa Sài Gòn.</span>',
+    ab_st:'<span class="ln">Gần một thập kỷ</span> <span class="ln">đưa nhạc Việt ra thế giới.</span> <span class="ln">Khởi đầu từ những đêm techno và house</span> <span class="ln">ở sàn ngầm Sài Gòn.</span>',
     f1b:"Thành lập",f2b:"Địa bàn",f2s:"Việt Nam & toàn cầu",f3b:"Mảng làm",f3s:"Phát hành · Label · Sự kiện · Sản xuất · Tư vấn",f4b:"Bản ghi đi xa nhất",f5b:"Người nghe",f5s:"3.500.000+ mỗi tháng",
     sv_k:"Chúng tôi làm gì",
     sv_h:'<span class="ln">Bạn cần gì cho âm nhạc,</span> <span class="ln"><em>Haustek có ở đây.</em></span>',
@@ -1339,6 +1428,16 @@ const I18N={
     ar_all:"Xem hồ sơ từng nghệ sĩ",
     et_k:"Sự kiện",
     et_h:'<span class="ln">Sân khấu</span> <span class="ln">chúng tôi từng <em>dàn dựng.</em></span>',
+    intl_k:"Những cái tên quốc tế Haustek đã đưa về Việt Nam",
+    intl_1:"Boiler Room chọn Sài Gòn — Haustek đồng tổ chức, 18 nghệ sĩ trong hai ngày tại Khu 13.",
+    intl_2:"Lần đầu chơi tại Sài Gòn, trong tour châu Á album Mosaiik 2. Cháy vé.",
+    intl_3:"Đêm ra mắt chính thức của Mixmag Asia Việt Nam. Cháy vé.",
+    intl_4:"Live set của gương mặt Anjunadeep, hai đêm liên tiếp tại Sài Gòn.",
+    intl_5:"Nghệ sĩ đầu tiên ký với Anjunabeats, từng chơi Tomorrowland và Creamfields.",
+    intl_6:"Gương mặt All Day I Dream, extended set trong đêm hausvn × Aura.",
+    intl_more:"Và nhiều tên tuổi khác",
+    istat1:"sự kiện trên Resident Advisor", istat2:"liên tục tổ chức", istat3:"đêm cháy vé",
+    intl_foot:"Toàn bộ nằm trong hồ sơ promoter của Haustek Agency trên Resident Advisor. Được Mixmag Asia đưa tin.",
     et_all:"Xem toàn bộ sự kiện & video",
     pq:'<span class="ln">“Bạn lo phần sáng tạo.</span> <span class="ln"><em>Chúng tôi lo phần còn lại.”</em></span>',
     pq_by:"Lời cam kết đến từ Haustek",
@@ -1393,7 +1492,7 @@ const I18N={
     st_streams:"Streams",st_founded:"Founded",st_stores:"Music stores",st_rel:"Releases",
     ab_k:"About Haustek",
     ab_h:'<span class="ln">Global roots,</span> <span class="ln"><em>devoted to</em> Vietnamese music.</span>',
-    ab_st:'<span class="ln">Nearly a decade</span> <span class="ln">taking Vietnamese music worldwide.</span> <span class="ln">It started with techno and house,</span> <span class="ln">underground, in Saigon.</span>',
+    ab_st:'<span class="ln">Nearly a decade</span> <span class="ln">taking Vietnamese music worldwide.</span> <span class="ln">It began on the underground</span> <span class="ln">techno and house floors of Saigon.</span>',
     f1b:"Founded",f2b:"Based",f2s:"Vietnam & worldwide",f3b:"Practice",f3s:"Distribution · Label · Events · Production · Consulting",f4b:"Farthest-reaching record",f5b:"Listeners",f5s:"3,500,000+ monthly",
     sv_k:"What we do",
     sv_h:'<span class="ln">Whatever your music needs,</span> <span class="ln"><em>Haustek has it here.</em></span>',
@@ -1427,6 +1526,16 @@ const I18N={
     ar_all:"See each artist profile",
     et_k:"Events",
     et_h:'<span class="ln">Stages</span> <span class="ln">we\'ve <em>built.</em></span>',
+    intl_k:"International names Haustek has brought to Vietnam",
+    intl_1:"Boiler Room picked Saigon — Haustek co-promoted, 18 artists over two days at Khu 13.",
+    intl_2:"Their first time in Saigon, on the Asia tour for Mosaiik 2. Sold out.",
+    intl_3:"The official launch night for Mixmag Asia Vietnam. Sold out.",
+    intl_4:"A live set from the Anjunadeep name, two nights running in Saigon.",
+    intl_5:"The first artist signed to Anjunabeats, has played Tomorrowland and Creamfields.",
+    intl_6:"An All Day I Dream regular, extended set for the hausvn × Aura night.",
+    intl_more:"And many more",
+    istat1:"events on Resident Advisor", istat2:"years running", istat3:"sold-out nights",
+    intl_foot:"All of the above sit in Haustek Agency's promoter history on Resident Advisor. Covered by Mixmag Asia.",
     et_all:"See all events & videos",
     pq:'<span class="ln">“You handle the creative.</span> <span class="ln"><em>We handle the rest.”</em></span>',
     pq_by:"A commitment from Haustek",
@@ -1593,10 +1702,16 @@ const cIO=new IntersectionObserver(es=>{
 },{threshold:.4});
 document.querySelectorAll('[data-count]').forEach(el=>cIO.observe(el));
 
-/* ================= dải equalizer ================= */
-/* Vẽ 1 lần khi vào tầm nhìn; khi bật beat thì cột nhảy theo tiếng kick. */
+/* ================= dải equalizer =================
+   Đây là FFT THẬT, không phải mô phỏng: khi bật beat, mỗi cột đọc trực tiếp
+   biên độ một dải tần từ AnalyserNode gắn trên chính đường tiếng đang phát.
+   Chia dải theo thang log (không phải tuyến tính) vì gần hết năng lượng của
+   kick nằm dưới 200Hz — chia đều thì 90% số cột sẽ nằm im.
+   Khi chưa bấm play thì không có âm thanh nào để đọc, nên cột trở về nhịp
+   thở nhẹ, cố tình thấp, để thấy rõ là đang chờ chứ không giả vờ có nhạc. */
 const eq=document.getElementById('eq');
 let eqCtx=null,eqBars=[],eqW=0,eqH=0,eqOn=false,eqBoost=0;
+let analyser=null,freqData=null;      /* engine beat phía dưới gán vào */
 if(eq){
   eqCtx=eq.getContext('2d');
   const BAR=6,GAP=4;
@@ -1606,8 +1721,8 @@ if(eq){
     eqH=eq.height=r.height*devicePixelRatio;
     const n=Math.ceil(r.width/(BAR+GAP));
     eqBars=Array.from({length:n},(_,i)=>({
-      v:Math.random()*.5+.15,
-      t:Math.random()*.5+.15,
+      v:Math.random()*.3+.08,
+      t:Math.random()*.3+.08,
       s:.012+Math.random()*.02,
       hot:Math.random()<.13
     }));
@@ -1616,16 +1731,30 @@ if(eq){
   new IntersectionObserver(es=>{eqOn=es[0].isIntersecting;if(eqOn)requestAnimationFrame(eqDraw);},{threshold:0}).observe(eq);
   function eqDraw(){
     if(!eqOn)return;
+    const live = playing && analyser && freqData;
+    if(live)analyser.getByteFrequencyData(freqData);
+    const nb = live ? analyser.frequencyBinCount : 0;
     eqCtx.clearRect(0,0,eqW,eqH);
-    const bw=6*devicePixelRatio,gap=4*devicePixelRatio;
+    const bw=6*devicePixelRatio,gap=4*devicePixelRatio,n=eqBars.length;
     eqBars.forEach((b,i)=>{
-      if(Math.random()<b.s)b.t=Math.random()*.85+.12;
-      b.v+=(b.t-b.v)*.06;
-      const amp=Math.min(1,b.v*(1+eqBoost*.9));
+      let amp;
+      if(live){
+        /* thang log: cột i lấy đỉnh của khoảng bin [nb^(i/n), nb^((i+1)/n)) */
+        const b0=Math.min(Math.floor(Math.pow(nb,i/n)),nb-1);
+        const b1=Math.min(Math.max(b0+1,Math.floor(Math.pow(nb,(i+1)/n))),nb);
+        let peak=0;
+        for(let k=b0;k<b1;k++)if(freqData[k]>peak)peak=freqData[k];
+        b.v+=(peak/255-b.v)*.42;            /* bám nhanh, vẫn mượt */
+        amp=Math.min(1,b.v*1.25);
+      }else{
+        if(Math.random()<b.s)b.t=Math.random()*.4+.06;
+        b.v+=(b.t-b.v)*.06;
+        amp=Math.min(1,b.v);
+      }
       const hgt=Math.max(2*devicePixelRatio,amp*eqH*.82);
       const x=i*(bw+gap),y=(eqH-hgt)/2;
       eqCtx.fillStyle=b.hot?`rgba(255,46,76,${(.32+amp*.5).toFixed(3)})`
-                           :`rgba(240,240,242,${(.07+amp*.2).toFixed(3)})`;
+                           :`rgba(240,240,242,${(.07+amp*.24).toFixed(3)})`;
       eqCtx.fillRect(x,y,bw,hgt);
     });
     eqBoost*=.88;
@@ -1784,20 +1913,22 @@ let heroVisible=true;
 })();
 
 let AC=null,playing=false,nextT=0,step=0,timer=null;
+let master=null;                     /* mọi tiếng đi qua đây để analyser đọc được */
+function audioOut(){return master||AC.destination;}
 const wheel=document.getElementById('wheel'),playBtn=document.getElementById('playBtn'),playIco=document.getElementById('playIco');
 const SPB=60/124/2;
 function kick(t){
   const o=AC.createOscillator(),g=AC.createGain();
   o.frequency.setValueAtTime(150,t);o.frequency.exponentialRampToValueAtTime(45,t+.11);
   g.gain.setValueAtTime(.9,t);g.gain.exponentialRampToValueAtTime(.001,t+.22);
-  o.connect(g).connect(AC.destination);o.start(t);o.stop(t+.25);
+  o.connect(g).connect(audioOut());o.start(t);o.stop(t+.25);
 }
 function hat(t,open){
   const b=AC.createBuffer(1,AC.sampleRate*.06,AC.sampleRate),d=b.getChannelData(0);
   for(let i=0;i<d.length;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/d.length,2);
   const s=AC.createBufferSource(),f=AC.createBiquadFilter(),g=AC.createGain();
   s.buffer=b;f.type="highpass";f.frequency.value=8000;g.gain.value=open?.28:.16;
-  s.connect(f).connect(g).connect(AC.destination);s.start(t);
+  s.connect(f).connect(g).connect(audioOut());s.start(t);
 }
 function schedule(){
   while(nextT<AC.currentTime+.12){
@@ -1809,7 +1940,6 @@ function schedule(){
         spawn(W*.5+(Math.random()-.5)*W*.55,H*.5+(Math.random()-.5)*H*.35,true);
         eqBoost=1;                       /* mỗi tiếng kick đẩy dải equalizer nhảy lên */
         pulseKick=true;                  /* và phát một vòng sóng ở phần giới thiệu */
-        eqBars.forEach(b=>{if(Math.random()<.45)b.t=Math.random()*.6+.4;});
         kickHooks.forEach(f=>f());       /* quả cầu ping, chuỗi tín hiệu dồn xung... */
       },Math.max(dt,0));
     }
@@ -1819,7 +1949,17 @@ function schedule(){
   timer=setTimeout(schedule,30);
 }
 playBtn.addEventListener('click',()=>{
-  if(!AC)AC=new (window.AudioContext||window.webkitAudioContext)();
+  if(!AC){
+    AC=new (window.AudioContext||window.webkitAudioContext)();
+    /* master → analyser → loa. Nhánh analyser chỉ để đo, không đổi tiếng. */
+    master=AC.createGain();
+    analyser=AC.createAnalyser();
+    analyser.fftSize=512;                 /* 256 bin, đủ mịn mà vẫn rẻ */
+    analyser.smoothingTimeConstant=.62;
+    freqData=new Uint8Array(analyser.frequencyBinCount);
+    master.connect(analyser);
+    analyser.connect(AC.destination);
+  }
   if(AC.state==="suspended")AC.resume();
   playing=!playing;
   wheel.classList.toggle('playing',playing);
