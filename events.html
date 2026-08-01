@@ -249,12 +249,10 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--red);outline-offset
   background:rgba(240,240,242,.035);border:1px solid rgba(240,240,242,.11);
   transition:border-color .25s,transform .25s}
 .hl:hover{border-color:var(--red);transform:translateY(-3px)}
-.hl-shot{position:relative;aspect-ratio:4/5;overflow:hidden;background:#0C0C10;
+.hl-shot{position:relative;aspect-ratio:1/1;overflow:hidden;background:#0C0C10;
   display:flex;align-items:center;justify-content:center}
-.hl-shot.wide{aspect-ratio:1340/699}
 .hl-shot img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;
   filter:brightness(.82) saturate(.9);transition:transform .5s,filter .3s}
-.hl-shot.wide img{object-fit:contain}   /* lineup 2 cột — hiện trọn, không cắt chữ */
 .hl:hover .hl-shot img{transform:scale(1.05);filter:brightness(1) saturate(1)}
 .hl-ini{font-family:var(--disp);font-weight:800;font-stretch:118%;font-size:54px;
   letter-spacing:-.03em;color:rgba(240,240,242,.09)}
@@ -462,7 +460,7 @@ l-1242 0 -30 29 -29 29 0 745 c0 768 1 796 40 817 12 6 374 10 984 10 929 0
   <div class="hl-grid">
 
     <a class="hl" href="https://ra.co/events/1309879" target="_blank" rel="noopener">
-      <span class="hl-shot wide"><img src="/events/boiler-room.webp" alt="Boiler Room Ho Chi Minh City" loading="lazy"></span>
+      <span class="hl-shot"><img src="/events/boiler-room.webp" alt="Boiler Room Ho Chi Minh City" loading="lazy"></span>
       <span class="hl-body">
         <span class="hl-name">Boiler Room</span>
         <span class="hl-note" data-i18n="hl_1">Boiler Room chọn Sài Gòn — Haustek đồng tổ chức, 18 nghệ sĩ trong hai ngày tại Khu 13.</span>
@@ -483,7 +481,7 @@ l-1242 0 -30 29 -29 29 0 745 c0 768 1 796 40 817 12 6 374 10 984 10 929 0
     </a>
 
     <a class="hl" href="https://ra.co/events/1794249" target="_blank" rel="noopener">
-      <span class="hl-shot"><img src="/events/uv-night.webp" alt="Boujee Station — Das Pharaoh &amp; Paul Thomas" loading="lazy"></span>
+      <span class="hl-shot"><img src="/events/das-pharaoh.webp" alt="Das Pharaoh — Fadi của Aly &amp; Fila" loading="lazy"></span>
       <span class="hl-body">
         <span class="hl-name">Das Pharaoh</span>
         <span class="hl-note" data-i18n="hl_7">Fadi của bộ đôi trance Aly &amp; Fila, chơi cùng Paul Thomas trong đêm hãng đĩa UV.</span>
@@ -493,7 +491,7 @@ l-1242 0 -30 29 -29 29 0 745 c0 768 1 796 40 817 12 6 374 10 984 10 929 0
     </a>
 
     <a class="hl" href="https://ra.co/events/2036372" target="_blank" rel="noopener">
-      <span class="hl-shot"><img src="/events/milo-raad.webp" alt="Milo Raad — The Abyss Rave" loading="lazy"></span>
+      <span class="hl-shot"><img src="/events/abyss-rave.webp" alt="THE ABYSS RAVE — kỷ niệm 8 năm Haustek" loading="lazy"></span>
       <span class="hl-body">
         <span class="hl-name">Milo Raad</span>
         <span class="hl-note" data-i18n="hl_8">Techno sâu từ Belgrade, ra đĩa trên Soma và Mord — trong đêm kỷ niệm 8 năm Haustek, cùng Xhin và KONKRETE.</span>
