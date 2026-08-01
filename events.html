@@ -68,6 +68,13 @@ img{max-width:100%;display:block}
 @keyframes d2{0%,100%{transform:translate3d(0,0,0) scale(1.1)}50%{transform:translate3d(-10vw,-8vh,0) scale(.92)}}
 @keyframes d3{0%,100%{transform:translate3d(0,0,0) scale(.96)}50%{transform:translate3d(8vw,-9vh,0) scale(1.2)}}
 .hero>*{position:relative;z-index:1}
+/* Đồ hoạ hero: đường chân trời 10 năm, vẽ từ chính dữ liệu 249 sự kiện.
+   Nằm dưới chữ, không bắt sự kiện chuột. */
+.hero #evSkyline{position:absolute;left:0;right:0;bottom:0;z-index:0;
+  width:100%;height:62%;display:block;pointer-events:none}
+/* Đồ hoạ khối venue: mặt sàn có đèn sân khấu quét qua. */
+.venue #vnRoom{position:absolute;inset:0;z-index:0;width:100%;height:100%;
+  display:block;pointer-events:none}
 .kicker{font-family:var(--mono);font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:var(--concrete);
   display:flex;gap:16px;align-items:center;margin-bottom:20px}
 .kicker i{font-style:normal;color:var(--red)}
@@ -568,6 +575,7 @@ l-1242 0 -30 29 -29 29 0 745 c0 768 1 796 40 817 12 6 374 10 984 10 929 0
 
 <section class="hero">
   <div class="aurora" aria-hidden="true"><i></i><i></i><i></i></div>
+  <canvas id="evSkyline" aria-hidden="true"></canvas>
   <p class="kicker"><i>●</i><span data-i18n="kicker">Sự kiện · từ 2017</span></p>
   <h1 data-i18n="h1"><span class="ln">Những đêm Haustek</span> <span class="ln"><em>đứng sau ánh đèn sân khấu.</em></span></h1>
   <p class="lead" data-i18n="lead">Từ những đêm techno nhỏ ở Sài Gòn cho tới chuỗi livestream trải khắp châu Á — đây là những sân khấu chúng tôi đã dựng, đã chơi và đã lên sóng. Bấm vào một tiết mục để xem lại.</p>
@@ -756,6 +764,32 @@ l-1242 0 -30 29 -29 29 0 745 c0 768 1 796 40 817 12 6 374 10 984 10 929 0
 </div>
 
 
+
+
+<section class="venue rv" id="venue">
+  <canvas id="vnRoom" aria-hidden="true"></canvas>
+  <p class="kicker"><i>●</i><span data-i18n="vn_k">Dành cho venue &amp; nhãn hàng</span></p>
+  <h2 data-i18n="vn_h"><span class="ln">Bạn có không gian.</span> <span class="ln"><em>Chúng tôi có đêm diễn.</em></span></h2>
+  <p class="lead" data-i18n="vn_p"></p>
+
+  <div class="vn-does">
+    <div class="vn-do"><b data-i18n="vn_d1t"></b><span data-i18n="vn_d1"></span></div>
+    <div class="vn-do"><b data-i18n="vn_d2t"></b><span data-i18n="vn_d2"></span></div>
+    <div class="vn-do"><b data-i18n="vn_d3t"></b><span data-i18n="vn_d3"></span></div>
+    <div class="vn-do"><b data-i18n="vn_d4t"></b><span data-i18n="vn_d4"></span></div>
+  </div>
+
+  <a class="vn-mail" href="mailto:mgmt@haustek-group.com">mgmt@haustek-group.com</a>
+  <p class="vn-note" data-i18n="vn_note"></p>
+
+  <div class="vn-links">
+    <a href="https://ra.co/promoters/73233" target="_blank" rel="noopener">Resident Advisor ↗</a>
+    <a href="https://www.instagram.com/haustek.agency" target="_blank" rel="noopener">Instagram ↗</a>
+    <a href="https://www.facebook.com/haustek.agency" target="_blank" rel="noopener">Facebook ↗</a>
+    <a href="/artists">Nghệ sĩ</a>
+  </div>
+</section>
+
 <section class="ev-faq rv">
   <p class="kicker"><i>●</i><span data-i18n="fq_k">Hỏi đáp về sự kiện</span></p>
   <h2 data-i18n="fq_h"><span class="ln">Những câu</span> <span class="ln"><em>hay được hỏi nhất.</em></span></h2>
@@ -794,29 +828,6 @@ l-1242 0 -30 29 -29 29 0 745 c0 768 1 796 40 817 12 6 374 10 984 10 929 0
     </details>
   </div>
   <button class="faq-more" id="faqMore" type="button" data-i18n="fq_more">Xem thêm câu hỏi</button>
-</section>
-
-<section class="venue rv" id="venue">
-  <p class="kicker"><i>●</i><span data-i18n="vn_k">Dành cho venue &amp; nhãn hàng</span></p>
-  <h2 data-i18n="vn_h"><span class="ln">Bạn có không gian.</span> <span class="ln"><em>Chúng tôi có đêm diễn.</em></span></h2>
-  <p class="lead" data-i18n="vn_p"></p>
-
-  <div class="vn-does">
-    <div class="vn-do"><b data-i18n="vn_d1t"></b><span data-i18n="vn_d1"></span></div>
-    <div class="vn-do"><b data-i18n="vn_d2t"></b><span data-i18n="vn_d2"></span></div>
-    <div class="vn-do"><b data-i18n="vn_d3t"></b><span data-i18n="vn_d3"></span></div>
-    <div class="vn-do"><b data-i18n="vn_d4t"></b><span data-i18n="vn_d4"></span></div>
-  </div>
-
-  <a class="vn-mail" href="mailto:mgmt@haustek-group.com">mgmt@haustek-group.com</a>
-  <p class="vn-note" data-i18n="vn_note"></p>
-
-  <div class="vn-links">
-    <a href="https://ra.co/promoters/73233" target="_blank" rel="noopener">Resident Advisor ↗</a>
-    <a href="https://www.instagram.com/haustek.agency" target="_blank" rel="noopener">Instagram ↗</a>
-    <a href="https://www.facebook.com/haustek.agency" target="_blank" rel="noopener">Facebook ↗</a>
-    <a href="/artists">Nghệ sĩ</a>
-  </div>
 </section>
 
 <footer>
@@ -1651,6 +1662,162 @@ const ARCHIVE=[
   moreEl.addEventListener('click',function(){shown+=PAGE;render();});
   render();
   window.__archRender=render;
+})();
+
+/* =====================================================================
+   ĐỒ HOẠ VẼ THỜI GIAN THỰC
+   Cùng ngôn ngữ với trang chủ: không phải ảnh minh hoạ, mà vẽ bằng code
+   theo dữ liệu thật. Một vòng requestAnimationFrame duy nhất cho cả hai
+   canvas; khối nào cuộn ra khỏi màn hình thì ngủ, tab ẩn thì dừng hẳn.
+   Mobile khoá 30fps và hạ độ phân giải. prefers-reduced-motion thì mỗi
+   khối vẽ đúng một khung tĩnh rồi thôi.
+   ===================================================================== */
+(function graphics(){
+  const REDUCED=matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const LITE=matchMedia('(max-width:760px)').matches;
+  const DPR=()=>Math.min(devicePixelRatio||1, LITE?1.5:2);
+  const BUS=[];
+
+  function add(canvas,setup){
+    if(!canvas)return;
+    const c=canvas.getContext('2d');
+    const m={on:false,draw:null};
+    function fit(){
+      const r=canvas.getBoundingClientRect();
+      const d=DPR();
+      canvas.width=Math.max(r.width*d,1);
+      canvas.height=Math.max(r.height*d,1);
+      m.d=d;m.w=canvas.width;m.h=canvas.height;
+    }
+    fit();addEventListener('resize',fit);
+    setup(c,m);
+    new IntersectionObserver(es=>{m.on=es[0].isIntersecting;},{threshold:0}).observe(canvas);
+    BUS.push(m);
+    if(REDUCED&&m.draw){m.on=true;m.draw(6);m.on=false;
+      addEventListener('resize',()=>{m.on=true;m.draw(6);m.on=false;});}
+  }
+
+  /* ---------- 01 · HERO: đường chân trời 10 năm ----------
+     Mỗi cột là một tháng, cao theo số đêm diễn trong tháng đó — tức là
+     hình dáng này vẽ ra đúng nhịp làm việc thật của Haustek từ 2015 tới
+     2025, không phải hoạ tiết trang trí. Tháng nào có nghệ sĩ quốc tế
+     thì cột ngả đỏ. Một kim quét chạy ngang như trong phần mềm dựng
+     nhạc, cột nào kim đi qua thì sáng lên rồi tắt dần. */
+  add(document.getElementById('evSkyline'),(c,m)=>{
+    const evs=(typeof ARCHIVE!=='undefined'?ARCHIVE:[]);
+    if(!evs.length){m.draw=null;return;}
+    const key=e=>{const p=e.d.split('-');return (+p[0])*12+(+p[1])-1;};
+    const ks=evs.map(key);
+    const k0=Math.min(...ks), k1=Math.max(...ks);
+    const N=Math.max(k1-k0+1,1);
+    const bins=new Array(N).fill(0), intl=new Array(N).fill(0);
+    evs.forEach(e=>{const i=key(e)-k0;bins[i]++;if(e.x)intl[i]++;});
+    const peak=Math.max(...bins,1);
+
+    m.draw=(t)=>{
+      const {w,h,d}=m;
+      c.clearRect(0,0,w,h);
+      const base=h*0.97, top=i=>base-Math.pow(bins[i]/peak,0.62)*h*0.80;
+      const X=i=>(i/(N-1))*w;
+      /* kim quét: chạy hết chiều ngang trong 16 giây rồi lặp */
+      const head=((t/16)%1)*w;
+
+      /* vệt chân trời: nối đỉnh các tháng thành một đường liền rồi tô
+         xuống đáy — tháng rỗng thành thung lũng chứ không thành lỗ hổng,
+         nên hình đọc ra là một đường chân trời thay vì đám vạch rời. */
+      c.beginPath();
+      c.moveTo(0,base);
+      for(let i=0;i<N;i++){
+        const x=X(i), y=top(i);
+        if(i===0){c.lineTo(x,y);continue;}
+        const px=X(i-1), py=top(i-1), mx=(px+x)/2;
+        c.bezierCurveTo(mx,py,mx,y,x,y);
+      }
+      c.lineTo(w,base);c.closePath();
+      const g=c.createLinearGradient(0,base-h*0.8,0,base);
+      g.addColorStop(0,'rgba(240,240,242,.13)');
+      g.addColorStop(1,'rgba(240,240,242,.015)');
+      c.fillStyle=g;c.fill();
+      c.strokeStyle='rgba(240,240,242,.30)';c.lineWidth=1.2*d;c.stroke();
+
+      /* vạch đỏ: tháng nào có nghệ sĩ quốc tế thì cắm một vạch lên trên
+         đỉnh — 38 đêm quốc tế trong 10 năm hiện thành 38 điểm mốc. */
+      for(let i=0;i<N;i++){
+        if(!intl[i])continue;
+        const x=X(i), y=top(i);
+        const len=(7+Math.min(intl[i],3)*5)*d;
+        const glow=Math.exp(-Math.pow(x-head,2)/(2*Math.pow(w*0.045,2)));
+        c.strokeStyle='rgba(255,46,76,'+(0.34+glow*0.6).toFixed(3)+')';
+        c.lineWidth=1.4*d;
+        c.beginPath();c.moveTo(x,y);c.lineTo(x,y-len);c.stroke();
+        c.fillStyle='rgba(255,46,76,'+(0.5+glow*0.5).toFixed(3)+')';
+        c.beginPath();c.arc(x,y-len,1.7*d,0,Math.PI*2);c.fill();
+      }
+
+      /* đường nền + kim quét */
+      c.fillStyle='rgba(240,240,242,.10)';c.fillRect(0,base,w,1*d);
+      const hg=c.createLinearGradient(head,base-h*0.86,head,base);
+      hg.addColorStop(0,'rgba(255,46,76,0)');
+      hg.addColorStop(1,'rgba(255,46,76,.5)');
+      c.fillStyle=hg;c.fillRect(head,base-h*0.86,1*d,h*0.86);
+    };
+  });
+
+  /* ---------- 02 · VENUE: mặt sàn và đèn quét ----------
+     Một mặt sàn nhìn từ trên xuống, dựng bằng lưới điểm thưa dần về phía
+     xa. Hai vệt đèn — một đỏ, một xanh ice — trôi chậm theo hai quỹ đạo
+     lệch nhau; điểm nào đèn quét qua thì sáng lên và bắt màu đèn. Nghĩa
+     đen của khối này: không gian là của bạn, ánh sáng là phần Haustek lo. */
+  add(document.getElementById('vnRoom'),(c,m)=>{
+    let pts=[];
+    function build(){
+      const {w,h,d}=m;
+      pts=[];
+      const step=Math.max(20*d, w/46);
+      for(let y=step*0.5;y<h;y+=step)
+        for(let x=step*0.5;x<w;x+=step)
+          pts.push([x+((y/step|0)%2)*step*0.5, y]);
+    }
+    build();addEventListener('resize',()=>{build();});
+    m.draw=(t)=>{
+      const {w,h,d}=m;
+      if(!pts.length||pts[pts.length-1][1]>h+40*d||pts[pts.length-1][1]<h-80*d)build();
+      c.clearRect(0,0,w,h);
+      /* hai vệt đèn chạy theo quỹ đạo lệch pha */
+      const R=Math.min(w,h)*0.42, R2=R*R;
+      const l1=[w*(0.5+0.42*Math.sin(t*0.21)), h*(0.5+0.34*Math.cos(t*0.17))];
+      const l2=[w*(0.5+0.40*Math.cos(t*0.14+1.7)), h*(0.5+0.30*Math.sin(t*0.19+2.4))];
+      for(let i=0;i<pts.length;i++){
+        const x=pts[i][0], y=pts[i][1];
+        const d1=(x-l1[0])*(x-l1[0])+(y-l1[1])*(y-l1[1]);
+        const d2=(x-l2[0])*(x-l2[0])+(y-l2[1])*(y-l2[1]);
+        const g1=d1<R2?1-Math.sqrt(d1)/R:0;
+        const g2=d2<R2?1-Math.sqrt(d2)/R:0;
+        const a=0.085+g1*0.62+g2*0.5;
+        if(a<0.09&&g1<0.02&&g2<0.02){
+          c.fillStyle='rgba(240,240,242,.085)';
+        }else{
+          const rr=240+(255-240)*g1, gg=240-(240-46)*g1-(240-214)*g2*0.6, bb=242-(242-76)*g1+(232-242)*g2*0.6;
+          c.fillStyle='rgba('+(rr|0)+','+(Math.max(gg,0)|0)+','+(Math.max(bb,0)|0)+','+a.toFixed(3)+')';
+        }
+        const r=(1.15+g1*2.1+g2*1.6)*d;
+        c.beginPath();c.arc(x,y,r,0,Math.PI*2);c.fill();
+      }
+    };
+  });
+
+  if(!REDUCED){
+    let t0=null,last=0;
+    (function loop(ts){
+      requestAnimationFrame(loop);
+      if(document.hidden)return;
+      if(LITE&&ts-last<32)return;          /* mobile: 30fps là đủ */
+      last=ts;
+      if(t0===null)t0=ts;
+      const t=(ts-t0)/1000;
+      for(const m of BUS)if(m.on&&m.draw)m.draw(t);
+    })(0);
+  }
 })();
 </script>
 </body>
