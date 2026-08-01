@@ -37,7 +37,7 @@
 {
   "@context": "https://schema.org",
   "@graph": [
-    { "@type": "Organization", "@id": "https://haustek-group.com/#org", "name": "Haustek", "url": "https://haustek-group.com/", "email": "mgmt@haustek-group.com", "foundingDate": "2017", "foundingLocation": {"@type":"Place","name":"Los Angeles, California, USA"}, "description": "Music label & distribution — sự kiện, sản xuất, phát hành, quảng bá và tư vấn chiến lược cho âm nhạc, từ 2017.", "sameAs": ["https://www.facebook.com/haustek.agency","https://www.instagram.com/haustek.agency","https://open.spotify.com/artist/1jiigt5sMZ62es2sH1UwYU"] },
+    { "@type": "Organization", "@id": "https://haustek-group.com/#org", "name": "Haustek", "url": "https://haustek-group.com/", "email": "mgmt@haustek-group.com", "foundingDate": "2017", "foundingLocation": {"@type":"Place","name":"Vietnam"}, "description": "Music label & distribution — sự kiện, sản xuất, phát hành, quảng bá và tư vấn chiến lược cho âm nhạc, từ 2017.", "sameAs": ["https://www.facebook.com/haustek.agency","https://www.instagram.com/haustek.agency","https://open.spotify.com/artist/1jiigt5sMZ62es2sH1UwYU"] },
     { "@type": "MusicGroup", "name": "Haustek", "url": "https://haustek-group.com/", "genre": ["Electronic","Techno","House","Ambient"], "foundingDate": "2017" }
   ]
 }
@@ -416,24 +416,6 @@ h1{
 .rm-track a.o:hover{-webkit-text-stroke-color:var(--amber)}
 .rm-track i{font-style:normal;color:var(--amber);font-size:.36em;vertical-align:middle;margin:0 6px}
 
-/* Marquee riêng cho "đã biểu diễn tại sự kiện" — cố tình KHÔNG dùng chung
-   class với marquee Nghệ sĩ hợp tác phía trên (roster/rm-*), dù cấu trúc
-   giống nhau. Hai danh sách mang ý nghĩa khác nhau: một bên là nghệ sĩ có
-   hợp tác chính thức, một bên là người từng lên sân khấu do Haustek dựng.
-   Tách class riêng + màu riêng (theo accent của zone, ở đây là đỏ) để
-   không ai nhầm lẫn hai danh sách là một. */
-.event-marquee{margin-top:44px;overflow:hidden}
-.em-row{overflow:hidden;white-space:nowrap;padding:4px 0}
-.em-track{display:inline-block;animation:scroll var(--dur,46s) linear infinite}
-.em-row.rev .em-track{animation-direction:reverse}
-.event-marquee:hover .em-track{animation-play-state:paused}
-.em-track span{
-  font-family:var(--disp);font-weight:700;font-stretch:112%;
-  font-size:clamp(20px,4.2vw,46px);letter-spacing:-.025em;line-height:1.3;
-  margin:0 20px;color:var(--concrete);transition:color .2s;display:inline-block;
-}
-.em-track span:hover{color:var(--accent)}
-.em-track i{font-style:normal;color:var(--accent);font-size:.4em;vertical-align:middle;margin:0 6px;opacity:.6}
 
 /* ================= ABOUT ================= */
 .z-about{--accent:var(--violet)}
@@ -531,11 +513,30 @@ a.row:hover .ttl{color:var(--accent)}
 /* ================= PULL QUOTE ================= */
 .pull{
   font-family:var(--disp);font-weight:600;font-stretch:106%;
-  font-size:clamp(25px,4.6vw,50px);line-height:1.24;letter-spacing:-.025em;
+  font-size:clamp(38px,9.2vw,100px);line-height:1.14;letter-spacing:-.028em;
   max-width:24ch;margin:0 auto;text-align:center;text-wrap:balance;
 }
-.z-pull{--accent:var(--ice);text-align:center;padding-top:clamp(110px,18vh,190px);padding-bottom:clamp(110px,18vh,190px)}
+.z-pull{--accent:var(--ice);text-align:center;padding-top:clamp(120px,20vh,210px);padding-bottom:clamp(120px,20vh,210px)}
 .pull-by{margin-top:28px;font-family:var(--mono);font-size:11px;letter-spacing:.2em;color:var(--concrete);text-transform:uppercase}
+
+/* ================= VIDEO REEL (05) ================= */
+.video-reel{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:34px}
+.vr-card{position:relative;display:block;aspect-ratio:16/9;border-radius:14px;overflow:hidden;
+  border:1px solid rgba(240,240,242,.12);background:#000}
+.vr-card img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;
+  animation:vrKen 10s ease-in-out infinite alternate;filter:brightness(.72)}
+.vr-card:nth-child(2) img{animation-duration:12s}
+.vr-card:nth-child(3) img{animation-duration:9s}
+@keyframes vrKen{from{transform:scale(1.02)}to{transform:scale(1.16)}}
+.vr-card::after{content:"";position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.75),transparent 55%)}
+.vr-play{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:2;
+  width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  background:rgba(240,240,242,.92);color:#0A0A0C;transition:transform .25s,background .25s}
+.vr-card:hover .vr-play{transform:translate(-50%,-50%) scale(1.12);background:var(--red);color:#fff}
+.vr-cap{position:absolute;left:14px;right:14px;bottom:12px;z-index:2;font-family:var(--body);
+  font-weight:600;font-size:13px;color:var(--paper);text-shadow:0 1px 6px rgba(0,0,0,.6)}
+@media(prefers-reduced-motion:reduce){.vr-card img{animation:none;transform:scale(1.03)}}
+@media(max-width:760px){.video-reel{grid-template-columns:1fr;gap:10px}}
 
 /* ================= FAQ ================= */
 .z-faq{--accent:var(--red)}
@@ -869,10 +870,10 @@ l-1242 0 -30 29 -29 29 0 745 c0 768 1 796 40 817 12 6 374 10 984 10 929 0
       </div>
     </div>
     <div class="fact-list glass rv">
-      <div class="fact"><b data-i18n="f1b">Thành lập</b><span>Los Angeles · 2017</span></div>
+      <div class="fact"><b data-i18n="f1b">Thành lập</b><span>Việt Nam · 2017</span></div>
       <div class="fact"><b data-i18n="f2b">Địa bàn</b><span data-i18n="f2s">Việt Nam &amp; toàn cầu</span></div>
       <div class="fact"><b data-i18n="f3b">Mảng làm</b><span data-i18n="f3s">Phát hành · Label · Sự kiện · Sản xuất · Tư vấn</span></div>
-      <div class="fact"><b data-i18n="f4b">Đi xa nhất</b><span>Đêm Thành Phố — 3.200.000+</span></div>
+      <div class="fact"><b data-i18n="f4b">Bản ghi đi xa nhất</b><span>Đêm Thành Phố — 2.931.346</span></div>
       <div class="fact"><b data-i18n="f5b">Người nghe</b><span data-i18n="f5s">3.500.000+ mỗi tháng</span></div>
     </div>
   </div>
@@ -961,7 +962,7 @@ l-1242 0 -30 29 -29 29 0 745 c0 768 1 796 40 817 12 6 374 10 984 10 929 0
   <canvas id="artnet" aria-hidden="true"></canvas>
   <div class="ghost" aria-hidden="true">04</div>
   <p class="kicker rv"><i>●</i><span data-i18n="ar_k">Nghệ sĩ</span></p>
-  <h2 class="rv" data-i18n="ar_h"><span class="ln">Những người</span> <span class="ln">đã <em>cùng làm nhạc.</em></span></h2>
+  <h2 class="rv" data-i18n="ar_h"><span class="ln">Những nghệ sĩ</span> <span class="ln">đã <em>cùng hợp tác.</em></span></h2>
   <div class="roster-marquee rv" id="roster" aria-label="Nghệ sĩ đã hợp tác"></div>
   <p class="roster-note glass rv" data-i18n="ar_note">Cùng nhiều producer, songwriter, DJ, VJ và ca sĩ khác, trong nước lẫn ngoài nước</p>
   <div class="rv"><a class="see-all" href="/artists">
@@ -976,7 +977,23 @@ l-1242 0 -30 29 -29 29 0 745 c0 768 1 796 40 817 12 6 374 10 984 10 929 0
   <div class="ghost" aria-hidden="true">05</div>
   <p class="kicker rv"><i>●</i><span data-i18n="et_k">Sự kiện</span></p>
   <h2 class="rv" data-i18n="et_h"><span class="ln">Sân khấu</span> <span class="ln">chúng tôi từng <em>dàn dựng.</em></span></h2>
-  <div class="event-marquee rv" id="eventRoster" aria-label="Nghệ sĩ đã biểu diễn tại sự kiện Haustek"></div>
+  <div class="video-reel rv">
+    <a class="vr-card" href="/events">
+      <img src="https://i.ytimg.com/vi/EvZ06FtYpPQ/hqdefault.jpg" alt="United We Stream Asia" loading="lazy">
+      <span class="vr-play" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></span>
+      <span class="vr-cap">United We Stream Asia</span>
+    </a>
+    <a class="vr-card" href="/events">
+      <img src="https://i.ytimg.com/vi/2fIl2XCUpdw/hqdefault.jpg" alt="5-Year Anniversary — hausvn × technovn" loading="lazy">
+      <span class="vr-play" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></span>
+      <span class="vr-cap">5-Year Anniversary</span>
+    </a>
+    <a class="vr-card" href="/events">
+      <img src="https://i.ytimg.com/vi/aUroUUtBvWs/hqdefault.jpg" alt="Club nights Việt Nam" loading="lazy">
+      <span class="vr-play" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></span>
+      <span class="vr-cap">Club nights Việt Nam</span>
+    </a>
+  </div>
   <div class="rv" style="margin-top:30px"><a class="see-all" href="/events">
     <span data-i18n="et_all">Xem toàn bộ sự kiện &amp; video</span>
     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
@@ -1044,6 +1061,9 @@ l-1242 0 -30 29 -29 29 0 745 c0 768 1 796 40 817 12 6 374 10 984 10 929 0
     <a href="https://zingmp3.vn/" target="_blank" rel="noopener">Zing MP3 ↗</a>
     <a href="https://www.facebook.com/haustek.agency" target="_blank" rel="noopener">Facebook ↗</a>
     <a href="https://www.instagram.com/haustek.agency" target="_blank" rel="noopener">Instagram ↗</a>
+    <!-- TODO: thêm 2 nút dưới đây khi có link thật, đúng khuôn mẫu các nút trên —
+         <a href="LINK_SNAPCHAT" target="_blank" rel="noopener">Snapchat ↗</a>
+         <a href="LINK_ALIVE" target="_blank" rel="noopener">Alive ↗</a> -->
   </div>
 </section>
 
@@ -1208,7 +1228,7 @@ l-1242 0 -30 29 -29 29 0 745 c0 768 1 796 40 817 12 6 374 10 984 10 929 0
     <a href="/metadata" data-i18n="lg_submit">Gửi nhạc</a>
   </nav>
   <div class="foot-row">
-    <p>© 2026 Haustek · Los Angeles → Việt Nam · Since 2017</p>
+    <p>© 2026 Haustek · Việt Nam · Since 2017</p>
     <div class="fsoc">
       <a href="https://www.facebook.com/haustek.agency" target="_blank" rel="noopener">FB</a>
       <a href="https://www.instagram.com/haustek.agency" target="_blank" rel="noopener">IG</a>
@@ -1264,23 +1284,11 @@ const ARTISTS=["HƯƠNGMYBÔNG","TRO-Music","Microwave","Trí Minh","nae & de'la
   }).join('');
 })();
 
-/* Những người từng biểu diễn tại các sự kiện Haustek dựng — United We Stream
-   Asia, Boiler Room Ho Chi Minh City, hausvn x technovn... Lấy từ đúng dữ
-   liệu trên trang /events, KHÔNG gộp chung với ARTISTS ở trên: đây là người
-   từng lên sân khấu do Haustek tổ chức, không phải toàn bộ đều là nghệ sĩ
-   ký hợp tác chính thức. Trộn hai danh sách sẽ ngầm khẳng định sai quan hệ
-   hợp tác — y hệt lý do bỏ Phùng Khánh Linh khỏi roster nghệ sĩ trước đó. */
-const EVENT_PERFORMERS=["Ro-TUNE","Attiss Ngo","Trí Minh","Dee.F","Limebócx","Tiny Giant","Minoto","Demon Slayer","Levi Oi","MYLE","Larria.","Trung Hoang","Tung Tim","My Nguyen","Jase","Chin","ELEK","Tarnoise Spaceman","ling:chi"];
-(function buildEventRoster(){
-  const el=document.getElementById('eventRoster');
-  if(!el)return;
-  const half=Math.ceil(EVENT_PERFORMERS.length/2);
-  const rows=[EVENT_PERFORMERS.slice(0,half),EVENT_PERFORMERS.slice(half)];
-  el.innerHTML=rows.map((names,ri)=>{
-    const inner=names.map((a,i)=>`<span class="${(i+ri)%2?'o':''}">${a}</span>`).join('<i>●</i>');
-    return `<div class="em-row${ri?' rev':''}"><div class="em-track" style="--dur:${ri?52:44}s">${inner}<i>●</i></div></div>`;
-  }).join('');
-})();
+/* Marquee tên người biểu diễn tại sự kiện đã thay bằng 3 clip video thật
+   (xem .video-reel trong HTML phần 05) — giữ đúng nguyên tắc "video/audio
+   chỉ tải khi người xem chủ động bấm" nên click ở đây dẫn sang /events,
+   nơi trình phát thật nằm sẵn. Không xoá tư liệu 19 tên cũ hoàn toàn phí,
+   nhưng cũng không còn chỗ dùng — bỏ luôn cho gọn code.
 
 /* ================= i18n ================= */
 const I18N={
@@ -1298,7 +1306,7 @@ const I18N={
     ab_k:"Về Haustek",
     ab_h:'<span class="ln">Gốc rễ toàn cầu,</span> <span class="ln"><em>thuộc về</em> nhạc Việt.</span>',
     ab_st:'<span class="ln">Gần một thập kỷ</span> <span class="ln">đưa nhạc Việt ra thế giới.</span> <span class="ln">Bắt đầu từ techno và house,</span> <span class="ln">dưới hầm, giữa Sài Gòn.</span>',
-    f1b:"Thành lập",f2b:"Địa bàn",f2s:"Việt Nam & toàn cầu",f3b:"Mảng làm",f3s:"Phát hành · Label · Sự kiện · Sản xuất · Tư vấn",f4b:"Đi xa nhất",f5b:"Người nghe",f5s:"3.500.000+ mỗi tháng",
+    f1b:"Thành lập",f2b:"Địa bàn",f2s:"Việt Nam & toàn cầu",f3b:"Mảng làm",f3s:"Phát hành · Label · Sự kiện · Sản xuất · Tư vấn",f4b:"Bản ghi đi xa nhất",f5b:"Người nghe",f5s:"3.500.000+ mỗi tháng",
     sv_k:"Chúng tôi làm gì",
     sv_h:'<span class="ln">Bạn cần gì cho âm nhạc,</span> <span class="ln"><em>Haustek có ở đây.</em></span>',
     sv_lead:"Mười mảng việc, một mái nhà.",
@@ -1326,7 +1334,7 @@ const I18N={
     stw_h:'<span class="ln">Mọi nơi người ta</span> <span class="ln"><em>đang nghe nhạc.</em></span>',
     stw_note:"Và hơn 200 cửa hàng nhạc số khác trên toàn thế giới",
     ar_k:"Nghệ sĩ",
-    ar_h:'<span class="ln">Những người</span> <span class="ln">đã <em>cùng làm nhạc.</em></span>',
+    ar_h:'<span class="ln">Những nghệ sĩ</span> <span class="ln">đã <em>cùng hợp tác.</em></span>',
     ar_note:"Cùng nhiều producer, songwriter, DJ, VJ và ca sĩ khác, trong nước lẫn ngoài nước",
     ar_all:"Xem hồ sơ từng nghệ sĩ",
     et_k:"Sự kiện",
@@ -1386,7 +1394,7 @@ const I18N={
     ab_k:"About Haustek",
     ab_h:'<span class="ln">Global roots,</span> <span class="ln"><em>devoted to</em> Vietnamese music.</span>',
     ab_st:'<span class="ln">Nearly a decade</span> <span class="ln">taking Vietnamese music worldwide.</span> <span class="ln">It started with techno and house,</span> <span class="ln">underground, in Saigon.</span>',
-    f1b:"Founded",f2b:"Based",f2s:"Vietnam & worldwide",f3b:"Practice",f3s:"Distribution · Label · Events · Production · Consulting",f4b:"Farthest reach",f5b:"Listeners",f5s:"3,500,000+ monthly",
+    f1b:"Founded",f2b:"Based",f2s:"Vietnam & worldwide",f3b:"Practice",f3s:"Distribution · Label · Events · Production · Consulting",f4b:"Farthest-reaching record",f5b:"Listeners",f5s:"3,500,000+ monthly",
     sv_k:"What we do",
     sv_h:'<span class="ln">Whatever your music needs,</span> <span class="ln"><em>Haustek has it here.</em></span>',
     sv_lead:"Ten practices, one roof.",
@@ -1414,7 +1422,7 @@ const I18N={
     stw_h:'<span class="ln">Everywhere people</span> <span class="ln"><em>are listening.</em></span>',
     stw_note:"And 200+ more digital music stores around the world",
     ar_k:"Artists",
-    ar_h:'<span class="ln">The people</span> <span class="ln">we have <em>made music with.</em></span>',
+    ar_h:'<span class="ln">The artists</span> <span class="ln">we have <em>partnered with.</em></span>',
     ar_note:"Along with many more producers, songwriters, DJs, VJs and vocalists at home and abroad",
     ar_all:"See each artist profile",
     et_k:"Events",
