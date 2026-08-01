@@ -538,38 +538,15 @@ a.row:hover .ttl{color:var(--accent)}
 @media(prefers-reduced-motion:reduce){.vr-card img{animation:none;transform:scale(1.03)}}
 @media(max-width:760px){.video-reel{grid-template-columns:1fr;gap:10px}}
 
-/* ============ QUỐC TẾ ĐÃ ĐƯA VỀ (trong section 05) ============ */
-.intl{margin-top:56px}
+/* ============ QUỐC TẾ — dải gọn, chi tiết đầy đủ nằm ở trang /events ============ */
+.intl-slim{margin-top:48px;padding-top:26px;border-top:1px solid rgba(240,240,242,.1)}
 .intl-lead{font-family:var(--mono);font-size:10.5px;letter-spacing:.24em;text-transform:uppercase;
-  color:var(--concrete);margin-bottom:20px;display:flex;align-items:center;gap:12px}
-.intl-lead::after{content:"";flex:1;height:1px;background:rgba(240,240,242,.14)}
-.intl-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:10px}
-.intl-card{position:relative;display:block;padding:20px 18px 16px;border-radius:12px;
-  background:rgba(240,240,242,.035);border:1px solid rgba(240,240,242,.1);
-  transition:border-color .25s,background .25s,transform .25s}
-.intl-card:hover{border-color:var(--accent);background:rgba(240,240,242,.06);transform:translateY(-3px)}
-.intl-name{display:block;font-family:var(--disp);font-weight:750;font-stretch:110%;
-  font-size:clamp(19px,2.1vw,26px);letter-spacing:-.02em;line-height:1.1;color:var(--paper)}
-.intl-note{display:block;margin-top:8px;font-family:var(--body);font-size:12.5px;
-  color:var(--concrete);line-height:1.45;text-wrap:pretty}
-.intl-meta{display:block;margin-top:12px;font-family:var(--mono);font-size:10px;
-  letter-spacing:.1em;color:var(--concrete);opacity:.8}
-.intl-src{display:inline-block;margin-top:10px;font-family:var(--mono);font-size:10px;
-  letter-spacing:.14em;text-transform:uppercase;color:var(--accent)}
-.intl-foot{margin-top:18px;font-family:var(--body);font-size:12.5px;color:var(--concrete)}
-.intl-more{margin-top:26px;font-family:var(--mono);font-size:10px;letter-spacing:.22em;
-  text-transform:uppercase;color:var(--concrete);opacity:.75}
-.intl-roll{margin-top:10px;font-family:var(--disp);font-weight:600;font-stretch:104%;
-  font-size:clamp(15px,1.9vw,21px);line-height:1.7;color:var(--concrete);letter-spacing:-.01em}
-.intl-roll i{font-style:normal;color:var(--accent);font-size:.42em;vertical-align:middle;margin:0 9px;opacity:.65}
-.intl-stats{display:flex;flex-wrap:wrap;gap:10px;margin-top:24px}
-.istat{flex:1;min-width:150px;padding:14px 16px;border-radius:11px;
-  background:rgba(240,240,242,.035);border:1px solid rgba(240,240,242,.1)}
-.istat b{display:block;font-family:var(--disp);font-weight:800;font-stretch:112%;
-  font-size:clamp(22px,2.6vw,32px);letter-spacing:-.02em;color:var(--accent);line-height:1}
-.istat span{display:block;margin-top:6px;font-family:var(--mono);font-size:9.5px;
-  letter-spacing:.14em;text-transform:uppercase;color:var(--concrete)}
-@media(max-width:640px){.intl-grid{grid-template-columns:1fr}.intl{margin-top:40px}}
+  color:var(--concrete);margin-bottom:16px}
+.intl-names{font-family:var(--disp);font-weight:700;font-stretch:106%;
+  font-size:clamp(17px,2.5vw,29px);line-height:1.5;letter-spacing:-.015em;color:var(--paper);text-wrap:pretty}
+.intl-names i{font-style:normal;color:var(--accent);font-size:.4em;vertical-align:middle;margin:0 11px;opacity:.7}
+.intl-foot{margin-top:18px;font-family:var(--body);font-size:13px;color:var(--concrete)}
+.intl-foot strong{color:var(--paper);font-weight:600}
 
 /* ================= FAQ ================= */
 .z-faq{--accent:var(--red)}
@@ -1028,59 +1005,10 @@ l-1242 0 -30 29 -29 29 0 745 c0 768 1 796 40 817 12 6 374 10 984 10 929 0
       <span class="vr-cap">Club nights Việt Nam</span>
     </a>
   </div>
-  <div class="intl rv">
+  <div class="intl-slim rv">
     <p class="intl-lead"><span data-i18n="intl_k">Những cái tên quốc tế Haustek đã đưa về Việt Nam</span></p>
-    <div class="intl-grid">
-      <a class="intl-card" href="https://ra.co/events/1309879" target="_blank" rel="noopener">
-        <span class="intl-name">Boiler Room</span>
-        <span class="intl-note" data-i18n="intl_1">Boiler Room chọn Sài Gòn — Haustek đồng tổ chức, 18 nghệ sĩ trong hai ngày tại Khu 13.</span>
-        <span class="intl-meta">Khu 13 · 19.10.2019</span>
-        <span class="intl-src">Resident Advisor ↗</span>
-      </a>
-      <a class="intl-card" href="https://mixmag.asia/read/huyn-thoi-nhc-trance-cosmic-gate-ln-u-tien-chi-nhc-ti-sai-gon-trong-tour-din-asia-qung-ba-album-mi-mosaiik-2-vit-nam" target="_blank" rel="noopener">
-        <span class="intl-name">Cosmic Gate</span>
-        <span class="intl-note" data-i18n="intl_2">Lần đầu chơi tại Sài Gòn, trong tour châu Á album Mosaiik 2. Cháy vé.</span>
-        <span class="intl-meta">Boujee.SGN · 16.09.2023</span>
-        <span class="intl-src">Mixmag Asia ↗</span>
-      </a>
-      <a class="intl-card" href="https://ra.co/events/1592369" target="_blank" rel="noopener">
-        <span class="intl-name">Nick Warren</span>
-        <span class="intl-note" data-i18n="intl_3">Đêm ra mắt chính thức của Mixmag Asia Việt Nam. Cháy vé.</span>
-        <span class="intl-meta">Aura Saigon · 25.11.2022</span>
-        <span class="intl-src">Resident Advisor ↗</span>
-      </a>
-      <a class="intl-card" href="https://ra.co/events/1250083" target="_blank" rel="noopener">
-        <span class="intl-name">Ben Böhmer</span>
-        <span class="intl-note" data-i18n="intl_4">Live set của gương mặt Anjunadeep, hai đêm liên tiếp tại Sài Gòn.</span>
-        <span class="intl-meta">Anjunadeep · 05.2019</span>
-        <span class="intl-src">Resident Advisor ↗</span>
-      </a>
-      <a class="intl-card" href="https://ra.co/events/1601605" target="_blank" rel="noopener">
-        <span class="intl-name">Oliver Smith</span>
-        <span class="intl-note" data-i18n="intl_5">Nghệ sĩ đầu tiên ký với Anjunabeats, từng chơi Tomorrowland và Creamfields.</span>
-        <span class="intl-meta">Aura Saigon · 09.12.2022</span>
-        <span class="intl-src">Resident Advisor ↗</span>
-      </a>
-      <a class="intl-card" href="https://ra.co/events/1563942" target="_blank" rel="noopener">
-        <span class="intl-name">Roy Rosenfeld</span>
-        <span class="intl-note" data-i18n="intl_6">Gương mặt All Day I Dream, extended set trong đêm hausvn × Aura.</span>
-        <span class="intl-meta">Aura Saigon · 19.08.2022</span>
-        <span class="intl-src">Resident Advisor ↗</span>
-      </a>
-    </div>
-
-    <p class="intl-more" data-i18n="intl_more">Và nhiều tên tuổi khác</p>
-    <div class="intl-roll" aria-label="Các nghệ sĩ quốc tế khác">
-      <span>Marsh</span><i>●</i><span>John 00 Fleming</span><i>●</i><span>Solarstone</span><i>●</i><span>Paul Thomas</span><i>●</i><span>Alex M.O.R.P.H.</span><i>●</i><span>Truncate</span><i>●</i><span>Xhin</span><i>●</i><span>Jeremy Olander</span><i>●</i><span>Juliet Fox</span><i>●</i><span>Exos</span><i>●</i><span>Khen</span><i>●</i><span>David Hohme</span><i>●</i><span>Double Touch</span><i>●</i><span>Viken Arman</span><i>●</i><span>James Trystan</span><i>●</i><span>Aldrin</span><i>●</i><span>Das Pharaoh</span><i>●</i><span>Derek Nielsen</span><i>●</i><span>Blanche</span>
-    </div>
-
-    <div class="intl-stats">
-      <div class="istat"><b>248</b><span data-i18n="istat1">sự kiện trên Resident Advisor</span></div>
-      <div class="istat"><b>2015–2023</b><span data-i18n="istat2">liên tục tổ chức</span></div>
-      <div class="istat"><b>4</b><span data-i18n="istat3">đêm cháy vé</span></div>
-    </div>
-
-    <p class="intl-foot" data-i18n="intl_foot">Toàn bộ nằm trong hồ sơ promoter của Haustek Agency trên Resident Advisor. Được Mixmag Asia đưa tin.</p>
+    <p class="intl-names">Boiler Room<i>●</i>Cosmic Gate<i>●</i>Nick Warren<i>●</i>Ben Böhmer<i>●</i>Oliver Smith<i>●</i>Roy Rosenfeld<i>●</i>Paul Thomas<i>●</i>Marsh<i>●</i>John 00 Fleming<i>●</i>Alex M.O.R.P.H.<i>●</i>Truncate<i>●</i>Xhin</p>
+    <p class="intl-foot" data-i18n="intl_foot"><strong>248 đêm</strong> từ 2015 đến 2023, <strong>4 đêm cháy vé</strong> — toàn bộ nằm trong hồ sơ promoter của Haustek trên Resident Advisor.</p>
   </div>
 
   <div class="rv" style="margin-top:30px"><a class="see-all" href="/events">
@@ -1429,15 +1357,7 @@ const I18N={
     et_k:"Sự kiện",
     et_h:'<span class="ln">Sân khấu</span> <span class="ln">chúng tôi từng <em>dàn dựng.</em></span>',
     intl_k:"Những cái tên quốc tế Haustek đã đưa về Việt Nam",
-    intl_1:"Boiler Room chọn Sài Gòn — Haustek đồng tổ chức, 18 nghệ sĩ trong hai ngày tại Khu 13.",
-    intl_2:"Lần đầu chơi tại Sài Gòn, trong tour châu Á album Mosaiik 2. Cháy vé.",
-    intl_3:"Đêm ra mắt chính thức của Mixmag Asia Việt Nam. Cháy vé.",
-    intl_4:"Live set của gương mặt Anjunadeep, hai đêm liên tiếp tại Sài Gòn.",
-    intl_5:"Nghệ sĩ đầu tiên ký với Anjunabeats, từng chơi Tomorrowland và Creamfields.",
-    intl_6:"Gương mặt All Day I Dream, extended set trong đêm hausvn × Aura.",
-    intl_more:"Và nhiều tên tuổi khác",
-    istat1:"sự kiện trên Resident Advisor", istat2:"liên tục tổ chức", istat3:"đêm cháy vé",
-    intl_foot:"Toàn bộ nằm trong hồ sơ promoter của Haustek Agency trên Resident Advisor. Được Mixmag Asia đưa tin.",
+    intl_foot:'<strong>248 đêm</strong> từ 2015 đến 2023, <strong>4 đêm cháy vé</strong> — toàn bộ nằm trong hồ sơ promoter của Haustek trên Resident Advisor.',
     et_all:"Xem toàn bộ sự kiện & video",
     pq:'<span class="ln">“Bạn lo phần sáng tạo.</span> <span class="ln"><em>Chúng tôi lo phần còn lại.”</em></span>',
     pq_by:"Lời cam kết đến từ Haustek",
@@ -1527,15 +1447,7 @@ const I18N={
     et_k:"Events",
     et_h:'<span class="ln">Stages</span> <span class="ln">we\'ve <em>built.</em></span>',
     intl_k:"International names Haustek has brought to Vietnam",
-    intl_1:"Boiler Room picked Saigon — Haustek co-promoted, 18 artists over two days at Khu 13.",
-    intl_2:"Their first time in Saigon, on the Asia tour for Mosaiik 2. Sold out.",
-    intl_3:"The official launch night for Mixmag Asia Vietnam. Sold out.",
-    intl_4:"A live set from the Anjunadeep name, two nights running in Saigon.",
-    intl_5:"The first artist signed to Anjunabeats, has played Tomorrowland and Creamfields.",
-    intl_6:"An All Day I Dream regular, extended set for the hausvn × Aura night.",
-    intl_more:"And many more",
-    istat1:"events on Resident Advisor", istat2:"years running", istat3:"sold-out nights",
-    intl_foot:"All of the above sit in Haustek Agency's promoter history on Resident Advisor. Covered by Mixmag Asia.",
+    intl_foot:'<strong>248 nights</strong> from 2015 to 2023, <strong>4 sold out</strong> — all of it sits in Haustek\'s promoter history on Resident Advisor.',
     et_all:"See all events & videos",
     pq:'<span class="ln">“You handle the creative.</span> <span class="ln"><em>We handle the rest.”</em></span>',
     pq_by:"A commitment from Haustek",

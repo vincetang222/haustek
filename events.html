@@ -240,6 +240,36 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--red);outline-offset
 .arch-note{margin-top:20px;font-family:var(--body);font-size:12.5px;color:var(--concrete)}
 .arch-note a{color:var(--ice)}
 @media(max-width:720px){.arow{grid-template-columns:1fr;gap:4px;padding:12px 4px}.ar-v{text-align:left}}
+
+/* ============ ĐẦU BẢNG QUỐC TẾ ============
+   Thẻ dựng sẵn chỗ cho poster: có <img> thì hiện ảnh, chưa có thì hiện
+   nền chữ viết tắt — thêm ảnh sau chỉ cần điền thuộc tính poster. */
+.hl-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:12px;margin-top:34px}
+.hl{position:relative;display:block;border-radius:14px;overflow:hidden;
+  background:rgba(240,240,242,.035);border:1px solid rgba(240,240,242,.11);
+  transition:border-color .25s,transform .25s}
+.hl:hover{border-color:var(--red);transform:translateY(-3px)}
+.hl-shot{position:relative;aspect-ratio:4/5;overflow:hidden;background:#0C0C10;
+  display:flex;align-items:center;justify-content:center}
+.hl-shot img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;
+  filter:brightness(.82) saturate(.9);transition:transform .5s,filter .3s}
+.hl:hover .hl-shot img{transform:scale(1.05);filter:brightness(1) saturate(1)}
+.hl-ini{font-family:var(--disp);font-weight:800;font-stretch:118%;font-size:54px;
+  letter-spacing:-.03em;color:rgba(240,240,242,.09)}
+.hl-shot::after{content:"";position:absolute;inset:0;
+  background:linear-gradient(to top,rgba(8,8,12,.9),transparent 52%)}
+.hl-badge{position:absolute;top:11px;left:11px;z-index:2;padding:4px 9px;border-radius:100px;
+  font-family:var(--mono);font-size:8.5px;letter-spacing:.12em;
+  background:rgba(255,46,76,.9);color:#fff}
+.hl-body{position:relative;padding:0 16px 15px;margin-top:-52px;z-index:2}
+.hl-name{display:block;font-family:var(--disp);font-weight:780;font-stretch:110%;
+  font-size:clamp(20px,2.2vw,27px);letter-spacing:-.02em;line-height:1.08;color:var(--paper)}
+.hl-note{display:block;margin-top:9px;font-family:var(--body);font-size:12.5px;
+  color:var(--concrete);line-height:1.45;text-wrap:pretty}
+.hl-meta{display:block;margin-top:11px;font-family:var(--mono);font-size:9.5px;
+  letter-spacing:.1em;color:var(--concrete);opacity:.8}
+.hl-src{display:inline-block;margin-top:9px;font-family:var(--mono);font-size:9.5px;
+  letter-spacing:.14em;text-transform:uppercase;color:var(--red)}
 </style>
 </head>
 <body>
@@ -424,6 +454,77 @@ l-1242 0 -30 29 -29 29 0 745 c0 768 1 796 40 817 12 6 374 10 984 10 929 0
   </div>
 </div>
 
+<section class="arch-hero" style="padding-bottom:0">
+  <p class="kicker"><i>●</i><span data-i18n="hl_k">Đầu bảng quốc tế</span></p>
+  <h2 data-i18n="hl_h"><span class="ln">Những cái tên</span> <span class="ln"><em>chúng tôi đã đưa về.</em></span></h2>
+  <div class="hl-grid">
+
+    <a class="hl" href="https://ra.co/events/1309879" target="_blank" rel="noopener">
+      <span class="hl-shot"><span class="hl-ini">BR</span></span>
+      <span class="hl-body">
+        <span class="hl-name">Boiler Room</span>
+        <span class="hl-note" data-i18n="hl_1">Boiler Room chọn Sài Gòn — Haustek đồng tổ chức, 18 nghệ sĩ trong hai ngày tại Khu 13.</span>
+        <span class="hl-meta">Khu 13 · 19.10.2019</span><br>
+        <span class="hl-src">Resident Advisor ↗</span>
+      </span>
+    </a>
+
+    <a class="hl" href="https://mixmag.asia/read/huyn-thoi-nhc-trance-cosmic-gate-ln-u-tien-chi-nhc-ti-sai-gon-trong-tour-din-asia-qung-ba-album-mi-mosaiik-2-vit-nam" target="_blank" rel="noopener">
+      <span class="hl-badge">SOLD OUT</span>
+      <span class="hl-shot"><span class="hl-ini">CG</span></span>
+      <span class="hl-body">
+        <span class="hl-name">Cosmic Gate</span>
+        <span class="hl-note" data-i18n="hl_2">Lần đầu chơi tại Sài Gòn, trong tour châu Á album Mosaiik 2.</span>
+        <span class="hl-meta">Boujee.SGN · 16.09.2023</span><br>
+        <span class="hl-src">Mixmag Asia ↗</span>
+      </span>
+    </a>
+
+    <a class="hl" href="https://ra.co/events/1592369" target="_blank" rel="noopener">
+      <span class="hl-badge">SOLD OUT</span>
+      <span class="hl-shot"><span class="hl-ini">NW</span></span>
+      <span class="hl-body">
+        <span class="hl-name">Nick Warren</span>
+        <span class="hl-note" data-i18n="hl_3">Đêm ra mắt chính thức của Mixmag Asia Việt Nam.</span>
+        <span class="hl-meta">Aura Saigon · 25.11.2022</span><br>
+        <span class="hl-src">Resident Advisor ↗</span>
+      </span>
+    </a>
+
+    <a class="hl" href="https://ra.co/events/1250083" target="_blank" rel="noopener">
+      <span class="hl-shot"><span class="hl-ini">BB</span></span>
+      <span class="hl-body">
+        <span class="hl-name">Ben Böhmer</span>
+        <span class="hl-note" data-i18n="hl_4">Live set của gương mặt Anjunadeep, hai đêm liên tiếp tại Sài Gòn.</span>
+        <span class="hl-meta">Anjunadeep · 05.2019</span><br>
+        <span class="hl-src">Resident Advisor ↗</span>
+      </span>
+    </a>
+
+    <a class="hl" href="https://ra.co/events/1601605" target="_blank" rel="noopener">
+      <span class="hl-shot"><span class="hl-ini">OS</span></span>
+      <span class="hl-body">
+        <span class="hl-name">Oliver Smith</span>
+        <span class="hl-note" data-i18n="hl_5">Nghệ sĩ đầu tiên ký với Anjunabeats, từng chơi Tomorrowland và Creamfields.</span>
+        <span class="hl-meta">Aura Saigon · 09.12.2022</span><br>
+        <span class="hl-src">Resident Advisor ↗</span>
+      </span>
+    </a>
+
+    <a class="hl" href="https://ra.co/events/1563942" target="_blank" rel="noopener">
+      <span class="hl-shot"><span class="hl-ini">RR</span></span>
+      <span class="hl-body">
+        <span class="hl-name">Roy Rosenfeld</span>
+        <span class="hl-note" data-i18n="hl_6">Gương mặt All Day I Dream, extended set trong đêm hausvn × Aura.</span>
+        <span class="hl-meta">Aura Saigon · 19.08.2022</span><br>
+        <span class="hl-src">Resident Advisor ↗</span>
+      </span>
+    </a>
+
+  </div>
+  <p class="arch-note" data-i18n="hl_note">Và nhiều tên khác: Paul Thomas, Marsh, John 00 Fleming, Solarstone, Alex M.O.R.P.H., Truncate, Xhin, Jeremy Olander, Juliet Fox, Exos, Khen, David Hohme, Viken Arman, James Trystan, Aldrin, Das Pharaoh, Derek Nielsen, Blanche — xem đầy đủ trong bảng bên dưới.</p>
+</section>
+
 <section class="arch-hero">
   <p class="kicker"><i>●</i><span data-i18n="ar_k">Hồ sơ trên Resident Advisor</span></p>
   <h2 data-i18n="ar_h"><span class="ln">Mọi đêm</span> <span class="ln"><em>chúng tôi từng dựng.</em></span></h2>
@@ -559,6 +660,15 @@ const I18N={
     blocked:"Video này hiện không thể phát tại đây do vướng bản quyền âm nhạc. Bạn xem trực tiếp trên YouTube nhé.",
     failed:"Video này hiện chưa mở được. Bạn thử lại trên YouTube nhé.",
     openYT:"Mở trên YouTube",
+    hl_k:"Đầu bảng quốc tế",
+    hl_h:'<span class="ln">Những cái tên</span> <span class="ln"><em>chúng tôi đã đưa về.</em></span>',
+    hl_1:"Boiler Room chọn Sài Gòn — Haustek đồng tổ chức, 18 nghệ sĩ trong hai ngày tại Khu 13.",
+    hl_2:"Lần đầu chơi tại Sài Gòn, trong tour châu Á album Mosaiik 2.",
+    hl_3:"Đêm ra mắt chính thức của Mixmag Asia Việt Nam.",
+    hl_4:"Live set của gương mặt Anjunadeep, hai đêm liên tiếp tại Sài Gòn.",
+    hl_5:"Nghệ sĩ đầu tiên ký với Anjunabeats, từng chơi Tomorrowland và Creamfields.",
+    hl_6:"Gương mặt All Day I Dream, extended set trong đêm hausvn × Aura.",
+    hl_note:"Và nhiều tên khác: Paul Thomas, Marsh, John 00 Fleming, Solarstone, Alex M.O.R.P.H., Truncate, Xhin, Jeremy Olander, Juliet Fox, Exos, Khen, David Hohme, Viken Arman, James Trystan, Aldrin, Das Pharaoh, Derek Nielsen, Blanche — xem đầy đủ trong bảng bên dưới.",
     ar_k:"Hồ sơ trên Resident Advisor",
     ar_h:'<span class="ln">Mọi đêm</span> <span class="ln"><em>chúng tôi từng dựng.</em></span>',
     ar_s1:"sự kiện", ar_s2:"liên tục", ar_s3:"đêm có nghệ sĩ quốc tế", ar_s4:"đêm cháy vé",
@@ -582,6 +692,15 @@ const I18N={
     blocked:"This video can't be played here right now due to a music licensing claim. You can watch it directly on YouTube instead.",
     failed:"This video isn't loading right now. Try watching it on YouTube instead.",
     openYT:"Open on YouTube",
+    hl_k:"International headliners",
+    hl_h:'<span class="ln">The names</span> <span class="ln"><em>we brought over.</em></span>',
+    hl_1:"Boiler Room picked Saigon — Haustek co-promoted, 18 artists over two days at Khu 13.",
+    hl_2:"Their first time in Saigon, on the Asia tour for Mosaiik 2.",
+    hl_3:"The official launch night for Mixmag Asia Vietnam.",
+    hl_4:"A live set from the Anjunadeep name, two nights running in Saigon.",
+    hl_5:"The first artist signed to Anjunabeats, has played Tomorrowland and Creamfields.",
+    hl_6:"An All Day I Dream regular, extended set for the hausvn × Aura night.",
+    hl_note:"And many more: Paul Thomas, Marsh, John 00 Fleming, Solarstone, Alex M.O.R.P.H., Truncate, Xhin, Jeremy Olander, Juliet Fox, Exos, Khen, David Hohme, Viken Arman, James Trystan, Aldrin, Das Pharaoh, Derek Nielsen, Blanche — the full list is in the table below.",
     ar_k:"The Resident Advisor record",
     ar_h:'<span class="ln">Every night</span> <span class="ln"><em>we have built.</em></span>',
     ar_s1:"events", ar_s2:"years running", ar_s3:"nights with international artists", ar_s4:"sold-out nights",
