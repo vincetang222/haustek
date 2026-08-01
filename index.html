@@ -45,7 +45,7 @@
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Archivo:ital,wdth,wght@0,62..125,300..900;1,62..125,300..900&family=Be+Vietnam+Pro:wght@300;400;500&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:ital,wdth,wght@0,100..125,300..800;1,100..125,300..800&family=Be+Vietnam+Pro:wght@300;400;500&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 
 <style>
 /* =========================================================
@@ -81,11 +81,6 @@ body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:120;op
 img{max-width:100%;display:block}
 a{color:inherit;text-decoration:none}
 a,button,summary{cursor:pointer;-webkit-tap-highlight-color:transparent}
-
-.cursor{position:fixed;top:0;left:0;width:10px;height:10px;border-radius:50%;background:var(--red);
-  pointer-events:none;z-index:9999;transform:translate(-50%,-50%);transition:width .25s,height .25s,opacity .25s}
-.cursor.hot{width:56px;height:56px;background:rgba(255,46,76,.14);border:1px solid var(--red)}
-@media(hover:none){.cursor{display:none}}
 
 /* ================= NAV ================= */
 .nav{
@@ -638,13 +633,50 @@ a:focus-visible,button:focus-visible,summary:focus-visible,input:focus-visible,t
   *{animation:none!important;transition:none!important}
   .rv,.split .row{opacity:1;transform:none}
   html{scroll-behavior:auto}
-  .cursor{display:none}
 }
+
+/* =========================================================
+   CHẾ ĐỘ NHẸ CHO MÀN HÌNH NHỎ (≤900px)
+   Chỉ áp dụng dưới 900px — desktop không đụng tới một dòng nào.
+   Mục tiêu: bỏ những thứ tốn GPU/repaint nhất trên điện thoại mà
+   không làm mất bố cục hay bản sắc trang. Mỗi khối màu nền zone
+   (::before) vẫn còn nguyên, nên nhìn vẫn ra đúng không khí cũ.
+   ========================================================= */
+@media (max-width:900px){
+
+  /* 1. Lớp nhiễu phủ toàn màn: là một layer fixed full-viewport,
+        buộc trình duyệt hợp thành lại mỗi lần cuộn. Bỏ hẳn. */
+  body::after{display:none}
+
+  /* 2. backdrop-filter là thứ đắt nhất trên GPU di động — mỗi phần tử
+        có nó buộc trình duyệt đọc lại vùng nền phía sau từng khung hình.
+        Thay bằng nền đặc, mắt thường gần như không phân biệt được. */
+  .nav{backdrop-filter:none;-webkit-backdrop-filter:none;background:rgba(7,7,9,.93)}
+  .full-menu{backdrop-filter:none;-webkit-backdrop-filter:none;background:#07070A}
+  .glass{backdrop-filter:none;-webkit-backdrop-filter:none;
+    background:rgba(240,240,242,.055);box-shadow:inset 0 1px 0 rgba(255,255,255,.06)}
+  .see-all,.store-links a,.nav-submit,.send-btn{backdrop-filter:none;-webkit-backdrop-filter:none}
+
+  /* 3. Aurora: 3 khối tròn cỡ nửa màn hình, blur 70px, chạy vô hạn —
+        đắt nhất trong toàn bộ CSS. Ẩn đi; nền màu của .z-artists::before
+        vẫn còn nên khu vực nghệ sĩ không bị trống. */
+  .aurora{display:none}
+
+  /* 4. Đèn quét sân khấu: blur 6px + mix-blend-mode:screen trên 2 khối
+        cao 130% màn hình, xoay liên tục. Ẩn; .z-events::before giữ màu. */
+  .beams{display:none}
+
+  /* 5. Ken Burns trên 3 ảnh video: phóng ảnh liên tục = repaint liên tục.
+        Giữ ảnh ở một cỡ cố định. */
+  .vr-card img{animation:none;transform:scale(1.03)}
+
+  /* 6. Bóng đổ lớn tốn công vẽ, trên nền tối gần như không thấy. */
+  .form-ed,.fact-list,.faq-wrap{box-shadow:none}
+}
+
 </style>
 </head>
 <body>
-
-<div class="cursor" aria-hidden="true"></div>
 
 <header class="nav">
   <a class="logo" href="/" aria-label="Haustek">
@@ -1256,8 +1288,20 @@ l-1242 0 -30 29 -29 29 0 745 c0 768 1 796 40 817 12 6 374 10 984 10 929 0
   </div>
 </footer>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script>
+/* =====================================================================
+   CỜ CHẾ ĐỘ NHẸ
+   Dưới 900px (điện thoại, tablet dọc) trang chạy ở chế độ nhẹ:
+   - hero 3D three.js VẪN GIỮ, nhưng lưới điểm 56×36 thay vì 96×60,
+     độ phân giải 1.5x thay vì 3x, khoá 30fps
+   - three.js tải bất đồng bộ, không chặn hiển thị trang
+   - mọi canvas khác hạ độ phân giải và chạy 30fps thay vì 60fps
+   - số điểm/hạt của các đồ hoạ nền giảm bớt
+   Từ 900px trở lên mọi thứ y hệt bản cũ, không đổi một dòng nào.
+   ===================================================================== */
+const LITE = matchMedia('(max-width:900px)').matches;
+const CDPR = () => Math.min(devicePixelRatio||1, LITE?1.5:2);
+
 /* =====================================================================
    KHE CẮM VIDEO NỀN
    Khi bạn có footage đêm diễn, up file lên cùng thư mục rồi điền tên vào đây.
@@ -1581,16 +1625,6 @@ fullMenu.querySelectorAll('a:not([data-fm-anchor])').forEach(a=>{
   a.addEventListener('click',closeMenu);
 });
 
-/* ================= custom cursor ================= */
-const cur=document.querySelector('.cursor');
-if(cur&&!matchMedia('(hover:none)').matches){
-  let cx=0,cy=0,tx=0,ty=0;
-  addEventListener('pointermove',e=>{tx=e.clientX;ty=e.clientY;});
-  (function loop(){cx+=(tx-cx)*.22;cy+=(ty-cy)*.22;cur.style.transform=`translate(${cx}px,${cy}px) translate(-50%,-50%)`;requestAnimationFrame(loop);})();
-  document.addEventListener('mouseover',e=>{if(e.target.closest('a,button,summary,input,textarea,select'))cur.classList.add('hot');});
-  document.addEventListener('mouseout',e=>{if(e.target.closest('a,button,summary,input,textarea,select'))cur.classList.remove('hot');});
-}
-
 /* ================= reveal + split ================= */
 const io=new IntersectionObserver(es=>{
   es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}});
@@ -1626,11 +1660,13 @@ let eqCtx=null,eqBars=[],eqW=0,eqH=0,eqOn=false,eqBoost=0;
 let analyser=null,freqData=null;      /* engine beat phía dưới gán vào */
 if(eq){
   eqCtx=eq.getContext('2d');
-  const BAR=6,GAP=4;
+  const BAR=LITE?9:6,GAP=LITE?5:4;
+  let eqD=CDPR(),eqLast=0;
   function eqSize(){
     const r=eq.getBoundingClientRect();
-    eqW=eq.width=r.width*devicePixelRatio;
-    eqH=eq.height=r.height*devicePixelRatio;
+    eqD=CDPR();
+    eqW=eq.width=r.width*eqD;
+    eqH=eq.height=r.height*eqD;
     const n=Math.ceil(r.width/(BAR+GAP));
     eqBars=Array.from({length:n},(_,i)=>({
       v:Math.random()*.3+.08,
@@ -1641,13 +1677,15 @@ if(eq){
   }
   eqSize();addEventListener('resize',eqSize);
   new IntersectionObserver(es=>{eqOn=es[0].isIntersecting;if(eqOn)requestAnimationFrame(eqDraw);},{threshold:0}).observe(eq);
-  function eqDraw(){
+  function eqDraw(ts){
     if(!eqOn)return;
+    if(LITE&&ts-eqLast<32){requestAnimationFrame(eqDraw);return;}   /* khoá 30fps */
+    eqLast=ts;
     const live = playing && analyser && freqData;
     if(live)analyser.getByteFrequencyData(freqData);
     const nb = live ? analyser.frequencyBinCount : 0;
     eqCtx.clearRect(0,0,eqW,eqH);
-    const bw=6*devicePixelRatio,gap=4*devicePixelRatio,n=eqBars.length;
+    const bw=BAR*eqD,gap=GAP*eqD,n=eqBars.length;
     eqBars.forEach((b,i)=>{
       let amp;
       if(live){
@@ -1663,7 +1701,7 @@ if(eq){
         b.v+=(b.t-b.v)*.06;
         amp=Math.min(1,b.v);
       }
-      const hgt=Math.max(2*devicePixelRatio,amp*eqH*.82);
+      const hgt=Math.max(2*eqD,amp*eqH*.82);
       const x=i*(bw+gap),y=(eqH-hgt)/2;
       eqCtx.fillStyle=b.hot?`rgba(255,46,76,${(.32+amp*.5).toFixed(3)})`
                            :`rgba(240,240,242,${(.07+amp*.24).toFixed(3)})`;
@@ -1692,10 +1730,95 @@ let spawn=function(){};              /* no-op mặc định — gán lại bên 
 const kickHooks=[];                  /* các đồ hoạ khác đăng ký vào đây để nhảy theo tiếng kick */
 let heroVisible=true;
 
-(function(){
+/* ---------- BẢN NHẸ CHO MÀN HÌNH NHỎ ----------
+   Cùng ý tưởng với bản 3D (một mặt sàn phập phồng, kick làm sóng lan về
+   phía người xem) nhưng vẽ bằng 2D canvas: 14 đường contour × 44 điểm,
+   chạy 30fps. Khoảng 600 phép tính mỗi khung thay vì gần 6.000, và
+   không phải tải thư viện 3D nào. Giữ nguyên API spawn(px,py,big) nên
+   phần engine beat phía dưới không cần đổi gì. */
+function initTerrainLite(){
+  if(!cv)return;
+  const c=cv.getContext('2d');
+  let w=1,h=1,d=CDPR();
+  function fit(){
+    const r=cv.getBoundingClientRect();
+    d=CDPR();
+    w=cv.width=Math.max(r.width*d,1);
+    h=cv.height=Math.max(r.height*d,1);
+    W=w;H=h;
+  }
+  fit();addEventListener('resize',fit);
+
+  const ROWS=16, COLS=48;
+  const waves=[];                       /* sóng lan từ chân trời về phía người xem */
+  spawn=function(px,py,big){
+    waves.push({p:0, a:big?1:.55, big:!!big});
+    if(waves.length>4)waves.shift();
+  };
+  /* chạm vào hero cũng tạo một sóng nhỏ */
+  cv.parentElement.addEventListener('pointerdown',()=>spawn(0,0,false),{passive:true});
+
+  const wheelEl=document.getElementById('wheel');
+  let energy=0, vis=true, last=0;
+  new IntersectionObserver(es=>{vis=es[0].isIntersecting;},{threshold:0}).observe(cv);
+
+  function draw(t){
+    const playing=wheelEl&&wheelEl.classList.contains('playing');
+    energy+=((playing?1:0)-energy)*.04;
+
+    for(let k=waves.length-1;k>=0;k--){
+      const wv=waves[k];wv.p+=.011;wv.a*=.988;
+      if(wv.p>1.15||wv.a<.04)waves.splice(k,1);
+    }
+
+    c.clearRect(0,0,w,h);
+    for(let r=0;r<ROWS;r++){
+      const u=r/(ROWS-1);                          /* 0 = chân trời, 1 = gần mắt */
+      const y0=h*(.34+Math.pow(u,1.7)*.70);
+      let amp=h*(.009+u*.052)*(1+energy*.9);
+      let red=0;
+      for(let k=0;k<waves.length;k++){
+        const wv=waves[k], dd=u-wv.p;
+        const e=Math.exp(-(dd*dd)/.006)*wv.a;
+        if(e>.02){amp*=1+e*(wv.big?2.2:.9); if(wv.big)red=Math.max(red,Math.min(e,1));}
+      }
+      c.beginPath();
+      for(let i=0;i<=COLS;i++){
+        const s=i/COLS, x=s*w;
+        const y=y0+Math.sin(s*6.1+t*.85+r*.55)*amp
+                  +Math.sin(s*11.3-t*1.25+r*.31)*amp*.42;
+        i?c.lineTo(x,y):c.moveTo(x,y);
+      }
+      const base=.05+u*.22+energy*.04;
+      c.strokeStyle = red>.03
+        ? `rgba(255,46,76,${(base+red*.5).toFixed(3)})`
+        : `rgba(240,240,242,${base.toFixed(3)})`;
+      c.lineWidth=d;c.stroke();
+    }
+  }
+
+  if(reduced){                                     /* một khung tĩnh */
+    waves.push({p:.42,a:.8,big:true});
+    draw(1.2);
+    addEventListener('resize',()=>draw(1.2));
+    return;
+  }
+  let t0=null;
+  (function loop(ts){
+    requestAnimationFrame(loop);
+    if(!vis||document.hidden)return;
+    if(ts-last<32)return;                          /* khoá 30fps */
+    last=ts;
+    if(t0===null)t0=ts;
+    draw((ts-t0)/1000);
+  })(0);
+}
+
+/* ---------- BẢN 3D ĐẦY ĐỦ (chỉ desktop) ---------- */
+function initTerrain3D(){
   if(!window.THREE||!cv)return;
-  const DPR=Math.min(devicePixelRatio||1,2);
-  const mobile=matchMedia('(max-width:760px)').matches;
+  const DPR=CDPR();                   /* mobile 1.5 thay vì 2–3 → ít pixel phải vẽ hơn nhiều */
+  const mobile=LITE;
   const renderer=new THREE.WebGLRenderer({canvas:cv,antialias:false,alpha:true,powerPreference:'low-power'});
   renderer.setPixelRatio(DPR);
   const scene=new THREE.Scene();
@@ -1705,8 +1828,12 @@ let heroVisible=true;
   cam.position.set(0,CAMY,CAMZ);
   cam.lookAt(0,1.2,-14);
 
-  /* lưới điểm: rộng hơn khung nhìn để không lộ mép khi camera lắc */
-  const NX=mobile?96:150, NZ=mobile?60:96, SX=128, SZ=96;
+  /* lưới điểm: rộng hơn khung nhìn để không lộ mép khi camera lắc.
+     Mobile hạ từ 96×60 (5.760 điểm) xuống 56×36 (2.016 điểm) — mỗi khung
+     hình phải tính lại độ cao và màu cho TỪNG điểm, nên đây là con số
+     quyết định trực tiếp trang có mượt hay không. Điểm được vẽ to lên
+     một chút để mặt sàn nhìn vẫn liền, không bị thưa. */
+  const NX=mobile?56:150, NZ=mobile?36:96, SX=128, SZ=96;
   const N=NX*NZ;
   const pos=new Float32Array(N*3), col=new Float32Array(N*3);
   const gx=new Float32Array(N), gz=new Float32Array(N);
@@ -1719,7 +1846,7 @@ let heroVisible=true;
   const geo=new THREE.BufferGeometry();
   geo.setAttribute('position',new THREE.BufferAttribute(pos,3).setUsage(THREE.DynamicDrawUsage));
   geo.setAttribute('color',new THREE.BufferAttribute(col,3).setUsage(THREE.DynamicDrawUsage));
-  const mat=new THREE.PointsMaterial({size:mobile?.4:.28,vertexColors:true,transparent:true,opacity:.9,
+  const mat=new THREE.PointsMaterial({size:mobile?.62:.28,vertexColors:true,transparent:true,opacity:.9,
     blending:THREE.AdditiveBlending,depthWrite:false,sizeAttenuation:true});
   scene.add(new THREE.Points(geo,mat));
 
@@ -1727,7 +1854,7 @@ let heroVisible=true;
   const waves=[];
   function impulse(wx,wz,big){
     waves.push({x:wx,z:wz,t0:tNow,red:big,amp:big?3.1:.8,spd:big?26:20,wd:big?15:9,dk:big?1.5:2.4});
-    if(waves.length>10)waves.shift();
+    if(waves.length>(mobile?5:10))waves.shift();
   }
   /* API cũ: spawn(px,py,big) với toạ độ pixel màn hình — quy về toạ độ địa hình */
   spawn=function(px,py,big){
@@ -1804,13 +1931,15 @@ let heroVisible=true;
   new IntersectionObserver(es=>{heroVisible=es[0].isIntersecting;if(heroVisible&&!reduced)requestAnimationFrame(loop);},{threshold:0}).observe(cv);
   document.addEventListener('visibilitychange',()=>{if(!document.hidden&&heroVisible&&!reduced)requestAnimationFrame(loop);});
 
-  let t0=null;
+  let t0=null,fLast=0;
   function loop(ts){
     if(!heroVisible||document.hidden||reduced)return;
+    requestAnimationFrame(loop);
+    if(mobile&&ts-fLast<32)return;     /* mobile: 30fps — nửa số phép tính, mắt gần như không thấy khác */
+    fLast=ts;
     if(t0===null)t0=ts;
     update((ts-t0)/1000);
     renderer.render(scene,cam);
-    requestAnimationFrame(loop);
   }
 
   if(reduced){
@@ -1822,7 +1951,20 @@ let heroVisible=true;
   }else{
     requestAnimationFrame(loop);
   }
-})();
+}
+
+/* ---------- tải three.js ----------
+   Mọi thiết bị đều dùng hero 3D. Khác bản gốc ở hai điểm:
+   (1) tải bất đồng bộ (async) thay vì thẻ <script> chặn — trang hiện chữ
+       và cuộn được ngay, không phải đứng chờ thư viện tải xong;
+   (2) trên mobile lưới điểm và độ phân giải hạ xuống, khoá 30fps.
+   Nếu CDN hỏng thì rơi về bản vẽ 2D thay vì để hero trống. */
+const s=document.createElement('script');
+s.src='https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js';
+s.async=true;
+s.onload=initTerrain3D;
+s.onerror=initTerrainLite;
+document.head.appendChild(s);
 
 let AC=null,playing=false,nextT=0,step=0,timer=null;
 let master=null;                     /* mọi tiếng đi qua đây để analyser đọc được */
@@ -1892,31 +2034,33 @@ const pulseCv=document.getElementById('pulseCv');
 let pulseKick=false;
 if(pulseCv){
   const pctx=pulseCv.getContext('2d');
-  let PW,PH,pOn=false,pLast=0;
-  function pSize(){const r=pulseCv.getBoundingClientRect();PW=pulseCv.width=r.width*devicePixelRatio;PH=pulseCv.height=r.height*devicePixelRatio;}
+  let PW,PH,pOn=false,pLast=0,pD=CDPR();
+  function pSize(){const r=pulseCv.getBoundingClientRect();pD=CDPR();PW=pulseCv.width=r.width*pD;PH=pulseCv.height=r.height*pD;}
   pSize();addEventListener('resize',pSize);
   const prs=[];
-  function pSpawn(hot){prs.push({r:3*devicePixelRatio,a:hot?.6:.42,red:hot||Math.random()<.22});if(prs.length>8)prs.shift();}
+  function pSpawn(hot){prs.push({r:3*pD,a:hot?.6:.42,red:hot||Math.random()<.22});if(prs.length>8)prs.shift();}
   pSpawn(false);
   new IntersectionObserver(es=>{pOn=es[0].isIntersecting;if(pOn)requestAnimationFrame(pLoop);},{threshold:0}).observe(pulseCv);
+  let pFrame=0;
   function pLoop(ts){
     if(!pOn)return;
+    if(!reduced)requestAnimationFrame(pLoop);
+    if(LITE&&(pFrame++&1))return;                  /* mobile: vẽ cách khung, ~30fps */
     if(ts-pLast>1600){pSpawn(false);pLast=ts;}
     if(pulseKick){pSpawn(true);pulseKick=false;}
     pctx.clearRect(0,0,PW,PH);
     const max=Math.min(PW,PH)/2-2;
     for(let i=prs.length-1;i>=0;i--){
-      const g=prs[i];g.r+=0.32*devicePixelRatio;g.a*=.994;
+      const g=prs[i];g.r+=(LITE?.64:.32)*pD;g.a*=LITE?.988:.994;
       if(g.r>max||g.a<.02){prs.splice(i,1);continue;}
       pctx.beginPath();pctx.arc(PW/2,PH/2,g.r,0,Math.PI*2);
       pctx.strokeStyle=g.red?`rgba(255,46,76,${g.a.toFixed(3)})`:`rgba(240,240,242,${(g.a*.8).toFixed(3)})`;
-      pctx.lineWidth=1.1*devicePixelRatio;pctx.stroke();
+      pctx.lineWidth=1.1*pD;pctx.stroke();
     }
-    pctx.beginPath();pctx.arc(PW/2,PH/2,2.6*devicePixelRatio,0,Math.PI*2);
+    pctx.beginPath();pctx.arc(PW/2,PH/2,2.6*pD,0,Math.PI*2);
     pctx.fillStyle='rgba(255,46,76,.9)';pctx.fill();
-    if(!reduced)requestAnimationFrame(pLoop);
   }
-  if(reduced){for(let k=0;k<5;k++){pSpawn(false);prs[prs.length-1].r=(12+k*18)*devicePixelRatio;}pOn=true;pLoop(0);pOn=false;}
+  if(reduced){for(let k=0;k<5;k++){pSpawn(false);prs[prs.length-1].r=(12+k*18)*pD;}pOn=true;pLoop(0);pOn=false;}
 }
 
 /* ================= thước timeline =================
@@ -1926,23 +2070,24 @@ document.querySelectorAll('.timebar .tb').forEach(tb=>{
   const c=tb.getContext('2d');
   function draw(){
     const r=tb.getBoundingClientRect();
-    const w=tb.width=r.width*devicePixelRatio, hh=tb.height=r.height*devicePixelRatio;
+    const dpr=CDPR();
+    const w=tb.width=r.width*dpr, hh=tb.height=r.height*dpr;
     c.clearRect(0,0,w,hh);
-    const minor=8*devicePixelRatio, major=96*devicePixelRatio;
+    const minor=8*dpr, major=96*dpr;
     c.strokeStyle='rgba(240,240,242,.16)';c.lineWidth=1;
-    c.font=(9*devicePixelRatio)+'px "IBM Plex Mono",monospace';
+    c.font=(9*dpr)+'px "IBM Plex Mono",monospace';
     c.fillStyle='rgba(142,142,152,.75)';
     for(let x=0;x<w;x+=minor){
       const isMajor=Math.round(x/minor)%12===0;
       c.beginPath();
       c.moveTo(x+.5,hh);
-      c.lineTo(x+.5,hh-(isMajor?18:8)*devicePixelRatio);
+      c.lineTo(x+.5,hh-(isMajor?18:8)*dpr);
       c.stroke();
       if(isMajor){
         const sec=Math.round(x/major)*2;
         const mm=String(Math.floor(sec/60)).padStart(2,'0');
         const ss=String(sec%60).padStart(2,'0');
-        c.fillText('00:'+mm+':'+ss+':00', x+5*devicePixelRatio, 16*devicePixelRatio);
+        c.fillText('00:'+mm+':'+ss+':00', x+5*dpr, 16*dpr);
       }
     }
   }
@@ -1962,7 +2107,7 @@ function busAdd(canvas,setup){
   const m={on:false,draw:null,resize:null};
   function fit(){
     const r=canvas.getBoundingClientRect();
-    const d=Math.min(devicePixelRatio||1,2);
+    const d=CDPR();
     canvas.width=Math.max(r.width*d,1);canvas.height=Math.max(r.height*d,1);
     m.d=d;m.w=canvas.width;m.h=canvas.height;
     if(m.resize)m.resize();
@@ -1974,10 +2119,12 @@ function busAdd(canvas,setup){
   if(reduced&&m.draw){m.on=true;m.draw(1.4);m.on=false;}
 }
 if(!reduced){
-  let busT0=null;
+  let busT0=null,busLast=0;
   (function busLoop(ts){
     requestAnimationFrame(busLoop);
     if(document.hidden)return;
+    if(LITE&&ts-busLast<32)return;          /* mobile: 30fps là quá đủ cho đồ hoạ nền */
+    busLast=ts;
     if(busT0===null)busT0=ts;
     const t=(ts-busT0)/1000;
     for(const m of Bus)if(m.on&&m.draw)m.draw(t);
@@ -2015,7 +2162,7 @@ busAdd(document.getElementById('svcSignal'),(c,m)=>{
     c.strokeStyle='rgba(240,240,242,.18)';c.lineWidth=1*d;c.stroke();
     /* xung chạy dọc đường */
     for(let k=pulses.length-1;k>=0;k--){
-      const p=pulses[k];p.p+=p.v/60;
+      const p=pulses[k];p.p+=p.v/(LITE?30:60);
       if(p.p>1.06){if(pulses.length>1)pulses.splice(k,1);else p.p=0;continue;}
       const px=x0+span*p.p, py=y+Math.sin(px/(46*d)+t*1.4)*2.2*d;
       const g=c.createRadialGradient(px,py,0,px,py,16*d);
@@ -2037,7 +2184,7 @@ busAdd(document.getElementById('svcSignal'),(c,m)=>{
     }
     /* vòng lan từ nút vừa mở */
     for(let k=rings.length-1;k>=0;k--){
-      const r=rings[k];r.r+=1.1*d;r.a*=.955;
+      const r=rings[k];r.r+=(LITE?2.2:1.1)*d;r.a*=LITE?.912:.955;
       if(r.a<.02){rings.splice(k,1);continue;}
       const nx=x0+span*(r.i+.5)/N;
       c.beginPath();c.arc(nx,y,r.r,0,Math.PI*2);
@@ -2050,7 +2197,7 @@ busAdd(document.getElementById('svcSignal'),(c,m)=>{
    ~800 điểm xếp xoắn Fibonacci trên mặt cầu, xoay chậm; ping đỏ nổ ngẫu
    nhiên (dày hơn khi beat đang chạy) = một bản nhạc vừa chạm một nơi nào đó. */
 busAdd(document.getElementById('globe'),(c,m)=>{
-  const N=800,pts=[];
+  const N=LITE?320:800,pts=[];
   const GA=Math.PI*(3-Math.sqrt(5));
   for(let i=0;i<N;i++){
     const yy=1-(i/(N-1))*2, r=Math.sqrt(1-yy*yy), th=GA*i;
@@ -2077,7 +2224,7 @@ busAdd(document.getElementById('globe'),(c,m)=>{
       c.fillStyle=`rgba(240,240,242,${b.toFixed(3)})`;c.fill();
     }
     for(let k=pings.length-1;k>=0;k--){
-      const p=pings[k];p.r+=.55*d;p.a*=.965;
+      const p=pings[k];p.r+=(LITE?1.1:.55)*d;p.a*=LITE?.931:.965;
       const[px,py,pz]=proj[p.i];
       if(p.a<.03){pings.splice(k,1);continue;}
       if(pz<=0)continue;
@@ -2180,7 +2327,7 @@ busAdd(document.getElementById('faqPulse'),(c,m)=>{
     c.beginPath();c.moveTo(0,mid);c.lineTo(w,mid);
     c.strokeStyle='rgba(240,240,242,.26)';c.lineWidth=1.5*d;c.stroke();
     for(let k=blips.length-1;k>=0;k--){
-      const b=blips[k];b.p+=.012;
+      const b=blips[k];b.p+=LITE?.024:.012;
       if(b.p>1.05){blips.splice(k,1);continue;}
       const cx=b.p*w, fade=1-b.p;
       c.beginPath();
@@ -2200,7 +2347,7 @@ busAdd(document.getElementById('faqPulse'),(c,m)=>{
    gần càng ngả đỏ rồi tan biến ngay trước khi chạm chữ — đúng nghĩa đen
    lời hứa "một đầu mối", không kẻ trục để khỏi thành gạch ngang email. */
 busAdd(document.getElementById('converge'),(c,m)=>{
-  const K=46,ps=[];
+  const K=LITE?22:46,ps=[];
   let cyy=.52;                       /* tỉ lệ chiều cao — cập nhật theo dòng mail */
   m.resize=()=>{
     const cvEl=document.getElementById('converge');
@@ -2215,7 +2362,7 @@ busAdd(document.getElementById('converge'),(c,m)=>{
     p.side=Math.random()<.5?-1:1;
     p.y0=.1+Math.random()*.8;
     p.t=Math.random();
-    p.v=.0016+Math.random()*.0022;
+    p.v=(.0016+Math.random()*.0022)*(LITE?2:1);
     p.curve=(Math.random()-.5)*.3;
   }
   for(let i=0;i<K;i++){const p={};seed(p);p.t=Math.random();ps.push(p);}
