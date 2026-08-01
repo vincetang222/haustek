@@ -176,7 +176,7 @@ h1 em{font-style:italic;font-weight:600;color:var(--red)}
 .tick-row{display:flex;align-items:center;gap:11px;padding:12px 14px;border-radius:10px;cursor:pointer;
   background:var(--field);border:1px solid var(--bd);transition:all .2s}
 .tick-row:hover{border-color:#7A7A8C;background:var(--field-hi)}
-.tick-row input[type=checkbox]{width:18px;height:18px;flex:none;accent-color:var(--red);cursor:pointer}
+.tick-row input{width:18px;height:18px;flex:none;accent-color:var(--red);cursor:pointer}
 .tick-row span{font-family:var(--body);font-size:14px;color:var(--paper)}
 
 /* ---------- khối tự kiểm tra file tại máy ----------
@@ -210,17 +210,6 @@ h1 em{font-style:italic;font-weight:600;color:var(--red)}
   background:var(--field);border:1px solid var(--bd);border-radius:10px;
   color:var(--paper);font-family:var(--body);font-weight:400;font-size:15px;padding:13px 15px;
   transition:border-color .18s,box-shadow .18s,background .18s;appearance:none;width:100%;
-}
-/* Quy tắc ngay trên viết cho ô nhập chữ, nhưng .f input khớp cả checkbox nằm
-   trong .f — appearance:none xoá mất dấu tích của trình duyệt (và làm
-   accent-color vô hiệu), còn padding/nền/viền bo biến ô tick thành khối
-   chữ nhật. Trả lại hình dạng gốc ở đây.
-   Cố tình KHÔNG đặt width/height: kích thước do từng khối tự quyết
-   (.tick-row 18px, .terr-all 19px, .terr-region-head 16px, .terr-grid 15px) —
-   đặt ở đây sẽ đè lên chúng vì độ ưu tiên cao hơn. */
-.f input[type=checkbox]{
-  appearance:auto;-webkit-appearance:auto;
-  padding:0;border:0;border-radius:0;background:none;
 }
 .f input:hover,.f select:hover,.f textarea:hover{border-color:#7A7A8C;background:var(--field-hi)}
 .f select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238E8E98' stroke-width='1.6' fill='none'/%3E%3C/svg%3E");
@@ -343,6 +332,86 @@ footer{padding:40px var(--gut);border-top:1px solid var(--line);background:#0606
 
 a:focus-visible,button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible{outline:2px solid var(--red);outline-offset:3px}
 @media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}html{scroll-behavior:auto}}
+
+/* ============ CHÚ THÍCH DẠNG TOOLTIP ============
+   27 dòng hint dài trước đây chiếm gần nửa chiều cao form. Giữ nguyên thẻ
+   .hint trong DOM (để hệ song ngữ vẫn dịch được như cũ) nhưng ẩn đi, rồi
+   JS gắn nút "?" cạnh nhãn — rê chuột hoặc bấm mới bung ra. */
+.hint{display:none}
+.tip-wrap{position:relative;display:inline-flex;vertical-align:middle;margin-left:7px}
+.tip-btn{width:16px;height:16px;border-radius:50%;border:1px solid var(--bd-2);background:transparent;
+  color:var(--concrete);font-family:var(--body);font-size:10.5px;font-weight:700;line-height:1;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;transition:all .18s;flex:none}
+.tip-btn:hover,.tip-btn[aria-expanded="true"]{border-color:var(--accent);color:var(--accent)}
+.tip-pop{position:absolute;top:calc(100% + 9px);left:-6px;z-index:60;width:max-content;
+  max-width:min(330px,72vw);padding:11px 13px;border-radius:9px;background:#15151D;
+  border:1px solid var(--bd-2);box-shadow:0 14px 36px rgba(0,0,0,.66);
+  font-family:var(--body);font-size:12.5px;line-height:1.55;color:var(--paper-2);
+  opacity:0;visibility:hidden;transform:translateY(-4px);transition:all .16s;text-wrap:pretty}
+.tip-pop::before{content:"";position:absolute;top:-5px;left:10px;width:9px;height:9px;background:#15151D;
+  border-left:1px solid var(--bd-2);border-top:1px solid var(--bd-2);transform:rotate(45deg)}
+.tip-wrap.on .tip-pop{opacity:1;visibility:visible;transform:translateY(0)}
+.tip-pop b{color:var(--paper);font-weight:600}
+@media(max-width:620px){.tip-pop{max-width:82vw}}
+
+/* ============ KHỐI TẢI FILE MẪU ============ */
+.bulk-box{display:flex;flex-wrap:wrap;gap:16px;align-items:center;justify-content:space-between;
+  padding:16px 18px;margin-bottom:20px;border-radius:11px;
+  background:color-mix(in srgb, var(--ice) 7%, transparent);
+  border:1px solid color-mix(in srgb, var(--ice) 30%, transparent)}
+.bulk-txt{flex:1;min-width:230px}
+.bulk-txt b{display:block;font-family:var(--body);font-weight:650;font-size:14px;color:var(--paper);margin-bottom:5px}
+.bulk-txt span{font-family:var(--body);font-size:12.5px;color:var(--paper-2);line-height:1.5}
+.bulk-act{display:flex;gap:8px;flex-wrap:wrap}
+.mini-btn.ghost{background:transparent;border-color:var(--bd-2);color:var(--paper-2);
+  display:inline-flex;align-items:center;text-decoration:none}
+.mini-btn.ghost:hover{border-color:var(--ice);color:var(--ice)}
+
+/* ============ FAQ ============ */
+.faq-list{margin-top:6px;border-top:1px solid var(--bd)}
+.faq-q{border-bottom:1px solid var(--bd)}
+.faq-q summary{list-style:none;display:flex;justify-content:space-between;gap:16px;align-items:flex-start;
+  padding:14px 2px;cursor:pointer;transition:padding .2s}
+.faq-q summary::-webkit-details-marker{display:none}
+.faq-q summary:hover{padding-left:6px}
+.faq-q .q{font-family:var(--body);font-weight:600;font-size:13.5px;color:var(--paper);line-height:1.45;text-wrap:pretty}
+.faq-q summary:hover .q,.faq-q[open] .q{color:var(--ice)}
+.faq-q .pm{font-family:var(--body);font-weight:300;font-size:19px;color:var(--concrete);flex:none;
+  line-height:1;transition:transform .28s,color .28s}
+.faq-q[open] .pm{transform:rotate(45deg);color:var(--ice)}
+.faq-q .a{padding:0 2px 15px;font-family:var(--body);font-size:12.5px;color:var(--paper-2);
+  line-height:1.6;max-width:70ch;text-wrap:pretty}
+.faq-q .a b{color:var(--paper);font-weight:600}
+.faq-q .a code{font-family:var(--mono);font-size:11.5px;color:var(--ice);
+  background:color-mix(in srgb, var(--ice) 12%, transparent);padding:1px 6px;border-radius:4px}
+.faq-more{display:block;margin:16px auto 0;padding:10px 22px;border-radius:100px;background:transparent;
+  border:1px solid var(--bd-2);color:var(--paper-2);cursor:pointer;font-family:var(--mono);font-size:10.5px;
+  letter-spacing:.14em;text-transform:uppercase;transition:all .2s}
+.faq-more:hover{border-color:var(--ice);color:var(--ice)}
+
+/* ============ HỖ TRỢ ============ */
+.help-box{display:flex;flex-wrap:wrap;gap:16px;align-items:center;justify-content:space-between;
+  margin-top:30px;padding:17px 19px;border-radius:11px;
+  background:color-mix(in srgb, var(--ok) 8%, transparent);
+  border:1px solid color-mix(in srgb, var(--ok) 30%, transparent)}
+.help-box b{display:block;font-family:var(--body);font-weight:650;font-size:14px;color:var(--paper);margin-bottom:4px}
+.help-box span{font-family:var(--body);font-size:12.5px;color:var(--paper-2)}
+.help-links{display:flex;flex-direction:column;gap:5px;align-items:flex-end}
+.help-links a{font-family:var(--mono);font-size:12.5px;color:var(--ok);text-decoration:none;
+  border-bottom:1px solid color-mix(in srgb, var(--ok) 45%, transparent)}
+.help-links a:hover{color:var(--paper)}
+.help-tba{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--concrete)}
+@media(max-width:620px){.help-links{align-items:flex-start}}
+
+/* dòng dẫn khối loại trừ lãnh thổ */
+.terr-lead{font-family:var(--body);font-size:12.5px;color:var(--paper-2);padding:11px 13px;margin:0 0 12px;
+  border-radius:8px;background:color-mix(in srgb, var(--warn) 10%, transparent);
+  border:1px solid color-mix(in srgb, var(--warn) 32%, transparent);line-height:1.5}
+.terr-lead b{color:var(--warn);font-weight:700}
+
+/* Header dính che phần đầu trường khi nhảy bằng Tab hoặc khi tự cuộn tới ô lỗi */
+html{scroll-padding-top:86px}
+.step,.f,.sub-h,.faq-q{scroll-margin-top:86px}
 </style>
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Haustek">
@@ -593,6 +662,16 @@ l-1242 0 -30 29 -29 29 0 745 c0 768 1 796 40 817 12 6 374 10 984 10 929 0
           <input id="r_apple" name="r_apple" type="url" placeholder="https://music.apple.com/artist/...">
           <span class="hint">Bỏ trống nếu đây là lần đầu bạn phát hành.</span>
         </div>
+        <div class="f">
+          <label for="r_feat_spotify">Link Spotify của nghệ sĩ khách mời</label>
+          <input id="r_feat_spotify" name="r_feat_spotify" type="url" placeholder="https://open.spotify.com/artist/...">
+          <span class="hint">Điền nếu bản thu có khách mời. Có link thì cửa hàng gắn đúng hồ sơ của họ, tránh nhầm sang người trùng tên.</span>
+        </div>
+        <div class="f">
+          <label for="r_feat_apple">Link Apple Music của nghệ sĩ khách mời</label>
+          <input id="r_feat_apple" name="r_feat_apple" type="url" placeholder="https://music.apple.com/artist/...">
+          <span class="hint">Bỏ trống nếu khách mời chưa từng phát hành.</span>
+        </div>
       </div>
 
       <div class="grid g3" style="margin-top:22px">
@@ -690,15 +769,16 @@ l-1242 0 -30 29 -29 29 0 745 c0 768 1 796 40 817 12 6 374 10 984 10 929 0
             <span>Toàn thế giới — phát hành ở tất cả các nước</span>
           </label>
           <div class="terr-picker" id="terrPicker" style="display:none">
+            <p class="terr-lead" id="terrLead">Tích vào những nước <b>KHÔNG</b> phát hành. Không tích nước nào thì vẫn là toàn thế giới.</p>
             <div class="terr-tools">
-              <input type="text" class="terr-search" id="terrFilter" placeholder="Tìm tên nước…" autocomplete="off">
+              <input type="text" class="terr-search" id="terrFilter" placeholder="Tìm nước muốn loại trừ…" autocomplete="off">
               <button type="button" class="terr-mini" id="terrClear">Bỏ chọn hết</button>
             </div>
             <div class="terr-scroll" id="terrScroll"></div>
             <div class="terr-count" id="terrCount"></div>
           </div>
         </div>
-        <span class="hint">Mặc định phát hành toàn thế giới. Bỏ tích ở trên nếu chỉ muốn lên sóng ở một số nước nhất định — có thể tích cả khu vực một lần.</span>
+        <span class="hint">Mặc định phát hành toàn thế giới. Bỏ tích ở trên nếu cần <b>loại trừ</b> một số nước — ví dụ khi bản thu đã có bên khác giữ quyền ở thị trường đó. Có thể tích cả khu vực một lần.</span>
       </div>
 
       <div class="grid g3" style="margin-top:22px">
@@ -728,7 +808,7 @@ l-1242 0 -30 29 -29 29 0 745 c0 768 1 796 40 817 12 6 374 10 984 10 929 0
           <div class="filecheck">
             <label class="filecheck-btn">
               Chọn ảnh bìa để tự kiểm tra
-              <input type="file" id="artCheck" accept="image/*">
+              <input type="file" id="artCheck" accept="image/jpeg,.jpg,.jpeg">
             </label>
             <div class="filecheck-note">Kiểm tra hộ bạn kích thước, tỉ lệ, định dạng và dung lượng trước khi gửi. Ảnh chỉ được đọc ngay trên máy bạn, không tải lên đâu cả — vẫn phải dán link ở trên để Haustek nhận file.</div>
             <div class="fc-result" id="artResult"></div>
@@ -756,6 +836,16 @@ l-1242 0 -30 29 -29 29 0 745 c0 768 1 796 40 817 12 6 374 10 984 10 929 0
         <span class="sh-note" id="trackCount">1 track</span>
       </div>
       <div class="step-body">
+        <div class="bulk-box">
+          <div class="bulk-txt">
+            <b>Phát hành album hay EP nhiều bài?</b>
+            <span>Điền tay từng track có thể mất thời gian. Tải file mẫu về, điền một lần rồi gửi kèm — các bước còn lại của biểu mẫu vẫn cần hoàn tất.</span>
+          </div>
+          <div class="bulk-act">
+            <button type="button" class="mini-btn" id="dlTemplate">Tải file mẫu (.csv)</button>
+            <a class="mini-btn ghost" href="mailto:mgmt@haustek-group.com?subject=Danh%20sach%20track%20album">Gửi qua email</a>
+          </div>
+        </div>
         <div id="tracks"></div>
         <button type="button" class="add-track" id="addTrack">+ Thêm một track</button>
       </div>
@@ -874,13 +964,22 @@ l-1242 0 -30 29 -29 29 0 745 c0 768 1 796 40 817 12 6 374 10 984 10 929 0
       <div class="msg err" id="msgErr"></div>
       <div class="msg good" id="msgOk"></div>
 
-      <div class="sub-h" style="margin-top:34px">Yêu cầu file gửi kèm</div>
-      <table class="spec">
-        <tr><td>File nhạc</td><td>WAV, 16-bit hoặc 24-bit, tần số 44.1 kHz trở lên, stereo. Không gửi MP3. Không để tiếng bị vỡ (clipping) ở đỉnh.</td></tr>
-        <tr><td>Ảnh bìa</td><td>3000×3000 px, JPG hoặc PNG, RGB, dưới 10MB.</td></tr>
-        <tr><td>Cách gửi</td><td>Đẩy lên Google Drive hoặc Dropbox rồi dán link vào biểu mẫu. File nhạc thường quá nặng để đính kèm thẳng vào email.</td></tr>
-        <tr><td>Đặt tên file</td><td><span style="font-family:var(--mono);font-size:12px">SốThứTự_TênNghệSĩ_TênTrack.wav</span> — ví dụ <span style="font-family:var(--mono);font-size:12px">01_Tarnoise_Dem Thanh Pho.wav</span></td></tr>
-      </table>
+      
+
+      <div class="sub-h" style="margin-top:34px">Câu hỏi thường gặp</div>
+      <div class="faq-list" id="faqList"></div>
+      <button type="button" class="faq-more" id="faqMore">Xem thêm câu hỏi</button>
+
+      <div class="help-box">
+        <div>
+          <b>Không gửi được, hoặc cần người hỗ trợ?</b>
+          <span>Nhắn cho Haustek, đội vận hành trả lời trong giờ làm việc.</span>
+        </div>
+        <div class="help-links">
+          <a href="mailto:mgmt@haustek-group.com">mgmt@haustek-group.com</a>
+          <span class="help-tba">Hotline &amp; Zalo — đang cập nhật</span>
+        </div>
+      </div>
 
       <p class="note">Sau khi nhận hồ sơ, Haustek kiểm tra trong 2–3 ngày làm việc và gọi hoặc nhắn cho bạn nếu cần bổ sung. Bản thu chỉ được đẩy lên hệ thống khi metadata đã sạch.</p>
       </div>
@@ -1167,9 +1266,11 @@ function bindTerritoryPicker(){
   function refreshCount(){
     const n = scroll.querySelectorAll('input[data-terr]:checked').length;
     countEl.textContent = n
-      ? (lang==='vi' ? `Đã chọn ${n} nước` : `${n} countries selected`)
-      : (lang==='vi' ? 'Chưa chọn nước nào' : 'No countries selected yet');
-    if(n) box.classList.remove('bad');
+      ? (lang==='vi' ? `Loại trừ ${n} nước — phát hành ở ${TERR_TOTAL-n} nước còn lại`
+                     : `Excluding ${n} — releasing in the other ${TERR_TOTAL-n}`)
+      : (lang==='vi' ? 'Chưa loại trừ nước nào — vẫn là toàn thế giới'
+                     : 'Nothing excluded yet — still worldwide');
+    box.classList.remove('bad');   /* không tích gì vẫn hợp lệ = toàn thế giới */
     /* Cập nhật ô tích của từng khu vực: đủ cả vùng thì tích, thiếu vài nước
        thì hiện dấu gạch ngang (indeterminate) — đúng như Finder/Explorer làm. */
     REGIONS.forEach(r => {
@@ -1224,13 +1325,17 @@ function bindTerritoryPicker(){
 }
 
 /* Đọc lãnh thổ đã chọn — dùng trong collect() */
+const TERR_TOTAL = REGIONS.reduce((n,r)=>n+r.list.length,0);
 function getTerritory(){
+  /* Ô tích mang nghĩa LOẠI TRỪ. Phần lớn bản phát hành là toàn thế giới trừ
+     vài nước, khai kiểu này nhanh hơn hẳn so với bắt tích 125 nước, và đội
+     vận hành đọc cũng gọn hơn. */
   const allBox = document.getElementById('terr_all');
-  if(!allBox || allBox.checked){
-    return { lanh_tho: 'Worldwide', danh_sach_quoc_gia: [] };
-  }
-  const chosen = [...document.querySelectorAll('#terrScroll input[data-terr]:checked')].map(el => el.value);
-  return { lanh_tho: chosen.length ? 'Custom' : '', danh_sach_quoc_gia: chosen };
+  if(!allBox || allBox.checked) return { lanh_tho:'Worldwide', quoc_gia_loai_tru:[] };
+  const excluded = [...document.querySelectorAll('#terrScroll input[data-terr]:checked')].map(el => el.value);
+  return excluded.length
+    ? { lanh_tho:'Worldwide except', quoc_gia_loai_tru:excluded }
+    : { lanh_tho:'Worldwide', quoc_gia_loai_tru:[] };
 }
 
 /* =====================================================================
@@ -1323,6 +1428,34 @@ function bindDatePreview(inputId, hintId){
    ===================================================================== */
 
 const TR = {
+  "Link Spotify của nghệ sĩ khách mời":"Featured artist's Spotify link",
+  "Điền nếu bản thu có khách mời. Có link thì cửa hàng gắn đúng hồ sơ của họ, tránh nhầm sang người trùng tên.":"Fill this in if the recording has a guest. With the link, stores attach it to the right profile instead of a same-name one.",
+  "Link Apple Music của nghệ sĩ khách mời":"Featured artist's Apple Music link",
+  "Bỏ trống nếu khách mời chưa từng phát hành.":"Leave blank if the guest has never released before.",
+  "Tìm nước muốn loại trừ…":"Search a country to exclude…",
+  "Phát hành album hay EP nhiều bài?":"Releasing an album or multi-track EP?",
+  "Điền tay từng track có thể mất thời gian. Tải file mẫu về, điền một lần rồi gửi kèm — các bước còn lại của biểu mẫu vẫn cần hoàn tất.":"Typing each track takes a while. Download the template, fill it once and send it along — you still need to finish the rest of this form.",
+  "Tải file mẫu (.csv)":"Download template (.csv)",
+  "Gửi qua email":"Send by email",
+  "Câu hỏi thường gặp":"Frequently asked questions",
+  "Không gửi được, hoặc cần người hỗ trợ?":"Can't submit, or need a hand?",
+  "Nhắn cho Haustek, đội vận hành trả lời trong giờ làm việc.":"Message Haustek — the operations team replies during working hours.",
+  "Hotline & Zalo — đang cập nhật":"Hotline & Zalo — coming soon",
+  "Sáng tác":"Songwriting",
+  "Chuyển soạn":"Adaptation",
+  "Trình diễn & sản xuất":"Performance & production",
+  "Khác":"Other",
+  "Đồng sáng tác":"Co-writer",
+  "Biên soạn / chuyển thể":"Adapter",
+  "Dịch lời":"Translator",
+  "Tác giả phần sample":"Sampled work author",
+  "Nhà sản xuất":"Producer",
+  "Nhạc công / trình diễn":"Musician / performer",
+  "Viết giai điệu chính":"Topliner",
+  "Làm beat":"Beatmaker",
+  "Kỹ sư âm thanh":"Sound engineer",
+  "Nhà xuất bản":"Publisher",
+  "Khác — ghi rõ ở ghi chú":"Other — specify in the notes",
   // --- chuỗi mới thêm ở vòng rà soát ---
   "+ Thêm nghệ sĩ chính":"+ Add primary artist",
   "+ Thêm khách mời":"+ Add featured artist",
@@ -1654,7 +1787,7 @@ const TR = {
   "Không lời":"Instrumental",
   "Nội dung nhạy cảm":"Explicit content",
   "Không — lời sạch":"No — clean lyrics",
-  "Có — lời tục / nội dung người lớn":"Yes — explicit lyrics / adult content",
+  "Có — nội dung dành cho người lớn":"Yes — explicit / adult content",
   "Bản đã kiểm duyệt (clean version)":"Cleaned version",
   "Link file WAV":"WAV file link",
   "Nhớ mở quyền cho bất kỳ ai có link.":"Remember to allow access to anyone with the link.",
@@ -1665,7 +1798,7 @@ const TR = {
   "tính từ mốc này — nên chọn mốc sao cho 60 giây sau đó là phần đắt nhất của bài.":
     "from this point — so pick a point where the following 60 seconds is the strongest part of the track.",
   "Đoạn preview bắt đầu từ phút giây nào":"Preview starts at",
-  "Tác quyền — ghi họ tên thật, không ghi nghệ danh":"Songwriting — use real legal names, not stage names",
+  "Bản quyền tác phẩm — ghi họ tên thật, không ghi nghệ danh":"Composition rights — use real legal names, not stage names",
   "Vai trò":"Role",
   "Soạn nhạc":"Composer",
   "Viết lời":"Lyricist",
@@ -1749,7 +1882,6 @@ const TR = {
   "Gửi hồ sơ cho Haustek":"Send to Haustek",
   "Gửi bằng email của tôi":"Send from my own email",
   "Tải bản lưu về máy":"Download a copy",
-  "Yêu cầu file gửi kèm":"File requirements",
   "File nhạc":"Audio file",
   "WAV, 16-bit hoặc 24-bit, tần số 44.1 kHz trở lên, stereo. Không gửi MP3. Không để tiếng bị vỡ (clipping) ở đỉnh.":
     "WAV, 16-bit or 24-bit, 44.1 kHz or higher, stereo. No MP3. No clipping on the peaks.",
@@ -1799,8 +1931,8 @@ function applyLang(){
   });
 
   // placeholder và title
-  document.querySelectorAll('[placeholder],[title]').forEach(el => {
-    ['placeholder','title'].forEach(attr => {
+  document.querySelectorAll('[placeholder],[title],optgroup[label]').forEach(el => {
+    ['placeholder','title','label'].forEach(attr => {   /* label: nhãn nhóm <optgroup> */
       if(!el.hasAttribute(attr)) return;
       const memo = '_vi_' + attr;
       if(!el[memo]) el[memo] = el.getAttribute(attr);
@@ -1815,6 +1947,8 @@ function applyLang(){
     : "Khai báo metadata phát hành — Haustek";
   const b = document.getElementById('langBtn');
   if(b) b.textContent = lang === "vi" ? "EN" : "VI";
+
+  if(typeof renderFAQ==='function') renderFAQ();   /* FAQ theo ngôn ngữ đang chọn */
 }
 
 
@@ -1898,7 +2032,7 @@ function trackHTML(n){
         <label>Nội dung nhạy cảm <span class="req">*</span></label>
         <select data-k="explicit" required>
           <option value="No">Không — lời sạch</option>
-          <option value="Yes">Có — lời tục / nội dung người lớn</option>
+          <option value="Yes">Có — nội dung dành cho người lớn</option>
           <option value="Cleaned">Bản đã kiểm duyệt (clean version)</option>
         </select>
       </div>
@@ -1925,7 +2059,7 @@ function trackHTML(n){
       </div>
     </div>
 
-    <div class="sub-h">Tác quyền — ghi họ tên thật, không ghi nghệ danh</div>
+    <div class="sub-h">Bản quyền tác phẩm — ghi họ tên thật, không ghi nghệ danh</div>
     <div data-writers></div>
     <button type="button" class="mini-btn" data-add-writer>+ Thêm người sáng tác</button>
     <div class="split-bar" data-splitbar>
@@ -1995,10 +2129,30 @@ function writerHTML(){
     <div class="f"><label>Họ tên thật <span class="req">*</span></label><input type="text" data-w="name" placeholder="Nguyễn Văn A"></div>
     <div class="f"><label>Vai trò</label>
       <select data-w="role">
-        <option value="Composer">Soạn nhạc</option>
-        <option value="Lyricist">Viết lời</option>
-        <option value="Composer & Lyricist">Soạn nhạc &amp; viết lời</option>
-        <option value="Arranger">Phối khí</option>
+        <optgroup label="Sáng tác">
+          <option value="Composer">Soạn nhạc</option>
+          <option value="Lyricist">Viết lời</option>
+          <option value="Composer &amp; Lyricist">Soạn nhạc &amp; viết lời</option>
+          <option value="Co-writer">Đồng sáng tác</option>
+        </optgroup>
+        <optgroup label="Chuyển soạn">
+          <option value="Arranger">Phối khí</option>
+          <option value="Adapter">Biên soạn / chuyển thể</option>
+          <option value="Translator">Dịch lời</option>
+          <option value="Remixer">Remixer</option>
+          <option value="Sampled work author">Tác giả phần sample</option>
+        </optgroup>
+        <optgroup label="Trình diễn &amp; sản xuất">
+          <option value="Producer">Nhà sản xuất</option>
+          <option value="Musician / Performer">Nhạc công / trình diễn</option>
+          <option value="Topliner">Viết giai điệu chính</option>
+          <option value="Beatmaker">Làm beat</option>
+          <option value="Sound engineer">Kỹ sư âm thanh</option>
+        </optgroup>
+        <optgroup label="Khác">
+          <option value="Publisher">Nhà xuất bản</option>
+          <option value="Other">Khác — ghi rõ ở ghi chú</option>
+        </optgroup>
       </select></div>
     <div class="f"><label>Mã IPI/CAE</label><input type="text" data-w="ipi" placeholder="Bỏ trống nếu chưa có"></div>
     <div class="f"><label>Tỉ lệ %</label><input type="number" data-w="split" min="0" max="100" step="0.01" placeholder="50"></div>
@@ -2037,6 +2191,7 @@ function addTrack(){
   renumber();
   updateSplit(node);
   applyLang();          /* track vừa thêm cũng phải theo ngôn ngữ đang chọn */
+  mountTips(node);
   return node;
 }
 
@@ -2084,6 +2239,7 @@ tracksEl.addEventListener('change',e=>{
 });
 
 addTrack();
+mountTips();
 
 /* ===================== THU THẬP + KIỂM TRA ===================== */
 function collect(){
@@ -2111,7 +2267,7 @@ function collect(){
     ngay_phat_hanh_goc:(g('r_reissue_on').checked ? dmyToISO(g('r_origdate').value) : ''),
     upc:g('r_upc').value.trim(),
     lanh_tho:_terr.lanh_tho,
-    danh_sach_quoc_gia:_terr.danh_sach_quoc_gia.join(', '),
+    quoc_gia_loai_tru:_terr.quoc_gia_loai_tru.join(', '),
     p_line:g('r_p').value.trim(),
     c_line:g('r_c').value.trim(),
     link_anh_bia:g('r_art').value.trim(),
@@ -2292,7 +2448,7 @@ const LABELS={
   nhan_phat_hanh:'Nhãn phát hành', nghe_si_chinh:'Nghệ sĩ chính', nghe_si_khach_moi:'Khách mời',
   spotify_artist:'Spotify nghệ sĩ', apple_artist:'Apple Music nghệ sĩ', the_loai_chinh:'Thể loại chính',
   the_loai_phu:'Thể loại phụ', ngon_ngu_metadata:'Ngôn ngữ', ngay_phat_hanh:'Ngày phát hành',
-  ngay_pre_save:'Ngày pre-save', gio_phat_hanh:'Giờ phát hành', upc:'UPC', lanh_tho:'Lãnh thổ', danh_sach_quoc_gia:'Danh sách quốc gia', p_line:'Dòng ℗', c_line:'Dòng ©',
+  ngay_pre_save:'Ngày pre-save', gio_phat_hanh:'Giờ phát hành', upc:'UPC', lanh_tho:'Lãnh thổ', quoc_gia_loai_tru:'Quốc gia loại trừ', p_line:'Dòng ℗', c_line:'Dòng ©',
   link_anh_bia:'Link ảnh bìa', nguoi_thiet_ke_bia:'Người thiết kế ảnh bìa', ghi_chu:'Ghi chú',
   ten_track:'Tên track', khach_moi:'Khách mời', remixer:'Remixer', isrc:'ISRC',
   ngon_ngu_loi:'Ngôn ngữ lời', noi_dung_nhay_cam:'Nội dung nhạy cảm', link_wav:'Link file WAV',
@@ -2529,6 +2685,128 @@ function refreshDatePreviews(){
 function refreshTerrCount(){
   if(refreshTerrCountFn) refreshTerrCountFn();
 }
+
+/* ============ Gắn tooltip cho mọi .hint ============
+   .hint vẫn nằm trong DOM (ẩn) nên setLang()/applyLang() dịch nó bình
+   thường; popover đọc lại innerHTML mỗi lần mở nên luôn đúng ngôn ngữ. */
+function mountTips(root){
+  (root||document).querySelectorAll('.f > .hint:not([data-tipped])').forEach(function(hint){
+    var f=hint.closest('.f'); if(!f)return;
+    var label=f.querySelector('label,.label-static'); if(!label)return;
+    hint.setAttribute('data-tipped','1');
+    var wrap=document.createElement('span'); wrap.className='tip-wrap';
+    var btn=document.createElement('button');
+    btn.type='button'; btn.className='tip-btn'; btn.textContent='?';
+    btn.setAttribute('aria-label','Xem hướng dẫn'); btn.setAttribute('aria-expanded','false');
+    var pop=document.createElement('span'); pop.className='tip-pop'; pop.setAttribute('role','tooltip');
+    wrap.appendChild(btn); wrap.appendChild(pop); label.appendChild(wrap);
+    function open(){
+      document.querySelectorAll('.tip-wrap.on').forEach(function(w){
+        if(w!==wrap){w.classList.remove('on');w.querySelector('.tip-btn').setAttribute('aria-expanded','false');}});
+      pop.innerHTML=hint.innerHTML;
+      pop.style.left='-6px'; pop.style.right='auto';
+      wrap.classList.add('on'); btn.setAttribute('aria-expanded','true');
+      /* Kẹp lại nếu tràn mép: đo thật rồi dịch vào, đúng cho mọi bề rộng
+         màn hình thay vì đoán bằng media query. */
+      var r=pop.getBoundingClientRect(), pad=12;
+      if(r.right>innerWidth-pad) pop.style.left=(-6-(r.right-(innerWidth-pad)))+'px';
+      var r2=pop.getBoundingClientRect();
+      if(r2.left<pad) pop.style.left=(parseFloat(pop.style.left||0)+(pad-r2.left))+'px';
+    }
+    function close(){ wrap.classList.remove('on'); btn.setAttribute('aria-expanded','false'); }
+    btn.addEventListener('click',function(e){e.preventDefault();e.stopPropagation();
+      wrap.classList.contains('on')?close():open();});
+    wrap.addEventListener('mouseenter',function(){ if(matchMedia('(hover:hover)').matches) open(); });
+    wrap.addEventListener('mouseleave',function(){ if(matchMedia('(hover:hover)').matches) close(); });
+    btn.addEventListener('keydown',function(e){ if(e.key==='Escape')close(); });
+  });
+}
+document.addEventListener('click',function(e){
+  if(!e.target.closest('.tip-wrap'))
+    document.querySelectorAll('.tip-wrap.on').forEach(function(w){
+      w.classList.remove('on'); w.querySelector('.tip-btn').setAttribute('aria-expanded','false');});
+});
+
+/* ============ FILE MẪU CHO ALBUM NHIỀU BÀI ============
+   CSV kèm BOM UTF-8 để Excel đọc đúng tiếng Việt (thiếu BOM Excel hiện
+   "Ti?u ??"). Không dùng thư viện ngoài — mở được bằng Excel, Numbers,
+   Google Sheets. */
+(function(){
+  var btn=document.getElementById('dlTemplate'); if(!btn)return;
+  var COLS=['STT','Tên track','Phiên bản','Nghệ sĩ chính','Nghệ sĩ khách mời',
+    'ISRC (bỏ trống nếu chưa có)','Ngôn ngữ lời','Nội dung người lớn (Có/Không)',
+    'Là bản phối lại (Có/Không)','Người sáng tác (họ tên thật)','Vai trò',
+    'Mã IPI/CAE','Tỉ lệ %','Ghi chú'];
+  var SAMPLE=['1','Đêm Thành Phố','','Lope Dope','','','Tiếng Việt','Không','Không',
+    'Nguyễn Văn A','Soạn nhạc & viết lời','','100','Dòng ví dụ — xoá trước khi gửi'];
+  btn.addEventListener('click',function(){
+    function esc(v){ return '"'+String(v).replace(/"/g,'""')+'"'; }
+    var rows=[COLS.map(esc).join(','), SAMPLE.map(esc).join(',')];
+    for(var i=2;i<=12;i++){
+      var blank=[esc(i)];
+      for(var k=1;k<COLS.length;k++) blank.push('""');
+      rows.push(blank.join(','));
+    }
+    var blob=new Blob(['\ufeff'+rows.join('\r\n')],{type:'text/csv;charset=utf-8;'});
+    var a=document.createElement('a');
+    a.href=URL.createObjectURL(blob);
+    a.download='haustek-danh-sach-track.csv';
+    document.body.appendChild(a); a.click();
+    setTimeout(function(){URL.revokeObjectURL(a.href); a.remove();},400);
+  });
+})();
+
+/* ============ FAQ — hiện 5 câu, bấm mới tải thêm ============ */
+var FAQ_VI=[
+ ["Tôi chưa có mã ISRC thì sao?","Bỏ trống. Haustek cấp mã ISRC cho bản thu chưa có. Chỉ điền khi bản thu <b>đã từng phát hành</b> và mang mã cũ — điền lại mã đó để giữ nguyên số liệu nghe."],
+ ["Bao lâu thì nhạc lên sóng?","Nhanh nhất 24–36 giờ, thường 1–2 tuần. Nên gửi trước ngày phát hành mong muốn <b>ít nhất 21 ngày</b> để kịp pitch playlist — biên tập viên cần thời gian nghe trước."],
+ ["File nhạc cần đúng chuẩn gì?","WAV, 16-bit hoặc 24-bit, tần số 44.1 kHz trở lên, stereo. <b>Không gửi MP3</b> — cửa hàng sẽ từ chối. Đừng để tiếng vỡ ở đỉnh (clipping)."],
+ ["Ảnh bìa cần thế nào?","Vuông <b>3000×3000 px</b>, hệ màu RGB, <b>chỉ nhận JPG</b>, dưới 10MB. Không chữ mờ, không viền trắng thừa, không logo cửa hàng nhạc trên ảnh."],
+ ["Gửi file nhạc bằng cách nào?","Đẩy lên Google Drive hoặc Dropbox rồi dán link vào biểu mẫu — file WAV thường quá nặng để đính kèm email. Nhớ <b>mở quyền xem cho người có link</b>, không thì Haustek không tải được."],
+ ["Đặt tên file thế nào cho đúng?","Theo mẫu <code>SốThứTự_TênNghệSĩ_TênTrack.wav</code> — ví dụ <code>01_Tarnoise_Dem Thanh Pho.wav</code>. Đặt đúng tên giúp đội vận hành khỏi ghép nhầm file với track."],
+ ["Tôi có mất quyền sở hữu bài hát không?","Không. Tác phẩm vẫn là của bạn. Điều khoản và tỉ lệ chia được thống nhất rõ <b>trước khi</b> phát hành, không có dòng chữ nhỏ."],
+ ["Nhiều người cùng sáng tác thì khai sao?","Thêm một dòng cho mỗi người ở phần bản quyền tác phẩm, ghi <b>họ tên thật</b> (không phải nghệ danh) và tỉ lệ %. Tổng các dòng phải đúng 100%."],
+ ["Album nhiều bài, điền tay lâu quá?","Bấm <b>Tải file mẫu (.csv)</b> ở bước 2, điền một lần rồi gửi kèm qua email. Các bước còn lại của biểu mẫu vẫn cần hoàn tất."],
+ ["Sao phải ghi họ tên thật, không phải nghệ danh?","Tiền bản quyền tác giả chi trả qua các tổ chức quản lý tập thể, họ đối chiếu theo giấy tờ tuỳ thân. Ghi nghệ danh thì khoản tiền đó rất dễ bị treo không tìm được chủ."],
+ ["Bản phối lại (remix) khai được không?","Được, nhưng phải có văn bản cho phép từ chủ sở hữu bản gốc. Tích ô \"là bản phối lại\" ở track tương ứng và ghi rõ nguồn ở ghi chú."],
+ ["Muốn loại trừ vài quốc gia thì làm sao?","Bỏ tích \"Toàn thế giới\" ở bước 1, rồi tích những nước <b>không</b> muốn phát hành. Không tích nước nào thì vẫn là toàn thế giới."]
+];
+var FAQ_EN=[
+ ["I don't have an ISRC yet — what now?","Leave it blank. Haustek issues ISRCs for recordings that don't have one. Only fill it in if the recording <b>has been released before</b> and already carries a code — reuse it to keep the existing play counts."],
+ ["How long until the music is live?","As fast as 24–36 hours, usually 1–2 weeks. Send it <b>at least 21 days</b> before your target release date so there's time to pitch playlists — editors need to hear it in advance."],
+ ["What audio spec do you need?","WAV, 16-bit or 24-bit, 44.1 kHz or higher, stereo. <b>No MP3</b> — stores will reject it. Don't let the peaks clip."],
+ ["What about the artwork?","Square <b>3000×3000 px</b>, RGB, <b>JPG only</b>, under 10MB. No blurry text, no white borders, no store logos on the image."],
+ ["How do I send the audio?","Upload to Google Drive or Dropbox and paste the link into the form — WAV files are usually too heavy to email. Make sure <b>anyone with the link can view</b>, otherwise Haustek can't download it."],
+ ["How should files be named?","Use <code>TrackNo_ArtistName_TrackTitle.wav</code> — for example <code>01_Tarnoise_Dem Thanh Pho.wav</code>. Correct naming stops the ops team pairing the wrong file with a track."],
+ ["Do I lose ownership of my song?","No. The work stays yours. Terms and splits are agreed clearly <b>before</b> release, with no fine print."],
+ ["How do I declare multiple songwriters?","Add one row per person under composition rights, using their <b>real legal name</b> (not a stage name) and their %. The rows must total exactly 100%."],
+ ["An album is a lot to type — any shortcut?","Hit <b>Download template (.csv)</b> in step 2, fill it once and send it along. You still need to complete the rest of the form."],
+ ["Why real names instead of stage names?","Songwriting royalties are paid through collecting societies, which match against identity documents. Stage names leave that money sitting unclaimed."],
+ ["Can I submit a remix?","Yes, but you need written permission from the owner of the original. Tick \"is a remix\" on that track and name the source in the notes."],
+ ["How do I exclude a few countries?","Untick \"Worldwide\" in step 1, then tick the countries you do <b>not</b> want to release in. Tick nothing and it stays worldwide."]
+];
+var faqShown=5;
+function renderFAQ(){
+  var list=document.getElementById('faqList'), more=document.getElementById('faqMore');
+  if(!list||!more)return;
+  /* applyLang() chạy sớm hơn chỗ khai báo hai mảng dưới đây (var được hoisting
+     nhưng giá trị chưa gán), nên thoát êm thay vì lỗi — lát nữa khối khởi tạo
+     FAQ sẽ tự gọi lại. */
+  if(typeof FAQ_VI==='undefined'||typeof FAQ_EN==='undefined')return;
+  var en=(typeof lang!=='undefined' && lang==='en');
+  var data=en?FAQ_EN:FAQ_VI;
+  list.innerHTML=data.slice(0,faqShown).map(function(x){
+    return '<details class="faq-q"><summary><span class="q">'+x[0]+'</span><span class="pm">+</span></summary><div class="a">'+x[1]+'</div></details>';
+  }).join('');
+  var rest=data.length-faqShown;
+  more.style.display = rest<=0 ? 'none' : 'block';
+  more.textContent = (en?'Show more ':'Xem thêm câu hỏi ')+'('+rest+')';
+}
+(function(){
+  var more=document.getElementById('faqMore');
+  if(more) more.addEventListener('click',function(){faqShown+=5;renderFAQ();});
+  renderFAQ();
+})();
 </script>
 </body>
 </html>
