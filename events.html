@@ -249,7 +249,7 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--red);outline-offset
   background:rgba(240,240,242,.035);border:1px solid rgba(240,240,242,.11);
   transition:border-color .25s,transform .25s}
 .hl:hover{border-color:var(--red);transform:translateY(-3px)}
-.hl-shot{position:relative;aspect-ratio:1/1;overflow:hidden;background:#0C0C10;
+.hl-shot{position:relative;aspect-ratio:4/5;overflow:hidden;background:#0C0C10;
   display:flex;align-items:center;justify-content:center}
 .hl-shot img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;
   filter:brightness(.82) saturate(.9);transition:transform .5s,filter .3s}
@@ -433,27 +433,6 @@ l-1242 0 -30 29 -29 29 0 745 c0 768 1 796 40 817 12 6 374 10 984 10 929 0
   <p class="lead" data-i18n="lead">Từ những đêm techno nhỏ ở Sài Gòn cho tới chuỗi livestream trải khắp châu Á — đây là những sân khấu chúng tôi đã dựng, đã chơi và đã lên sóng. Bấm vào một tiết mục để xem lại.</p>
 </section>
 
-<div class="grid" id="grid"></div>
-
-<section class="sets-hero">
-  <div class="ghost-line" aria-hidden="true"></div>
-  <p class="kicker"><i>●</i><span data-i18n="sets_k">Xem lại toàn bộ</span></p>
-  <h2 data-i18n="sets_h"><span class="ln">Từng set,</span> <span class="ln"><em>từng đêm diễn.</em></span></h2>
-  <p class="lead" data-i18n="sets_p">21 set trực tiếp từ chính kênh YouTube của Haustek — chưa cắt, chưa dựng lại. Bấm vào tên nghệ sĩ để xem.</p>
-</section>
-
-<div id="setGroups"></div>
-
-<!-- Modal video — một cái duy nhất, tái dùng cho mọi card -->
-<div class="yt-modal" id="ytModal" aria-hidden="true">
-  <div class="yt-box" role="dialog" aria-modal="true" aria-label="Trình phát video">
-    <button class="yt-close" id="ytClose" aria-label="Đóng" type="button">
-      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3"><path d="M6 6l12 12M18 6L6 18"/></svg>
-    </button>
-    <div class="frame" id="ytSlot"></div>
-  </div>
-</div>
-
 <section class="arch-hero" style="padding-bottom:0">
   <p class="kicker"><i>●</i><span data-i18n="hl_k">Đầu bảng quốc tế</span></p>
   <h2 data-i18n="hl_h"><span class="ln">Những cái tên</span> <span class="ln"><em>chúng tôi đã đưa về.</em></span></h2>
@@ -491,7 +470,7 @@ l-1242 0 -30 29 -29 29 0 745 c0 768 1 796 40 817 12 6 374 10 984 10 929 0
     </a>
 
     <a class="hl" href="https://ra.co/events/2036372" target="_blank" rel="noopener">
-      <span class="hl-shot"><img src="/events/abyss-rave.webp" alt="THE ABYSS RAVE — kỷ niệm 8 năm Haustek" loading="lazy"></span>
+      <span class="hl-shot"><img src="/events/milo-raad.webp" alt="Milo Raad" loading="lazy"></span>
       <span class="hl-body">
         <span class="hl-name">Milo Raad</span>
         <span class="hl-note" data-i18n="hl_8">Techno sâu từ Belgrade, ra đĩa trên Soma và Mord — trong đêm kỷ niệm 8 năm Haustek, cùng Xhin và KONKRETE.</span>
@@ -545,20 +524,42 @@ l-1242 0 -30 29 -29 29 0 745 c0 768 1 796 40 817 12 6 374 10 984 10 929 0
   <p class="arch-note" data-i18n="hl_note">Và nhiều tên khác: Marsh, John 00 Fleming, Solarstone, Alex M.O.R.P.H., Truncate, Xhin, Jeremy Olander, Juliet Fox, Exos, Khen, David Hohme, Viken Arman, James Trystan, Aldrin, Das Pharaoh, Derek Nielsen, Blanche — xem đầy đủ trong bảng bên dưới.</p>
 </section>
 
+<div class="grid" id="grid"></div>
+
 <section class="arch-hero">
   <p class="kicker"><i>●</i><span data-i18n="ar_k">Hồ sơ trên Resident Advisor</span></p>
   <h2 data-i18n="ar_h"><span class="ln">Mọi đêm</span> <span class="ln"><em>chúng tôi từng dựng.</em></span></h2>
   <div class="arch-stats">
-    <div class="astat"><b>248</b><span data-i18n="ar_s1">sự kiện</span></div>
-    <div class="astat"><b>2015–2023</b><span data-i18n="ar_s2">liên tục</span></div>
-    <div class="astat"><b>37</b><span data-i18n="ar_s3">đêm có nghệ sĩ quốc tế</span></div>
+    <div class="astat"><b>249</b><span data-i18n="ar_s1">sự kiện</span></div>
+    <div class="astat"><b>2015–2025</b><span data-i18n="ar_s2">liên tục</span></div>
+    <div class="astat"><b>38</b><span data-i18n="ar_s3">đêm có nghệ sĩ quốc tế</span></div>
     <div class="astat"><b>4</b><span data-i18n="ar_s4">đêm cháy vé</span></div>
   </div>
   <div class="arch-bar" id="yearBar"><span class="lbl" data-i18n="ar_filter">Lọc theo năm</span></div>
   <div class="arch-list" id="archList"></div>
   <button class="arch-more" id="archMore" type="button">Xem thêm</button>
-  <p class="arch-note" data-i18n="ar_note">Dữ liệu lấy từ hồ sơ promoter công khai của Haustek Agency trên <a href="https://ra.co/promoters/73233/past-events" target="_blank" rel="noopener">Resident Advisor ↗</a>. Chấm đỏ đánh dấu đêm có nghệ sĩ quốc tế.</p>
+  <p class="arch-note" data-i18n="ar_note">Chủ yếu lấy từ hồ sơ promoter công khai của Haustek Agency trên <a href="https://ra.co/promoters/73233/past-events" target="_blank" rel="noopener">Resident Advisor ↗</a>. Riêng đêm kỷ niệm 8 năm 2025 do Arcan đứng tên tổ chức. Chấm đỏ đánh dấu đêm có nghệ sĩ quốc tế.</p>
 </section>
+
+<section class="sets-hero">
+  <div class="ghost-line" aria-hidden="true"></div>
+  <p class="kicker"><i>●</i><span data-i18n="sets_k">Xem lại toàn bộ</span></p>
+  <h2 data-i18n="sets_h"><span class="ln">Từng set,</span> <span class="ln"><em>từng đêm diễn.</em></span></h2>
+  <p class="lead" data-i18n="sets_p">21 set trực tiếp từ chính kênh YouTube của Haustek — chưa cắt, chưa dựng lại. Bấm vào tên nghệ sĩ để xem.</p>
+</section>
+
+<div id="setGroups"></div>
+
+<!-- Modal video — một cái duy nhất, tái dùng cho mọi card -->
+<div class="yt-modal" id="ytModal" aria-hidden="true">
+  <div class="yt-box" role="dialog" aria-modal="true" aria-label="Trình phát video">
+    <button class="yt-close" id="ytClose" aria-label="Đóng" type="button">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3"><path d="M6 6l12 12M18 6L6 18"/></svg>
+    </button>
+    <div class="frame" id="ytSlot"></div>
+  </div>
+</div>
+
 
 <div class="tail rv">
   <p data-i18n="cta">Muốn Haustek dựng một đêm cho bạn? <a href="mailto:mgmt@haustek-group.com">Gửi yêu cầu booking →</a></p>
@@ -695,7 +696,7 @@ const I18N={
     ar_h:'<span class="ln">Mọi đêm</span> <span class="ln"><em>chúng tôi từng dựng.</em></span>',
     ar_s1:"sự kiện", ar_s2:"liên tục", ar_s3:"đêm có nghệ sĩ quốc tế", ar_s4:"đêm cháy vé",
     ar_filter:"Lọc theo năm",
-    ar_note:'Dữ liệu lấy từ hồ sơ promoter công khai của Haustek Agency trên <a href="https://ra.co/promoters/73233/past-events" target="_blank" rel="noopener">Resident Advisor ↗</a>. Chấm đỏ đánh dấu đêm có nghệ sĩ quốc tế.',
+    ar_note:'Chủ yếu lấy từ hồ sơ promoter công khai của Haustek Agency trên <a href="https://ra.co/promoters/73233/past-events" target="_blank" rel="noopener">Resident Advisor ↗</a>. Riêng đêm kỷ niệm 8 năm 2025 do Arcan đứng tên tổ chức. Chấm đỏ đánh dấu đêm có nghệ sĩ quốc tế.',
     sets_k:"Xem lại toàn bộ",
     sets_h:'<span class="ln">Từng set,</span> <span class="ln"><em>từng đêm diễn.</em></span>',
     sets_p:"21 set quay trực tiếp, lấy nguyên từ kênh YouTube của Haustek — không cắt, không dựng lại. Bấm vào tên nghệ sĩ để xem.",
@@ -729,7 +730,7 @@ const I18N={
     ar_h:'<span class="ln">Every night</span> <span class="ln"><em>we have built.</em></span>',
     ar_s1:"events", ar_s2:"years running", ar_s3:"nights with international artists", ar_s4:"sold-out nights",
     ar_filter:"Filter by year",
-    ar_note:'Pulled from Haustek Agency\'s public promoter profile on <a href="https://ra.co/promoters/73233/past-events" target="_blank" rel="noopener">Resident Advisor ↗</a>. A red dot marks a night with an international artist.',
+    ar_note:'Mostly from Haustek Agency\'s public promoter profile on <a href="https://ra.co/promoters/73233/past-events" target="_blank" rel="noopener">Resident Advisor ↗</a>. The 2025 anniversary night was promoted under Arcan. A red dot marks a night with an international artist.',
     sets_k:"Watch it all back",
     sets_h:'<span class="ln">Every set,</span> <span class="ln"><em>every night.</em></span>',
     sets_p:"21 sets filmed live, taken straight from Haustek's YouTube channel — uncut, unedited. Tap a name to watch.",
@@ -951,6 +952,7 @@ renderSetGroups();
    v địa điểm, i mã sự kiện RA (để dựng link), s cháy vé, x có nghệ sĩ
    quốc tế. Hiện 30 mục một lần cho nhẹ, bấm "xem thêm" để tải tiếp. */
 const ARCHIVE=[
+  {d:"2025-03-08",t:"THE ABYSS RAVE — kỷ niệm 8 năm Haustek",v:"Arcan, Bình Thạnh",i:"2036372",x:1},
   {d:"2023-11-25",t:"Boujee Station: Das Pharaoh, Paul Thomas [UV] | hosted by Tùng Tím",v:"TBA - Boujee.SGN",i:"1794249",x:1},
   {d:"2023-09-16",t:"Boujee Station: Cosmic Gate, Thien Hi, D.A | hosted by Tung Tim",v:"TBA - Boujee.SGN",i:"1744061",s:1,x:1},
   {d:"2022-12-17",t:"James Trystan (Bedrock, Disco Halal, Steyoyoke) by hausvn & Aura Saigon",v:"Aura Lounge",i:"1601607",x:1},
