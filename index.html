@@ -181,15 +181,15 @@ section.hero{content-visibility:visible}
 .zone .bg-gfx{position:absolute;inset:0;width:100%;height:100%;z-index:0;pointer-events:none;display:block}
 
 /* 02 — chuỗi tín hiệu: 5 dịch vụ = 5 nút trên một đường truyền */
-#svcSignal{display:block;width:100%;height:96px;margin-top:38px}
+#svcSignal{display:block;width:100%;height:80px;margin-top:24px}
 
 /* 03 — quả cầu điểm: bản phát hành đáp xuống khắp thế giới */
 .stores-top{display:flex;align-items:center;justify-content:space-between;gap:28px}
 .stores-top h2{flex:1;min-width:0}
 #globe{width:clamp(180px,17vw,250px);aspect-ratio:1;flex:none;display:block}
 @media(max-width:760px){
-  .stores-top{flex-wrap:wrap}
-  #globe{width:min(260px,62vw);margin:6px auto 0}
+  .stores-top{flex-direction:column;align-items:center}
+  #globe{width:min(220px,58vw);margin:4px 0 0}
 }
 
 /* 05 — đèn quét sân khấu: chỉ transform/opacity, chạy trên compositor */
@@ -203,9 +203,9 @@ section.hero{content-visibility:visible}
 @keyframes sweep2{from{transform:rotate(12deg)}to{transform:rotate(-9deg)}}
 @media(prefers-reduced-motion:reduce){.beams i{animation:none;transform:rotate(-4deg)}}
 
-/* 04 — trường sóng nghệ sĩ: mỗi người một tâm sóng sinh từ chính tên họ,
-   cùng ngôn ngữ với card dự phòng trên trang /artists */
-#rippleField{position:absolute;inset:0;width:100%;height:100%;z-index:0;pointer-events:none;display:block}
+/* 04 — chòm sao cộng tác: mỗi nghệ sĩ một ngôi sao, toạ độ sinh từ chính
+   tên họ; các sao gần nhau nối thành mạng — "những người đã cùng làm nhạc" */
+#artnet{position:absolute;inset:0;width:100%;height:100%;z-index:0;pointer-events:none;display:block}
 
 /* Pull quote — đường tiếng nói: gói sóng chạy ngang dưới lời cam kết */
 #voiceline{display:block;width:min(560px,86%);height:64px;margin:26px auto 0}
@@ -218,7 +218,7 @@ section.hero{content-visibility:visible}
   radial-gradient(58% 46% at 88% 6%, rgba(139,123,232,.16), transparent 68%),
   radial-gradient(52% 44% at 4% 96%, rgba(127,214,232,.09), transparent 70%)}
 
-.z-svc{background:#070A0C}
+.z-svc{background:#070A0C;padding-block:clamp(60px,9vh,88px)}
 .z-svc::before{background:
   radial-gradient(50% 42% at 6% 10%, rgba(127,214,232,.13), transparent 70%),
   radial-gradient(46% 40% at 94% 88%, rgba(255,46,76,.09), transparent 70%)}
@@ -468,23 +468,27 @@ a.row:hover .ttl{color:var(--accent)}
 
 /* dịch vụ accordion */
 .z-svc{--accent:var(--ice)}
-.svc-wrap{margin-top:50px;padding:6px 26px}
-.svc details{border-bottom:1px solid rgba(240,240,242,.09)}
-.svc details:last-of-type{border-bottom:0}
-.svc summary{
-  list-style:none;display:grid;grid-template-columns:auto 1fr auto;align-items:baseline;gap:18px;
-  padding:26px 0;transition:padding .3s;
-}
+/* Lưới dịch vụ: 10 ô gọn, bấm ô nào ô đó giãn hết hàng và mở chi tiết —
+   trạng thái đóng luôn lọt trong một màn hình. */
+.svc-wrap{margin-top:26px;display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px}
+.svc details{position:relative;background:rgba(240,240,242,.035);border:1px solid rgba(240,240,242,.1);
+  border-radius:12px;padding:16px 18px 14px;transition:border-color .25s,background .25s}
+.svc details:hover{border-color:rgba(240,240,242,.28);background:rgba(240,240,242,.055)}
+.svc details[open]{grid-column:1/-1;border-color:var(--accent);background:rgba(240,240,242,.05)}
+.svc summary{list-style:none;display:block}
 .svc summary::-webkit-details-marker{display:none}
-.svc summary:hover{padding-left:10px}
-.svc summary .idx{font-family:var(--mono);font-size:11px;color:var(--concrete);min-width:34px}
-.svc summary .ttl{font-family:var(--disp);font-weight:750;font-stretch:110%;font-size:clamp(21px,4.4vw,44px);letter-spacing:-.028em;line-height:1.06;transition:color .25s;text-wrap:balance}
+.svc summary .idx{font-family:var(--mono);font-size:10px;letter-spacing:.14em;color:var(--concrete);display:block;margin-bottom:9px}
+.svc details[open] summary .idx{color:var(--accent)}
+.svc summary .ttl{font-family:var(--disp);font-weight:680;font-stretch:108%;font-size:clamp(14.5px,1.35vw,18px);
+  letter-spacing:-.015em;line-height:1.2;display:block;padding-right:20px;transition:color .25s;text-wrap:balance}
 .svc summary:hover .ttl,.svc details[open] .ttl{color:var(--accent)}
-.svc summary .pm{font-family:var(--disp);font-weight:300;font-size:26px;color:var(--concrete);transition:transform .3s,color .3s}
+.svc summary .pm{position:absolute;top:12px;right:15px;font-family:var(--disp);font-weight:300;font-size:19px;
+  color:var(--concrete);transition:transform .3s,color .3s;line-height:1}
 .svc details[open] .pm{transform:rotate(45deg);color:var(--accent)}
-.svc .body{padding:0 0 28px 52px;color:var(--concrete);font-size:14px;max-width:620px;text-wrap:pretty}
+.svc .body{padding:12px 0 4px;color:var(--concrete);font-size:13.5px;max-width:640px;text-wrap:pretty}
 .svc .body a{color:var(--ice)}
-@media(max-width:640px){.svc .body{padding-left:0}.svc-wrap{padding:6px 18px}}
+@media(max-width:640px){.svc-wrap{grid-template-columns:repeat(2,1fr);gap:8px}
+  .svc details{padding:13px 14px 12px}}
 
 /* ================= TYPE WALL ================= */
 .z-stores{--accent:var(--red)}
@@ -535,17 +539,17 @@ a.row:hover .ttl{color:var(--accent)}
 
 /* ================= FAQ ================= */
 .z-faq{--accent:var(--red)}
-.faq-wrap{margin-top:50px;padding:6px 26px}
+.faq-wrap{margin-top:38px;padding:4px 22px}
 .faq details{border-bottom:1px solid rgba(240,240,242,.09)}
 .faq details:last-of-type{border-bottom:0}
-.faq summary{list-style:none;display:flex;justify-content:space-between;gap:20px;align-items:baseline;padding:22px 0;transition:padding .3s}
+.faq summary{list-style:none;display:flex;justify-content:space-between;gap:20px;align-items:baseline;padding:15px 0;transition:padding .3s}
 .faq summary::-webkit-details-marker{display:none}
 .faq summary:hover{padding-left:10px}
-.faq summary .q{font-family:var(--disp);font-weight:600;font-stretch:106%;font-size:clamp(16px,2.7vw,23px);letter-spacing:-.015em;transition:color .2s;text-wrap:balance}
+.faq summary .q{font-family:var(--disp);font-weight:600;font-stretch:106%;font-size:clamp(14px,1.7vw,17px);letter-spacing:-.01em;transition:color .2s;text-wrap:balance}
 .faq summary:hover .q,.faq details[open] .q{color:var(--accent)}
-.faq summary .pm{font-family:var(--disp);font-weight:300;font-size:22px;color:var(--concrete);flex:none;transition:transform .3s,color .3s}
+.faq summary .pm{font-family:var(--disp);font-weight:300;font-size:17px;color:var(--concrete);flex:none;transition:transform .3s,color .3s}
 .faq details[open] .pm{transform:rotate(45deg);color:var(--accent)}
-.faq .a{padding:0 0 24px;color:var(--concrete);font-size:13.5px;max-width:640px;text-wrap:pretty}
+.faq .a{padding:0 0 16px;color:var(--concrete);font-size:13px;max-width:640px;text-wrap:pretty}
 .faq .a a{color:var(--ice)}
 @media(max-width:640px){.faq-wrap{padding:6px 18px}}
 
@@ -879,16 +883,16 @@ l-1242 0 -30 29 -29 29 0 745 c0 768 1 796 40 817 12 6 374 10 984 10 929 0
   <div class="ghost" aria-hidden="true">02</div>
   <p class="kicker rv"><i>●</i><span data-i18n="sv_k">Chúng tôi làm gì</span></p>
   <h2 class="rv" data-i18n="sv_h"><span class="ln">Bạn cần gì cho âm nhạc,</span> <span class="ln"><em>Haustek có ở đây.</em></span></h2>
-  <p class="smallp rv" style="margin-top:20px" data-i18n="sv_lead">Năm mảng việc, một mái nhà.</p>
+  <p class="smallp rv" style="margin-top:20px" data-i18n="sv_lead">Mười mảng việc, một mái nhà.</p>
   <canvas id="svcSignal" class="rv" aria-hidden="true"></canvas>
 
-  <div class="svc-wrap glass rv">
-    <details open>
+  <div class="svc-wrap rv">
+    <details>
       <summary><span class="idx">01</span><span class="ttl" data-i18n="sv1t">Phát hành &amp; khai thác bản ghi</span><span class="pm">+</span></summary>
       <p class="body" data-i18n="sv1">Nhạc của bạn lên hơn 200 cửa hàng số — Spotify, Apple Music, TikTok, Zing MP3 và nhiều nơi khác. Đúng hẹn, số liệu công khai, báo cáo rõ.</p>
     </details>
     <details>
-      <summary><span class="idx">02</span><span class="ttl" data-i18n="sv2t">Nhãn thu âm</span><span class="pm">+</span></summary>
+      <summary><span class="idx">02</span><span class="ttl" data-i18n="sv2t">Hãng thu âm</span><span class="pm">+</span></summary>
       <p class="body" data-i18n="sv2">Tìm chất riêng, dựng hình ảnh, vạch lộ trình dài hơi. Demo gửi tới chắc chắn có người nghe.</p>
     </details>
     <details>
@@ -903,7 +907,26 @@ l-1242 0 -30 29 -29 29 0 745 c0 768 1 796 40 817 12 6 374 10 984 10 929 0
       <summary><span class="idx">05</span><span class="ttl" data-i18n="sv5t">Booking nghệ sĩ</span><span class="pm">+</span></summary>
       <p class="body" data-i18n="sv5">DJ set, live band, trình diễn kèm visual — cho nhãn hàng, festival hay không gian riêng.</p>
     </details>
-  </div>
+    <details>
+      <summary><span class="idx">06</span><span class="ttl" data-i18n="sv6t">Chiến lược &amp; kế hoạch marketing</span><span class="pm">+</span></summary>
+      <p class="body" data-i18n="sv6">Lộ trình dựa trên dữ liệu, định vị thương hiệu cho tăng trưởng bền vững.</p>
+    </details>
+    <details>
+      <summary><span class="idx">07</span><span class="ttl" data-i18n="sv7t">Chiến dịch digital marketing</span><span class="pm">+</span></summary>
+      <p class="body" data-i18n="sv7">Chiến dịch đa kênh nhắm đúng đối tượng, tập trung tạo khách hàng tiềm năng.</p>
+    </details>
+    <details>
+      <summary><span class="idx">08</span><span class="ttl" data-i18n="sv8t">Quản lý mạng xã hội</span><span class="pm">+</span></summary>
+      <p class="body" data-i18n="sv8">Sản xuất nội dung, chăm sóc cộng đồng và phát triển kênh trên mọi nền tảng.</p>
+    </details>
+    <details>
+      <summary><span class="idx">09</span><span class="ttl" data-i18n="sv9t">Content marketing</span><span class="pm">+</span></summary>
+      <p class="body" data-i18n="sv9">Nội dung và bài viết giá trị cao — xây niềm tin, chuyển đổi khách hàng.</p>
+    </details>
+    <details>
+      <summary><span class="idx">10</span><span class="ttl" data-i18n="sv10t">Sản xuất media</span><span class="pm">+</span></summary>
+      <p class="body" data-i18n="sv10">Video, nhiếp ảnh và thiết kế đồ hoạ chuyên nghiệp giúp thương hiệu nổi bật.</p>
+    </details>
 </section>
 
 <div class="timebar" aria-hidden="true"><canvas class="tb"></canvas><div class="head"></div></div>
@@ -935,7 +958,7 @@ l-1242 0 -30 29 -29 29 0 745 c0 768 1 796 40 817 12 6 374 10 984 10 929 0
 <!-- 04 ARTISTS -->
 <section id="artists" class="zone z-artists">
   <div class="aurora" aria-hidden="true"><i></i><i></i><i></i></div>
-  <canvas id="rippleField" aria-hidden="true"></canvas>
+  <canvas id="artnet" aria-hidden="true"></canvas>
   <div class="ghost" aria-hidden="true">04</div>
   <p class="kicker rv"><i>●</i><span data-i18n="ar_k">Nghệ sĩ</span></p>
   <h2 class="rv" data-i18n="ar_h"><span class="ln">Những người</span> <span class="ln">đã <em>cùng làm nhạc.</em></span></h2>
@@ -1278,10 +1301,10 @@ const I18N={
     f1b:"Thành lập",f2b:"Địa bàn",f2s:"Việt Nam & toàn cầu",f3b:"Mảng làm",f3s:"Phát hành · Label · Sự kiện · Sản xuất · Tư vấn",f4b:"Đi xa nhất",f5b:"Người nghe",f5s:"3.500.000+ mỗi tháng",
     sv_k:"Chúng tôi làm gì",
     sv_h:'<span class="ln">Bạn cần gì cho âm nhạc,</span> <span class="ln"><em>Haustek có ở đây.</em></span>',
-    sv_lead:"Năm mảng việc, một mái nhà.",
+    sv_lead:"Mười mảng việc, một mái nhà.",
     sv1t:"Phát hành & khai thác bản ghi",
     sv1:"Nhạc của bạn lên hơn 200 cửa hàng số — Spotify, Apple Music, TikTok, Zing MP3 và nhiều nơi khác. Đúng hẹn, số liệu công khai, báo cáo rõ.",
-    sv2t:"Nhãn thu âm",
+    sv2t:"Hãng thu âm",
     sv2:"Tìm chất riêng, dựng hình ảnh, vạch lộ trình dài hơi. Demo gửi tới chắc chắn có người nghe.",
     sv3t:"Tổ chức sự kiện",
     sv3:'Từ đêm diễn trong nước đến United We Stream Asia. <a href="#/events">Xem những đêm đã làm →</a>',
@@ -1289,6 +1312,16 @@ const I18N={
     sv4:"Kỹ sư âm thanh và nhạc sĩ từ các nhạc viện — nhạc phim, jingle, quảng cáo, từ ý tưởng đến bản master.",
     sv5t:"Booking nghệ sĩ",
     sv5:"DJ set, live band, trình diễn kèm visual — cho nhãn hàng, festival hay không gian riêng.",
+    sv6t:"Chiến lược & kế hoạch marketing",
+    sv6:"Lộ trình dựa trên dữ liệu, định vị thương hiệu cho tăng trưởng bền vững.",
+    sv7t:"Chiến dịch digital marketing",
+    sv7:"Chiến dịch đa kênh nhắm đúng đối tượng, tập trung tạo khách hàng tiềm năng.",
+    sv8t:"Quản lý mạng xã hội",
+    sv8:"Sản xuất nội dung, chăm sóc cộng đồng và phát triển kênh trên mọi nền tảng.",
+    sv9t:"Content marketing",
+    sv9:"Nội dung và bài viết giá trị cao — xây niềm tin, chuyển đổi khách hàng.",
+    sv10t:"Sản xuất media",
+    sv10:"Video, nhiếp ảnh và thiết kế đồ hoạ chuyên nghiệp giúp thương hiệu nổi bật.",
     stw_k:"Nhạc của bạn sẽ nằm ở",
     stw_h:'<span class="ln">Mọi nơi người ta</span> <span class="ln"><em>đang nghe nhạc.</em></span>',
     stw_note:"Và hơn 200 cửa hàng nhạc số khác trên toàn thế giới",
@@ -1356,7 +1389,7 @@ const I18N={
     f1b:"Founded",f2b:"Based",f2s:"Vietnam & worldwide",f3b:"Practice",f3s:"Distribution · Label · Events · Production · Consulting",f4b:"Farthest reach",f5b:"Listeners",f5s:"3,500,000+ monthly",
     sv_k:"What we do",
     sv_h:'<span class="ln">Whatever your music needs,</span> <span class="ln"><em>Haustek has it here.</em></span>',
-    sv_lead:"Five practices, one roof.",
+    sv_lead:"Ten practices, one roof.",
     sv1t:"Distribution & recordings",
     sv1:"Your music lands in 200+ digital stores — Spotify, Apple Music, TikTok, Zing MP3 and more. On time, open numbers, clear reports.",
     sv2t:"Record label",
@@ -1367,6 +1400,16 @@ const I18N={
     sv4:"Conservatory-trained engineers and musicians — film scores, jingles, brand music, idea to master.",
     sv5t:"Artist booking",
     sv5:"DJ sets, live bands, performances with visuals — for brands, festivals or your own space.",
+    sv6t:"Marketing strategy & planning",
+    sv6:"Data-driven roadmaps to position your brand for sustainable growth.",
+    sv7t:"Digital marketing campaigns",
+    sv7:"Targeted multi-channel campaigns focused on lead generation.",
+    sv8t:"Social media management",
+    sv8:"Content creation, community engagement, and growth across all platforms.",
+    sv9t:"Content marketing",
+    sv9:"High-value copy and articles that build trust and convert prospects.",
+    sv10t:"Media production",
+    sv10:"Professional video, photo, and graphic design to make your brand stand out.",
     stw_k:"Your music will live on",
     stw_h:'<span class="ln">Everywhere people</span> <span class="ln"><em>are listening.</em></span>',
     stw_note:"And 200+ more digital music stores around the world",
@@ -1887,10 +1930,17 @@ if(!reduced){
 busAdd(document.getElementById('svcSignal'),(c,m)=>{
   const pulses=[{p:0,v:.16}];
   const rings=[];
-  const wrap=()=>document.querySelector('.svc-wrap');
+  const items=document.querySelectorAll('.svc-wrap details');
+  const N=items.length||5;
   let openIdx=0;
-  document.querySelectorAll('.svc-wrap details').forEach((d,i)=>{
-    d.addEventListener('toggle',()=>{if(d.open){openIdx=i;rings.push({i,r:0,a:.85});}});
+  items.forEach((d,i)=>{
+    d.addEventListener('toggle',()=>{
+      if(d.open){
+        openIdx=i; rings.push({i,r:0,a:.85});
+        /* lưới gọn: chỉ một ô mở tại một thời điểm */
+        items.forEach(o=>{if(o!==d&&o.open)o.open=false;});
+      }
+    });
   });
   kickHooks.push(()=>{if(m.on){pulses.push({p:0,v:.5});if(pulses.length>6)pulses.shift();}});
   m.draw=(t)=>{
@@ -1912,21 +1962,24 @@ busAdd(document.getElementById('svcSignal'),(c,m)=>{
       g.addColorStop(0,'rgba(255,46,76,.85)');g.addColorStop(1,'rgba(255,46,76,0)');
       c.fillStyle=g;c.beginPath();c.arc(px,py,16*d,0,Math.PI*2);c.fill();
     }
-    /* 5 nút */
-    for(let i=0;i<5;i++){
-      const nx=x0+span*(i+.5)/5;
+    /* N nút — một nút mỗi dịch vụ; màn hẹp thì ẩn nhãn số cho thoáng */
+    const label=w/d>560;
+    for(let i=0;i<N;i++){
+      const nx=x0+span*(i+.5)/N;
       const hot=i===openIdx;
-      c.beginPath();c.arc(nx,y,(hot?4.6:3.2)*d,0,Math.PI*2);
+      c.beginPath();c.arc(nx,y,(hot?4.6:3)*d,0,Math.PI*2);
       c.fillStyle=hot?'#FF2E4C':'rgba(240,240,242,.5)';c.fill();
-      c.font=`${10*d}px "IBM Plex Mono",monospace`;
-      c.fillStyle=hot?'rgba(255,46,76,.9)':'rgba(142,142,152,.7)';
-      c.textAlign='center';c.fillText('0'+(i+1),nx,y-14*d);
+      if(label){
+        c.font=`${10*d}px "IBM Plex Mono",monospace`;
+        c.fillStyle=hot?'rgba(255,46,76,.9)':'rgba(142,142,152,.7)';
+        c.textAlign='center';c.fillText(String(i+1).padStart(2,'0'),nx,y-14*d);
+      }
     }
     /* vòng lan từ nút vừa mở */
     for(let k=rings.length-1;k>=0;k--){
       const r=rings[k];r.r+=1.1*d;r.a*=.955;
       if(r.a<.02){rings.splice(k,1);continue;}
-      const nx=x0+span*(r.i+.5)/5;
+      const nx=x0+span*(r.i+.5)/N;
       c.beginPath();c.arc(nx,y,r.r,0,Math.PI*2);
       c.strokeStyle=`rgba(255,46,76,${r.a.toFixed(3)})`;c.lineWidth=1.3*d;c.stroke();
     }
@@ -1977,40 +2030,48 @@ busAdd(document.getElementById('globe'),(c,m)=>{
   };
 });
 
-/* ---------- 04: trường sóng nghệ sĩ ----------
-   Mỗi nghệ sĩ trong ARTISTS một tâm sóng, toạ độ sinh từ hash chính tên họ —
-   cùng ý tưởng với card dự phòng trên /artists. Vòng lan chậm đan nhau,
-   kick → một tâm ngẫu nhiên phát vòng đỏ. */
-busAdd(document.getElementById('rippleField'),(c,m)=>{
-  function hash(s){let h=0;for(let i=0;i<s.length;i++){h=(h*31+s.charCodeAt(i))>>>0;}return h;}
-  const seeds=(typeof ARTISTS!=='undefined'?ARTISTS:[]).map(n=>{
-    const h=hash(n);
-    return {x:.06+((h%1000)/1000)*.88, y:.12+(((h>>10)%1000)/1000)*.76, next:Math.random()*5};
-  });
-  const rings=[];
-  kickHooks.push(()=>{
-    if(m.on&&seeds.length){
-      const s=seeds[(Math.random()*seeds.length)|0];
-      rings.push({x:s.x,y:s.y,r:0,a:.8,red:true});
-    }
-  });
+/* ---------- 04: chòm sao cộng tác ----------
+   Mỗi nghệ sĩ một ngôi sao, toạ độ sinh từ hash chính tên họ. Sao trôi
+   chậm quanh vị trí neo; hai sao lại gần nhau thì nối một sợi mảnh —
+   cả roster thành một mạng lưới "đã cùng làm nhạc". Kick → một sao
+   loé đỏ, các sợi quanh nó sáng theo. */
+busAdd(document.getElementById('artnet'),(c,m)=>{
+  function hash(str){let h=0;for(let i=0;i<str.length;i++)h=(h*31+str.charCodeAt(i))>>>0;return h;}
+  const names=(typeof ARTISTS!=='undefined'?ARTISTS:[]);
+  const nodes=names.map(n=>{const h=hash(n);return{
+    ax:.06+((h%997)/997)*.88, ay:.14+(((h>>9)%997)/997)*.72,
+    ph:((h>>18)%628)/100, sp:.1+(((h>>5)%100)/100)*.12,
+    r:1.5+(((h>>13)%10)/10)*1.5, flash:0};});
+  kickHooks.push(()=>{if(m.on&&nodes.length)nodes[(Math.random()*nodes.length)|0].flash=1;});
   m.draw=(t)=>{
-    const {w,h,d}=m;c.clearRect(0,0,w,h);
-    for(const s of seeds){
-      if(t>s.next){rings.push({x:s.x,y:s.y,r:0,a:.5,red:false});s.next=t+3+Math.random()*4;}
+    const{w,h,d}=m;c.clearRect(0,0,w,h);
+    const P=nodes.map(n=>{
+      n.flash*=.95;
+      return [n.ax*w+Math.sin(t*n.sp+n.ph)*15*d,
+              n.ay*h+Math.cos(t*n.sp*.8+n.ph*1.7)*12*d, n];
+    });
+    const R=Math.min(w,h)*.3, R2=R*R;
+    for(let i=0;i<P.length;i++)for(let j=i+1;j<P.length;j++){
+      const dx=P[i][0]-P[j][0], dy=P[i][1]-P[j][1], q=dx*dx+dy*dy;
+      if(q<R2){
+        const f=Math.max(P[i][2].flash,P[j][2].flash);
+        const a=(1-Math.sqrt(q)/R)*.22+f*.3;
+        c.beginPath();c.moveTo(P[i][0],P[i][1]);c.lineTo(P[j][0],P[j][1]);
+        c.strokeStyle=f>.25?`rgba(255,46,76,${a.toFixed(3)})`
+                           :`rgba(240,240,242,${a.toFixed(3)})`;
+        c.lineWidth=1*d;c.stroke();
+      }
     }
-    if(rings.length>34)rings.splice(0,rings.length-34);
-    const max=Math.max(w,h)*.3;
-    for(let i=rings.length-1;i>=0;i--){
-      const g=rings[i];g.r+=.75*d;g.a*=.995;
-      if(g.r>max||g.a<.02){rings.splice(i,1);continue;}
-      for(let k=0;k<2;k++){                      /* vòng chính + một vòng dội */
-        const rr=g.r-k*16*d; if(rr<=0)continue;
-        const aa=g.a*(1-k*.45);
-        c.beginPath();c.arc(g.x*w,g.y*h,rr,0,Math.PI*2);
-        c.strokeStyle=g.red?`rgba(255,46,76,${aa.toFixed(3)})`
-                           :`rgba(240,240,242,${(aa*.7).toFixed(3)})`;
-        c.lineWidth=1.2*d;c.stroke();
+    for(const[x,y,n]of P){
+      const f=n.flash;
+      c.beginPath();c.arc(x,y,n.r*d*(1+f*.9),0,Math.PI*2);
+      c.fillStyle=f>.05
+        ?`rgba(${240+15*f|0},${240-194*f|0},${242-166*f|0},${(.65+.3*f).toFixed(2)})`
+        :'rgba(240,240,242,.65)';
+      c.fill();
+      if(f>.35){
+        c.beginPath();c.arc(x,y,(n.r+10*f)*d,0,Math.PI*2);
+        c.strokeStyle=`rgba(255,46,76,${(f*.5).toFixed(2)})`;c.lineWidth=1*d;c.stroke();
       }
     }
   };
