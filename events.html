@@ -251,8 +251,10 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--red);outline-offset
 .hl:hover{border-color:var(--red);transform:translateY(-3px)}
 .hl-shot{position:relative;aspect-ratio:4/5;overflow:hidden;background:#0C0C10;
   display:flex;align-items:center;justify-content:center}
+.hl-shot.wide{aspect-ratio:1340/699}
 .hl-shot img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;
   filter:brightness(.82) saturate(.9);transition:transform .5s,filter .3s}
+.hl-shot.wide img{object-fit:contain}   /* lineup 2 cột — hiện trọn, không cắt chữ */
 .hl:hover .hl-shot img{transform:scale(1.05);filter:brightness(1) saturate(1)}
 .hl-ini{font-family:var(--disp);font-weight:800;font-stretch:118%;font-size:54px;
   letter-spacing:-.03em;color:rgba(240,240,242,.09)}
@@ -460,7 +462,7 @@ l-1242 0 -30 29 -29 29 0 745 c0 768 1 796 40 817 12 6 374 10 984 10 929 0
   <div class="hl-grid">
 
     <a class="hl" href="https://ra.co/events/1309879" target="_blank" rel="noopener">
-      <span class="hl-shot"><span class="hl-ini">BR</span></span>
+      <span class="hl-shot wide"><img src="/events/boiler-room.webp" alt="Boiler Room Ho Chi Minh City" loading="lazy"></span>
       <span class="hl-body">
         <span class="hl-name">Boiler Room</span>
         <span class="hl-note" data-i18n="hl_1">Boiler Room chọn Sài Gòn — Haustek đồng tổ chức, 18 nghệ sĩ trong hai ngày tại Khu 13.</span>
@@ -471,7 +473,7 @@ l-1242 0 -30 29 -29 29 0 745 c0 768 1 796 40 817 12 6 374 10 984 10 929 0
 
     <a class="hl" href="https://mixmag.asia/read/huyn-thoi-nhc-trance-cosmic-gate-ln-u-tien-chi-nhc-ti-sai-gon-trong-tour-din-asia-qung-ba-album-mi-mosaiik-2-vit-nam" target="_blank" rel="noopener">
       <span class="hl-badge">SOLD OUT</span>
-      <span class="hl-shot"><span class="hl-ini">CG</span></span>
+      <span class="hl-shot"><img src="/events/cosmic-gate.webp" alt="Cosmic Gate — Boujee Station" loading="lazy"></span>
       <span class="hl-body">
         <span class="hl-name">Cosmic Gate</span>
         <span class="hl-note" data-i18n="hl_2">Lần đầu chơi tại Sài Gòn, trong tour châu Á album Mosaiik 2.</span>
@@ -480,9 +482,29 @@ l-1242 0 -30 29 -29 29 0 745 c0 768 1 796 40 817 12 6 374 10 984 10 929 0
       </span>
     </a>
 
+    <a class="hl" href="https://ra.co/events/1794249" target="_blank" rel="noopener">
+      <span class="hl-shot"><img src="/events/uv-night.webp" alt="Boujee Station — Das Pharaoh &amp; Paul Thomas" loading="lazy"></span>
+      <span class="hl-body">
+        <span class="hl-name">Das Pharaoh</span>
+        <span class="hl-note" data-i18n="hl_7">Fadi của bộ đôi trance Aly &amp; Fila, chơi cùng Paul Thomas trong đêm hãng đĩa UV.</span>
+        <span class="hl-meta">Boujee.SGN · 25.11.2023</span><br>
+        <span class="hl-src">Resident Advisor ↗</span>
+      </span>
+    </a>
+
+    <a class="hl" href="https://ra.co/events/2036372" target="_blank" rel="noopener">
+      <span class="hl-shot"><img src="/events/milo-raad.webp" alt="Milo Raad — The Abyss Rave" loading="lazy"></span>
+      <span class="hl-body">
+        <span class="hl-name">Milo Raad</span>
+        <span class="hl-note" data-i18n="hl_8">Techno sâu từ Belgrade, ra đĩa trên Soma và Mord — trong đêm kỷ niệm 8 năm Haustek, cùng Xhin và KONKRETE.</span>
+        <span class="hl-meta">Arcan, Sài Gòn · 08.03.2025</span><br>
+        <span class="hl-src">Resident Advisor ↗</span>
+      </span>
+    </a>
+
     <a class="hl" href="https://ra.co/events/1592369" target="_blank" rel="noopener">
       <span class="hl-badge">SOLD OUT</span>
-      <span class="hl-shot"><span class="hl-ini">NW</span></span>
+      <span class="hl-shot"><img src="/events/nick-warren.webp" alt="Nick Warren — Mixmag Asia Việt Nam" loading="lazy"></span>
       <span class="hl-body">
         <span class="hl-name">Nick Warren</span>
         <span class="hl-note" data-i18n="hl_3">Đêm ra mắt chính thức của Mixmag Asia Việt Nam.</span>
@@ -492,7 +514,7 @@ l-1242 0 -30 29 -29 29 0 745 c0 768 1 796 40 817 12 6 374 10 984 10 929 0
     </a>
 
     <a class="hl" href="https://ra.co/events/1250083" target="_blank" rel="noopener">
-      <span class="hl-shot"><span class="hl-ini">BB</span></span>
+      <span class="hl-shot"><img src="/events/ben-bohmer.webp" alt="Ben Böhmer" loading="lazy"></span>
       <span class="hl-body">
         <span class="hl-name">Ben Böhmer</span>
         <span class="hl-note" data-i18n="hl_4">Live set của gương mặt Anjunadeep, hai đêm liên tiếp tại Sài Gòn.</span>
@@ -502,7 +524,7 @@ l-1242 0 -30 29 -29 29 0 745 c0 768 1 796 40 817 12 6 374 10 984 10 929 0
     </a>
 
     <a class="hl" href="https://ra.co/events/1601605" target="_blank" rel="noopener">
-      <span class="hl-shot"><span class="hl-ini">OS</span></span>
+      <span class="hl-shot"><img src="/events/oliver-smith.webp" alt="Oliver Smith — Aura Saigon" loading="lazy"></span>
       <span class="hl-body">
         <span class="hl-name">Oliver Smith</span>
         <span class="hl-note" data-i18n="hl_5">Nghệ sĩ đầu tiên ký với Anjunabeats, từng chơi Tomorrowland và Creamfields.</span>
@@ -512,7 +534,7 @@ l-1242 0 -30 29 -29 29 0 745 c0 768 1 796 40 817 12 6 374 10 984 10 929 0
     </a>
 
     <a class="hl" href="https://ra.co/events/1563942" target="_blank" rel="noopener">
-      <span class="hl-shot"><span class="hl-ini">RR</span></span>
+      <span class="hl-shot"><img src="/events/roy-rosenfeld.webp" alt="Roy Rosenfeld — Aura Saigon" loading="lazy"></span>
       <span class="hl-body">
         <span class="hl-name">Roy Rosenfeld</span>
         <span class="hl-note" data-i18n="hl_6">Gương mặt All Day I Dream, extended set trong đêm hausvn × Aura.</span>
@@ -522,7 +544,7 @@ l-1242 0 -30 29 -29 29 0 745 c0 768 1 796 40 817 12 6 374 10 984 10 929 0
     </a>
 
   </div>
-  <p class="arch-note" data-i18n="hl_note">Và nhiều tên khác: Paul Thomas, Marsh, John 00 Fleming, Solarstone, Alex M.O.R.P.H., Truncate, Xhin, Jeremy Olander, Juliet Fox, Exos, Khen, David Hohme, Viken Arman, James Trystan, Aldrin, Das Pharaoh, Derek Nielsen, Blanche — xem đầy đủ trong bảng bên dưới.</p>
+  <p class="arch-note" data-i18n="hl_note">Và nhiều tên khác: Marsh, John 00 Fleming, Solarstone, Alex M.O.R.P.H., Truncate, Xhin, Jeremy Olander, Juliet Fox, Exos, Khen, David Hohme, Viken Arman, James Trystan, Aldrin, Das Pharaoh, Derek Nielsen, Blanche — xem đầy đủ trong bảng bên dưới.</p>
 </section>
 
 <section class="arch-hero">
@@ -668,7 +690,9 @@ const I18N={
     hl_4:"Live set của gương mặt Anjunadeep, hai đêm liên tiếp tại Sài Gòn.",
     hl_5:"Nghệ sĩ đầu tiên ký với Anjunabeats, từng chơi Tomorrowland và Creamfields.",
     hl_6:"Gương mặt All Day I Dream, extended set trong đêm hausvn × Aura.",
-    hl_note:"Và nhiều tên khác: Paul Thomas, Marsh, John 00 Fleming, Solarstone, Alex M.O.R.P.H., Truncate, Xhin, Jeremy Olander, Juliet Fox, Exos, Khen, David Hohme, Viken Arman, James Trystan, Aldrin, Das Pharaoh, Derek Nielsen, Blanche — xem đầy đủ trong bảng bên dưới.",
+    hl_7:"Fadi của bộ đôi trance Aly & Fila, chơi cùng Paul Thomas trong đêm hãng đĩa UV.",
+    hl_8:"Techno sâu từ Belgrade, ra đĩa trên Soma và Mord — trong đêm kỷ niệm 8 năm Haustek, cùng Xhin và KONKRETE.",
+    hl_note:"Và nhiều tên khác: Marsh, John 00 Fleming, Solarstone, Alex M.O.R.P.H., Truncate, Xhin, Jeremy Olander, Juliet Fox, Exos, Khen, David Hohme, Viken Arman, James Trystan, Aldrin, Das Pharaoh, Derek Nielsen, Blanche — xem đầy đủ trong bảng bên dưới.",
     ar_k:"Hồ sơ trên Resident Advisor",
     ar_h:'<span class="ln">Mọi đêm</span> <span class="ln"><em>chúng tôi từng dựng.</em></span>',
     ar_s1:"sự kiện", ar_s2:"liên tục", ar_s3:"đêm có nghệ sĩ quốc tế", ar_s4:"đêm cháy vé",
@@ -700,7 +724,9 @@ const I18N={
     hl_4:"A live set from the Anjunadeep name, two nights running in Saigon.",
     hl_5:"The first artist signed to Anjunabeats, has played Tomorrowland and Creamfields.",
     hl_6:"An All Day I Dream regular, extended set for the hausvn × Aura night.",
-    hl_note:"And many more: Paul Thomas, Marsh, John 00 Fleming, Solarstone, Alex M.O.R.P.H., Truncate, Xhin, Jeremy Olander, Juliet Fox, Exos, Khen, David Hohme, Viken Arman, James Trystan, Aldrin, Das Pharaoh, Derek Nielsen, Blanche — the full list is in the table below.",
+    hl_7:"Fadi of trance duo Aly & Fila, alongside Paul Thomas for the UV label night.",
+    hl_8:"Deep techno from Belgrade, released on Soma and Mord — at Haustek's 8th anniversary night, with Xhin and KONKRETE.",
+    hl_note:"And many more: Marsh, John 00 Fleming, Solarstone, Alex M.O.R.P.H., Truncate, Xhin, Jeremy Olander, Juliet Fox, Exos, Khen, David Hohme, Viken Arman, James Trystan, Aldrin, Das Pharaoh, Derek Nielsen, Blanche — the full list is in the table below.",
     ar_k:"The Resident Advisor record",
     ar_h:'<span class="ln">Every night</span> <span class="ln"><em>we have built.</em></span>',
     ar_s1:"events", ar_s2:"years running", ar_s3:"nights with international artists", ar_s4:"sold-out nights",
