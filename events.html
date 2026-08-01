@@ -116,7 +116,8 @@ h1 em{font-style:italic;font-weight:600;color:var(--red)}
 .shot .play.disabled .btn{opacity:.4;background:rgba(7,7,9,.5)}
 .card:hover .play.disabled .btn{background:rgba(7,7,9,.5);border-color:rgba(240,240,242,.28)}
 
-.body{padding:20px 20px 22px;display:flex;flex-direction:column;gap:10px;flex:1}
+.body{padding:clamp(20px,1.5vw,26px) clamp(20px,1.5vw,26px) clamp(22px,1.6vw,28px);
+  display:flex;flex-direction:column;gap:10px;flex:1}
 .ename{font-family:var(--disp);font-weight:760;font-stretch:110%;font-size:clamp(19px,2.6vw,25px);
   letter-spacing:-.022em;line-height:1.16;text-wrap:balance;
   min-height:2.32em;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
@@ -127,11 +128,15 @@ h1 em{font-style:italic;font-weight:600;color:var(--red)}
 .yt-modal{position:fixed;inset:0;z-index:200;display:none;align-items:center;justify-content:center;
   padding:24px;background:rgba(6,6,8,.82);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
 .yt-modal.on{display:flex}
-.yt-box{position:relative;width:100%;max-width:920px;border-radius:16px;overflow:hidden;
+.yt-wrap{position:relative;width:100%;max-width:920px}
+.yt-box{position:relative;width:100%;border-radius:16px;overflow:hidden;
   background:#0b0b11;border:1px solid rgba(240,240,242,.14);box-shadow:0 30px 90px rgba(0,0,0,.6)}
 .yt-box .frame{position:relative;aspect-ratio:16/9;width:100%}
 .yt-box iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
-.yt-close{position:absolute;top:-46px;right:0;z-index:2;width:36px;height:36px;border-radius:50%;
+/* Nút đóng nằm NGOÀI .yt-box: nếu để bên trong thì bị overflow:hidden của
+   hộp cắt mất hoàn toàn — người xem chỉ còn cách bấm ra nền hoặc bấm Esc.
+   Đặt trong .yt-modal và neo theo hộp qua biến vị trí là thấy được ở mọi cỡ màn. */
+.yt-close{position:absolute;top:-46px;right:0;z-index:3;width:36px;height:36px;border-radius:50%;
   display:grid;place-items:center;background:rgba(7,7,9,.7);border:1px solid rgba(240,240,242,.22);
   color:var(--paper);cursor:pointer;backdrop-filter:blur(8px);transition:all .2s}
 .yt-close:hover{background:var(--red);border-color:var(--red)}
@@ -181,7 +186,7 @@ h1 em{font-style:italic;font-weight:600;color:var(--red)}
   transition:all .25s}
 .set-card:hover .set-shot .play .btn{background:var(--youtube);border-color:var(--youtube)}
 .set-shot .play svg{width:12px;height:12px;fill:var(--paper);margin-left:2px}
-.set-body{padding:12px 13px 14px}
+.set-body{padding:14px clamp(14px,1.1vw,18px) 16px}
 .set-name{font-family:var(--disp);font-weight:700;font-stretch:108%;font-size:15.5px;
   letter-spacing:-.01em;line-height:1.25;min-height:2.5em;display:-webkit-box;
   -webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
@@ -261,15 +266,150 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--red);outline-offset
 .hl-badge{position:absolute;top:11px;left:11px;z-index:2;padding:4px 9px;border-radius:100px;
   font-family:var(--mono);font-size:8.5px;letter-spacing:.12em;
   background:rgba(255,46,76,.9);color:#fff}
-.hl-body{position:relative;padding:0 16px 15px;margin-top:-52px;z-index:2}
+/* Padding co giãn theo bề rộng thẻ: thẻ càng to thì lề càng rộng, nên
+   chữ không bao giờ dính sát mép như khi để một con số cố định.
+   QUAN TRỌNG: .hl-body là thẻ <span>, mặc định là inline — mà padding
+   ngang của một phần tử inline KHÔNG đẩy được các khối block nằm bên
+   trong nó. Đó là lý do padding cũ (16px) không hề có tác dụng và chữ
+   dính sát mép thẻ. Phải khai báo display:block thì padding mới ăn. */
+.hl-body{display:block;position:relative;
+  padding:0 clamp(18px,1.5vw,28px) clamp(18px,1.4vw,24px);margin-top:-52px;z-index:2}
 .hl-name{display:block;font-family:var(--disp);font-weight:780;font-stretch:110%;
   font-size:clamp(20px,2.2vw,27px);letter-spacing:-.02em;line-height:1.08;color:var(--paper)}
 .hl-note{display:block;margin-top:9px;font-family:var(--body);font-size:12.5px;
-  color:var(--concrete);line-height:1.45;text-wrap:pretty}
+  color:var(--concrete);line-height:1.45;text-wrap:pretty;max-width:44ch}
 .hl-meta{display:block;margin-top:11px;font-family:var(--mono);font-size:9.5px;
   letter-spacing:.1em;color:var(--concrete);opacity:.8}
 .hl-src{display:inline-block;margin-top:9px;font-family:var(--mono);font-size:9.5px;
   letter-spacing:.14em;text-transform:uppercase;color:var(--red)}
+
+/* ============ FAQ SỰ KIỆN ============ */
+.ev-faq{padding:clamp(70px,10vh,110px) var(--gut) 0;position:relative}
+.ev-faq .kicker i{color:var(--ice)}
+.ev-faq h2{font-family:var(--disp);font-weight:780;font-stretch:112%;
+  font-size:clamp(30px,6.4vw,64px);line-height:1.02;letter-spacing:-.03em;text-wrap:balance}
+.ev-faq h2 em{font-style:italic;font-weight:600;color:var(--ice)}
+.faq-wrap{margin-top:34px;max-width:860px;border-top:1px solid rgba(240,240,242,.09)}
+.faq-wrap details{border-bottom:1px solid rgba(240,240,242,.09)}
+.faq-wrap summary{list-style:none;display:flex;justify-content:space-between;gap:22px;
+  align-items:baseline;padding:17px 2px;cursor:pointer;transition:padding .28s}
+.faq-wrap summary::-webkit-details-marker{display:none}
+.faq-wrap summary:hover{padding-left:10px}
+.faq-wrap .q{font-family:var(--disp);font-weight:640;font-stretch:106%;
+  font-size:clamp(15px,1.9vw,18.5px);letter-spacing:-.01em;line-height:1.3;
+  text-wrap:balance;transition:color .2s}
+.faq-wrap summary:hover .q,.faq-wrap details[open] .q{color:var(--ice)}
+.faq-wrap .pm{font-family:var(--disp);font-weight:300;font-size:19px;color:var(--concrete);
+  flex:none;line-height:1;transition:transform .3s,color .3s}
+.faq-wrap details[open] .pm{transform:rotate(45deg);color:var(--ice)}
+.faq-wrap .a{padding:0 0 18px;color:var(--concrete);font-size:13.5px;
+  max-width:66ch;text-wrap:pretty;line-height:1.75}
+.faq-wrap .a a{color:var(--ice)}
+.faq-wrap .a a:hover{text-decoration:underline}
+/* Mặc định chỉ hiện 4 câu đầu, phần còn lại chờ bấm "Xem thêm" — khối
+   hỏi đáp không nên chiếm cả màn hình khi phần lớn người xem chỉ cần
+   một hai câu đầu. */
+.faq-wrap details.hidden-q{display:none}
+.faq-more{display:block;margin:22px auto 0;padding:12px 26px;border-radius:100px;
+  background:transparent;border:1px solid var(--line);color:var(--paper);cursor:pointer;
+  font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;transition:all .2s}
+.faq-more:hover{border-color:var(--ice);background:rgba(127,214,232,.1)}
+.faq-more.gone{display:none}
+
+/* ============ DÀNH CHO VENUE ============ */
+.venue{padding:clamp(70px,10vh,110px) var(--gut) clamp(80px,11vh,120px);position:relative;overflow:hidden}
+.venue::before{content:"";position:absolute;inset:0;z-index:0;pointer-events:none;
+  background:radial-gradient(58% 50% at 6% 8%, rgba(255,46,76,.15), transparent 70%),
+             radial-gradient(56% 48% at 94% 92%, rgba(127,214,232,.12), transparent 70%)}
+.venue>*{position:relative;z-index:1}
+.venue h2{font-family:var(--disp);font-weight:780;font-stretch:112%;
+  font-size:clamp(30px,6.4vw,64px);line-height:1.02;letter-spacing:-.03em;text-wrap:balance;max-width:18ch}
+.venue h2 em{font-style:italic;font-weight:600;color:var(--red)}
+.venue .lead{margin-top:18px;max-width:620px}
+
+/* những gì Haustek nhận làm */
+.vn-does{display:grid;gap:9px;margin-top:34px;max-width:900px;
+  grid-template-columns:repeat(auto-fit,minmax(min(100%,215px),1fr))}
+.vn-do{padding:15px 17px;border-radius:11px;background:rgba(240,240,242,.03);
+  border:1px solid rgba(240,240,242,.09)}
+.vn-do b{display:block;font-family:var(--disp);font-weight:700;font-stretch:108%;
+  font-size:15px;letter-spacing:-.012em;margin-bottom:6px}
+.vn-do span{display:block;font-size:12.5px;color:var(--concrete);line-height:1.55;text-wrap:pretty}
+
+.vn-mail{display:inline-block;margin:40px 0 0;font-family:var(--disp);font-weight:800;
+  font-stretch:114%;font-size:clamp(21px,5vw,58px);letter-spacing:-.035em;line-height:1.1;
+  overflow-wrap:anywhere;transition:color .25s}
+.vn-mail:hover{color:var(--red)}
+.vn-note{margin-top:20px;max-width:620px;font-size:13px;color:var(--concrete);
+  line-height:1.8;text-wrap:pretty}
+.vn-note b{color:var(--paper);font-weight:500}
+.vn-links{display:flex;flex-wrap:wrap;gap:8px;margin-top:26px}
+.vn-links a{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--concrete);padding:11px 18px;border-radius:100px;
+  background:rgba(240,240,242,.035);border:1px solid rgba(240,240,242,.1);transition:all .25s}
+.vn-links a:hover{color:var(--paper);border-color:var(--line-2);
+  background:rgba(240,240,242,.09);transform:translateY(-2px)}
+
+/* =========================================================
+   THU GỌN CHO MÀN HÌNH NHỎ (≤760px)
+   Vấn đề: hai khối nhiều thẻ nhất (12 đầu bảng quốc tế, 21 video set)
+   khi xếp một cột dọc chiếm gần 14.000px — 70% chiều dài cả trang, khiến
+   người dùng điện thoại phải cuộn qua hàng chục màn hình mới tới cuối.
+   Cách xử lý: đổi thành DẢI VUỐT NGANG có điểm dừng (scroll-snap).
+   Mỗi khối co từ ~7.000px xuống còn đúng một chiều cao thẻ. Thẻ kế tiếp
+   luôn ló ra một phần ở mép phải để người xem biết là vuốt được, kèm
+   thanh tiến độ và số thứ tự bên dưới. Desktop không đổi gì.
+   ========================================================= */
+@media(max-width:760px){
+  /* dải tràn ra sát mép màn hình cho rộng rãi, nhưng thẻ đầu vẫn thẳng lề */
+  .hl-grid,.set-grid{
+    display:flex;gap:12px;
+    overflow-x:auto;overscroll-behavior-x:contain;
+    scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;
+    scroll-padding-left:var(--gut);scroll-padding-right:var(--gut);
+    scrollbar-width:none;
+    margin-left:calc(var(--gut) * -1);margin-right:calc(var(--gut) * -1);
+    padding:2px var(--gut) 4px;
+  }
+  .hl-grid::-webkit-scrollbar,.set-grid::-webkit-scrollbar{display:none}
+  .hl-grid>.hl,.set-grid>.set-card{flex:0 0 auto;scroll-snap-align:start}
+  .hl-grid>.hl{width:75vw;max-width:330px}
+  .set-grid>.set-card{width:66vw;max-width:300px}
+  /* thẻ trong dải bỏ hiệu ứng nhấc lên — vuốt ngang mà thẻ nhảy thì rối mắt */
+  .hl:hover,.set-card:hover{transform:none}
+
+  /* thanh tiến độ + số thứ tự dưới mỗi dải */
+  .rail-nav{display:flex;align-items:center;gap:12px;margin-top:15px;
+    font-family:var(--mono);font-size:10px;letter-spacing:.16em;color:var(--concrete)}
+  .rail-ix{color:var(--paper);min-width:2.2em}
+  .rail-tot{min-width:2.2em;text-align:right}
+  .rail-bar{position:relative;flex:1;height:2px;border-radius:2px;
+    background:rgba(240,240,242,.13);overflow:hidden}
+  .rail-bar i{position:absolute;top:0;bottom:0;left:0;border-radius:2px;
+    background:var(--red);transition:left .14s linear}
+
+  /* các mảng còn lại: xếp 2 cột cho đỡ tốn chiều dọc */
+  .vn-does{grid-template-columns:repeat(2,1fr);gap:8px}
+  .vn-do{padding:13px 14px}
+  .vn-do b{font-size:14px}
+  .vn-do span{font-size:11.5px}
+
+  /* mỗi nhóm video chỉ dựng khi cuộn tới gần — vào trang nhanh hơn */
+  .set-group{content-visibility:auto;contain-intrinsic-size:1px 400px}
+
+  /* Dãy lọc năm: 12 nút xuống dòng thành 3–4 hàng, chiếm chỗ vô ích.
+     Gom về đúng một hàng cuộn ngang. */
+  .arch-bar{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;
+    margin-left:calc(var(--gut) * -1);margin-right:calc(var(--gut) * -1);
+    padding:2px var(--gut);gap:6px}
+  .arch-bar::-webkit-scrollbar{display:none}
+  .arch-bar .lbl{display:none}
+  .ychip{flex:0 0 auto;padding:7px 14px}
+
+  /* bốn ô số xếp 2×2 cho gọn chiều dọc */
+  .arch-stats{gap:8px}
+  .astat{min-width:calc(50% - 4px);padding:13px 15px}
+}
 </style>
 </head>
 <body>
@@ -438,16 +578,6 @@ l-1242 0 -30 29 -29 29 0 745 c0 768 1 796 40 817 12 6 374 10 984 10 929 0
   <h2 data-i18n="hl_h"><span class="ln">Những cái tên</span> <span class="ln"><em>chúng tôi đã đưa về.</em></span></h2>
   <div class="hl-grid">
 
-    <a class="hl" href="https://ra.co/events/1309879" target="_blank" rel="noopener">
-      <span class="hl-shot"><img src="/events/boiler-room.webp" alt="Boiler Room Ho Chi Minh City" loading="lazy"></span>
-      <span class="hl-body">
-        <span class="hl-name">Boiler Room</span>
-        <span class="hl-note" data-i18n="hl_1">Boiler Room chọn Sài Gòn — Haustek đồng tổ chức, 18 nghệ sĩ trong hai ngày tại Khu 13.</span>
-        <span class="hl-meta">Khu 13 · 19.10.2019</span><br>
-        <span class="hl-src">Resident Advisor ↗</span>
-      </span>
-    </a>
-
     <a class="hl" href="https://mixmag.asia/read/huyn-thoi-nhc-trance-cosmic-gate-ln-u-tien-chi-nhc-ti-sai-gon-trong-tour-din-asia-qung-ba-album-mi-mosaiik-2-vit-nam" target="_blank" rel="noopener">
       <span class="hl-badge">SOLD OUT</span>
       <span class="hl-shot"><img src="/events/cosmic-gate.webp" alt="Cosmic Gate — Boujee Station" loading="lazy"></span>
@@ -459,25 +589,6 @@ l-1242 0 -30 29 -29 29 0 745 c0 768 1 796 40 817 12 6 374 10 984 10 929 0
       </span>
     </a>
 
-    <a class="hl" href="https://ra.co/events/1794249" target="_blank" rel="noopener">
-      <span class="hl-shot"><img src="/events/das-pharaoh.webp" alt="Das Pharaoh — Fadi của Aly &amp; Fila" loading="lazy"></span>
-      <span class="hl-body">
-        <span class="hl-name">Das Pharaoh</span>
-        <span class="hl-note" data-i18n="hl_7">Fadi của bộ đôi trance Aly &amp; Fila, chơi cùng Paul Thomas trong đêm hãng đĩa UV.</span>
-        <span class="hl-meta">Boujee.SGN · 25.11.2023</span><br>
-        <span class="hl-src">Resident Advisor ↗</span>
-      </span>
-    </a>
-
-    <a class="hl" href="https://ra.co/events/2036372" target="_blank" rel="noopener">
-      <span class="hl-shot"><img src="/events/milo-raad.webp" alt="Milo Raad" loading="lazy"></span>
-      <span class="hl-body">
-        <span class="hl-name">Milo Raad</span>
-        <span class="hl-note" data-i18n="hl_8">Techno sâu từ Belgrade, ra đĩa trên Soma và Mord — trong đêm kỷ niệm 8 năm Haustek, cùng Xhin và KONKRETE.</span>
-        <span class="hl-meta">Arcan, Sài Gòn · 08.03.2025</span><br>
-        <span class="hl-src">Resident Advisor ↗</span>
-      </span>
-    </a>
 
     <a class="hl" href="https://ra.co/events/1592369" target="_blank" rel="noopener">
       <span class="hl-badge">SOLD OUT</span>
@@ -490,25 +601,6 @@ l-1242 0 -30 29 -29 29 0 745 c0 768 1 796 40 817 12 6 374 10 984 10 929 0
       </span>
     </a>
 
-    <a class="hl" href="https://ra.co/events/1250083" target="_blank" rel="noopener">
-      <span class="hl-shot"><img src="/events/ben-bohmer.webp" alt="Ben Böhmer" loading="lazy"></span>
-      <span class="hl-body">
-        <span class="hl-name">Ben Böhmer</span>
-        <span class="hl-note" data-i18n="hl_4">Live set của gương mặt Anjunadeep, hai đêm liên tiếp tại Sài Gòn.</span>
-        <span class="hl-meta">Anjunadeep · 05.2019</span><br>
-        <span class="hl-src">Resident Advisor ↗</span>
-      </span>
-    </a>
-
-    <a class="hl" href="https://ra.co/events/1601605" target="_blank" rel="noopener">
-      <span class="hl-shot"><img src="/events/oliver-smith.webp" alt="Oliver Smith — Aura Saigon" loading="lazy"></span>
-      <span class="hl-body">
-        <span class="hl-name">Oliver Smith</span>
-        <span class="hl-note" data-i18n="hl_5">Nghệ sĩ đầu tiên ký với Anjunabeats, từng chơi Tomorrowland và Creamfields.</span>
-        <span class="hl-meta">Aura Saigon · 09.12.2022</span><br>
-        <span class="hl-src">Resident Advisor ↗</span>
-      </span>
-    </a>
 
     <a class="hl" href="https://ra.co/events/1529411" target="_blank" rel="noopener">
       <span class="hl-badge">SOLD OUT</span>
@@ -521,6 +613,7 @@ l-1242 0 -30 29 -29 29 0 745 c0 768 1 796 40 817 12 6 374 10 984 10 929 0
       </span>
     </a>
 
+
     <a class="hl" href="https://ra.co/events/1574941" target="_blank" rel="noopener">
       <span class="hl-badge">SOLD OUT</span>
       <span class="hl-shot"><img src="/events/john-00-fleming.webp" alt="John 00 Fleming" loading="lazy"></span>
@@ -532,6 +625,62 @@ l-1242 0 -30 29 -29 29 0 745 c0 768 1 796 40 817 12 6 374 10 984 10 929 0
       </span>
     </a>
 
+
+    <a class="hl" href="https://ra.co/events/1309879" target="_blank" rel="noopener">
+      <span class="hl-shot"><img src="/events/boiler-room.webp" alt="Boiler Room Ho Chi Minh City" loading="lazy"></span>
+      <span class="hl-body">
+        <span class="hl-name">Boiler Room</span>
+        <span class="hl-note" data-i18n="hl_1">Boiler Room chọn Sài Gòn — Haustek đồng tổ chức, 18 nghệ sĩ trong hai ngày tại Khu 13.</span>
+        <span class="hl-meta">Khu 13 · 19.10.2019</span><br>
+        <span class="hl-src">Resident Advisor ↗</span>
+      </span>
+    </a>
+
+
+    <a class="hl" href="https://ra.co/events/1794249" target="_blank" rel="noopener">
+      <span class="hl-shot"><img src="/events/das-pharaoh.webp" alt="Das Pharaoh — Fadi của Aly &amp; Fila" loading="lazy"></span>
+      <span class="hl-body">
+        <span class="hl-name">Das Pharaoh</span>
+        <span class="hl-note" data-i18n="hl_7">Fadi của bộ đôi trance Aly &amp; Fila, chơi cùng Paul Thomas trong đêm hãng đĩa UV.</span>
+        <span class="hl-meta">Boujee.SGN · 25.11.2023</span><br>
+        <span class="hl-src">Resident Advisor ↗</span>
+      </span>
+    </a>
+
+
+    <a class="hl" href="https://ra.co/events/2036372" target="_blank" rel="noopener">
+      <span class="hl-shot"><img src="/events/milo-raad.webp" alt="Milo Raad" loading="lazy"></span>
+      <span class="hl-body">
+        <span class="hl-name">Milo Raad</span>
+        <span class="hl-note" data-i18n="hl_8">Techno sâu từ Belgrade, ra đĩa trên Soma và Mord — trong đêm kỷ niệm 8 năm Haustek, cùng Xhin và KONKRETE.</span>
+        <span class="hl-meta">Arcan, Sài Gòn · 08.03.2025</span><br>
+        <span class="hl-src">Resident Advisor ↗</span>
+      </span>
+    </a>
+
+
+    <a class="hl" href="https://ra.co/events/1250083" target="_blank" rel="noopener">
+      <span class="hl-shot"><img src="/events/ben-bohmer.webp" alt="Ben Böhmer" loading="lazy"></span>
+      <span class="hl-body">
+        <span class="hl-name">Ben Böhmer</span>
+        <span class="hl-note" data-i18n="hl_4">Live set của gương mặt Anjunadeep, hai đêm liên tiếp tại Sài Gòn.</span>
+        <span class="hl-meta">Anjunadeep · 05.2019</span><br>
+        <span class="hl-src">Resident Advisor ↗</span>
+      </span>
+    </a>
+
+
+    <a class="hl" href="https://ra.co/events/1601605" target="_blank" rel="noopener">
+      <span class="hl-shot"><img src="/events/oliver-smith.webp" alt="Oliver Smith — Aura Saigon" loading="lazy"></span>
+      <span class="hl-body">
+        <span class="hl-name">Oliver Smith</span>
+        <span class="hl-note" data-i18n="hl_5">Nghệ sĩ đầu tiên ký với Anjunabeats, từng chơi Tomorrowland và Creamfields.</span>
+        <span class="hl-meta">Aura Saigon · 09.12.2022</span><br>
+        <span class="hl-src">Resident Advisor ↗</span>
+      </span>
+    </a>
+
+
     <a class="hl" href="https://ra.co/events/1608918" target="_blank" rel="noopener">
       <span class="hl-shot"><img src="/events/xhin.webp" alt="Xhin" loading="lazy"></span>
       <span class="hl-body">
@@ -542,6 +691,7 @@ l-1242 0 -30 29 -29 29 0 745 c0 768 1 796 40 817 12 6 374 10 984 10 929 0
       </span>
     </a>
 
+
     <a class="hl" href="https://ra.co/events/1245857" target="_blank" rel="noopener">
       <span class="hl-shot"><img src="/events/truncate.webp" alt="Truncate" loading="lazy"></span>
       <span class="hl-body">
@@ -551,6 +701,7 @@ l-1242 0 -30 29 -29 29 0 745 c0 768 1 796 40 817 12 6 374 10 984 10 929 0
         <span class="hl-src">Resident Advisor ↗</span>
       </span>
     </a>
+
 
     <a class="hl" href="https://ra.co/events/1563942" target="_blank" rel="noopener">
       <span class="hl-shot"><img src="/events/roy-rosenfeld.webp" alt="Roy Rosenfeld — Aura Saigon" loading="lazy"></span>
@@ -580,7 +731,7 @@ l-1242 0 -30 29 -29 29 0 745 c0 768 1 796 40 817 12 6 374 10 984 10 929 0
   <div class="arch-bar" id="yearBar"><span class="lbl" data-i18n="ar_filter">Lọc theo năm</span></div>
   <div class="arch-list" id="archList"></div>
   <button class="arch-more" id="archMore" type="button">Xem thêm</button>
-  <p class="arch-note" data-i18n="ar_note">Chủ yếu lấy từ hồ sơ promoter công khai của Haustek Agency trên <a href="https://ra.co/promoters/73233/past-events" target="_blank" rel="noopener">Resident Advisor ↗</a>. Riêng đêm kỷ niệm 8 năm 2025 do Arcan đứng tên tổ chức. Chấm đỏ đánh dấu đêm có nghệ sĩ quốc tế.</p>
+  <p class="arch-note" data-i18n="ar_note">Chủ yếu lấy từ tài khoản promoter công khai của Haustek Agency trên <a href="https://ra.co/promoters/73233/past-events" target="_blank" rel="noopener">Resident Advisor ↗</a>. Riêng đêm kỷ niệm 8 năm 2025 do Arcan đứng tên tổ chức. Chấm đỏ đánh dấu đêm có nghệ sĩ quốc tế.</p>
 </section>
 
 <section class="sets-hero">
@@ -594,18 +745,79 @@ l-1242 0 -30 29 -29 29 0 745 c0 768 1 796 40 817 12 6 374 10 984 10 929 0
 
 <!-- Modal video — một cái duy nhất, tái dùng cho mọi card -->
 <div class="yt-modal" id="ytModal" aria-hidden="true">
-  <div class="yt-box" role="dialog" aria-modal="true" aria-label="Trình phát video">
+  <div class="yt-wrap">
     <button class="yt-close" id="ytClose" aria-label="Đóng" type="button">
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3"><path d="M6 6l12 12M18 6L6 18"/></svg>
     </button>
-    <div class="frame" id="ytSlot"></div>
+    <div class="yt-box" role="dialog" aria-modal="true" aria-label="Trình phát video">
+      <div class="frame" id="ytSlot"></div>
+    </div>
   </div>
 </div>
 
 
-<div class="tail rv">
-  <p data-i18n="cta">Muốn Haustek dựng một đêm cho bạn? <a href="mailto:mgmt@haustek-group.com">Gửi yêu cầu booking →</a></p>
-</div>
+<section class="ev-faq rv">
+  <p class="kicker"><i>●</i><span data-i18n="fq_k">Hỏi đáp về sự kiện</span></p>
+  <h2 data-i18n="fq_h"><span class="ln">Những câu</span> <span class="ln"><em>hay được hỏi nhất.</em></span></h2>
+  <div class="faq-wrap">
+    <details>
+      <summary><span class="q" data-i18n="fq1">Haustek nhận tổ chức những loại đêm nào?</span><span class="pm">+</span></summary>
+      <div class="a" data-i18n="fa1"></div>
+    </details>
+    <details>
+      <summary><span class="q" data-i18n="fq2"></span><span class="pm">+</span></summary>
+      <div class="a" data-i18n="fa2"></div>
+    </details>
+    <details>
+      <summary><span class="q" data-i18n="fq3"></span><span class="pm">+</span></summary>
+      <div class="a" data-i18n="fa3"></div>
+    </details>
+    <details>
+      <summary><span class="q" data-i18n="fq4"></span><span class="pm">+</span></summary>
+      <div class="a" data-i18n="fa4"></div>
+    </details>
+    <details>
+      <summary><span class="q" data-i18n="fq5"></span><span class="pm">+</span></summary>
+      <div class="a" data-i18n="fa5"></div>
+    </details>
+    <details>
+      <summary><span class="q" data-i18n="fq6"></span><span class="pm">+</span></summary>
+      <div class="a" data-i18n="fa6"></div>
+    </details>
+    <details>
+      <summary><span class="q" data-i18n="fq7"></span><span class="pm">+</span></summary>
+      <div class="a" data-i18n="fa7"></div>
+    </details>
+    <details>
+      <summary><span class="q" data-i18n="fq8"></span><span class="pm">+</span></summary>
+      <div class="a" data-i18n="fa8"></div>
+    </details>
+  </div>
+  <button class="faq-more" id="faqMore" type="button" data-i18n="fq_more">Xem thêm câu hỏi</button>
+</section>
+
+<section class="venue rv" id="venue">
+  <p class="kicker"><i>●</i><span data-i18n="vn_k">Dành cho venue &amp; nhãn hàng</span></p>
+  <h2 data-i18n="vn_h"><span class="ln">Bạn có không gian.</span> <span class="ln"><em>Chúng tôi có đêm diễn.</em></span></h2>
+  <p class="lead" data-i18n="vn_p"></p>
+
+  <div class="vn-does">
+    <div class="vn-do"><b data-i18n="vn_d1t"></b><span data-i18n="vn_d1"></span></div>
+    <div class="vn-do"><b data-i18n="vn_d2t"></b><span data-i18n="vn_d2"></span></div>
+    <div class="vn-do"><b data-i18n="vn_d3t"></b><span data-i18n="vn_d3"></span></div>
+    <div class="vn-do"><b data-i18n="vn_d4t"></b><span data-i18n="vn_d4"></span></div>
+  </div>
+
+  <a class="vn-mail" href="mailto:mgmt@haustek-group.com">mgmt@haustek-group.com</a>
+  <p class="vn-note" data-i18n="vn_note"></p>
+
+  <div class="vn-links">
+    <a href="https://ra.co/promoters/73233" target="_blank" rel="noopener">Resident Advisor ↗</a>
+    <a href="https://www.instagram.com/haustek.agency" target="_blank" rel="noopener">Instagram ↗</a>
+    <a href="https://www.facebook.com/haustek.agency" target="_blank" rel="noopener">Facebook ↗</a>
+    <a href="/artists">Nghệ sĩ</a>
+  </div>
+</section>
 
 <footer>
   <span>© 2026 Haustek · Việt Nam · Since 2017</span>
@@ -738,18 +950,53 @@ const I18N={
     hl_11:"Stroboscopic Artefacts, Singapore — chơi cùng Trí Minh, Ro-TUNE, ling:chi và KONKRETE.",
     hl_12:"50 Weapons — techno Los Angeles, trong đêm techno.vn × 6AM.",
     hl_note:"Và nhiều tên khác: Solarstone, Alex M.O.R.P.H., Jeremy Olander, Juliet Fox, Exos, Khen, David Hohme, Viken Arman, James Trystan, Aldrin, Das Pharaoh, Derek Nielsen, Blanche — xem đầy đủ trong bảng bên dưới.",
-    ar_k:"Hồ sơ trên Resident Advisor",
-    ar_h:'<span class="ln">Mọi đêm</span> <span class="ln"><em>chúng tôi từng dựng.</em></span>',
+    ar_k:"Thông tin trên Resident Advisor",
+    ar_h:'<span class="ln">Những trải nghiệm chúng tôi đã đi qua,</span> <span class="ln"><em>và đây vẫn chưa phải tất cả.</em></span>',
     ar_s1:"sự kiện", ar_s2:"liên tục", ar_s3:"đêm có nghệ sĩ quốc tế", ar_s4:"đêm cháy vé",
     ar_filter:"Lọc theo năm",
-    ar_note:'Chủ yếu lấy từ hồ sơ promoter công khai của Haustek Agency trên <a href="https://ra.co/promoters/73233/past-events" target="_blank" rel="noopener">Resident Advisor ↗</a>. Riêng đêm kỷ niệm 8 năm 2025 do Arcan đứng tên tổ chức. Chấm đỏ đánh dấu đêm có nghệ sĩ quốc tế.',
+    ar_note:'Chủ yếu lấy từ tài khoản promoter công khai của Haustek Agency trên <a href="https://ra.co/promoters/73233/past-events" target="_blank" rel="noopener">Resident Advisor ↗</a>. Riêng đêm kỷ niệm 8 năm 2025 do Arcan đứng tên tổ chức. Chấm đỏ đánh dấu đêm có nghệ sĩ quốc tế.',
     sets_k:"Xem lại toàn bộ",
     sets_h:'<span class="ln">Từng set,</span> <span class="ln"><em>từng đêm diễn.</em></span>',
     sets_p:"21 set quay trực tiếp, lấy nguyên từ kênh YouTube của Haustek — không cắt, không dựng lại. Bấm vào tên nghệ sĩ để xem.",
     grp_uws:"United We Stream Vietnam", sub_uws:"Haustek x Hanoi Rock City · Haustek x Khu 13, Hồ Chí Minh City — 2020",
     grp_br:"Boiler Room Ho Chi Minh City", sub_br:"Khu 13 x Haustek Agency — 2019",
     grp_anniv:"5 năm hausvn × technovn", sub_anniv:"Aura Saigon · Savage Hanoi — 2022",
-    n_videos:"video"
+    n_videos:"video",
+
+    /* ---------- FAQ sự kiện ---------- */
+    fq_k:"Hỏi đáp về sự kiện",
+    fq_h:'<span class="ln">Những câu</span> <span class="ln"><em>hay được hỏi nhất.</em></span>',
+    fq1:"Haustek nhận tổ chức những loại đêm nào?",
+    fa1:"Club night, đêm nhãn đĩa, sân khấu festival, sự kiện quảng bá cho nhãn hàng và livestream. Nhỏ thì một đêm ở club, lớn thì cả chuỗi nhiều thành phố như United We Stream Asia.",
+    fq2:"Venue muốn hợp tác thì bắt đầu thế nào?",
+    fa2:'Gửi mail tới <a href="mailto:mgmt@haustek-group.com">mgmt@haustek-group.com</a>, kèm bốn thông tin: sức chứa, thời gian dự kiến, dòng nhạc muốn hướng tới và ngân sách. Đủ bốn thứ đó là chúng tôi trả lời được ngay, khỏi hẹn tới hẹn lui.',
+    fq3:"Haustek lo trọn gói hay chỉ lo phần nhạc?",
+    fa3:"Trọn gói cũng được: lineup, âm thanh, ánh sáng, visual, truyền thông, ghi hình. Bên bạn đã có sẵn phần nào thì Haustek chỉ làm phần còn thiếu, không bắt phải lấy cả gói.",
+    fq4:"Có booking được nghệ sĩ quốc tế không?",
+    fa4:"Có. Boiler Room, Cosmic Gate, Nick Warren, Ben Böhmer, Xhin, Truncate và nhiều tên khác đều là những đêm Haustek đưa về. Mỗi đêm đều có link Resident Advisor hoặc Mixmag Asia ngay phía trên, bạn tự kiểm chứng được.",
+    fq5:"Cần đặt trước bao lâu?",
+    fa5:"Nghệ sĩ quốc tế nên tính trước 3–6 tháng, vì còn lịch tour và thủ tục nhập cảnh. Đêm với nghệ sĩ trong nước thì 4–6 tuần là đủ. Gấp hơn vẫn làm được, chỉ là ít lựa chọn hơn.",
+    fq6:"Chi phí như thế nào?",
+    fa6:"Không có bảng giá cố định, vì mỗi đêm mỗi khác — tuỳ nghệ sĩ, quy mô, thiết bị và cách chia doanh thu. Cứ nói chuyện trước, chúng tôi báo giá cụ thể cho đúng đêm bạn định làm.",
+    fq7:"Haustek có làm ngoài dòng điện tử không?",
+    fa7:"Từ trước tới nay chủ yếu là điện tử, nhưng Haustek cũng đã làm với live band và những đêm pha nhiều dòng nhạc. Cứ gửi ý tưởng — không phải thứ chúng tôi làm tốt thì chúng tôi nói thẳng, không nhận bừa.",
+    fq8:"Nghệ sĩ muốn chơi trong một đêm của Haustek thì làm sao?",
+    fa8:'Gửi link mix hoặc bản demo qua trang <a href="/metadata">Gửi nhạc</a>, hoặc mail thẳng tới <a href="mailto:mgmt@haustek-group.com">mgmt@haustek-group.com</a>. Không cần hồ sơ dài — một bản mix nói được nhiều hơn.',
+    fq_more:"Xem thêm câu hỏi", fq_less:"Thu gọn",
+
+    /* ---------- dành cho venue ---------- */
+    vn_k:"Dành cho venue & nhãn hàng",
+    vn_h:'<span class="ln">Bạn có không gian.</span> <span class="ln"><em>Haustek có những sự kiện đáng nhớ.</em></span>',
+    vn_p:"Nếu bạn đang vận hành một club, rooftop, không gian sự kiện, hay là thương hiệu muốn làm sự kiện quảng bá — đây là những gì Haustek mang tới, và tất cả đều kiểm chứng được qua hình ảnh công khai.",
+    vn_d1t:"Lineup & booking",
+    vn_d1:"Nghệ sĩ trong nước lẫn quốc tế, chọn đúng gu khách của không gian bạn.",
+    vn_d2t:"Kỹ thuật sân khấu",
+    vn_d2:"Âm thanh, ánh sáng, visual — làm cùng những đối tác kỹ thuật đã quen tay.",
+    vn_d3t:"Truyền thông",
+    vn_d3:"Thiết kế, nội dung, chạy quảng cáo và quan hệ báo chí trong mảng nhạc điện tử.",
+    vn_d4t:"Ghi hình & phát lại",
+    vn_d4:"Quay set, livestream, để lại tư liệu dùng tiếp cho những đêm sau.",
+    vn_note:'Muốn tìm hiểu thêm về chi tiết, cứ nhắn cứ gọi, chúng tôi sẽ giúp hết mình.'
   },
   en:{
     _title:"Events — Haustek",
@@ -777,17 +1024,52 @@ const I18N={
     hl_12:"50 Weapons — Los Angeles techno, for the techno.vn × 6AM night.",
     hl_note:"And many more: Solarstone, Alex M.O.R.P.H., Jeremy Olander, Juliet Fox, Exos, Khen, David Hohme, Viken Arman, James Trystan, Aldrin, Das Pharaoh, Derek Nielsen, Blanche — the full list is in the table below.",
     ar_k:"The Resident Advisor record",
-    ar_h:'<span class="ln">Every night</span> <span class="ln"><em>we have built.</em></span>',
+    ar_h:'<span class="ln">The nights we have been through,</span> <span class="ln"><em>and this still is not all of them.</em></span>',
     ar_s1:"events", ar_s2:"years running", ar_s3:"nights with international artists", ar_s4:"sold-out nights",
     ar_filter:"Filter by year",
-    ar_note:'Mostly from Haustek Agency\'s public promoter profile on <a href="https://ra.co/promoters/73233/past-events" target="_blank" rel="noopener">Resident Advisor ↗</a>. The 2025 anniversary night was promoted under Arcan. A red dot marks a night with an international artist.',
+    ar_note:'Mostly from Haustek Agency\'s public promoter account on <a href="https://ra.co/promoters/73233/past-events" target="_blank" rel="noopener">Resident Advisor ↗</a>. The 2025 anniversary night was promoted under Arcan. A red dot marks a night with an international artist.',
     sets_k:"Watch it all back",
     sets_h:'<span class="ln">Every set,</span> <span class="ln"><em>every night.</em></span>',
     sets_p:"21 sets filmed live, taken straight from Haustek's YouTube channel — uncut, unedited. Tap a name to watch.",
     grp_uws:"United We Stream Vietnam", sub_uws:"Haustek x Hanoi Rock City · Haustek x Khu 13, Ho Chi Minh City — 2020",
     grp_br:"Boiler Room Ho Chi Minh City", sub_br:"Khu 13 x Haustek Agency — 2019",
     grp_anniv:"5 Years of hausvn × technovn", sub_anniv:"Aura Saigon · Savage Hanoi — 2022",
-    n_videos:"videos"
+    n_videos:"videos",
+
+    /* ---------- events FAQ ---------- */
+    fq_k:"Event FAQ",
+    fq_h:'<span class="ln">The questions</span> <span class="ln"><em>we get asked most.</em></span>',
+    fq1:"What kinds of nights does Haustek run?",
+    fa1:"Club nights, label nights, festival stages, brand launches and campaigns, and livestreams. Anything from a single night in a small club to a multi-city series like United We Stream Asia.",
+    fq2:"How does a venue start a conversation?",
+    fa2:'Email <a href="mailto:mgmt@haustek-group.com">mgmt@haustek-group.com</a>. Tell us four things: your capacity, the dates you have in mind, the musical direction you want, and your rough budget. With those four we can tell you straight away whether it works, instead of going back and forth.',
+    fq3:"Do you handle everything, or only the music?",
+    fa3:"We can handle all of it: lineup, sound, lighting, visuals, promotion and filming. If your venue already covers part of that, we only fill the gaps — you don't have to take the whole package.",
+    fq4:"Can you book international artists?",
+    fa4:"Yes. Boiler Room, Cosmic Gate, Nick Warren, Ben Böhmer, Xhin, Truncate and many others were all nights Haustek brought over — each one linked to Resident Advisor or Mixmag Asia further up this page so you can verify it yourself.",
+    fq5:"How far ahead should we book?",
+    fa5:"For international artists, plan 3–6 months ahead — tour schedules and visa paperwork set the pace. For a night with local artists, 4–6 weeks is enough. Shorter notice is possible, but your options narrow.",
+    fq6:"What does it cost?",
+    fa6:"There's no fixed price list — every night is different depending on the artist, the scale, the equipment and the revenue split. Talk to us first and we'll quote for the specific night you have in mind.",
+    fq7:"Do you work outside electronic music?",
+    fa7:"Most of our work so far has been electronic, but we've also worked with live bands and cross-genre nights. Send us the idea — if it isn't something we do well, we'll say so rather than take it on anyway.",
+    fq8:"How can an artist play at a Haustek night?",
+    fa8:'Send a mix or demo link through the <a href="/metadata">Submit music</a> page, or email <a href="mailto:mgmt@haustek-group.com">mgmt@haustek-group.com</a> directly. No long bio needed — one mix says more.',
+    fq_more:"More questions", fq_less:"Show less",
+
+    /* ---------- for venues ---------- */
+    vn_k:"For venues & brands",
+    vn_h:'<span class="ln">You have the room.</span> <span class="ln"><em>Haustek has the nights people remember.</em></span>',
+    vn_p:"If you run a club, a rooftop, an event space, or you're a brand planning a promotional event — here is what Haustek brings, and all of it can be checked against what's already public.",
+    vn_d1t:"Lineup & booking",
+    vn_d1:"Local and international artists, matched to the crowd your room actually draws.",
+    vn_d2t:"Stage technical",
+    vn_d2:"Sound, lighting and visuals, delivered with technical partners we work with regularly.",
+    vn_d3t:"Promotion",
+    vn_d3:"Design, content, paid campaigns and press relationships across electronic music.",
+    vn_d4t:"Filming & replay",
+    vn_d4:"Set recordings, livestreams, and footage you can keep using to sell the next night.",
+    vn_note:'Want to go deeper on any of it? Message us, call us — we\'ll help however we can.'
   }
 };
 let lang="vi";
@@ -896,7 +1178,7 @@ function observeCards(){
   io=new IntersectionObserver(es=>{
     es.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); } });
   },{threshold:.1});
-  document.querySelectorAll('.card,.set-card').forEach(c=>io.observe(c));
+  document.querySelectorAll('.card,.set-card,.rv').forEach(c=>io.observe(c));
 }
 
 /* ===================== MODAL VIDEO ====================
@@ -989,12 +1271,87 @@ function setLang(l){
   langBtn.textContent = l==="vi" ? "EN" : "VI";
   renderGrid();
   renderSetGroups();
+  mountRails();                                   /* nhóm video vừa dựng lại → gắn lại thanh tiến độ */
+  if(window.__faqApply)window.__faqApply();       /* nhãn nút "Xem thêm câu hỏi" theo ngôn ngữ */
   if(window.__archRender)window.__archRender();   /* nhãn nút "Xem thêm"/"Tất cả" theo ngôn ngữ */
 }
 langBtn.addEventListener('click',()=>setLang(lang==="vi"?"en":"vi"));
 
 renderGrid();
 renderSetGroups();
+/* Đổ nội dung tiếng Việt ngay khi tải: các khối mới (FAQ, venue) lấy chữ
+   từ bảng I18N chứ không viết cứng trong HTML, nên phải chạy một lượt
+   setLang thì mới có chữ — không thì khối hiện ra trống trơn. */
+setLang("vi");
+
+/* ===================== DẢI VUỐT NGANG (chỉ mobile) =====================
+   Trên màn hẹp, khối đầu bảng quốc tế và các nhóm video chuyển thành dải
+   vuốt ngang (xem CSS @media ≤760px). Hàm này gắn thêm phần chỉ dẫn bên
+   dưới mỗi dải: số thẻ đang xem trên tổng số, và một thanh tiến độ chạy
+   theo tay vuốt — để người xem biết dải còn dài bao nhiêu, thay vì đoán.
+   Trên desktop hàm này không làm gì cả. */
+function mountRails(){
+  if(!matchMedia('(max-width:760px)').matches)return;
+  document.querySelectorAll('.hl-grid,.set-grid').forEach(rail=>{
+    const next=rail.nextElementSibling;
+    if(next&&next.classList.contains('rail-nav'))return;   /* đã gắn rồi */
+    const n=rail.children.length;
+    if(n<2)return;
+    const nav=document.createElement('div');
+    nav.className='rail-nav';
+    nav.setAttribute('aria-hidden','true');
+    nav.innerHTML='<span class="rail-ix">01</span>'+
+                  '<span class="rail-bar"><i></i></span>'+
+                  '<span class="rail-tot">'+String(n).padStart(2,'0')+'</span>';
+    rail.insertAdjacentElement('afterend',nav);
+
+    const thumb=nav.querySelector('i'), ix=nav.querySelector('.rail-ix');
+    const wPct=Math.max(100/n,9);
+    thumb.style.width=wPct+'%';
+    let tick=false;
+    rail.addEventListener('scroll',()=>{
+      if(tick)return;
+      tick=true;
+      requestAnimationFrame(()=>{
+        tick=false;
+        const max=rail.scrollWidth-rail.clientWidth;
+        const p=max>0?Math.min(Math.max(rail.scrollLeft/max,0),1):0;
+        thumb.style.left=(p*(100-wPct))+'%';
+        ix.textContent=String(Math.min(n,Math.round(p*(n-1))+1)).padStart(2,'0');
+      });
+    },{passive:true});
+  });
+}
+mountRails();
+
+/* ===================== THU GỌN HỎI ĐÁP =====================
+   Chỉ hiện 4 câu đầu; bấm "Xem thêm câu hỏi" mới bung nốt phần còn lại.
+   Bấm lần nữa thì thu về và cuộn lại đầu khối — không để người xem phải
+   cuộn ngược cả màn hình để quay về chỗ cũ. */
+(function faqCollapse(){
+  const SHOW=4;
+  const wrap=document.querySelector('.faq-wrap');
+  const btn=document.getElementById('faqMore');
+  if(!wrap||!btn)return;
+  const items=[...wrap.querySelectorAll('details')];
+  if(items.length<=SHOW){btn.classList.add('gone');return;}
+  let open=false;
+  function apply(){
+    items.forEach((d,i)=>{
+      const hide=!open&&i>=SHOW;
+      d.classList.toggle('hidden-q',hide);
+      if(hide)d.open=false;
+    });
+    btn.textContent=I18N[lang][open?'fq_less':'fq_more'];
+  }
+  btn.addEventListener('click',()=>{
+    open=!open;
+    apply();
+    if(!open)wrap.scrollIntoView({block:'start',behavior:'smooth'});
+  });
+  window.__faqApply=apply;      /* đổi ngôn ngữ thì cập nhật lại nhãn nút */
+  apply();
+})();
 
 /* ===================== LƯU TRỮ SỰ KIỆN =====================
    248 sự kiện bóc từ chính hồ sơ promoter Haustek Agency trên Resident
@@ -1258,7 +1615,10 @@ const ARCHIVE=[
   const barEl=document.getElementById('yearBar');
   const moreEl=document.getElementById('archMore');
   if(!listEl||!barEl||!moreEl)return;
-  const PAGE=10;
+  /* Mobile hiện 5 dòng mỗi lần thay vì 10: danh sách 10 dòng trên màn hẹp
+     đã chiếm hơn một màn hình, trong khi người xem thường chỉ lướt qua vài
+     dòng rồi cuộn tiếp. Ai muốn xem sâu vẫn bấm "Xem thêm" được. */
+  const PAGE = matchMedia('(max-width:760px)').matches ? 5 : 10;
   let year='all', shown=PAGE;
   const vi=()=> (typeof lang!=='undefined' ? lang==='vi' : true);
 
