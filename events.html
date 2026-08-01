@@ -205,6 +205,41 @@ footer a:hover{color:var(--paper)}
 a:focus-visible,button:focus-visible{outline:2px solid var(--red);outline-offset:3px}
 @media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}
   .rv{opacity:1;transform:none}html{scroll-behavior:auto}}
+
+/* ============ LƯU TRỮ SỰ KIỆN (nguồn: Resident Advisor) ============ */
+.arch-hero{padding:clamp(70px,10vh,110px) var(--gut) 0}
+.arch-stats{display:flex;flex-wrap:wrap;gap:10px;margin-top:26px}
+.astat{flex:1;min-width:150px;padding:15px 17px;border-radius:11px;
+  background:rgba(240,240,242,.035);border:1px solid rgba(240,240,242,.1)}
+.astat b{display:block;font-family:var(--disp);font-weight:800;font-stretch:112%;
+  font-size:clamp(24px,3vw,36px);letter-spacing:-.02em;color:var(--red);line-height:1}
+.astat span{display:block;margin-top:6px;font-family:var(--mono);font-size:9.5px;
+  letter-spacing:.14em;text-transform:uppercase;color:var(--concrete)}
+.arch-bar{display:flex;flex-wrap:wrap;gap:7px;margin:30px 0 4px;align-items:center}
+.arch-bar .lbl{font-family:var(--mono);font-size:10px;letter-spacing:.2em;
+  text-transform:uppercase;color:var(--concrete);margin-right:6px}
+.ychip{font-family:var(--mono);font-size:11px;letter-spacing:.08em;padding:7px 13px;border-radius:100px;
+  background:transparent;border:1px solid var(--line);color:var(--concrete);cursor:pointer;transition:all .2s}
+.ychip:hover{border-color:var(--line-2);color:var(--paper)}
+.ychip.on{background:var(--red);border-color:var(--red);color:#fff}
+.arch-list{margin-top:18px;border-top:1px solid rgba(240,240,242,.09)}
+.arow{display:grid;grid-template-columns:96px 1fr auto;gap:16px;align-items:baseline;
+  padding:13px 4px;border-bottom:1px solid rgba(240,240,242,.07);transition:background .18s,padding .18s}
+.arow:hover{background:rgba(240,240,242,.04);padding-left:10px}
+.ar-d{font-family:var(--mono);font-size:11px;color:var(--concrete);letter-spacing:.04em}
+.ar-t{font-family:var(--body);font-size:14px;color:var(--paper);line-height:1.4;text-wrap:pretty}
+.arow.intl .ar-t::before{content:"\25CF";color:var(--red);font-size:.6em;vertical-align:middle;margin-right:8px}
+.ar-v{font-family:var(--mono);font-size:10px;color:var(--concrete);text-align:right;opacity:.75;white-space:nowrap}
+.ar-so{display:inline-block;margin-left:9px;padding:2px 7px;border-radius:100px;
+  font-family:var(--mono);font-size:8.5px;letter-spacing:.1em;
+  background:rgba(255,46,76,.16);color:var(--red);vertical-align:middle}
+.arch-more{display:block;margin:22px auto 0;padding:12px 26px;border-radius:100px;
+  background:transparent;border:1px solid var(--line);color:var(--paper);cursor:pointer;
+  font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;transition:all .2s}
+.arch-more:hover{border-color:var(--red);background:rgba(255,46,76,.1)}
+.arch-note{margin-top:20px;font-family:var(--body);font-size:12.5px;color:var(--concrete)}
+.arch-note a{color:var(--ice)}
+@media(max-width:720px){.arow{grid-template-columns:1fr;gap:4px;padding:12px 4px}.ar-v{text-align:left}}
 </style>
 </head>
 <body>
@@ -389,12 +424,27 @@ l-1242 0 -30 29 -29 29 0 745 c0 768 1 796 40 817 12 6 374 10 984 10 929 0
   </div>
 </div>
 
+<section class="arch-hero">
+  <p class="kicker"><i>●</i><span data-i18n="ar_k">Hồ sơ trên Resident Advisor</span></p>
+  <h2 data-i18n="ar_h"><span class="ln">Mọi đêm</span> <span class="ln"><em>chúng tôi từng dựng.</em></span></h2>
+  <div class="arch-stats">
+    <div class="astat"><b>248</b><span data-i18n="ar_s1">sự kiện</span></div>
+    <div class="astat"><b>2015–2023</b><span data-i18n="ar_s2">liên tục</span></div>
+    <div class="astat"><b>37</b><span data-i18n="ar_s3">đêm có nghệ sĩ quốc tế</span></div>
+    <div class="astat"><b>4</b><span data-i18n="ar_s4">đêm cháy vé</span></div>
+  </div>
+  <div class="arch-bar" id="yearBar"><span class="lbl" data-i18n="ar_filter">Lọc theo năm</span></div>
+  <div class="arch-list" id="archList"></div>
+  <button class="arch-more" id="archMore" type="button">Xem thêm</button>
+  <p class="arch-note" data-i18n="ar_note">Dữ liệu lấy từ hồ sơ promoter công khai của Haustek Agency trên <a href="https://ra.co/promoters/73233/past-events" target="_blank" rel="noopener">Resident Advisor ↗</a>. Chấm đỏ đánh dấu đêm có nghệ sĩ quốc tế.</p>
+</section>
+
 <div class="tail rv">
   <p data-i18n="cta">Muốn Haustek dựng một đêm cho bạn? <a href="mailto:mgmt@haustek-group.com">Gửi yêu cầu booking →</a></p>
 </div>
 
 <footer>
-  <span>© 2026 Haustek · Los Angeles → Việt Nam · Since 2017</span>
+  <span>© 2026 Haustek · Việt Nam · Since 2017</span>
   <span><a href="/">Trang chủ</a> · <a href="/artists">Nghệ sĩ</a> · <a href="/legal">Pháp lý</a></span>
 </footer>
 
@@ -509,6 +559,11 @@ const I18N={
     blocked:"Video này hiện không thể phát tại đây do vướng bản quyền âm nhạc. Bạn xem trực tiếp trên YouTube nhé.",
     failed:"Video này hiện chưa mở được. Bạn thử lại trên YouTube nhé.",
     openYT:"Mở trên YouTube",
+    ar_k:"Hồ sơ trên Resident Advisor",
+    ar_h:'<span class="ln">Mọi đêm</span> <span class="ln"><em>chúng tôi từng dựng.</em></span>',
+    ar_s1:"sự kiện", ar_s2:"liên tục", ar_s3:"đêm có nghệ sĩ quốc tế", ar_s4:"đêm cháy vé",
+    ar_filter:"Lọc theo năm",
+    ar_note:'Dữ liệu lấy từ hồ sơ promoter công khai của Haustek Agency trên <a href="https://ra.co/promoters/73233/past-events" target="_blank" rel="noopener">Resident Advisor ↗</a>. Chấm đỏ đánh dấu đêm có nghệ sĩ quốc tế.',
     sets_k:"Xem lại toàn bộ",
     sets_h:'<span class="ln">Từng set,</span> <span class="ln"><em>từng đêm diễn.</em></span>',
     sets_p:"21 set quay trực tiếp, lấy nguyên từ kênh YouTube của Haustek — không cắt, không dựng lại. Bấm vào tên nghệ sĩ để xem.",
@@ -527,6 +582,11 @@ const I18N={
     blocked:"This video can't be played here right now due to a music licensing claim. You can watch it directly on YouTube instead.",
     failed:"This video isn't loading right now. Try watching it on YouTube instead.",
     openYT:"Open on YouTube",
+    ar_k:"The Resident Advisor record",
+    ar_h:'<span class="ln">Every night</span> <span class="ln"><em>we have built.</em></span>',
+    ar_s1:"events", ar_s2:"years running", ar_s3:"nights with international artists", ar_s4:"sold-out nights",
+    ar_filter:"Filter by year",
+    ar_note:'Pulled from Haustek Agency\'s public promoter profile on <a href="https://ra.co/promoters/73233/past-events" target="_blank" rel="noopener">Resident Advisor ↗</a>. A red dot marks a night with an international artist.',
     sets_k:"Watch it all back",
     sets_h:'<span class="ln">Every set,</span> <span class="ln"><em>every night.</em></span>',
     sets_p:"21 sets filmed live, taken straight from Haustek's YouTube channel — uncut, unedited. Tap a name to watch.",
@@ -735,11 +795,308 @@ function setLang(l){
   langBtn.textContent = l==="vi" ? "EN" : "VI";
   renderGrid();
   renderSetGroups();
+  if(window.__archRender)window.__archRender();   /* nhãn nút "Xem thêm"/"Tất cả" theo ngôn ngữ */
 }
 langBtn.addEventListener('click',()=>setLang(lang==="vi"?"en":"vi"));
 
 renderGrid();
 renderSetGroups();
+
+/* ===================== LƯU TRỮ SỰ KIỆN =====================
+   248 sự kiện bóc từ chính hồ sơ promoter Haustek Agency trên Resident
+   Advisor — không có mục nào tự bịa. Mỗi mục: d ngày, t tiêu đề,
+   v địa điểm, i mã sự kiện RA (để dựng link), s cháy vé, x có nghệ sĩ
+   quốc tế. Hiện 30 mục một lần cho nhẹ, bấm "xem thêm" để tải tiếp. */
+const ARCHIVE=[
+  {d:"2023-11-25",t:"Boujee Station: Das Pharaoh, Paul Thomas [UV] | hosted by Tùng Tím",v:"TBA - Boujee.SGN",i:"1794249",x:1},
+  {d:"2023-09-16",t:"Boujee Station: Cosmic Gate, Thien Hi, D.A | hosted by Tung Tim",v:"TBA - Boujee.SGN",i:"1744061",s:1,x:1},
+  {d:"2022-12-17",t:"James Trystan (Bedrock, Disco Halal, Steyoyoke) by hausvn & Aura Saigon",v:"Aura Lounge",i:"1601607",x:1},
+  {d:"2022-12-09",t:"Oliver Smith (Anjunabeats) by trancevn, hausvn & Aura Saigon",v:"Aura Lounge",i:"1601605",x:1},
+  {d:"2022-11-25",t:"Mixmag Asia Vietnam Official Launching Event: Nick Warren, Thien Hi",v:"Aura Lounge",i:"1592369",s:1,x:1},
+  {d:"2022-11-12",t:"techno.vn invites: Xhin, Tri Minh (live), Ro-Tune (live), ling:chi, KONKRETE, & Ke Ling",v:"Aura Lounge",i:"1608918",x:1},
+  {d:"2022-10-29",t:"Paul Thomas (UV), DJ Hoang Anh, & Yukaris by hausvn, 88DNA & Aura Saigon",v:"Aura Lounge",i:"1601602",x:1},
+  {d:"2022-10-22",t:"Aldrin (ONE with Music - Singapore) & THUC by hausvn & Aura Saigon",v:"Aura Lounge",i:"1592447",x:1},
+  {d:"2022-10-08",t:"Apsara (Monaberry, Ibogatech) [Extended Set], ling:chi by haus.vn & Aura Saigon",v:"Aura Lounge",i:"1592407"},
+  {d:"2022-09-24",t:"John 00 Fleming [Open till Close] by hausvn & Aura Saigon",v:"Aura Lounge",i:"1574941",s:1,x:1},
+  {d:"2022-08-19",t:"hausvn pres. Roy Rosenfeld (All Day I Dream) [Extended Set]",v:"Aura Lounge",i:"1563942",x:1},
+  {d:"2022-08-05",t:"hausvn x Aura pres. Darin Epsilon (Perspectives Digital) [Extended Set], Nghia & Red Sheep",v:"Aura Lounge",i:"1563940"},
+  {d:"2022-07-01",t:"haus.vn presents David Hohme (Anjunadeep / Where The Heart Is) [All Night Long]",v:"Aura Lounge",i:"1545981",x:1},
+  {d:"2022-06-03",t:"haus.vn x Nocturnal Animals: Cosmo's Midnight & Tseba (AUS)",v:"Aura Lounge",i:"1540291"},
+  {d:"2022-05-20",t:"haus.vn presents Marsh (Anjunadeep) [Extended Set]",v:"Aura Lounge",i:"1529411",s:1,x:1},
+  {d:"2022-04-22",t:"haus.vn x techno.vn Anniversary: Double Touch [All Day I Dream] & Chin (live) [Haustek Records]",v:"Savage",i:"1515542",x:1},
+  {d:"2022-04-15",t:"haus.vn x techno.vn Anniversary: AURA Saigon",v:"Aura Lounge",i:"1519523"},
+  {d:"2021-04-16",t:"Abundance x Techno.vn: ĐÊM HỒ TÂY",v:"Savage",i:"1440724"},
+  {d:"2021-03-13",t:"haus.vn x Ice Sky Lounge: Imagine",v:"Ice Sky Lounge",i:"1438671"},
+  {d:"2020-12-22",t:"Em Wine Bar Invites Tri Minh (Live)",v:"Em Wine Bar",i:"1434179"},
+  {d:"2020-10-08",t:"United We Stream: Golden Bridge, Danang",v:"TBA - Vietnam",i:"1426702"},
+  {d:"2020-06-26",t:"United We Stream: Hanoi Rock City x Haustek",v:"Livestream",i:"1410699"},
+  {d:"2020-06-26",t:"United We Stream: Hanoi Rock City x Haustek [ONLINE Stream]",v:"Hanoi Rock City",i:"1410700"},
+  {d:"2020-06-12",t:"Haustek 3-Year Anniversary",v:"Hanoi Rock City",i:"1409513"},
+  {d:"2020-05-31",t:"United We Stream: Haustek x Khu 13",v:"Livestream",i:"1409512"},
+  {d:"2020-05-31",t:"United We Stream: Khu 13 x Haustek [ONLINE Stream]",v:"Khu 13",i:"1410701"},
+  {d:"2020-04-25",t:"Music Can Heal?? [LIVESTREAM via Ticketbox for Covid-19 Fundraising]",v:"Livestream",i:"1407908"},
+  {d:"2020-03-07",t:"Techno.vn x Haus.vn: Arcan Saigon",v:"",i:"1383708"},
+  {d:"2020-03-07",t:"Piku-Niku - M A R S",v:"Schiller Saigon",i:"1399883"},
+  {d:"2020-02-22",t:"Travel with Mind (Open-to-Close Set)",v:"Schiller Saigon",i:"1388075"},
+  {d:"2020-02-08",t:"Haus.vn Open Air: Red Sheep, AL Loudvoic, and Pacy",v:"The Hub Saigon",i:"1368773"},
+  {d:"2020-02-07",t:"Spray [BacknForth Seoul, KR], Phatbeatz, Jase, & Jin",v:"Khu 13",i:"1368971"},
+  {d:"2020-02-07",t:"[Cancelled] Contemporary Music & Art Exhibition: Chèo Performance",v:"Barbetta Hoi An",i:"1368775"},
+  {d:"2020-01-18",t:"Black House Pres. Fallens [Deluxe Seoul, KR]",v:"Black House",i:"1368769"},
+  {d:"2020-01-17",t:"Tung Tim [techno.vn, Haus.vn]",v:"Barbetta Hoi An",i:"1368768"},
+  {d:"2020-01-16",t:"Techno Thursday: Tung Tim [Techno.vn, Haus.vn]",v:"Tê Bar Da Nang",i:"1368766"},
+  {d:"2020-01-09",t:"Techno Thursday: Ro-Tune [Spirit of Nature]",v:"Tê Bar Da Nang",i:"1368765"},
+  {d:"2019-12-31",t:"New Year's Eve Rooftop Ibis Saigon Airport Hotel",v:"The Hub Saigon",i:"1354896"},
+  {d:"2019-12-20",t:"Black House Pres. Blanche [Deluxe Seoul, KR]",v:"Black House",i:"1354895",x:1},
+  {d:"2019-12-19",t:"Techno Thursday: Blanche [Deluxe Seoul, KR]",v:"Tê Bar Da Nang",i:"1354891",x:1},
+  {d:"2019-12-18",t:"Blanche [Deluxe Seoul, KR] & Colin Devaney [IE]",v:"Barbetta Hoi An",i:"1354888",x:1},
+  {d:"2019-12-14",t:"Techno.vn x haus.vn Showcase: Vietnamese Underground Pioneers",v:"",i:"1347482"},
+  {d:"2019-12-13",t:"Sound From The Deep: Tung Tim [All Night Long]",v:"Air Saigon",i:"1357145"},
+  {d:"2019-10-19",t:"Boiler Room Ho-Chi Minh City: Khu 13 x Haustek",v:"Khu 13",i:"1309879",x:1},
+  {d:"2019-10-12",t:"Techno.vn Episode IX: Sala Underground Club",v:"Sala Club",i:"1306679"},
+  {d:"2019-10-11",t:"Techno.vn Episode VII: Arcan Saigon",v:"",i:"1307756"},
+  {d:"2019-09-14",t:"Haus.vn Open Air: Mid Autumn Pool Party",v:"The Hub Saigon",i:"1311648"},
+  {d:"2019-09-13",t:"Gừng - Techno Ginger",v:"TẾT Club",i:"1303246"},
+  {d:"2019-07-19",t:"Crowd Control",v:"Bam Bam",i:"1291930"},
+  {d:"2019-07-13",t:"Haus.vn Open Air: Kiko Bacio x Derek Nielsen [US] & More",v:"The Hub Saigon",i:"1283452",x:1},
+  {d:"2019-07-06",t:"Techno.vn x 6AM: Truncate [50 Weapons], JIA, Derek Nielsen, Kiko Bacio, Attiss Ngo",v:"Savage",i:"1245857",x:1},
+  {d:"2019-07-05",t:"_cosm & SGR present Truncate (50weapons/Truncate, US) & Co.",v:"De Commune",i:"1297607",x:1},
+  {d:"2019-06-16",t:"Soundtripz x Space Echo: John 00 Fleming & Solarstone, Tung Tim, and Thuc",v:"Khu 13",i:"1217185",x:1},
+  {d:"2019-06-15",t:"TIN Pres. John 00 Fleming & Solarstone",v:"The Docks",i:"1203265",x:1},
+  {d:"2019-06-07",t:"techno.vn Episode VIII: Tung Tim, 0104, Khoi Mai, Trung Hoang",v:"Savage",i:"1246843"},
+  {d:"2019-06-06",t:"Bass Republic 9-Year Anniversary: Minoto [BassGang], DJ Jin, Jase, 2stone",v:"Lush",i:"1309872"},
+  {d:"2019-06-01",t:"TIN Pres: Khen [Lost & Found, Vivrant]",v:"Kumquat Tree",i:"1250102",x:1},
+  {d:"2019-05-31",t:"Haus.vn x Space Echo: Khen [Lost & Found, Vivrant]",v:"",i:"1250101",x:1},
+  {d:"2019-05-30",t:"Nyctophilia #12: Exos [трип, Figure] & Trung Hoang",v:"Savage",i:"1252573",x:1},
+  {d:"2019-05-18",t:"Kumquat Pres. Ben Böhmer (Live) [Anjunadeep, Ton Töpferei]",v:"Kumquat Tree",i:"1250083",x:1},
+  {d:"2019-05-17",t:"Techno.vn: Phase Fatale [Ostgut Ton, BITE], Stakhan [Tunnel Vision] & Mppm [Techno.vn]",v:"Savage",i:"1213457"},
+  {d:"2019-05-17",t:"Road to Ravolution x Haus.vn: Ben Böhmer (Live) [Anjunadeep, Ton Töpferei]",v:"1960 Bar Saigon",i:"1242344",x:1},
+  {d:"2019-04-27",t:"Techno.vn x Hopdem: Zenker Brothers [Ilian Tape], Lukas, My Nguyen",v:"Savage",i:"1236804"},
+  {d:"2019-04-27",t:"Hopdem Spring Edition 2019",v:"Savage",i:"1235520"},
+  {d:"2019-04-13",t:"Bass Republic: DJ Jin & Jase",v:"Lush",i:"1309870"},
+  {d:"2019-04-13",t:"18 Years Anniversary: Thien Hi with Alex Morph",v:"Playhouse Saigon",i:"1303082",x:1},
+  {d:"2019-04-12",t:"Nyctophilia #10: Soel [Plangent Records], Red Sheep, Tyan",v:"TBA - Saigon",i:"1238683"},
+  {d:"2019-04-11",t:"Hopdem Pre-Party x Techno.vn: SOEL [Plangent Record], Ling:chi, Nghia",v:"Savage",i:"1203723"},
+  {d:"2019-03-22",t:"XX Voyage II 220319",v:"Birdcage",i:"1239528"},
+  {d:"2019-03-14",t:"Nyctophilia #11: Marco Lenzi [Molecular], Trung Hoang",v:"Savage",i:"1196600"},
+  {d:"2019-03-09",t:"Bass Republic: Ghetto Kid, Jase, DJ Jin, 2stone",v:"Lush",i:"1309869"},
+  {d:"2019-03-08",t:"Dong Bar Invites: ReOrder (3-Hour set) [BlackHole, Armada, FSOE]",v:"Dong Bar - Unlock the Vibes",i:"1223271"},
+  {d:"2019-03-01",t:"Techno.vn 2-Year Anniversary: Marcel Fengler [IMF, Mote-Evolver, Ostgut Ton], Dee.F & Tung Tim",v:"Savage",i:"1210360"},
+  {d:"2019-02-16",t:"Nyctophilia #9: Anastasia Kristensen [MORD], Edward Ean, Steffen Sonnenschein, Dbpb, Chin",v:"",i:"1199007"},
+  {d:"2019-02-15",t:"Techno.vn Part 5: Anastasia Kristensen, My Nguyen, Xuxi, Ling:chi",v:"Savage",i:"1186359"},
+  {d:"2019-02-08",t:"TIN Pres. Simon Patterson & Sean Tyas [VII Crew], DBX, Nghia, Maiann, Hoang Pio, My Nguyen",v:"TBA - Hanoi",i:"1210451"},
+  {d:"2019-02-02",t:"Homeaway Pres. Rey & Kjavik [DE] / Katermukke",v:"Kobala",i:"1215904"},
+  {d:"2019-01-25",t:"Techno.vn Part 4: Xhin [Stroboscopic Artefacts],Khoi Mai, Trung Hoang, My Nguyen, Ling:chi",v:"Savage",i:"1186354",x:1},
+  {d:"2019-01-20",t:"Euphoria #3: Oliver Smith / Anjunabeats",v:"T-Studio - The Toilet Hanoi",i:"1202033",x:1},
+  {d:"2019-01-17",t:"Nyctophilia #7: Steffen Sonnenschein [Miteinander Musik] & Tung Tim [techno.vn]",v:"Savage",i:"1187820"},
+  {d:"2019-01-11",t:"Nyctophilia #6: Kiko Bacio [Discourse Los Angeles]",v:"",i:"1200876"},
+  {d:"2018-12-31",t:"Kumquat New Year's Eve with Tung Tim & D.B.X.",v:"Kumquat Tree",i:"1203258"},
+  {d:"2018-12-31",t:"The Hub Nye's with Ling:chi, Tyan, Zoey, Redsheep, M.A",v:"The Hub Saigon",i:"1203260"},
+  {d:"2018-12-28",t:"Techno.vn Part 3: Marmosets (Live) [Raze, Tempo BKK], Dee.F, Attiss Ngo & More",v:"Savage",i:"1186315",x:1},
+  {d:"2018-12-22",t:"Arcan Pres. Hexer / Rebellious, Bach Music",v:"",i:"1196264",x:1},
+  {d:"2018-12-22",t:"Kumquat Tree Birthday Party: Borderline with Duy Tuan",v:"Kumquat Tree",i:"1203249"},
+  {d:"2018-12-21",t:"RE.Peat with Marmosets (Live) [Raze, Tempo BKK], Dee.F & Crazy Monkey (VJ)",v:"",i:"1186304",x:1},
+  {d:"2018-12-08",t:"Kumquat Pres. Viken Arman / All Day I Dream, Denature Records",v:"Kumquat Tree",i:"1193231",x:1},
+  {d:"2018-12-07",t:"Arcan Pres. Juliet Fox / Drumcode",v:"",i:"1193269",x:1},
+  {d:"2018-11-25",t:"Nyctophilia x Arcan Takeovers",v:"Savage",i:"1190857"},
+  {d:"2018-11-24",t:"Euphoria x The Council: The Council Takeover",v:"T-Studio - The Toilet Hanoi",i:"1190824"},
+  {d:"2018-11-23",t:"Techno.vn Invites Dee.F, Chin, Nghia, Trung Hoang, Khoi Mai",v:"Savage",i:"1174011"},
+  {d:"2018-11-17",t:"Jeremy Olander [Vivrant, Anjunadeep]",v:"",i:"1178035",x:1},
+  {d:"2018-11-16",t:"Techno.vn Pres 86 / Haustek Showcase",v:"The Observatory",i:"1178368"},
+  {d:"2018-11-09",t:"Tgif",v:"Dong Bar - Unlock the Vibes",i:"1179365"},
+  {d:"2018-11-02",t:"Tgif",v:"Dong Bar - Unlock the Vibes",i:"1179364"},
+  {d:"2018-10-31",t:"Horror Night by Ling:chi",v:"Dong Bar - Unlock the Vibes",i:"1179366"},
+  {d:"2018-10-27",t:"Techno.vn Episode VI: Arcan Saigon",v:"",i:"1168600"},
+  {d:"2018-10-27",t:"Cocktail From the Death",v:"Kumquat Tree",i:"1178382"},
+  {d:"2018-10-26",t:"Mistery Friday Feat. DJ Sean Doyle",v:"Kumquat Tree",i:"1178381"},
+  {d:"2018-10-20",t:"The Blush Night",v:"Kumquat Tree",i:"1176356"},
+  {d:"2018-10-20",t:"Vietnamese Woman's day! by Ling:chi",v:"Dong Bar - Unlock the Vibes",i:"1176360"},
+  {d:"2018-10-19",t:"Euphoria #1: Mendy Indigo",v:"T-Studio - The Toilet Hanoi",i:"1169292"},
+  {d:"2018-10-13",t:"Nyctophilia #5: Inland [A-Ton, Counterchange], Dee.F, Vank, Chin",v:"",i:"1126958"},
+  {d:"2018-10-09",t:"The First Unlock by Ling:chi & Min8",v:"Dong Bar - Unlock the Vibes",i:"1176361"},
+  {d:"2018-10-05",t:"Techno.vn Invites Attiss Ngo, Khoi Mai, Trung Hoang",v:"Savage",i:"1164248"},
+  {d:"2018-09-29",t:"RE.Peat with Koichi Shimizu (Live), Dee.F x Attiss Ngo (Live), Chin, Zoey, Rvst",v:"",i:"1143582"},
+  {d:"2018-09-22",t:"Lunatic Night",v:"Kumquat Tree",i:"1176357"},
+  {d:"2018-09-22",t:"Nyctophilia #4: Monoloc [Dystopian, Afterlife], Dee.F x Chin (live), Attiss Ngo (live), Tyan",v:"Apocalypse Now Bar-Cafe",i:"1124588"},
+  {d:"2018-09-21",t:"Disco Paradiso: Pride Up Your Style",v:"Kumquat Tree",i:"1176358"},
+  {d:"2018-09-21",t:"Techno.vn Part 2: Monoloc [Dystopian, Afterlife], Viet Anh, Tung Tim, TrinhNu, My Nguyen",v:"Savage",i:"1124567"},
+  {d:"2018-09-16",t:"VEW - Techno After Party",v:"Savage",i:"1143579"},
+  {d:"2018-09-16",t:"Techno.vn Episode V: VEW - Trip To the Moon",v:"TBA - Hanoi",i:"1140599"},
+  {d:"2018-09-08",t:"Road to Abgt300: Anjunadeep Night",v:"Kumquat Tree",i:"1176359"},
+  {d:"2018-09-08",t:"Nyctophilia #3: Ø [Phase] [Token], Dee.F, Chin, Attiss Ngo, RVST",v:"",i:"1124580"},
+  {d:"2018-09-07",t:"Techno.vn Part 1 x VEW: Ø [Phase] [Token], Quan (Live), My Nguyen",v:"Savage",i:"1126157"},
+  {d:"2018-08-26",t:"The Haus of House",v:"Vibes Club Saigon",i:"1143581"},
+  {d:"2018-08-11",t:"Techno.vn Episode IV: The Rabbit Hole",v:"The Rabbit Hole",i:"1102603"},
+  {d:"2018-08-10",t:"It's a Dark Night, It's a Techno Night",v:"Vibes Club Saigon",i:"1126967"},
+  {d:"2018-08-04",t:"Digital Trap",v:"Vibes Club Saigon",i:"1124577"},
+  {d:"2018-08-03",t:"Jabba The Earth",v:"Vibes Club Saigon",i:"1143563"},
+  {d:"2018-07-29",t:"The Haus of House",v:"Vibes Club Saigon",i:"1124978"},
+  {d:"2018-07-27",t:"T-Studio Pres. RAW Equipment [Girasole, PIV Records], Ling:chi, Nghia",v:"T-Studio - The Toilet Hanoi",i:"1102608"},
+  {d:"2018-07-27",t:"Gentle Disco",v:"Vibes Club Saigon",i:"1125406"},
+  {d:"2018-07-26",t:"Vibes! Pres. Techno Thursday",v:"Vibes Club Saigon",i:"1125084"},
+  {d:"2018-07-22",t:"The Haus of House",v:"Vibes Club Saigon",i:"1124976"},
+  {d:"2018-07-21",t:"Vibes! Pres. Raw Equipment / Girasole, PIV Records",v:"Vibes Club Saigon",i:"1126955"},
+  {d:"2018-07-20",t:"Residents Night",v:"Vibes Club Saigon",i:"1127744"},
+  {d:"2018-07-19",t:"Nyctophilia #2: Broken English Club (Live) [L.I.E.S], Dee.F , Javier Marimon (Live), Attiss Ngo",v:"Vibes Club Saigon",i:"1119476",x:1},
+  {d:"2018-07-15",t:"The Haus of House",v:"Vibes Club Saigon",i:"1124975"},
+  {d:"2018-07-14",t:"The Sky God",v:"Vibes Club Saigon",i:"1135992"},
+  {d:"2018-07-13",t:"Residents Night",v:"Vibes Club Saigon",i:"1126961"},
+  {d:"2018-07-12",t:"Nyctophilia #1: Ploy / Hessle Audio, Timedance",v:"Vibes Club Saigon",i:"1125082"},
+  {d:"2018-07-08",t:"The Haus of House",v:"Vibes Club Saigon",i:"1124974"},
+  {d:"2018-07-07",t:"It's Not A Social Club Night with Chris Wolter",v:"Vibes Club Saigon",i:"1124571"},
+  {d:"2018-07-06",t:"Vibes! Pres. Kin / The Observatory",v:"Vibes Club Saigon",i:"1124186"},
+  {d:"2018-07-05",t:"Crossover",v:"Vibes Club Saigon",i:"1125081"},
+  {d:"2018-07-01",t:"The Haus of House",v:"Vibes Club Saigon",i:"1124973"},
+  {d:"2018-06-29",t:"the Discologist: Jean Tonique",v:"Vibes Club Saigon",i:"1118693"},
+  {d:"2018-06-28",t:"Vibes! Pres. Techno Thursday",v:"Vibes Club Saigon",i:"1120346"},
+  {d:"2018-06-24",t:"The Haus of House",v:"Vibes Club Saigon",i:"1124972"},
+  {d:"2018-06-23",t:"GOT.D",v:"Vibes Club Saigon",i:"1118681"},
+  {d:"2018-06-22",t:"Haustek Anniversary w. Tobias. (Live) [Ostgut Ton], Quan, Dee.F, My Nguyen, Rvst & More",v:"Vibes Club Saigon",i:"1120335"},
+  {d:"2018-06-21",t:"Vibes! Pres. Techno Thursday",v:"Vibes Club Saigon",i:"1120343"},
+  {d:"2018-06-17",t:"The Haus of House",v:"Vibes Club Saigon",i:"1124980"},
+  {d:"2018-06-16",t:"Vibes! Pres. RVST",v:"Vibes Club Saigon",i:"1120330"},
+  {d:"2018-06-15",t:"Vibes! Residents Night",v:"Vibes Club Saigon",i:"1116891"},
+  {d:"2018-06-14",t:"Vibes! Pres. Techno Thursday",v:"Vibes Club Saigon",i:"1120342"},
+  {d:"2018-06-09",t:"Nghệ - Black Turmeric",v:"Vibes Club Saigon",i:"1108826"},
+  {d:"2018-06-02",t:"Saigon Trance Night",v:"Vibes Club Saigon",i:"1116893"},
+  {d:"2018-06-02",t:"Kobala Residents' Night Typhoon Edition",v:"Kobala",i:"1118228"},
+  {d:"2018-05-30",t:"Mixtape Vol.3 / Oldskool",v:"Kumquat Tree",i:"1113745"},
+  {d:"2018-05-27",t:"Mysterious Inspiration by Nghia & Tyan",v:"Vibes Club Saigon",i:"1110508"},
+  {d:"2018-05-26",t:"Proper Planet #1: Ravolution Music Festival",v:"Vibes Club Saigon",i:"1102604"},
+  {d:"2018-05-26",t:"Studio Adventure 4.0",v:"Dao Anh Khanh Studio",i:"1099841"},
+  {d:"2018-05-25",t:"GOT.D",v:"Vibes Club Saigon",i:"1102605"},
+  {d:"2018-05-24",t:"Tech-Phonics Pres Matais & Cusack",v:"Vibes Club Saigon",i:"1115951"},
+  {d:"2018-05-19",t:"Gừng - Black Ginger",v:"TẾT Club",i:"1102422"},
+  {d:"2018-05-18",t:"Tek2dwn",v:"Lush",i:"1094910"},
+  {d:"2018-05-07",t:"Vibes! Pres. Techno Thursday",v:"Vibes Club Saigon",i:"1120338"},
+  {d:"2018-05-05",t:"Nghệ - Yellow Turmeric",v:"Piu Piu",i:"1102455"},
+  {d:"2018-05-05",t:"Odoriko Ninja Night",v:"Kobala",i:"1103268"},
+  {d:"2018-05-04",t:"Gừng - Blue Ginger",v:"TẾT Club",i:"1102607"},
+  {d:"2018-04-29",t:"Wegroove Sunday with Tok",v:"Kobala",i:"1095840"},
+  {d:"2018-04-28",t:"Speak Easy Dance Hard",v:"Kumquat Tree",i:"1094920"},
+  {d:"2018-04-28",t:"Hospitality Night - Every Saturday w Nghia",v:"Camelia Lounge Hanoi",i:"1093174"},
+  {d:"2018-04-28",t:"Gang de Lascars",v:"Kobala",i:"1099874"},
+  {d:"2018-04-27",t:"Speak Easy Dance Hard",v:"Kumquat Tree",i:"1094922"},
+  {d:"2018-04-27",t:"Fashion Night Out - w. Tung Tim",v:"Camelia Lounge Hanoi",i:"1093176"},
+  {d:"2018-04-27",t:"HUM T-Studio Soft Launch",v:"T-Studio - The Toilet Hanoi",i:"1104435"},
+  {d:"2018-04-26",t:"Saigon Impackt W/ Max Cleo & RVST",v:"",i:"1103321"},
+  {d:"2018-04-24",t:"Saigon Impackt W/ Chris Wolter",v:"",i:"1103322"},
+  {d:"2018-04-22",t:"Wegroove Sunday with Marco Yanes",v:"Kobala",i:"1095837"},
+  {d:"2018-04-21",t:"Speak Easy Dance Hard",v:"Kumquat Tree",i:"1094919"},
+  {d:"2018-04-21",t:"Kobala Night Market",v:"Kobala",i:"1095996"},
+  {d:"2018-04-20",t:"Speak Easy Dance Hard",v:"Kumquat Tree",i:"1094918"},
+  {d:"2018-04-20",t:"Gừng - Yellow Ginger",v:"TẾT Club",i:"1068503"},
+  {d:"2018-04-14",t:"Speak Easy Dance Hard",v:"Kumquat Tree",i:"1094914"},
+  {d:"2018-04-14",t:"Hospitality Night - Every Saturday w Nghia",v:"Camelia Lounge Hanoi",i:"1093173"},
+  {d:"2018-04-13",t:"ALT. - Measure for Measure",v:"Union",i:"1096710"},
+  {d:"2018-04-13",t:"Speak Easy Dance Hard",v:"Kumquat Tree",i:"1094913"},
+  {d:"2018-04-12",t:"Wine Class",v:"Kumquat Tree",i:"1094162"},
+  {d:"2018-04-09",t:"Chaos: Digital Devilry A Dark Dance Music Party 18",v:"El Cid",i:"1096708"},
+  {d:"2018-04-08",t:"Wegroove Sunday with D.B.X.",v:"Kobala",i:"1095835"},
+  {d:"2018-04-07",t:"Kobala x Kumquat",v:"Kobala",i:"1093172"},
+  {d:"2018-04-07",t:"Speak Easy Dance Hard",v:"Kumquat Tree",i:"1094156"},
+  {d:"2018-04-06",t:"Speak Easy Dance Hard",v:"Kumquat Tree",i:"1094157"},
+  {d:"2018-04-05",t:"Matsuri X Kobala",v:"Kobala",i:"1092799"},
+  {d:"2018-03-31",t:"Kobala Night Market",v:"Kobala",i:"1090105"},
+  {d:"2018-03-28",t:"Lối Cũ Ta Về / Oldskool",v:"Kumquat Tree",i:"1086847"},
+  {d:"2018-03-25",t:"Wegroove Sundays",v:"Kobala",i:"1086856"},
+  {d:"2018-03-24",t:"Speak Easy Dance Hard",v:"Kumquat Tree",i:"1087578"},
+  {d:"2018-03-24",t:"Movie & Music Under The Stars - The Hub Saigon 1-Year Anniversary",v:"The Hub Saigon",i:"1086751"},
+  {d:"2018-03-24",t:"Spring Equinox - Day Party",v:"TBA - Hanoi",i:"1081965"},
+  {d:"2018-03-23",t:"Tek2dwn",v:"Lush",i:"1068504"},
+  {d:"2018-03-23",t:"Speak Easy Dance Hard",v:"Kumquat Tree",i:"1087573"},
+  {d:"2018-03-20",t:"Afterwork Menu Launch",v:"Kumquat Tree",i:"1086750"},
+  {d:"2018-03-18",t:"Wegroove Sundays",v:"Kobala",i:"1086754"},
+  {d:"2018-03-17",t:"Rooftop Party - Viet Anh & Barkë",v:"Kobala",i:"1086753"},
+  {d:"2018-03-10",t:"Studio Adventure 3.0",v:"Dao Anh Khanh Studio",i:"1071353"},
+  {d:"2018-03-09",t:"Speak Easy Dance Hard Underground",v:"Kumquat Tree",i:"1080687"},
+  {d:"2018-03-03",t:"Techno.vn 1-Year Anniversary: Basement Saigon",v:"Vibes Club Saigon",i:"1068499"},
+  {d:"2018-03-03",t:"Downtempo Sessions: Max Cleo [Open to Close]",v:"The Hub Saigon",i:"1071602"},
+  {d:"2018-03-02",t:"Haustek & Friends VI: Huy Truong & Hime",v:"Kobala",i:"1072434"},
+  {d:"2018-02-24",t:"Kobala Party with Matt From Birouette [FR]",v:"Kobala",i:"1076670"},
+  {d:"2018-02-24",t:"Sunset Saturday presents Nghia & Huy Truong",v:"The Hub Saigon",i:"1069176"},
+  {d:"2018-02-19",t:"Purple Disco Night with Tung Tim",v:"Camelia Lounge Hanoi",i:"1072058"},
+  {d:"2018-02-18",t:"Khai Hội: Tết Holiday",v:"Kumquat Tree",i:"1069172"},
+  {d:"2018-02-17",t:"Camelia Special Guest: Nghia",v:"Camelia Lounge Hanoi",i:"1071248"},
+  {d:"2018-02-10",t:"Bass Republic: Tha Trickaz (DJ Set), Dub-Stuy, Jase, DJ Jin",v:"Lush",i:"1309864"},
+  {d:"2018-02-10",t:"Kobala Night - Tết Offensive",v:"Kobala",i:"1069645"},
+  {d:"2018-02-10",t:"Make Tết Great Again",v:"Kumquat Tree",i:"1069222"},
+  {d:"2018-02-09",t:"Kobala x Kumquat Tree",v:"Kumquat Tree",i:"1067909"},
+  {d:"2018-02-01",t:"Ostinato",v:"Vibes Club Saigon",i:"1062468"},
+  {d:"2018-01-18",t:"Haustek & Friends V: Mya DJ & Kevin Dean [SA]",v:"Kobala",i:"1019421"},
+  {d:"2018-01-12",t:"Gingerwork x Kobala Invite Mendy Indigo",v:"Kobala",i:"1092800"},
+  {d:"2017-12-31",t:"Studio Adventure No. 02 - New Year's Eve",v:"TBA - Hanoi",i:"1046599"},
+  {d:"2017-12-31",t:"New Year's Eve 2018",v:"Camelia Lounge Hanoi",i:"1046941"},
+  {d:"2017-12-31",t:"Countdown NYE Party with MYLE /Die Empathie",v:"The Hub Saigon",i:"1031214"},
+  {d:"2017-12-24",t:"Kobala Xmas",v:"Kobala",i:"1044584"},
+  {d:"2017-12-23",t:"Techno.vn Episode II: Shaka",v:"Vibes Club Saigon",i:"1036247"},
+  {d:"2017-12-23",t:"Day et Night: Day Pool x Night Club - The Hub x Shaka Saigon",v:"The Hub Saigon",i:"1031212"},
+  {d:"2017-12-16",t:"The Kingmen's Flavour",v:"Camelia Lounge Hanoi",i:"1047555"},
+  {d:"2017-12-15",t:"The King's Legacy",v:"Camelia Lounge Hanoi",i:"1047554"},
+  {d:"2017-12-14",t:"Haustek & Friends IV: Viet Anh & TrungD",v:"Kobala",i:"1019419"},
+  {d:"2017-12-14",t:"The Beats Saigon 11th Anniversary: Nightwave x Kidkanevil",v:"Vibes Club Saigon",i:"1045182"},
+  {d:"2017-12-09",t:"Celebration Week",v:"Kumquat Tree",i:"1046891"},
+  {d:"2017-12-02",t:"Bass Republic: DJ Jin, Jase, Teddy Chilla, Maraphoria",v:"Lush",i:"1309867"},
+  {d:"2017-11-16",t:"Haustek & Friends III: Slowz & TrungD",v:"Kobala",i:"1019412"},
+  {d:"2017-11-11",t:"Day et. Night: House x Techno - the Hub x GM Bistro",v:"GM Bistro",i:"1019441"},
+  {d:"2017-11-11",t:"Day et. Night: House x Techno - the Hub x GM Bistro",v:"The Hub Saigon",i:"1019425"},
+  {d:"2017-10-28",t:"Halloween Beat Jam by The Beats Saigon",v:"GM Bistro",i:"1309866"},
+  {d:"2017-10-20",t:"Vietnamese Women's Day with The Trio Mys: Mya DJ, My Nguyen, Hime",v:"Kobala",i:"1020871"},
+  {d:"2017-10-19",t:"Haustek & Friends II:Tung Tim & Duy Tuan",v:"Kobala",i:"1019410"},
+  {d:"2017-09-28",t:"Haustek & Friends I: Mya DJ & Min8",v:"Kobala",i:"1017779"},
+  {d:"2017-08-26",t:"Saturday Pool Party",v:"The Hub Saigon",i:"1001879"},
+  {d:"2017-08-18",t:"Haustek x Hrbr-Habour: Saigon Friday",v:"The Lighthouse",i:"998396"},
+  {d:"2017-08-12",t:"Nghia [All Night Long]",v:"Camelia Lounge Hanoi",i:"1001549"},
+  {d:"2017-08-11",t:"Downtempo Sessions: Max Cleo [Open to Close]",v:"Kobala",i:"1001546"},
+  {d:"2017-08-10",t:"Techno.vn Episode I: Savage",v:"Savage",i:"997210"},
+  {d:"2017-08-02",t:"Haustek presents: Tùng Tím & Mya - Wednesday Techno x Kobala",v:"Kobala",i:"997212"},
+  {d:"2017-05-05",t:"Vtc's 2nd Offline: DJ Woody (ITF Champ) & Jase",v:"TBA - Saigon",i:"1309865"},
+  {d:"2016-08-06",t:"RE.Peat with Dee.F, Tomes, Hleb",v:"Hanoi Rock City",i:"1170651"},
+  {d:"2016-03-05",t:"RE.Peat with Dee.F, TrungD, My Nguyen",v:"Hanoi Rock City",i:"1170637"},
+  {d:"2016-02-05",t:"RE.Peat with Dee.F (Live), Ali, and Mark Harris",v:"Hanoi Rock City",i:"1170639"},
+  {d:"2015-12-31",t:"RE.Peat 0101 New Year's Eve",v:"Hanoi Rock City",i:"1170642"},
+  {d:"2015-11-20",t:"RE.Peat with Dee.F, Quan, My Nguyen, TrungD",v:"Hanoi Rock City",i:"1170646"},
+  {d:"2015-10-17",t:"RE.Peat Women of Techno",v:"Hanoi Rock City",i:"1170650"}
+];
+
+(function(){
+  const listEl=document.getElementById('archList');
+  const barEl=document.getElementById('yearBar');
+  const moreEl=document.getElementById('archMore');
+  if(!listEl||!barEl||!moreEl)return;
+  const PAGE=30;
+  let year='all', shown=PAGE;
+  const vi=()=> (typeof lang!=='undefined' ? lang==='vi' : true);
+
+  const years=[...new Set(ARCHIVE.map(e=>e.d.slice(0,4)))].sort().reverse();
+  barEl.insertAdjacentHTML('beforeend',
+    '<button class="ychip on" data-y="all"></button>'+
+    years.map(y=>'<button class="ychip" data-y="'+y+'">'+y+'</button>').join(''));
+
+  function filtered(){return year==='all'?ARCHIVE:ARCHIVE.filter(e=>e.d.startsWith(year));}
+  function fmt(d){const p=d.split('-');return p[2]+'.'+p[1]+'.'+p[0];}
+
+  function render(){
+    const f=filtered(), part=f.slice(0,shown);
+    barEl.querySelector('[data-y="all"]').textContent = vi()?'Tất cả':'All';
+    listEl.innerHTML=part.map(function(e){
+      return '<a class="arow'+(e.x?' intl':'')+'" href="https://ra.co/events/'+e.i+'" target="_blank" rel="noopener">'
+        +'<span class="ar-d">'+fmt(e.d)+'</span>'
+        +'<span class="ar-t">'+e.t+(e.s?'<span class="ar-so">SOLD OUT</span>':'')+'</span>'
+        +'<span class="ar-v">'+(e.v||'')+'</span></a>';
+    }).join('');
+    const rest=f.length-shown;
+    moreEl.style.display = rest<=0 ? 'none' : 'block';
+    moreEl.textContent = (vi()?'Xem thêm ':'Show more ')+'('+rest+')';
+  }
+  barEl.addEventListener('click',function(ev){
+    const b=ev.target.closest('.ychip'); if(!b)return;
+    barEl.querySelectorAll('.ychip').forEach(function(c){c.classList.toggle('on',c===b);});
+    year=b.dataset.y; shown=PAGE; render();
+  });
+  moreEl.addEventListener('click',function(){shown+=PAGE;render();});
+  render();
+  window.__archRender=render;
+})();
 </script>
 </body>
 </html>
