@@ -42,6 +42,10 @@
     <div class="crumb" id="crumb"></div>
     <div class="spacer"></div>
     <select id="period" aria-label="Kỳ báo cáo"></select>
+    <div class="dimtabs" role="group" aria-label="Tiền tệ">
+      <button data-cur="USD" class="on">USD</button>
+      <button data-cur="VND">VND</button>
+    </div>
   </div>
 </header>
 
@@ -143,6 +147,13 @@ catch (e) { LOGINS = []; }
 let me = LOGINS[0] || null;
 let stream = "rec", dim = "src", tailOpen = false;
 let periodKey = null, sortKey = "mine", sortDir = -1, query = "", selected = -1;
+let cur = "USD", fxRate = null, fxAt = null;
+/* Số tiền luôn tính bằng USD ở máy chủ. Đổi sang VND chỉ là chuyện hiển
+   thị, và phải dùng ĐÚNG tỷ giá đã khoá lúc duyệt kỳ — không phải tỷ giá
+   hôm nay. Đọc lại báo cáo tháng ba vào tháng chín vẫn phải ra đúng con
+   số đã chuyển vào tài khoản. */
+const M  = v => cur === "VND" ? fmt.vnd(v, fxRate) : fmt.usd0(v);
+const M2 = v => cur === "VND" ? fmt.vnd(v, fxRate) : fmt.usd(v);
 let vt = null, PAYLOADS = {}, shownCall = "summary";
 
 function toast(msg, kind) {
@@ -228,9 +239,9 @@ function drawKpis(s) {
   let cards;
   if (me.role === "label") {
     cards = [
-      { lab: "Phần label nhận", val: fmt.usd0(s.total), sub: delta(s.total, s.prevTotal), hero: 1 },
-      { lab: "Doanh thu gộp", val: fmt.usd0(s.gross), sub: "trước mọi khoản trừ" },
-      { lab: "Trả cho nghệ sĩ", val: fmt.usd0(Math.abs((s.chain.find(c => c.key === "artist") || {}).value || 0)),
+      { lab: "Phần label nhận", val: M(s.total), sub: delta(s.total, s.prevTotal), hero: 1 },
+      { lab: "Doanh thu gộp", val: M(s.gross), sub: "trước mọi khoản trừ" },
+      { lab: "Trả cho nghệ sĩ", val: M(Math.abs((s.chain.find(c => c.key === "artist") || {}).value || 0)),
         sub: "theo tỷ lệ bạn đặt" },
       { lab: "Bản ghi có doanh thu", val: fmt.num(s.tracks), sub: "trên " + fmt.num(SESSION.trackCount) + " bản ghi" },
       { lab: "Lượt nghe", val: fmt.num(s.streams), sub: delta(s.streams, s.prevStreams) }
@@ -238,19 +249,19 @@ function drawKpis(s) {
   } else {
     const fin = s.chain[s.chain.length - 1];
     cards = [
-      { lab: "Doanh thu " + st + " của bạn", val: fmt.usd(s.total), sub: delta(s.total, s.prevTotal), hero: 1 },
+      { lab: "Doanh thu " + st + " của bạn", val: M2(s.total), sub: delta(s.total, s.prevTotal), hero: 1 },
       { lab: stream === "rec" ? "Lượt nghe" : "Số bài",
         val: stream === "rec" ? fmt.num(s.streams) : fmt.num(s.tracks),
         sub: stream === "rec" ? delta(s.streams, s.prevStreams) : "có tác quyền kỳ này" }
     ];
     if (s.advance) {
-      cards.push({ lab: "Còn phải thu hồi", val: fmt.usd0(s.advance.left),
-        sub: `đã ứng <b>${fmt.usd0(s.advance.opening)}</b>` + (s.advance.left > 0 ? ` · còn ~<b>${s.advance.periodsLeft}</b> kỳ` : " · đã xong"), bad: s.advance.left > 0 });
+      cards.push({ lab: "Còn phải thu hồi", val: M(s.advance.left),
+        sub: `đã ứng <b>${M(s.advance.opening)}</b>` + (s.advance.left > 0 ? ` · còn ~<b>${s.advance.periodsLeft}</b> kỳ` : " · đã xong"), bad: s.advance.left > 0 });
       /* Thu hồi tạm ứng chạy trên cả hai dòng tiền, nhưng con số dưới đây
          chỉ là phần của dòng tiền đang xem — nên nói rõ ra, đừng để người
          đọc cộng nhầm hai lần. */
       cards.push({ lab: stream === "rec" ? "Thực nhận kỳ này" : "Về tay bạn (tác quyền)",
-        val: fmt.usd0(fin.value),
+        val: M(fin.value),
         sub: stream === "rec" ? (s.payout ? esc(s.payout.note) : "")
                               : "phần tác quyền · doanh thu bản ghi tính riêng ở tab bên cạnh" });
     } else {
@@ -278,13 +289,19 @@ function drawChain(s) {
   const top = Math.abs(s.chain[0].value) || 1;
   $("chain").innerHTML = s.chain.map(c => `<div class="chain-step ${c.kind === "out" ? "out" : (c.kind === "final" ? "final" : "")}">
     <div class="chain-top"><span class="chain-name">${esc(c.label)}</span>
-      <span class="chain-val">${c.value < 0 ? "−" : ""}${fmt.usd0(Math.abs(c.value))}</span></div>
+      <span class="chain-val">${c.value < 0 ? "−" : ""}${M(Math.abs(c.value))}</span></div>
     <div class="chain-note">${esc(c.note)}</div>
     <div class="chain-bar"><i style="width:${Math.min(Math.abs(c.value) / top * 100, 100).toFixed(1)}%"></i></div>
   </div>`).join("");
-  $("chainFoot").innerHTML = stream === "rec"
+  const fxNote = cur === "VND"
+    ? `<br>Quy đổi theo tỷ giá <b>1 USD = ${fmt.num(fxRate)} ₫</b>`
+      + (s.fx && s.fx.locked ? ` — chốt ngày ${fmt.date(s.fx.at)} lúc duyệt kỳ này và không đổi nữa.
+         Mở lại báo cáo sau nửa năm vẫn ra đúng con số đã chuyển đi.`
+                             : " — kỳ này chưa khoá tỷ giá, con số quy đổi còn trôi theo tỷ giá hôm nay.")
+    : "";
+  $("chainFoot").innerHTML = (stream === "rec"
     ? "Điểm producer trừ vào phần của nghệ sĩ, không cộng thêm bên trên — đó là cách tính chuẩn của ngành. Làm ngược lại thì tổng các phần vượt quá 100%."
-    : "Tác quyền là dòng tiền tách rời với doanh thu bản ghi: chủ sở hữu khác, nguồn khác, kỳ khác. Một người có thể có cả hai, một trong hai, hoặc không cái nào.";
+    : "Tác quyền là dòng tiền tách rời với doanh thu bản ghi: chủ sở hữu khác, nguồn khác, kỳ khác. Một người có thể có cả hai, một trong hai, hoặc không cái nào.") + fxNote;
 }
 
 /* ---------- biểu đồ + xếp hạng ---------- */
@@ -306,7 +323,7 @@ function drawRank() {
   const peak = rows.length ? Math.max(...rows.map(r => r.value)) : 1;
   $("rank").innerHTML = (rows.map(r => `<div class="rank-row${r.tail ? " tail-row" : ""}">
     <div class="rank-top"><span class="rank-name">${esc(r.name)}</span>
-      <span class="rank-val">${fmt.usd0(r.value)}</span></div>
+      <span class="rank-val">${M(r.value)}</span></div>
     <div class="rank-bar"><i style="width:${peak > 0 ? (r.value / peak * 100).toFixed(1) : 0}%"></i></div>
   </div>`).join("") + tailNote) || `<p class="empty">Chưa có dữ liệu.</p>`;
   const tb = $("tailBtn");
@@ -335,8 +352,8 @@ function drawTable() {
     if (c.k === "title") return `<div class="tt"><b>${esc(r.title)}</b><span>${esc(r.isrc)} · ${esc(r.type)}</span></div>`;
     if (c.k === "artist") return `<div>${esc(r.artist)}</div>`;
     if (c.k === "streams") return `<div class="num">${r.streams == null ? "—" : fmt.num(r.streams)}</div>`;
-    if (c.k === "gross") return `<div class="num">${fmt.usd(r.gross)}</div>`;
-    return `<div class="num pay">${fmt.usd(r.mine)}</div>`;
+    if (c.k === "gross") return `<div class="num">${M2(r.gross)}</div>`;
+    return `<div class="num pay">${M2(r.mine)}</div>`;
   }).join("");
   const opts = { body: $("vbody"), spacer: $("vspacer"), head: $("vhead"),
     rows: t.rows, cols, rowHTML, sortKey, sortDir,
@@ -352,7 +369,7 @@ function drawDrill() {
   let d;
   try { d = call("trackDetail", () => H.api.trackDetail(me.role, me.partyId, periodKey, stream, selected)); }
   catch (e) { toast(e.message, "no"); selected = -1; $("drill").classList.add("hide"); return; }
-  const mk = list => list.map(x => `<tr><td>${esc(x.name)}</td><td>${fmt.usd(x.value)}</td></tr>`).join("")
+  const mk = list => list.map(x => `<tr><td>${esc(x.name)}</td><td>${M2(x.value)}</td></tr>`).join("")
     || `<tr><td colspan="2" class="dim">chưa có</td></tr>`;
   $("drill").classList.remove("hide");
   $("drill").innerHTML = `
@@ -367,7 +384,7 @@ function drawDrill() {
       <div class="mini"><h4>Theo lãnh thổ</h4><table>${mk(d.byTerritory)}</table></div>
       <div class="mini"><h4>${stream === "rec" ? "Chia tiền bài này" : "Phần sáng tác"}</h4><table>${
         d.steps.map(s => `<tr><td>${s.strong ? "<b>" + esc(s.label) + "</b>" : esc(s.label)}</td>
-          <td>${s.strong ? "<b>" : ""}${s.text != null ? esc(s.text) : (s.value < 0 ? "−" : "") + fmt.usd(Math.abs(s.value))}${s.strong ? "</b>" : ""}</td></tr>`).join("")
+          <td>${s.strong ? "<b>" : ""}${s.text != null ? esc(s.text) : (s.value < 0 ? "−" : "") + M2(Math.abs(s.value))}${s.strong ? "</b>" : ""}</td></tr>`).join("")
       }</table></div>
     </div>`;
   $("closeDrill").onclick = () => { selected = -1; drawTable(); drawDrill(); };
@@ -438,6 +455,7 @@ function render() {
     $("gateNote").innerHTML += `<div class="infobar"><span class="ic">◷</span>
       <span>${esc(s.emptyReason)} Kỳ gần nhất có số là <b>${esc(s.nextPub.label)}</b>.</span></div>`;
   }
+  fxRate = s.fx ? s.fx.rate : null; fxAt = s.fx ? s.fx.at : null;
   drawKpis(s); drawChain(s); drawTrend(); drawRank(); drawTable(); drawDrill();
   const g = GATE[me.role];
   $("gateTitle").textContent = g.t;
@@ -496,6 +514,13 @@ $("vbody").addEventListener("click", e => {
 });
 let qt = null;
 $("q").oninput = e => { query = e.target.value; clearTimeout(qt); qt = setTimeout(() => { drawTable(); drawProbe(); }, 200); };
+document.querySelectorAll("[data-cur]").forEach(b => {
+  b.onclick = () => {
+    cur = b.dataset.cur;
+    document.querySelectorAll("[data-cur]").forEach(x => x.classList.toggle("on", x === b));
+    render();
+  };
+});
 $("btnProbe").onclick = () => { render(); toast("Đã gọi lại toàn bộ API và kiểm tra lại payload", "ok"); };
 let rt = null;
 addEventListener("resize", () => { clearTimeout(rt); rt = setTimeout(() => { if (periodKey) { drawTrend(); drawTable(); } }, 200); });

@@ -1362,8 +1362,15 @@ const api = {
         emptyReason = "Kỳ này chưa bài nào của bạn phát sinh doanh thu.";
       }
     }
+    /* Tỷ giá của kỳ KHÔNG phải bí mật — đó là tỷ giá dùng để trả tiền cho
+       chính người đang xem, họ có quyền biết. Gửi kèm cả ngày khoá: đọc
+       lại báo cáo cũ sau nửa năm vẫn phải ra đúng con số đã chuyển đi. */
+    const lockedFx = state.fx.locked[periodKey] || null;
     return scrub({
       periodKey, stream, emptyReason, nextPub,
+      fx: { rate: lockedFx ? lockedFx.rate : state.fx.rate,
+            at: lockedFx ? lockedFx.at : null,
+            locked: !!lockedFx },
       total: a.total, gross: a.gross, streams: a.streams, tracks: a.tracks,
       prevTotal: prev ? prev.total : null, prevStreams: prev ? prev.streams : null,
       prevLabel: prevIdx != null ? PERIODS[prevIdx].label : null,
