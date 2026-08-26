@@ -663,16 +663,25 @@ function agg(role, partyId, p, stream) {
    cả hai đều không được để lọt sang bước duyệt kỳ.
    ===================================================================== */
 function feedTotals(pIdx, fId) {
+  const pk = PERIODS[pIdx].k;
   let attributed = 0;
   for (let i = 0; i < N; i++) attributed += grossRecByFeed(i, pIdx, fId);
   attributed = cents(attributed);
   const pending = cents(state.queue
-    .filter(q => q.periodKey === PERIODS[pIdx].k && q.feedId === fId && q.status === "pending")
+    .filter(q => q.periodKey === pk && q.feedId === fId && q.status === "pending")
     .reduce((s, q) => s + q.amount, 0));
-  const vKey = PERIODS[pIdx].k + ":" + fId;
+  /* Khoản truy thu của kỳ khác đang được ghi vào kỳ này KHÔNG có trong file
+     của kỳ này — phải trừ ra khỏi con số đem đi so với file gốc, không thì
+     đối chiếu báo lệch trong khi chẳng có gì sai. */
+  const adjustments = cents(state.queue
+    .filter(q => q.status === "matched" && q.intoPeriod === pk && q.feedId === fId)
+    .reduce((s, q) => s + q.amount, 0));
+  const fromFile = cents(attributed - adjustments);
+  const vKey = pk + ":" + fId;
   const injected = state.variance[vKey] ? 0 : builtinVariance(pIdx, fId);
-  const control = cents(attributed + pending + injected);
-  return { attributed, pending, control, diff: cents(control - attributed - pending),
+  const control = cents(fromFile + pending + injected);
+  return { attributed, adjustments, fromFile, pending, control,
+           diff: cents(control - fromFile - pending),
            accepted: state.variance[vKey] || null };
 }
 /* một kỳ cố tình lệch, để thấy quy trình xử lý chênh lệch chứ không chỉ
@@ -684,11 +693,12 @@ function recon(pIdx) {
   const rows = FEEDS.map(f => {
     const st = state.feeds[PERIODS[pIdx].k][f.id];
     const t = st.status === "loaded" ? feedTotals(pIdx, f.id)
-            : { attributed: 0, pending: 0, control: 0, diff: 0, accepted: null };
+            : { attributed: 0, adjustments: 0, fromFile: 0, pending: 0, control: 0, diff: 0, accepted: null };
     return { feed: f, status: st.status, at: st.at, file: st.file, ...t };
   });
-  const sum = k => cents(rows.reduce((s, r) => s + r[k], 0));
-  return { rows, attributed: sum("attributed"), pending: sum("pending"),
+  const sum = k => cents(rows.reduce((s, r) => s + (r[k] || 0), 0));
+  return { rows, attributed: sum("attributed"), adjustments: sum("adjustments"),
+           fromFile: sum("fromFile"), pending: sum("pending"),
            control: sum("control"), diff: sum("diff") };
 }
 
@@ -1012,19 +1022,40 @@ const queue = {
       .reduce((s, q) => s + q.amount, 0));
   },
   suggest(qid) { const q = state.queue.find(x => x.id === qid); return q ? suggestFor(q, 6) : []; },
+  /* Khớp một dòng của kỳ ĐÃ DUYỆT không được sửa lại kỳ đó. Kỳ đã chốt,
+     đã đối chiếu, đã chi tiền, và khách đã đọc con số ấy — sửa lại là làm
+     hai người cùng nhìn một kỳ mà ra hai số khác nhau.
+     Cách làm của ngành: tiền vẫn về đúng chủ, nhưng cộng vào KỲ ĐANG MỞ
+     gần nhất, ghi rõ là khoản truy thu của kỳ nào. Kỳ cũ giữ nguyên. */
   resolve(qid, trackIdx, by) {
     const q = state.queue.find(x => x.id === qid);
     if (!q) throw new Error("Không tìm thấy dòng " + qid);
     if (q.status !== "pending") throw new Error("Dòng này đã xử lý rồi");
-    if (state.approved[q.periodKey]) throw new Error("Kỳ đã duyệt — thu hồi duyệt trước rồi mới khớp thêm");
     if (!(trackIdx >= 0 && trackIdx < N)) throw new Error("Bản ghi không hợp lệ");
-    const p = pIndexOf(q.periodKey);
+    let p = pIndexOf(q.periodKey);
+    let intoKey = null;
+    if (state.approved[q.periodKey]) {
+      const open = PERIODS.find(x => !state.approved[x.k]);
+      if (!open) throw new Error("Kỳ của dòng này đã duyệt và không còn kỳ nào đang mở để ghi khoản truy thu — mở kỳ mới rồi khớp lại");
+      p = open.idx; intoKey = open.k;
+    }
     const key = trackIdx + ":" + p + ":" + q.feedId;
     state.match[key] = cents((state.match[key] || 0) + q.amount);
     q.status = "matched"; q.resolvedTo = trackIdx; q.at = nowISO(); q.by = by || "admin";
+    q.intoPeriod = intoKey;
     rebuildMatchIndex();
-    audit.log("queue.resolve", q.id + " → " + tIsrc[trackIdx] + " (" + tTitle[trackIdx] + ") · " + fmt.usd(q.amount));
+    audit.log("queue.resolve", q.id + " → " + tIsrc[trackIdx] + " (" + tTitle[trackIdx] + ") · " + fmt.usd(q.amount)
+      + (intoKey ? " · truy thu của kỳ " + q.periodKey + ", ghi vào kỳ " + intoKey : ""));
     store.save();
+  },
+  /* Kỳ nào sẽ nhận khoản truy thu nếu khớp dòng này bây giờ — để giao diện
+     nói trước cho người bấm, đừng để họ ngạc nhiên sau khi đã bấm. */
+  landingPeriod(qid) {
+    const q = state.queue.find(x => x.id === qid);
+    if (!q) return null;
+    if (!state.approved[q.periodKey]) return { k: q.periodKey, label: PERIODS[pIndexOf(q.periodKey)].label, adjustment: false };
+    const open = PERIODS.find(x => !state.approved[x.k]);
+    return open ? { k: open.k, label: open.label, adjustment: true } : null;
   },
   park(qid, note) {
     const q = state.queue.find(x => x.id === qid);
@@ -1037,13 +1068,17 @@ const queue = {
     const q = state.queue.find(x => x.id === qid);
     if (!q) return;
     if (q.status === "matched") {
-      const p = pIndexOf(q.periodKey);
+      /* Gỡ đúng ở kỳ đã ghi vào — với khoản truy thu thì đó không phải kỳ
+         gốc của dòng. Gỡ nhầm kỳ là để lại tiền ma trong sổ. */
+      const landed = q.intoPeriod || q.periodKey;
+      if (state.approved[landed]) throw new Error("Khoản này đã nằm trong kỳ " + landed + " và kỳ đó đã duyệt — thu hồi duyệt kỳ đó trước");
+      const p = pIndexOf(landed);
       const key = q.resolvedTo + ":" + p + ":" + q.feedId;
       state.match[key] = cents((state.match[key] || 0) - q.amount);
       if (state.match[key] <= 0.004) delete state.match[key];
       rebuildMatchIndex();
     }
-    q.status = "pending"; q.resolvedTo = null; q.at = null;
+    q.status = "pending"; q.resolvedTo = null; q.at = null; q.intoPeriod = null;
     audit.log("queue.unpark", q.id + " · trả lại hàng chờ");
     store.save();
   }
