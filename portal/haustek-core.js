@@ -1578,7 +1578,23 @@ if (FRESH) {
       approve(pi, "ops@haustek-group.com", "Đối chiếu xong, đã duyệt");
     } catch (e) { console.warn("[haustek-core] không duyệt được kỳ " + PERIODS[pi].label + ": " + e.message); }
   }
-  state.audit = state.audit.slice(0, 60);
+  /* Những lần nạp trong lịch sử cũng phải để lại dấu vết, không thì mở
+     nhật ký ra thấy trống trơn và tưởng hệ thống không ghi gì. */
+  PERIODS.forEach((p, pi) => {
+    FEEDS.forEach(f => {
+      const st = state.feeds[p.k][f.id];
+      if (st.status !== "loaded") return;
+      state.audit.push({ at: String(st.at).replace("T", " "), action: "ingest.load",
+        by: "ops@haustek-group.com",
+        detail: "Nạp " + f.name + " · kỳ " + p.label + " · " + st.file });
+    });
+    const pb = state.pub[p.k];
+    if (pb && pb.status === "loaded")
+      state.audit.push({ at: String(pb.at).replace("T", " "), action: "ingest.pub",
+        by: "ops@haustek-group.com", detail: "Nạp báo cáo tác quyền quý " + p.quarter + "/" + p.year + " · " + pb.file });
+  });
+  state.audit.sort((a, b) => a.at < b.at ? 1 : a.at > b.at ? -1 : 0);
+  state.audit = state.audit.slice(0, 120);
   store.save();
 }
 
