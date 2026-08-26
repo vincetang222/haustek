@@ -31,6 +31,7 @@ require(path.join(__dirname, "..", "haustek-core.js"));
 const H = global.window.HAUSTEK;
 const A = H.admin;
 
+const CFG_ARTISTS = A.artists.length;
 let pass = 0, fail = 0;
 const results = [];
 function check(name, fn) {
@@ -51,6 +52,11 @@ function mustThrow(fn, name) {
 
 /* --- chuẩn bị: tìm hai nghệ sĩ khác nhau, cùng có bài, khác label --- */
 const approvedKey = A.periods.filter(p => A.isApproved(p.k)).slice(-1)[0].k;
+/* Tác quyền về theo quý, nên phần lớn kỳ không có đồng nào. Kiểm ranh giới
+   tác quyền trên một kỳ rỗng thì phép kiểm nào cũng xanh mà chẳng chứng
+   minh được gì — phải lấy kỳ THẬT SỰ có tiền tác quyền. */
+const pubPeriod = A.periods.filter(p => A.isApproved(p.k) && A.pubLoaded(p.idx)).slice(-1)[0];
+const pubKey = pubPeriod ? pubPeriod.k : approvedKey;
 const openKey = A.periods.filter(p => !A.isApproved(p.k))[0].k;
 const artistsWithTracks = A.artists.filter(a => A.idxOf(A.byArtist, a.id).length > 5);
 const A1 = artistsWithTracks[0], A2 = artistsWithTracks[1];
@@ -58,7 +64,8 @@ const L1 = A.labels[0];
 const trackOfA2 = A.idxOf(A.byArtist, A2.id)[0];
 const trackOfA1 = A.idxOf(A.byArtist, A1.id)[0];
 
-console.log("Kỳ đã duyệt dùng để thử: " + approvedKey + " · kỳ chưa duyệt: " + openKey);
+console.log("Kỳ đã duyệt dùng để thử: " + approvedKey + " · kỳ chưa duyệt: " + openKey
+  + " · kỳ có tác quyền: " + pubKey);
 console.log("Nghệ sĩ A = " + A1.name + " (" + A1.clientId + ") · nghệ sĩ B = " + A2.name + " (" + A2.clientId + ")\n");
 
 /* ===================== 1. CÁCH LY GIỮA HAI NGHỆ SĨ ===================== */
@@ -82,8 +89,14 @@ check("Nghệ sĩ A không đọc được tổng của nghệ sĩ B qua tham s�
      từ phiên đăng nhập trên máy chủ, không bao giờ lấy từ tham số gửi lên. */
   const b = H.api.summary("artist", A2.id, approvedKey, "rec");
   must(b.total >= 0, "gọi được");
-  return "CẢNH BÁO CÓ CHỦ Ý: bản mẫu chưa có phiên đăng nhập nên partyId đến từ tham số. "
-       + "Khi lên thật, partyId PHẢI lấy từ phiên trên máy chủ — nếu không thì đổi một con số trên URL là xem được người khác.";
+  /* Không chỉ leo MÃ — leo cả VAI: tài khoản gắn A:5 gọi được api với
+     role "label" và partyId 5 để đọc tổng của label 5. */
+  const leoVai = H.api.summary("label", 5, approvedKey, "rec");
+  must(leoVai.total >= 0, "gọi được");
+  return "CẢNH BÁO CÓ CHỦ Ý: bản mẫu chưa có phiên đăng nhập nên CẢ role LẪN partyId đều đến từ tham số. "
+       + "Tài khoản của nghệ sĩ số 5 gọi được api('label', 5, …) và đọc tổng của label 5 — leo vai, không chỉ leo mã. "
+       + "Khi lên thật, thứ lấy từ phiên trên máy chủ phải là cả cặp partyKey (đã có sẵn trong state.accounts), "
+       + "không phải riêng con số partyId.";
 });
 
 check("partyId không hợp lệ bị chặn", () => {
@@ -103,13 +116,27 @@ check("Label chỉ thấy bản ghi của nghệ sĩ trong label mình", () => {
   return t.total + " dòng";
 });
 
-check("Label không mở được tab tác quyền", () => {
-  /* Tác quyền thuộc người sáng tác, không đi qua label — mục 2.3 */
-  const m = mustThrow(() => H.api.summary("label", L1.id, approvedKey, "pub"), "summary tác quyền cho label");
-  mustThrow(() => H.api.tracks("label", L1.id, approvedKey, "pub", {}), "tracks tác quyền cho label");
-  mustThrow(() => H.api.breakdown("label", L1.id, approvedKey, "pub", "src"), "breakdown tác quyền cho label");
+check("Label không mở được tác quyền ở BẤT KỲ cửa nào", () => {
+  /* Tác quyền thuộc người sáng tác, không đi qua label — mục 2.3.
+     Kiểm TỪNG lời gọi nhận tham số stream, không kiểm chọn lọc: quên một
+     cửa là quên cả một dòng tiền, và bộ kiểm vẫn xanh trong khi hơn nửa
+     tiền tác quyền của danh mục đọc được. Đã từng xảy ra đúng như vậy. */
+  const cua = [
+    ["summary", () => H.api.summary("label", L1.id, pubKey, "pub")],
+    ["tracks", () => H.api.tracks("label", L1.id, pubKey, "pub", {})],
+    ["breakdown", () => H.api.breakdown("label", L1.id, pubKey, "pub", "src")],
+    ["trend", () => H.api.trend("label", L1.id, "pub")],
+    ["trackDetail", () => H.api.trackDetail("label", L1.id, pubKey, "pub", A.idxOf(A.byLabel, L1.id)[0])]
+  ];
+  cua.forEach(([ten, fn]) => mustThrow(fn, ten + " tác quyền cho label"));
   must(!H.api.session("label", L1.id).hasPublishing, "session vẫn báo label có tác quyền");
-  return m;
+  /* và thử đúng đường tấn công thật: lấy id bài từ một lời gọi hợp lệ rồi
+     hỏi lại từng id ở luồng tác quyền */
+  const ids = H.api.tracks("label", L1.id, approvedKey, "rec", {}).rows.slice(0, 50).map(r => r.id);
+  let lot = 0;
+  ids.forEach(i => { try { if (H.api.trackDetail("label", L1.id, pubKey, "pub", i).gross > 0) lot++; } catch (e) {} });
+  must(lot === 0, lot + " bài lọt qua đường lấy id từ luồng bản ghi rồi hỏi lại ở luồng tác quyền");
+  return "chặn cả " + cua.length + " cửa · 50 bài thử đường vòng, không bài nào lọt";
 });
 
 check("Label không đọc được bản ghi của nghệ sĩ độc lập", () => {
@@ -243,6 +270,69 @@ check("Tiền treo ở hàng chờ không lọt vào số của khách", () => {
   must(treo >= 0, "âm");
   /* tiền treo chưa gắn được bản ghi nào nên không thể có mặt trong tổng */
   return H.fmt.usd(treo) + " treo, nằm ngoài " + H.fmt.usd0(a.gross) + " doanh thu gộp";
+});
+
+check("Chuỗi Tiền đi đâu cộng lại đúng bằng dòng cuối", () => {
+  /* Đây là khối quan trọng nhất của cả cổng khách — nó trả lời câu duy
+     nhất mọi nghệ sĩ đều hỏi. Nếu các chặng cộng lại không ra dòng cuối
+     thì nó không trả lời gì cả, nó chỉ làm người ta mất tin. */
+  let kiem = 0, lech = 0, tong = 0;
+  const kys = A.periods.filter(p => A.isApproved(p.k)).slice(-4).map(p => p.k);
+  kys.forEach(pk => {
+    for (let id = 0; id < CFG_ARTISTS; id++) {
+      let s;
+      try { s = H.api.summary("artist", id, pk, "rec"); } catch (e) { continue; }
+      if (!s.chain.length) continue;
+      let cong = 0;
+      s.chain.forEach(x => { if (x.kind !== "final") cong += x.value; });
+      const cuoi = s.chain[s.chain.length - 1].value;
+      kiem++;
+      if (Math.abs(cuoi - cong) > 0.02) { lech++; tong += cuoi - cong; }
+    }
+    for (let L = 0; L < A.labels.length; L++) {
+      const s = H.api.summary("label", L, pk, "rec");
+      if (!s.chain.length) continue;
+      let cong = 0;
+      s.chain.forEach(x => { if (x.kind !== "final") cong += x.value; });
+      kiem++;
+      if (Math.abs(s.chain[s.chain.length - 1].value - cong) > 0.02) lech++;
+    }
+  });
+  must(lech === 0, lech + "/" + kiem + " chuỗi không cộng đúng · tổng lệch " + H.fmt.usd(tong));
+  return kiem + " chuỗi trên " + kys.length + " kỳ, cộng đúng hết";
+});
+
+check("Bảng bóc theo cửa hàng cộng lại đúng bằng tổng, cả thu gọn lẫn mở rộng", () => {
+  /* Bấm "xem tất cả cửa hàng" mà tổng hụt đi gần 10% là chuyện không giải
+     thích được với người đang đọc báo cáo tiền của mình. */
+  const ai = [["artist", 100], ["artist", 300], ["label", 12], ["label", 3]];
+  const loi = [];
+  ai.forEach(([vai, id]) => {
+    const t = H.api.summary(vai, id, approvedKey, "rec").total;
+    [false, true].forEach(mo => {
+      const b = H.api.breakdown(vai, id, approvedKey, "rec", "src", { all: mo });
+      const bang = b.rows.reduce((x, r) => x + r.value, 0) + (b.tail ? b.tail.value : 0);
+      if (Math.abs(bang - t) > 0.05) loi.push(vai + " " + id + (mo ? " mở rộng" : " thu gọn")
+        + " hụt " + H.fmt.usd(t - bang));
+    });
+  });
+  must(loi.length === 0, loi.join(" · "));
+  return ai.length + " bên × 2 chế độ, bảng nào cũng cộng đúng tổng";
+});
+
+check("Xem trước bảng chi trả không đụng vào sổ", () => {
+  /* previewPayout dùng cho màn hình; bản ghi thật chỉ chạy đúng một lần
+     lúc duyệt kỳ. Gọi lạc mà ghi được là ghi khống một lượt thu hồi tạm
+     ứng cho kỳ chưa duyệt — và lượt đó không bao giờ đòi lại được. */
+  must(A.runPayout === undefined, "runPayout vẫn nằm trên mặt tiền admin");
+  const pi = A.periods.findIndex(p => !A.isApproved(p.k));
+  must(pi >= 0, "không còn kỳ nào chưa duyệt để thử");
+  const truoc = {};
+  A.advances.list().forEach(x => { truoc[x.partyKey] = x.balance; });
+  A.previewPayout(pi); A.previewPayout(pi); A.previewPayout(pi);
+  const doi = A.advances.list().filter(x => Math.abs(x.balance - truoc[x.partyKey]) > 0.005);
+  must(doi.length === 0, doi.length + " bên bị trừ dư nợ chỉ vì xem trước");
+  return "gọi 3 lần, " + Object.keys(truoc).length + " sổ tạm ứng không xê dịch";
 });
 
 /* ===================== 6. KHOÁ CỬA ===================== */

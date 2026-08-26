@@ -76,13 +76,29 @@ haustek-core.js
 ```
 
 `dashboard.html` gọi `HAUSTEK.lockdown()` ở dòng đầu tiên. Sau lời gọi đó `HAUSTEK.admin`
-biến mất khỏi trang — mở dev tools cũng không lấy được. Cuối trang dashboard có khối
-**"Trình duyệt này thực sự nhận được những gì"**: hiện đúng những gói JSON máy chủ vừa gửi
-xuống, kích thước từng gói, và năm phép kiểm tra chạy thật chứ không phải chữ trang trí.
+biến mất khỏi trang và không lời gọi nào của trang đó lấy lại được. Hai bí mật kinh doanh —
+tên đơn vị phân phối và tỷ lệ gốc — thì ngay từ đầu đã **không nằm trong `haustek-core.js`**:
+`intranet.html` tự nạp chúng vào lúc khởi động, nên bản sao lõi mà khách tải về không mang
+theo gì cả.
 
-Trong sản phẩm thật, thứ tương đương là: những dữ liệu ấy chưa bao giờ rời khỏi máy chủ.
-Ở một bản mẫu chạy trong một trình duyệt, đây là cách gần nhất để chứng minh cùng nguyên tắc.
-Xem mục 5.1 và 2.7 tài liệu bàn giao.
+Cuối trang dashboard có khối **"Trình duyệt này thực sự nhận được những gì"**: hiện đúng những
+gói JSON vừa nhận, kích thước từng gói, và năm phép kiểm **chạy thật trên chính payload và
+chính tầng API** — trong đó có hai phép thử tấn công: hỏi bản ghi ngoài phạm vi, và hỏi một kỳ
+chưa duyệt. Cả hai phải bị từ chối.
+
+### Chỗ bản mẫu KHÔNG chứng minh được — đọc kỹ
+
+Hai trang chạy trong cùng một trình duyệt, cùng một gốc (origin). Nên vẫn còn đường vòng mà
+bản mẫu không bịt được, và cũng không giả vờ là bịt được:
+
+- nạp lại `haustek-core.js` trong một iframe cùng gốc là có lại nguyên `HAUSTEK.admin`
+- `localStorage` giữ toàn bộ quyết định của admin, trang nào cùng gốc cũng đọc được
+
+Vì vậy: đây là **hình dạng** của ranh giới, chưa phải ranh giới đã được thực thi. Thứ thật sự
+bảo đảm cách ly nằm ở mục 5.1 tài liệu bàn giao — dữ liệu thô trong database, lọc và tổng hợp
+chạy ở máy chủ, Row Level Security quyết định ai đọc được dòng nào. Cái ở đây nói rõ tầng API
+phải có hình dạng gì để RLS bên dưới có nghĩa, và `portal/test/api-guard.js` viết hình dạng ấy
+thành phép kiểm chạy được.
 
 ## Trạng thái khởi điểm
 

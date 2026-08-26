@@ -86,11 +86,19 @@ function scan(A) {
 
 /* Tìm tay trong 50.000 bản ghi: MỘT vòng, dừng ngay khi đủ số cần hiện.
    Chỉ soi mã chính và tên bài — mã phụ nằm ở phần gợi ý của lõi. */
+/* Người ta gõ không dấu. Bỏ dấu cả hai vế, không thì "dem" không bao giờ
+   ra "Đêm" — mà ô này là đường thoát duy nhất khi gợi ý của hệ thống không
+   ra gì, tức đúng những dòng treo lâu nhất và khó nhất. */
+function boDau(x) {
+  return String(x || "").toLowerCase().normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "").replace(/đ/g, "d");
+}
 function searchCatalog(A, needle, limit) {
-  const q = needle.toLowerCase();
+  const q = boDau(needle);
   const out = [];
   for (let i = 0; i < A.trackCount && out.length < limit; i++) {
-    if (A.isrcOf(i).toLowerCase().indexOf(q) >= 0 || A.titleOf(i).toLowerCase().indexOf(q) >= 0) out.push(i);
+    if (boDau(A.isrcOf(i)).indexOf(q) >= 0 || boDau(A.titleOf(i)).indexOf(q) >= 0
+        || boDau(A.artistOf(i).name).indexOf(q) >= 0) out.push(i);
   }
   return out;
 }
@@ -390,10 +398,16 @@ H.registerScreen({
          thành khoản truy thu ở kỳ đang mở, kỳ cũ giữ nguyên. Chỉ việc GỠ
          khớp là không cho, vì gỡ là rút tiền ra khỏi một kỳ đã chi. */
       const land = q.status === "pending" ? A.queue.landingPeriod(q.id) : null;
-      if (locked && q.status === "matched") {
+      /* Khoá theo kỳ tiền THẬT SỰ rơi vào, không theo kỳ gốc của dòng.
+         Một khoản truy thu có kỳ gốc đã chốt nhưng đang nằm ở kỳ đang mở —
+         khoá theo kỳ gốc là khoá vĩnh viễn, và người khớp nhầm không còn
+         đường lùi nào trong giao diện. */
+      const kyDangGiu = q.status === "matched" ? (q.intoPeriod || q.periodKey) : q.periodKey;
+      const khoaGo = q.status === "matched" && A.isApproved(kyDangGiu);
+      if (khoaGo) {
         acts = `<div class="mt-acts">
           <button class="btn sm" disabled>Bỏ khớp</button>
-        </div><span class="sub">kỳ đã chốt — không rút lại được khoản đã chi</span>`;
+        </div><span class="sub">tiền đã nằm trong kỳ ${esc(perOf(A, kyDangGiu).label)} đã chốt — không rút lại được khoản đã chi</span>`;
       } else if (q.status === "pending" && land && land.adjustment) {
         acts = `<div class="mt-acts">
           <button class="btn sm pri" data-mact="match" data-id="${esc(q.id)}">Tìm bản ghi khớp</button>

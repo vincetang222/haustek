@@ -50,16 +50,29 @@ Tiền: `A.grossRec(i,p)` `A.grossPub(i,p)` `A.grossRecByFeed(i,p,f)` `A.grossOf
 (role `"admin"` bỏ qua partyId)
 
 Luồng & kỳ: `A.feedLoaded(p,f)` `A.loadedFeedIds(p)` `A.missingFeeds(p)` `A.pubLoaded(p)`
-`A.recon(p)` → `{rows:[{feed,status,at,file,attributed,pending,control,diff,accepted}],attributed,pending,control,diff}`
+`A.recon(p)` → `{rows:[{feed,status,at,file,attributed,adjustments,fromFile,pending,control,diff,accepted}],…}`
+`fromFile` = phần đến từ chính file kỳ này · `adjustments` = khoản truy thu của kỳ khác ghi vào đây.
+So với file gốc thì dùng `fromFile`, đừng dùng `attributed` (nó đã cộng cả truy thu vào).
 `A.approvalChecks(p)` → `[{id,ok,label,detail}]` · `A.canApprove(p)`
 `A.approve(p,by,note,force)` · `A.revoke(p,why)` · `A.isApproved(periodKey)`
+Kỳ phải đóng theo thứ tự: không duyệt được kỳ sau khi kỳ trước còn mở, không thu hồi được kỳ trước khi kỳ sau đã duyệt.
 `A.approvalOf(periodKey)` · `A.payoutOf(periodKey)` → `[{partyKey,kind,earned,carryIn,recoup,payable,carryOut,advanceLeft}]`
+Dòng cuối có thể là `{partyKey:"P:*", kind:"producer", held:true}` — điểm producer chưa gắn được danh tính.
+`A.previewPayout(p)` → cùng hình dạng, nhưng **không ghi gì vào sổ**. Màn hình chỉ được dùng cái này;
+bản ghi thật chỉ chạy đúng một lần, lúc `approve()`.
+`A.earnedByParty(p)` → `Map(partyKey → số tiền)` — **quét cả 50.000 bản ghi, gọi đúng một lần mỗi lần vẽ**.
+`A.pIndexOf(periodKey)` → chỉ số kỳ (0..11), `-1` nếu không có.
 
 Nạp: `A.ingest.steps` (8 bước) · `A.ingest.load(p,f,{file,replace})` · `A.ingest.unload(p,f)`
-`A.ingest.loadPub(p)` · `A.ingest.acceptVariance(p,f,note)`
+`A.ingest.loadPub(p,{file,force})` · `A.ingest.unloadPub(p)` · `A.ingest.acceptVariance(p,f,note)`
+Tác quyền chốt theo quý: `loadPub` ném lỗi nếu kỳ không phải cuối quý, trừ khi `force`.
 
 Hàng chờ khớp ISRC: `A.queue.list({periodKey,status,feedId})` · `A.queue.pendingTotal(periodKey?)`
 `A.queue.suggest(qid)` → `[{i,score,why}]` · `A.queue.resolve(qid,trackIdx)` · `A.queue.park(qid,note)` · `A.queue.unpark(qid)`
+`A.queue.landingPeriod(qid)` → `{k,label,adjustment}` — kỳ mà tiền sẽ RƠI VÀO nếu khớp bây giờ.
+Dòng của kỳ đã duyệt vẫn khớp được: tiền ghi thành **khoản truy thu ở kỳ đang mở** (`adjustment:true`),
+kỳ cũ giữ nguyên. Dòng đã khớp mang thêm `intoPeriod`. Mọi phép kiểm quyền trên dòng đã khớp phải dùng
+`q.intoPeriod || q.periodKey`, **không dùng `q.periodKey`** — kỳ gốc đã chốt không có nghĩa là tiền nằm ở đó.
 Dòng hàng chờ: `{id,periodKey,feedId,isrc,title,artist,store,territory,streams,amount,reason,status,resolvedTo,at}`
 `status` ∈ `pending` · `matched` · `parked`
 
@@ -89,8 +102,12 @@ Trạng thái thô: `A.state()` (đọc thôi, đừng sửa trực tiếp — d
 `rowHTML(row, index)` trả chuỗi các `<div>`, đúng số cột.
 Markup cần: `<div class="vt"><div class="vt-head" id="…"></div><div class="vt-body" id="…"><div class="vt-spacer" id="…"></div></div></div>`
 
-`HAUSTEK.barChart(canvasEl, points, {current, height})` — `points` = `[{label,value,open}]`,
-`open:false` vẽ thành vạch xám (kỳ chưa duyệt).
+`HAUSTEK.barChart(canvasEl, points, {current, height})` — `points` = `[{label,value,open}]`, ba trạng thái:
+`value == null` → vạch cụt sát đáy (chưa có số nào) · `open:false` → **cột viền đứt cao đúng giá trị thật**
+(có số nhưng chưa chốt) · còn lại → cột đặc (đã chốt). Đừng mô tả cột viền đứt là "vạch xám sát đáy".
+
+`A.store.save()` — hầu hết hàm tự lưu, nhưng nếu bạn đổi một trường trạng thái không đi qua hàm nào
+thì phải tự gọi. Tốt nhất là đừng làm vậy.
 
 ## Luật bắt buộc
 

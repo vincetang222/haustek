@@ -85,14 +85,32 @@ HAUSTEK.registerScreen({
     function statusBar() {
       if (miss.length) {
         const lost = miss.reduce((s, f) => s + share[f.id], 0);
-        const money = lost < 1 ? a.gross / (1 - lost) * lost : 0;
+        /* Suy ngược tiền thiếu từ doanh thu ĐANG CÓ chỉ đúng khi còn luồng
+           nào đó đã nạp. Thiếu cả ba thì a.gross = 0, và công thức đó nói
+           "thiếu 100% doanh thu, tức chừng $0" — đúng lúc cần cảnh báo nhất
+           thì lại tự bác bỏ chính mình. Không còn gì để suy thì lấy kỳ gần
+           nhất có đủ luồng làm mốc, và nói rõ đó là ước theo kỳ nào. */
+        let money = 0, mocKy = null;
+        if (lost < 0.999 && a.gross > 0) {
+          money = a.gross / (1 - lost) * lost;
+        } else {
+          for (let i = pi - 1; i >= 0; i--) {
+            if (A.missingFeeds(i).length === 0) {
+              const g = aggs[i].gross;
+              if (g > 0) { money = g * lost; mocKy = P[i].label; break; }
+            }
+          }
+        }
         return `<div class="warn">
           <div class="ic">▲</div>
           <div>
             <b>Kỳ ${esc(P[pi].label)} còn thiếu ${miss.length}/${A.feeds.length} luồng — mọi con số bên dưới đang nhỏ hơn sự thật</b>
             <span>${miss.map(f =>
               `<span class="pill">${esc(f.short)}</span>${esc(f.name)} · gánh chừng ${fmt.pct(share[f.id])} doanh thu kỳ`).join("<br>")}</span>
-            <span>Thiếu tất cả khoảng ${fmt.pct(lost)} doanh thu kỳ, tức chừng ${m(money)} chưa có mặt trong bảng.
+            <span>Thiếu tất cả khoảng ${fmt.pct(lost)} doanh thu kỳ${
+              money > 0 ? `, tức chừng ${m(money)} chưa có mặt trong bảng${
+                mocKy ? ` (ước theo kỳ ${esc(mocKy)} — kỳ này chưa có luồng nào để suy)` : ""}`
+                       : ` — chưa nạp luồng nào nên chưa có gì để ước ra tiền`}.
             Chưa nên gửi báo cáo hoặc chi trả cho kỳ này trước khi nạp nốt.</span>
             <div class="btnrow ov-act"><button class="btn sm" data-go="ingest">Sang nạp dữ liệu</button></div>
           </div></div>`;
@@ -219,8 +237,8 @@ HAUSTEK.registerScreen({
             </div>
           </div>
           <canvas class="ov-chart" data-ov="chart"></canvas>
-          <div class="ov-note">Vạch xám nằm sát đáy = kỳ chưa duyệt: số đã tính được nhưng chưa đối chiếu xong,
-          nên chưa coi là chốt và khách chưa thấy.</div>
+          <div class="ov-note">Cột <b>viền đứt</b> = kỳ chưa duyệt: cao đúng số đã tính được, nhưng chưa
+          đối chiếu xong nên chưa coi là chốt và khách chưa thấy. Cột đặc = kỳ đã duyệt.</div>
         </div>
         <div class="panel">
           <div class="panel-head">

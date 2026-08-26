@@ -69,6 +69,22 @@
    hộp thoại, thông báo, và vẽ lại khi trạng thái đổi.
    ===================================================================== */
 const H = HAUSTEK, A = H.admin, fmt = H.fmt, esc = H.esc;
+
+/* =====================================================================
+   HAI BÍ MẬT KINH DOANH — MỤC 2.7 TÀI LIỆU BÀN GIAO
+   ---------------------------------------------------------------------
+   Chúng nằm ở ĐÂY chứ không nằm trong haustek-core.js, vì cổng khách cũng
+   nạp file lõi đó — thứ gì viết trong lõi là tải về máy khách, đọc bằng
+   `curl` cũng thấy, không cần mở dev tools.
+   Khi triển khai thật, hai giá trị này thuộc về biến môi trường của máy
+   chủ và chưa từng đi qua đường truyền tới bất kỳ trình duyệt nào.
+   ===================================================================== */
+A.provideSecrets({
+  code:      "DIST-1",
+  name:      "Đối tác phân phối chính (tên thật điền khi triển khai)",
+  grossRate: 0.86,     /* Haustek nhận 86% từ đối tác, phần còn lại là phí của họ */
+  contact:   "nội bộ · không hiển thị cho khách"
+});
 const $ = id => document.getElementById(id);
 
 let pIdx = A.periods.length - 1;

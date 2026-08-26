@@ -257,7 +257,10 @@ H.registerScreen({
     const missShareNow = missNow.reduce((s, f) => s + (share[f.id] || 0), 0);
 
     const quarters = P.filter(x => x.month % 3 === 0);
-    const pubDone = P.filter((x, i) => A.pubLoaded(i)).length;
+    /* Đếm trên chính các quý, không đếm trên 12 kỳ rồi chia cho 4 quý —
+       nếu không, nạp nhầm tác quyền vào một tháng giữa quý sẽ đẩy thẻ số
+       lên "4/4 quý" trong khi ngay bên cạnh vẫn ghi còn quý chưa về. */
+    const pubDone = quarters.filter(x => A.pubLoaded(A.pIndexOf(x.k))).length;
     const pubLate = quarters.filter((x) => !A.pubLoaded(A.pIndexOf(x.k)));
 
     const pendNow = A.queue.list({ periodKey: per.k, status: "pending" }).length;

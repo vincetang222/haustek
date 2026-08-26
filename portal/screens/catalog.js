@@ -462,11 +462,18 @@ HAUSTEK.registerScreen({
     }
 
     /* ---------- sự kiện ---------- */
+    /* Khung vẽ lại màn hình chỉ xoá DOM, không dọn timer. Timer còn sống sẽ
+       ghi bộ lọc vào biến cấp module rồi bắn vào DOM đã tháo — bộ lọc biến
+       mất khỏi bảng đang nhìn, rồi tự hiện ra ở lần vẽ sau mà không ai bấm
+       gì. Canh phần tử còn nằm trong trang trước khi làm gì. */
     let qt = null;
     const qEl = $("q");
     qEl.addEventListener("input", () => {
       clearTimeout(qt);
-      qt = setTimeout(() => { flt.q = qEl.value; paint(); }, 200);
+      qt = setTimeout(() => {
+        if (!qEl.isConnected) return;
+        flt.q = qEl.value; paint();
+      }, 200);
     });
     ["own", "type"].forEach(k => {
       $(k).addEventListener("change", e => { flt[k] = e.target.value; paint(); });

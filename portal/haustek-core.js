@@ -13,9 +13,19 @@
                         Đây là thứ duy nhất dashboard được gọi.
 
    dashboard.html gọi HAUSTEK.lockdown() ngay khi khởi động: sau lời gọi
-   đó, HAUSTEK.admin biến mất khỏi trình duyệt khách. Mở dev tools cũng
-   không lấy được. Đây là bản mô phỏng trong trình duyệt của nguyên tắc
-   ở mục 5.1 tài liệu bàn giao: lọc và tổng hợp thuộc về máy chủ.
+   đó, HAUSTEK.admin biến mất khỏi trang khách và không lời gọi nào của
+   trang đó lấy lại được.
+
+   NÓI CHO ĐÚNG: đây là HÌNH DẠNG của ranh giới, không phải ranh giới đã
+   được thực thi. Hai trang cùng chạy trong một trình duyệt, cùng một gốc
+   (origin), nên vẫn còn đường vòng: nạp lại file lõi này trong một iframe
+   cùng gốc là có lại .admin, và localStorage giữ toàn bộ quyết định của
+   admin thì trang nào cùng gốc cũng đọc được. Bản mẫu không bịt được
+   những đường đó, và cũng không nên giả vờ là bịt được.
+   Thứ thật sự bảo đảm cách ly là ở mục 5.1 tài liệu bàn giao: dữ liệu thô
+   nằm trong database, lọc và tổng hợp chạy ở máy chủ, và Row Level
+   Security quyết định ai đọc được dòng nào. Cái ở đây chỉ nói rõ tầng API
+   phải có hình dạng gì để RLS bên dưới có nghĩa.
 
    Số liệu sinh tại chỗ bằng bộ sinh số giả ngẫu nhiên CÓ HẠT GIỐNG cố
    định — nên hai trang mở riêng vẫn ra đúng cùng một con số. Chỉ những
@@ -44,17 +54,24 @@ const CFG = {
 };
 
 /* Tên đơn vị phân phối và tỷ lệ gốc — MỤC 2.7: bí mật kinh doanh.
-   Không bao giờ được có mặt trong bất kỳ gói dữ liệu nào gửi cho khách.
-   Giá trị dưới đây là chỗ giữ chỗ; điền tên thật khi triển khai. */
-const DISTRIBUTOR = {
-  code:      "DIST-1",
-  name:      "Đối tác phân phối chính (tên thật điền khi triển khai)",
-  grossRate: 0.86,             /* Haustek nhận 86% từ đối tác, phần còn lại là phí của họ */
-  contact:   "nội bộ · không hiển thị cho khách"
+   KHÔNG viết chúng vào file này. Cổng khách cũng nạp chính file này, nên
+   bất cứ thứ gì nằm đây đều tải về máy khách — mở dev tools hay chỉ cần
+   `curl` file .js là đọc được, không cần chạy một dòng JavaScript nào.
+   Vì vậy intranet.html tự nạp chúng vào lúc khởi động bằng
+   HAUSTEK.admin.provideSecrets(); dashboard.html không bao giờ gọi hàm đó,
+   nên bản sao lõi mà khách tải về không mang theo gì cả.
+   Trong sản phẩm thật, tương đương là: những giá trị này nằm trong biến
+   môi trường của máy chủ và chưa từng đi qua đường truyền tới khách. */
+let DISTRIBUTOR = null;
+const KHONG_CO_BI_MAT = {
+  code: "—", name: "(chưa nạp — chỉ intranet mới có)", grossRate: null,
+  contact: "chỉ có ở intranet"
 };
 /* Những chuỗi tuyệt đối không được lọt xuống trình duyệt khách.
-   Hàm scrub() bên dưới sẽ ném lỗi nếu thấy chúng trong payload. */
-const FORBIDDEN = [DISTRIBUTOR.name, DISTRIBUTOR.code, "grossRate", "distributor", "nhà phân phối"];
+   Hàm scrub() bên dưới ném lỗi nếu thấy chúng trong payload. Danh sách này
+   nở ra khi intranet nạp bí mật vào. */
+let FORBIDDEN = ["grossRate", "distributor", "nhà phân phối", "phân phối",
+                 "rate_share", "rateShare", "mối riêng"];
 
 /* ---------------------------------------------------------------------
    2. BỘ SINH SỐ CÓ HẠT GIỐNG
@@ -610,10 +627,23 @@ function splitDim(trackIdx, total, weights) {
 /* =====================================================================
    14. PHẠM VI & TỔNG HỢP
    ===================================================================== */
+const RONG = new Int32Array(0);
 function scopeOf(role, partyId, stream) {
   if (role === "admin") return null;                         /* null = toàn danh mục */
-  if (role === "label") return idxOf(byLabel, partyId);
+  if (role === "label") {
+    /* Tác quyền thuộc người sáng tác, không đi qua label. Trả danh mục bản
+       ghi của label cho luồng tác quyền là mở toang cửa: bài thì đúng của
+       label, nhưng TIỀN thì của người sáng tác — nhiều người trong số đó
+       chẳng liên quan gì tới label. Chặn ngay ở đây, đừng chỉ chặn ở từng
+       lời gọi: quên một lời gọi là quên cả một dòng tiền. */
+    return stream === "pub" ? RONG : idxOf(byLabel, partyId);
+  }
   return stream === "pub" ? idxOf(byWriter, partyId) : idxOf(byArtist, partyId);
+}
+/* Một chỗ duy nhất phát biểu luật, để không lời gọi nào quên. */
+function chanTacQuyenChoLabel(role, stream) {
+  if (stream === "pub" && role === "label")
+    throw new Error("Tác quyền không đi qua label");
 }
 function writerShare(i, artistId) {
   if (tW1[i] === artistId) return tW1s[i];
@@ -743,7 +773,7 @@ function approve(pIdx, by, note, force) {
   if (failed.length && !force) throw new Error("Chưa đủ điều kiện duyệt: " + failed.map(c => c.label).join(" · "));
   state.approved[pk] = { at: nowISO(), by: by || "admin", note: note || "",
                          overrides: failed.map(c => c.id) };
-  state.payouts[pk] = runPayout(pIdx);
+  state.payouts[pk] = runPayout(pIdx, true);
   state.publishedAt = nowISO();
   audit.log("period.approve", "Duyệt kỳ " + PERIODS[pIdx].label + (failed.length ? " (bỏ qua: " + failed.map(c => c.label).join(", ") + ")" : ""));
   store.save();
@@ -806,7 +836,12 @@ function earnedByParty(pIdx) {
   }
   return out;
 }
-function runPayout(pIdx) {
+/* GHI vào sổ: đặt lượt thu hồi tạm ứng và phần dồn sang kỳ sau. Chỉ được
+   gọi từ approve(). Gọi lạc một lần ngoài đó là ghi khống một lượt thu hồi
+   cho kỳ chưa duyệt — và vì lần chạy sau thấy dư nợ đã trừ rồi nên nó
+   không ghi đè lại, kết quả là sổ tạm ứng nói đã thu còn bảng chi trả nói
+   chưa trừ. Bên ngoài muốn xem trước thì dùng previewPayout(). */
+function runPayout(pIdx, ghi) {
   const pk = PERIODS[pIdx].k;
   const earned = earnedByParty(pIdx);
   const rows = [];
@@ -827,11 +862,11 @@ function runPayout(pIdx) {
     const after = cents(gross - recoup);
     const payable = after >= CFG.PAYOUT_MIN ? after : 0;
     const carryOut = after >= CFG.PAYOUT_MIN ? 0 : after;
-    if (recoup > 0) {
+    if (ghi && recoup > 0) {
       const adv = state.advances[key];
       adv.byPeriod = adv.byPeriod || {}; adv.byPeriod[pk] = recoup;
     }
-    state.carry[key] = carryOut;
+    if (ghi) state.carry[key] = carryOut;
     rows.push({ partyKey: key, kind: key[0] === "L" ? "label" : "artist",
                 earned: amount, carryIn, recoup, payable, carryOut,
                 advanceLeft: cents(Math.max(bal - recoup, 0)) });
@@ -997,6 +1032,13 @@ const ingest = {
     store.save();
     return { added: n };
   },
+  unloadPub(pIdx) {
+    const pk = PERIODS[pIdx].k;
+    if (state.approved[pk]) throw new Error("Kỳ đã duyệt — thu hồi duyệt trước đã");
+    state.pub[pk] = { status: "missing", at: null, file: null };
+    audit.log("ingest.pub", "Gỡ báo cáo tác quyền kỳ " + PERIODS[pIdx].label);
+    store.save();
+  },
   unload(pIdx, fId) {
     const pk = PERIODS[pIdx].k;
     if (state.approved[pk]) throw new Error("Kỳ đã duyệt — thu hồi duyệt trước đã");
@@ -1004,9 +1046,15 @@ const ingest = {
     audit.log("ingest.unload", "Gỡ luồng " + FEEDS[fId].name + " khỏi kỳ " + PERIODS[pIdx].label);
     store.save();
   },
-  loadPub(pIdx) {
+  loadPub(pIdx, opts) {
     const pk = PERIODS[pIdx].k;
-    state.pub[pk] = { status: "loaded", at: nowISO(), file: "cmo-" + pk + ".xlsx" };
+    /* Tác quyền chốt theo quý. Nạp một báo cáo quý vào tháng giữa quý là
+       đặt cả quý tiền vào sai kỳ — và không ai phát hiện ra, vì con số vẫn
+       "có". Chặn ở đây; muốn cố tình thì phải nói rõ ra. */
+    if (PERIODS[pIdx].month % 3 !== 0 && !(opts && opts.force))
+      throw new Error("Kỳ " + PERIODS[pIdx].label + " không phải cuối quý — tác quyền chốt theo quý, nạp vào đây là đặt cả quý tiền vào sai kỳ");
+    if (state.approved[pk]) throw new Error("Kỳ đã duyệt — thu hồi duyệt trước đã");
+    state.pub[pk] = { status: "loaded", at: nowISO(), file: (opts && opts.file) || ("cmo-" + pk + ".xlsx") };
     audit.log("ingest.pub", "Nạp báo cáo tác quyền kỳ " + PERIODS[pIdx].label);
     store.save();
   },
@@ -1122,7 +1170,15 @@ function esc(s) {
    ===================================================================== */
 const admin = {
   cfg: CFG,
-  distributor: DISTRIBUTOR,
+  get distributor() { return DISTRIBUTOR || KHONG_CO_BI_MAT; },
+  /* Chỉ intranet.html gọi. Gọi xong, hai giá trị này có mặt trong bộ nhớ
+     của TRANG ADMIN — và chỉ trang đó. */
+  provideSecrets(obj) {
+    if (!obj || !obj.name) throw new Error("Thiếu tên đơn vị phân phối");
+    DISTRIBUTOR = Object.assign({}, KHONG_CO_BI_MAT, obj);
+    FORBIDDEN = FORBIDDEN.concat([DISTRIBUTOR.name, DISTRIBUTOR.code].filter(Boolean));
+    return true;
+  },
   periods: PERIODS, feeds: FEEDS, pubFeed: PUB_FEED,
   stores: STORES, storeW: STORE_W, storeFeed: STORE_FEED, storeTopCount: N_TOP,
   territories: TERR, territoryW: TERR_W, pubSources: PUBSRC, pubSourceW: PUBSRC_W,
@@ -1149,7 +1205,10 @@ const admin = {
   idxOf, byArtist, byLabel, byWriter,
   feedLoaded, loadedFeedIds, missingFeeds, pubLoaded,
   recon, feedTotals, approvalChecks, canApprove, approve, revoke,
-  runPayout, earnedByParty, advanceBalance,
+  /* Xem trước bảng chi trả mà KHÔNG đụng vào sổ. Màn hình nào cũng chỉ
+     được dùng cái này; bản ghi thật chỉ chạy đúng một lần, lúc duyệt kỳ. */
+  previewPayout: pIdx => runPayout(pIdx, false),
+  earnedByParty, advanceBalance,
   isApproved: pk => !!state.approved[pk],
   approvalOf: pk => state.approved[pk] || null,
   payoutOf: pk => state.payouts[pk] || null,
@@ -1299,7 +1358,7 @@ const api = {
     assertParty(role, partyId);
     const p = requireApproved(periodKey);
     stream = stream === "pub" ? "pub" : "rec";
-    if (stream === "pub" && role === "label") throw new Error("Tác quyền không đi qua label");
+    chanTacQuyenChoLabel(role, stream);
     const a = agg(role, partyId, p, stream);
     const prevIdx = approvedPeriods().map(x => x.idx).filter(x => x < p).pop();
     const prev = prevIdx != null ? agg(role, partyId, prevIdx, stream) : null;
@@ -1328,11 +1387,25 @@ const api = {
           chain.push({ key: "producer", label: "Điểm producer", value: -a.producer,
                        note: "trừ vào phần của bạn, không cộng thêm bên trên", kind: "out" });
         if (advLeft > 0 || (payoutRow && payoutRow.recoup > 0)) {
-          const rec = payoutRow ? payoutRow.recoup : Math.min(advLeft, a.artist);
+          /* Thu hồi tạm ứng chạy ở cấp BÊN NHẬN — gộp cả doanh thu bản ghi
+             lẫn tác quyền lẫn phần dồn từ kỳ trước. Nhưng chuỗi này chỉ nói
+             về MỘT dòng tiền, nên phải lấy đúng phần thu hồi rơi vào dòng
+             tiền đó, chia theo tỷ lệ đóng góp. Bê nguyên con số cấp bên nhận
+             xuống đây là để tiền tác quyền chui vào cột bản ghi, và chuỗi
+             cộng lại không ra dòng cuối — đúng cái mà cả khối này sinh ra để
+             trả lời. */
+          const recAll = payoutRow ? payoutRow.recoup : Math.min(advLeft, a.artist);
+          const earnedAll = payoutRow ? payoutRow.earned : a.artist;
+          const phan = earnedAll > 0 ? Math.min(a.artist / earnedAll, 1) : 1;
+          const rec = Math.min(cents(recAll * phan), a.artist);
+          const conNo = payoutRow ? payoutRow.advanceLeft : Math.max(advLeft - recAll, 0);
+          const camCaHai = payoutRow && payoutRow.earned > a.artist + 0.005;
           chain.push({ key: "recoup", label: "Trừ vào khoản tạm ứng", value: -rec,
-                       note: "đã ứng " + fmt.usd0(advOpening) + " · còn phải thu hồi " + fmt.usd0(payoutRow ? payoutRow.advanceLeft : Math.max(advLeft - rec, 0)), kind: "out" });
-          chain.push({ key: "final", label: "Thực nhận kỳ này", value: payoutRow ? cents(payoutRow.payable + payoutRow.carryOut) : cents(a.artist - rec),
-                       note: (payoutRow && payoutRow.advanceLeft <= 0) ? "đã thu hồi xong khoản tạm ứng" : "đang trừ dần vào khoản tạm ứng", kind: "final" });
+                       note: "đã ứng " + fmt.usd0(advOpening) + " · còn phải thu hồi " + fmt.usd0(conNo)
+                           + (camCaHai ? " · phần thu hồi tính trên cả doanh thu bản ghi lẫn tác quyền, đây là phần rơi vào dòng này" : ""),
+                       kind: "out" });
+          chain.push({ key: "final", label: "Thực nhận kỳ này", value: cents(a.artist - rec),
+                       note: conNo <= 0 ? "đã thu hồi xong khoản tạm ứng" : "đang trừ dần vào khoản tạm ứng", kind: "final" });
         } else {
           chain.push({ key: "final", label: "Về tay bạn", value: a.artist, note: "số tiền kỳ này", kind: "final" });
         }
@@ -1384,7 +1457,12 @@ const api = {
           return left <= 0 ? 0 : Math.max(1, Math.ceil(left / Math.max(rate, 1)));
         })()
       } : null,
+      /* Khối này ở cấp BÊN NHẬN: một lần chi trả cho cả hai dòng tiền cộng
+         lại, không phải riêng dòng đang xem. Nói rõ ra, đừng để người đọc
+         cộng nhầm nó vào chuỗi phía trên. */
       payout: payoutRow ? { payable: payoutRow.payable, carryOut: payoutRow.carryOut,
+        earnedAllStreams: payoutRow.earned, carryIn: payoutRow.carryIn,
+        coversBothStreams: payoutRow.earned > a.artist + 0.005,
         threshold: CFG.PAYOUT_MIN,
         note: payoutRow.payable > 0 ? "sẽ chi trong kỳ chi trả tới"
           : (payoutRow.carryOut > 0 ? "dưới ngưỡng " + fmt.usd0(CFG.PAYOUT_MIN) + " — dồn sang kỳ sau" : "") } : null,
@@ -1395,6 +1473,7 @@ const api = {
   trend(role, partyId, stream) {
     assertParty(role, partyId);
     stream = stream === "pub" ? "pub" : "rec";
+    chanTacQuyenChoLabel(role, stream);
     return scrub({ points: PERIODS.map(p => state.approved[p.k]
       ? { k: p.k, label: p.label, value: agg(role, partyId, p.idx, stream).total, open: true }
       : { k: p.k, label: p.label, value: null, open: false }) });
@@ -1404,7 +1483,7 @@ const api = {
     assertParty(role, partyId);
     const p = requireApproved(periodKey);
     stream = stream === "pub" ? "pub" : "rec";
-    if (stream === "pub" && role === "label") throw new Error("Tác quyền không đi qua label");
+    chanTacQuyenChoLabel(role, stream);
     const isTerr = dim === "terr";
     /* Khách chỉ thấy tên CỬA HÀNG — thứ họ vốn đã biết. Không có tên đơn
        vị phân phối, không có "luồng dữ liệu" nào ở đây: đó là chuyện vận
@@ -1428,12 +1507,29 @@ const api = {
     let list = names.map((s, j) => ({ name: s, value: cents(acc[j] * norm) })).filter(x => x.value > 0.004);
     list.sort((a, b) => b.value - a.value);
     const topN = (!isTerr && stream === "rec") ? N_TOP : list.length;
-    const head = list.slice(0, topN);
-    const tail = list.slice(topN);
+    /* Mở rộng thì hiện nhiều dòng hơn, nhưng KHÔNG được cắt mất tiền: phần
+       đuôi bị cắt vẫn phải nằm lại một dòng. Cắt trắng là khách bấm "xem tất
+       cả" rồi thấy tổng hụt gần 10% so với lúc thu gọn — không có cách nào
+       giải thích được chuyện đó. */
+    const N_HIEN = (opts && opts.all) ? 40 : topN;
+    const hien = list.slice(0, N_HIEN);
+    const duoi = list.slice(N_HIEN);
+    let tail = duoi.length
+      ? { count: duoi.length, value: cents(duoi.reduce((s, x) => s + x.value, 0)) }
+      : null;
+    /* Bóc 218 cửa hàng rồi làm tròn từng dòng tới xu thì tổng lệch vài xu
+       so với con số ở ô lớn — nhỏ, nhưng đây là báo cáo tiền, và người đọc
+       cộng tay được. Dồn phần dư vào dòng "còn lại" (hoặc dòng lớn nhất nếu
+       không có dòng nào bị gộp) để bảng luôn cộng đúng tuyệt đối. */
+    const dangCo = cents(hien.reduce((x, r) => x + r.value, 0) + (tail ? tail.value : 0));
+    const du = cents(total - dangCo);
+    if (Math.abs(du) > 0.004) {
+      if (tail) tail.value = cents(tail.value + du);
+      else if (hien.length) hien[0].value = cents(hien[0].value + du);
+    }
     return scrub({
-      dim, rows: (opts && opts.all) ? list.slice(0, 40) : head,
-      tail: (opts && opts.all) ? null : (tail.length ? { count: tail.length, value: cents(tail.reduce((s, x) => s + x.value, 0)) } : null),
-      totalStores: list.length
+      dim, rows: hien, tail,
+      shown: hien.length, totalStores: list.length, expanded: !!(opts && opts.all)
     });
   },
 
@@ -1441,7 +1537,7 @@ const api = {
     assertParty(role, partyId);
     const p = requireApproved(periodKey);
     stream = stream === "pub" ? "pub" : "rec";
-    if (stream === "pub" && role === "label") throw new Error("Tác quyền không đi qua label");
+    chanTacQuyenChoLabel(role, stream);
     opts = opts || {};
     const q = (opts.q || "").trim().toLowerCase();
     const sc = scopeOf(role, partyId, stream), n = sc ? sc.length : 0;
@@ -1472,6 +1568,7 @@ const api = {
     assertParty(role, partyId);
     const p = requireApproved(periodKey);
     stream = stream === "pub" ? "pub" : "rec";
+    chanTacQuyenChoLabel(role, stream);
     const i = +trackId;
     /* kiểm tra quyền lần nữa ở đây, không tin giao diện đã lọc đúng */
     if (!inScope(role, partyId, stream, i)) throw new Error("Bản ghi này không thuộc phạm vi của bạn");
@@ -1663,7 +1760,12 @@ const H = {
 
   /* dashboard.html gọi hàm này ngay dòng đầu. Sau đó HAUSTEK.admin không
      còn tồn tại trong trình duyệt khách — cả dữ liệu thô, cả tên đơn vị
-     phân phối, cả tỷ lệ gốc. Mở dev tools cũng không lấy được.
+     phân phối, cả tỷ lệ gốc — hai thứ sau thì ngay từ đầu đã không nằm
+     trong file này (xem provideSecrets ở trên).
+     Nhắc lại cho khỏi hiểu nhầm: lời gọi này gỡ mặt tiền admin khỏi TRANG
+     đang chạy, chứ không dựng được tường giữa hai trang cùng gốc. Nạp lại
+     lõi trong iframe cùng gốc là có lại; localStorage cũng đọc được. Muốn
+     thật thì dữ liệu phải ở phía máy chủ.
      Trong hệ thật, thứ tương đương là: những thứ này chưa bao giờ rời
      khỏi máy chủ. */
   lockdown() {
