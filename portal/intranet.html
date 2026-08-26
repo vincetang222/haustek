@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Haustek — Intranet vận hành doanh thu</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=Be+Vietnam+Pro:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="haustek-ui.css">
+</head>
+<body>
+
+<div class="scale" id="scaleBar">Đang dựng dữ liệu…</div>
+
+<header class="top">
+  <div class="top-in">
+    <div class="logo"><i>●</i> HAUSTEK <em>INTRANET</em></div>
+    <div class="crumb" id="crumb"></div>
+    <div class="spacer"></div>
+    <select id="period" aria-label="Kỳ báo cáo"></select>
+    <div class="dimtabs" role="group" aria-label="Tiền tệ">
+      <button data-cur="USD" class="on">USD</button>
+      <button data-cur="VND">VND</button>
+    </div>
+    <button class="btn" id="btnSnap" title="Xuất / nạp snapshot trạng thái">Snapshot</button>
+    <a class="btn" href="dashboard.html" target="_blank" rel="noopener">Cổng khách ↗</a>
+  </div>
+</header>
+
+<div class="shell">
+  <nav class="nav" id="nav" aria-label="Điều hướng"></nav>
+  <main>
+    <div class="page-head">
+      <h1 id="pgTitle"></h1>
+      <p id="pgSub"></p>
+    </div>
+    <div id="screen"></div>
+  </main>
+</div>
+
+<footer>
+  Intranet nội bộ Haustek · bản mẫu · số liệu sinh tại chỗ để thử kiến trúc ở quy mô thật — không phải doanh thu thật<br>
+  Toàn bộ tổng hợp ở đây chạy trong trình duyệt <b>chỉ vì bản mẫu phải tự chạy được</b>. Khi làm thật, những phép này thuộc về database — xem mục 5.1 tài liệu bàn giao.<br>
+  Tên đơn vị phân phối và tỷ lệ gốc chỉ có ở trang này. Cổng khách không bao giờ nhận được chúng.
+</footer>
+
+<div class="toasts" id="toasts"></div>
+
+<script src="haustek-core.js"></script>
+<script src="screens/overview.js"></script>
+<script src="screens/ingest.js"></script>
+<script src="screens/match.js"></script>
+<script src="screens/close.js"></script>
+<script src="screens/rates.js"></script>
+<script src="screens/advances.js"></script>
+<script src="screens/payouts.js"></script>
+<script src="screens/catalog.js"></script>
+<script src="screens/accounts.js"></script>
+<script src="screens/questions.js"></script>
+<script>
+"use strict";
+/* =====================================================================
+   KHUNG INTRANET
+   Mỗi màn hình là một file trong screens/, tự đăng ký qua
+   HAUSTEK.registerScreen(). Khung này lo: điều hướng, chọn kỳ, tiền tệ,
+   hộp thoại, thông báo, và vẽ lại khi trạng thái đổi.
+   ===================================================================== */
+const H = HAUSTEK, A = H.admin, fmt = H.fmt, esc = H.esc;
+const $ = id => document.getElementById(id);
+
+let pIdx = A.periods.length - 1;
+let cur = "USD";
+let activeId = null;
+
+/* ---------- thông báo ---------- */
+function toast(msg, kind) {
+  const el = document.createElement("div");
+  el.className = "toast" + (kind ? " " + kind : "");
+  el.textContent = msg;
+  $("toasts").appendChild(el);
+  setTimeout(() => { el.style.opacity = "0"; el.style.transition = "opacity .3s"; }, 3200);
+  setTimeout(() => el.remove(), 3600);
+}
+
+/* ---------- hộp thoại ---------- */
+function modal(opts) {
+  return new Promise(resolve => {
+    const bg = document.createElement("div");
+    bg.className = "modal-bg";
+    bg.innerHTML = `<div class="modal" role="dialog" aria-modal="true">
+      <h3>${esc(opts.title || "")}</h3>
+      ${opts.hint ? `<p class="hint">${opts.hint}</p>` : ""}
+      <div id="mBody">${opts.body || ""}</div>
+      <div class="modal-foot">
+        <button class="btn" data-act="cancel">${esc(opts.cancel || "Huỷ")}</button>
+        ${opts.ok === false ? "" : `<button class="btn ${opts.danger ? "dang" : "pri"}" data-act="ok">${esc(opts.ok || "Xác nhận")}</button>`}
+      </div></div>`;
+    const close = v => { bg.remove(); document.removeEventListener("keydown", onKey); resolve(v); };
+    const onKey = e => { if (e.key === "Escape") close(null); };
+    bg.addEventListener("click", e => {
+      if (e.target === bg) return close(null);
+      const b = e.target.closest("button[data-act]");
+      if (!b) return;
+      if (b.dataset.act === "cancel") return close(null);
+      const form = {};
+      bg.querySelectorAll("[data-field]").forEach(f => { form[f.dataset.field] = f.value; });
+      close(form);
+    });
+    document.addEventListener("keydown", onKey);
+    document.body.appendChild(bg);
+    const first = bg.querySelector("[data-field], button[data-act=ok]");
+    if (first) first.focus();
+    if (opts.onMount) opts.onMount(bg);
+  });
+}
+async function confirmBox(title, hint, okLabel, danger) {
+  return !!(await modal({ title, hint, ok: okLabel || "Xác nhận", danger }));
+}
+
+/* ---------- ngữ cảnh trao cho mỗi màn hình ---------- */
+function ctx() {
+  return {
+    pIdx, period: A.periods[pIdx], periodKey: A.periods[pIdx].k,
+    periods: A.periods, cur,
+    admin: A, fmt, esc, H,
+    money:  v => fmt.money(v, cur, A.fx.rateFor(A.periods[pIdx].k)),
+    money2: v => fmt.money2(v, cur, A.fx.rateFor(A.periods[pIdx].k)),
+    setPeriod(i) { pIdx = Math.max(0, Math.min(A.periods.length - 1, i)); $("period").value = pIdx; render(); },
+    go(id) { location.hash = "#" + id; },
+    refresh() { render(); },
+    toast, modal, confirm: confirmBox
+  };
+}
+
+/* ---------- điều hướng ---------- */
+function drawNav() {
+  const groups = [];
+  H.screens.forEach(s => {
+    let g = groups.find(x => x.name === (s.group || ""));
+    if (!g) { g = { name: s.group || "", items: [] }; groups.push(g); }
+    g.items.push(s);
+  });
+  $("nav").innerHTML = groups.map(g =>
+    (g.name ? `<div class="nav-grp">${esc(g.name)}</div>` : "") +
+    g.items.map(s => {
+      let badge = "";
+      try { badge = s.badge ? (s.badge(ctx()) || "") : ""; } catch (e) { badge = ""; }
+      return `<a href="#${s.id}" class="${s.id === activeId ? "on" : ""}">${esc(s.nav || s.title)}${
+        badge ? `<span class="badge">${esc(badge)}</span>` : ""}</a>`;
+    }).join("")
+  ).join("");
+}
+
+/* ---------- vẽ ---------- */
+function render() {
+  const id = (location.hash || "").replace("#", "") || H.screens[0].id;
+  const s = H.screens.find(x => x.id === id) || H.screens[0];
+  activeId = s.id;
+  drawNav();
+  $("pgTitle").textContent = s.title;
+  $("pgSub").innerHTML = s.subtitle || "";
+  $("crumb").textContent = "Admin · " + s.nav + " · kỳ " + A.periods[pIdx].label;
+  const root = $("screen");
+  root.innerHTML = "";
+  const t = performance.now();
+  try { s.render(root, ctx()); }
+  catch (e) {
+    root.innerHTML = `<div class="panel"><h3>Màn hình này lỗi</h3>
+      <p class="hint">${esc(e && e.message)}</p><pre class="json">${esc(e && e.stack || "")}</pre></div>`;
+    console.error(e);
+  }
+  drawScale(performance.now() - t);
+}
+
+function drawScale(ms) {
+  const st = A.state();
+  const approved = Object.keys(st.approved).length;
+  const pend = A.queue.list({ status: "pending" }).length;
+  const miss = A.periods.reduce((s, p, i) => s + A.missingFeeds(i).length, 0);
+  $("scaleBar").innerHTML = `
+    <span><b>${fmt.num(A.counts.tracks)}</b> bản ghi</span>
+    <span><b>${fmt.num(A.counts.artists)}</b> nghệ sĩ · <b>${fmt.num(A.counts.labels)}</b> label</span>
+    <span>bóc theo <b>${fmt.num(A.counts.stores)}</b> cửa hàng × <b>${A.counts.territories}</b> lãnh thổ</span>
+    <span><b>${A.feeds.length}</b> luồng dữ liệu${miss ? ` · <b class="no">${miss}</b> ô còn thiếu` : ""}</span>
+    <span>kỳ đã duyệt <b>${approved}/${A.periods.length}</b></span>
+    <span>hàng chờ khớp <b class="${pend ? "no" : "ok"}">${fmt.num(pend)}</b> dòng</span>
+    <span class="ok">vẽ màn hình: <b>${Math.round(ms)}ms</b></span>`;
+}
+
+/* ---------- snapshot: kênh dự phòng khi localStorage bị chặn ---------- */
+$("btnSnap").onclick = async () => {
+  const ok = H.storage.available();
+  const res = await modal({
+    title: "Snapshot trạng thái",
+    hint: ok
+      ? "Trạng thái đang được lưu tự động vào trình duyệt này. Snapshot dùng khi muốn chuyển sang máy khác, hoặc khi mở bằng Safari (Safari chặn localStorage với file mở từ ổ đĩa)."
+      : "<b>Trình duyệt này đang chặn localStorage</b> — mọi thay đổi sẽ mất khi đóng tab. Dùng snapshot để giữ lại.",
+    body: `<label class="fld">Dán snapshot vào đây để nạp lại</label>
+      <textarea data-field="json" rows="7" placeholder='{"v":"1.0.0", …}'></textarea>
+      <div class="btnrow" style="margin-top:9px">
+        <button type="button" class="btn" id="dl">Tải snapshot về máy</button>
+        <button type="button" class="btn dang" id="rs">Đặt lại toàn bộ</button>
+      </div>`,
+    ok: "Nạp snapshot",
+    onMount(bg) {
+      bg.querySelector("#dl").onclick = () => {
+        const blob = new Blob([H.storage.exportJSON()], { type: "application/json" });
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = "haustek-snapshot-" + new Date().toISOString().slice(0, 10) + ".json";
+        a.click(); URL.revokeObjectURL(a.href);
+        toast("Đã tải snapshot về máy", "ok");
+      };
+      bg.querySelector("#rs").onclick = async () => {
+        bg.remove();
+        if (await confirmBox("Đặt lại toàn bộ trạng thái?",
+          "Mọi thao tác đã làm (nạp luồng, khớp tay, duyệt kỳ, tỷ lệ, tài khoản) sẽ mất. Danh mục và doanh thu sinh lại y hệt.",
+          "Đặt lại", true)) A.reset();
+      };
+    }
+  });
+  if (res && res.json && res.json.trim()) {
+    try { H.storage.importJSON(res.json); toast("Đã nạp snapshot", "ok"); location.reload(); }
+    catch (e) { toast(e.message, "no"); }
+  }
+};
+
+/* ---------- sự kiện chung ---------- */
+$("period").innerHTML = A.periods.map((p, i) =>
+  `<option value="${i}">Kỳ ${p.label}${A.isApproved(p.k) ? " · đã duyệt" : " · chưa duyệt"}</option>`).reverse().join("");
+$("period").value = pIdx;
+$("period").onchange = e => { pIdx = +e.target.value; render(); };
+document.querySelectorAll("[data-cur]").forEach(b => {
+  b.onclick = () => {
+    cur = b.dataset.cur;
+    document.querySelectorAll("[data-cur]").forEach(x => x.classList.toggle("on", x === b));
+    render();
+  };
+});
+addEventListener("hashchange", render);
+let rt = null;
+addEventListener("resize", () => { clearTimeout(rt); rt = setTimeout(render, 200); });
+
+render();
+console.log("[intranet] " + H.screens.length + " màn hình · dựng lõi " + H.bootMs() + "ms");
+</script>
+</body>
+</html>
