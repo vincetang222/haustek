@@ -40,10 +40,14 @@ const CSS = `
    nửa xu là chắc chắn nhiễu chứ không phải tiền. */
 const EPS = 0.004;
 
+/* Dòng điểm producer cũng có số ở cột dồn sang kỳ sau, nhưng đó là tiền
+   GIỮ LẠI vì chưa biết chủ — không phải tiền dồn vì dưới ngưỡng chi. Nên
+   nó đứng ngoài bộ lọc "bị dồn sang kỳ sau", đúng như cách thẻ số đếm;
+   để nó lọt vào đây thì thẻ số và bảng nói hai con số khác nhau. */
 const FILTERS = [
   { k: "all",   lab: "Tất cả",                     test: () => true },
   { k: "pay",   lab: "Chỉ bên được nhận tiền",     test: r => r.payable > EPS },
-  { k: "carry", lab: "Chỉ bên bị dồn sang kỳ sau", test: r => r.carryOut > EPS },
+  { k: "carry", lab: "Chỉ bên bị dồn sang kỳ sau", test: r => !r.isProd && r.carryOut > EPS },
   { k: "rec",   lab: "Chỉ bên đang trừ tạm ứng",   test: r => r.recoup > EPS }
 ];
 
@@ -66,7 +70,7 @@ const ui = { q: "", f: "all" };
 let sortKey = "payable", sortDir = -1;
 
 const fold = s => String(s == null ? "" : s).toLowerCase()
-  .normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/đ/g, "d");
+  .normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\u0111/g, "d");
 
 /* ---------------------------------------------------------------------
    ĐỌC BẢN CHỤP RA DẠNG VẼ ĐƯỢC
@@ -165,7 +169,8 @@ function buildCSV(list, periodKey) {
       csvNum(r.payable), csvNum(r.carryOut), csvNum(r.advanceLeft)
     ].join(","));
   });
-  return "﻿" + lines.join("\r\n") + "\r\n";
+  /* BOM: thiếu nó thì Excel đọc UTF-8 thành ký tự rác */
+  return "\uFEFF" + lines.join("\r\n") + "\r\n";
 }
 
 function downloadCSV(text, fileName) {
@@ -300,13 +305,16 @@ HAUSTEK.registerScreen({
           ? "giữ nhịp này thì còn ~" + esc(fmt.num(recPeriods)) + " kỳ nữa mới thu hồi xong"
           : "kỳ này không thu hồi thêm được đồng nào"))}
       ${kpi(S.carryOut > EPS ? "bad" : "", "Dồn sang kỳ sau", esc(ctx.money(S.carryOut)),
-        esc(fmt.num(S.carryN)) + " bên dưới ngưỡng " + esc(fmt.usd0(S.minPay))
-        + " — tiền không mất, cộng vào kỳ sau"
+        (S.carryN > 0
+          ? esc(fmt.num(S.carryN)) + " bên rơi xuống dưới ngưỡng " + esc(fmt.usd0(S.minPay))
+            + " — tiền không mất, cộng thẳng vào kỳ sau"
+          : "không bên nào xuống dưới ngưỡng " + esc(fmt.usd0(S.minPay)) + " kỳ này")
         + (S.held > EPS ? "<br>ngoài ra " + esc(ctx.money(S.held)) + " điểm producer giữ lại, dòng riêng cuối bảng" : ""))}
       ${kpi(S.zero > 0 ? "bad" : "good", "Kiếm được nhưng không nhận đồng nào", esc(fmt.num(S.zero)),
         S.zero > 0
-          ? esc(fmt.num(S.zeroRec)) + " bên bị tạm ứng ăn hết · " + esc(fmt.num(S.zeroCarry))
-            + " bên dưới ngưỡng chi<br>họ vẫn thấy số kiếm được trên cổng khách, kèm lý do chưa nhận"
+          ? [S.zeroRec ? esc(fmt.num(S.zeroRec)) + " bên bị tạm ứng ăn hết" : "",
+             S.zeroCarry ? esc(fmt.num(S.zeroCarry)) + " bên dưới ngưỡng chi" : ""].filter(Boolean).join(" · ")
+            + "<br>họ vẫn thấy số kiếm được trên cổng khách, kèm lý do chưa nhận"
           : "mọi bên có phát sinh đều nhận được tiền kỳ này")}
     </div>`;
 
@@ -317,7 +325,7 @@ HAUSTEK.registerScreen({
       const pendAmt = A.queue.pendingTotal(pk);
       const items = [
         { ok: true, b: "Kỳ " + per.label + " đã duyệt — bảng dưới đây là bản đã chốt",
-          s: (appr.by || "admin") + " · " + fmt.when(appr.at)
+          s: esc(appr.by || "admin") + " · " + fmt.when(appr.at)
              + ((appr.overrides && appr.overrides.length)
                 ? " · duyệt trong khi còn " + appr.overrides.length + " điều kiện chưa đạt"
                 : "") },
@@ -440,8 +448,9 @@ HAUSTEK.registerScreen({
         countEl.innerHTML = `<b>${esc(fmt.num(view.length))}</b> / ${esc(fmt.num(all.length))} bên nhận<br>`
           + `thực trả ${esc(ctx.money(sum.payable))}`
           + (S.payable > 0 ? ` · ${esc(fmt.pct(sum.payable / S.payable))} tổng phải chi` : "");
-        footEl.innerHTML = `Chỉ ~30 dòng đang nhìn thấy được dựng thành HTML; ${esc(fmt.num(all.length))} dòng
-          còn lại nằm trong bộ nhớ dưới dạng số. Bấm tiêu đề cột để đổi thứ tự sắp xếp.`
+        footEl.innerHTML = `Chỉ ~30 dòng đang nhìn thấy được dựng thành HTML, trong tổng số
+          ${esc(fmt.num(view.length))} dòng đang lọc — phần còn lại nằm trong bộ nhớ dưới dạng số.
+          Bấm tiêu đề cột để đổi thứ tự sắp xếp.`
           + (S.held > EPS
             ? `<br>Dòng cuối bảng — <b>${esc(ctx.money(S.held))}</b> điểm producer — không trả cho ai được:
                danh mục chỉ có TÊN producer, chưa có mã. Tiền nằm lại và nhìn thấy được, chứ không lặng lẽ biến mất.`
@@ -479,7 +488,11 @@ HAUSTEK.registerScreen({
       try {
         if (!view.length) { ctx.toast("Bộ lọc đang không còn dòng nào để xuất", "no"); return; }
         downloadCSV(buildCSV(view, pk), "haustek-chi-tra-" + pk + ".csv");
+        /* Ai đã cầm bảng chi trả ra khỏi hệ thống là chuyện đáng ghi lại.
+           audit.log không tự lưu (lõi luôn gọi save ở mutator gọi nó), nên
+           lưu ngay tại đây, không thì mở lại trang là mất dấu. */
         A.audit.log("payout.export", "Xuất CSV chi trả kỳ " + per.label + " · " + view.length + " dòng");
+        A.store.save();
         ctx.toast("Đã tải " + fmt.num(view.length) + " dòng chi trả kỳ " + per.label + " · số ghi bằng USD", "ok");
       } catch (e) { ctx.toast(e.message, "no"); }
     });

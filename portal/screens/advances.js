@@ -35,6 +35,7 @@ const CSS = `
 .ad-cols{display:grid;gap:12px;grid-template-columns:1fr}
 @media(min-width:1120px){.ad-cols{grid-template-columns:1.05fr 1fr}}
 .ad-acts{display:flex;gap:6px;justify-content:flex-end}
+.ad-k{margin-left:6px}
 `;
 
 /* Bao nhiêu bên nhận đổ vào select một lần. 900 nghệ sĩ nhét hết vào một
@@ -42,7 +43,7 @@ const CSS = `
 const OPT_LIMIT = 200;
 
 const fold = s => String(s == null ? "" : s).toLowerCase()
-  .normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/đ/g, "d");
+  .normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\u0111/g, "d");
 
 /* Trạng thái riêng của màn hình, để ngoài DOM: sau ctx.refresh() (thêm,
    sửa, xoá một khoản) người dùng quay lại đúng chỗ đang đứng. */
@@ -62,16 +63,22 @@ function scanPayouts(A, cents) {
   A.periods.forEach(p => {
     if (!A.isApproved(p.k)) return;
     const rows = A.payoutOf(p.k) || [];
-    let recoup = 0, parties = 0, earned = 0, below = 0, belowSum = 0;
+    let recoup = 0, parties = 0, earned = 0, below = 0, belowSum = 0, carried = 0;
     rows.forEach(r => {
       earned += r.earned || 0;
-      if (r.carryOut > 0.005) { below++; belowSum += r.carryOut; }
+      /* Dòng "P:*" là điểm producer chưa gắn được danh tính — nó nằm lại
+         nguyên cục chứ không phải một bên nhận rơi xuống dưới ngưỡng.
+         Đếm nhầm nó vào là con số dồn sang kỳ sau phồng lên gấp mấy trăm lần. */
+      if (r.kind !== "producer") {
+        if (r.carryOut > 0.005) { below++; belowSum += r.carryOut; }
+        if (r.carryIn > 0.005) carried++;
+      }
       if (!(r.recoup > 0.005)) return;
       recoup += r.recoup; parties++;
       pace.set(r.partyKey, { amount: r.recoup, period: p });
     });
     byPeriod.push({ p, recoup: cents(recoup), parties, earned: cents(earned),
-                    below, belowSum: cents(belowSum), rows });
+                    below, belowSum: cents(belowSum), carried, rows });
   });
   return { byPeriod, pace };
 }
@@ -104,9 +111,13 @@ function pickExample(scan) {
     const e = scan.byPeriod[n];
     const hits = e.rows.filter(r => r.recoup > 0.005);
     if (!hits.length) continue;
-    /* Ưu tiên bên VẪN CÒN nợ: dẫn được cả chặng "còn bao nhiêu kỳ nữa". */
-    const owing = hits.filter(r => r.advanceLeft > 0.005);
-    return { entry: e, row: owing[0] || hits[0] };
+    /* Dòng dẫn ra phải nói được càng nhiều chặng càng tốt: vẫn còn nợ (thấy
+       chặng "còn mấy kỳ nữa") và vẫn còn tiền về tay (thấy chặng ngưỡng chi
+       trả). Dòng bị trừ sạch không còn đồng nào là ví dụ cụt. */
+    const score = r => (r.advanceLeft > 0.005 ? 2 : 0) + (r.payable > 0.005 ? 1 : 0);
+    let best = hits[0];
+    for (const r of hits) if (score(r) > score(best)) best = r;
+    return { entry: e, row: best };
   }
   return null;
 }
@@ -156,10 +167,10 @@ async function askAdvance(ctx, existing) {
       const amtEl = bg.querySelector('[data-field="amount"]');
       const amtLive = bg.querySelector("[data-ad-amt]");
       const paintAmt = () => {
-        const v = Number(String(amtEl.value).replace(",", "."));
-        amtLive.textContent = v > 0
-          ? "≈ " + vnd(v) + " theo tỷ giá kỳ " + ctx.period.label
-          : "Số tiền phải lớn hơn 0.";
+        const raw = String(amtEl.value).trim();
+        const v = Number(raw.replace(",", "."));
+        amtLive.textContent = v > 0 ? "≈ " + vnd(v) + " theo tỷ giá kỳ " + ctx.period.label
+          : (raw ? "Số tiền phải lớn hơn 0." : "Nhập số tiền đã ứng, tính bằng USD.");
       };
       amtEl.addEventListener("input", paintAmt);
       paintAmt();
@@ -170,8 +181,9 @@ async function askAdvance(ctx, existing) {
       const qEl = bg.querySelector("[data-ad-q]");
       const live = bg.querySelector("[data-ad-live]");
 
-      function paintLive(total) {
-        const key = partyEl.value;
+      let matched = 0;
+      function paintLive() {
+        const total = matched, key = partyEl.value;
         const old = key ? have.get(key) : null;
         live.textContent = !key
           ? "Không có bên nhận nào khớp — sửa lại ô tìm."
@@ -191,17 +203,20 @@ async function askAdvance(ctx, existing) {
           if (needle && fold(p.name + " " + p.clientId).indexOf(needle) < 0) continue;
           hit.push(p);
         }
-        partyEl.innerHTML = hit.slice(0, OPT_LIMIT).map(p => {
+        /* Select nhiều dòng (size>1) mở ra KHÔNG chọn sẵn gì cả — không đánh
+           dấu dòng đầu thì bấm Lưu ngay sẽ báo "phải chọn một bên nhận". */
+        partyEl.innerHTML = hit.slice(0, OPT_LIMIT).map((p, n) => {
           const old = have.get(p.key);
-          return '<option value="' + esc(p.key) + '">' + esc(p.name) + " · " + esc(p.clientId)
+          return '<option value="' + esc(p.key) + '"' + (n === 0 ? " selected" : "") + ">" + esc(p.name) + " · " + esc(p.clientId)
             + (isLabel ? "" : " · " + esc(p.labelId >= 0 ? A.labels[p.labelId].name : "độc lập"))
             + (old ? " · đang nợ " + esc(fmt.usd0(old.balance)) : "") + "</option>";
         }).join("");
-        paintLive(hit.length);
+        matched = hit.length;
+        paintLive();
       }
       kindEl.addEventListener("change", () => { qEl.value = ""; fill(); });
       qEl.addEventListener("input", fill);
-      partyEl.addEventListener("change", () => paintLive(partyEl.options.length));
+      partyEl.addEventListener("change", paintLive);
       fill();
     }
   });
@@ -344,6 +359,13 @@ HAUSTEK.registerScreen({
         const r = ex.row, e = ex.entry;
         const gross = cents(r.earned + r.carryIn);
         const after = cents(gross - r.recoup);
+        /* Dòng chính hầu như luôn bị trừ sạch — đó mới là chuyện thường ngày.
+           Nên hai chặng cuối phải mượn số ở chỗ khác mới nói được bằng số. */
+        const clearedRows = e.rows.filter(x => x.kind !== "producer" && x.recoup > 0.005 && x.payable > 0.005);
+        const cleared = clearedRows[0] || null, clearedN = clearedRows.length;
+        let carryEx = null;
+        for (let n = scan.byPeriod.length - 1; n >= 0 && !carryEx; n--)
+          if (scan.byPeriod[n].below > 0) carryEx = { e: scan.byPeriod[n], next: scan.byPeriod[n + 1] || null };
         const step = (cls, lab, val, note) => `<div class="chain-step${cls ? " " + cls : ""}">
           <div class="chain-top"><span class="chain-name">${esc(lab)}</span><span class="chain-val">${ctx.money2(val)}</span></div>
           <div class="chain-note">${note}</div>
@@ -355,16 +377,24 @@ HAUSTEK.registerScreen({
             esc(A.partyName(r.partyKey)) + " · " + esc(A.partyClientId(r.partyKey))
             + " · " + (r.kind === "label" ? "label" : "nghệ sĩ"))}
           ${r.carryIn > 0.005 ? step("", "+ Dồn từ kỳ trước", r.carryIn, "kỳ trước dưới ngưỡng nên để lại, không mất") : ""}
-          ${step("out", "− Trừ vào dư nợ tạm ứng", -r.recoup,
+          ${step("out", "− Trừ vào dư nợ tạm ứng", r.recoup,
             "sau lần trừ này còn phải thu hồi " + esc(fmt.usd0(r.advanceLeft))
             + (r.advanceLeft > 0.005 ? " — chưa hết nợ" : " — vừa sạch nợ ở kỳ này"))}
           ${step(r.payable > 0.005 ? "final" : "", "= Còn lại sau khi trừ", after,
             r.payable > 0.005
               ? "trên ngưỡng " + esc(fmt.usd0(min)) + " → vào danh sách chi của kỳ chi trả tới"
-              : "dưới ngưỡng " + esc(fmt.usd0(min)) + " → dồn sang kỳ sau, còn nguyên " + esc(fmt.usd0(r.carryOut)))}
+              : (r.carryOut > 0.005
+                  ? "dưới ngưỡng " + esc(fmt.usd0(min)) + " → dồn sang kỳ sau, còn nguyên " + esc(fmt.usd0(r.carryOut))
+                  : "kỳ này bị trừ hết vào khoản tạm ứng — không còn đồng nào để chi, cũng không có gì để dồn"))}
         </div>
-        <div class="ad-note">Riêng kỳ ${esc(e.p.label)} có <b>${fmt.num(e.below)}</b> bên rơi xuống dưới ngưỡng,
-        tổng ${ctx.money(e.belowSum)} dồn sang kỳ sau. Số đó không biến mất khỏi sổ — nó là khoản Haustek còn nợ họ.</div>`;
+        ${cleared ? `<div class="ad-note">Cũng kỳ ${esc(e.p.label)}, <b>${fmt.num(clearedN)}</b> bên trả xong khoản ứng —
+          ví dụ ${esc(A.partyName(cleared.partyKey))}: bị trừ nốt ${ctx.money2(cleared.recoup)}, phần dư
+          ${ctx.money2(cleared.payable)} trên ngưỡng ${esc(fmt.usd0(min))} nên về tay họ ngay kỳ đó.</div>` : ""}
+        ${carryEx ? `<div class="ad-note">Bước 4 không phải chuyện lý thuyết: kỳ ${esc(carryEx.e.p.label)} có
+          <b>${fmt.num(carryEx.e.below)}</b> bên rơi xuống dưới ngưỡng, tổng ${ctx.money2(carryEx.e.belowSum)} dồn sang kỳ sau${
+          carryEx.next ? " — và kỳ " + esc(carryEx.next.p.label) + " có " + fmt.num(carryEx.next.carried)
+            + " bên mở đầu bằng phần dồn đó" : ""}. Không đồng nào rơi ra ngoài sổ.</div>`
+          : `<div class="ad-note">Chưa kỳ đã duyệt nào có bên rơi xuống dưới ngưỡng ${esc(fmt.usd0(min))} — nhánh dồn sang kỳ sau vẫn có đó, chỉ là chưa dùng tới.</div>`}`;
       }
       return `<div class="panel">
         <div class="panel-head">
@@ -425,7 +455,7 @@ HAUSTEK.registerScreen({
           return `<tr class="${r.done ? "ad-done" : ""}">
             <td>
               <b>${esc(r.name)}</b>
-              <span class="chip ${r.kind === "label" ? "lbl" : "ind"}" style="margin-left:6px">${r.kind === "label" ? "Label" : "Nghệ sĩ"}</span>
+              <span class="chip ad-k ${r.kind === "label" ? "lbl" : "ind"}">${r.kind === "label" ? "Label" : "Nghệ sĩ"}</span>
               <span class="sub">${esc(r.clientId)}${r.home ? " · " + esc(r.home) : ""}${r.note ? " · " + esc(r.note) : ""}</span>
             </td>
             <td class="num mono">${ctx.money(r.opening)}</td>
