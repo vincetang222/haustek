@@ -23,7 +23,11 @@ const CSS = `
 .ac-k{margin-left:6px}
 .ac-id{font-family:var(--mono);font-size:11px;color:var(--teal);font-variant-numeric:tabular-nums}
 .ac-trap td{vertical-align:middle}
-.ac-trap .ac-nm{font-size:13.5px;font-weight:500;word-break:break-word}
+/* Tên phải hiện nguyên vẹn một dòng: cả panel này nói về việc tên sai một
+   ly là hỏng, mà lại tự bẻ đôi tên giữa chừng thì phản tác dụng. Bảng dài
+   ra thì .tb-wrap cuộn ngang. */
+.ac-trap .ac-nm{font-size:13.5px;font-weight:500;white-space:nowrap}
+.ac-trap td:first-child,.ac-trap td:nth-child(2){width:1%;white-space:nowrap}
 .ac-why{font-family:var(--mono);font-size:10px;color:var(--muted);line-height:1.75}
 .ac-gate td{vertical-align:top;font-size:12px;line-height:1.65}
 .ac-gate .ac-role{white-space:nowrap}
@@ -222,7 +226,11 @@ async function askInvite(ctx) {
    --------------------------------------------------------------------- */
 async function askStatus(ctx, acc) {
   const A = ctx.admin, esc = ctx.esc;
-  const next = acc.status === "active" ? "suspended" : "active";
+  /* acc là chính đối tượng trong trạng thái, setStatus sửa thẳng lên nó —
+     nên phải giữ lại trạng thái cũ ở đây, không thì câu thông báo sau đó
+     đọc phải giá trị vừa ghi và nói nhầm "mở lại" thành "kích hoạt". */
+  const was = acc.status;
+  const next = was === "active" ? "suspended" : "active";
 
   /* Khoá nốt admin cuối cùng thì không còn ai mở khoá lại được — cùng một
      tai nạn với xoá, chặn ở cùng một chỗ. Trong hệ thật phép kiểm này phải
@@ -245,7 +253,7 @@ async function askStatus(ctx, acc) {
   try {
     A.accounts.setStatus(acc.id, next);
     ctx.toast(next === "active"
-      ? (acc.status === "invited" ? "Đã kích hoạt " : "Đã mở lại ") + acc.email
+      ? (was === "invited" ? "Đã kích hoạt " : "Đã mở lại ") + acc.email
       : "Đã tạm khoá " + acc.email, "ok");
     ctx.refresh();
   } catch (e) { ctx.toast(e.message, "no"); }

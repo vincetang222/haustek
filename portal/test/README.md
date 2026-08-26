@@ -37,6 +37,7 @@ npx http-server portal -p 8099 -c-1 &
 
 node portal/test/smoke.js    # vẽ hết mọi màn hình intranet, gom lỗi console
 node portal/test/flow.js     # đi hết một chu trình vận hành
+node portal/test/edge.js     # thu hồi duyệt sạch 12 kỳ rồi mở lại từng màn hình
 ```
 
 `smoke.js` — mở từng màn hình, đổi sang kỳ chưa duyệt, đổi sang VND, và báo lỗi nếu
@@ -49,6 +50,10 @@ xuất hiện ở cổng khách:
 nạp luồng còn thiếu → khớp một dòng treo → ghi nhận chênh lệch
   → chốt tỷ giá → duyệt kỳ → cổng khách thấy kỳ mới
 ```
+
+`edge.js` — trường hợp biên khắc nghiệt nhất: thu hồi duyệt **sạch cả 12 kỳ**, rồi mở lại
+từng màn hình intranet và cả cổng khách. Đây là chỗ code hay chết vì chia cho 0, đọc `[0]`
+của mảng rỗng, hoặc so với kỳ trước không tồn tại.
 
 Biến môi trường: `BASE` (mặc định `http://127.0.0.1:8099`), `CHROMIUM` (đường dẫn
 chromium nếu playwright không tự tìm được), `SHOTS` (nơi lưu ảnh chụp).

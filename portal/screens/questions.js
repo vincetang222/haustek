@@ -136,7 +136,13 @@ function stats(A) {
   let last = null;
   for (const r of A.audit.list(200)) if (r.action === "answer.set") { last = r; break; }
 
-  return { open, done, samples, stillNeed, approved, paid, last, total: A.questions.length };
+  /* Câu nào đang chờ đúng cái file chưa xin được — đếm thật, không đếm cả
+     bảng ánh xạ, vì xin được một file là gỡ được một phần. */
+  const gotIds = new Set(samples.filter(x => x.got).map(x => x.s.id));
+  const blocked = A.questions.filter(q =>
+    ANSWERED_BY_SAMPLE[q.id] && !gotIds.has(ANSWERED_BY_SAMPLE[q.id])).length;
+
+  return { open, done, samples, stillNeed, blocked, approved, paid, last, total: A.questions.length };
 }
 
 /* Nhật ký ghi "q3 · nội dung câu trả lời…" — chỉ cần lấy lại phần đầu để
@@ -274,7 +280,7 @@ HAUSTEK.registerScreen({
         <div class="lab">Đã trả lời</div>
         <div class="val">${s.done.length}/${s.total}</div>
         <div class="sub">${s.open.length
-          ? esc(fmt.pct(s.done.length / s.total)) + " danh sách · còn " + s.open.length + " câu treo"
+          ? "đã chốt " + esc(fmt.pct(s.done.length / s.total)) + " · còn " + s.open.length + " câu treo"
           : "chốt hết · schema viết được rồi"}</div>
       </div>
       <div class="kpi ${s.open.length ? "bad" : "good"}">
@@ -288,9 +294,8 @@ HAUSTEK.registerScreen({
         <div class="lab">File mẫu còn phải xin</div>
         <div class="val">${s.stillNeed}/${A.samplesNeeded.length}</div>
         <div class="sub">${s.stillNeed
-          ? "chưa có file thì " + Object.keys(ANSWERED_BY_SAMPLE).length
-            + " câu ở trên không có cách nào chốt"
-          : "đã nhận đủ · đối chiếu lại phỏng đoán với file thật"}</div>
+          ? "chưa có file thì " + s.blocked + "/" + s.total + " câu ở trên không chốt được"
+          : "đã nhận đủ · đối chiếu lại từng phỏng đoán với file thật"}</div>
       </div>
       <div class="kpi">
         <div class="lab">Ghi lần gần nhất</div>
