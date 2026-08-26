@@ -103,8 +103,26 @@ ranh giới quyền giữa ba vai, nhật ký kiểm toán.
 Đường ống nạp thật cần parser riêng cho từng luồng, mà muốn viết được thì phải có
 file mẫu (xem màn hình **Câu hỏi còn treo**).
 
-**Chưa có** — đăng nhập thật, database, quy đổi tiền tệ theo từng nền tảng, tab tác quyền
-cho label (còn chờ chốt label có kiêm publisher không).
+**Chưa có** — database, quy đổi tiền tệ theo từng nền tảng, tab tác quyền cho label
+(còn chờ chốt label có kiêm publisher không), và **đăng nhập thật** — đọc kỹ chỗ này:
+
+> Ở bản mẫu, `HAUSTEK.api` nhận `partyId` như một tham số. Ô chọn tài khoản trên cổng khách
+> chỉ là để xem thử. Khi làm thật, **`partyId` phải lấy từ phiên đăng nhập trên máy chủ,
+> không bao giờ lấy từ tham số gửi lên** — nếu không thì sửa một con số trên URL là xem
+> được dữ liệu người khác, và mọi phép kiểm khác trong file này trở nên vô nghĩa.
+> `portal/test/api-guard.js` ghi rõ điều này thành một phép kiểm có nhãn cảnh báo.
+
+## Kiểm tra
+
+```bash
+node portal/test/api-guard.js       # 18 phép kiểm ranh giới quyền, không cần trình duyệt
+```
+
+Đây là mốc số 2 trong tài liệu bàn giao — test chứng minh nghệ sĩ A không truy vấn được
+dữ liệu nghệ sĩ B, và phải chạy trong CI. Bản mẫu chưa có database nên chưa viết được
+Row Level Security thật, nhưng ranh giới thì đã có: những gì file này kiểm tra chính là
+những gì các policy RLS sau này phải bảo đảm. Lên Postgres thì dịch từng phép kiểm thành
+một test SQL.
 
 ## Bước tiếp theo
 
