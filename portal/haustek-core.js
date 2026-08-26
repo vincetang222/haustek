@@ -196,8 +196,21 @@ const tProd = new Float32Array(N), tRel = new Int8Array(N);
 const tPop = new Float32Array(N), tType = new Int8Array(N);
 const tW1 = new Int32Array(N), tW2 = new Int32Array(N), tW1s = new Float32Array(N);
 
+/* Danh mục thật không chia đều. Một nhóm nghệ sĩ ra đều tay gánh phần lớn
+   danh mục, phần còn lại mỗi người dăm bài. Chia đều cho 900 người thì ai
+   cũng kiếm được vài nghìn đô một kỳ, và ngưỡng chi trả tối thiểu — cùng
+   với phần tiền dồn sang kỳ sau — không bao giờ chạm tới, tức là một
+   nhánh của hệ thống không bao giờ được thử.
+   Thứ tự trong danh sách nghệ sĩ đã xáo trước, nên tên có thật không tự
+   nhiên rơi hết vào nhóm đông bài. */
+const RANK = [];
+for (let i = 0; i < CFG.N_ARTISTS; i++) RANK.push(i);
+for (let i = RANK.length - 1; i > 0; i--) { const j = (rnd() * (i + 1)) | 0; const t = RANK[i]; RANK[i] = RANK[j]; RANK[j] = t; }
+const CORE_N = Math.round(CFG.N_ARTISTS * 0.45);
 for (let i = 0; i < N; i++) {
-  const a = (rnd() * CFG.N_ARTISTS) | 0;
+  const a = rnd() < 0.88
+    ? RANK[(rnd() * CORE_N) | 0]
+    : RANK[CORE_N + ((rnd() * (CFG.N_ARTISTS - CORE_N)) | 0)];
   tArtist[i] = a; tLabel[i] = ARTISTS[a].labelId;
   tTitle[i] = pick(W1) + (rnd() < 0.42 ? " " + pick(W2) : "");
   tIsrc[i] = "VN" + String(20 + ((rnd() * 6) | 0)) + String(100000 + ((rnd() * 899999) | 0)) + String(10 + ((rnd() * 89) | 0));
@@ -207,7 +220,7 @@ for (let i = 0; i < N; i++) {
   tUpc[i] = String(880000000000 + ((rnd() * 99999999) | 0));
   tProd[i] = rnd() < 0.35 ? [0.03, 0.04, 0.05][(rnd() * 3) | 0] : 0;  /* điểm producer trên doanh thu ròng */
   tRel[i] = (rnd() * P) | 0;
-  tPop[i] = 0.1 + rnd() * 0.9;
+  tPop[i] = 0.04 + Math.pow(rnd(), 2.2) * 0.96;   /* độ phổ biến cũng đuôi dài: nhiều bài rất ít nghe */
   tType[i] = rnd() < 0.72 ? 0 : (rnd() < 0.6 ? 1 : 2);
   let w = ARTISTS[a].writer ? a : ((rnd() * CFG.N_ARTISTS) | 0);
   let guard = 0; while (!ARTISTS[w].writer && guard++ < 12) w = (rnd() * CFG.N_ARTISTS) | 0;
@@ -502,10 +515,12 @@ const rates = {
 };
 function partyKeyOfTrack(i) { return tLabel[i] >= 0 ? "L:" + tLabel[i] : "A:" + tArtist[i]; }
 function partyName(key) {
+  if (key === "P:*") return "Điểm producer — chưa gắn danh tính";
   const id = +key.slice(2);
   return key[0] === "L" ? (LABELS[id] ? LABELS[id].name : key) : (ARTISTS[id] ? ARTISTS[id].name : key);
 }
 function partyClientId(key) {
+  if (key === "P:*") return "—";
   const id = +key.slice(2);
   return key[0] === "L" ? (LABELS[id] ? LABELS[id].clientId : "") : (ARTISTS[id] ? ARTISTS[id].clientId : "");
 }
@@ -703,9 +718,16 @@ function approvalChecks(pIdx) {
 }
 function canApprove(pIdx) { return approvalChecks(pIdx).every(c => c.ok); }
 
+/* Kỳ phải đóng theo thứ tự. Phần tiền dưới ngưỡng chi trả được dồn từ kỳ
+   này sang kỳ sau, và tạm ứng thu hồi dần qua từng kỳ — duyệt nhảy cóc thì
+   hai chuỗi đó đứt, và không có cách nào phát hiện ra sau khi đã chi tiền. */
 function approve(pIdx, by, note, force) {
   const pk = PERIODS[pIdx].k;
   if (state.approved[pk]) throw new Error("Kỳ " + pk + " đã duyệt rồi");
+  const openBefore = PERIODS.slice(0, pIdx).filter(p => !state.approved[p.k]);
+  if (openBefore.length)
+    throw new Error("Phải duyệt xong kỳ trước đã: " + openBefore.map(p => p.label).join(", ")
+      + " — tiền dồn và thu hồi tạm ứng chạy nối tiếp qua từng kỳ");
   const checks = approvalChecks(pIdx);
   const failed = checks.filter(c => !c.ok);
   if (failed.length && !force) throw new Error("Chưa đủ điều kiện duyệt: " + failed.map(c => c.label).join(" · "));
@@ -720,11 +742,18 @@ function approve(pIdx, by, note, force) {
 function revoke(pIdx, why) {
   const pk = PERIODS[pIdx].k;
   if (!state.approved[pk]) return;
-  /* hoàn lại phần đã thu hồi tạm ứng của kỳ này — nếu không, thu hồi hai lần */
+  const approvedAfter = PERIODS.slice(pIdx + 1).filter(p => state.approved[p.k]);
+  if (approvedAfter.length)
+    throw new Error("Phải thu hồi kỳ sau trước: " + approvedAfter.map(p => p.label).join(", ")
+      + " — các kỳ sau đã tính dựa trên kết quả của kỳ này");
+  /* Trả lại đúng trạng thái trước khi duyệt: hoàn phần đã thu hồi tạm ứng
+     (không thì kỳ sau thu hồi hai lần) và trả phần dồn về đúng số dồn VÀO
+     kỳ này, chứ không phải xoá trắng — xoá trắng là làm mất tiền của người ta. */
   (state.payouts[pk] || []).forEach(row => {
     const adv = state.advances[row.partyKey];
     if (adv && adv.byPeriod) delete adv.byPeriod[pk];
-    if (state.carry[row.partyKey] != null) delete state.carry[row.partyKey];
+    if (row.carryIn > 0) state.carry[row.partyKey] = row.carryIn;
+    else delete state.carry[row.partyKey];
   });
   delete state.payouts[pk]; delete state.approved[pk];
   state.publishedAt = nowISO();
@@ -771,8 +800,16 @@ function runPayout(pIdx) {
   const pk = PERIODS[pIdx].k;
   const earned = earnedByParty(pIdx);
   const rows = [];
+  /* Điểm producer đã trừ khỏi phần nghệ sĩ, nhưng danh mục hiện tại chỉ có
+     cột Producer ghi TÊN, không có mã. Không có mã thì không biết trả cho
+     ai, nên khoản này phải nằm lại một dòng riêng và nhìn thấy được — chứ
+     không phải lặng lẽ biến mất khỏi bảng chi trả.
+     Đây chính là câu hỏi số 3 còn treo: một cột Rate Share có đủ không,
+     hay phải tách bảng chia phần mỗi dòng một người. */
+  let producerHeld = 0;
+  earned.forEach((amount, key) => { if (key[0] === "P") producerHeld = cents(producerHeld + amount); });
   earned.forEach((amount, key) => {
-    if (key[0] === "P") return;                          /* điểm producer trả qua nghệ sĩ chính */
+    if (key[0] === "P") return;
     const carryIn = state.carry[key] || 0;
     const gross = cents(amount + carryIn);
     const bal = advanceBalance(key);
@@ -790,6 +827,11 @@ function runPayout(pIdx) {
                 advanceLeft: cents(Math.max(bal - recoup, 0)) });
   });
   rows.sort((a, b) => b.payable - a.payable);
+  if (producerHeld > 0) rows.push({
+    partyKey: "P:*", kind: "producer", held: true,
+    earned: producerHeld, carryIn: 0, recoup: 0, payable: 0, carryOut: producerHeld, advanceLeft: 0,
+    note: "Chưa gắn được danh tính producer — danh mục chỉ có tên, chưa có mã"
+  });
   return rows;
 }
 
@@ -808,7 +850,17 @@ function seedAccounts() {
   state.accounts.push(mk("mgmt@haustek-group.com", "admin", null));
   state.accounts.push(mk("ops@haustek-group.com", "admin", null));
   [0, 1, 2, 3].forEach(i => state.accounts.push(mk("label" + (i + 1) + "@vidu.vn", "label", LABELS[i].key)));
-  [1, 12, 18, 25].forEach(i => state.accounts.push(mk("artist" + i + "@vidu.vn", "artist", ARTISTS[i].key)));
+  /* Chọn tài khoản nghệ sĩ sao cho phủ đủ các trường hợp phải thử: thuộc
+     label, độc lập, có phần sáng tác, không có phần sáng tác, đang còn nợ
+     tạm ứng. Tên có ký tự lạ nằm ở nhóm đầu danh mục nên lấy luôn. */
+  const wanted = [];
+  const enough = i => idxOf(byArtist, i).length >= 12;
+  const want = (test, n) => { let c = 0; for (let i = 0; i < REAL.length && c < n; i++) if (!wanted.includes(i) && enough(i) && test(ARTISTS[i])) { wanted.push(i); c++; } };
+  want(a => a.labelId >= 0 && a.writer, 3);
+  want(a => a.labelId < 0 && a.writer, 2);
+  want(a => a.labelId < 0 && !a.writer, 1);
+  want(a => a.labelId >= 0 && !a.writer, 1);
+  wanted.forEach((i, n) => state.accounts.push(mk("nghesi" + (n + 1) + "@vidu.vn", "artist", ARTISTS[i].key)));
   state.accounts.push(mk("cho-moi@vidu.vn", "artist", ARTISTS[5].key, "invited"));
   store.save();
 }
@@ -1152,6 +1204,22 @@ const api = {
   /* đọc lại quyết định mới nhất của admin (khi intranet vừa duyệt xong) */
   refresh() { const s = store.load(); if (s) { state = s; invalidateRates(); rebuildMatchIndex(); } return !!s; },
 
+  /* Bản mẫu: liệt kê những tài khoản đã được cấp, để mô phỏng bước đăng
+     nhập. Hệ thật KHÔNG có hàm này — trang đăng nhập không bao giờ nói cho
+     ai biết những ai đang có tài khoản. */
+  demoLogins() {
+    return scrub({ accounts: state.accounts
+      .filter(a => a.role !== "admin" && a.partyKey && a.status !== "suspended")
+      .map(a => {
+        const id = +a.partyKey.slice(2), isL = a.partyKey[0] === "L";
+        const who = isL ? LABELS[id] : ARTISTS[id];
+        if (!who) return null;
+        return { email: a.email, role: a.role, partyId: id, name: who.name,
+                 clientId: who.clientId, status: a.status,
+                 kind: isL ? "label" : (who.labelId >= 0 ? "artist-label" : "artist-indie") };
+      }).filter(Boolean) });
+  },
+
   session(role, partyId) {
     assertParty(role, partyId);
     const isLabel = role === "label";
@@ -1176,7 +1244,10 @@ const api = {
       k: p.k, label: p.label, approvedAt: state.approved[p.k].at
     }));
     const waiting = PERIODS.filter(p => !state.approved[p.k]).map(p => ({ k: p.k, label: p.label }));
-    return scrub({ open, waiting, latest: open.length ? open[open.length - 1].k : null });
+    /* Tác quyền về theo quý và về trễ, nên rất nhiều kỳ đơn giản là không
+       có báo cáo nào — khách phải biết điều đó, không thì họ tưởng mất tiền. */
+    const pubOpen = PERIODS.filter(p => state.approved[p.k] && pubLoaded(p.idx)).map(p => ({ k: p.k, label: p.label }));
+    return scrub({ open, waiting, pubOpen, latest: open.length ? open[open.length - 1].k : null });
   },
 
   summary(role, partyId, periodKey, stream) {
@@ -1230,8 +1301,24 @@ const api = {
       chain.push({ key: "final", label: "Về tay bạn", value: a.total, note: "số tiền kỳ này", kind: "final" });
     }
 
+    /* Kỳ trống vì hai lý do rất khác nhau: chưa có báo cáo về (tác quyền
+       theo quý), hay có báo cáo mà bài của người này không phát sinh gì.
+       Nói nhầm lý do là làm người ta hoang mang vô cớ. */
+    let emptyReason = null, nextPub = null;
+    if (a.gross <= 0) {
+      if (stream === "pub") {
+        if (!pubLoaded(p)) {
+          emptyReason = "Tác quyền về theo quý, không phải hằng tháng — kỳ này chưa có tổ chức nào báo cáo.";
+          const withPub = PERIODS.filter(x => state.approved[x.k] && pubLoaded(x.idx));
+          const before = withPub.filter(x => x.idx < p).pop() || withPub[withPub.length - 1];
+          nextPub = before ? { k: before.k, label: before.label } : null;
+        } else emptyReason = "Kỳ này có báo cáo tác quyền, nhưng chưa bài nào của bạn phát sinh.";
+      } else {
+        emptyReason = "Kỳ này chưa bài nào của bạn phát sinh doanh thu.";
+      }
+    }
     return scrub({
-      periodKey, stream,
+      periodKey, stream, emptyReason, nextPub,
       total: a.total, gross: a.gross, streams: a.streams, tracks: a.tracks,
       prevTotal: prev ? prev.total : null, prevStreams: prev ? prev.streams : null,
       prevLabel: prevIdx != null ? PERIODS[prevIdx].label : null,
@@ -1428,20 +1515,35 @@ function barChart(canvas, points, opt) {
   const vals = points.map(p => p.value || 0);
   const peak = Math.max(...vals, 0.01);
   const padB = 22 * d, padT = 16 * d, bw = W / points.length;
+  /* Ba trạng thái, đừng gộp làm hai:
+       value == null   → chưa có số nào (cổng khách với kỳ chưa duyệt) → vạch cụt
+       open === false  → có số nhưng chưa chốt (intranet) → cột viền đứt, vẫn đúng độ cao
+       còn lại         → đã chốt → cột đặc
+     Vẽ kỳ chưa chốt thành vạch cụt ở intranet là giấu mất thứ người vận
+     hành cần nhìn nhất: kỳ đang làm dở to cỡ nào. */
   points.forEach((p, i) => {
     const h = (p.value || 0) / peak * (HH - padB - padT);
     const x = i * bw, y = HH - padB - h, cur = i === opt.current;
-    if (p.open === false) {
+    const bx = x + bw * 0.2, bwid = bw * 0.6;
+    if (p.value == null) {
       c.fillStyle = "#EDEEF2";
-      c.fillRect(x + bw * 0.2, HH - padB - 8 * d, bw * 0.6, 8 * d);
+      c.fillRect(bx, HH - padB - 8 * d, bwid, 8 * d);
+    } else if (p.open === false) {
+      c.fillStyle = cur ? "#FFD8DF" : "#EDEEF2";
+      c.fillRect(bx, y, bwid, Math.max(h, 0));
+      c.strokeStyle = cur ? "#FF2E4C" : "#B6B7C2";
+      c.lineWidth = 1.4 * d;
+      if (c.setLineDash) c.setLineDash([3 * d, 2.6 * d]);
+      c.strokeRect(bx + c.lineWidth / 2, y + c.lineWidth / 2, bwid - c.lineWidth, Math.max(h - c.lineWidth, 0));
+      if (c.setLineDash) c.setLineDash([]);
     } else {
       c.fillStyle = cur ? "#FF2E4C" : "#D7D9E0";
-      c.fillRect(x + bw * 0.2, y, bw * 0.6, Math.max(h, 0));
-      if (cur && p.value > 0) {
-        c.fillStyle = "#C8102E";
-        c.font = `600 ${9.5 * d}px 'IBM Plex Mono',monospace`; c.textAlign = "center";
-        c.fillText(fmt.usd0(p.value), x + bw / 2, Math.max(y - 5 * d, 12 * d));
-      }
+      c.fillRect(bx, y, bwid, Math.max(h, 0));
+    }
+    if (cur && p.value > 0) {
+      c.fillStyle = "#C8102E";
+      c.font = `600 ${9.5 * d}px 'IBM Plex Mono',monospace`; c.textAlign = "center";
+      c.fillText(fmt.usd0(p.value), x + bw / 2, Math.max(y - 5 * d, 12 * d));
     }
     c.fillStyle = cur ? "#C8102E" : (p.open === false ? "#B6B7C2" : "#8A8A99");
     c.font = `400 ${8.5 * d}px 'IBM Plex Mono',monospace`; c.textAlign = "center";
