@@ -164,11 +164,37 @@ check("Không payload nào chứa tên đơn vị phân phối hoặc tỷ lệ 
   return goi.length + " lời gọi · " + Math.round(txt.length / 1024) + " KB, sạch";
 });
 
-check("Payload không mang theo tỷ lệ chia của bên khác", () => {
-  const s = JSON.stringify(H.api.summary("artist", A1.id, approvedKey, "rec"));
-  must(!/"rate"/.test(s), "payload có trường rate");
-  must(!/"labelRate"|"indieRate"|"baseRate"/.test(s), "payload có tỷ lệ nội bộ");
-  return "không có trường tỷ lệ nào";
+check("Payload không mang theo tỷ lệ chia của bên nào", () => {
+  /* Đi qua từng khoá trong payload thay vì tìm chuỗi: tỷ lệ CHIA phải
+     không có mặt, còn tỷ GIÁ (fx.rate) thì được — đó là tỷ giá dùng để
+     trả tiền cho chính người đang xem, họ có quyền biết. Bắt bằng cách
+     tìm chuỗi "rate" thì hai thứ đó lẫn vào nhau. */
+  const duocPhep = d => d === "fx.rate" || d.endsWith(".fx.rate");
+  const XAU = /^(rate|share|labelRate|indieRate|baseRate|grossRate|rateShare|split)$/i;
+  const loi = [];
+  (function di(o, duong) {
+    if (!o || typeof o !== "object") return;
+    if (Array.isArray(o)) return o.forEach((x, i) => di(x, duong + "[" + i + "]"));
+    Object.keys(o).forEach(k => {
+      const d = duong ? duong + "." + k : k;
+      const dGoc = d.replace(/\[\d+\]/g, "");
+      if (XAU.test(k) && !duocPhep(dGoc)) loi.push(d);
+      di(o[k], d);
+    });
+  })({
+    summary: H.api.summary("artist", A1.id, approvedKey, "rec"),
+    summaryLabel: H.api.summary("label", L1.id, approvedKey, "rec"),
+    tracks: H.api.tracks("artist", A1.id, approvedKey, "rec", {}),
+    detail: H.api.trackDetail("artist", A1.id, approvedKey, "rec", trackOfA1),
+    session: H.api.session("artist", A1.id)
+  }, "");
+  must(loi.length === 0, "payload mang tỷ lệ chia ở: " + loi.slice(0, 5).join(", "));
+  /* và tỷ giá thì phải có, kèm ngày khoá — thiếu là khách không kiểm lại được */
+  const s = H.api.summary("artist", A1.id, approvedKey, "rec");
+  must(s.fx && s.fx.rate > 0, "payload thiếu tỷ giá của kỳ");
+  must(s.fx.locked ? !!s.fx.at : true, "tỷ giá báo đã khoá nhưng không kèm ngày khoá");
+  return "không tỷ lệ chia nào lọt · tỷ giá kỳ = " + H.fmt.num(s.fx.rate)
+       + " ₫" + (s.fx.locked ? ", khoá ngày " + s.fx.at : ", chưa khoá");
 });
 
 /* ===================== 5. SỐ PHẢI KHỚP ===================== */

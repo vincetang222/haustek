@@ -142,7 +142,7 @@ async function askInvite(ctx) {
       + '</select>'
       + '<div data-ac-party>'
       + '<label class="fld" style="margin-top:13px">Tìm bên nhận</label>'
-      + '<input type="search" data-ac-q placeholder="Gõ tên hoặc mã Client ID để thu hẹp…" style="width:100%">'
+      + '<input type="search" data-ac-find placeholder="Gõ tên hoặc mã Client ID để thu hẹp…" style="width:100%">'
       + '<label class="fld" style="margin-top:13px">Bên nhận — quyền bám vào mã này</label>'
       + '<select data-field="party" size="6" style="width:100%;max-width:100%;font-size:11px"></select>'
       + '<span class="ac-live" data-ac-live></span>'
@@ -154,7 +154,7 @@ async function askInvite(ctx) {
       const roleEl  = bg.querySelector('[data-field="role"]');
       const partyEl = bg.querySelector('[data-field="party"]');
       const wrapEl  = bg.querySelector("[data-ac-party]");
-      const qEl     = bg.querySelector("[data-ac-q]");
+      const qEl     = bg.querySelector("[data-ac-find]");
       const live    = bg.querySelector("[data-ac-live]");
       let matched = 0;
 
@@ -233,10 +233,12 @@ async function askStatus(ctx, acc) {
   }
 
   if (next === "suspended") {
+    /* partyName không nhận null — tài khoản admin không gắn bên nhận nào. */
+    const who = acc.partyKey ? A.partyName(acc.partyKey) : null;
     const ok = await ctx.confirm("Tạm khoá " + acc.email + "?",
       "Người này mất quyền vào ngay lập tức, kể cả phiên đang mở. "
-      + "Dữ liệu và các kỳ đã duyệt của bên nhận <b>" + esc(A.partyName(acc.partyKey) || "—")
-      + "</b> giữ nguyên — mở lại là thấy lại.",
+      + (who ? "Dữ liệu và các kỳ đã duyệt của <b>" + esc(who) + "</b> giữ nguyên — mở lại là thấy lại."
+             : "Tài khoản vẫn còn trong danh sách, mở lại được bất cứ lúc nào."),
       "Tạm khoá", true);
     if (!ok) return;
   }
@@ -395,7 +397,12 @@ HAUSTEK.registerScreen({
       const rows = accounts.map(a => {
         const role = ROLE[a.role] || { lab: a.role, chip: "" };
         const st = STATUS[a.status] || { lab: a.status, chip: "" };
-        const isLast = a.role === "admin" && usableAdmins(A, a.id).length === 0;
+        /* Xoá admin cuối cùng là mất đường vào hẳn — chặn cả khi tài khoản
+           đó đang tạm khoá, vì xoá xong không còn ai để mở lại.
+           Ngược lại, nút MỞ LẠI thì không bao giờ chặn: nó chỉ trả lại
+           quyền, chặn nó mới đúng là khoá cứng cả hệ thống. */
+        const lastAdmin = a.role === "admin" && usableAdmins(A, a.id).length === 0;
+        const blockSuspend = lastAdmin && a.status === "active";
         let party = `<span class="dim">—</span><span class="sub">không gắn bên nhận · thấy toàn bộ</span>`;
         if (a.partyKey) {
           const id = +a.partyKey.slice(2);
@@ -407,7 +414,7 @@ HAUSTEK.registerScreen({
         const nextBtn = a.status === "invited"
           ? `<button class="btn sm" data-ac-st="${esc(a.id)}">Kích hoạt</button>`
           : a.status === "active"
-            ? `<button class="btn sm" data-ac-st="${esc(a.id)}"${isLast ? " disabled title=\"Admin cuối cùng còn dùng được\"" : ""}>Tạm khoá</button>`
+            ? `<button class="btn sm" data-ac-st="${esc(a.id)}"${blockSuspend ? " disabled title=\"Admin cuối cùng còn dùng được — mời thêm một admin rồi hãy khoá\"" : ""}>Tạm khoá</button>`
             : `<button class="btn sm" data-ac-st="${esc(a.id)}">Mở lại</button>`;
         return `<tr>
           <td><b>${esc(a.email)}</b><span class="sub">${esc(a.id)}${
@@ -418,7 +425,7 @@ HAUSTEK.registerScreen({
           <td>${a.mfa ? `<span class="chip ok">Bật</span>` : `<span class="chip wait">Chưa</span>`}</td>
           <td class="mono">${esc(fmt.date(a.createdAt))}</td>
           <td><div class="ac-acts">${nextBtn}
-            <button class="btn sm dang" data-ac-del="${esc(a.id)}"${isLast ? " disabled title=\"Admin cuối cùng còn dùng được\"" : ""}>Xoá</button>
+            <button class="btn sm dang" data-ac-del="${esc(a.id)}"${lastAdmin ? " disabled title=\"Admin cuối cùng — xoá xong không ai vào được nữa\"" : ""}>Xoá</button>
           </div></td>
         </tr>`;
       }).join("");
@@ -525,21 +532,26 @@ HAUSTEK.registerScreen({
       + kpis() + idPanel() + accountsPanel() + gatePanel() + logPanel();
 
     /* ---------- gắn sự kiện ---------- */
-    root.querySelector("[data-ac-add]").addEventListener("click", () => {
-      try { askInvite(ctx); } catch (e) { ctx.toast(e.message, "no"); }
-    });
+    /* Ba hộp thoại đều là hàm async: lỗi ném ra sau lần await đầu tiên
+       không rơi vào try/catch quanh lời gọi nữa, nên bắt ở nhánh promise —
+       không thì hộp thoại tắt ngóm mà không ai thấy lý do. */
+    const guard = p => p.catch(e => ctx.toast((e && e.message) || "Không làm được, xem console", "no"));
+
+    root.querySelector("[data-ac-add]").addEventListener("click", () => guard(askInvite(ctx)));
     root.querySelectorAll("[data-ac-st]").forEach(b => {
       b.addEventListener("click", () => {
+        /* Đọc lại từ lõi thay vì dùng dòng đã vẽ: bảng có thể đã cũ hơn
+           trạng thái sau một thao tác khác. */
         const a = A.accounts.list().find(x => x.id === b.dataset.acSt);
         if (!a) return ctx.toast("Tài khoản này không còn nữa", "no");
-        try { askStatus(ctx, a); } catch (e) { ctx.toast(e.message, "no"); }
+        guard(askStatus(ctx, a));
       });
     });
     root.querySelectorAll("[data-ac-del]").forEach(b => {
       b.addEventListener("click", () => {
         const a = A.accounts.list().find(x => x.id === b.dataset.acDel);
         if (!a) return ctx.toast("Tài khoản này không còn nữa", "no");
-        try { askRemove(ctx, a); } catch (e) { ctx.toast(e.message, "no"); }
+        guard(askRemove(ctx, a));
       });
     });
 

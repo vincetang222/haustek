@@ -10,6 +10,17 @@ Hai trang, một lõi dữ liệu. Mở bằng trình duyệt là chạy, không
 | `haustek-ui.css` | cả hai | Bảng màu và các thành phần giao diện |
 | `screens/*.js` | intranet | Mỗi file một màn hình, tự đăng ký vào khung |
 
+## Mười màn hình intranet
+
+**Vận hành** — Tổng quan · Nạp dữ liệu · Khớp ISRC · Đối chiếu & duyệt kỳ
+**Tiền** — Tỷ lệ chia · Tạm ứng & thu hồi · Chi trả
+**Dữ liệu** — Danh mục
+**Quản trị** — Tài khoản & nhật ký · Câu hỏi còn treo
+
+Mỗi màn hình là một file trong `screens/`, tự đăng ký vào khung qua
+`HAUSTEK.registerScreen()`. Viết thêm màn hình mới thì đọc `screens/_CONTRACT.md`
+rồi thêm một file và một thẻ `<script>` trong `intranet.html`.
+
 ## Chạy thế nào
 
 Mở thẳng `intranet.html` bằng Chrome hoặc Firefox là được.
