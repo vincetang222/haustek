@@ -137,7 +137,17 @@ async function openMatch(ctx, q) {
 
   let picked = null;
 
-  const body = qCard(ctx, q) +
+  /* Nói trước tiền sẽ rơi vào kỳ nào, đừng để người bấm ngạc nhiên sau khi
+     đã bấm — đây là chỗ tiền đổi kỳ, không phải một thao tác vô hại. */
+  const land = A.queue.landingPeriod(q.id);
+  const landNote = land && land.adjustment
+    ? `<div class="infobar" style="margin:12px 0"><span class="ic">↩</span>
+        <span>Dòng này thuộc kỳ <b>${esc(perOf(A, q.periodKey).label)}</b> đã chốt.
+        Khớp xong, ${esc(ctx.money2(q.amount))} sẽ ghi thành <b>khoản truy thu ở kỳ ${esc(land.label)}</b> —
+        kỳ cũ giữ nguyên con số khách đã đọc, và khoản này nằm riêng một dòng ở màn đối chiếu.</span></div>`
+    : "";
+
+  const body = qCard(ctx, q) + landNote +
     `<div class="mt-lead">Gợi ý của hệ thống · ${sug.length ? "tối đa 6 bản ghi, xếp theo điểm khớp" : "không có bản ghi nào đủ giống để gợi ý"}</div>` +
     (sug.length ? sug.map(s => sugRow(ctx, s.i, s.score, s.why)).join("")
                 : `<p class="note">Mã không tra ra, tên bài cũng không gần bài nào trong danh mục. Tìm tay bên dưới, hoặc để lại chờ đối tác xác nhận.</p>`) +
@@ -376,10 +386,19 @@ H.registerScreen({
       }
 
       let acts;
-      if (locked && q.status !== "parked") {
+      /* Dòng của kỳ đã chốt vẫn khớp được — tiền về đúng chủ, nhưng ghi
+         thành khoản truy thu ở kỳ đang mở, kỳ cũ giữ nguyên. Chỉ việc GỠ
+         khớp là không cho, vì gỡ là rút tiền ra khỏi một kỳ đã chi. */
+      const land = q.status === "pending" ? A.queue.landingPeriod(q.id) : null;
+      if (locked && q.status === "matched") {
         acts = `<div class="mt-acts">
-          <button class="btn sm" disabled>${q.status === "matched" ? "Bỏ khớp" : "Tìm bản ghi khớp"}</button>
-        </div><span class="sub">kỳ đã chốt — khớp bây giờ sẽ ghi thành khoản truy thu ở kỳ đang mở</span>`;
+          <button class="btn sm" disabled>Bỏ khớp</button>
+        </div><span class="sub">kỳ đã chốt — không rút lại được khoản đã chi</span>`;
+      } else if (q.status === "pending" && land && land.adjustment) {
+        acts = `<div class="mt-acts">
+          <button class="btn sm pri" data-mact="match" data-id="${esc(q.id)}">Tìm bản ghi khớp</button>
+          <button class="btn sm" data-mact="park" data-id="${esc(q.id)}">Để lại chờ</button>
+        </div><span class="sub">kỳ đã chốt — sẽ ghi thành khoản truy thu ở kỳ ${esc(land.label)}</span>`;
       } else if (q.status === "pending") {
         acts = `<div class="mt-acts">
           <button class="btn sm pri" data-mact="match" data-id="${esc(q.id)}">Tìm bản ghi khớp</button>
