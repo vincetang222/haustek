@@ -909,7 +909,17 @@ const QUESTIONS = [
     guess: "Bản mẫu vẫn gộp track với composition, chỉ tách phần sáng tác thành bảng chia phần." },
   { id: "q6", t: "Label có kiêm publisher không?",
     why: "Quyết định label có thấy tab tác quyền hay không.",
-    guess: "Bản mẫu giả định KHÔNG — tác quyền thuộc người sáng tác, không đi qua label." }
+    guess: "Bản mẫu giả định KHÔNG — tác quyền thuộc người sáng tác, không đi qua label." },
+  { id: "q7", t: "Con số ở cột doanh thu trong file báo cáo là TRƯỚC hay SAU khi đơn vị phân phối giữ phần của họ?",
+    why: "Đây là câu hỏi đắt nhất trong danh sách, và tài liệu bàn giao chưa nêu. "
+       + "Nếu con số trong file đã trừ phần của đối tác rồi mà hệ thống lại tính phí Haustek 15% trên đó, "
+       + "thì cái mà nghệ sĩ đọc là 'doanh thu gộp' thật ra không phải doanh thu gộp — và mọi chặng phía sau "
+       + "đều lệch theo. Ngược lại, nếu là số gộp thật mà hệ thống không trừ phần đối tác thì Haustek thiếu tiền. "
+       + "Chênh lệch giữa hai cách hiểu là hơn 10% trên từng dòng, từng kỳ, từng người. "
+       + "Không đoán được — phải nhìn file báo cáo doanh thu mẫu.",
+    guess: "Bản mẫu đang coi con số trong file là doanh thu gộp thật, và phí Haustek 15% tính trên đó. "
+         + "Phần đối tác phân phối giữ nằm ngoài mô hình. Nếu thực tế ngược lại thì phải sửa chuỗi chia tiền, "
+         + "không phải sửa giao diện." }
 ];
 const SAMPLES_NEEDED = [
   { id: "s1", t: "File mẫu master data 10–15 dòng",
