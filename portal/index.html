@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Haustek Portal — bản mẫu</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" href="../favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=Be+Vietnam+Pro:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="haustek-ui.css">
+<style>
+main{max-width:900px}
+.doors{display:grid;gap:12px;grid-template-columns:1fr;margin:22px 0}
+@media(min-width:820px){.doors{grid-template-columns:1fr 1fr}}
+.door{display:block;background:var(--card);border:1px solid var(--hair);border-radius:13px;
+  padding:20px;text-decoration:none;color:inherit;transition:.15s}
+.door:hover{border-color:var(--ink);transform:translateY(-1px)}
+.door .k{font-family:var(--mono);font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.door h2{font-family:var(--disp);font-weight:800;font-size:21px;letter-spacing:-.02em;margin:7px 0 8px}
+.door p{font-size:13px;color:var(--ink2);line-height:1.65}
+.door ul{margin:11px 0 0 16px;font-family:var(--mono);font-size:10.5px;color:var(--muted);line-height:1.9}
+.door.pri{border-color:var(--red);background:var(--red-soft)}
+.door.pri h2{color:var(--red)}
+.flow{font-family:var(--mono);font-size:11px;line-height:2.1;color:var(--ink2);
+  background:#FAFAFC;border:1px solid var(--hair);border-radius:11px;padding:16px;overflow:auto}
+.flow b{color:var(--red)}
+</style>
+</head>
+<body>
+<header class="top"><div class="top-in">
+  <div class="logo"><i>●</i> HAUSTEK <em>PORTAL</em></div>
+  <div class="crumb">Bản mẫu · 26.08.2026</div>
+</div></header>
+
+<main>
+  <div class="page-head">
+    <h1>Hai cửa, một lõi</h1>
+    <p>Portal báo cáo doanh thu. Số liệu sinh tại chỗ ở quy mô thật — 50.000 bản ghi, 3 luồng dữ liệu,
+      218 cửa hàng — để thử kiến trúc chứ không phải doanh thu thật.</p>
+  </div>
+
+  <div class="doors">
+    <a class="door pri" href="intranet.html">
+      <div class="k">Nội bộ Haustek</div>
+      <h2>Intranet vận hành</h2>
+      <p>Nơi số liệu được làm ra: nạp ba luồng, khớp những dòng không tìm được chủ,
+        đối chiếu tới từng xu, rồi duyệt kỳ.</p>
+      <ul>
+        <li>Nạp dữ liệu · hàng chờ khớp ISRC · đối chiếu &amp; duyệt kỳ</li>
+        <li>Tỷ lệ chia có ngày hiệu lực · tạm ứng · chi trả</li>
+        <li>Danh mục 50.000 bản ghi · tài khoản · nhật ký</li>
+        <li>Chỉ ở đây mới có tên đơn vị phân phối và tỷ lệ gốc</li>
+      </ul>
+    </a>
+    <a class="door" href="dashboard.html">
+      <div class="k">Label và nghệ sĩ</div>
+      <h2>Cổng khách</h2>
+      <p>Nơi số liệu được đọc. Chỉ thấy kỳ đã duyệt, chỉ thấy phần của mình,
+        và thấy rõ tiền đi qua những chặng nào.</p>
+      <ul>
+        <li>Tiền đi đâu · bóc theo cửa hàng và lãnh thổ</li>
+        <li>Tạm ứng còn phải thu hồi · thực nhận kỳ này</li>
+        <li>Doanh thu bản ghi và tác quyền tách rời</li>
+        <li>Có khối soi đúng những gói dữ liệu trình duyệt nhận được</li>
+      </ul>
+    </a>
+  </div>
+
+  <div class="panel">
+    <h3>Số liệu chảy từ intranet sang cổng khách thế nào</h3>
+    <p class="hint">Danh mục và doanh thu không được truyền đi — chúng sinh lại y hệt nhờ hạt giống cố định.
+      Thứ được truyền là quyết định của admin, và quan trọng nhất là: đã duyệt kỳ nào.</p>
+    <div class="flow">
+intranet &nbsp;nạp đủ 3 luồng cho kỳ X<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;→ khớp nốt các dòng treo ở hàng chờ ISRC<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;→ đối chiếu: tổng file gốc = đã khớp + đang treo, lệch phải bằng 0<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;→ chốt tỷ giá cho kỳ<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;→ <b>DUYỆT KỲ</b> ← cánh cửa duy nhất<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;→ chạy bảng chi trả (trừ tạm ứng, áp ngưỡng chi trả)<br>
+<br>
+cổng khách &nbsp;kỳ X hiện ra trong ô chọn kỳ — và chỉ lúc này mới hiện
+    </div>
+    <p class="note" style="margin-top:12px">
+      Mở hai tab cạnh nhau rồi duyệt một kỳ ở intranet: tab cổng khách tự nhận ra và tải lại.<br>
+      Trạng thái khởi điểm: 10 kỳ đầu đã duyệt · 06/2026 đối chiếu còn lệch $41,37 · 07/2026 chưa nạp TikTok.
+    </p>
+  </div>
+
+  <div class="panel">
+    <h3>Đọc trước khi đụng vào code</h3>
+    <p class="hint">
+      <code>README.md</code> — cách chạy, cái gì thật cái gì giả, bước tiếp theo<br>
+      <code>screens/_CONTRACT.md</code> — giao kèo để viết thêm màn hình intranet<br>
+      <code>haustek-core.js</code> — lõi dữ liệu, đóng vai database và API
+    </p>
+  </div>
+</main>
+
+<footer>
+  Bản mẫu nội bộ · không phải doanh thu Haustek · không public
+</footer>
+</body>
+</html>

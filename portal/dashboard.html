@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Haustek — Cổng báo cáo doanh thu</title>
+<link rel="icon" href="../favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=Be+Vietnam+Pro:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="haustek-ui.css">
+<style>
+/* riêng cổng khách: dải mô phỏng đăng nhập và khối soi payload */
+.simbar{background:#15151C;color:#C9C9D4;padding:8px var(--gut);font-family:var(--mono);
+  font-size:10px;display:flex;gap:11px;align-items:center;flex-wrap:wrap}
+.simbar b{color:#fff}
+.simbar select{background:#26262F;border-color:#3A3A46;color:#fff;max-width:none}
+.simbar .tag{background:#2C2C36;border-radius:5px;padding:2px 7px}
+.gate-cards{display:grid;gap:9px;grid-template-columns:repeat(auto-fit,minmax(min(100%,230px),1fr))}
+.gate-card{padding:12px 14px;border-radius:9px;border:1px solid var(--hair);background:#FAFAFC}
+.gate-card b{display:block;font-size:12px;font-weight:600;margin-bottom:5px}
+.gate-card span{display:block;font-family:var(--mono);font-size:9.5px;line-height:1.75;color:var(--muted)}
+.gate-card b.yes{color:var(--teal)} .gate-card b.no{color:var(--red)}
+.probe{display:flex;flex-direction:column;gap:5px;margin-bottom:12px}
+.probe div{display:flex;gap:9px;align-items:baseline;font-family:var(--mono);font-size:10.5px;
+  padding:7px 10px;border-radius:7px;background:var(--pos-soft);color:#0B5E3D}
+.probe div.no{background:var(--red-soft);color:var(--red)}
+.probe i{font-style:normal;flex:none}
+.calls{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:11px}
+.calls button{padding:5px 10px;border-radius:6px;border:1px solid var(--hair2);background:#fff;
+  font-family:var(--mono);font-size:10px;color:var(--muted)}
+.calls button.on{background:var(--ink);border-color:var(--ink);color:#fff}
+</style>
+</head>
+<body>
+
+<div class="simbar" id="simbar"></div>
+
+<header class="top">
+  <div class="top-in">
+    <div class="logo"><i>●</i> HAUSTEK</div>
+    <div class="crumb" id="crumb"></div>
+    <div class="spacer"></div>
+    <select id="period" aria-label="Kỳ báo cáo"></select>
+    <div class="dimtabs" role="group" aria-label="Tiền tệ">
+      <button data-cur="USD" class="on">USD</button>
+      <button data-cur="VND">VND</button>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div id="gateNote"></div>
+
+  <div class="dimtabs" id="streams" style="margin-bottom:14px">
+    <button data-s="rec" class="on">Doanh thu bản ghi</button>
+    <button data-s="pub">Doanh thu tác quyền</button>
+  </div>
+
+  <section class="kpis" id="kpis"></section>
+
+  <section class="grid2">
+    <div class="panel">
+      <h3>Tiền đi đâu</h3>
+      <p class="hint" id="chainHint"></p>
+      <div class="chain" id="chain"></div>
+      <p class="note" id="chainFoot" style="margin-top:11px"></p>
+    </div>
+    <div class="panel">
+      <h3>Doanh thu 12 kỳ</h3>
+      <p class="hint">Cột đỏ là kỳ đang xem · vạch xám là kỳ chưa mở</p>
+      <canvas id="trend"></canvas>
+      <div style="height:14px"></div>
+      <div class="dimtabs" id="dimtabs">
+        <button data-d="src" class="on">Cửa hàng</button>
+        <button data-d="terr">Lãnh thổ</button>
+      </div>
+      <div class="rank" id="rank"></div>
+    </div>
+  </section>
+
+  <div class="tbl-head">
+    <h3 id="tblTitle"></h3>
+    <input class="search" id="q" type="search" placeholder="Tìm theo tên bài hoặc mã ISRC…">
+    <p class="hint" id="tblHint"></p>
+  </div>
+  <div class="vt">
+    <div class="vt-head" id="vhead"></div>
+    <div class="vt-body" id="vbody"><div class="vt-spacer" id="vspacer"></div></div>
+  </div>
+
+  <section class="drill hide" id="drill"></section>
+
+  <section class="panel" style="margin-top:22px">
+    <div class="panel-head">
+      <div>
+        <h3>Trình duyệt này thực sự nhận được những gì</h3>
+        <p class="hint">Không phải trang giải thích cho vui — đây là chính những gói dữ liệu máy chủ vừa gửi xuống.
+          Mọi con số ở trên đến từ chúng, và không có gì khác được tải về.</p>
+      </div>
+      <button class="btn sm" id="btnProbe">Chạy lại kiểm tra</button>
+    </div>
+    <div class="probe" id="probe"></div>
+    <div class="calls" id="calls"></div>
+    <pre class="json" id="payload"></pre>
+  </section>
+
+  <section class="panel">
+    <h3 id="gateTitle"></h3>
+    <p class="hint">Cùng một hệ thống, khác nhau ở phạm vi dòng được thấy, cột nào hiện, và thao tác nào được phép</p>
+    <div class="gate-cards" id="gateGrid"></div>
+  </section>
+</main>
+
+<footer>
+  Cổng báo cáo doanh thu Haustek · bản mẫu · số liệu sinh tại chỗ, không phải doanh thu thật<br>
+  Trang này chỉ gọi tầng API dành cho khách; mọi con số ở trên đến từ những gói dữ liệu bên dưới.<br>
+  Bản mẫu chạy cả hai trang trong một trình duyệt, một gốc — nên đây là <b>hình dạng</b> của ranh
+  giới chứ chưa phải ranh giới đã được thực thi. Khi làm thật, dữ liệu thô nằm ở database và
+  Row Level Security mới là thứ bảo đảm.
+</footer>
+
+<div class="toasts" id="toasts"></div>
+
+<script src="haustek-core.js"></script>
+<script>
+"use strict";
+/* =====================================================================
+   CỔNG KHÁCH — LABEL VÀ NGHỆ SĨ
+   ---------------------------------------------------------------------
+   Dòng đầu tiên là khoá cửa. Sau lời gọi này, HAUSTEK.admin không còn tồn
+   tại trong trang: không dữ liệu thô, không tên đơn vị phân phối, không
+   tỷ lệ gốc, không nút duyệt kỳ. Không lời gọi nào của TRANG NÀY lấy lại
+   được.
+
+   Nhưng nói cho đúng: hai trang cùng chạy trong một trình duyệt và cùng
+   một gốc, nên vẫn còn đường vòng — nạp lại lõi trong iframe cùng gốc,
+   hay đọc thẳng localStorage. Bản mẫu không bịt được, và khối "Trình
+   duyệt này thực sự nhận được những gì" ở cuối trang nói rõ điều đó.
+   Cái chứng minh được ở đây là HÌNH DẠNG của tầng API: mỗi lời gọi trả về
+   đúng một người xem, đúng một kỳ đã duyệt, đã tính sẵn. Khi làm thật,
+   chính hình dạng đó là thứ các policy Row Level Security phải bảo đảm.
+   ===================================================================== */
+HAUSTEK.lockdown();
+
+const H = HAUSTEK, fmt = H.fmt, esc = H.esc;
+const $ = id => document.getElementById(id);
+
+/* ---------- mô phỏng đăng nhập ---------- */
+let LOGINS = [];
+try { LOGINS = H.api.demoLogins().accounts.filter(a => a.status === "active"); }
+catch (e) { LOGINS = []; }
+
+let me = LOGINS[0] || null;
+let stream = "rec", dim = "src", tailOpen = false;
+let periodKey = null, sortKey = "mine", sortDir = -1, query = "", selected = -1;
+let cur = "USD", fxRate = null, fxAt = null;
+/* Số tiền luôn tính bằng USD ở máy chủ. Đổi sang VND chỉ là chuyện hiển
+   thị, và phải dùng ĐÚNG tỷ giá đã khoá lúc duyệt kỳ — không phải tỷ giá
+   hôm nay. Đọc lại báo cáo tháng ba vào tháng chín vẫn phải ra đúng con
+   số đã chuyển vào tài khoản. */
+const M  = v => cur === "VND" ? fmt.vnd(v, fxRate) : fmt.usd0(v);
+const M2 = v => cur === "VND" ? fmt.vnd(v, fxRate) : fmt.usd(v);
+let vt = null, PAYLOADS = {}, shownCall = "summary";
+
+function toast(msg, kind) {
+  const el = document.createElement("div");
+  el.className = "toast" + (kind ? " " + kind : "");
+  el.textContent = msg;
+  $("toasts").appendChild(el);
+  setTimeout(() => el.remove(), 3400);
+}
+
+/* mọi lời gọi API đi qua đây, để lưu lại payload cho khối soi bên dưới */
+function call(name, fn) {
+  try {
+    const t = performance.now();
+    const out = fn();
+    PAYLOADS[name] = { ok: true, ms: +(performance.now() - t).toFixed(1), data: out };
+    return out;
+  } catch (e) {
+    PAYLOADS[name] = { ok: false, error: e.message };
+    throw e;
+  }
+}
+
+/* ---------- dải mô phỏng đăng nhập ---------- */
+function drawSim() {
+  const opts = LOGINS.map((a, i) =>
+    `<option value="${i}">${esc(a.email)} — ${esc(a.name)}${a.kind === "artist-indie" ? " (độc lập)" : ""}</option>`).join("");
+  $("simbar").innerHTML = `<b>BẢN MẪU</b>
+    <span>Chọn tài khoản để xem cổng dưới góc nhìn của họ:</span>
+    <select id="who" aria-label="Tài khoản">${opts}</select>
+    <span class="tag" id="whoTag"></span>
+    <span class="spacer" style="flex:1"></span>
+    <span>Hệ thật không có ô chọn này — mỗi người chỉ đăng nhập được vào chính tài khoản mình.</span>`;
+  const sel = $("who");
+  sel.value = String(LOGINS.indexOf(me));
+  sel.onchange = e => {
+    me = LOGINS[+e.target.value];
+    stream = "rec"; selected = -1; query = ""; $("q").value = "";
+    periodKey = null; tailOpen = false;
+    boot();
+  };
+}
+
+/* ---------- kỳ ---------- */
+let SESSION = null, PERIODS = null;
+function loadSession() {
+  SESSION = call("session", () => H.api.session(me.role, me.partyId));
+  PERIODS = call("periods", () => H.api.periods(me.role, me.partyId));
+  if (!periodKey || !PERIODS.open.some(p => p.k === periodKey))
+    periodKey = PERIODS.latest;
+  $("period").innerHTML = PERIODS.open.map(p =>
+    `<option value="${esc(p.k)}">Kỳ ${esc(p.label)}</option>`).reverse().join("");
+  $("period").value = periodKey || "";
+  $("whoTag").textContent = SESSION.clientId + " · " + (me.role === "label" ? "label" : "nghệ sĩ");
+  $("crumb").textContent = (me.role === "label" ? "Cổng label" : "Cổng nghệ sĩ") + " · " + SESSION.name;
+}
+
+function drawGateNote() {
+  const waiting = PERIODS.waiting;
+  if (!waiting.length) {
+    $("gateNote").innerHTML = `<div class="okbar"><span class="ic">✓</span>
+      <span>Tất cả các kỳ đã đối chiếu xong và đã mở.</span></div>`;
+    return;
+  }
+  /* Không nói vì sao kỳ chưa mở — đó là chuyện vận hành nội bộ. Chỉ nói
+     là chưa xong, và chưa xong thì chưa có số nào để tin. */
+  $("gateNote").innerHTML = `<div class="infobar"><span class="ic">◷</span>
+    <div><b style="display:block;font-size:12.5px;color:var(--teal);margin-bottom:3px">
+      ${waiting.length === 1 ? "Một kỳ" : waiting.length + " kỳ"} đang được đối chiếu</b>
+      <span>${waiting.map(w => `<i class="chip info">${esc(w.label)}</i>`).join(" ")}
+        — sẽ mở ngay khi Haustek nạp đủ dữ liệu và đối chiếu xong.
+        Trước lúc đó chưa có con số nào của các kỳ này, kể cả con số tạm.</span></div></div>`;
+}
+
+/* ---------- thẻ số ---------- */
+function drawKpis(s) {
+  const delta = (now, before) => {
+    if (before == null || !before) return "";
+    const d = (now - before) / before * 100;
+    return `<span class="${d >= 0 ? "up" : "down"}">${d >= 0 ? "▲" : "▼"} ${Math.abs(d).toFixed(1)}%</span> so kỳ ${esc(s.prevLabel || "")}`;
+  };
+  const st = stream === "rec" ? "bản ghi" : "tác quyền";
+  let cards;
+  if (me.role === "label") {
+    cards = [
+      { lab: "Phần label nhận", val: M(s.total), sub: delta(s.total, s.prevTotal), hero: 1 },
+      { lab: "Doanh thu gộp", val: M(s.gross), sub: "trước mọi khoản trừ" },
+      { lab: "Trả cho nghệ sĩ", val: M(Math.abs((s.chain.find(c => c.key === "artist") || {}).value || 0)),
+        sub: "theo tỷ lệ bạn đặt" },
+      { lab: "Bản ghi có doanh thu", val: fmt.num(s.tracks), sub: "trên " + fmt.num(SESSION.trackCount) + " bản ghi" },
+      { lab: "Lượt nghe", val: fmt.num(s.streams), sub: delta(s.streams, s.prevStreams) }
+    ];
+  } else {
+    const fin = s.chain[s.chain.length - 1];
+    cards = [
+      { lab: "Doanh thu " + st + " của bạn", val: M2(s.total), sub: delta(s.total, s.prevTotal), hero: 1 },
+      { lab: stream === "rec" ? "Lượt nghe" : "Số bài",
+        val: stream === "rec" ? fmt.num(s.streams) : fmt.num(s.tracks),
+        sub: stream === "rec" ? delta(s.streams, s.prevStreams) : "có tác quyền kỳ này" }
+    ];
+    if (s.advance) {
+      cards.push({ lab: "Còn phải thu hồi", val: M(s.advance.left),
+        sub: `đã ứng <b>${M(s.advance.opening)}</b>` + (s.advance.left > 0 ? ` · còn ~<b>${s.advance.periodsLeft}</b> kỳ` : " · đã xong"), bad: s.advance.left > 0 });
+      /* Thu hồi tạm ứng chạy trên cả hai dòng tiền, nhưng con số dưới đây
+         chỉ là phần của dòng tiền đang xem — nên nói rõ ra, đừng để người
+         đọc cộng nhầm hai lần. */
+      cards.push({ lab: stream === "rec" ? "Thực nhận kỳ này" : "Về tay bạn (tác quyền)",
+        val: M(fin.value),
+        sub: stream === "rec" ? (s.payout ? esc(s.payout.note) : "")
+                              : "phần tác quyền · doanh thu bản ghi tính riêng ở tab bên cạnh" });
+    } else {
+      cards.push({ lab: "Bài có doanh thu", val: fmt.num(s.tracks), sub: "trong kỳ này" });
+      cards.push({ lab: "Thuộc về", val: SESSION.independent ? "Độc lập" : "Label",
+        sub: SESSION.independent ? "trực tiếp với Haustek" : esc(SESSION.belongsTo) });
+    }
+  }
+  $("kpis").innerHTML = cards.map(c => `<div class="kpi${c.hero ? " hero" : (c.bad ? " bad" : "")}">
+    <div class="lab">${esc(c.lab)}</div><div class="val">${esc(c.val)}</div>
+    ${c.sub ? `<div class="sub">${c.sub}</div>` : ""}</div>`).join("");
+}
+
+/* ---------- chuỗi tiền ---------- */
+function drawChain(s) {
+  $("chainHint").textContent = SESSION.name + " · kỳ " + periodLabel(periodKey);
+  if (!s.chain.length || s.gross <= 0) {
+    $("chain").innerHTML = `<p class="empty">${esc(s.emptyReason || "Kỳ này chưa có doanh thu.")}</p>`
+      + (s.nextPub ? `<button class="tail-btn" id="jumpPub">Xem kỳ ${esc(s.nextPub.label)} — kỳ gần nhất có tác quyền</button>` : "");
+    const j = $("jumpPub");
+    if (j) j.onclick = () => { periodKey = s.nextPub.k; $("period").value = periodKey; render(); };
+    $("chainFoot").textContent = "";
+    return;
+  }
+  const top = Math.abs(s.chain[0].value) || 1;
+  $("chain").innerHTML = s.chain.map(c => `<div class="chain-step ${c.kind === "out" ? "out" : (c.kind === "final" ? "final" : "")}">
+    <div class="chain-top"><span class="chain-name">${esc(c.label)}</span>
+      <span class="chain-val">${c.value < 0 ? "−" : ""}${M(Math.abs(c.value))}</span></div>
+    <div class="chain-note">${esc(c.note)}</div>
+    <div class="chain-bar"><i style="width:${Math.min(Math.abs(c.value) / top * 100, 100).toFixed(1)}%"></i></div>
+  </div>`).join("");
+  const fxNote = cur === "VND"
+    ? `<br>Quy đổi theo tỷ giá <b>1 USD = ${fmt.num(fxRate)} ₫</b>`
+      + (s.fx && s.fx.locked ? ` — chốt ngày ${fmt.date(s.fx.at)} lúc duyệt kỳ này và không đổi nữa.
+         Mở lại báo cáo sau nửa năm vẫn ra đúng con số đã chuyển đi.`
+                             : " — kỳ này chưa khoá tỷ giá, con số quy đổi còn trôi theo tỷ giá hôm nay.")
+    : "";
+  $("chainFoot").innerHTML = (stream === "rec"
+    ? "Điểm producer trừ vào phần của nghệ sĩ, không cộng thêm bên trên — đó là cách tính chuẩn của ngành. Làm ngược lại thì tổng các phần vượt quá 100%."
+    : "Tác quyền là dòng tiền tách rời với doanh thu bản ghi: chủ sở hữu khác, nguồn khác, kỳ khác. Một người có thể có cả hai, một trong hai, hoặc không cái nào.") + fxNote;
+}
+
+/* ---------- biểu đồ + xếp hạng ---------- */
+function drawTrend() {
+  const t = call("trend", () => H.api.trend(me.role, me.partyId, stream));
+  const cur = t.points.findIndex(p => p.k === periodKey);
+  H.barChart($("trend"), t.points, { current: cur, height: 150 });
+}
+function drawRank() {
+  const b = call("breakdown", () => H.api.breakdown(me.role, me.partyId, periodKey, stream, dim, { all: tailOpen }));
+  let rows = b.rows.slice();
+  let tailNote = "";
+  /* Dòng "còn lại" luôn phải có mặt khi còn cửa hàng chưa hiện — bảng này
+     phải cộng đúng bằng tổng, dù đang thu gọn hay đã mở rộng. */
+  if (b.tail) rows.push({ name: "Khác — " + fmt.num(b.tail.count) + " cửa hàng", value: b.tail.value, tail: true });
+  if (dim === "src" && stream === "rec") {
+    tailNote = b.expanded
+      ? `<button class="tail-btn" id="tailBtn">Thu về ${fmt.num(8)} cửa hàng chính</button>`
+      : `<button class="tail-btn" id="tailBtn">Xem tất cả ${fmt.num(b.totalStores)} cửa hàng</button>`;
+  }
+  const peak = rows.length ? Math.max(...rows.map(r => r.value)) : 1;
+  $("rank").innerHTML = (rows.map(r => `<div class="rank-row${r.tail ? " tail-row" : ""}">
+    <div class="rank-top"><span class="rank-name">${esc(r.name)}</span>
+      <span class="rank-val">${M(r.value)}</span></div>
+    <div class="rank-bar"><i style="width:${peak > 0 ? (r.value / peak * 100).toFixed(1) : 0}%"></i></div>
+  </div>`).join("") + tailNote) || `<p class="empty">Chưa có dữ liệu.</p>`;
+  const tb = $("tailBtn");
+  if (tb) tb.onclick = () => { tailOpen = !tailOpen; drawRank(); drawProbe(); };
+}
+
+/* ---------- bảng bài ---------- */
+function colDefs() {
+  if (me.role === "label") return [
+    { k: "title", lab: "Bản ghi", w: "minmax(180px,2.2fr)" },
+    { k: "artist", lab: "Nghệ sĩ", w: "minmax(120px,1.4fr)" },
+    { k: "streams", lab: "Lượt nghe", w: "110px", num: 1 },
+    { k: "gross", lab: "Doanh thu gộp", w: "125px", num: 1 },
+    { k: "mine", lab: "Label nhận", w: "125px", num: 1, pay: 1 }];
+  return [
+    { k: "title", lab: stream === "rec" ? "Bài của bạn" : "Bài bạn có phần sáng tác", w: "minmax(180px,2.6fr)" },
+    { k: "streams", lab: "Lượt nghe", w: "110px", num: 1 },
+    { k: "gross", lab: "Doanh thu gộp", w: "125px", num: 1 },
+    { k: "mine", lab: "Về tay bạn", w: "130px", num: 1, pay: 1 }];
+}
+function drawTable() {
+  const t = call("tracks", () => H.api.tracks(me.role, me.partyId, periodKey, stream,
+    { q: query, sort: sortKey, dir: sortDir }));
+  const cols = colDefs();
+  const rowHTML = r => cols.map(c => {
+    if (c.k === "title") return `<div class="tt"><b>${esc(r.title)}</b><span>${esc(r.isrc)} · ${esc(r.type)}</span></div>`;
+    if (c.k === "artist") return `<div>${esc(r.artist)}</div>`;
+    if (c.k === "streams") return `<div class="num">${r.streams == null ? "—" : fmt.num(r.streams)}</div>`;
+    if (c.k === "gross") return `<div class="num">${M2(r.gross)}</div>`;
+    return `<div class="num pay">${M2(r.mine)}</div>`;
+  }).join("");
+  const opts = { body: $("vbody"), spacer: $("vspacer"), head: $("vhead"),
+    rows: t.rows, cols, rowHTML, sortKey, sortDir,
+    isSelected: r => r.id === selected };
+  vt = H.vtable(opts);
+  $("tblHint").textContent = fmt.num(t.total) + " bản ghi · vẽ ~30 dòng đang nhìn thấy";
+  $("vbody").scrollTop = 0;
+}
+
+/* ---------- chi tiết một bài ---------- */
+function drawDrill() {
+  if (selected < 0) { $("drill").classList.add("hide"); return; }
+  let d;
+  try { d = call("trackDetail", () => H.api.trackDetail(me.role, me.partyId, periodKey, stream, selected)); }
+  catch (e) { toast(e.message, "no"); selected = -1; $("drill").classList.add("hide"); return; }
+  const mk = list => list.map(x => `<tr><td>${esc(x.name)}</td><td>${M2(x.value)}</td></tr>`).join("")
+    || `<tr><td colspan="2" class="dim">chưa có</td></tr>`;
+  $("drill").classList.remove("hide");
+  $("drill").innerHTML = `
+    <div class="drill-head">
+      <div><h3>${esc(d.title)}</h3>
+        <div class="meta">${esc(d.isrc)} · ${esc(d.type)} · ${esc(d.artist)}${
+          d.streams != null ? " · " + fmt.num(d.streams) + " lượt nghe kỳ này" : ""}</div></div>
+      <button class="btn sm" id="closeDrill">Đóng</button>
+    </div>
+    <div class="drill-cols">
+      <div class="mini"><h4>Theo cửa hàng</h4><table>${mk(d.byStore)}</table></div>
+      <div class="mini"><h4>Theo lãnh thổ</h4><table>${mk(d.byTerritory)}</table></div>
+      <div class="mini"><h4>${stream === "rec" ? "Chia tiền bài này" : "Phần sáng tác"}</h4><table>${
+        d.steps.map(s => `<tr><td>${s.strong ? "<b>" + esc(s.label) + "</b>" : esc(s.label)}</td>
+          <td>${s.strong ? "<b>" : ""}${s.text != null ? esc(s.text) : (s.value < 0 ? "−" : "") + M2(Math.abs(s.value))}${s.strong ? "</b>" : ""}</td></tr>`).join("")
+      }</table></div>
+    </div>`;
+  $("closeDrill").onclick = () => { selected = -1; drawTable(); drawDrill(); };
+}
+
+/* ---------- khối soi payload ---------- */
+/* Năm phép kiểm dưới đây phải CHẠY THẬT trên payload vừa nhận và trên
+   chính tầng API, không được là năm dấu tích trang trí. Một phép kiểm luôn
+   xanh còn tệ hơn không có phép kiểm nào: nó làm người ta tin vào thứ chưa
+   ai kiểm. */
+function chayKiemTra() {
+  const all = JSON.stringify(PAYLOADS).toLowerCase();
+  const t = [];
+
+  t.push({ t: "Không có tên đơn vị phân phối hay tỷ lệ gốc trong bất kỳ gói nào",
+    bad: ["phân phối", "distributor", "grossrate", "dist-1"].some(x => all.includes(x)) });
+
+  /* tỷ lệ CHIA của bất kỳ bên nào — đi qua từng khoá, chừa tỷ giá */
+  const xau = [];
+  (function di(o, d) {
+    if (!o || typeof o !== "object") return;
+    if (Array.isArray(o)) return o.forEach((x, i) => di(x, d));
+    Object.keys(o).forEach(k => {
+      const p2 = d ? d + "." + k : k;
+      if (/^(rate|share|split|rateShare)$/i.test(k) && !/(^|\.)fx\.rate$/.test(p2)) xau.push(p2);
+      di(o[k], p2);
+    });
+  })(PAYLOADS, "");
+  t.push({ t: "Không gói nào mang tỷ lệ chia của bất kỳ bên nào" + (xau.length ? " — thấy: " + xau.join(", ") : ""),
+    bad: xau.length > 0 });
+
+  /* thử đọc dữ liệu ngoài phạm vi — phải bị từ chối */
+  let chan = 0, thu = 0;
+  const mine = new Set(((PAYLOADS.tracks || {}).data || { rows: [] }).rows.map(r => r.id));
+  for (let i = 0; i < 60000 && thu < 3; i += 977) {
+    if (mine.has(i)) continue;
+    thu++;
+    try { H.api.trackDetail(me.role, me.partyId, periodKey, stream, i); } catch (e) { chan++; }
+  }
+  t.push({ t: "Hỏi thử " + thu + " bản ghi ngoài phạm vi — bị từ chối cả " + chan,
+    bad: thu > 0 && chan < thu });
+
+  t.push({ t: "HAUSTEK.admin không còn tồn tại trong trang này", bad: !!H.admin });
+
+  /* kỳ chưa duyệt: vừa kiểm gói đã nhận, vừa hỏi thẳng một kỳ chưa mở */
+  const moKys = new Set((PERIODS.open || []).map(x => x.k));
+  const sai = Object.values(PAYLOADS).filter(x => x.data && x.data.periodKey && !moKys.has(x.data.periodKey)).length;
+  let choDong = true;
+  const kyDong = (PERIODS.waiting || [])[0];
+  if (kyDong) { try { H.api.summary(me.role, me.partyId, kyDong.k, "rec"); choDong = false; } catch (e) {} }
+  t.push({ t: "Chỉ nhận kỳ đã duyệt" + (kyDong ? " — hỏi thử kỳ " + kyDong.label + " thì bị từ chối" : ""),
+    bad: sai > 0 || !choDong });
+  return t;
+}
+
+function drawProbe() {
+  const tests = chayKiemTra();
+  const bytes = Object.values(PAYLOADS).reduce((s, p) => s + (p.data && p.data._bytes || 0), 0);
+  $("probe").innerHTML = tests.map(x =>
+    `<div class="${x.bad ? "no" : ""}"><i>${x.bad ? "✕" : "✓"}</i><span>${esc(x.t)}</span></div>`).join("")
+    + `<div><i>Σ</i><span>tổng cộng ${fmt.bytes(bytes)} dữ liệu đã tải xuống trình duyệt này cho cả trang</span></div>`
+    + `<div class="no"><i>!</i><span>Chưa kiểm được, và bản mẫu không kiểm được: hai trang chạy cùng một gốc,
+        nên nạp lại lõi trong iframe hay đọc thẳng localStorage vẫn lấy được dữ liệu quản trị.
+        Đây là hình dạng của ranh giới, chưa phải ranh giới đã được thực thi — thứ đó nằm ở
+        Row Level Security phía database.</span></div>`;
+  const names = Object.keys(PAYLOADS);
+  if (!names.includes(shownCall)) shownCall = names[0];
+  $("calls").innerHTML = names.map(n =>
+    `<button data-c="${esc(n)}" class="${n === shownCall ? "on" : ""}">api.${esc(n)}()${
+      PAYLOADS[n].ms != null ? " · " + PAYLOADS[n].ms + "ms" : ""}</button>`).join("");
+  $("calls").querySelectorAll("button").forEach(b => {
+    b.onclick = () => { shownCall = b.dataset.c; drawProbe(); };
+  });
+  const p = PAYLOADS[shownCall];
+  let txt = p ? JSON.stringify(p.ok ? p.data : { loi: p.error }, null, 1) : "";
+  if (txt.length > 9000) txt = txt.slice(0, 9000) + "\n… (cắt bớt cho gọn màn hình)";
+  $("payload").textContent = txt;
+}
+
+/* ---------- ai thấy gì ---------- */
+const GATE = {
+  label: { t: "Label thấy gì, không thấy gì", g: [
+    ["yes", "Thấy", "Bản ghi của nghệ sĩ trong label · doanh thu gộp · phần label nhận · phần trả nghệ sĩ"],
+    ["", "Được sửa", "Tỷ lệ chia cho nghệ sĩ của mình, trong khung Haustek cho phép"],
+    ["no", "Không thấy", "Label khác · nghệ sĩ độc lập · tác quyền (thuộc người sáng tác, không đi qua label)"]] },
+  artist: { t: "Nghệ sĩ thấy gì, không thấy gì", g: [
+    ["yes", "Thấy", "Bài của mình · bóc theo cửa hàng và lãnh thổ · từng chặng tiền đi · số tiền cuối cùng"],
+    ["", "Hai dòng tiền tách rời", "Chủ bản ghi xem doanh thu bản ghi · người sáng tác xem tác quyền"],
+    ["no", "Không thấy", "Nghệ sĩ khác · tên đơn vị phân phối · tỷ lệ gốc · doanh thu tổng của label"]] }
+};
+
+/* ---------- vẽ tất cả ---------- */
+function periodLabel(k) { const p = PERIODS.open.find(x => x.k === k); return p ? p.label : k; }
+
+function render() {
+  PAYLOADS = {};
+  loadSessionTabs();
+  if (!periodKey) {
+    $("gateNote").innerHTML = `<div class="warn"><span class="ic">▲</span>
+      <div><b>Chưa có kỳ nào được mở</b>
+      <span>Haustek chưa đối chiếu xong kỳ nào. Khi xong, số liệu sẽ hiện ở đây.</span></div></div>`;
+    ["kpis", "chain", "rank", "vhead", "vspacer"].forEach(id => $(id).innerHTML = "");
+    $("tblHint").textContent = ""; $("drill").classList.add("hide");
+    drawProbe();
+    return;
+  }
+  drawGateNote();
+  let s;
+  try { s = call("summary", () => H.api.summary(me.role, me.partyId, periodKey, stream)); }
+  catch (e) { toast(e.message, "no"); return; }
+  $("tblTitle").textContent = stream === "rec" ? "Bản ghi" : "Bài có tác quyền";
+  if (stream === "pub" && s.emptyReason && s.nextPub) {
+    $("gateNote").innerHTML += `<div class="infobar"><span class="ic">◷</span>
+      <span>${esc(s.emptyReason)} Kỳ gần nhất có số là <b>${esc(s.nextPub.label)}</b>.</span></div>`;
+  }
+  fxRate = s.fx ? s.fx.rate : null; fxAt = s.fx ? s.fx.at : null;
+  drawKpis(s); drawChain(s); drawTrend(); drawRank(); drawTable(); drawDrill();
+  const g = GATE[me.role];
+  $("gateTitle").textContent = g.t;
+  $("gateGrid").innerHTML = g.g.map(([c, b, t]) =>
+    `<div class="gate-card"><b class="${c}">${esc(b)}</b><span>${esc(t)}</span></div>`).join("");
+  drawProbe();
+}
+
+function loadSessionTabs() {
+  const pubBtn = $("streams").querySelector('[data-s="pub"]');
+  const noPub = !SESSION.hasPublishing;
+  pubBtn.disabled = noPub;
+  pubBtn.style.opacity = noPub ? ".4" : "";
+  pubBtn.style.cursor = noPub ? "not-allowed" : "";
+  pubBtn.title = noPub
+    ? (me.role === "label" ? "Tác quyền thuộc người sáng tác, không đi qua label"
+                           : "Bạn không có phần sáng tác nào trong danh mục")
+    : "";
+  if (noPub && stream === "pub") stream = "rec";
+  $("streams").querySelectorAll("button").forEach(b => b.classList.toggle("on", b.dataset.s === stream));
+}
+
+function boot() {
+  if (!me) {
+    document.querySelector("main").innerHTML =
+      `<div class="warn"><span class="ic">▲</span><div><b>Chưa có tài khoản khách nào được cấp</b>
+       <span>Mở intranet.html → Tài khoản & nhật ký → Mời tài khoản.</span></div></div>`;
+    return;
+  }
+  drawSim();
+  loadSession();
+  render();
+}
+
+/* ---------- sự kiện ---------- */
+$("period").onchange = e => { periodKey = e.target.value; selected = -1; tailOpen = false; render(); };
+$("streams").querySelectorAll("button").forEach(b => {
+  b.onclick = () => { if (b.disabled) return; stream = b.dataset.s; selected = -1; sortKey = "mine"; tailOpen = false; render(); };
+});
+$("dimtabs").querySelectorAll("button").forEach(b => {
+  b.onclick = () => { dim = b.dataset.d; tailOpen = false;
+    $("dimtabs").querySelectorAll("button").forEach(x => x.classList.toggle("on", x === b));
+    drawRank(); drawProbe(); };
+});
+$("vhead").addEventListener("click", e => {
+  const sp = e.target.closest("span"); if (!sp) return;
+  if (sortKey === sp.dataset.k) sortDir *= -1; else { sortKey = sp.dataset.k; sortDir = -1; }
+  drawTable(); drawProbe();
+});
+$("vbody").addEventListener("click", e => {
+  const r = e.target.closest(".vt-row"); if (!r) return;
+  const row = vt.rowAt(+r.dataset.r); if (!row) return;
+  selected = selected === row.id ? -1 : row.id;
+  drawTable(); drawDrill(); drawProbe();
+  if (selected >= 0) $("drill").scrollIntoView({ block: "nearest", behavior: "smooth" });
+});
+let qt = null;
+$("q").oninput = e => { query = e.target.value; clearTimeout(qt); qt = setTimeout(() => { drawTable(); drawProbe(); }, 200); };
+document.querySelectorAll("[data-cur]").forEach(b => {
+  b.onclick = () => {
+    cur = b.dataset.cur;
+    document.querySelectorAll("[data-cur]").forEach(x => x.classList.toggle("on", x === b));
+    render();
+  };
+});
+$("btnProbe").onclick = () => { render(); toast("Đã gọi lại toàn bộ API và kiểm tra lại payload", "ok"); };
+let rt = null;
+addEventListener("resize", () => { clearTimeout(rt); rt = setTimeout(() => { if (periodKey) { drawTrend(); drawTable(); } }, 200); });
+/* intranet vừa duyệt kỳ ở tab khác → nạp lại quyết định mới nhất */
+addEventListener("storage", () => { if (H.api.refresh()) { loadSession(); render(); toast("Haustek vừa cập nhật — đã tải lại", "ok"); } });
+
+boot();
+</script>
+</body>
+</html>
