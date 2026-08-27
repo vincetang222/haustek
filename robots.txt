@@ -8,4 +8,8 @@ Allow: /
 # không cần xuất hiện trên kết quả tìm kiếm.
 Disallow: /metadata
 
+# Portal báo cáo doanh thu là công cụ nội bộ, chưa có đăng nhập.
+# Chặn cỗ máy tìm kiếm chỉ là lớp mỏng nhất — ai có link vẫn vào được.
+Disallow: /portal
+
 Sitemap: https://haustek-group.com/sitemap.xml
