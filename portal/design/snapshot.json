@@ -1,0 +1,512 @@
+{
+ "period": {
+  "k": "2026-06",
+  "label": "06/2026",
+  "approved": false,
+  "idx": 10
+ },
+ "now": {
+  "k": "2026-06",
+  "label": "06/2026",
+  "gross": 3689317.05,
+  "fee": 553401.42,
+  "labelCut": 671658.75,
+  "producer": 44284.47,
+  "artist": 2419972.41,
+  "streams": 1189885505,
+  "tracks": 45828,
+  "feeds": [
+   2752584.27,
+   499657.17,
+   437075.61
+  ],
+  "approved": false
+ },
+ "prev": {
+  "k": "2026-05",
+  "label": "05/2026",
+  "gross": 3540299.17,
+  "fee": 531049.38,
+  "labelCut": 644557.74,
+  "producer": 42339.42,
+  "artist": 2322352.63,
+  "streams": 1142238293,
+  "tracks": 41709,
+  "feeds": [
+   2642242.25,
+   478553.62,
+   419503.3
+  ],
+  "approved": true
+ },
+ "byPeriod": [
+  {
+   "k": "2025-08",
+   "label": "08/2025",
+   "gross": 621855.97,
+   "fee": 93278.94,
+   "labelCut": 112418.24,
+   "producer": 7176.26,
+   "artist": 408982.53,
+   "streams": 202485694,
+   "tracks": 4182,
+   "feeds": [
+    464669.15,
+    83841.91,
+    73344.91
+   ],
+   "approved": true
+  },
+  {
+   "k": "2025-09",
+   "label": "09/2025",
+   "gross": 1274511.92,
+   "fee": 191177.36,
+   "labelCut": 230010.16,
+   "producer": 14700.48,
+   "artist": 838623.92,
+   "streams": 410035401,
+   "tracks": 8309,
+   "feeds": [
+    949989.37,
+    173480.2,
+    151042.35
+   ],
+   "approved": true
+  },
+  {
+   "k": "2025-10",
+   "label": "10/2025",
+   "gross": 1979680.17,
+   "fee": 296953.1,
+   "labelCut": 355908.52,
+   "producer": 22892.24,
+   "artist": 1303926.31,
+   "streams": 638093610,
+   "tracks": 12535,
+   "feeds": [
+    1473552.2,
+    270736.41,
+    235391.56
+   ],
+   "approved": true
+  },
+  {
+   "k": "2025-11",
+   "label": "11/2025",
+   "gross": 2556651.31,
+   "fee": 383498.94,
+   "labelCut": 459558.06,
+   "producer": 29899.65,
+   "artist": 1683694.66,
+   "streams": 822360901,
+   "tracks": 16760,
+   "feeds": [
+    1902911.06,
+    349499.76,
+    304240.49
+   ],
+   "approved": true
+  },
+  {
+   "k": "2025-12",
+   "label": "12/2025",
+   "gross": 3014671.24,
+   "fee": 452203.23,
+   "labelCut": 543405.51,
+   "producer": 35159.27,
+   "artist": 1983903.23,
+   "streams": 971323155,
+   "tracks": 20901,
+   "feeds": [
+    2245264.06,
+    411673.13,
+    357734.05
+   ],
+   "approved": true
+  },
+  {
+   "k": "2026-01",
+   "label": "01/2026",
+   "gross": 3276893.86,
+   "fee": 491535.46,
+   "labelCut": 590299.89,
+   "producer": 38509.36,
+   "artist": 2156549.15,
+   "streams": 1057147927,
+   "tracks": 25007,
+   "feeds": [
+    2440662.36,
+    447151.42,
+    389080.08
+   ],
+   "approved": true
+  },
+  {
+   "k": "2026-02",
+   "label": "02/2026",
+   "gross": 3463476.66,
+   "fee": 519523.99,
+   "labelCut": 623588.37,
+   "producer": 40295.18,
+   "artist": 2280069.12,
+   "streams": 1115563759,
+   "tracks": 29207,
+   "feeds": [
+    2581902.19,
+    471132.24,
+    410442.23
+   ],
+   "approved": true
+  },
+  {
+   "k": "2026-03",
+   "label": "03/2026",
+   "gross": 3537678.13,
+   "fee": 530655.41,
+   "labelCut": 636039.17,
+   "producer": 41881.54,
+   "artist": 2329102.01,
+   "streams": 1140509843,
+   "tracks": 33415,
+   "feeds": [
+    2638639.71,
+    480564.22,
+    418474.2
+   ],
+   "approved": true
+  },
+  {
+   "k": "2026-04",
+   "label": "04/2026",
+   "gross": 3535318.13,
+   "fee": 530301.51,
+   "labelCut": 641742.84,
+   "producer": 41899.56,
+   "artist": 2321374.22,
+   "streams": 1141030912,
+   "tracks": 37591,
+   "feeds": [
+    2637931.2,
+    478932.92,
+    418454.01
+   ],
+   "approved": true
+  },
+  {
+   "k": "2026-05",
+   "label": "05/2026",
+   "gross": 3540299.17,
+   "fee": 531049.38,
+   "labelCut": 644557.74,
+   "producer": 42339.42,
+   "artist": 2322352.63,
+   "streams": 1142238293,
+   "tracks": 41709,
+   "feeds": [
+    2642242.25,
+    478553.62,
+    419503.3
+   ],
+   "approved": true
+  },
+  {
+   "k": "2026-06",
+   "label": "06/2026",
+   "gross": 3689317.05,
+   "fee": 553401.42,
+   "labelCut": 671658.75,
+   "producer": 44284.47,
+   "artist": 2419972.41,
+   "streams": 1189885505,
+   "tracks": 45828,
+   "feeds": [
+    2752584.27,
+    499657.17,
+    437075.61
+   ],
+   "approved": false
+  },
+  {
+   "k": "2026-07",
+   "label": "07/2026",
+   "gross": 3426998.39,
+   "fee": 514054.44,
+   "labelCut": 624710.34,
+   "producer": 41121.02,
+   "artist": 2247112.59,
+   "streams": 1253785460,
+   "tracks": 50000,
+   "feeds": [
+    2901105.21,
+    525893.18,
+    0
+   ],
+   "approved": false
+  }
+ ],
+ "feeds": [
+  {
+   "id": 0,
+   "name": "Đơn vị phân phối chính",
+   "short": "Chính",
+   "fmt": "CSV · 41 cột · hằng tháng, ngày 20",
+   "loaded": true,
+   "gross": 2752584.27
+  },
+  {
+   "id": 1,
+   "name": "YouTube (mối riêng)",
+   "short": "YouTube",
+   "fmt": "CSV nén · 3 file/kỳ · hằng tháng, ngày 25",
+   "loaded": true,
+   "gross": 499657.17
+  },
+  {
+   "id": 2,
+   "name": "TikTok (mối riêng)",
+   "short": "TikTok",
+   "fmt": "XLSX · 1 sheet/lãnh thổ · hằng tháng, thất thường",
+   "loaded": true,
+   "gross": 437075.61
+  }
+ ],
+ "stores": [
+  {
+   "name": "Spotify",
+   "value": 890597.41
+  },
+  {
+   "name": "YouTube Music",
+   "value": 483690.14
+  },
+  {
+   "name": "TikTok",
+   "value": 424139.45
+  },
+  {
+   "name": "Apple Music",
+   "value": 394887.75
+  },
+  {
+   "name": "Zing MP3",
+   "value": 236911.45
+  },
+  {
+   "name": "NhacCuaTui",
+   "value": 195990.51
+  },
+  {
+   "name": "Facebook",
+   "value": 152239.72
+  },
+  {
+   "name": "Instagram",
+   "value": 110160
+  }
+ ],
+ "storesTail": {
+  "count": 210,
+  "value": 800700.59,
+  "total": 218
+ },
+ "territories": [
+  {
+   "name": "Việt Nam",
+   "value": 1320197.51
+  },
+  {
+   "name": "Hoa Kỳ",
+   "value": 546770.43
+  },
+  {
+   "name": "Nhật Bản",
+   "value": 295983.39
+  },
+  {
+   "name": "Hàn Quốc",
+   "value": 238187.64
+  },
+  {
+   "name": "Đức",
+   "value": 178331.18
+  },
+  {
+   "name": "Anh",
+   "value": 158594.7
+  },
+  {
+   "name": "Pháp",
+   "value": 139157.55
+  },
+  {
+   "name": "Úc",
+   "value": 118322.81
+  }
+ ],
+ "terrTail": {
+  "count": 8,
+  "value": 693771.83
+ },
+ "payees": [
+  {
+   "key": "L:38",
+   "name": "Cửa Bắc Audio",
+   "clientId": "HTK-L039",
+   "kind": "label",
+   "earned": 30155.52,
+   "advance": 0
+  },
+  {
+   "key": "L:14",
+   "name": "Vọng Âm Collective",
+   "clientId": "HTK-L015",
+   "kind": "label",
+   "earned": 25870.52,
+   "advance": 0
+  },
+  {
+   "key": "L:13",
+   "name": "Bến Trắng Collective",
+   "clientId": "HTK-L014",
+   "kind": "label",
+   "earned": 24476.31,
+   "advance": 0
+  },
+  {
+   "key": "L:10",
+   "name": "Nightform Collective",
+   "clientId": "HTK-L011",
+   "kind": "label",
+   "earned": 22384.2,
+   "advance": 0
+  },
+  {
+   "key": "L:5",
+   "name": "Tầng Hầm Records",
+   "clientId": "HTK-L006",
+   "kind": "label",
+   "earned": 21798.75,
+   "advance": 0
+  },
+  {
+   "key": "L:17",
+   "name": "Bụi Đỏ Collective",
+   "clientId": "HTK-L018",
+   "kind": "label",
+   "earned": 19217.64,
+   "advance": 0
+  },
+  {
+   "key": "L:8",
+   "name": "Cửa Bắc Records",
+   "clientId": "HTK-L009",
+   "kind": "label",
+   "earned": 18014.07,
+   "advance": 0
+  },
+  {
+   "key": "L:12",
+   "name": "Kho 13 Collective",
+   "clientId": "HTK-L013",
+   "kind": "label",
+   "earned": 17925.27,
+   "advance": 0
+  },
+  {
+   "key": "L:31",
+   "name": "Sông Ngầm Audio",
+   "clientId": "HTK-L032",
+   "kind": "label",
+   "earned": 16286.73,
+   "advance": 0
+  },
+  {
+   "key": "L:16",
+   "name": "Mạch Collective",
+   "clientId": "HTK-L017",
+   "kind": "label",
+   "earned": 16183.85,
+   "advance": 0
+  }
+ ],
+ "queue": {
+  "rows": 55,
+  "amount": 24051.79,
+  "thisPeriod": 6365.66
+ },
+ "recon": {
+  "control": 3695724.08,
+  "attributed": 3689317.05,
+  "pending": 6365.66,
+  "diff": 41.37,
+  "rows": [
+   {
+    "short": "Chính",
+    "status": "loaded",
+    "control": 2753696.91,
+    "attributed": 2752584.27,
+    "pending": 1112.64,
+    "diff": 0
+   },
+   {
+    "short": "YouTube",
+    "status": "loaded",
+    "control": 502602.53,
+    "attributed": 499657.17,
+    "pending": 2903.99,
+    "diff": 41.37
+   },
+   {
+    "short": "TikTok",
+    "status": "loaded",
+    "control": 439424.64,
+    "attributed": 437075.61,
+    "pending": 2349.03,
+    "diff": 0
+   }
+  ]
+ },
+ "advances": {
+  "total": 648384.35,
+  "parties": 73,
+  "opening": 2410291,
+  "recouped": 1761906.65
+ },
+ "counts": {
+  "tracks": 50000,
+  "periods": 12,
+  "artists": 900,
+  "labels": 40,
+  "stores": 218,
+  "territories": 16
+ },
+ "checks": [
+  {
+   "id": "feeds",
+   "ok": true,
+   "label": "Đã nạp đủ 3 luồng dữ liệu",
+   "detail": "Đủ cả 3 luồng"
+  },
+  {
+   "id": "recon",
+   "ok": false,
+   "label": "Đối chiếu khớp tới từng xu",
+   "detail": "YouTube lệch $41.37"
+  },
+  {
+   "id": "queue",
+   "ok": true,
+   "label": "Tiền treo dưới 0.5% doanh thu kỳ",
+   "detail": "$6,365.66 đang treo · 0.17% doanh thu kỳ"
+  },
+  {
+   "id": "fx",
+   "ok": false,
+   "label": "Đã chốt tỷ giá cho kỳ",
+   "detail": "Chưa chốt — số quy đổi sang VND sẽ trôi theo tỷ giá hôm nay"
+  }
+ ],
+ "approvedCount": 10,
+ "fx": 26150
+}
