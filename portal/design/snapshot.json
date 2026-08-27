@@ -398,36 +398,36 @@
    "advance": 0
   },
   {
-   "key": "L:8",
-   "name": "Cửa Bắc Records",
-   "clientId": "HTK-L009",
-   "kind": "label",
-   "earned": 18014.07,
+   "key": "A:683",
+   "name": "Vũ Vũ Khánh",
+   "clientId": "HTK-A0684",
+   "kind": "artist",
+   "earned": 8233.47,
    "advance": 0
   },
   {
-   "key": "L:12",
-   "name": "Kho 13 Collective",
-   "clientId": "HTK-L013",
-   "kind": "label",
-   "earned": 17925.27,
+   "key": "A:800",
+   "name": "Hoàng Bảo Bảo",
+   "clientId": "HTK-A0801",
+   "kind": "artist",
+   "earned": 7913.95,
    "advance": 0
   },
   {
-   "key": "L:31",
-   "name": "Sông Ngầm Audio",
-   "clientId": "HTK-L032",
-   "kind": "label",
-   "earned": 16286.73,
-   "advance": 0
+   "key": "A:586",
+   "name": "Phạm Chi Lâm",
+   "clientId": "HTK-A0587",
+   "kind": "artist",
+   "earned": 1268.9,
+   "advance": 9725.11
   },
   {
-   "key": "L:16",
-   "name": "Mạch Collective",
-   "clientId": "HTK-L017",
-   "kind": "label",
-   "earned": 16183.85,
-   "advance": 0
+   "key": "A:591",
+   "name": "Đỗ Yên Sơn",
+   "clientId": "HTK-A0592",
+   "kind": "artist",
+   "earned": 1252.46,
+   "advance": 31.81
   }
  ],
  "queue": {
@@ -492,13 +492,13 @@
    "id": "recon",
    "ok": false,
    "label": "Đối chiếu khớp tới từng xu",
-   "detail": "YouTube lệch $41.37"
+   "detail": "YouTube lệch $41,37"
   },
   {
    "id": "queue",
    "ok": true,
-   "label": "Tiền treo dưới 0.5% doanh thu kỳ",
-   "detail": "$6,365.66 đang treo · 0.17% doanh thu kỳ"
+   "label": "Tiền treo dưới 0,5% doanh thu kỳ",
+   "detail": "$6.365,66 đang treo · 0,17% doanh thu kỳ"
   },
   {
    "id": "fx",
