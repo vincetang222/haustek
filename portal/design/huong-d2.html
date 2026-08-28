@@ -109,7 +109,7 @@
 .huong-d2 .d2-m{padding-right:20px}
 .huong-d2 .d2-m + .d2-m{border-left:1px solid var(--line);padding-left:22px}
 .huong-d2 .d2-m .l{font-size:12.5px;color:var(--ink2);margin-bottom:5px}
-.huong-d2 .d2-m .v{font-size:clamp(17px,1.42vw,21px);font-weight:600;line-height:1.2;
+.huong-d2 .d2-m .v{font-size:clamp(16px,1.28vw,21px);font-weight:600;line-height:1.2;
   font-variant-numeric:tabular-nums;white-space:nowrap}
 .huong-d2 .d2-m .s{font-size:11.5px;color:var(--faint);margin-top:5px;
   font-variant-numeric:tabular-nums}
@@ -235,7 +235,7 @@
   .huong-d2 .d2-donut{flex-direction:row;align-items:center;gap:28px}
   .huong-d2 .d2-lg{max-width:260px}
 }
-@media (max-width:1040px){
+@media (max-width:1220px){
   .huong-d2 .d2-metrics{grid-template-columns:repeat(3,minmax(0,1fr));row-gap:24px}
   .huong-d2 .d2-m:nth-child(3n+1){border-left:0;padding-left:0}
 }
@@ -385,7 +385,7 @@
   var T = {
     vi: {
       brandSub: 'intranet', crumb: 'Vận hành', screen: 'Tổng quan',
-      user: 'Ngô Vĩnh Khang', role: 'Kế toán bản quyền',
+      user: 'ops@haustek-group.com', role: 'Tài khoản vận hành',
       title: 'Tổng quan vận hành',
       readA: 'Bản ghi có doanh thu', readB: 'Kỳ đã duyệt',
       navGroups: ['Vận hành', 'Danh mục', 'Dòng tiền', 'Hệ thống'],
@@ -398,7 +398,7 @@
       mFee: 'Phí Haustek', mArtist: 'Về tay nghệ sĩ', mLabel: 'Phần label giữ',
       mStreams: 'Lượt nghe', mQueue: 'Tiền treo chưa khớp',
       vsPrev: 'so kỳ trước',
-      queueSub: '{n} dòng · {v} kỳ này',
+      queueSub: '{n} dòng đang treo',
       statusH: 'Kỳ {p} chưa duyệt',
       statusSub: 'Còn {n} trong 4 điều kiện chưa đạt',
       btnApprove: 'Duyệt kỳ', btnRecon: 'Mở đối chiếu',
@@ -429,7 +429,7 @@
     },
     en: {
       brandSub: 'intranet', crumb: 'Operations', screen: 'Overview',
-      user: 'Ngô Vĩnh Khang', role: 'Royalty accountant',
+      user: 'ops@haustek-group.com', role: 'Operations account',
       title: 'Operations overview',
       readA: 'Tracks with revenue', readB: 'Periods approved',
       navGroups: ['Operations', 'Catalogue', 'Money', 'System'],
@@ -442,7 +442,7 @@
       mFee: 'Haustek fee', mArtist: 'To artists', mLabel: 'Label share',
       mStreams: 'Streams', mQueue: 'Unmatched suspense',
       vsPrev: 'vs last period',
-      queueSub: '{n} rows · {v} this period',
+      queueSub: '{n} rows in suspense',
       statusH: 'Period {p} not approved',
       statusSub: '{n} of 4 conditions unmet',
       btnApprove: 'Approve period', btnRecon: 'Open reconciliation',
@@ -757,7 +757,7 @@
         '" stroke="#C6CCD3" stroke-width="1" stroke-dasharray="3 3"/>';
     }
     steps.forEach(function (s, i) {
-      var cx = colW * (i + 0.5), yTop = yp(s.hi), hh = Math.max(3, yp(s.lo) - yp(s.hi));
+      var cx = colW * (i + 0.5), yTop = yp(s.hi), hh = Math.max(2.5, yp(s.lo) - yp(s.hi));
       h += '<rect x="' + (cx - bw / 2).toFixed(1) + '" y="' + yTop.toFixed(1) + '" width="' + bw.toFixed(1) +
         '" height="' + hh.toFixed(1) + '" rx="2" fill="' + s.col + '"/>';
       h += '<text x="' + cx.toFixed(1) + '" y="' + (yTop - 10).toFixed(1) + '" text-anchor="middle" ' +
@@ -781,8 +781,17 @@
   function tipShow(el, head, body) {
     var a = el.getBoundingClientRect(), b = root.getBoundingClientRect();
     tip.innerHTML = '<b>' + esc(head) + '</b>' + esc(body);
-    tip.style.left = (a.left - b.left + a.width / 2) + 'px';
-    tip.style.top = (a.top - b.top - 8) + 'px';
+    var tw = tip.offsetWidth, th = tip.offsetHeight;
+    var cx = a.left - b.left + a.width / 2;
+    cx = Math.max(tw / 2 + 10, Math.min(b.width - tw / 2 - 10, cx));
+    var bot = a.top - b.top - 8;
+    var plot = root.querySelector('.d2-plot');
+    if (plot) {
+      var minBot = plot.getBoundingClientRect().top - b.top + th + 2;
+      if (bot < minBot) bot = minBot;
+    }
+    tip.style.left = cx + 'px';
+    tip.style.top = bot + 'px';
     tip.classList.add('on');
   }
   function tipHide() { tip.classList.remove('on'); }
@@ -790,10 +799,10 @@
   root.addEventListener('mouseover', function (e) {
     var col = e.target.closest ? e.target.closest('.d2-bcol') : null;
     if (!col || !root.contains(col)) return;
-    var p = B[+col.getAttribute('data-bi')];
-    if (!p) return;
+    var p = B[+col.getAttribute('data-bi')], bar = col.querySelector('.d2-bar');
+    if (!p || !bar) return;
     var sd = SERIES[serIdx], v = sd.money ? usd(p[sd.k]) : fmt(p[sd.k], 0);
-    tipShow(col, p.label + (p.approved ? '' : ' · ' + t().tipPend), v);
+    tipShow(bar, p.label + (p.approved ? '' : ' · ' + t().tipPend), v);
   });
   root.addEventListener('mouseout', function (e) {
     var col = e.target.closest ? e.target.closest('.d2-bcol') : null;

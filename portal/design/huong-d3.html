@@ -1,0 +1,950 @@
+<style>
+/* ===================================================================
+   HƯỚNG D3 — BẢNG LÀM CHỦ, BIỂU ĐỒ ĐỠ
+   Bảng đứng trước, biểu đồ nhỏ nằm cạnh để đỡ. Mở ra là dò được số.
+   Mọi selector bắt đầu bằng .huong-d3. Không dùng id.
+   =================================================================== */
+.huong-d3{
+  --dark:#0E1A24; --dark2:#16242F; --dark3:#1E313E;
+  --bg:#F5F6F8;   --card:#FFFFFF;
+  --ink:#1A2129;  --ink2:#5B6672; --faint:#8A939E; --line:#E6E9ED;
+  --teal:#0E7C92; --teal-mid:#4FA3B5; --teal-soft:#B7E3EC;
+  --slate:#9AA6B1;
+  --blue:#2C6ECB; --blue-soft:#E8F0FB;
+  --red:#C8102E;  --green:#157A4E;
+  --zebra:#F7F8FA; --thead:#F1F3F5; --grid:#E2E6EA;
+  --sh:0 1px 2px rgba(16,24,32,.06);
+  --font:'Be Vietnam Pro',system-ui,-apple-system,sans-serif;
+  --mono:'IBM Plex Mono',ui-monospace,monospace;
+  position:relative; background:var(--bg); color:var(--ink);
+  font-family:var(--font); font-size:14px; line-height:1.5; font-weight:400;
+  -webkit-font-smoothing:antialiased;
+}
+.huong-d3,.huong-d3 *{box-sizing:border-box}
+.huong-d3 *{margin:0;padding:0}
+.huong-d3 button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;text-align:left}
+.huong-d3 table{border-collapse:collapse;border-spacing:0}
+.huong-d3 svg{display:block}
+.huong-d3 svg text{font-family:var(--font)}
+.huong-d3 :focus-visible{outline:2px solid var(--blue);outline-offset:2px;border-radius:3px}
+.huong-d3 h1,.huong-d3 h2,.huong-d3 h3{font-weight:600;letter-spacing:-.012em}
+.huong-d3 .d3-num{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1}
+
+/* ---------- khung ---------- */
+.huong-d3 .d3-shell{display:flex;align-items:stretch;min-height:940px}
+.huong-d3 .d3-side{flex:0 0 270px;width:270px;background:var(--dark);color:#fff;
+  display:flex;flex-direction:column}
+.huong-d3 .d3-main{flex:1;min-width:0;display:flex;flex-direction:column}
+
+/* ---------- sidebar ---------- */
+.huong-d3 .d3-brand{height:52px;display:flex;align-items:center;gap:9px;padding:0 22px;flex:none}
+.huong-d3 .d3-bname{font-size:15px;font-weight:600;letter-spacing:-.005em}
+.huong-d3 .d3-bsub{font-size:11.5px;color:rgba(255,255,255,.42)}
+.huong-d3 .d3-nav{padding:10px 12px 24px;flex:1}
+.huong-d3 .d3-ng{font-size:11.5px;color:rgba(255,255,255,.36);padding:0 10px;margin:16px 0 5px}
+.huong-d3 .d3-ng:first-child{margin-top:2px}
+.huong-d3 .d3-ni{display:flex;align-items:center;gap:11px;width:100%;
+  padding:8px 10px;border-radius:6px;font-size:13.5px;color:rgba(255,255,255,.72);
+  transition:background .13s,color .13s}
+.huong-d3 .d3-ni svg{flex:none;opacity:.6}
+.huong-d3 .d3-ni:hover{background:var(--dark2);color:#fff}
+.huong-d3 .d3-ni.on{background:var(--dark3);color:#fff;font-weight:500}
+.huong-d3 .d3-ni.on svg{opacity:1}
+.huong-d3 .d3-sfoot{padding:15px 22px 20px;border-top:1px solid var(--dark2);flex:none}
+.huong-d3 .d3-user{font-size:13px;font-weight:500}
+.huong-d3 .d3-role{font-size:11.5px;color:rgba(255,255,255,.42);margin-top:2px}
+
+/* ---------- thanh tiện ích ---------- */
+.huong-d3 .d3-util{display:flex;align-items:center;gap:8px;height:52px;flex:none;
+  padding:0 30px;background:var(--card);border-bottom:1px solid var(--line);font-size:12.5px}
+.huong-d3 .d3-crumb,.huong-d3 .d3-sep{color:var(--faint)}
+.huong-d3 .d3-here{color:var(--ink2)}
+.huong-d3 .d3-grow{flex:1}
+.huong-d3 .d3-fx{color:var(--ink2);white-space:nowrap}
+.huong-d3 .d3-fx b{font-weight:500;color:var(--ink);font-variant-numeric:tabular-nums}
+.huong-d3 .d3-fx i{font-style:normal;color:var(--faint)}
+.huong-d3 .d3-lang{display:flex;align-items:center;gap:0;margin-left:18px}
+.huong-d3 .d3-lang button{padding:4px 8px;font-size:12px;color:var(--faint);border-radius:4px}
+.huong-d3 .d3-lang button:hover{color:var(--ink)}
+.huong-d3 .d3-lang button.on{color:var(--ink);font-weight:500}
+.huong-d3 .d3-lsep{width:1px;height:12px;background:var(--line)}
+
+/* ---------- trang ---------- */
+.huong-d3 .d3-page{padding:26px 30px 44px;display:flex;flex-direction:column;gap:18px}
+.huong-d3 .d3-head{display:flex;align-items:flex-end;justify-content:space-between;gap:26px;flex-wrap:wrap}
+.huong-d3 .d3-h1{font-size:24px;line-height:1.2}
+.huong-d3 .d3-code{font-style:normal;color:var(--blue);font-weight:500;margin-left:8px}
+.huong-d3 .d3-reads{display:flex;gap:44px}
+.huong-d3 .d3-read{text-align:right}
+.huong-d3 .d3-read .l{font-size:12px;color:var(--faint);margin-bottom:3px}
+.huong-d3 .d3-read .v{font-size:23px;font-weight:600;letter-spacing:-.015em;
+  font-variant-numeric:tabular-nums;line-height:1.2}
+.huong-d3 .d3-read .s{font-size:12px;color:var(--ink2);margin-top:3px;font-variant-numeric:tabular-nums}
+
+/* ---------- bộ lọc ---------- */
+.huong-d3 .d3-filters{display:flex;gap:8px;flex-wrap:wrap;margin-top:-4px}
+.huong-d3 .d3-pill{display:inline-flex;align-items:center;gap:7px;padding:6px 11px;
+  border-radius:15px;background:#EDEFF2;color:var(--ink);font-size:12.5px;transition:background .13s}
+.huong-d3 .d3-pill:hover{background:#E4E7EB}
+.huong-d3 .d3-pill.on{background:var(--blue-soft);color:#1F4E93}
+.huong-d3 .d3-pill svg{opacity:.55}
+
+/* ---------- khối ---------- */
+.huong-d3 .d3-card{background:var(--card);border-radius:8px;box-shadow:var(--sh);padding:20px 22px 22px}
+.huong-d3 .d3-plain{padding:2px 0 4px}
+.huong-d3 .d3-ch{display:flex;align-items:baseline;justify-content:space-between;
+  gap:16px;flex-wrap:wrap;margin-bottom:14px}
+.huong-d3 .d3-h2{font-size:15.5px}
+.huong-d3 .d3-h3{font-size:12.5px;font-weight:500;color:var(--ink2);margin-bottom:12px}
+.huong-d3 .d3-note{font-size:12.5px;color:var(--faint);font-variant-numeric:tabular-nums}
+.huong-d3 .d3-foot{margin-top:12px;font-size:12px;color:var(--faint);line-height:1.7;
+  font-variant-numeric:tabular-nums}
+
+/* ---------- bảng ---------- */
+.huong-d3 .d3-tw{overflow-x:auto}
+.huong-d3 .d3-tbl{width:100%;font-size:13.5px}
+.huong-d3 .d3-tbl th{background:var(--thead);color:var(--ink2);font-weight:500;font-size:12px;
+  text-align:left;padding:8px 12px;white-space:nowrap;line-height:1.35}
+.huong-d3 .d3-tbl th:first-child{border-radius:4px 0 0 4px}
+.huong-d3 .d3-tbl th:last-child{border-radius:0 4px 4px 0}
+.huong-d3 .d3-tbl td{padding:10px 12px;vertical-align:middle;line-height:1.45}
+.huong-d3 .d3-tbl tbody tr:nth-child(even) td{background:var(--zebra)}
+.huong-d3 .d3-tbl .d3-n{text-align:right;white-space:nowrap;
+  font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1}
+.huong-d3 .d3-tbl th.d3-n{text-align:right}
+.huong-d3 .d3-sub{display:block;font-size:11.5px;color:var(--faint);margin-top:1px;
+  font-variant-numeric:tabular-nums}
+.huong-d3 .d3-dim{color:var(--faint)}
+.huong-d3 .d3-soft{color:var(--ink2)}
+.huong-d3 .d3-red{color:var(--red)}
+.huong-d3 .d3-lead td{font-weight:500;font-size:14.5px}
+.huong-d3 .d3-tot td{font-weight:500;background:#fff!important;
+  border-top:1px solid var(--line);padding-top:11px}
+.huong-d3 .d3-code2{font-family:var(--mono);font-size:12px;color:var(--ink2);letter-spacing:-.01em}
+.huong-d3 .d3-link{color:var(--blue);cursor:pointer}
+.huong-d3 .d3-link:hover{text-decoration:underline}
+
+/* thanh nhỏ trong ô bảng */
+.huong-d3 .d3-bcell{width:84px;padding-right:0}
+.huong-d3 .d3-track{height:6px;border-radius:3px;background:#EDF0F2;overflow:hidden}
+.huong-d3 .d3-track span{display:block;height:100%;background:var(--teal);border-radius:3px}
+.huong-d3 .d3-track.d3-tail span{background:var(--slate)}
+
+/* ---------- tình trạng kỳ ---------- */
+.huong-d3 .d3-shead{display:flex;align-items:flex-start;justify-content:space-between;
+  gap:22px;flex-wrap:wrap;margin-bottom:15px}
+.huong-d3 .d3-warn{display:flex;align-items:flex-start;gap:11px}
+.huong-d3 .d3-warn svg{flex:none;margin-top:2px}
+.huong-d3 .d3-warn .t{font-size:15.5px;font-weight:600;letter-spacing:-.012em}
+.huong-d3 .d3-warn .s{font-size:12.5px;color:var(--ink2);margin-top:2px}
+.huong-d3 .d3-acts{display:flex;gap:9px;flex:none}
+.huong-d3 .d3-btn{padding:8px 15px;border-radius:6px;font-size:13px;font-weight:500;
+  background:#EDEFF2;color:var(--ink);transition:background .13s;white-space:nowrap}
+.huong-d3 .d3-btn:hover{background:#E4E7EB}
+.huong-d3 .d3-btn-pri{background:var(--dark);color:#fff}
+.huong-d3 .d3-btn-pri:hover{background:var(--dark2)}
+.huong-d3 .d3-btn-pri:disabled{background:#E7EAEE;color:#9AA3AD;cursor:not-allowed}
+.huong-d3 .d3-chk td:first-child{width:26px;padding-right:0}
+.huong-d3 .d3-chk td:first-child svg{margin-top:1px}
+
+/* ---------- hai cột ---------- */
+.huong-d3 .d3-flow{display:grid;grid-template-columns:minmax(0,1.16fr) minmax(0,1fr);
+  gap:30px;align-items:start}
+.huong-d3 .d3-recon{display:grid;grid-template-columns:minmax(0,1fr) 272px;gap:30px;align-items:start}
+.huong-d3 .d3-split{display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:start}
+.huong-d3 .d3-wfwrap,.huong-d3 .d3-trendwrap{width:100%}
+.huong-d3 .d3-mix{padding-top:2px}
+.huong-d3 .d3-donutrow{display:flex;align-items:center;gap:15px}
+.huong-d3 .d3-lg{display:flex;flex-direction:column;gap:9px;min-width:0}
+.huong-d3 .d3-lgi{display:flex;align-items:center;gap:8px;font-size:12.5px;white-space:nowrap}
+.huong-d3 .d3-lgd{width:9px;height:9px;border-radius:50%;flex:none}
+.huong-d3 .d3-lgn{color:var(--ink2);flex:1}
+.huong-d3 .d3-lgv{font-variant-numeric:tabular-nums;color:var(--ink)}
+
+/* ---------- tab ---------- */
+.huong-d3 .d3-tabs{display:flex;gap:20px}
+.huong-d3 .d3-tab{font-size:13px;color:var(--ink2);padding:2px 0 6px;
+  border-bottom:2px solid transparent;transition:color .13s,border-color .13s}
+.huong-d3 .d3-tab:hover{color:var(--ink)}
+.huong-d3 .d3-tab.on{color:var(--ink);font-weight:500;border-bottom-color:var(--teal)}
+
+/* ---------- gợi ý ---------- */
+.huong-d3 .d3-tip{position:absolute;z-index:20;pointer-events:none;opacity:0;
+  transform:translate(-50%,-100%);background:#fff;border-radius:6px;
+  box-shadow:0 3px 12px rgba(16,24,32,.14);padding:8px 11px;font-size:12px;
+  line-height:1.55;white-space:nowrap;transition:opacity .1s}
+.huong-d3 .d3-tip.on{opacity:1}
+.huong-d3 .d3-tip .k{color:var(--ink2)}
+.huong-d3 .d3-tip .v{font-weight:500;font-variant-numeric:tabular-nums}
+.huong-d3 .d3-tip .p{color:var(--faint)}
+
+@media (max-width:1180px){
+  .huong-d3 .d3-flow,.huong-d3 .d3-recon,.huong-d3 .d3-split{grid-template-columns:minmax(0,1fr)}
+  .huong-d3 .d3-recon{gap:22px}
+  .huong-d3 .d3-page{padding:24px 24px 40px}
+  .huong-d3 .d3-util{padding:0 24px}
+  .huong-d3 .d3-reads{gap:38px}
+  .huong-d3 .d3-read{text-align:left}
+}
+@media (prefers-reduced-motion:reduce){.huong-d3 *{transition:none!important}}
+</style>
+
+<div class="huong-d3">
+  <div class="d3-shell">
+
+    <aside class="d3-side">
+      <div class="d3-brand">
+        <svg width="9" height="9" viewBox="0 0 9 9" aria-hidden="true"><circle cx="4.5" cy="4.5" r="4.5" fill="#FF2E4C"/></svg>
+        <span class="d3-bname">Haustek</span>
+        <span class="d3-bsub" data-t="brandSub"></span>
+      </div>
+      <nav class="d3-nav" data-nav></nav>
+      <div class="d3-sfoot">
+        <div class="d3-user" data-t="user"></div>
+        <div class="d3-role" data-t="role"></div>
+      </div>
+    </aside>
+
+    <div class="d3-main">
+      <div class="d3-util">
+        <span class="d3-crumb" data-t="crumb"></span>
+        <span class="d3-sep">/</span>
+        <span class="d3-here" data-t="screen"></span>
+        <span class="d3-grow"></span>
+        <span class="d3-fx" data-fx></span>
+        <div class="d3-lang" data-lang>
+          <button type="button" data-set="vi">VI</button>
+          <span class="d3-lsep"></span>
+          <button type="button" data-set="en">EN</button>
+        </div>
+      </div>
+
+      <div class="d3-page">
+
+        <div class="d3-head">
+          <h1 class="d3-h1"><span data-t="title"></span><em class="d3-code" data-per></em></h1>
+          <div class="d3-reads" data-reads></div>
+        </div>
+
+        <div class="d3-filters" data-filters></div>
+
+        <section class="d3-card">
+          <div class="d3-shead">
+            <div class="d3-warn" data-warn></div>
+            <div class="d3-acts">
+              <button type="button" class="d3-btn d3-btn-pri" disabled data-t="btnApprove"></button>
+              <button type="button" class="d3-btn" data-t="btnRecon"></button>
+            </div>
+          </div>
+          <div class="d3-tw"><table class="d3-tbl d3-chk" data-checks></table></div>
+        </section>
+
+        <section class="d3-card">
+          <div class="d3-ch">
+            <h2 class="d3-h2" data-kpi-h></h2>
+            <span class="d3-note" data-kpi-note></span>
+          </div>
+          <div class="d3-tw"><table class="d3-tbl" data-kpi></table></div>
+        </section>
+
+        <section class="d3-card">
+          <div class="d3-ch">
+            <h2 class="d3-h2" data-t="flowH"></h2>
+            <span class="d3-note" data-flow-note></span>
+          </div>
+          <div class="d3-flow">
+            <div class="d3-tw"><table class="d3-tbl" data-flow></table></div>
+            <div class="d3-wfwrap" data-wfwrap><svg data-wf aria-hidden="true"></svg></div>
+          </div>
+          <div class="d3-foot" data-flow-foot></div>
+        </section>
+
+        <section class="d3-card">
+          <div class="d3-ch">
+            <h2 class="d3-h2" data-t="reconH"></h2>
+            <span class="d3-note" data-recon-note></span>
+          </div>
+          <div class="d3-recon">
+            <div class="d3-tw"><table class="d3-tbl" data-recon></table></div>
+            <div class="d3-mix">
+              <div class="d3-h3" data-t="mixH"></div>
+              <div class="d3-donutrow">
+                <svg width="116" height="116" viewBox="0 0 116 116" data-donut aria-hidden="true"></svg>
+                <div class="d3-lg" data-legend></div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="d3-plain">
+          <div class="d3-ch">
+            <h2 class="d3-h2" data-t="trendH"></h2>
+            <div class="d3-tabs" data-tabs></div>
+          </div>
+          <div class="d3-trendwrap" data-trendwrap><svg data-trend></svg></div>
+          <div class="d3-foot" data-t="trendNote"></div>
+        </section>
+
+        <div class="d3-split">
+          <section class="d3-card">
+            <div class="d3-ch">
+              <h2 class="d3-h2" data-t="storeH"></h2>
+              <span class="d3-note" data-store-note></span>
+            </div>
+            <div class="d3-tw"><table class="d3-tbl" data-stores></table></div>
+          </section>
+          <section class="d3-card">
+            <div class="d3-ch">
+              <h2 class="d3-h2" data-t="terrH"></h2>
+              <span class="d3-note" data-terr-note></span>
+            </div>
+            <div class="d3-tw"><table class="d3-tbl" data-terr></table></div>
+          </section>
+        </div>
+
+        <section class="d3-card">
+          <div class="d3-ch">
+            <h2 class="d3-h2" data-t="payH"></h2>
+            <span class="d3-note" data-t="payNote"></span>
+          </div>
+          <div class="d3-tw"><table class="d3-tbl" data-pay></table></div>
+          <div class="d3-foot" data-pay-foot></div>
+        </section>
+
+      </div>
+    </div>
+  </div>
+  <div class="d3-tip" data-tip></div>
+</div>
+
+<script>
+(function () {
+  var root = document.querySelector('.huong-d3');
+  if (!root) return;
+  var S = window.SNAP;
+  if (!S || !S.now) return;
+
+  /* ================= chữ hai thứ tiếng ================= */
+  var T = {
+    vi: {
+      brandSub: 'intranet', crumb: 'Vận hành', screen: 'Tổng quan',
+      user: 'ops@haustek-group.com', role: 'Tài khoản vận hành',
+      title: 'Tổng quan vận hành',
+      navGroups: ['Vận hành', 'Danh mục', 'Dòng tiền', 'Hệ thống'],
+      nav: ['Tổng quan', 'Nhập dữ liệu', 'Đối chiếu', 'Tiền treo', 'Bản ghi',
+            'Nghệ sĩ & label', 'Tạm ứng', 'Bảng kê', 'Chi trả', 'Tỷ giá', 'Người dùng'],
+      fxL: 'Tỷ giá kỳ', fxOpen: 'chưa chốt',
+      readGross: 'Doanh thu gộp {p}', readTracks: 'Bản ghi có doanh thu',
+      readDelta: '{v} · {q} so với {r}', readAppr: '{a}/{b} kỳ đã duyệt',
+      filters: ['Kỳ {p}', 'Tất cả luồng', 'Tất cả lãnh thổ'],
+      warnT: 'Kỳ {p} chưa duyệt', warnS: 'Còn {n} trong 4 điều kiện chưa đạt',
+      btnApprove: 'Duyệt kỳ', btnRecon: 'Mở đối chiếu',
+      chkTh: ['Điều kiện duyệt', 'Hiện trạng'],
+      chk: [
+        ['Đã nạp đủ ba luồng dữ liệu', 'Đủ cả ba luồng'],
+        ['Đối chiếu khớp tới từng xu', 'YouTube lệch {v}'],
+        ['Tiền treo dưới 0,5% doanh thu kỳ', '{v} treo · {p} doanh thu kỳ'],
+        ['Đã chốt tỷ giá cho kỳ', 'Chưa chốt · số quy đổi VND sẽ trôi']
+      ],
+      kpiH: 'Số liệu kỳ {p}', kpiNote: 'Đối chiếu với {q}',
+      kpiTh: ['Chỉ tiêu', '{p}', '{q}', 'Chênh lệch', '% doanh thu gộp'],
+      mGross: 'Doanh thu gộp', mFee: 'Phí Haustek', mLabel: 'Phần label giữ',
+      mArtist: 'Về tay nghệ sĩ', mStreams: 'Lượt nghe', mQueue: 'Tiền treo chưa khớp',
+      queueSub: '{n} dòng · {v} phát sinh kỳ này',
+      flowH: 'Tiền đi đâu', flowNote: 'Kỳ {p}',
+      flowTh: ['Chặng', 'Số tiền', '% gộp', 'Còn lại'],
+      wf: ['Doanh thu gộp', 'Phí Haustek', 'Phần label giữ', 'Điểm producer', 'Về tay nghệ sĩ'],
+      wfShort: ['Gộp', 'Phí', 'Label', 'Producer', 'Nghệ sĩ'],
+      flowFoot: 'Ba khoản trừ {v} · {p} doanh thu gộp',
+      reconH: 'Đối chiếu ba luồng', reconNote: 'Kỳ {p}',
+      reconTh: ['Luồng', 'Trên file gốc', 'Đã khớp', 'Đang treo', 'Lệch'],
+      reconTot: 'Cộng ba luồng',
+      feedNames: ['Đơn vị phân phối chính', 'YouTube', 'TikTok'],
+      feedFmt: ['CSV · 41 cột · hằng tháng, ngày 20',
+                'CSV nén · 3 file mỗi kỳ · ngày 25',
+                'XLSX · 1 sheet mỗi lãnh thổ · thất thường'],
+      feedShort: ['Đơn vị chính', 'YouTube', 'TikTok'],
+      mixH: 'Tỷ trọng doanh thu gộp',
+      trendH: 'Xu hướng 12 kỳ', trendNote: 'Cột nhạt là kỳ chưa duyệt',
+      series: ['Doanh thu gộp', 'Về tay nghệ sĩ', 'Lượt nghe'],
+      tipPend: 'chưa duyệt', tipDone: 'đã duyệt',
+      storeH: 'Theo cửa hàng', terrH: 'Theo lãnh thổ',
+      topOf: 'Top {a} trong {b}',
+      rankTh: ['Cửa hàng', 'Doanh thu', '% gộp'],
+      rankTh2: ['Lãnh thổ', 'Doanh thu', '% gộp'],
+      tailStore: '{n} cửa hàng còn lại', tailTerr: '{n} lãnh thổ còn lại',
+      payH: 'Mười bên nhận lớn nhất', payNote: 'Kiếm được trong kỳ',
+      payTh: ['Bên nhận', 'Mã khách', 'Loại', 'Kiếm được kỳ này', 'Dư nợ tạm ứng'],
+      kindLabel: 'Label', kindArtist: 'Nghệ sĩ',
+      payFoot1: 'Toàn danh mục: {l} label · {a} nghệ sĩ · {t} bản ghi',
+      payFoot2: 'Tạm ứng còn thu hồi {v} · {n} bên',
+      unit: [' ng', ' tr', ' tỷ']
+    },
+    en: {
+      brandSub: 'intranet', crumb: 'Operations', screen: 'Overview',
+      user: 'ops@haustek-group.com', role: 'Operations account',
+      title: 'Operations overview',
+      navGroups: ['Operations', 'Catalogue', 'Money', 'System'],
+      nav: ['Overview', 'Imports', 'Reconciliation', 'Suspense', 'Recordings',
+            'Artists & labels', 'Advances', 'Statements', 'Payouts', 'FX rates', 'Users'],
+      fxL: 'Period FX', fxOpen: 'not locked',
+      readGross: 'Gross revenue {p}', readTracks: 'Tracks with revenue',
+      readDelta: '{v} · {q} vs {r}', readAppr: '{a}/{b} periods approved',
+      filters: ['Period {p}', 'All feeds', 'All territories'],
+      warnT: 'Period {p} not approved', warnS: '{n} of 4 conditions still unmet',
+      btnApprove: 'Approve period', btnRecon: 'Open reconciliation',
+      chkTh: ['Approval condition', 'Status'],
+      chk: [
+        ['All three feeds loaded', 'Three of three feeds'],
+        ['Reconciles to the cent', 'YouTube off by {v}'],
+        ['Suspense under 0,5% of revenue', '{v} pending · {p} of revenue'],
+        ['FX rate locked for the period', 'Not locked · VND figures will drift']
+      ],
+      kpiH: 'Period figures {p}', kpiNote: 'Compared with {q}',
+      kpiTh: ['Line', '{p}', '{q}', 'Change', '% of gross'],
+      mGross: 'Gross revenue', mFee: 'Haustek fee', mLabel: 'Label share',
+      mArtist: 'To artists', mStreams: 'Streams', mQueue: 'Unmatched suspense',
+      queueSub: '{n} rows · {v} raised this period',
+      flowH: 'Where the money goes', flowNote: 'Period {p}',
+      flowTh: ['Step', 'Amount', '% of gross', 'Balance'],
+      wf: ['Gross revenue', 'Haustek fee', 'Label share', 'Producer points', 'To artists'],
+      wfShort: ['Gross', 'Fee', 'Label', 'Producer', 'Artists'],
+      flowFoot: 'Three deductions {v} · {p} of gross revenue',
+      reconH: 'Three-feed reconciliation', reconNote: 'Period {p}',
+      reconTh: ['Feed', 'On source file', 'Matched', 'In suspense', 'Difference'],
+      reconTot: 'All three feeds',
+      feedNames: ['Main distributor', 'YouTube', 'TikTok'],
+      feedFmt: ['CSV · 41 columns · monthly, day 20',
+                'Zipped CSV · 3 files a period · day 25',
+                'XLSX · 1 sheet a territory · irregular'],
+      feedShort: ['Distributor', 'YouTube', 'TikTok'],
+      mixH: 'Share of gross revenue',
+      trendH: '12-period trend', trendNote: 'Pale bars are unapproved periods',
+      series: ['Gross revenue', 'To artists', 'Streams'],
+      tipPend: 'not approved', tipDone: 'approved',
+      storeH: 'By store', terrH: 'By territory',
+      topOf: 'Top {a} of {b}',
+      rankTh: ['Store', 'Revenue', '% of gross'],
+      rankTh2: ['Territory', 'Revenue', '% of gross'],
+      tailStore: '{n} other stores', tailTerr: '{n} other territories',
+      payH: 'Ten largest payees', payNote: 'Earned in the period',
+      payTh: ['Payee', 'Client ID', 'Type', 'Earned this period', 'Advance outstanding'],
+      kindLabel: 'Label', kindArtist: 'Artist',
+      payFoot1: 'Catalogue: {l} labels · {a} artists · {t} recordings',
+      payFoot2: 'Advances still to recoup {v} · {n} parties',
+      unit: ['K', 'M', 'B']
+    }
+  };
+  var lang = 'vi', navIdx = 0, serIdx = 0;
+  function t() { return T[lang]; }
+
+  /* ================= tiện ích ================= */
+  function esc(s) {
+    return String(s).replace(/[&<>"]/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c];
+    });
+  }
+  function fill(s, m) {
+    return String(s).replace(/\{(\w+)\}/g, function (_, k) {
+      return m[k] == null ? '' : m[k];
+    });
+  }
+  /* định dạng Việt ở cả hai thứ tiếng: nghìn dấu chấm, thập phân dấu phẩy */
+  function fmt(n, d) {
+    d = d == null ? 2 : d;
+    var neg = n < 0, p = Math.abs(n).toFixed(d).split('.');
+    var i = p[0].replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+    return (neg ? '−' : '') + i + (d ? ',' + p[1] : '');
+  }
+  function usd(n, d) {
+    return (n < 0 ? '−' : '') + '$' + fmt(Math.abs(n), d == null ? 2 : d);
+  }
+  function sgnUsd(n, d) {
+    return (n > 0 ? '+' : n < 0 ? '−' : '') + '$' + fmt(Math.abs(n), d == null ? 2 : d);
+  }
+  function sgnPct(n, d) {
+    return (n > 0 ? '+' : n < 0 ? '−' : '') + fmt(Math.abs(n), d == null ? 1 : d) + '%';
+  }
+  function pct(n, d) { return fmt(n, d == null ? 1 : d) + '%'; }
+  function shortN(n) {
+    var u = t().unit, a = Math.abs(n);
+    function dp(x) { return Math.abs(x) < 10 ? 2 : Math.abs(x) < 100 ? 1 : 0; }
+    if (a >= 1e9) return fmt(n / 1e9, dp(n / 1e9)) + u[2];
+    if (a >= 1e6) return fmt(n / 1e6, dp(n / 1e6)) + u[1];
+    if (a >= 1e3) return fmt(n / 1e3, 0) + u[0];
+    return fmt(n, 0);
+  }
+  function shortUsd(n) { return (n < 0 ? '−' : '') + '$' + shortN(Math.abs(n)); }
+  /* nhãn trục: mốc lưới là số tròn, bỏ phần thập phân thừa cho đỡ rối */
+  function axisLab(v, money) {
+    var s = (money ? shortUsd(v) : shortN(v));
+    return s.replace(/,(\d*?)0+(?=\D|$)/, function (m, keep) { return keep ? ',' + keep : ''; });
+  }
+  function el(sel) { return root.querySelector(sel); }
+  function setHTML(sel, html) { var e = el(sel); if (e) e.innerHTML = html; }
+
+  /* ================= biểu tượng ================= */
+  function ico(paths, sz) {
+    sz = sz || 16;
+    return '<svg width="' + sz + '" height="' + sz + '" viewBox="0 0 16 16" fill="none" ' +
+      'stroke="currentColor" stroke-width="1.35" stroke-linecap="round" ' +
+      'stroke-linejoin="round" aria-hidden="true">' + paths + '</svg>';
+  }
+  var ICONS = [
+    '<rect x="2.3" y="2.3" width="4.7" height="4.7" rx="1"/><rect x="9" y="2.3" width="4.7" height="4.7" rx="1"/><rect x="2.3" y="9" width="4.7" height="4.7" rx="1"/><rect x="9" y="9" width="4.7" height="4.7" rx="1"/>',
+    '<path d="M8 2.4v7.2"/><path d="M5.2 6.9 8 9.7l2.8-2.8"/><path d="M2.8 11.3v1.5a.9.9 0 0 0 .9.9h8.6a.9.9 0 0 0 .9-.9v-1.5"/>',
+    '<path d="M2.6 5.3h9.4"/><path d="M9.6 2.9 12 5.3 9.6 7.7"/><path d="M13.4 10.7H4"/><path d="M6.4 8.3 4 10.7l2.4 2.4"/>',
+    '<circle cx="8" cy="8" r="5.7"/><path d="M8 4.7V8l2.3 1.5"/>',
+    '<circle cx="8" cy="8" r="5.8"/><circle cx="8" cy="8" r="1.7"/>',
+    '<circle cx="8" cy="5.6" r="2.6"/><path d="M3.3 13.4c0-2.5 2.1-3.9 4.7-3.9s4.7 1.4 4.7 3.9"/>',
+    '<rect x="2" y="4.1" width="12" height="7.8" rx="1.4"/><circle cx="8" cy="8" r="1.8"/>',
+    '<path d="M4 2.3h5.1l3.4 3.4v8H4z"/><path d="M9 2.5v3.3h3.4"/><path d="M6.1 9h4.2"/><path d="M6.1 11.2h4.2"/>',
+    '<path d="M2.6 8h8.2"/><path d="M8.2 5.4 10.8 8l-2.6 2.6"/><path d="M11.3 2.7h1.3a.9.9 0 0 1 .9.9v8.8a.9.9 0 0 1-.9.9h-1.3"/>',
+    '<circle cx="8" cy="8" r="5.7"/><path d="M2.4 8h11.2"/><path d="M8 2.3c1.5 1.6 2.3 3.5 2.3 5.7S9.5 12.1 8 13.7C6.5 12.1 5.7 10.2 5.7 8S6.5 3.9 8 2.3z"/>',
+    '<circle cx="6.3" cy="5.8" r="2.4"/><path d="M2.3 13.3c0-2.3 1.8-3.6 4-3.6s4 1.3 4 3.6"/><path d="M10.9 4.1a2.4 2.4 0 0 1 0 4.4"/><path d="M11.8 10c1.2.5 1.9 1.6 1.9 3.3"/>'
+  ];
+  var NAV_GROUPS = [[0, 3], [4, 5], [6, 8], [9, 10]];
+  var CHEV = '<svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" ' +
+    'stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+    '<path d="M2.2 3.9 5 6.7l2.8-2.8"/></svg>';
+  var TICK = '<svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="#157A4E" ' +
+    'stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+    '<path d="M3.4 8.4 6.3 11.3 12.6 4.9"/></svg>';
+  var CROSS = '<svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="#C8102E" ' +
+    'stroke-width="1.7" stroke-linecap="round" aria-hidden="true">' +
+    '<path d="M4.6 4.6 11.4 11.4"/><path d="M11.4 4.6 4.6 11.4"/></svg>';
+  var ALERT = '<svg width="19" height="19" viewBox="0 0 20 20" fill="none" stroke="#C8102E" ' +
+    'stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+    '<circle cx="10" cy="10" r="7.7"/><path d="M10 6.2v4.6"/><path d="M10 13.6h.01"/></svg>';
+
+  /* ================= dữ liệu ================= */
+  var N = S.now, P = S.prev, B = (S.byPeriod || []).slice(-12);
+  var PER = (S.period && S.period.label) || N.label, PREV = P.label;
+  var Q = S.queue || { rows: 0, amount: 0, thisPeriod: 0 };
+  var R = S.recon || { rows: [] };
+  var C = S.counts || {};
+  var CH = S.checks || [];
+  var badN = CH.filter(function (c) { return !c.ok; }).length;
+  var DEDUCT = N.fee + N.labelCut + N.producer;
+  var dGross = N.gross - P.gross;
+  var STEPS = [
+    { key: 0, v: N.gross,     sign: 1 },
+    { key: 1, v: N.fee,       sign: -1 },
+    { key: 2, v: N.labelCut,  sign: -1 },
+    { key: 3, v: N.producer,  sign: -1 },
+    { key: 4, v: N.artist,    sign: 1 }
+  ];
+  var TEAL = '#0E7C92', TMID = '#4FA3B5', TSOFT = '#B7E3EC', SLATE = '#9AA6B1';
+  var DCOL = [TEAL, TMID, TSOFT];
+  function ofGross(v) { return v / N.gross * 100; }
+  function chg(a, b) { return b ? (a - b) / b * 100 : 0; }
+
+  /* ================= vẽ chữ tĩnh ================= */
+  function paintStatic() {
+    var L = t();
+    root.querySelectorAll('[data-t]').forEach(function (e) {
+      e.textContent = L[e.getAttribute('data-t')] || '';
+    });
+    el('[data-per]').textContent = PER;
+    setHTML('[data-fx]', esc(L.fxL) + ' <b>' + fmt(S.fx, 0) + ' ₫/$</b> · <i>' + esc(L.fxOpen) + '</i>');
+    el('[data-kpi-h]').textContent = fill(L.kpiH, { p: PER });
+    el('[data-kpi-note]').textContent = fill(L.kpiNote, { q: PREV });
+    el('[data-flow-note]').textContent = fill(L.flowNote, { p: PER });
+    el('[data-recon-note]').textContent = fill(L.reconNote, { p: PER });
+    el('[data-store-note]').textContent = fill(L.topOf, { a: (S.stores || []).length, b: C.stores });
+    el('[data-terr-note]').textContent = fill(L.topOf, { a: (S.territories || []).length, b: C.territories });
+    el('[data-flow-foot]').textContent =
+      fill(L.flowFoot, { v: usd(DEDUCT), p: pct(ofGross(DEDUCT)) });
+    setHTML('[data-pay-foot]',
+      esc(fill(L.payFoot1, { l: fmt(C.labels, 0), a: fmt(C.artists, 0), t: fmt(C.tracks, 0) })) + '<br>' +
+      esc(fill(L.payFoot2, { v: usd(S.advances.total), n: fmt(S.advances.parties, 0) })));
+    root.querySelectorAll('[data-lang] button').forEach(function (b) {
+      b.classList.toggle('on', b.getAttribute('data-set') === lang);
+    });
+  }
+
+  function paintNav() {
+    var L = t(), out = '';
+    NAV_GROUPS.forEach(function (g, gi) {
+      out += '<div class="d3-ng">' + esc(L.navGroups[gi]) + '</div>';
+      for (var i = g[0]; i <= g[1]; i++) {
+        out += '<button type="button" class="d3-ni' + (i === navIdx ? ' on' : '') +
+          '" data-ni="' + i + '">' + ico(ICONS[i]) + '<span>' + esc(L.nav[i]) + '</span></button>';
+      }
+    });
+    setHTML('[data-nav]', out);
+  }
+
+  function paintReads() {
+    var L = t();
+    setHTML('[data-reads]',
+      '<div class="d3-read"><div class="l">' + esc(fill(L.readGross, { p: PER })) + '</div>' +
+      '<div class="v">' + usd(N.gross) + '</div>' +
+      '<div class="s">' + esc(fill(L.readDelta,
+        { v: sgnUsd(dGross), q: sgnPct(chg(N.gross, P.gross)), r: PREV })) + '</div></div>' +
+      '<div class="d3-read"><div class="l">' + esc(L.readTracks) + '</div>' +
+      '<div class="v">' + fmt(N.tracks, 0) + '</div>' +
+      '<div class="s">' + esc(fill(L.readAppr,
+        { a: S.approvedCount, b: C.periods })) + '</div></div>');
+  }
+
+  function paintFilters() {
+    var L = t();
+    setHTML('[data-filters]', L.filters.map(function (f, i) {
+      return '<button type="button" class="d3-pill' + (i === 0 ? ' on' : '') + '">' +
+        esc(fill(f, { p: PER })) + CHEV + '</button>';
+    }).join(''));
+  }
+
+  function paintStatus() {
+    var L = t();
+    setHTML('[data-warn]', ALERT + '<div><div class="t">' +
+      esc(fill(L.warnT, { p: PER })) + '</div><div class="s">' +
+      esc(fill(L.warnS, { n: badN })) + '</div></div>');
+
+    var vals = [
+      {},
+      { v: usd(R.diff) },
+      { v: usd(Q.thisPeriod), p: pct(Q.thisPeriod / N.gross * 100, 2) },
+      {}
+    ];
+    var body = CH.map(function (c, i) {
+      var txt = L.chk[i] || ['', ''];
+      return '<tr><td>' + (c.ok ? TICK : CROSS) + '</td>' +
+        '<td>' + esc(txt[0]) + '</td>' +
+        '<td class="d3-n ' + (c.ok ? 'd3-dim' : 'd3-red') + '">' +
+        esc(fill(txt[1], vals[i] || {})) + '</td></tr>';
+    }).join('');
+    setHTML('[data-checks]',
+      '<thead><tr><th></th><th>' + esc(L.chkTh[0]) + '</th>' +
+      '<th class="d3-n">' + esc(L.chkTh[1]) + '</th></tr></thead><tbody>' + body + '</tbody>');
+  }
+
+  function paintKpi() {
+    var L = t();
+    var rows = [
+      { n: L.mGross,   a: N.gross,   b: P.gross,   money: 1, lead: 1 },
+      { n: L.mFee,     a: N.fee,     b: P.fee,     money: 1 },
+      { n: L.mLabel,   a: N.labelCut, b: P.labelCut, money: 1 },
+      { n: L.mArtist,  a: N.artist,  b: P.artist,  money: 1 },
+      { n: L.mStreams, a: N.streams, b: P.streams, money: 0, nopct: 1 },
+      { n: L.mQueue,   a: Q.amount,  b: null,      money: 1,
+        sub: fill(L.queueSub, { n: fmt(Q.rows, 0), v: usd(Q.thisPeriod) }) }
+    ];
+    var head = '<thead><tr><th>' + esc(L.kpiTh[0]) + '</th>' +
+      '<th class="d3-n">' + esc(fill(L.kpiTh[1], { p: PER })) + '</th>' +
+      '<th class="d3-n">' + esc(fill(L.kpiTh[2], { q: PREV })) + '</th>' +
+      '<th class="d3-n">' + esc(L.kpiTh[3]) + '</th>' +
+      '<th class="d3-n">' + esc(L.kpiTh[4]) + '</th></tr></thead>';
+    var body = rows.map(function (r) {
+      var f = r.money ? function (v) { return usd(v); } : function (v) { return fmt(v, 0); };
+      var d = r.b == null ? '<span class="d3-dim">—</span>'
+        : (r.money ? sgnUsd(r.a - r.b) : (r.a - r.b > 0 ? '+' : '') + fmt(r.a - r.b, 0)) +
+          '<span class="d3-sub">' + sgnPct(chg(r.a, r.b)) + '</span>';
+      return '<tr class="' + (r.lead ? 'd3-lead' : '') + '"><td>' + esc(r.n) +
+        (r.sub ? '<span class="d3-sub">' + esc(r.sub) + '</span>' : '') + '</td>' +
+        '<td class="d3-n">' + f(r.a) + '</td>' +
+        '<td class="d3-n d3-soft">' + (r.b == null ? '<span class="d3-dim">—</span>' : f(r.b)) + '</td>' +
+        '<td class="d3-n d3-soft">' + d + '</td>' +
+        '<td class="d3-n d3-soft">' + (r.nopct ? '<span class="d3-dim">—</span>' : pct(ofGross(r.a))) +
+        '</td></tr>';
+    }).join('');
+    setHTML('[data-kpi]', head + '<tbody>' + body + '</tbody>');
+  }
+
+  function paintFlow() {
+    var L = t(), run = 0, out = '';
+    var head = '<thead><tr><th>' + esc(L.flowTh[0]) + '</th>' +
+      '<th class="d3-n">' + esc(L.flowTh[1]) + '</th>' +
+      '<th class="d3-n">' + esc(L.flowTh[2]) + '</th>' +
+      '<th class="d3-n">' + esc(L.flowTh[3]) + '</th></tr></thead>';
+    STEPS.forEach(function (s, i) {
+      var last = i === STEPS.length - 1;
+      if (i === 0) run = s.v; else if (!last) run -= s.v;
+      out += '<tr class="' + (last ? 'd3-tot' : '') + '"><td>' + esc(L.wf[i]) + '</td>' +
+        '<td class="d3-n ' + (s.sign < 0 ? 'd3-soft' : '') + '">' +
+        (last ? '<span class="d3-dim">—</span>' : usd(s.sign * s.v)) + '</td>' +
+        '<td class="d3-n d3-soft">' + pct(ofGross(s.v)) + '</td>' +
+        '<td class="d3-n">' + usd(last ? s.v : run) + '</td></tr>';
+    });
+    setHTML('[data-flow]', head + '<tbody>' + out + '</tbody>');
+  }
+
+  function paintRecon() {
+    var L = t();
+    var head = '<thead><tr><th>' + esc(L.reconTh[0]) + '</th>' +
+      L.reconTh.slice(1).map(function (h) {
+        return '<th class="d3-n">' + esc(h) + '</th>';
+      }).join('') + '</tr></thead>';
+    var body = (R.rows || []).map(function (r, i) {
+      return '<tr><td>' + esc(L.feedNames[i]) +
+        '<span class="d3-sub">' + esc(L.feedFmt[i]) + '</span></td>' +
+        '<td class="d3-n d3-soft">' + usd(r.control) + '</td>' +
+        '<td class="d3-n">' + usd(r.attributed) + '</td>' +
+        '<td class="d3-n d3-soft">' + usd(r.pending) + '</td>' +
+        '<td class="d3-n ' + (r.diff ? 'd3-red' : 'd3-dim') + '">' +
+        (r.diff ? usd(r.diff) : '—') + '</td></tr>';
+    }).join('');
+    var tot = '<tr class="d3-tot"><td>' + esc(L.reconTot) + '</td>' +
+      '<td class="d3-n">' + usd(R.control) + '</td>' +
+      '<td class="d3-n">' + usd(R.attributed) + '</td>' +
+      '<td class="d3-n">' + usd(R.pending) + '</td>' +
+      '<td class="d3-n d3-red">' + usd(R.diff) + '</td></tr>';
+    setHTML('[data-recon]', head + '<tbody>' + body + tot + '</tbody>');
+
+    setHTML('[data-legend]', (S.feeds || []).map(function (f, i) {
+      return '<div class="d3-lgi"><span class="d3-lgd" style="background:' + DCOL[i] + '"></span>' +
+        '<span class="d3-lgn">' + esc(L.feedShort[i]) + '</span>' +
+        '<span class="d3-lgv">' + pct(ofGross(f.gross)) + '</span></div>';
+    }).join(''));
+  }
+
+  function paintTabs() {
+    var L = t();
+    setHTML('[data-tabs]', L.series.map(function (s, i) {
+      return '<button type="button" class="d3-tab' + (i === serIdx ? ' on' : '') +
+        '" data-ti="' + i + '">' + esc(s) + '</button>';
+    }).join(''));
+  }
+
+  function rankTable(sel, list, tail, tailTxt, th) {
+    var max = list[0] ? list[0].value : 1;
+    var head = '<thead><tr><th>' + esc(th[0]) + '</th>' +
+      '<th class="d3-n">' + esc(th[1]) + '</th>' +
+      '<th class="d3-n">' + esc(th[2]) + '</th><th></th></tr></thead>';
+    var body = list.map(function (r) {
+      return '<tr><td>' + esc(r.name) + '</td>' +
+        '<td class="d3-n">' + usd(r.value) + '</td>' +
+        '<td class="d3-n d3-soft">' + pct(ofGross(r.value)) + '</td>' +
+        '<td class="d3-bcell"><div class="d3-track"><span style="width:' +
+        (r.value / max * 100).toFixed(2) + '%"></span></div></td></tr>';
+    }).join('');
+    if (tail) {
+      body += '<tr><td class="d3-dim">' + esc(tailTxt) + '</td>' +
+        '<td class="d3-n d3-soft">' + usd(tail.value) + '</td>' +
+        '<td class="d3-n d3-dim">' + pct(ofGross(tail.value)) + '</td>' +
+        '<td class="d3-bcell"><div class="d3-track d3-tail"><span style="width:' +
+        Math.min(100, tail.value / max * 100).toFixed(2) + '%"></span></div></td></tr>';
+    }
+    setHTML(sel, head + '<tbody>' + body + '</tbody>');
+  }
+
+  function paintRanks() {
+    var L = t();
+    rankTable('[data-stores]', S.stores || [], S.storesTail,
+      fill(L.tailStore, { n: fmt(S.storesTail.count, 0) }), L.rankTh);
+    rankTable('[data-terr]', S.territories || [], S.terrTail,
+      fill(L.tailTerr, { n: fmt(S.terrTail.count, 0) }), L.rankTh2);
+  }
+
+  function paintPay() {
+    var L = t();
+    var head = '<thead><tr><th>' + esc(L.payTh[0]) + '</th><th>' + esc(L.payTh[1]) + '</th>' +
+      '<th>' + esc(L.payTh[2]) + '</th>' +
+      '<th class="d3-n">' + esc(L.payTh[3]) + '</th>' +
+      '<th class="d3-n">' + esc(L.payTh[4]) + '</th></tr></thead>';
+    var body = (S.payees || []).map(function (p) {
+      return '<tr><td><span class="d3-link">' + esc(p.name) + '</span></td>' +
+        '<td class="d3-code2">' + esc(p.clientId) + '</td>' +
+        '<td class="d3-soft">' + esc(p.kind === 'label' ? L.kindLabel : L.kindArtist) + '</td>' +
+        '<td class="d3-n">' + usd(p.earned) + '</td>' +
+        '<td class="d3-n ' + (p.advance ? 'd3-soft' : 'd3-dim') + '">' +
+        (p.advance ? usd(p.advance) : '—') + '</td></tr>';
+    }).join('');
+    setHTML('[data-pay]', head + '<tbody>' + body + '</tbody>');
+  }
+
+  /* ================= vòng tròn ba luồng ================= */
+  function drawDonut() {
+    var svg = el('[data-donut]');
+    if (!svg) return;
+    var cx = 58, cy = 58, r = 40, w = 26, a = -Math.PI / 2, out = '';
+    (S.feeds || []).forEach(function (f, i) {
+      var sw = f.gross / N.gross * Math.PI * 2, b = a + sw;
+      var big = sw > Math.PI ? 1 : 0, ro = r + w / 2, ri = r - w / 2;
+      out += '<path d="M' + (cx + ro * Math.cos(a)).toFixed(2) + ' ' + (cy + ro * Math.sin(a)).toFixed(2) +
+        ' A' + ro + ' ' + ro + ' 0 ' + big + ' 1 ' + (cx + ro * Math.cos(b)).toFixed(2) + ' ' + (cy + ro * Math.sin(b)).toFixed(2) +
+        ' L' + (cx + ri * Math.cos(b)).toFixed(2) + ' ' + (cy + ri * Math.sin(b)).toFixed(2) +
+        ' A' + ri + ' ' + ri + ' 0 ' + big + ' 0 ' + (cx + ri * Math.cos(a)).toFixed(2) + ' ' + (cy + ri * Math.sin(a)).toFixed(2) +
+        ' Z" fill="' + DCOL[i] + '"/>';
+      a = b;
+    });
+    svg.innerHTML = out;
+  }
+
+  /* ================= thác nước ================= */
+  function drawWF() {
+    var wrap = el('[data-wfwrap]'), svg = el('[data-wf]');
+    if (!wrap || !svg) return;
+    var W = wrap.clientWidth;
+    if (!W) return;
+    var H = W > 560 ? 206 : 268, padT = 30, padB = 30, plotH = H - padT - padB;
+    var sc = plotH / N.gross;
+    var band = W / 5, bw = Math.min(52, band * 0.5);
+    function y(v) { return padT + plotH - v * sc; }
+
+    var out = '<line x1="0" y1="' + (padT + plotH) + '" x2="' + W + '" y2="' + (padT + plotH) +
+      '" stroke="#D9DEE3" stroke-width="1"/>';
+    var run = N.gross, tops = [];
+    STEPS.forEach(function (s, i) {
+      var top, bot;
+      if (i === 0) { top = N.gross; bot = 0; }
+      else if (i === STEPS.length - 1) { top = s.v; bot = 0; }
+      else { top = run; bot = run - s.v; run = bot; }
+      tops.push({ top: top, bot: bot });
+      var x = band * i + (band - bw) / 2;
+      var h = Math.max(2.5, (top - bot) * sc);
+      var yy = y(top);
+      out += '<rect x="' + x.toFixed(1) + '" y="' + yy.toFixed(1) + '" width="' + bw.toFixed(1) +
+        '" height="' + h.toFixed(1) + '" fill="' + (s.sign > 0 ? TEAL : SLATE) + '"/>';
+    });
+    /* đường nối giữa các cột, ở mức số dư đang chạy */
+    for (var i = 0; i < STEPS.length - 1; i++) {
+      var lv = i === 0 ? N.gross : tops[i].bot;
+      var x1 = band * i + (band + bw) / 2, x2 = band * (i + 1) + (band - bw) / 2;
+      out += '<line x1="' + x1.toFixed(1) + '" y1="' + y(lv).toFixed(1) + '" x2="' + x2.toFixed(1) +
+        '" y2="' + y(lv).toFixed(1) + '" stroke="#C9D0D7" stroke-width="1" stroke-dasharray="3 3"/>';
+    }
+    /* nhãn số trên đầu cột, nhãn tên dưới chân */
+    var L = t();
+    STEPS.forEach(function (s, i) {
+      var cx = band * i + band / 2;
+      out += '<text x="' + cx.toFixed(1) + '" y="' + (y(tops[i].top) - 9).toFixed(1) +
+        '" text-anchor="middle" font-size="11" font-weight="500" fill="#1A2129">' +
+        esc((s.sign < 0 ? '−' : '') + shortUsd(s.v)) + '</text>';
+      out += '<text x="' + cx.toFixed(1) + '" y="' + (H - 11) +
+        '" text-anchor="middle" font-size="11" fill="#8A939E">' + esc(L.wfShort[i]) + '</text>';
+    });
+    svg.setAttribute('width', W);
+    svg.setAttribute('height', H);
+    svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
+    svg.innerHTML = out;
+  }
+
+  /* ================= xu hướng 12 kỳ ================= */
+  function niceStep(raw) {
+    var mag = Math.pow(10, Math.floor(Math.log(raw) / Math.LN10)), n = raw / mag;
+    return mag * (n <= 1 ? 1 : n <= 2 ? 2 : n <= 2.5 ? 2.5 : n <= 5 ? 5 : 10);
+  }
+  var SKEY = ['gross', 'artist', 'streams'];
+
+  function drawTrend() {
+    var wrap = el('[data-trendwrap]'), svg = el('[data-trend]');
+    if (!wrap || !svg) return;
+    var W = wrap.clientWidth;
+    if (!W) return;
+    var key = SKEY[serIdx], money = serIdx < 2;
+    var H = 236, padT = 22, padB = 30, padL = 54, padR = 6;
+    var plotH = H - padT - padB, plotW = W - padL - padR;
+    var max = 0;
+    B.forEach(function (b) { if (b[key] > max) max = b[key]; });
+    var step = niceStep(max / 4), nStep = Math.ceil(max / step), top = step * nStep;
+    function y(v) { return padT + plotH - v / top * plotH; }
+
+    var out = '';
+    for (var g = 0; g <= nStep; g++) {
+      var v = step * g, yy = y(v);
+      out += '<line x1="' + padL + '" y1="' + yy.toFixed(1) + '" x2="' + (W - padR) +
+        '" y2="' + yy.toFixed(1) + '" stroke="' + (g ? '#E2E6EA' : '#D9DEE3') + '" stroke-width="1"/>';
+      out += '<text x="' + (padL - 10) + '" y="' + (yy + 3.5).toFixed(1) +
+        '" text-anchor="end" font-size="10.5" fill="#8A939E">' +
+        esc(g === 0 ? '0' : axisLab(v, money)) + '</text>';
+    }
+    var band = plotW / B.length, bw = Math.min(40, band * 0.54);
+    var shortLab = band < 52;
+    B.forEach(function (b, i) {
+      var x = padL + band * i + (band - bw) / 2, yy = y(b[key]);
+      var h = Math.max(1, padT + plotH - yy);
+      out += '<rect x="' + x.toFixed(1) + '" y="' + yy.toFixed(1) + '" width="' + bw.toFixed(1) +
+        '" height="' + h.toFixed(1) + '" fill="' + (b.approved ? TEAL : TSOFT) + '"/>';
+      var lab = shortLab ? b.label.slice(0, 3) + b.label.slice(5) : b.label;
+      out += '<text x="' + (padL + band * i + band / 2).toFixed(1) + '" y="' + (H - 11) +
+        '" text-anchor="middle" font-size="10.5" font-weight="' + (b.k === N.k ? '500' : '400') +
+        '" fill="' + (b.k === N.k ? '#1A2129' : '#8A939E') + '">' + esc(lab) + '</text>';
+      if (b.k === N.k) {
+        out += '<text x="' + (padL + band * i + band / 2).toFixed(1) + '" y="' + (yy - 8).toFixed(1) +
+          '" text-anchor="middle" font-size="11" font-weight="500" fill="#1A2129">' +
+          esc(money ? shortUsd(b[key]) : shortN(b[key])) + '</text>';
+      }
+      out += '<rect x="' + (padL + band * i).toFixed(1) + '" y="' + padT + '" width="' + band.toFixed(1) +
+        '" height="' + plotH + '" fill="transparent" data-bi="' + i + '"/>';
+    });
+    svg.setAttribute('width', W);
+    svg.setAttribute('height', H);
+    svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
+    svg.innerHTML = out;
+  }
+
+  /* ================= gợi ý ================= */
+  var tip = el('[data-tip]');
+  function tipShow(e, i) {
+    var b = B[i], L = t(), key = SKEY[serIdx], money = serIdx < 2;
+    tip.innerHTML = '<div class="k">' + esc(b.label) + ' · <span class="p">' +
+      esc(b.approved ? L.tipDone : L.tipPend) + '</span></div>' +
+      '<div class="v">' + esc(money ? usd(b[key]) : fmt(b[key], 0)) + '</div>';
+    var r = root.getBoundingClientRect();
+    tip.style.left = (e.clientX - r.left) + 'px';
+    tip.style.top = (e.clientY - r.top - 14) + 'px';
+    tip.classList.add('on');
+  }
+  function tipHide() { tip.classList.remove('on'); }
+
+  root.addEventListener('mousemove', function (e) {
+    var h = e.target.closest ? e.target.closest('[data-bi]') : null;
+    if (h) tipShow(e, +h.getAttribute('data-bi')); else tipHide();
+  });
+  root.addEventListener('mouseleave', tipHide);
+
+  /* ================= tương tác ================= */
+  root.addEventListener('click', function (e) {
+    var tg = e.target.closest ? e.target.closest('[data-set],[data-ti],[data-ni],.d3-pill') : null;
+    if (!tg || !root.contains(tg)) return;
+    if (tg.hasAttribute('data-set')) {
+      var l = tg.getAttribute('data-set');
+      if (l !== lang) { lang = l; paintAll(); }
+      return;
+    }
+    if (tg.hasAttribute('data-ti')) {
+      serIdx = +tg.getAttribute('data-ti');
+      root.querySelectorAll('.d3-tab').forEach(function (b) {
+        b.classList.toggle('on', +b.getAttribute('data-ti') === serIdx);
+      });
+      tipHide(); drawTrend();
+      return;
+    }
+    if (tg.hasAttribute('data-ni')) {
+      navIdx = +tg.getAttribute('data-ni');
+      root.querySelectorAll('.d3-ni').forEach(function (b) {
+        b.classList.toggle('on', +b.getAttribute('data-ni') === navIdx);
+      });
+      return;
+    }
+    if (tg.classList.contains('d3-pill')) {
+      root.querySelectorAll('.d3-pill').forEach(function (b) { b.classList.toggle('on', b === tg); });
+    }
+  });
+
+  function paintAll() {
+    paintStatic(); paintNav(); paintReads(); paintFilters(); paintStatus();
+    paintKpi(); paintFlow(); paintRecon(); paintTabs(); paintRanks(); paintPay();
+    drawDonut(); drawWF(); drawTrend();
+  }
+
+  /* ================= vẽ lại khi đổi bề rộng ================= */
+  var lastW = -1, raf = 0;
+  function schedule() {
+    if (raf) cancelAnimationFrame(raf);
+    raf = requestAnimationFrame(function () {
+      raf = 0;
+      var w = root.clientWidth;
+      if (!w || w === lastW) return;
+      lastW = w; tipHide(); drawWF(); drawTrend();
+    });
+  }
+
+  paintAll();
+  schedule();
+  window.addEventListener('resize', schedule);
+  if (window.ResizeObserver) new ResizeObserver(schedule).observe(root);
+})();
+</script>
