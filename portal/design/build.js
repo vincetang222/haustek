@@ -103,10 +103,10 @@ footer{max-width:1560px;margin:0 auto;padding:0 22px 50px;
 <div class="chrome"><div class="chrome-in">
   <div class="mark"><i>●</i> HAUSTEK <em>CHỌN HƯỚNG NHÌN</em></div>
   <div class="tabs" id="tabs">
-${HUONG.map((h, i) => `    <button data-p="${h.id}"${i === 0 ? ' class="on"' : ''}><span class="k">${h.id.toUpperCase()}</span>${h.ten}</button>`).join('\n')}
+${HUONG.map((h, i) => `    <button data-p="${h.id}"${i === 0 ? ' class="on"' : ''}><span class="k">${i + 1}</span>${h.ten}</button>`).join('\n')}
   </div>
   <div class="spacer"></div>
-  <div class="hint-k">bấm A · B · C trên bàn phím để lật nhanh</div>
+  <div class="hint-k">bấm ${HUONG.map((h, i) => i + 1).join(' · ')} trên bàn phím để lật nhanh</div>
 </div></div>
 
 <div class="brief">
@@ -117,7 +117,7 @@ ${HUONG.map((h, i) => `    <button data-p="${h.id}"${i === 0 ? ' class="on"' : '
   <p>Anh lật qua ba cái rồi chỉ một. Tôi dựng lại chín màn hình còn lại theo hướng đó.</p>
   <div class="cards" id="cards">
 ${HUONG.map((h, i) => `    <button class="card${i === 0 ? ' on' : ''}" data-p="${h.id}">
-      <div class="k">Hướng ${h.id.toUpperCase()}</div>
+      <div class="k">${h.ten}</div>
       <h3>${h.ten}</h3>
       <p>${h.mo}</p>
       <span class="tham">${h.tham}</span>
@@ -156,13 +156,18 @@ ${doc(h.id)}
   document.querySelectorAll('[data-p]').forEach(function (b) {
     b.addEventListener('click', function () { go(b.dataset.p); });
   });
+  /* Phím tắt đánh số theo thứ tự tab. Cắm cứng a/b/c như trước là sai ngay
+     khi thêm hướng mới, mà dòng gợi ý lại vẫn ghi cũ. */
+  var IDS = [].map.call(document.querySelectorAll('[data-p]'), function (b) { return b.dataset.p; });
   addEventListener('keydown', function (e) {
     if (e.metaKey || e.ctrlKey || e.altKey) return;
+    var n = parseInt(e.key, 10);
+    if (n >= 1 && n <= IDS.length) return go(IDS[n - 1]);
     var k = e.key.toLowerCase();
-    if (k === 'a' || k === 'b' || k === 'c') go(k);
+    if (IDS.indexOf(k) >= 0) go(k);
   });
   var h = (location.hash || '').replace('#', '');
-  if (h === 'a' || h === 'b' || h === 'c') go(h);
+  if (IDS.indexOf(h) >= 0) go(h);
 })();
 </script>
 `;

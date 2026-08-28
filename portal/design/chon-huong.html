@@ -583,15 +583,15 @@ footer{max-width:1560px;margin:0 auto;padding:0 22px 50px;
 <div class="chrome"><div class="chrome-in">
   <div class="mark"><i>●</i> HAUSTEK <em>CHỌN HƯỚNG NHÌN</em></div>
   <div class="tabs" id="tabs">
-    <button data-p="d1" class="on"><span class="k">D1</span>D1 · Bám ảnh mẫu</button>
-    <button data-p="d2"><span class="k">D2</span>D2 · Thoáng</button>
-    <button data-p="d3"><span class="k">D3</span>D3 · Bảng làm chủ</button>
-    <button data-p="a"><span class="k">A</span>Sáng, tinh</button>
-    <button data-p="b"><span class="k">B</span>Tối, theo brand</button>
-    <button data-p="c"><span class="k">C</span>Biểu đồ dẫn dắt</button>
+    <button data-p="d1" class="on"><span class="k">1</span>D1 · Bám ảnh mẫu</button>
+    <button data-p="d2"><span class="k">2</span>D2 · Thoáng</button>
+    <button data-p="d3"><span class="k">3</span>D3 · Bảng làm chủ</button>
+    <button data-p="a"><span class="k">4</span>Sáng, tinh</button>
+    <button data-p="b"><span class="k">5</span>Tối, theo brand</button>
+    <button data-p="c"><span class="k">6</span>Biểu đồ dẫn dắt</button>
   </div>
   <div class="spacer"></div>
-  <div class="hint-k">bấm A · B · C trên bàn phím để lật nhanh</div>
+  <div class="hint-k">bấm 1 · 2 · 3 · 4 · 5 · 6 trên bàn phím để lật nhanh</div>
 </div></div>
 
 <div class="brief">
@@ -602,37 +602,37 @@ footer{max-width:1560px;margin:0 auto;padding:0 22px 50px;
   <p>Anh lật qua ba cái rồi chỉ một. Tôi dựng lại chín màn hình còn lại theo hướng đó.</p>
   <div class="cards" id="cards">
     <button class="card on" data-p="d1">
-      <div class="k">Hướng D1</div>
+      <div class="k">D1 · Bám ảnh mẫu</div>
       <h3>D1 · Bám ảnh mẫu</h3>
       <p>Khung tối bên trái, nội dung sáng — dựng gần nhất với nền tảng khách đang dùng.</p>
       <span class="tham">Ảnh khách gửi</span>
     </button>
     <button class="card" data-p="d2">
-      <div class="k">Hướng D2</div>
+      <div class="k">D2 · Thoáng</div>
       <h3>D2 · Thoáng</h3>
       <p>Cùng khung tối + nền sáng, nhưng bớt thẻ. Nhiều phần nằm thẳng trên nền.</p>
       <span class="tham">Ảnh khách gửi · ít khối hơn</span>
     </button>
     <button class="card" data-p="d3">
-      <div class="k">Hướng D3</div>
+      <div class="k">D3 · Bảng làm chủ</div>
       <h3>D3 · Bảng làm chủ</h3>
       <p>Bảng lên trước, biểu đồ đỡ. Mở ra là dò số ngay.</p>
       <span class="tham">Ảnh khách gửi · kiểu kế toán</span>
     </button>
     <button class="card" data-p="a">
-      <div class="k">Hướng A</div>
+      <div class="k">Sáng, tinh</div>
       <h3>Sáng, tinh</h3>
       <p>Nền sáng, ít đường kẻ, nhiều khoảng thở. Màu chỉ xuất hiện ở chỗ có nghĩa.</p>
       <span class="tham">Linear · Stripe Dashboard</span>
     </button>
     <button class="card" data-p="b">
-      <div class="k">Hướng B</div>
+      <div class="k">Tối, theo brand</div>
       <h3>Tối, theo brand</h3>
       <p>Đúng brand playbook Haustek. Đỏ #FF2E4C và ice blue chỉ đạt chuẩn tương phản trên nền tối.</p>
       <span class="tham">Grafana · Vercel</span>
     </button>
     <button class="card" data-p="c">
-      <div class="k">Hướng C</div>
+      <div class="k">Biểu đồ dẫn dắt</div>
       <h3>Biểu đồ dẫn dắt</h3>
       <p>Biểu đồ chiếm phần lớn màn hình, bảng lùi xuống. Mở ra thấy ngay xu hướng.</p>
       <span class="tham">Power BI</span>
@@ -649,10 +649,1758 @@ footer{max-width:1560px;margin:0 auto;padding:0 22px 50px;
 <div class="stage-wrap">
   <div class="stage" id="stage">
     <div class="pane on" data-pane="d1" style="background:#F5F6F8;color:#1A2129">
-<div class="chua-co">Hướng D1 chưa dựng xong.</div>
+<style>
+/* ==================================================================
+   HƯỚNG D1 — bám sát ảnh giao diện khách gửi.
+   Khung tối bên trái + thanh trên, vùng nội dung sáng, thẻ trắng không viền.
+   MỌI selector bắt đầu bằng .huong-d1 — file này nằm chung trang với các hướng khác.
+   ================================================================== */
+.huong-d1{
+  --dark:#0E1A24; --dark-2:#16242F; --dark-3:#1B2C38; --dark-4:#243646;
+  --on-dark:#EAF0F5; --on-dark-2:#B9C6D1; --on-dark-3:#6C7D8B;
+
+  --bg:#F5F6F8; --card:#FFFFFF;
+  --ink:#1A2129; --ink-2:#5B6672; --faint:#8A939E; --line:#E6E9ED;
+  --zebra:#FAFBFC; --head:#F2F4F6; --fill:#ECEEF1;
+
+  --teal:#0E7C92; --teal-2:#3D9DB1; --teal-3:#7FC3D2; --teal-lo:#B7E3EC;
+  --blue:#2C6ECB; --sel:#E6EEFA;
+  --red:#C8102E; --red-lo:#FCEEF0; --red-ink:#8E1226;
+  --green:#157A4E;
+  --grey-bar:#DCE1E6;
+
+  --f:'Be Vietnam Pro',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --mono:'IBM Plex Mono',ui-monospace,monospace;
+  --sh:0 1px 2px rgba(16,24,32,.06);
+
+  background:var(--bg); color:var(--ink);
+  font-family:var(--f); font-size:14px; line-height:1.5;
+  -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
+}
+.huong-d1 *{margin:0;padding:0;box-sizing:border-box}
+.huong-d1 button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+.huong-d1 svg{display:block}
+.huong-d1 table{border-collapse:collapse;width:100%}
+.huong-d1 ul{list-style:none}
+.huong-d1 :focus-visible{outline:2px solid var(--teal);outline-offset:2px}
+.huong-d1 .d1-n{font-variant-numeric:tabular-nums}
+.huong-d1 .d1-mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
+
+/* ---------- thanh trên (tối) ---------- */
+.huong-d1 .d1-top{display:flex;align-items:center;gap:14px;height:56px;padding:0 22px;
+  background:var(--dark);color:var(--on-dark);border-bottom:1px solid var(--dark-2)}
+.huong-d1 .d1-brand{display:flex;align-items:center;gap:9px;flex:0 0 248px;
+  font-size:13.5px;font-weight:600;letter-spacing:.15em}
+.huong-d1 .d1-dot{width:8px;height:8px;border-radius:50%;background:#FF2E4C;flex:0 0 auto}
+.huong-d1 .d1-brand em{font-style:normal;font-weight:400;font-size:11.5px;
+  letter-spacing:.02em;color:var(--on-dark-3)}
+.huong-d1 .d1-grow{flex:1}
+.huong-d1 .d1-fx{font-size:12px;color:var(--on-dark-3);white-space:nowrap;
+  overflow:hidden;text-overflow:ellipsis}
+.huong-d1 .d1-lang{display:flex;gap:2px;background:var(--dark-2);border-radius:7px;padding:2px;flex:0 0 auto}
+.huong-d1 .d1-lang button{padding:5px 11px;border-radius:5px;font-size:12px;font-weight:500;
+  color:#8F9DAA;transition:background .15s,color .15s}
+.huong-d1 .d1-lang button:hover{color:var(--on-dark)}
+.huong-d1 .d1-lang button.on{background:var(--dark-4);color:#fff}
+
+/* ---------- khung ---------- */
+.huong-d1 .d1-body{display:flex;align-items:stretch}
+
+/* ---------- cột trái (tối) ---------- */
+.huong-d1 .d1-side{flex:0 0 270px;width:270px;background:var(--dark);
+  padding:14px 12px 22px;display:flex;flex-direction:column}
+.huong-d1 .d1-gp{font-size:11px;color:var(--on-dark-3);padding:15px 10px 5px}
+.huong-d1 .d1-gp:first-child{padding-top:2px}
+.huong-d1 .d1-nav{display:flex;align-items:center;gap:10px;width:100%;text-align:left;
+  padding:8px 10px;border-radius:7px;color:var(--on-dark-2);font-size:13.5px;
+  transition:background .15s,color .15s}
+.huong-d1 .d1-nav:hover{background:var(--dark-2);color:var(--on-dark)}
+.huong-d1 .d1-nav.on{background:var(--dark-3);color:#fff;font-weight:500}
+.huong-d1 .d1-nav svg{flex:0 0 auto;opacity:.6}
+.huong-d1 .d1-nav.on svg{opacity:1}
+.huong-d1 .d1-nav span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.huong-d1 .d1-nav i{font-style:normal;font-size:11.5px;color:var(--on-dark-3);
+  font-variant-numeric:tabular-nums}
+.huong-d1 .d1-acct{margin-top:auto;display:flex;align-items:center;gap:10px;
+  padding:14px 10px 0;margin:24px 2px 0;border-top:1px solid var(--dark-2)}
+.huong-d1 .d1-av{width:28px;height:28px;border-radius:50%;background:var(--dark-4);
+  color:var(--on-dark-2);display:flex;align-items:center;justify-content:center;
+  font-size:11px;font-weight:600;letter-spacing:.04em;flex:0 0 auto}
+.huong-d1 .d1-acct div{min-width:0}
+.huong-d1 .d1-acct b{display:block;font-size:12.5px;font-weight:500;color:var(--on-dark-2)}
+.huong-d1 .d1-acct span{display:block;font-size:11.5px;color:var(--on-dark-3)}
+
+/* ---------- vùng nội dung (sáng) ---------- */
+.huong-d1 .d1-main{flex:1;min-width:0;position:relative;padding:22px 30px 46px}
+
+.huong-d1 .d1-crumb{display:flex;align-items:center;gap:7px;font-size:12px;
+  color:var(--faint);margin-bottom:9px}
+.huong-d1 .d1-crumb svg{opacity:.7}
+
+.huong-d1 .d1-head{display:flex;align-items:flex-end;gap:26px;flex-wrap:wrap;margin-bottom:16px}
+.huong-d1 .d1-hl{display:flex;align-items:baseline;gap:11px;flex:1 1 300px;min-width:0}
+.huong-d1 .d1-hl h1{font-size:clamp(21px,1.8vw,27px);font-weight:600;
+  letter-spacing:-.012em;line-height:1.2}
+.huong-d1 .d1-code{font-family:var(--mono);font-size:12.5px;color:var(--blue)}
+.huong-d1 .d1-cells{display:flex;gap:clamp(20px,2.4vw,38px);flex:0 0 auto}
+.huong-d1 .d1-cell{text-align:right}
+.huong-d1 .d1-cl{font-size:11.5px;color:var(--faint);margin-bottom:4px;white-space:nowrap}
+.huong-d1 .d1-cv{font-size:clamp(18px,1.5vw,23px);font-weight:600;line-height:1.15;
+  font-variant-numeric:tabular-nums;white-space:nowrap}
+.huong-d1 .d1-cs{font-size:11.5px;color:var(--ink-2);margin-top:4px;white-space:nowrap}
+
+.huong-d1 .d1-pills{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:15px}
+.huong-d1 .d1-pill{display:inline-flex;align-items:center;gap:7px;height:32px;padding:0 12px;
+  border-radius:999px;background:var(--fill);font-size:12.5px;font-weight:500;
+  transition:background .15s}
+.huong-d1 .d1-pill:hover{background:#E2E5EA}
+.huong-d1 .d1-pill.on{background:var(--sel)}
+.huong-d1 .d1-pill em{font-style:normal;font-weight:400;color:var(--ink-2)}
+.huong-d1 .d1-pill svg{opacity:.45}
+
+.huong-d1 .d1-tabs{display:flex;gap:24px;border-bottom:1px solid var(--line);margin-bottom:20px}
+.huong-d1 .d1-tab{position:relative;padding:0 0 11px;font-size:13.5px;color:var(--ink-2);
+  transition:color .15s}
+.huong-d1 .d1-tab:hover{color:var(--ink)}
+.huong-d1 .d1-tab.on{color:var(--ink);font-weight:500}
+.huong-d1 .d1-tab.on::after{content:"";position:absolute;left:0;right:0;bottom:-1px;
+  height:2px;background:var(--ink);border-radius:2px}
+
+/* ---------- thẻ ---------- */
+.huong-d1 .d1-card{background:var(--card);border-radius:8px;box-shadow:var(--sh);padding:21px 24px}
+.huong-d1 .d1-card + .d1-card,.huong-d1 .d1-sec + .d1-sec{margin-top:18px}
+.huong-d1 .d1-sec{scroll-margin-top:70px}
+.huong-d1 .d1-split{display:grid;grid-template-columns:minmax(0,1.22fr) minmax(0,1fr);
+  gap:18px;align-items:start}
+.huong-d1 .d1-split .d1-card + .d1-card{margin-top:0}
+.huong-d1 .d1-ch{display:flex;align-items:flex-start;justify-content:space-between;
+  gap:20px;flex-wrap:wrap;margin-bottom:16px}
+.huong-d1 .d1-h2{font-size:15.5px;font-weight:600;letter-spacing:-.006em}
+.huong-d1 .d1-sub{font-size:12.5px;color:var(--ink-2);margin-top:3px}
+.huong-d1 .d1-lbl{font-size:11.5px;color:var(--faint);margin-bottom:10px}
+
+/* ---------- khối duyệt kỳ ---------- */
+.huong-d1 .d1-acts{display:flex;gap:9px;flex:0 0 auto}
+.huong-d1 .d1-btn{height:36px;padding:0 15px;border-radius:6px;font-size:13px;font-weight:500;
+  background:var(--teal);color:#fff;transition:background .15s}
+.huong-d1 .d1-btn:hover{background:#0B6C80}
+.huong-d1 .d1-btn-off{height:36px;padding:0 15px;border-radius:6px;font-size:13px;font-weight:500;
+  background:#EDEFF2;color:#9AA3AD;cursor:not-allowed}
+.huong-d1 .d1-warn{display:flex;align-items:center;gap:9px;background:var(--red-lo);
+  color:var(--red-ink);border-radius:6px;padding:9px 12px;font-size:12.5px;margin-bottom:18px}
+.huong-d1 .d1-warn svg{flex:0 0 auto}
+.huong-d1 .d1-ag{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:30px}
+.huong-d1 .d1-ck{display:flex;align-items:flex-start;gap:10px;padding:9px 0}
+.huong-d1 .d1-ck + .d1-ck{border-top:1px solid #F0F2F4}
+.huong-d1 .d1-ck svg{flex:0 0 auto;margin-top:1px}
+.huong-d1 .d1-ck b{display:block;font-size:13px;font-weight:400}
+.huong-d1 .d1-ck span{display:block;font-size:12px;color:var(--faint);margin-top:2px}
+.huong-d1 .d1-ck.no b{font-weight:500}
+
+/* ---------- hàng chỉ số ---------- */
+.huong-d1 .d1-kpi{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));padding:0}
+.huong-d1 .d1-kc{padding:17px 16px 18px;min-width:0}
+.huong-d1 .d1-kc + .d1-kc{border-left:1px solid var(--line)}
+.huong-d1 .d1-kl{font-size:11.5px;color:var(--faint);margin-bottom:7px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.huong-d1 .d1-kv{font-size:clamp(15px,1.35vw,20px);font-weight:600;line-height:1.2;
+  font-variant-numeric:tabular-nums;white-space:nowrap}
+.huong-d1 .d1-ks{font-size:11.5px;color:var(--ink-2);margin-top:5px}
+
+/* ---------- biểu đồ ---------- */
+.huong-d1 .d1-legend{display:flex;align-items:center;gap:16px;font-size:12px;color:var(--ink-2)}
+.huong-d1 .d1-lg{display:flex;align-items:center;gap:7px}
+.huong-d1 .d1-sw{width:11px;height:11px;border-radius:2px;flex:0 0 auto}
+.huong-d1 .d1-note{font-size:12px;color:var(--faint);margin-top:12px}
+.huong-d1 .d1-gl{stroke:var(--line);stroke-width:1}
+.huong-d1 .d1-gt{font-size:10.5px;fill:var(--faint)}
+.huong-d1 .d1-xt{font-size:11px;fill:var(--faint)}
+.huong-d1 .d1-xt.cur{fill:var(--ink-2)}
+.huong-d1 .d1-fv{font-size:clamp(10.5px,.86vw,12.5px);font-weight:500;fill:var(--ink)}
+.huong-d1 .d1-fn{font-size:clamp(10.5px,.85vw,12.5px);fill:var(--ink-2)}
+.huong-d1 .d1-fp{font-size:10.5px;fill:var(--faint)}
+.huong-d1 .d1-conn{stroke:#CFD5DB;stroke-width:1;stroke-dasharray:3 3}
+.huong-d1 .d1-hit{fill:transparent;cursor:default}
+.huong-d1 .d1-chart{position:relative}
+.huong-d1 .d1-chart svg{position:absolute;left:0;top:0}
+.huong-d1 .d1-col{position:absolute}
+.huong-d1 .d1-bar{position:absolute;bottom:0;border-radius:2px 2px 0 0;
+  background:linear-gradient(to top,#3AA4B9,#0E7C92);transition:filter .15s}
+.huong-d1 .d1-bar.open{background:linear-gradient(to top,#CBEBF2,#A6D9E5)}
+.huong-d1 .d1-col:hover .d1-bar{filter:brightness(1.07)}
+.huong-d1 .d1-anim{animation:d1rise .4s cubic-bezier(.22,.7,.3,1) both}
+@keyframes d1rise{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}
+
+.huong-d1 .d1-tip{position:absolute;z-index:20;pointer-events:none;opacity:0;
+  transform:translate(-50%,-100%);background:#fff;border-radius:7px;padding:9px 11px;
+  box-shadow:0 4px 16px rgba(16,24,32,.14);font-size:12px;white-space:nowrap;
+  transition:opacity .12s}
+.huong-d1 .d1-tip.on{opacity:1}
+.huong-d1 .d1-tip b{display:block;font-size:12.5px;font-weight:600;margin-bottom:5px}
+.huong-d1 .d1-tip u{text-decoration:none;color:var(--ink-2)}
+.huong-d1 .d1-tip i{font-style:normal;font-variant-numeric:tabular-nums;
+  margin-left:12px;float:right}
+.huong-d1 .d1-tip s{display:block;text-decoration:none;color:var(--ink-2);margin-top:5px}
+
+/* ---------- xếp hạng cửa hàng ---------- */
+.huong-d1 .d1-rank{display:flex;align-items:center;gap:12px;padding:6px 0}
+.huong-d1 .d1-rn{flex:0 0 clamp(134px,11.5vw,158px);font-size:12.5px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.huong-d1 .d1-rt{flex:1;min-width:20px;height:16px;position:relative}
+.huong-d1 .d1-rb{position:absolute;left:0;top:0;height:100%;border-radius:2px;
+  background:var(--teal);transition:width .45s cubic-bezier(.22,.7,.3,1)}
+.huong-d1 .d1-rb.tail{background:var(--grey-bar)}
+.huong-d1 .d1-rv{flex:0 0 auto;font-size:12.5px;font-variant-numeric:tabular-nums;
+  text-align:right;min-width:96px}
+.huong-d1 .d1-rank.tail .d1-rn,.huong-d1 .d1-rank.tail .d1-rv{color:var(--ink-2)}
+
+/* ---------- vòng lãnh thổ ---------- */
+.huong-d1 .d1-donut{display:flex;align-items:center;gap:clamp(14px,2vw,26px);flex-wrap:wrap}
+.huong-d1 .d1-dl{flex:1 1 186px;min-width:min(100%,186px)}
+.huong-d1 .d1-dr{display:flex;align-items:center;gap:9px;padding:7px 0;font-size:12.5px}
+.huong-d1 .d1-dr + .d1-dr{border-top:1px solid #F2F4F6}
+.huong-d1 .d1-dd{display:block;width:9px;height:9px;border-radius:50%;flex:0 0 9px}
+.huong-d1 .d1-dr span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.huong-d1 .d1-dr em{font-style:normal;font-variant-numeric:tabular-nums;color:var(--ink-2)}
+.huong-d1 .d1-dc{font-size:15px;font-weight:600;fill:var(--ink)}
+.huong-d1 .d1-dcs{font-size:10.5px;fill:var(--faint)}
+
+/* ---------- bảng ---------- */
+.huong-d1 .d1-tw{overflow-x:auto}
+.huong-d1 .d1-tb{font-size:13px;min-width:560px}
+.huong-d1 .d1-tb th{background:var(--head);color:var(--ink-2);font-weight:500;font-size:12px;
+  text-align:left;padding:9px 12px;white-space:nowrap}
+.huong-d1 .d1-tb th:first-child{border-radius:5px 0 0 5px}
+.huong-d1 .d1-tb th:last-child{border-radius:0 5px 5px 0}
+.huong-d1 .d1-tb td{padding:10px 12px;border-bottom:1px solid #F2F4F6}
+.huong-d1 .d1-tb tbody tr:nth-child(even){background:var(--zebra)}
+.huong-d1 .d1-tb tbody tr:hover{background:#F1F4F7}
+.huong-d1 .d1-tb tbody tr:last-child td{border-bottom:0}
+.huong-d1 .d1-r{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.huong-d1 .d1-link{color:var(--blue);font-size:13px;text-align:left;transition:color .15s}
+.huong-d1 .d1-link:hover{text-decoration:underline}
+.huong-d1 .d1-dim{color:var(--faint)}
+.huong-d1 .d1-red{color:var(--red)}
+.huong-d1 .d1-green{color:var(--green)}
+.huong-d1 .d1-foot{font-size:12px;color:var(--ink-2);margin-top:13px}
+.huong-d1 .d1-rt2{font-size:12.5px;min-width:0}
+.huong-d1 .d1-rt2 th{color:var(--faint);font-weight:400;font-size:11.5px;
+  text-align:right;padding:0 0 7px;white-space:nowrap}
+.huong-d1 .d1-rt2 th:first-child{text-align:left}
+.huong-d1 .d1-rt2 td{padding:8px 0;border-top:1px solid #F0F2F4;text-align:right;white-space:nowrap}
+.huong-d1 .d1-rt2 td:first-child{text-align:left}
+
+@media (max-width:1230px){
+  .huong-d1 .d1-side{flex-basis:232px;width:232px}
+  .huong-d1 .d1-brand{flex-basis:210px}
+  .huong-d1 .d1-main{padding:20px 22px 40px}
+  .huong-d1 .d1-ag{gap:22px}
+}
+@media (max-width:1060px){
+  .huong-d1 .d1-ag{grid-template-columns:minmax(0,1fr);gap:20px}
+  .huong-d1 .d1-kpi{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .huong-d1 .d1-kc:nth-child(4){border-left:0}
+  .huong-d1 .d1-kc:nth-child(n+4){border-top:1px solid var(--line)}
+  .huong-d1 .d1-split{grid-template-columns:minmax(0,1fr)}
+  .huong-d1 .d1-fx{display:none}
+}
+@media (prefers-reduced-motion:reduce){
+  .huong-d1 *{animation:none!important;transition:none!important}
+}
+</style>
+
+<div class="huong-d1">
+  <div class="d1-top">
+    <div class="d1-brand"><span class="d1-dot"></span>HAUSTEK<em data-t="brandSub"></em></div>
+    <div class="d1-grow"></div>
+    <div class="d1-fx" data-fx></div>
+    <div class="d1-lang">
+      <button data-lang="vi" class="on">VI</button><button data-lang="en">EN</button>
+    </div>
+  </div>
+
+  <div class="d1-body">
+    <nav class="d1-side" data-nav></nav>
+
+    <main class="d1-main">
+      <div class="d1-crumb" data-crumb></div>
+
+      <div class="d1-head">
+        <div class="d1-hl"><h1 data-t="title"></h1><span class="d1-code" data-per></span></div>
+        <div class="d1-cells" data-cells></div>
+      </div>
+
+      <div class="d1-pills" data-pills></div>
+      <div class="d1-tabs" data-tabs></div>
+
+      <section class="d1-sec" data-sec="overview">
+        <div class="d1-card" data-appr></div>
+        <div class="d1-card d1-kpi" data-kpi></div>
+        <div class="d1-card">
+          <div class="d1-ch">
+            <div><div class="d1-h2" data-t="trendTitle"></div>
+                 <div class="d1-sub" data-trendsub></div></div>
+            <div class="d1-legend" data-trendleg></div>
+          </div>
+          <div data-trend></div>
+          <div class="d1-note" data-trendnote></div>
+        </div>
+      </section>
+
+      <section class="d1-sec" data-sec="flow">
+        <div class="d1-card">
+          <div class="d1-ch">
+            <div><div class="d1-h2" data-t="flowTitle"></div>
+                 <div class="d1-sub" data-t="flowSub"></div></div>
+          </div>
+          <div data-fall></div>
+        </div>
+      </section>
+
+      <section class="d1-sec d1-split" data-sec="split">
+        <div class="d1-card" data-store></div>
+        <div class="d1-card" data-terr></div>
+      </section>
+
+      <section class="d1-sec" data-sec="payees">
+        <div class="d1-card" data-pay></div>
+      </section>
+
+      <div class="d1-tip" data-tip></div>
+    </main>
+  </div>
+</div>
+
+<script>
+(function () {
+  var root = document.querySelector('.huong-d1');
+  if (!root || !window.SNAP) return;
+  var S = window.SNAP;
+  var N = S.now, P = S.prev, B = S.byPeriod;
+
+  /* ---------------- chữ hai thứ tiếng ---------------- */
+  var T = {
+    vi: {
+      brandSub: 'Nội bộ',
+      fxNote: 'chưa chốt cho kỳ',
+      acct: 'Vận hành', acctSub: 'TP.HCM',
+      nav: { g1:'Vận hành', overview:'Tổng quan', periods:'Kỳ doanh thu', recon:'Đối chiếu',
+             queue:'Tiền treo', g2:'Chi trả', payees:'Bên nhận', advances:'Tạm ứng',
+             payments:'Lệnh chi', g3:'Danh mục', tracks:'Bản ghi', stores:'Cửa hàng',
+             terr:'Lãnh thổ', g4:'Hệ thống', imports:'Tệp nhập', users:'Người dùng' },
+      crumb1: 'Doanh thu', crumb2: 'Kỳ',
+      title: 'Tổng quan vận hành',
+      cellGross: 'doanh thu gộp kỳ',
+      cellTracks: 'bản ghi có doanh thu',
+      cellDelta: 'so kỳ trước',
+      pill: { per:'Kỳ', feed:'Luồng', cur:'Tiền tệ' }, pillAll: 'tất cả',
+      tabs: { overview:'Tổng quan', flow:'Tiền đi đâu', split:'Bóc tách', payees:'Bên nhận' },
+      apprTitle: 'Duyệt kỳ',
+      apprSub: 'Đạt {a}/{b} điều kiện duyệt.',
+      apprWarn: 'Chưa duyệt được — đối chiếu lệch {d} và tỷ giá chưa chốt.',
+      btnOff: 'Duyệt kỳ', btnGo: 'Mở đối chiếu',
+      checksTitle: 'Điều kiện duyệt', reconTitle: 'Đối chiếu theo luồng',
+      thFeed:'Luồng', thControl:'Số gốc', thMatch:'Đã khớp', thDiff:'Lệch', rTotal:'Cộng',
+      kpi: { fee:'phí Haustek', artist:'về tay nghệ sĩ', label:'phần label giữ',
+             streams:'lượt nghe', queue:'tiền treo chưa khớp' },
+      ofGross: 'doanh thu gộp', vsPrev: 'so kỳ trước', rowsWait: 'dòng chờ khớp',
+      trendTitle: 'Doanh thu gộp 12 kỳ',
+      trendSub: 'Cột kỳ 06/2026 là số chưa duyệt.',
+      legOk: 'đã duyệt', legOpen: 'chưa duyệt',
+      trendNote: 'Kỳ 07/2026 đang nhận dữ liệu — chưa có TikTok.',
+      tipGross: 'gộp', tipArtist: 'nghệ sĩ', tipOpen: 'chưa duyệt',
+      flowTitle: 'Tiền đi đâu',
+      flowSub: 'Từ doanh thu gộp tới phần về tay nghệ sĩ, kỳ 06/2026.',
+      flow: ['Doanh thu gộp','Phí Haustek','Phần label giữ','Điểm producer','Về tay nghệ sĩ'],
+      storeTitle: 'Theo cửa hàng', storeSub: '{n} cửa hàng có doanh thu trong kỳ.',
+      storeTail: '{n} cửa hàng còn lại',
+      terrTitle: 'Theo lãnh thổ', terrSub: '{n} lãnh thổ có doanh thu trong kỳ.',
+      terrRest: '{n} lãnh thổ còn lại', terrCenter: 'lãnh thổ',
+      payTitle: 'Mười bên nhận lớn nhất', paySub: 'Số của kỳ 06/2026, chưa trừ tạm ứng.',
+      thPayee:'Bên nhận', thCode:'Mã', thKind:'Loại', thEarned:'Kỳ', thAdv:'Dư tạm ứng',
+      kLabel:'Label', kArtist:'Nghệ sĩ',
+      payFoot: 'Tạm ứng chưa thu hồi toàn hệ thống: {v} · {n} bên.'
+    },
+    en: {
+      brandSub: 'Internal',
+      fxNote: 'not locked for the period',
+      acct: 'Operations', acctSub: 'Ho Chi Minh City',
+      nav: { g1:'Operations', overview:'Overview', periods:'Revenue periods', recon:'Reconciliation',
+             queue:'Unmatched', g2:'Payouts', payees:'Payees', advances:'Advances',
+             payments:'Payment runs', g3:'Catalogue', tracks:'Recordings', stores:'Stores',
+             terr:'Territories', g4:'System', imports:'Imports', users:'Users' },
+      crumb1: 'Revenue', crumb2: 'Period',
+      title: 'Operations overview',
+      cellGross: 'gross revenue, period',
+      cellTracks: 'recordings with revenue',
+      cellDelta: 'vs last period',
+      pill: { per:'Period', feed:'Feed', cur:'Currency' }, pillAll: 'all',
+      tabs: { overview:'Overview', flow:'Where money goes', split:'Breakdown', payees:'Payees' },
+      apprTitle: 'Approve period',
+      apprSub: '{a} of {b} approval conditions met.',
+      apprWarn: 'Cannot approve — reconciliation off by {d}, FX not locked.',
+      btnOff: 'Approve period', btnGo: 'Open reconciliation',
+      checksTitle: 'Approval conditions', reconTitle: 'Reconciliation by feed',
+      thFeed:'Feed', thControl:'Source total', thMatch:'Matched', thDiff:'Off by', rTotal:'Total',
+      kpi: { fee:'Haustek fee', artist:'paid to artists', label:'label share kept',
+             streams:'streams', queue:'unmatched money' },
+      ofGross: 'of gross', vsPrev: 'vs last period', rowsWait: 'rows waiting',
+      trendTitle: 'Gross revenue, 12 periods',
+      trendSub: 'The 06/2026 bar is not approved yet.',
+      legOk: 'approved', legOpen: 'not approved',
+      trendNote: 'Period 07/2026 is still loading — TikTok missing.',
+      tipGross: 'gross', tipArtist: 'artists', tipOpen: 'not approved',
+      flowTitle: 'Where the money goes',
+      flowSub: 'From gross revenue to artist payable, period 06/2026.',
+      flow: ['Gross revenue','Haustek fee','Label share','Producer points','Paid to artists'],
+      storeTitle: 'By store', storeSub: '{n} stores earned in the period.',
+      storeTail: '{n} remaining stores',
+      terrTitle: 'By territory', terrSub: '{n} territories earned in the period.',
+      terrRest: '{n} remaining territories', terrCenter: 'territories',
+      payTitle: 'Ten largest payees', paySub: 'Period 06/2026, before advance recoupment.',
+      thPayee:'Payee', thCode:'Code', thKind:'Type', thEarned:'Period', thAdv:'Advance balance',
+      kLabel:'Label', kArtist:'Artist',
+      payFoot: 'Advances outstanding across the system: {v} · {n} parties.'
+    }
+  };
+
+  var lang = 'vi';
+  function t() { return T[lang]; }
+
+  /* ---------------- số, chuỗi ---------------- */
+  function esc(s) {
+    return String(s).replace(/[&<>"']/g, function (c) {
+      return { '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c];
+    });
+  }
+  function grp(s) { return s.replace(/\B(?=(\d{3})+(?!\d))/g, '.'); }
+  function num(v, d) {
+    d = (d == null) ? 2 : d;
+    var neg = v < 0, s = Math.abs(v).toFixed(d).split('.');
+    return (neg ? '−' : '') + grp(s[0]) + (s[1] ? ',' + s[1] : '');
+  }
+  function usd(v, d) {
+    var neg = v < 0;
+    return (neg ? '−$' : '$') + num(Math.abs(v), d == null ? 2 : d);
+  }
+  function pct(v, d) { return num(v, d == null ? 1 : d) + '%'; }
+  function sig(v, d) { return (v >= 0 ? '+' : '−') + num(Math.abs(v), d == null ? 1 : d) + '%'; }
+  function fill(s, o) { return s.replace(/\{(\w+)\}/g, function (m, k) { return o[k]; }); }
+  function compact(v) {
+    if (v >= 1e6) { var m = v / 1e6; return num(m, m % 1 ? 1 : 0) + ' M'; }
+    if (v >= 1e3) return num(v / 1e3, 0) + ' K';
+    return num(v, 0);
+  }
+  function niceTop(v) {
+    var p = Math.pow(10, Math.floor(Math.log10(v))), n = v / p;
+    var m = n <= 1 ? 1 : n <= 1.5 ? 1.5 : n <= 2 ? 2 : n <= 2.5 ? 2.5
+          : n <= 3 ? 3 : n <= 4 ? 4 : n <= 5 ? 5 : n <= 8 ? 8 : 10;
+    return m * p;
+  }
+
+  /* ---------------- biểu tượng nét mảnh ---------------- */
+  function svgi(inner, sz) {
+    sz = sz || 16;
+    return '<svg width="' + sz + '" height="' + sz + '" viewBox="0 0 16 16" fill="none" ' +
+      'stroke="currentColor" stroke-width="1.35" stroke-linecap="round" ' +
+      'stroke-linejoin="round" aria-hidden="true">' + inner + '</svg>';
+  }
+  var ICON = {
+    overview:'<rect x="2.4" y="2.4" width="4.7" height="4.7" rx="1"/><rect x="8.9" y="2.4" width="4.7" height="4.7" rx="1"/><rect x="2.4" y="8.9" width="4.7" height="4.7" rx="1"/><rect x="8.9" y="8.9" width="4.7" height="4.7" rx="1"/>',
+    periods:'<rect x="2.3" y="3.4" width="11.4" height="10.3" rx="1.6"/><path d="M2.3 6.6h11.4M5.4 2.1v2.6M10.6 2.1v2.6"/>',
+    recon:'<path d="M2.6 5.4h9.1M4.3 10.6h9.1"/><path d="M9.6 3.2l2.1 2.2-2.1 2.2M6.4 8.4L4.3 10.6l2.1 2.2"/>',
+    queue:'<circle cx="8" cy="8" r="5.6"/><path d="M8 4.9v3.3l2.2 1.3"/>',
+    payees:'<circle cx="6.2" cy="5.9" r="2.6"/><path d="M2.3 13.3c.5-2.3 2-3.6 3.9-3.6s3.4 1.3 3.9 3.6"/><path d="M11 3.9a2.4 2.4 0 010 4.2M12.4 13.3c-.2-1.1-.6-2.1-1.2-2.7"/>',
+    advances:'<rect x="1.9" y="4.1" width="12.2" height="7.8" rx="1.5"/><circle cx="8" cy="8" r="1.9"/>',
+    payments:'<path d="M2.4 8h7.9M7.5 5.2L10.3 8l-2.8 2.8M13.6 3.1v9.8"/>',
+    tracks:'<circle cx="8" cy="8" r="5.7"/><circle cx="8" cy="8" r="1.6"/>',
+    stores:'<path d="M3.1 5.9h9.8l-.8 7.4H3.9z"/><path d="M5.9 5.9V4.6a2.1 2.1 0 014.2 0v1.3"/>',
+    terr:'<circle cx="8" cy="8" r="5.7"/><path d="M2.4 8h11.2"/><path d="M8 2.3c1.6 1.7 2.4 3.6 2.4 5.7s-.8 4-2.4 5.7C6.4 12 5.6 10.1 5.6 8s.8-4 2.4-5.7z"/>',
+    imports:'<path d="M8 10.4V2.7M5.1 5.6L8 2.7l2.9 2.9M2.8 9.9v3.4h10.4V9.9"/>',
+    users:'<circle cx="8" cy="5.5" r="2.8"/><path d="M2.9 13.4c.7-2.7 2.6-4.1 5.1-4.1s4.4 1.4 5.1 4.1"/>'
+  };
+  var I_OK   = '<svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="#157A4E" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8" cy="8" r="6.1"/><path d="M5.3 8.2l1.9 1.9 3.5-4.1"/></svg>';
+  var I_NO   = '<svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="#C8102E" stroke-width="1.4" stroke-linecap="round" aria-hidden="true"><circle cx="8" cy="8" r="6.1"/><path d="M6.1 6.1l3.8 3.8M9.9 6.1l-3.8 3.8"/></svg>';
+  var I_WARN = '<svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.35" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 2.2l6.1 10.6H1.9z"/><path d="M8 6.4v3.1"/><circle cx="8" cy="11.3" r=".55" fill="currentColor" stroke="none"/></svg>';
+  var I_CHEV = '<svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.6 3.9L5 6.3l2.4-2.4"/></svg>';
+  var I_SEP  = '<svg width="9" height="9" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.9 2.3L6.3 5 3.9 7.7"/></svg>';
+
+  /* ---------------- số liệu suy ra ---------------- */
+  var dGross = N.gross - P.gross;
+  var dPct   = dGross / P.gross * 100;
+  var dStr   = (N.streams - P.streams) / P.streams * 100;
+  var okN    = S.checks.filter(function (c) { return c.ok; }).length;
+  var offRow = S.recon.rows.filter(function (r) { return r.diff !== 0; })[0];
+  var terrTop = S.territories.slice(0, 3);
+  var terrRestV = N.gross - terrTop.reduce(function (a, r) { return a + r.value; }, 0);
+  var terrRestN = S.counts.territories - terrTop.length;
+
+  function ckText(c) {
+    if (lang === 'vi') return { l: c.label, d: c.detail };
+    var e = {
+      feeds: { l:'All three data feeds loaded', d:'All ' + S.feeds.length + ' feeds in' },
+      recon: { l:'Reconciliation matches to the cent',
+               d: offRow ? offRow.short + ' off by ' + usd(S.recon.diff) : '' },
+      queue: { l:'Unmatched money under 0,5% of period revenue',
+               d: usd(S.queue.thisPeriod) + ' pending · ' +
+                  pct(S.queue.thisPeriod / N.gross * 100, 2) + ' of period revenue' },
+      fx:    { l:'FX rate locked for the period',
+               d:'Not locked — VND figures drift with today rate' }
+    };
+    return e[c.id] || { l: c.label, d: c.detail };
+  }
+
+  /* ---------------- dựng lại chữ + nội dung ---------------- */
+  var NAV = [
+    { g:'g1' }, { k:'overview', on:true }, { k:'periods', n:S.counts.periods },
+    { k:'recon' }, { k:'queue', n:S.queue.rows },
+    { g:'g2' }, { k:'payees', n:S.counts.labels + S.counts.artists },
+    { k:'advances', n:S.advances.parties }, { k:'payments' },
+    { g:'g3' }, { k:'tracks', n:S.counts.tracks }, { k:'stores', n:S.counts.stores },
+    { k:'terr', n:S.counts.territories },
+    { g:'g4' }, { k:'imports' }, { k:'users' }
+  ];
+  var TABS = ['overview', 'flow', 'split', 'payees'];
+  var tab = 'overview';
+
+  function q(sel) { return root.querySelector(sel); }
+  function setText(sel, s) { var e = q(sel); if (e) e.textContent = s; }
+
+  function renderChrome() {
+    var L = t();
+    setText('[data-t="brandSub"]', L.brandSub);
+    setText('[data-fx]', '1 USD = ' + num(S.fx, 0) + ' ₫ · ' + L.fxNote);
+    setText('[data-t="title"]', L.title);
+    setText('[data-per]', S.period.k);
+
+    q('[data-crumb]').innerHTML =
+      esc(L.crumb1) + I_SEP + esc(L.crumb2) + ' ' + esc(S.period.label);
+
+    q('[data-nav]').innerHTML = NAV.map(function (it) {
+      if (it.g) return '<div class="d1-gp">' + esc(L.nav[it.g]) + '</div>';
+      return '<button class="d1-nav' + (it.on ? ' on' : '') + '">' +
+        svgi(ICON[it.k]) + '<span>' + esc(L.nav[it.k]) + '</span>' +
+        (it.n ? '<i>' + num(it.n, 0) + '</i>' : '') + '</button>';
+    }).join('') +
+      '<div class="d1-acct"><div class="d1-av">HT</div><div>' +
+      '<b>' + esc(L.acct) + '</b><span>' + esc(L.acctSub) + '</span></div></div>';
+
+    q('[data-cells]').innerHTML =
+      '<div class="d1-cell"><div class="d1-cl">' + esc(L.cellGross) + '</div>' +
+      '<div class="d1-cv">' + usd(N.gross) + '</div>' +
+      '<div class="d1-cs">' + num(N.tracks, 0) + ' ' + esc(L.cellTracks) + '</div></div>' +
+      '<div class="d1-cell"><div class="d1-cl">' + esc(L.cellDelta) + ' (' + esc(P.label) + ')</div>' +
+      '<div class="d1-cv">' + sig(dPct, 2) + '</div>' +
+      '<div class="d1-cs">+' + usd(dGross) + '</div></div>';
+
+    var pills = [
+      { k:'per', v:S.period.label, on:true },
+      { k:'feed', v:L.pillAll },
+      { k:'cur', v:'USD' }
+    ];
+    q('[data-pills]').innerHTML = pills.map(function (p) {
+      return '<button class="d1-pill' + (p.on ? ' on' : '') + '"><em>' +
+        esc(L.pill[p.k]) + '</em> ' + esc(p.v) + I_CHEV + '</button>';
+    }).join('');
+
+    q('[data-tabs]').innerHTML = TABS.map(function (k) {
+      return '<button class="d1-tab' + (k === tab ? ' on' : '') + '" data-tab="' + k + '">' +
+        esc(L.tabs[k]) + '</button>';
+    }).join('');
+  }
+
+  function renderAppr() {
+    var L = t();
+    var rows = S.recon.rows.map(function (r) {
+      return '<tr><td>' + esc(r.short) + '</td>' +
+        '<td class="d1-n">' + usd(r.control) + '</td>' +
+        '<td class="d1-n">' + usd(r.attributed) + '</td>' +
+        '<td class="d1-n' + (r.diff ? ' d1-red' : ' d1-dim') + '">' +
+        (r.diff ? usd(r.diff) : '—') + '</td></tr>';
+    }).join('');
+    rows += '<tr><td>' + esc(L.rTotal) + '</td>' +
+      '<td class="d1-n">' + usd(S.recon.control) + '</td>' +
+      '<td class="d1-n">' + usd(S.recon.attributed) + '</td>' +
+      '<td class="d1-n d1-red">' + usd(S.recon.diff) + '</td></tr>';
+
+    q('[data-appr]').innerHTML =
+      '<div class="d1-ch"><div>' +
+        '<div class="d1-h2">' + esc(L.apprTitle) + ' ' + esc(S.period.label) + '</div>' +
+        '<div class="d1-sub">' + esc(fill(L.apprSub, { a:okN, b:S.checks.length })) + '</div>' +
+      '</div><div class="d1-acts">' +
+        '<button class="d1-btn-off" disabled>' + esc(L.btnOff) + '</button>' +
+        '<button class="d1-btn">' + esc(L.btnGo) + '</button>' +
+      '</div></div>' +
+      '<div class="d1-warn">' + I_WARN + '<span>' +
+        esc(fill(L.apprWarn, { d: usd(S.recon.diff) })) + '</span></div>' +
+      '<div class="d1-ag"><div>' +
+        '<div class="d1-lbl">' + esc(L.checksTitle) + '</div>' +
+        S.checks.map(function (c) {
+          var x = ckText(c);
+          return '<div class="d1-ck' + (c.ok ? '' : ' no') + '">' + (c.ok ? I_OK : I_NO) +
+            '<div><b>' + esc(x.l) + '</b><span>' + esc(x.d) + '</span></div></div>';
+        }).join('') +
+      '</div><div>' +
+        '<div class="d1-lbl">' + esc(L.reconTitle) + '</div>' +
+        '<table class="d1-rt2"><thead><tr><th>' + esc(L.thFeed) + '</th><th>' +
+        esc(L.thControl) + '</th><th>' + esc(L.thMatch) + '</th><th>' +
+        esc(L.thDiff) + '</th></tr></thead><tbody>' + rows + '</tbody></table>' +
+      '</div></div>';
+  }
+
+  function renderKpi() {
+    var L = t();
+    var cells = [
+      { l:L.kpi.fee,     v:usd(N.fee),     s:pct(N.fee / N.gross * 100) + ' ' + L.ofGross },
+      { l:L.kpi.artist,  v:usd(N.artist),  s:pct(N.artist / N.gross * 100) + ' ' + L.ofGross },
+      { l:L.kpi.label,   v:usd(N.labelCut),s:pct(N.labelCut / N.gross * 100) + ' ' + L.ofGross },
+      { l:L.kpi.streams, v:num(N.streams, 0), s:sig(dStr, 2) + ' ' + L.vsPrev },
+      { l:L.kpi.queue,   v:usd(S.queue.amount), s:num(S.queue.rows, 0) + ' ' + L.rowsWait }
+    ];
+    q('[data-kpi]').innerHTML = cells.map(function (c) {
+      return '<div class="d1-kc"><div class="d1-kl">' + esc(c.l) + '</div>' +
+        '<div class="d1-kv">' + c.v + '</div>' +
+        '<div class="d1-ks">' + esc(c.s) + '</div></div>';
+    }).join('');
+  }
+
+  function renderTrend() {
+    var L = t();
+    setText('[data-t="trendTitle"]', L.trendTitle);
+    setText('[data-trendsub]', L.trendSub);
+    setText('[data-trendnote]', L.trendNote);
+    q('[data-trendleg]').innerHTML =
+      '<span class="d1-lg"><span class="d1-sw" style="background:#0E7C92"></span>' +
+      esc(L.legOk) + '</span>' +
+      '<span class="d1-lg"><span class="d1-sw" style="background:#B7E3EC"></span>' +
+      esc(L.legOpen) + '</span>';
+  }
+
+  function renderSplit() {
+    var L = t();
+    var maxS = S.stores[0].value;
+    var rows = S.stores.map(function (s) {
+      return '<div class="d1-rank"><div class="d1-rn">' + esc(s.name) + '</div>' +
+        '<div class="d1-rt"><div class="d1-rb" style="width:' +
+        (s.value / maxS * 100).toFixed(2) + '%"></div></div>' +
+        '<div class="d1-rv">' + usd(s.value) + '</div></div>';
+    }).join('');
+    rows += '<div class="d1-rank tail"><div class="d1-rn">' +
+      esc(fill(L.storeTail, { n: num(S.storesTail.count, 0) })) + '</div>' +
+      '<div class="d1-rt"><div class="d1-rb tail" style="width:' +
+      (S.storesTail.value / maxS * 100).toFixed(2) + '%"></div></div>' +
+      '<div class="d1-rv">' + usd(S.storesTail.value) + '</div></div>';
+
+    q('[data-store]').innerHTML =
+      '<div class="d1-ch"><div><div class="d1-h2">' + esc(L.storeTitle) + '</div>' +
+      '<div class="d1-sub">' + esc(fill(L.storeSub, { n: num(S.storesTail.total, 0) })) +
+      '</div></div></div>' + rows;
+
+    var COL = ['#0E7C92', '#3D9DB1', '#7FC3D2', '#CBD3DA'];
+    var slices = terrTop.map(function (r, i) {
+      return { name:r.name, v:r.value, c:COL[i] };
+    });
+    slices.push({ name: fill(L.terrRest, { n: num(terrRestN, 0) }), v: terrRestV, c: COL[3] });
+
+    q('[data-terr]').innerHTML =
+      '<div class="d1-ch"><div><div class="d1-h2">' + esc(L.terrTitle) + '</div>' +
+      '<div class="d1-sub">' + esc(fill(L.terrSub, { n: num(S.counts.territories, 0) })) +
+      '</div></div></div>' +
+      '<div class="d1-donut"><div data-dsvg></div><div class="d1-dl">' +
+      slices.map(function (s) {
+        return '<div class="d1-dr"><i class="d1-dd" style="background:' + s.c + '"></i>' +
+          '<span>' + esc(s.name) + '</span><em>' + pct(s.v / N.gross * 100) + '</em></div>';
+      }).join('') + '</div></div>';
+    root._slices = slices;
+  }
+
+  function renderPay() {
+    var L = t();
+    var body = S.payees.map(function (p) {
+      return '<tr><td><button class="d1-link">' + esc(p.name) + '</button></td>' +
+        '<td class="d1-mono d1-dim">' + esc(p.clientId) + '</td>' +
+        '<td>' + esc(p.kind === 'label' ? L.kLabel : L.kArtist) + '</td>' +
+        '<td class="d1-r">' + usd(p.earned) + '</td>' +
+        '<td class="d1-r' + (p.advance ? '' : ' d1-dim') + '">' +
+        (p.advance ? usd(p.advance) : '—') + '</td></tr>';
+    }).join('');
+    q('[data-pay]').innerHTML =
+      '<div class="d1-ch"><div><div class="d1-h2">' + esc(L.payTitle) + '</div>' +
+      '<div class="d1-sub">' + esc(L.paySub) + '</div></div></div>' +
+      '<div class="d1-tw"><table class="d1-tb"><thead><tr>' +
+      '<th>' + esc(L.thPayee) + '</th><th>' + esc(L.thCode) + '</th><th>' + esc(L.thKind) + '</th>' +
+      '<th class="d1-r">' + esc(L.thEarned) + ' ' + esc(S.period.label) + '</th>' +
+      '<th class="d1-r">' + esc(L.thAdv) + '</th></tr></thead><tbody>' + body +
+      '</tbody></table></div>' +
+      '<div class="d1-foot">' +
+      esc(fill(L.payFoot, { v: usd(S.advances.total), n: num(S.advances.parties, 0) })) +
+      '</div>';
+  }
+
+  function renderFlow() {
+    var L = t();
+    setText('[data-t="flowTitle"]', L.flowTitle);
+    setText('[data-t="flowSub"]', L.flowSub);
+  }
+
+  function renderAll() {
+    renderChrome(); renderAppr(); renderKpi(); renderTrend();
+    renderFlow(); renderSplit(); renderPay();
+    bindTabs();
+  }
+
+  /* ---------------- biểu đồ cột 12 kỳ ---------------- */
+  var animated = false;
+
+  function drawTrend() {
+    var host = q('[data-trend]');
+    var W = Math.max(300, host.clientWidth), H = 250;
+    var padL = 56, padR = 8, padT = 14, padB = 32;
+    var iw = W - padL - padR, ih = H - padT - padB;
+    var max = B.reduce(function (a, d) { return Math.max(a, d.gross); }, 0);
+    var top = niceTop(max), ticks = 4, step = iw / B.length;
+    var bw = Math.min(40, step * 0.54);
+    var every = step < 46 ? 2 : 1;
+
+    var g = '';
+    for (var i = 0; i <= ticks; i++) {
+      var v = top / ticks * i, y = padT + ih - (v / top) * ih;
+      g += '<line class="d1-gl" x1="' + padL + '" y1="' + y.toFixed(1) +
+           '" x2="' + (W - padR) + '" y2="' + y.toFixed(1) + '"/>' +
+           '<text class="d1-gt" x="' + (padL - 10) + '" y="' + (y + 3.5).toFixed(1) +
+           '" text-anchor="end">' + compact(v) + '</text>';
+    }
+    B.forEach(function (d, i) {
+      if (i % every) return;
+      var cx = padL + step * i + step / 2;
+      g += '<text class="d1-xt' + (d.k === S.period.k ? ' cur' : '') + '" x="' + cx.toFixed(1) +
+           '" y="' + (H - 10) + '" text-anchor="middle">' + esc(d.label) + '</text>';
+    });
+
+    var bars = B.map(function (d, i) {
+      var h = (d.gross / top) * ih;
+      var left = padL + step * i;
+      return '<div class="d1-col" data-i="' + i + '" style="left:' + left.toFixed(1) +
+        'px;width:' + step.toFixed(1) + 'px;height:' + ih + 'px;top:' + padT + 'px">' +
+        '<div class="d1-bar' + (d.approved ? '' : ' open') + '" data-g="' + d.gross +
+        '" data-h="' + h.toFixed(2) + '" style="left:' + ((step - bw) / 2).toFixed(1) +
+        'px;width:' + bw.toFixed(1) + 'px;height:' + h.toFixed(1) + 'px"></div></div>';
+    }).join('');
+
+    host.innerHTML = '<div class="d1-chart' + (animated ? '' : ' d1-anim') +
+      '" style="height:' + H + 'px">' +
+      '<svg width="' + W + '" height="' + H + '" aria-hidden="true">' + g + '</svg>' +
+      bars + '</div>';
+
+    host.querySelectorAll('.d1-col').forEach(function (col) {
+      col.addEventListener('mouseenter', function () {
+        var d = B[+col.dataset.i], L = t();
+        tipShow(col.querySelector('.d1-bar'),
+          '<b>' + esc(d.label) + '</b>' +
+          '<u>' + esc(L.tipGross) + '</u><i>' + usd(d.gross) + '</i><br>' +
+          '<u>' + esc(L.tipArtist) + '</u><i>' + usd(d.artist) + '</i>' +
+          (d.approved ? '' : '<s>' + esc(L.tipOpen) + '</s>'));
+      });
+      col.addEventListener('mouseleave', tipHide);
+    });
+  }
+
+  /* ---------------- thác nước: tiền đi đâu ---------------- */
+  function drawFall() {
+    var host = q('[data-fall]');
+    var W = Math.max(300, host.clientWidth), H = 274;
+    var padT = 36, padB = 54, padL = 4, padR = 4;
+    var iw = W - padL - padR, ih = H - padT - padB;
+    var L = t(), G = N.gross;
+    var c1 = G - N.fee, c2 = c1 - N.labelCut, c3 = c2 - N.producer;
+    var steps = [
+      { lo:0,  hi:G,  v:G,           total:true, p:100 },
+      { lo:c1, hi:G,  v:-N.fee,      p:N.fee / G * 100 },
+      { lo:c2, hi:c1, v:-N.labelCut, p:N.labelCut / G * 100 },
+      { lo:c3, hi:c2, v:-N.producer, p:N.producer / G * 100 },
+      { lo:0,  hi:N.artist, v:N.artist, total:true, p:N.artist / G * 100 }
+    ];
+    var step = iw / steps.length, bw = Math.min(86, step * 0.52);
+    function Y(v) { return padT + ih - (v / G) * ih; }
+    function cx(i) { return padL + step * i + step / 2; }
+
+    var s = '<line class="d1-gl" x1="' + padL + '" y1="' + (padT + ih) +
+            '" x2="' + (W - padR) + '" y2="' + (padT + ih) + '"/>';
+    steps.forEach(function (d, i) {
+      var y = Y(d.hi), h = Math.max(4, Y(d.lo) - Y(d.hi));
+      s += '<rect x="' + (cx(i) - bw / 2).toFixed(1) + '" y="' + y.toFixed(1) +
+        '" width="' + bw.toFixed(1) + '" height="' + h.toFixed(1) + '" rx="2" fill="' +
+        (d.total ? '#0E7C92' : '#B7E3EC') + '"/>';
+      s += '<text class="d1-fv" x="' + cx(i).toFixed(1) + '" y="' + (y - 11).toFixed(1) +
+        '" text-anchor="middle">' + (d.v < 0 ? '−' : '') + usd(Math.abs(d.v)) + '</text>';
+      s += '<text class="d1-fn" x="' + cx(i).toFixed(1) + '" y="' + (padT + ih + 22) +
+        '" text-anchor="middle">' + esc(L.flow[i]) + '</text>';
+      s += '<text class="d1-fp" x="' + cx(i).toFixed(1) + '" y="' + (padT + ih + 39) +
+        '" text-anchor="middle">' + pct(d.p) + '</text>';
+      if (i < steps.length - 1) {
+        var yc = Y(i === 0 ? d.hi : d.lo);
+        s += '<line class="d1-conn" x1="' + (cx(i) + bw / 2).toFixed(1) + '" y1="' + yc.toFixed(1) +
+          '" x2="' + (cx(i + 1) - bw / 2).toFixed(1) + '" y2="' + yc.toFixed(1) + '"/>';
+      }
+    });
+    host.innerHTML = '<svg class="' + (animated ? '' : 'd1-anim') + '" width="' + W +
+      '" height="' + H + '" role="img" aria-label="' + esc(L.flowTitle) + '">' + s + '</svg>';
+  }
+
+  /* ---------------- vòng lãnh thổ ---------------- */
+  function drawDonut() {
+    var host = q('[data-dsvg]'); if (!host) return;
+    var card = q('[data-terr]');
+    var w = Math.max(200, card.clientWidth - 48);
+    var size = Math.max(124, Math.min(172, Math.round(w * 0.38)));
+    var sw = Math.max(19, Math.round(size * 0.16));
+    var r = size / 2 - sw / 2 - 1, C = 2 * Math.PI * r, cxy = size / 2;
+    var acc = 0, gap = 2.5, L = t();
+    var s = '';
+    (root._slices || []).forEach(function (sl) {
+      var len = sl.v / N.gross * C;
+      s += '<circle cx="' + cxy + '" cy="' + cxy + '" r="' + r.toFixed(2) +
+        '" fill="none" stroke="' + sl.c + '" stroke-width="' + sw +
+        '" stroke-dasharray="' + Math.max(0, len - gap).toFixed(2) + ' ' +
+        (C - Math.max(0, len - gap)).toFixed(2) + '" stroke-dashoffset="' + (-acc).toFixed(2) +
+        '" transform="rotate(-90 ' + cxy + ' ' + cxy + ')"/>';
+      acc += len;
+    });
+    s += '<text class="d1-dc" x="' + cxy + '" y="' + (cxy - 2) + '" text-anchor="middle">' +
+      num(S.counts.territories, 0) + '</text>' +
+      '<text class="d1-dcs" x="' + cxy + '" y="' + (cxy + 14) + '" text-anchor="middle">' +
+      esc(L.terrCenter) + '</text>';
+    host.innerHTML = '<svg width="' + size + '" height="' + size + '" aria-hidden="true">' + s + '</svg>';
+  }
+
+  /* ---------------- chú thích nổi ---------------- */
+  var tip = q('[data-tip]');
+  function tipShow(el, html) {
+    var main = q('.d1-main');
+    var a = el.getBoundingClientRect(), b = main.getBoundingClientRect();
+    tip.innerHTML = html;
+    tip.classList.add('on');
+    var half = tip.offsetWidth / 2 + 6;
+    var x = a.left - b.left + a.width / 2;
+    x = Math.min(Math.max(x, half), b.width - half);
+    tip.style.left = x.toFixed(1) + 'px';
+    tip.style.top = (a.top - b.top - 9).toFixed(1) + 'px';
+  }
+  function tipHide() { tip.classList.remove('on'); }
+
+  /* ---------------- tab + ngôn ngữ ---------------- */
+  function bindTabs() {
+    root.querySelectorAll('[data-tab]').forEach(function (b) {
+      b.addEventListener('click', function () {
+        tab = b.dataset.tab;
+        lock = Date.now() + 900;
+        markTab();
+        var sec = q('[data-sec="' + tab + '"]');
+        if (sec) sec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+    });
+  }
+  function markTab() {
+    root.querySelectorAll('[data-tab]').forEach(function (b) {
+      b.classList.toggle('on', b.dataset.tab === tab);
+    });
+  }
+  var spy = 0, lock = 0;
+  function onScroll() {
+    if (spy) return;
+    spy = requestAnimationFrame(function () {
+      spy = 0;
+      if (!root.clientWidth || Date.now() < lock) return;
+      var cur = TABS[0];
+      TABS.forEach(function (k) {
+        var sec = q('[data-sec="' + k + '"]');
+        if (sec && sec.getBoundingClientRect().top <= 140) cur = k;
+      });
+      var doc = document.documentElement;
+      if (window.innerHeight + window.scrollY >= doc.scrollHeight - 6) cur = TABS[TABS.length - 1];
+      if (cur !== tab) { tab = cur; markTab(); }
+    });
+  }
+
+  root.querySelectorAll('[data-lang]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      if (lang === b.dataset.lang) return;
+      lang = b.dataset.lang;
+      root.querySelectorAll('[data-lang]').forEach(function (x) {
+        x.classList.toggle('on', x.dataset.lang === lang);
+      });
+      tipHide(); renderAll(); drawAll();
+    });
+  });
+
+  /* ---------------- vẽ lại theo bề rộng ---------------- */
+  function drawAll() { drawTrend(); drawFall(); drawDonut(); animated = true; }
+
+  var lastW = -1, raf = 0;
+  function schedule() {
+    if (raf) cancelAnimationFrame(raf);
+    raf = requestAnimationFrame(function () {
+      raf = 0;
+      var w = root.clientWidth;
+      if (!w || w === lastW) return;
+      lastW = w; tipHide(); drawAll();
+    });
+  }
+
+  renderAll();
+  schedule();
+  window.addEventListener('resize', schedule);
+  window.addEventListener('scroll', onScroll, { passive: true });
+  if (window.ResizeObserver) new ResizeObserver(schedule).observe(root);
+})();
+</script>
+
     </div>
     <div class="pane" data-pane="d2" style="background:#F5F6F8;color:#1A2129">
-<div class="chua-co">Hướng D2 chưa dựng xong.</div>
+<style>
+/* ===================================================================
+   HƯỚNG D2 — THOÁNG · ít khối, nhiều khoảng thở
+   Mọi selector bắt đầu bằng .huong-d2. Không dùng id.
+   =================================================================== */
+.huong-d2{
+  --dark:#0E1A24; --dark2:#16242F; --dark3:#1D2E3B;
+  --bg:#F5F6F8;   --card:#FFFFFF;
+  --ink:#1A2129;  --ink2:#5B6672; --faint:#8A939E; --line:#E6E9ED;
+  --teal:#0E7C92; --teal-mid:#5AAABB; --teal-soft:#B7E3EC;
+  --blue:#2C6ECB; --blue-soft:#E7EFFB; --blue-ink:#1F4E93;
+  --red:#C8102E;  --green:#157A4E;
+  --grey-bar:#AAB4BD;
+  --sh:0 1px 2px rgba(16,24,32,.06);
+  --font:'Be Vietnam Pro',system-ui,-apple-system,sans-serif;
+  --mono:'IBM Plex Mono',ui-monospace,monospace;
+  position:relative; background:var(--bg); color:var(--ink);
+  font-family:var(--font); font-size:14px; line-height:1.5; font-weight:400;
+  -webkit-font-smoothing:antialiased;
+}
+.huong-d2,.huong-d2 *{box-sizing:border-box}
+.huong-d2 *{margin:0;padding:0}
+.huong-d2 button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;text-align:left}
+.huong-d2 svg{display:block}
+.huong-d2 :focus-visible{outline:2px solid var(--blue);outline-offset:2px;border-radius:3px}
+.huong-d2 h1,.huong-d2 h2,.huong-d2 h3{font-weight:600;letter-spacing:-.012em}
+.huong-d2 .d2-svg text{font-family:var(--font)}
+.huong-d2 .d2-num{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1}
+
+/* ---------- khung ---------- */
+.huong-d2 .d2-shell{display:flex;align-items:stretch;min-height:900px}
+.huong-d2 .d2-side{flex:0 0 270px;width:270px;background:var(--dark);color:#fff;
+  display:flex;flex-direction:column;box-shadow:1px 0 0 var(--dark2)}
+.huong-d2 .d2-main{flex:1;min-width:0;display:flex;flex-direction:column}
+
+/* ---------- sidebar ---------- */
+.huong-d2 .d2-brand{height:57px;display:flex;align-items:center;gap:9px;padding:0 22px;flex:none}
+.huong-d2 .d2-bname{font-size:15px;font-weight:600;letter-spacing:-.005em}
+.huong-d2 .d2-bsub{font-size:11.5px;color:rgba(255,255,255,.42);font-weight:400;
+  margin-left:1px;align-self:center}
+.huong-d2 .d2-nav{padding:14px 12px 26px;flex:1}
+.huong-d2 .d2-ng{font-size:11.5px;color:rgba(255,255,255,.36);font-weight:400;
+  padding:0 10px;margin:18px 0 6px}
+.huong-d2 .d2-ng:first-child{margin-top:0}
+.huong-d2 .d2-ni{display:flex;align-items:center;gap:11px;width:100%;
+  padding:8px 10px;border-radius:6px;font-size:13.5px;color:rgba(255,255,255,.72);
+  transition:background .13s,color .13s}
+.huong-d2 .d2-ni svg{flex:none;opacity:.62}
+.huong-d2 .d2-ni:hover{background:var(--dark2);color:#fff}
+.huong-d2 .d2-ni.on{background:var(--dark3);color:#fff;font-weight:500}
+.huong-d2 .d2-ni.on svg{opacity:1}
+.huong-d2 .d2-sfoot{padding:16px 22px 20px;border-top:1px solid var(--dark2);flex:none}
+.huong-d2 .d2-user{font-size:13px;font-weight:500;color:rgba(255,255,255,.9)}
+.huong-d2 .d2-role{font-size:11.5px;color:rgba(255,255,255,.4);margin-top:2px}
+
+/* ---------- thanh trên ---------- */
+.huong-d2 .d2-top{height:57px;flex:none;background:var(--dark);
+  border-bottom:1px solid var(--dark2);display:flex;align-items:center;gap:9px;padding:0 32px}
+.huong-d2 .d2-crumb{font-size:13px;color:rgba(255,255,255,.48)}
+.huong-d2 .d2-slash{font-size:13px;color:rgba(255,255,255,.24)}
+.huong-d2 .d2-screen{font-size:13px;color:#fff;font-weight:500}
+.huong-d2 .d2-grow{flex:1}
+.huong-d2 .d2-lang{display:flex;align-items:center;gap:0}
+.huong-d2 .d2-lang button{font-size:12px;font-weight:500;padding:5px 9px;border-radius:5px;
+  color:rgba(255,255,255,.46);transition:color .13s,background .13s}
+.huong-d2 .d2-lang button:hover{color:rgba(255,255,255,.8)}
+.huong-d2 .d2-lang button.on{color:#fff;background:var(--dark3)}
+.huong-d2 .d2-lsep{width:1px;height:13px;background:rgba(255,255,255,.16);margin:0 3px}
+
+/* ---------- trang ---------- */
+.huong-d2 .d2-page{padding:32px 40px 64px;max-width:1420px;width:100%}
+
+.huong-d2 .d2-head{display:flex;align-items:flex-end;justify-content:space-between;
+  gap:36px;flex-wrap:wrap}
+.huong-d2 .d2-h1{font-size:27px;line-height:1.2;color:var(--ink)}
+.huong-d2 .d2-h1 em{font-style:normal;color:var(--blue);font-weight:500;font-size:22px;
+  margin-left:10px;font-variant-numeric:tabular-nums}
+.huong-d2 .d2-reads{display:flex;gap:46px}
+.huong-d2 .d2-read .l{font-size:12px;color:var(--faint);margin-bottom:3px;white-space:nowrap}
+.huong-d2 .d2-read .v{font-size:22px;font-weight:600;line-height:1.15;
+  font-variant-numeric:tabular-nums}
+
+.huong-d2 .d2-filters{display:flex;gap:8px;margin-top:20px;flex-wrap:wrap}
+.huong-d2 .d2-pill{display:inline-flex;align-items:center;gap:7px;height:32px;padding:0 13px;
+  border-radius:99px;background:#ECEEF1;color:var(--ink);font-size:13px;font-weight:500;
+  transition:background .13s}
+.huong-d2 .d2-pill svg{opacity:.5}
+.huong-d2 .d2-pill:hover{background:#E3E6EA}
+.huong-d2 .d2-pill.on{background:var(--blue-soft);color:var(--blue-ink)}
+.huong-d2 .d2-pill.on svg{opacity:.7}
+
+.huong-d2 .d2-rule{border:0;height:1px;background:var(--line);margin:30px 0 0}
+.huong-d2 .d2-page > section,.huong-d2 .d2-page > .d2-split{margin-top:26px}
+
+/* ---------- hàng số dẫn ---------- */
+.huong-d2 .d2-hero{margin-top:26px}
+.huong-d2 .d2-hero .l{font-size:13px;color:var(--ink2);margin-bottom:6px}
+.huong-d2 .d2-hero .v{font-size:clamp(34px,3.1vw,44px);font-weight:600;line-height:1.1;
+  letter-spacing:-.024em;font-variant-numeric:tabular-nums}
+.huong-d2 .d2-hero .d{font-size:13px;color:var(--ink2);margin-top:10px;
+  font-variant-numeric:tabular-nums}
+.huong-d2 .d2-hero .d.neg{color:var(--red)}
+
+.huong-d2 .d2-metrics{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));margin-top:32px}
+.huong-d2 .d2-m{padding-right:20px}
+.huong-d2 .d2-m + .d2-m{border-left:1px solid var(--line);padding-left:22px}
+.huong-d2 .d2-m .l{font-size:12.5px;color:var(--ink2);margin-bottom:5px}
+.huong-d2 .d2-m .v{font-size:clamp(17px,1.42vw,21px);font-weight:600;line-height:1.2;
+  font-variant-numeric:tabular-nums;white-space:nowrap}
+.huong-d2 .d2-m .s{font-size:11.5px;color:var(--faint);margin-top:5px;
+  font-variant-numeric:tabular-nums}
+
+/* ---------- thẻ ---------- */
+.huong-d2 .d2-card{background:var(--card);border-radius:8px;box-shadow:var(--sh);padding:26px 28px}
+
+/* ---------- tình trạng kỳ ---------- */
+.huong-d2 .d2-status{display:grid;grid-template-columns:minmax(0,1fr) 234px;gap:40px;
+  align-items:start}
+.huong-d2 .d2-h2{font-size:16px}
+.huong-d2 .d2-h3{font-size:13px;font-weight:500;color:var(--ink2);margin-bottom:12px}
+.huong-d2 .d2-sub{font-size:13px;color:var(--red);margin-top:5px}
+.huong-d2 .d2-checks{margin-top:18px}
+.huong-d2 .d2-chk{display:flex;align-items:center;gap:11px;padding:10px 0;
+  border-top:1px solid var(--line)}
+.huong-d2 .d2-chk:first-child{border-top:0;padding-top:2px}
+.huong-d2 .d2-chk .ic{flex:none;width:16px;height:16px}
+.huong-d2 .d2-chk .t{font-size:13.5px;font-weight:500}
+.huong-d2 .d2-chk .sp{flex:1;min-width:14px}
+.huong-d2 .d2-chk .d{font-size:12.5px;color:var(--ink2);text-align:right;
+  font-variant-numeric:tabular-nums}
+.huong-d2 .d2-chk.bad .d{color:var(--red)}
+.huong-d2 .d2-acts{display:flex;gap:10px;margin-top:22px;flex-wrap:wrap}
+.huong-d2 .d2-btn{height:36px;padding:0 16px;border-radius:6px;font-size:13.5px;
+  font-weight:500;display:inline-flex;align-items:center;transition:background .13s}
+.huong-d2 .d2-btn-pri{background:var(--dark);color:#fff}
+.huong-d2 .d2-btn-pri:hover{background:var(--dark3)}
+.huong-d2 .d2-btn-pri[disabled]{background:#E6E9ED;color:#98A1AB;cursor:not-allowed}
+.huong-d2 .d2-btn-sec{background:#fff;color:var(--ink);box-shadow:inset 0 0 0 1px var(--line)}
+.huong-d2 .d2-btn-sec:hover{background:#F7F8F9}
+
+.huong-d2 .d2-donut{display:flex;flex-direction:column;align-items:flex-start;gap:16px}
+.huong-d2 .d2-lg{width:100%}
+.huong-d2 .d2-lgr{display:flex;align-items:center;gap:9px;font-size:12.5px;padding:3px 0}
+.huong-d2 .d2-lgr i{width:9px;height:9px;border-radius:50%;flex:none}
+.huong-d2 .d2-lgr .n{color:var(--ink2);flex:1;min-width:0;overflow:hidden;
+  text-overflow:ellipsis;white-space:nowrap}
+.huong-d2 .d2-lgr .p{color:var(--ink);font-weight:500;font-variant-numeric:tabular-nums}
+
+/* ---------- đầu mục ---------- */
+.huong-d2 .d2-sechead{display:flex;align-items:flex-end;justify-content:space-between;
+  gap:20px;margin-bottom:18px;flex-wrap:wrap}
+.huong-d2 .d2-note{font-size:12.5px;color:var(--faint)}
+.huong-d2 .d2-foot{font-size:12px;color:var(--faint);margin-top:14px;
+  font-variant-numeric:tabular-nums}
+.huong-d2 .d2-tabs{display:flex;gap:24px}
+.huong-d2 .d2-tab{font-size:13.5px;color:var(--ink2);padding-bottom:7px;
+  border-bottom:2px solid transparent;transition:color .13s,border-color .13s}
+.huong-d2 .d2-tab:hover{color:var(--ink)}
+.huong-d2 .d2-tab.on{color:var(--ink);font-weight:500;border-bottom-color:var(--ink)}
+
+/* ---------- xu hướng ---------- */
+.huong-d2 .d2-chart{position:relative;padding-left:64px}
+.huong-d2 .d2-plot{position:relative;height:206px}
+.huong-d2 .d2-gl{position:absolute;left:0;right:0;height:1px;background:var(--line)}
+.huong-d2 .d2-gl span{position:absolute;right:calc(100% + 12px);top:-8px;white-space:nowrap;
+  font-size:11px;color:var(--faint);font-variant-numeric:tabular-nums}
+.huong-d2 .d2-bars{position:absolute;inset:0;display:flex;align-items:flex-end}
+.huong-d2 .d2-bcol{flex:1;min-width:0;height:100%;display:flex;align-items:flex-end;
+  justify-content:center}
+.huong-d2 .d2-bar{width:54%;max-width:42px;border-radius:2px 2px 0 0;
+  background:linear-gradient(to top,#0B6E82,#1795AC);transition:opacity .13s}
+.huong-d2 .d2-bar.pend{background:var(--teal-soft)}
+.huong-d2 .d2-bcol:hover .d2-bar{opacity:.78}
+.huong-d2 .d2-xls{display:flex;margin-top:10px}
+.huong-d2 .d2-xl{flex:1;min-width:0;text-align:center;font-size:11px;color:#77828D;
+  font-variant-numeric:tabular-nums}
+.huong-d2 .d2-xl.cur{color:var(--ink);font-weight:500}
+
+/* ---------- tiền đi đâu ---------- */
+.huong-d2 .d2-wfwrap{margin-top:4px}
+.huong-d2 .d2-wf{width:100%}
+
+/* ---------- bóc theo ---------- */
+.huong-d2 .d2-split{display:grid;grid-template-columns:repeat(auto-fit,minmax(330px,1fr));
+  gap:44px}
+.huong-d2 .d2-rrow{margin-top:15px}
+.huong-d2 .d2-rrow:first-child{margin-top:0}
+.huong-d2 .d2-rtop{display:flex;justify-content:space-between;gap:14px;
+  font-size:13px;margin-bottom:6px}
+.huong-d2 .d2-rtop .n{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.huong-d2 .d2-rtop .v{flex:none;font-variant-numeric:tabular-nums}
+.huong-d2 .d2-rtrack{height:6px;background:#E6E9ED;border-radius:3px;overflow:hidden}
+.huong-d2 .d2-rtrack i{display:block;height:100%;background:var(--teal);border-radius:3px}
+.huong-d2 .d2-rrow.tail .n,.huong-d2 .d2-rrow.tail .v{color:var(--ink2)}
+.huong-d2 .d2-rrow.tail .d2-rtrack i{background:var(--teal-soft)}
+
+/* ---------- bảng ---------- */
+.huong-d2 .d2-tw{background:#fff;border-radius:8px;box-shadow:var(--sh);overflow:hidden}
+.huong-d2 .d2-tscroll{overflow-x:auto}
+.huong-d2 .d2-tbl{border-collapse:collapse;width:100%;min-width:660px}
+.huong-d2 .d2-tbl th{background:#F0F1F4;color:var(--ink2);font-size:12.5px;font-weight:500;
+  text-align:left;padding:11px 18px;white-space:nowrap}
+.huong-d2 .d2-tbl td{padding:11px 18px;font-size:13px;border-top:1px solid #F0F1F4}
+.huong-d2 .d2-tbl tbody tr:nth-child(even){background:#FAFBFC}
+.huong-d2 .d2-tbl tbody tr:hover{background:#F4F6F8}
+.huong-d2 .d2-tbl .r{text-align:right}
+.huong-d2 .d2-tbl .num{font-variant-numeric:tabular-nums}
+.huong-d2 .d2-tbl .mono{font-family:var(--mono);font-size:12px;color:var(--ink2)}
+.huong-d2 .d2-tbl .dim{color:var(--ink2)}
+.huong-d2 .d2-tbl .nil{color:var(--faint)}
+.huong-d2 .d2-link{color:var(--blue);font-size:13px;padding:0;border-radius:3px}
+.huong-d2 .d2-link:hover{text-decoration:underline}
+
+/* ---------- chú thích nổi ---------- */
+.huong-d2 .d2-tip{position:absolute;z-index:20;pointer-events:none;opacity:0;
+  transform:translate(-50%,-100%);background:var(--dark);color:#fff;font-size:12px;
+  line-height:1.45;padding:7px 10px;border-radius:6px;white-space:nowrap;
+  box-shadow:0 4px 14px rgba(14,26,36,.22);transition:opacity .12s;
+  font-variant-numeric:tabular-nums}
+.huong-d2 .d2-tip.on{opacity:1}
+.huong-d2 .d2-tip b{display:block;font-weight:500;color:rgba(255,255,255,.62);font-size:11px}
+
+@media (max-width:1300px){
+  .huong-d2 .d2-side{flex-basis:238px;width:238px}
+  .huong-d2 .d2-page{padding:28px 30px 56px}
+  .huong-d2 .d2-top{padding:0 30px}
+  .huong-d2 .d2-reads{gap:34px}
+}
+@media (max-width:1180px){
+  .huong-d2 .d2-status{grid-template-columns:minmax(0,1fr);gap:28px}
+  .huong-d2 .d2-donut{flex-direction:row;align-items:center;gap:28px}
+  .huong-d2 .d2-lg{max-width:260px}
+}
+@media (max-width:1040px){
+  .huong-d2 .d2-metrics{grid-template-columns:repeat(3,minmax(0,1fr));row-gap:24px}
+  .huong-d2 .d2-m:nth-child(3n+1){border-left:0;padding-left:0}
+}
+@media (prefers-reduced-motion:reduce){.huong-d2 *{transition:none!important}}
+</style>
+
+<div class="huong-d2">
+  <div class="d2-shell">
+
+    <aside class="d2-side">
+      <div class="d2-brand">
+        <svg width="9" height="9" viewBox="0 0 9 9" aria-hidden="true"><circle cx="4.5" cy="4.5" r="4.5" fill="#FF2E4C"/></svg>
+        <span class="d2-bname">Haustek</span>
+        <span class="d2-bsub" data-t="brandSub"></span>
+      </div>
+      <nav class="d2-nav" data-nav></nav>
+      <div class="d2-sfoot">
+        <div class="d2-user" data-t="user"></div>
+        <div class="d2-role" data-t="role"></div>
+      </div>
+    </aside>
+
+    <div class="d2-main">
+      <header class="d2-top">
+        <span class="d2-crumb" data-t="crumb"></span>
+        <span class="d2-slash">/</span>
+        <span class="d2-screen" data-t="screen"></span>
+        <span class="d2-grow"></span>
+        <div class="d2-lang" data-lang>
+          <button type="button" data-set="vi">VI</button>
+          <span class="d2-lsep"></span>
+          <button type="button" data-set="en">EN</button>
+        </div>
+      </header>
+
+      <div class="d2-page">
+
+        <div class="d2-head">
+          <h1 class="d2-h1"><span data-t="title"></span><em data-per></em></h1>
+          <div class="d2-reads">
+            <div class="d2-read"><div class="l" data-t="readA"></div><div class="v" data-va></div></div>
+            <div class="d2-read"><div class="l" data-t="readB"></div><div class="v" data-vb></div></div>
+          </div>
+        </div>
+
+        <div class="d2-filters" data-filters></div>
+        <hr class="d2-rule">
+
+        <div class="d2-hero">
+          <div class="l" data-hero-l></div>
+          <div class="v" data-gross></div>
+          <div class="d" data-delta></div>
+        </div>
+        <div class="d2-metrics" data-metrics></div>
+
+        <hr class="d2-rule">
+
+        <section class="d2-card d2-status">
+          <div>
+            <h2 class="d2-h2" data-status-h></h2>
+            <p class="d2-sub" data-status-sub></p>
+            <div class="d2-checks" data-checks></div>
+            <div class="d2-acts">
+              <button type="button" class="d2-btn d2-btn-pri" disabled data-t="btnApprove"></button>
+              <button type="button" class="d2-btn d2-btn-sec" data-t="btnRecon"></button>
+            </div>
+          </div>
+          <div>
+            <div class="d2-h3" data-t="donutH"></div>
+            <div class="d2-donut">
+              <svg class="d2-svg" width="128" height="128" viewBox="0 0 128 128" data-donut aria-hidden="true"></svg>
+              <div class="d2-lg" data-legend></div>
+            </div>
+          </div>
+        </section>
+
+        <section>
+          <div class="d2-sechead">
+            <h2 class="d2-h2" data-t="trendH"></h2>
+            <div class="d2-tabs" data-tabs></div>
+          </div>
+          <div class="d2-chart" data-chart></div>
+          <div class="d2-foot" data-t="trendNote"></div>
+        </section>
+
+        <hr class="d2-rule">
+
+        <section class="d2-card">
+          <div class="d2-sechead">
+            <h2 class="d2-h2" data-t="flowH"></h2>
+            <span class="d2-note" data-flow-note></span>
+          </div>
+          <div class="d2-wfwrap" data-wfwrap>
+            <svg class="d2-svg d2-wf" data-wf aria-hidden="true"></svg>
+          </div>
+          <div class="d2-foot" data-wf-foot></div>
+        </section>
+
+        <hr class="d2-rule">
+
+        <div class="d2-split">
+          <section>
+            <div class="d2-sechead">
+              <h2 class="d2-h2" data-t="storeH"></h2>
+              <span class="d2-note" data-store-note></span>
+            </div>
+            <div data-stores></div>
+          </section>
+          <section>
+            <div class="d2-sechead">
+              <h2 class="d2-h2" data-t="terrH"></h2>
+              <span class="d2-note" data-terr-note></span>
+            </div>
+            <div data-terr></div>
+          </section>
+        </div>
+
+        <hr class="d2-rule">
+
+        <section>
+          <div class="d2-sechead">
+            <h2 class="d2-h2" data-t="payH"></h2>
+            <span class="d2-note" data-t="payNote"></span>
+          </div>
+          <div class="d2-tw"><div class="d2-tscroll"><table class="d2-tbl" data-tbl></table></div></div>
+          <div class="d2-foot" data-pay-foot></div>
+        </section>
+
+      </div>
+    </div>
+  </div>
+  <div class="d2-tip" data-tip></div>
+</div>
+
+<script>
+(function () {
+  var root = document.querySelector('.huong-d2');
+  if (!root) return;
+  var S = window.SNAP;
+  if (!S || !S.now) return;
+
+  /* ---------------- chữ hai thứ tiếng ---------------- */
+  var T = {
+    vi: {
+      brandSub: 'intranet', crumb: 'Vận hành', screen: 'Tổng quan',
+      user: 'Ngô Vĩnh Khang', role: 'Kế toán bản quyền',
+      title: 'Tổng quan vận hành',
+      readA: 'Bản ghi có doanh thu', readB: 'Kỳ đã duyệt',
+      navGroups: ['Vận hành', 'Danh mục', 'Dòng tiền', 'Hệ thống'],
+      nav: ['Tổng quan', 'Nhập dữ liệu', 'Đối chiếu', 'Tiền treo', 'Bản ghi',
+            'Nghệ sĩ & label', 'Tạm ứng', 'Bảng kê', 'Chi trả', 'Tỷ giá', 'Người dùng'],
+      filters: ['Kỳ {p}', 'Tất cả luồng', 'Tất cả lãnh thổ'],
+      heroL: 'Doanh thu gộp kỳ {p}',
+      deltaTail: 'so với {p}',
+      ofGross: 'doanh thu gộp',
+      mFee: 'Phí Haustek', mArtist: 'Về tay nghệ sĩ', mLabel: 'Phần label giữ',
+      mStreams: 'Lượt nghe', mQueue: 'Tiền treo chưa khớp',
+      vsPrev: 'so kỳ trước',
+      queueSub: '{n} dòng · {v} kỳ này',
+      statusH: 'Kỳ {p} chưa duyệt',
+      statusSub: 'Còn {n} trong 4 điều kiện chưa đạt',
+      btnApprove: 'Duyệt kỳ', btnRecon: 'Mở đối chiếu',
+      donutH: 'Ba luồng đã nạp',
+      feedNames: ['Đơn vị chính', 'YouTube', 'TikTok'],
+      chk: [
+        ['Đã nạp đủ 3 luồng', 'Đủ cả 3 luồng'],
+        ['Đối chiếu khớp tới từng xu', 'YouTube lệch {v}'],
+        ['Tiền treo dưới 0,5%', '{v} treo · {p} doanh thu kỳ'],
+        ['Đã chốt tỷ giá kỳ', 'Chưa chốt · số VND sẽ trôi']
+      ],
+      trendH: 'Xu hướng 12 kỳ',
+      trendNote: 'Cột nhạt là kỳ chưa duyệt',
+      series: ['Doanh thu gộp', 'Về tay nghệ sĩ', 'Lượt nghe'],
+      tipPend: 'chưa duyệt',
+      flowH: 'Tiền đi đâu', flowNote: 'Kỳ {p}',
+      wf: ['Doanh thu gộp', 'Phí Haustek', 'Phần label giữ', 'Điểm producer', 'Về tay nghệ sĩ'],
+      wfFoot: 'Ba khoản trừ: {v} · {p} doanh thu gộp',
+      storeH: 'Theo cửa hàng', terrH: 'Theo lãnh thổ',
+      topOf: 'Top {a} trong {b}',
+      tailStore: '{n} cửa hàng còn lại', tailTerr: '{n} lãnh thổ còn lại',
+      payH: 'Mười bên nhận lớn nhất', payNote: 'Kiếm được trong kỳ',
+      th: ['Bên nhận', 'Mã', 'Loại', 'Kiếm được kỳ này', 'Dư nợ tạm ứng'],
+      kindLabel: 'Label', kindArtist: 'Nghệ sĩ',
+      payFoot: 'Toàn danh mục: {l} label · {a} nghệ sĩ · {t} bản ghi',
+      unit: [' ng', ' tr', ' tỷ']
+    },
+    en: {
+      brandSub: 'intranet', crumb: 'Operations', screen: 'Overview',
+      user: 'Ngô Vĩnh Khang', role: 'Royalty accountant',
+      title: 'Operations overview',
+      readA: 'Tracks with revenue', readB: 'Periods approved',
+      navGroups: ['Operations', 'Catalogue', 'Money', 'System'],
+      nav: ['Overview', 'Imports', 'Reconciliation', 'Suspense', 'Recordings',
+            'Artists & labels', 'Advances', 'Statements', 'Payouts', 'FX rates', 'Users'],
+      filters: ['Period {p}', 'All feeds', 'All territories'],
+      heroL: 'Gross revenue · {p}',
+      deltaTail: 'vs {p}',
+      ofGross: 'of gross',
+      mFee: 'Haustek fee', mArtist: 'To artists', mLabel: 'Label share',
+      mStreams: 'Streams', mQueue: 'Unmatched suspense',
+      vsPrev: 'vs last period',
+      queueSub: '{n} rows · {v} this period',
+      statusH: 'Period {p} not approved',
+      statusSub: '{n} of 4 conditions unmet',
+      btnApprove: 'Approve period', btnRecon: 'Open reconciliation',
+      donutH: 'Three feeds loaded',
+      feedNames: ['Main distributor', 'YouTube', 'TikTok'],
+      chk: [
+        ['All three feeds loaded', '3 of 3 feeds'],
+        ['Reconciles to the cent', 'YouTube off by {v}'],
+        ['Suspense under 0,5%', '{v} pending · {p} of revenue'],
+        ['FX rate locked', 'Not locked · VND will drift']
+      ],
+      trendH: '12-period trend',
+      trendNote: 'Pale bars are unapproved periods',
+      series: ['Gross revenue', 'To artists', 'Streams'],
+      tipPend: 'not approved',
+      flowH: 'Where the money goes', flowNote: 'Period {p}',
+      wf: ['Gross revenue', 'Haustek fee', 'Label share', 'Producer points', 'To artists'],
+      wfFoot: 'Three deductions: {v} · {p} of gross',
+      storeH: 'By store', terrH: 'By territory',
+      topOf: 'Top {a} of {b}',
+      tailStore: '{n} other stores', tailTerr: '{n} other territories',
+      payH: 'Ten largest payees', payNote: 'Earned in period',
+      th: ['Payee', 'ID', 'Type', 'Earned this period', 'Advance outstanding'],
+      kindLabel: 'Label', kindArtist: 'Artist',
+      payFoot: 'Catalogue: {l} labels · {a} artists · {t} recordings',
+      unit: ['K', 'M', 'B']
+    }
+  };
+  var lang = 'vi';
+  function t() { return T[lang]; }
+
+  /* ---------------- tiện ích ---------------- */
+  function esc(s) {
+    return String(s).replace(/[&<>"]/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c];
+    });
+  }
+  function fmt(n, d) {
+    d = d == null ? 2 : d;
+    var neg = n < 0, s = Math.abs(n).toFixed(d), p = s.split('.');
+    var i = p[0].replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+    return (neg ? '−' : '') + i + (d ? ',' + p[1] : '');
+  }
+  function usd(n, d) {
+    var neg = n < 0;
+    return (neg ? '−' : '') + '$' + fmt(Math.abs(n), d == null ? 2 : d);
+  }
+  function pctS(n, d) { return fmt(n, d == null ? 1 : d) + '%'; }
+  function shortN(n) {
+    var u = t().unit, a = Math.abs(n);
+    if (a >= 1e9) return fmt(n / 1e9, 1) + u[2];
+    if (a >= 1e6) return fmt(n / 1e6, 1) + u[1];
+    if (a >= 1e3) return fmt(n / 1e3, 0) + u[0];
+    return fmt(n, 0);
+  }
+  function fill(s, m) {
+    return String(s).replace(/\{(\w+)\}/g, function (_, k) { return m[k] == null ? '' : m[k]; });
+  }
+  function niceMax(m) {
+    if (!(m > 0)) return 1;
+    var p = Math.pow(10, Math.floor(Math.log10(m))), s = m / p;
+    var n = s <= 1 ? 1 : s <= 1.2 ? 1.2 : s <= 1.5 ? 1.5 : s <= 2 ? 2 : s <= 2.5 ? 2.5
+          : s <= 3 ? 3 : s <= 4 ? 4 : s <= 5 ? 5 : s <= 6 ? 6 : s <= 8 ? 8 : 10;
+    return n * p;
+  }
+  function q(sel) { return root.querySelector(sel); }
+
+  /* ---------------- biểu tượng nét mảnh ---------------- */
+  function ico(paths) {
+    return '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" ' +
+      'stroke-width="1.35" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+      paths + '</svg>';
+  }
+  var ICONS = [
+    '<rect x="2.3" y="2.3" width="4.7" height="4.7" rx="1"/><rect x="9" y="2.3" width="4.7" height="4.7" rx="1"/><rect x="2.3" y="9" width="4.7" height="4.7" rx="1"/><rect x="9" y="9" width="4.7" height="4.7" rx="1"/>',
+    '<path d="M8 2.4v7.2"/><path d="M5.2 6.9 8 9.7l2.8-2.8"/><path d="M2.8 11.3v1.5a.9.9 0 0 0 .9.9h8.6a.9.9 0 0 0 .9-.9v-1.5"/>',
+    '<path d="M2.6 5.3h9.4"/><path d="M9.6 2.9 12 5.3 9.6 7.7"/><path d="M13.4 10.7H4"/><path d="M6.4 8.3 4 10.7l2.4 2.4"/>',
+    '<circle cx="8" cy="8" r="5.7"/><path d="M8 4.7V8l2.3 1.5"/>',
+    '<circle cx="8" cy="8" r="5.8"/><circle cx="8" cy="8" r="1.7"/>',
+    '<circle cx="8" cy="5.6" r="2.6"/><path d="M3.3 13.4c0-2.5 2.1-3.9 4.7-3.9s4.7 1.4 4.7 3.9"/>',
+    '<rect x="2" y="4.1" width="12" height="7.8" rx="1.4"/><circle cx="8" cy="8" r="1.8"/>',
+    '<path d="M4 2.3h5.1l3.4 3.4v8H4z"/><path d="M9 2.5v3.3h3.4"/><path d="M6.1 9h4.2"/><path d="M6.1 11.2h4.2"/>',
+    '<path d="M2.6 8h8.2"/><path d="M8.2 5.4 10.8 8l-2.6 2.6"/><path d="M11.3 2.7h1.3a.9.9 0 0 1 .9.9v8.8a.9.9 0 0 1-.9.9h-1.3"/>',
+    '<circle cx="8" cy="8" r="5.7"/><path d="M2.4 8h11.2"/><path d="M8 2.3c1.5 1.6 2.3 3.5 2.3 5.7S9.5 12.1 8 13.7C6.5 12.1 5.7 10.2 5.7 8S6.5 3.9 8 2.3z"/>',
+    '<circle cx="6.3" cy="5.8" r="2.4"/><path d="M2.3 13.3c0-2.3 1.8-3.6 4-3.6s4 1.3 4 3.6"/><path d="M10.9 4.1a2.4 2.4 0 0 1 0 4.4"/><path d="M11.8 10c1.2.5 1.9 1.6 1.9 3.3"/>'
+  ];
+  var NAV_GROUPS = [[0, 3], [4, 5], [6, 8], [9, 10]];
+  var CHEV = '<svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" ' +
+    'stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.2 3.9 5 6.7l2.8-2.8"/></svg>';
+  var TICK = '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="#157A4E" ' +
+    'stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.4 8.4 6.3 11.3 12.6 4.9"/></svg>';
+  var CROSS = '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="#C8102E" ' +
+    'stroke-width="1.7" stroke-linecap="round" aria-hidden="true"><path d="M4.6 4.6 11.4 11.4"/><path d="M11.4 4.6 4.6 11.4"/></svg>';
+
+  /* ---------------- dữ liệu rút gọn ---------------- */
+  var N = S.now, P = S.prev, B = S.byPeriod || [], PER = (S.period && S.period.label) || N.label;
+  var badCount = (S.checks || []).filter(function (c) { return !c.ok; }).length;
+  var DEDUCT = N.fee + N.labelCut + N.producer;
+  var FEED_TOTAL = (N.feeds || []).reduce(function (a, b) { return a + b; }, 0);
+  var DCOL = ['#0E7C92', '#4FA0B3', '#9CD3E0'];
+  var SERIES = [{ k: 'gross', money: true }, { k: 'artist', money: true }, { k: 'streams', money: false }];
+  var serIdx = 0;
+
+  /* Quét lại sau khi vẽ: còn chỗ trống nào chưa điền thì kêu lên ngay, đừng
+     để nó lặng lẽ hiện ra màn hình cho khách nhìn thấy. */
+  function soatChoTrong() {
+    var con = (root.textContent || '').match(/\{[a-z]+\}/gi);
+    if (con) console.error('[huong-d2] còn chỗ trống chưa điền: ' + con.join(' '));
+  }
+
+  /* ---------------- dựng phần chữ ---------------- */
+  function paintStatic() {
+    root.querySelectorAll('[data-t]').forEach(function (n) {
+      var v = t()[n.getAttribute('data-t')];
+      /* Chuỗi có chỗ trống {..} phải do người gọi điền — mỗi chỗ trống mang
+         một nghĩa khác nhau ({p} khi là kỳ, khi là phần trăm), không điền
+         hàng loạt được. Gán thẳng ở đây là để lộ nguyên "Kỳ {p} chưa duyệt"
+         ra màn hình. */
+      if (typeof v === 'string' && v.indexOf('{') < 0) n.textContent = v;
+    });
+    q('[data-per]').textContent = PER;
+    q('[data-va]').textContent = fmt(N.tracks, 0);
+    q('[data-vb]').textContent = fmt(S.approvedCount, 0) + '/' + fmt(S.counts.periods, 0);
+    q('[data-hero-l]').textContent = fill(t().heroL, { p: PER });
+    q('[data-flow-note]').textContent = fill(t().flowNote, { p: PER });
+    q('[data-status-h]').textContent = fill(t().statusH, { p: PER });
+    q('[data-status-sub]').textContent = fill(t().statusSub, { n: badCount });
+    q('[data-store-note]').textContent = fill(t().topOf, { a: S.stores.length, b: S.counts.stores });
+    q('[data-terr-note]').textContent = fill(t().topOf, { a: S.territories.length, b: S.counts.territories });
+    q('[data-wf-foot]').textContent = fill(t().wfFoot, { v: usd(DEDUCT), p: pctS(DEDUCT / N.gross * 100) });
+    q('[data-pay-foot]').textContent = fill(t().payFoot, {
+      l: fmt(S.counts.labels, 0), a: fmt(S.counts.artists, 0), t: fmt(S.counts.tracks, 0)
+    });
+
+    var d = N.gross - P.gross, dp = d / P.gross * 100;
+    q('[data-gross]').textContent = usd(N.gross);
+    var dn = q('[data-delta]');
+    dn.textContent = (d >= 0 ? '+' : '−') + pctS(Math.abs(dp), 2) + ' ' +
+      fill(t().deltaTail, { p: P.label }) + ' · ' + (d >= 0 ? '+' : '−') + '$' + fmt(Math.abs(d));
+    dn.classList.toggle('neg', d < 0);
+  }
+
+  function paintNav() {
+    var html = '';
+    NAV_GROUPS.forEach(function (g, gi) {
+      html += '<div class="d2-ng">' + esc(t().navGroups[gi]) + '</div>';
+      for (var i = g[0]; i <= g[1]; i++) {
+        html += '<button type="button" class="d2-ni' + (i === 0 ? ' on' : '') + '">' +
+          ico(ICONS[i]) + '<span>' + esc(t().nav[i]) + '</span></button>';
+      }
+    });
+    q('[data-nav]').innerHTML = html;
+  }
+
+  function paintFilters() {
+    q('[data-filters]').innerHTML = t().filters.map(function (f, i) {
+      return '<button type="button" class="d2-pill' + (i === 0 ? ' on' : '') + '">' +
+        esc(fill(f, { p: PER })) + CHEV + '</button>';
+    }).join('');
+  }
+
+  function paintMetrics() {
+    var sdp = (N.streams - P.streams) / P.streams * 100;
+    var rows = [
+      { l: t().mFee, v: usd(N.fee), s: pctS(N.fee / N.gross * 100) + ' ' + t().ofGross },
+      { l: t().mArtist, v: usd(N.artist), s: pctS(N.artist / N.gross * 100) + ' ' + t().ofGross },
+      { l: t().mLabel, v: usd(N.labelCut), s: pctS(N.labelCut / N.gross * 100) + ' ' + t().ofGross },
+      { l: t().mStreams, v: fmt(N.streams, 0), s: (sdp >= 0 ? '+' : '−') + pctS(Math.abs(sdp), 2) + ' ' + t().vsPrev },
+      { l: t().mQueue, v: usd(S.queue.amount), s: fill(t().queueSub, { n: fmt(S.queue.rows, 0), v: usd(S.queue.thisPeriod) }) }
+    ];
+    q('[data-metrics]').innerHTML = rows.map(function (r) {
+      return '<div class="d2-m"><div class="l">' + esc(r.l) + '</div><div class="v">' +
+        esc(r.v) + '</div><div class="s">' + esc(r.s) + '</div></div>';
+    }).join('');
+  }
+
+  function paintChecks() {
+    var det = [
+      {},
+      { v: usd(S.recon.diff) },
+      { v: usd(S.queue.thisPeriod), p: pctS(S.queue.thisPeriod / N.gross * 100, 2) },
+      {}
+    ];
+    q('[data-checks]').innerHTML = (S.checks || []).map(function (c, i) {
+      var tx = t().chk[i] || ['', ''];
+      return '<div class="d2-chk' + (c.ok ? '' : ' bad') + '">' +
+        '<span class="ic">' + (c.ok ? TICK : CROSS) + '</span>' +
+        '<span class="t">' + esc(tx[0]) + '</span><span class="sp"></span>' +
+        '<span class="d">' + esc(fill(tx[1], det[i] || {})) + '</span></div>';
+    }).join('');
+  }
+
+  function paintTabs() {
+    q('[data-tabs]').innerHTML = t().series.map(function (s, i) {
+      return '<button type="button" class="d2-tab' + (i === serIdx ? ' on' : '') +
+        '" data-ti="' + i + '">' + esc(s) + '</button>';
+    }).join('');
+  }
+
+  function paintTable() {
+    var head = '<thead><tr>' + t().th.map(function (h, i) {
+      return '<th' + (i > 2 ? ' class="r"' : '') + '>' + esc(h) + '</th>';
+    }).join('') + '</tr></thead>';
+    var body = '<tbody>' + (S.payees || []).map(function (p) {
+      return '<tr>' +
+        '<td><button type="button" class="d2-link">' + esc(p.name) + '</button></td>' +
+        '<td class="mono">' + esc(p.clientId) + '</td>' +
+        '<td class="dim">' + esc(p.kind === 'label' ? t().kindLabel : t().kindArtist) + '</td>' +
+        '<td class="r num">' + esc(usd(p.earned)) + '</td>' +
+        '<td class="r num' + (p.advance > 0 ? '' : ' nil') + '">' +
+          (p.advance > 0 ? esc(usd(p.advance)) : '—') + '</td>' +
+        '</tr>';
+    }).join('') + '</tbody>';
+    q('[data-tbl]').innerHTML = head + body;
+  }
+
+  function paintRanks() {
+    function build(node, rows, mx) {
+      node.innerHTML = rows.map(function (r) {
+        return '<div class="d2-rrow' + (r.tail ? ' tail' : '') + '">' +
+          '<div class="d2-rtop"><span class="n">' + esc(r.name) + '</span>' +
+          '<span class="v">' + esc(usd(r.value)) + '</span></div>' +
+          '<div class="d2-rtrack"><i style="width:' + (r.value / mx * 100).toFixed(2) + '%"></i></div></div>';
+      }).join('');
+    }
+    var st = S.stores.map(function (r) { return { name: r.name, value: r.value }; });
+    st.push({ name: fill(t().tailStore, { n: fmt(S.storesTail.count, 0) }), value: S.storesTail.value, tail: true });
+    build(q('[data-stores]'), st, S.stores[0].value);
+
+    var tr = S.territories.map(function (r) { return { name: r.name, value: r.value }; });
+    tr.push({ name: fill(t().tailTerr, { n: fmt(S.terrTail.count, 0) }), value: S.terrTail.value, tail: true });
+    build(q('[data-terr]'), tr, S.territories[0].value);
+  }
+
+  function paintLegend() {
+    q('[data-legend]').innerHTML = (N.feeds || []).map(function (v, i) {
+      return '<div class="d2-lgr"><i style="background:' + DCOL[i] + '"></i>' +
+        '<span class="n">' + esc(t().feedNames[i]) + '</span>' +
+        '<span class="p">' + esc(pctS(v / FEED_TOTAL * 100)) + '</span></div>';
+    }).join('');
+  }
+
+  /* ---------------- vành tròn ---------------- */
+  function drawDonut() {
+    var svg = q('[data-donut]');
+    if (!svg) return;
+    var cx = 64, cy = 64, r = 47, sw = 21, C = 2 * Math.PI * r, off = 0, h = '';
+    (N.feeds || []).forEach(function (v, i) {
+      var len = v / FEED_TOTAL * C;
+      h += '<circle cx="' + cx + '" cy="' + cy + '" r="' + r + '" fill="none" stroke="' + DCOL[i] +
+        '" stroke-width="' + sw + '" stroke-dasharray="' + Math.max(0, len - 2).toFixed(2) + ' ' +
+        (C - len + 2).toFixed(2) + '" stroke-dashoffset="' + (-off).toFixed(2) +
+        '" transform="rotate(-90 ' + cx + ' ' + cy + ')"/>';
+      off += len;
+    });
+    svg.innerHTML = h;
+  }
+
+  /* ---------------- xu hướng 12 kỳ ---------------- */
+  function drawTrend() {
+    var node = q('[data-chart]');
+    if (!node) return;
+    var sd = SERIES[serIdx], vals = B.map(function (p) { return p[sd.k]; });
+    var mx = niceMax(Math.max.apply(null, vals));
+    var gl = '';
+    for (var g = 4; g >= 0; g--) {
+      var lab = g === 0 ? (sd.money ? '$0' : '0') : (sd.money ? '$' : '') + shortN(mx * g / 4);
+      gl += '<div class="d2-gl" style="bottom:' + (g * 25) + '%"><span>' + esc(lab) + '</span></div>';
+    }
+    var bars = B.map(function (p, i) {
+      return '<div class="d2-bcol" data-bi="' + i + '"><div class="d2-bar' + (p.approved ? '' : ' pend') +
+        '" style="height:' + (vals[i] / mx * 100).toFixed(3) + '%"></div></div>';
+    }).join('');
+    var labs = B.map(function (p) {
+      return '<div class="d2-xl' + (p.k === N.k ? ' cur' : '') + '">' + esc(p.label) + '</div>';
+    }).join('');
+    node.innerHTML = '<div class="d2-plot">' + gl + '<div class="d2-bars">' + bars +
+      '</div></div><div class="d2-xls">' + labs + '</div>';
+  }
+
+  /* ---------------- tiền đi đâu ---------------- */
+  function drawWF() {
+    var svg = q('[data-wf]'), wrap = q('[data-wfwrap]');
+    if (!svg || !wrap) return;
+    var W = wrap.clientWidth;
+    if (W < 220) return;
+    var padTop = 28, plotH = 198, baseY = padTop + plotH, H = baseY + 52;
+    var g = N, mx = g.gross;
+    var a1 = g.gross - g.fee, a2 = a1 - g.labelCut, a3 = a2 - g.producer;
+    var steps = [
+      { lo: 0, hi: g.gross, amt: g.gross, col: '#B7E3EC', strong: true },
+      { lo: a1, hi: g.gross, amt: -g.fee, col: '#AAB4BD' },
+      { lo: a2, hi: a1, amt: -g.labelCut, col: '#AAB4BD' },
+      { lo: a3, hi: a2, amt: -g.producer, col: '#AAB4BD' },
+      { lo: 0, hi: a3, amt: a3, col: '#0E7C92', strong: true }
+    ];
+    var levels = [g.gross, a1, a2, a3];
+    var colW = W / steps.length, bw = Math.min(104, colW * 0.5);
+    function yp(v) { return baseY - (v / mx) * plotH; }
+    var h = '<line x1="0" y1="' + baseY + '" x2="' + W + '" y2="' + baseY +
+      '" stroke="#E6E9ED" stroke-width="1"/>';
+
+    for (var i = 0; i < levels.length; i++) {
+      var y = yp(levels[i]).toFixed(1);
+      var xa = (colW * (i + 0.5) + bw / 2 + 5).toFixed(1);
+      var xb = (colW * (i + 1.5) - bw / 2 - 5).toFixed(1);
+      h += '<line x1="' + xa + '" y1="' + y + '" x2="' + xb + '" y2="' + y +
+        '" stroke="#C6CCD3" stroke-width="1" stroke-dasharray="3 3"/>';
+    }
+    steps.forEach(function (s, i) {
+      var cx = colW * (i + 0.5), yTop = yp(s.hi), hh = Math.max(3, yp(s.lo) - yp(s.hi));
+      h += '<rect x="' + (cx - bw / 2).toFixed(1) + '" y="' + yTop.toFixed(1) + '" width="' + bw.toFixed(1) +
+        '" height="' + hh.toFixed(1) + '" rx="2" fill="' + s.col + '"/>';
+      h += '<text x="' + cx.toFixed(1) + '" y="' + (yTop - 10).toFixed(1) + '" text-anchor="middle" ' +
+        'font-size="12.5" font-weight="' + (s.strong ? '500' : '400') + '" fill="' +
+        (s.strong ? '#1A2129' : '#5B6672') + '" style="font-variant-numeric:tabular-nums">' +
+        esc((s.amt < 0 ? '−' : '') + '$' + fmt(Math.abs(s.amt))) + '</text>';
+      h += '<text x="' + cx.toFixed(1) + '" y="' + (baseY + 24) + '" text-anchor="middle" ' +
+        'font-size="12.5" fill="#5B6672">' + esc(t().wf[i]) + '</text>';
+      h += '<text x="' + cx.toFixed(1) + '" y="' + (baseY + 42) + '" text-anchor="middle" ' +
+        'font-size="11.5" fill="#8A939E" style="font-variant-numeric:tabular-nums">' +
+        esc(pctS(Math.abs(s.amt) / mx * 100)) + '</text>';
+    });
+    svg.setAttribute('width', W);
+    svg.setAttribute('height', H);
+    svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
+    svg.innerHTML = h;
+  }
+
+  /* ---------------- chú thích nổi ---------------- */
+  var tip = q('[data-tip]');
+  function tipShow(el, head, body) {
+    var a = el.getBoundingClientRect(), b = root.getBoundingClientRect();
+    tip.innerHTML = '<b>' + esc(head) + '</b>' + esc(body);
+    tip.style.left = (a.left - b.left + a.width / 2) + 'px';
+    tip.style.top = (a.top - b.top - 8) + 'px';
+    tip.classList.add('on');
+  }
+  function tipHide() { tip.classList.remove('on'); }
+
+  root.addEventListener('mouseover', function (e) {
+    var col = e.target.closest ? e.target.closest('.d2-bcol') : null;
+    if (!col || !root.contains(col)) return;
+    var p = B[+col.getAttribute('data-bi')];
+    if (!p) return;
+    var sd = SERIES[serIdx], v = sd.money ? usd(p[sd.k]) : fmt(p[sd.k], 0);
+    tipShow(col, p.label + (p.approved ? '' : ' · ' + t().tipPend), v);
+  });
+  root.addEventListener('mouseout', function (e) {
+    var col = e.target.closest ? e.target.closest('.d2-bcol') : null;
+    if (col) tipHide();
+  });
+
+  /* ---------------- tương tác ---------------- */
+  root.addEventListener('click', function (e) {
+    var tg = e.target.closest ? e.target.closest('[data-set],[data-ti],.d2-pill,.d2-ni') : null;
+    if (!tg || !root.contains(tg)) return;
+    if (tg.hasAttribute('data-set')) {
+      var L = tg.getAttribute('data-set');
+      if (L !== lang) { lang = L; paintAll(); }
+      return;
+    }
+    if (tg.hasAttribute('data-ti')) {
+      serIdx = +tg.getAttribute('data-ti');
+      root.querySelectorAll('.d2-tab').forEach(function (b) {
+        b.classList.toggle('on', +b.getAttribute('data-ti') === serIdx);
+      });
+      tipHide(); drawTrend();
+      return;
+    }
+    if (tg.classList.contains('d2-pill')) {
+      root.querySelectorAll('.d2-pill').forEach(function (b) { b.classList.toggle('on', b === tg); });
+      return;
+    }
+    if (tg.classList.contains('d2-ni')) {
+      root.querySelectorAll('.d2-ni').forEach(function (b) { b.classList.toggle('on', b === tg); });
+    }
+  });
+
+  function paintAll() {
+    root.querySelectorAll('[data-lang] button').forEach(function (b) {
+      b.classList.toggle('on', b.getAttribute('data-set') === lang);
+    });
+    paintStatic(); paintNav(); paintFilters(); paintMetrics(); paintChecks();
+    paintTabs(); paintLegend(); paintRanks(); paintTable();
+    drawDonut(); drawTrend(); drawWF();
+    soatChoTrong();
+  }
+
+  /* ---------------- vẽ lại theo bề rộng ---------------- */
+  var lastW = -1, raf = 0;
+  function schedule() {
+    if (raf) cancelAnimationFrame(raf);
+    raf = requestAnimationFrame(function () {
+      raf = 0;
+      var w = root.clientWidth;
+      if (!w || w === lastW) return;
+      lastW = w; tipHide(); drawWF();
+    });
+  }
+
+  paintAll();
+  schedule();
+  window.addEventListener('resize', schedule);
+  if (window.ResizeObserver) new ResizeObserver(schedule).observe(root);
+})();
+</script>
+
     </div>
     <div class="pane" data-pane="d3" style="background:#F5F6F8;color:#1A2129">
 <div class="chua-co">Hướng D3 chưa dựng xong.</div>
@@ -2932,13 +4680,18 @@ footer{max-width:1560px;margin:0 auto;padding:0 22px 50px;
   document.querySelectorAll('[data-p]').forEach(function (b) {
     b.addEventListener('click', function () { go(b.dataset.p); });
   });
+  /* Phím tắt đánh số theo thứ tự tab. Cắm cứng a/b/c như trước là sai ngay
+     khi thêm hướng mới, mà dòng gợi ý lại vẫn ghi cũ. */
+  var IDS = [].map.call(document.querySelectorAll('[data-p]'), function (b) { return b.dataset.p; });
   addEventListener('keydown', function (e) {
     if (e.metaKey || e.ctrlKey || e.altKey) return;
+    var n = parseInt(e.key, 10);
+    if (n >= 1 && n <= IDS.length) return go(IDS[n - 1]);
     var k = e.key.toLowerCase();
-    if (k === 'a' || k === 'b' || k === 'c') go(k);
+    if (IDS.indexOf(k) >= 0) go(k);
   });
   var h = (location.hash || '').replace('#', '');
-  if (h === 'a' || h === 'b' || h === 'c') go(h);
+  if (IDS.indexOf(h) >= 0) go(h);
 })();
 </script>
 
