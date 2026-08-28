@@ -22,13 +22,11 @@ function doc(f) {
   return fs.readFileSync(p, 'utf8');
 }
 
-const html = `<!DOCTYPE html>
-<html lang="vi">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="robots" content="noindex, nofollow">
-<title>Haustek — chọn hướng nhìn</title>
+/* Ruột trang: dùng chung cho hai bản xuất.
+   · chon-huong.html          — trang đứng riêng, mở bằng file:// hay server tĩnh
+   · chon-huong.artifact.html — chỉ phần thân, để publish thành trang có link
+     (nơi publish tự bọc doctype/head/body, nên không được tự viết các thẻ đó) */
+const ruot = `<title>Ba hướng nhìn Haustek</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&family=Be+Vietnam+Pro:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -92,8 +90,6 @@ footer{max-width:1560px;margin:0 auto;padding:0 22px 50px;
   font-family:'IBM Plex Mono',monospace;font-size:10.5px;line-height:1.9;color:#5E5E70}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
-</head>
-<body>
 
 <div class="chrome"><div class="chrome-in">
   <div class="mark"><i>●</i> HAUSTEK <em>CHỌN HƯỚNG NHÌN</em></div>
@@ -160,9 +156,18 @@ ${doc(h.id)}
   if (h === 'a' || h === 'b' || h === 'c') go(h);
 })();
 </script>
-</body>
-</html>
 `;
+const html = `<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+${ruot}
+</body>
+</html>`;
+
 fs.writeFileSync(path.join(D, 'chon-huong.html'), html);
+fs.writeFileSync(path.join(D, 'chon-huong.artifact.html'), ruot);
 const co = HUONG.filter(h => fs.existsSync(path.join(D, 'huong-' + h.id + '.html'))).map(h => h.id);
 console.log('đã dựng design/chon-huong.html · hướng có sẵn: ' + (co.join(', ') || 'chưa có cái nào'));
