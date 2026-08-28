@@ -5,6 +5,15 @@ const D = __dirname;
 const snap = fs.readFileSync(path.join(D, 'snapshot.json'), 'utf8');
 
 const HUONG = [
+  { id: 'd1', ten: 'D1 · Bám ảnh mẫu', canvas: '#F5F6F8', chu: '#1A2129',
+    mo: 'Khung tối bên trái, nội dung sáng — dựng gần nhất với nền tảng khách đang dùng.',
+    tham: 'Ảnh khách gửi' },
+  { id: 'd2', ten: 'D2 · Thoáng', canvas: '#F5F6F8', chu: '#1A2129',
+    mo: 'Cùng khung tối + nền sáng, nhưng bớt thẻ. Nhiều phần nằm thẳng trên nền.',
+    tham: 'Ảnh khách gửi · ít khối hơn' },
+  { id: 'd3', ten: 'D3 · Bảng làm chủ', canvas: '#F5F6F8', chu: '#1A2129',
+    mo: 'Bảng lên trước, biểu đồ đỡ. Mở ra là dò số ngay.',
+    tham: 'Ảnh khách gửi · kiểu kế toán' },
   { id: 'a', ten: 'Sáng, tinh',   canvas: '#F7F7F8', chu: '#16161A',
     mo: 'Nền sáng, ít đường kẻ, nhiều khoảng thở. Màu chỉ xuất hiện ở chỗ có nghĩa.',
     tham: 'Linear · Stripe Dashboard' },
