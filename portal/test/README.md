@@ -55,5 +55,32 @@ nạp luồng còn thiếu → khớp một dòng treo → ghi nhận chênh l�
 từng màn hình intranet và cả cổng khách. Đây là chỗ code hay chết vì chia cho 0, đọc `[0]`
 của mảng rỗng, hoặc so với kỳ trước không tồn tại.
 
+`layout.js` — mở trang chọn hướng ở 1500 / 1280 / 1100px, đi hết các hướng, bắt chữ bị cắt,
+chữ tràn khung và lỗi console.
+
+## Font thật, không phải font dự phòng
+
+Máy chạy kiểm ở đây bị chặn ra `fonts.googleapis.com`, nên Chromium render bằng font dự
+phòng — **rộng hơn** Be Vietnam Pro. Kiểm "vừa khung" bằng font đó là kiểm theo hướng an
+toàn, nhưng nó không phải thứ khách nhìn thấy, và nó **giấu mất những lỗi chỉ xảy ra khi
+chữ hẹp lại**.
+
+`font-that.js` chặn đường gọi ra ngoài và trả về bộ chữ thật đã tải sẵn. Dựng file font
+một lần:
+
+```bash
+curl -sSL "https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800\
+&family=Be+Vietnam+Pro:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" \
+  -o /tmp/gf.css
+# tải các woff2 trong gf.css về rồi nhúng base64 thay cho URL, ghi ra /tmp/fonts-local.css
+```
+
+Trỏ chỗ khác bằng `FONT_CSS=/duong/dan/khac.css`. Không có file thì `layout.js` vẫn chạy,
+chỉ cảnh báo là đang dùng font dự phòng.
+
+Chính bài kiểm này bắt được `full is not defined` ở hướng C — một lỗi chỉ nổ khi nhãn dài
+quá chỗ, tức chỉ ở bề ngang hẹp, và các bài kiểm trước không thấy vì chúng không thu lỗi
+console.
+
 Biến môi trường: `BASE` (mặc định `http://127.0.0.1:8099`), `CHROMIUM` (đường dẫn
 chromium nếu playwright không tự tìm được), `SHOTS` (nơi lưu ảnh chụp).

@@ -2546,7 +2546,8 @@ footer{max-width:1560px;margin:0 auto;padding:0 22px 50px;
 .huong-d3 .d3-link:hover{text-decoration:underline}
 
 /* thanh nhỏ trong ô bảng */
-.huong-d3 .d3-bcell{width:84px;padding-right:0}
+.huong-d3 .d3-bcell{width:76px;padding-right:0}
+.huong-d3 .d3-split .d3-tbl th,.huong-d3 .d3-split .d3-tbl td{padding-left:9px;padding-right:9px}
 .huong-d3 .d3-track{height:6px;border-radius:3px;background:#EDF0F2;overflow:hidden}
 .huong-d3 .d3-track span{display:block;height:100%;background:var(--teal);border-radius:3px}
 .huong-d3 .d3-track.d3-tail span{background:var(--slate)}
@@ -2599,9 +2600,14 @@ footer{max-width:1560px;margin:0 auto;padding:0 22px 50px;
 .huong-d3 .d3-tip .v{font-weight:500;font-variant-numeric:tabular-nums}
 .huong-d3 .d3-tip .p{color:var(--faint)}
 
+/* Dưới 1360px, bảng tiền và bảng đối chiếu cần trọn bề ngang mới dò được số;
+   biểu đồ đỡ tụt xuống dưới thay vì bóp cột lại. */
+@media (max-width:1360px){
+  .huong-d3 .d3-flow,.huong-d3 .d3-recon{grid-template-columns:minmax(0,1fr);gap:22px}
+  .huong-d3 .d3-wfwrap{max-width:720px;margin:0 auto}
+}
 @media (max-width:1180px){
-  .huong-d3 .d3-flow,.huong-d3 .d3-recon,.huong-d3 .d3-split{grid-template-columns:minmax(0,1fr)}
-  .huong-d3 .d3-recon{gap:22px}
+  .huong-d3 .d3-split{grid-template-columns:minmax(0,1fr)}
   .huong-d3 .d3-page{padding:24px 24px 40px}
   .huong-d3 .d3-util{padding:0 24px}
   .huong-d3 .d3-reads{gap:38px}
@@ -2756,7 +2762,7 @@ footer{max-width:1560px;margin:0 auto;padding:0 22px 50px;
             'Nghệ sĩ & label', 'Tạm ứng', 'Bảng kê', 'Chi trả', 'Tỷ giá', 'Người dùng'],
       fxL: 'Tỷ giá kỳ', fxOpen: 'chưa chốt',
       readGross: 'Doanh thu gộp {p}', readTracks: 'Bản ghi có doanh thu',
-      readDelta: '{v} · {q} so với {r}', readAppr: '{a}/{b} kỳ đã duyệt',
+      readDelta: '{v} · {q} so với {r}', readAppr: 'trong {t} bản ghi danh mục',
       filters: ['Kỳ {p}', 'Tất cả luồng', 'Tất cả lãnh thổ'],
       warnT: 'Kỳ {p} chưa duyệt', warnS: 'Còn {n} trong 4 điều kiện chưa đạt',
       btnApprove: 'Duyệt kỳ', btnRecon: 'Mở đối chiếu',
@@ -2781,9 +2787,9 @@ footer{max-width:1560px;margin:0 auto;padding:0 22px 50px;
       reconTh: ['Luồng', 'Trên file gốc', 'Đã khớp', 'Đang treo', 'Lệch'],
       reconTot: 'Cộng ba luồng',
       feedNames: ['Đơn vị phân phối chính', 'YouTube', 'TikTok'],
-      feedFmt: ['CSV · 41 cột · hằng tháng, ngày 20',
+      feedFmt: ['CSV · 41 cột · ngày 20 hằng tháng',
                 'CSV nén · 3 file mỗi kỳ · ngày 25',
-                'XLSX · 1 sheet mỗi lãnh thổ · thất thường'],
+                'XLSX · 1 sheet mỗi lãnh thổ'],
       feedShort: ['Đơn vị chính', 'YouTube', 'TikTok'],
       mixH: 'Tỷ trọng doanh thu gộp',
       trendH: 'Xu hướng 12 kỳ', trendNote: 'Cột nhạt là kỳ chưa duyệt',
@@ -2797,7 +2803,7 @@ footer{max-width:1560px;margin:0 auto;padding:0 22px 50px;
       payH: 'Mười bên nhận lớn nhất', payNote: 'Kiếm được trong kỳ',
       payTh: ['Bên nhận', 'Mã khách', 'Loại', 'Kiếm được kỳ này', 'Dư nợ tạm ứng'],
       kindLabel: 'Label', kindArtist: 'Nghệ sĩ',
-      payFoot1: 'Toàn danh mục: {l} label · {a} nghệ sĩ · {t} bản ghi',
+      payFoot1: 'Danh mục: {l} label · {a} nghệ sĩ · {t} bản ghi',
       payFoot2: 'Tạm ứng còn thu hồi {v} · {n} bên',
       unit: [' ng', ' tr', ' tỷ']
     },
@@ -2810,7 +2816,7 @@ footer{max-width:1560px;margin:0 auto;padding:0 22px 50px;
             'Artists & labels', 'Advances', 'Statements', 'Payouts', 'FX rates', 'Users'],
       fxL: 'Period FX', fxOpen: 'not locked',
       readGross: 'Gross revenue {p}', readTracks: 'Tracks with revenue',
-      readDelta: '{v} · {q} vs {r}', readAppr: '{a}/{b} periods approved',
+      readDelta: '{v} · {q} vs {r}', readAppr: 'of {t} catalogue recordings',
       filters: ['Period {p}', 'All feeds', 'All territories'],
       warnT: 'Period {p} not approved', warnS: '{n} of 4 conditions still unmet',
       btnApprove: 'Approve period', btnRecon: 'Open reconciliation',
@@ -2836,8 +2842,8 @@ footer{max-width:1560px;margin:0 auto;padding:0 22px 50px;
       reconTot: 'All three feeds',
       feedNames: ['Main distributor', 'YouTube', 'TikTok'],
       feedFmt: ['CSV · 41 columns · monthly, day 20',
-                'Zipped CSV · 3 files a period · day 25',
-                'XLSX · 1 sheet a territory · irregular'],
+                'Zipped CSV · 3 files · day 25',
+                'XLSX · 1 sheet a territory'],
       feedShort: ['Distributor', 'YouTube', 'TikTok'],
       mixH: 'Share of gross revenue',
       trendH: '12-period trend', trendNote: 'Pale bars are unapproved periods',
@@ -3005,8 +3011,7 @@ footer{max-width:1560px;margin:0 auto;padding:0 22px 50px;
         { v: sgnUsd(dGross), q: sgnPct(chg(N.gross, P.gross)), r: PREV })) + '</div></div>' +
       '<div class="d3-read"><div class="l">' + esc(L.readTracks) + '</div>' +
       '<div class="v">' + fmt(N.tracks, 0) + '</div>' +
-      '<div class="s">' + esc(fill(L.readAppr,
-        { a: S.approvedCount, b: C.periods })) + '</div></div>');
+      '<div class="s">' + esc(fill(L.readAppr, { t: fmt(C.tracks, 0) })) + '</div></div>');
   }
 
   function paintFilters() {
@@ -5541,7 +5546,9 @@ footer{max-width:1560px;margin:0 auto;padding:0 22px 50px;
     for(var i=0;i<texts.length;i++){
       var node=texts[i];
       if(node.getComputedTextLength()>labW-6){
-        var s=full;
+        /* Nguyên văn nhãn nằm ngay trên node — biến `full` chưa bao giờ tồn tại,
+           nên nhánh này ném lỗi mỗi khi có nhãn quá dài (bề ngang hẹp). */
+        var s=node.textContent;
         while(s.length>2 && node.getComputedTextLength()>labW-6){
           s=s.slice(0,-1); node.textContent=s+'…';
         }
