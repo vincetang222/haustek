@@ -5,6 +5,9 @@ const D = __dirname;
 const snap = fs.readFileSync(path.join(D, 'snapshot.json'), 'utf8');
 
 const HUONG = [
+  { id: 'dm', ten: 'Danh mục (D1)', canvas: '#F5F6F8', chu: '#1A2129',
+    mo: 'Màn danh sách theo bốn ảnh mới: bảng sắp xếp được, chip lọc gỡ được, phân trang, ngăn chi tiết.',
+    tham: 'Ảnh mới khách gửi' },
   { id: 'd1', ten: 'D1 · Bám ảnh mẫu', canvas: '#F5F6F8', chu: '#1A2129',
     mo: 'Khung tối bên trái, nội dung sáng — dựng gần nhất với nền tảng khách đang dùng.',
     tham: 'Ảnh khách gửi' },

@@ -1,0 +1,680 @@
+<style>
+/* ==================================================================
+   MÀN DANH MỤC BẢN GHI — dựng theo bốn ảnh khách gửi thêm.
+   Cả bốn đều là màn BẢNG, không phải dashboard, nên đây là thứ ba hướng
+   D còn thiếu. Dùng lại nguyên hệ token của hướng D1 để nhìn liền mạch.
+
+   Những khuôn lấy từ ảnh:
+   · tab có icon, chỉ gạch chân cái đang mở
+   · nút lọc hình viên thuốc + chip lọc GỠ ĐƯỢC (dấu ✕)
+   · cột đang sắp xếp được tô nền nhạt và có mũi tên
+   · trang trên đầu bảng "1–24 trong 240", nút xuất/tuỳ chỉnh cột màu xanh
+   · "—" khi không có số, "0" khi bằng 0 — hai chuyện khác nhau
+   · chọn số dòng mỗi trang ở chân bảng
+   · bảng rỗng có dòng chữ tử tế, không để trắng
+   ================================================================== */
+.huong-dm{
+  --dark:#0E1A24; --dark-2:#16242F; --dark-3:#1B2C38; --dark-4:#243646;
+  --on-dark:#EAF0F5; --on-dark-2:#B9C6D1; --on-dark-3:#6C7D8B;
+  --bg:#F5F6F8; --card:#FFFFFF;
+  --ink:#1A2129; --ink-2:#5B6672; --faint:#8A939E; --line:#E6E9ED;
+  --zebra:#FAFBFC; --head:#F2F4F6; --fill:#ECEEF1; --band:#F7F9FA;
+  --teal:#0E7C92; --teal-lo:#B7E3EC;
+  --blue:#2C6ECB; --sel:#E6EEFA;
+  --red:#C8102E; --green:#157A4E;
+  --f:'Be Vietnam Pro',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --mono:'IBM Plex Mono',ui-monospace,monospace;
+  --sh:0 1px 2px rgba(16,24,32,.06);
+  background:var(--bg); color:var(--ink);
+  font-family:var(--f); font-size:14px; line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+}
+.huong-dm *{margin:0;padding:0;box-sizing:border-box}
+.huong-dm button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+.huong-dm svg{display:block}
+.huong-dm table{border-collapse:collapse;width:100%}
+.huong-dm ul{list-style:none}
+.huong-dm :focus-visible{outline:2px solid var(--teal);outline-offset:2px}
+.huong-dm .dm-n{font-variant-numeric:tabular-nums}
+.huong-dm .dm-mono{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:12px}
+
+/* ---------- thanh trên ---------- */
+.huong-dm .dm-top{display:flex;align-items:center;gap:14px;height:56px;padding:0 22px;
+  background:var(--dark);color:var(--on-dark)}
+.huong-dm .dm-brand{display:flex;align-items:center;gap:9px;font-weight:600;
+  letter-spacing:.13em;font-size:12.5px;white-space:nowrap}
+.huong-dm .dm-brand i{width:8px;height:8px;border-radius:50%;background:var(--red);
+  display:block;flex:none}
+.huong-dm .dm-brand em{font-style:normal;color:var(--on-dark-3);font-weight:500;
+  letter-spacing:.06em;font-size:11px}
+.huong-dm .dm-crumb{color:var(--on-dark-3);font-size:12.5px}
+.huong-dm .dm-crumb b{color:var(--on-dark-2);font-weight:400}
+.huong-dm .dm-sp{flex:1}
+.huong-dm .dm-fx{color:var(--on-dark-3);font-size:12px;white-space:nowrap}
+.huong-dm .dm-lang{display:flex;border:1px solid var(--dark-4);border-radius:6px;overflow:hidden}
+.huong-dm .dm-lang button{padding:4px 10px;font-size:11.5px;color:var(--on-dark-3);font-weight:500}
+.huong-dm .dm-lang button.on{background:var(--dark-4);color:#fff}
+
+/* ---------- khung ---------- */
+.huong-dm .dm-body{display:grid;grid-template-columns:250px minmax(0,1fr);min-height:820px}
+.huong-dm .dm-side{background:var(--dark);padding:14px 0 26px;color:var(--on-dark-2)}
+.huong-dm .dm-grp{font-size:10.5px;color:var(--on-dark-3);padding:16px 22px 6px;letter-spacing:.04em}
+.huong-dm .dm-nav{display:flex;align-items:center;gap:11px;padding:8px 22px;font-size:13px;
+  color:var(--on-dark-2);cursor:pointer}
+.huong-dm .dm-nav:hover{background:var(--dark-2);color:var(--on-dark)}
+.huong-dm .dm-nav.on{background:var(--dark-3);color:#fff;font-weight:500;
+  box-shadow:inset 3px 0 0 var(--teal)}
+.huong-dm .dm-nav svg{width:16px;height:16px;flex:none;stroke:currentColor;fill:none;
+  stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;opacity:.85}
+.huong-dm .dm-nav .dm-c{margin-left:auto;font-size:11.5px;color:var(--on-dark-3);
+  font-variant-numeric:tabular-nums}
+.huong-dm .dm-nav.on .dm-c{color:var(--on-dark-2)}
+
+.huong-dm .dm-main{padding:22px 26px 40px;min-width:0}
+
+/* ---------- đầu trang ---------- */
+.huong-dm .dm-head{display:flex;align-items:flex-end;gap:20px;flex-wrap:wrap;margin-bottom:16px}
+.huong-dm .dm-h1{font-size:25px;font-weight:600;letter-spacing:-.015em}
+.huong-dm .dm-h1 .dm-per{color:var(--blue);font-weight:500}
+.huong-dm .dm-kpis{margin-left:auto;display:flex;gap:34px}
+.huong-dm .dm-kpi{text-align:right}
+.huong-dm .dm-kl{font-size:11.5px;color:var(--faint);margin-bottom:2px}
+.huong-dm .dm-kv{font-size:19px;font-weight:600;font-variant-numeric:tabular-nums}
+
+/* ---------- tab có icon ---------- */
+.huong-dm .dm-tabs{display:flex;gap:26px;border-bottom:1px solid var(--line);margin-bottom:16px}
+.huong-dm .dm-tab{display:flex;align-items:center;gap:7px;padding:0 0 10px;font-size:13.5px;
+  color:var(--ink-2);border-bottom:2px solid transparent;margin-bottom:-1px}
+.huong-dm .dm-tab svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:1.5;
+  stroke-linecap:round;stroke-linejoin:round}
+.huong-dm .dm-tab:hover{color:var(--ink)}
+.huong-dm .dm-tab.on{color:var(--ink);font-weight:600;border-bottom-color:var(--ink)}
+
+/* ---------- hàng lọc ---------- */
+.huong-dm .dm-filters{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-bottom:11px}
+.huong-dm .dm-search{position:relative;flex:0 1 300px;min-width:190px}
+.huong-dm .dm-search svg{position:absolute;left:11px;top:50%;transform:translateY(-50%);
+  width:15px;height:15px;stroke:var(--faint);fill:none;stroke-width:1.6}
+.huong-dm .dm-search input{width:100%;height:34px;padding:0 12px 0 33px;font:inherit;font-size:13px;
+  color:var(--ink);background:var(--card);border:1px solid var(--line);border-radius:17px;outline:0}
+.huong-dm .dm-search input:focus{border-color:var(--teal)}
+.huong-dm .dm-search input::placeholder{color:var(--faint)}
+.huong-dm .dm-pill{display:flex;align-items:center;gap:7px;height:34px;padding:0 14px;
+  border-radius:17px;background:var(--fill);color:var(--ink);font-size:13px;white-space:nowrap}
+.huong-dm .dm-pill:hover{background:#E3E6EA}
+.huong-dm .dm-pill.on{background:var(--sel);color:var(--blue)}
+.huong-dm .dm-pill svg{width:11px;height:11px;stroke:currentColor;fill:none;stroke-width:2}
+.huong-dm .dm-right{margin-left:auto}
+
+/* ---------- chip lọc gỡ được ---------- */
+.huong-dm .dm-chips{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-bottom:12px;
+  min-height:26px}
+.huong-dm .dm-chip{display:inline-flex;align-items:center;gap:8px;height:26px;padding:0 5px 0 11px;
+  border-radius:13px;background:var(--sel);color:var(--blue);font-size:12.5px;white-space:nowrap}
+.huong-dm .dm-chip b{font-weight:600}
+.huong-dm .dm-chip button{width:16px;height:16px;border-radius:50%;display:grid;place-items:center;
+  color:var(--blue);opacity:.65}
+.huong-dm .dm-chip button:hover{background:rgba(44,110,203,.16);opacity:1}
+.huong-dm .dm-chip svg{width:9px;height:9px;stroke:currentColor;stroke-width:2.2;fill:none}
+.huong-dm .dm-clear{font-size:12.5px;color:var(--ink-2);text-decoration:underline;
+  text-underline-offset:2px}
+.huong-dm .dm-clear:hover{color:var(--ink)}
+
+/* ---------- thẻ bảng ---------- */
+.huong-dm .dm-card{background:var(--card);border-radius:9px;box-shadow:var(--sh);overflow:hidden}
+.huong-dm .dm-bar{display:flex;align-items:center;gap:14px;padding:12px 16px;flex-wrap:wrap}
+.huong-dm .dm-pager{display:flex;align-items:center;gap:4px}
+.huong-dm .dm-pg{width:26px;height:26px;border-radius:6px;display:grid;place-items:center;
+  color:var(--ink-2)}
+.huong-dm .dm-pg:hover:not(:disabled){background:var(--fill);color:var(--ink)}
+.huong-dm .dm-pg:disabled{color:#C3C9D0;cursor:default}
+.huong-dm .dm-pg svg{width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:1.8;
+  stroke-linecap:round;stroke-linejoin:round}
+.huong-dm .dm-range{font-size:12.5px;color:var(--ink-2);font-variant-numeric:tabular-nums;
+  letter-spacing:.02em;padding:0 6px}
+.huong-dm .dm-acts{margin-left:auto;display:flex;gap:18px}
+.huong-dm .dm-act{font-size:12px;font-weight:600;color:var(--blue);letter-spacing:.05em}
+.huong-dm .dm-act:hover{text-decoration:underline;text-underline-offset:3px}
+
+/* ---------- bảng ---------- */
+.huong-dm .dm-wrap{overflow-x:auto}
+.huong-dm .dm-tbl{min-width:940px}
+.huong-dm .dm-tbl th{background:var(--head);font-size:11.5px;font-weight:600;color:var(--ink-2);
+  text-align:left;padding:9px 14px;white-space:nowrap;border-bottom:1px solid var(--line);
+  cursor:pointer;user-select:none;position:relative}
+.huong-dm .dm-tbl th:hover{color:var(--ink)}
+.huong-dm .dm-tbl th.num{text-align:right}
+.huong-dm .dm-tbl th.sorted{background:#E9EDF0;color:var(--ink)}
+.huong-dm .dm-tbl th .dm-ar{display:inline-block;width:9px;margin-left:5px;opacity:.75}
+.huong-dm .dm-tbl td{padding:10px 14px;font-size:13px;border-bottom:1px solid #F1F3F5;
+  vertical-align:middle}
+.huong-dm .dm-tbl tbody tr:nth-child(even) td{background:var(--zebra)}
+.huong-dm .dm-tbl tbody tr:hover td{background:var(--sel)}
+.huong-dm .dm-tbl tbody tr{cursor:pointer}
+.huong-dm .dm-tbl td.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.huong-dm .dm-tbl td.band,.huong-dm .dm-tbl th.band{background:var(--band)}
+.huong-dm .dm-tbl tbody tr:nth-child(even) td.band{background:#F2F5F6}
+.huong-dm .dm-tbl tbody tr:hover td.band{background:var(--sel)}
+.huong-dm .dm-ttl{font-weight:500;color:var(--ink)}
+.huong-dm .dm-sub{font-size:11.5px;color:var(--faint);font-family:var(--mono);margin-top:1px}
+.huong-dm .dm-link{color:var(--blue)}
+.huong-dm .dm-link:hover{text-decoration:underline;text-underline-offset:2px}
+.huong-dm .dm-own{display:inline-block;max-width:190px;overflow:hidden;text-overflow:ellipsis;
+  white-space:nowrap;padding:3px 9px;border-radius:5px;background:var(--fill);color:var(--ink-2);
+  font-size:12px;vertical-align:middle}
+.huong-dm .dm-own.indie{background:#EAF4F6;color:var(--teal)}
+.huong-dm .dm-nil{color:#C3C9D0}
+.huong-dm .dm-alt{display:inline-block;margin-left:6px;padding:1px 5px;border-radius:4px;
+  background:#FFF4E0;color:#8A5A12;font-size:10.5px;vertical-align:middle}
+
+/* ---------- chân bảng ---------- */
+.huong-dm .dm-foot{display:flex;align-items:center;gap:14px;padding:12px 16px;flex-wrap:wrap;
+  border-top:1px solid var(--line);font-size:12.5px;color:var(--ink-2)}
+.huong-dm .dm-foot select{font:inherit;font-size:12.5px;color:var(--ink);background:var(--card);
+  border:1px solid var(--line);border-radius:6px;padding:3px 6px;cursor:pointer}
+.huong-dm .dm-foot b{font-weight:600;color:var(--ink);font-variant-numeric:tabular-nums}
+
+/* ---------- bảng rỗng ---------- */
+.huong-dm .dm-empty{padding:64px 20px;text-align:center}
+.huong-dm .dm-empty svg{width:34px;height:34px;margin:0 auto 12px;stroke:#C3C9D0;fill:none;
+  stroke-width:1.3;stroke-linecap:round;stroke-linejoin:round}
+.huong-dm .dm-empty b{display:block;font-size:14.5px;font-weight:600;margin-bottom:5px}
+.huong-dm .dm-empty span{display:block;font-size:13px;color:var(--ink-2)}
+.huong-dm .dm-empty button{margin-top:14px;font-size:13px;color:var(--blue)}
+.huong-dm .dm-empty button:hover{text-decoration:underline;text-underline-offset:3px}
+
+/* ---------- ngăn chi tiết ---------- */
+.huong-dm .dm-dr{position:fixed;top:0;right:0;bottom:0;width:min(560px,94vw);z-index:60;
+  background:var(--card);box-shadow:-8px 0 28px rgba(16,24,32,.13);
+  transform:translateX(100%);transition:transform .18s ease-out;overflow:auto}
+.huong-dm .dm-dr.on{transform:none}
+.huong-dm .dm-dr-h{display:flex;align-items:flex-start;gap:14px;padding:20px 22px 16px;
+  border-bottom:1px solid var(--line)}
+.huong-dm .dm-dr-t{flex:1;min-width:0}
+.huong-dm .dm-dr-t h3{font-size:19px;font-weight:600;letter-spacing:-.01em}
+.huong-dm .dm-dr-t p{font-size:12.5px;color:var(--faint);font-family:var(--mono);margin-top:3px}
+.huong-dm .dm-x{width:30px;height:30px;border-radius:7px;display:grid;place-items:center;
+  color:var(--ink-2);flex:none}
+.huong-dm .dm-x:hover{background:var(--fill);color:var(--ink)}
+.huong-dm .dm-x svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:1.8}
+.huong-dm .dm-dr-cols{display:grid;grid-template-columns:1fr 1fr;gap:0 26px;padding:18px 22px}
+.huong-dm .dm-dl{display:flex;justify-content:space-between;gap:12px;padding:7px 0;
+  border-bottom:1px solid #F1F3F5;font-size:13px}
+.huong-dm .dm-dl dt{color:var(--ink-2)}
+.huong-dm .dm-dl dd{text-align:right;font-variant-numeric:tabular-nums}
+.huong-dm .dm-dr-s{padding:4px 22px 22px}
+.huong-dm .dm-dr-s h4{font-size:11.5px;color:var(--faint);margin:16px 0 8px}
+.huong-dm .dm-bd{position:fixed;inset:0;background:rgba(14,26,36,.28);z-index:59;opacity:0;
+  pointer-events:none;transition:opacity .18s}
+.huong-dm .dm-bd.on{opacity:1;pointer-events:auto}
+
+@media (max-width:1180px){
+  .huong-dm .dm-body{grid-template-columns:1fr}
+  .huong-dm .dm-side{display:none}
+  .huong-dm .dm-kpis{width:100%;margin-left:0;justify-content:flex-start;gap:26px}
+}
+@media (prefers-reduced-motion:reduce){
+  .huong-dm .dm-dr,.huong-dm .dm-bd{transition:none}
+}
+</style>
+
+<div class="huong-dm">
+  <div class="dm-top">
+    <div class="dm-brand"><i></i>HAUSTEK <em data-t="internal"></em></div>
+    <div class="dm-crumb"><b data-t="navCatalog"></b> / <span data-t="tabRec"></span></div>
+    <div class="dm-sp"></div>
+    <div class="dm-fx" data-fx></div>
+    <div class="dm-lang">
+      <button type="button" data-lang="vi" class="on">VI</button>
+      <button type="button" data-lang="en">EN</button>
+    </div>
+  </div>
+
+  <div class="dm-body">
+    <nav class="dm-side" data-side></nav>
+
+    <main class="dm-main">
+      <div class="dm-head">
+        <div>
+          <h1 class="dm-h1"><span data-t="h1"></span> <span class="dm-per" data-per></span></h1>
+        </div>
+        <div class="dm-kpis">
+          <div class="dm-kpi"><div class="dm-kl" data-t="kTotal"></div><div class="dm-kv" data-k-total></div></div>
+          <div class="dm-kpi"><div class="dm-kl" data-t="kEarning"></div><div class="dm-kv" data-k-earn></div></div>
+          <div class="dm-kpi"><div class="dm-kl" data-t="kGross"></div><div class="dm-kv" data-k-gross></div></div>
+        </div>
+      </div>
+
+      <div class="dm-tabs" data-tabs></div>
+
+      <div class="dm-filters">
+        <label class="dm-search">
+          <svg viewBox="0 0 16 16"><circle cx="7" cy="7" r="4.6"/><path d="M10.5 10.5 14 14"/></svg>
+          <input type="search" data-q>
+        </label>
+        <button type="button" class="dm-pill" data-menu="type">
+          <span data-t="fType"></span>
+          <svg viewBox="0 0 12 12"><path d="M2.5 4.5 6 8l3.5-3.5"/></svg>
+        </button>
+        <button type="button" class="dm-pill" data-menu="owner">
+          <span data-t="fOwner"></span>
+          <svg viewBox="0 0 12 12"><path d="M2.5 4.5 6 8l3.5-3.5"/></svg>
+        </button>
+        <button type="button" class="dm-pill dm-right" data-menu="period">
+          <span data-period-btn></span>
+          <svg viewBox="0 0 12 12"><path d="M2.5 4.5 6 8l3.5-3.5"/></svg>
+        </button>
+      </div>
+
+      <div class="dm-chips" data-chips></div>
+
+      <div class="dm-card">
+        <div class="dm-bar">
+          <div class="dm-pager">
+            <button type="button" class="dm-pg" data-prev aria-label="trước">
+              <svg viewBox="0 0 14 14"><path d="M9 2 4 7l5 5"/></svg>
+            </button>
+            <button type="button" class="dm-pg" data-next aria-label="sau">
+              <svg viewBox="0 0 14 14"><path d="M5 2l5 5-5 5"/></svg>
+            </button>
+          </div>
+          <div class="dm-range" data-range></div>
+          <div class="dm-acts">
+            <button type="button" class="dm-act" data-t="aExport"></button>
+            <button type="button" class="dm-act" data-t="aCols"></button>
+          </div>
+        </div>
+        <div class="dm-wrap">
+          <table class="dm-tbl">
+            <thead><tr data-th></tr></thead>
+            <tbody data-tb></tbody>
+          </table>
+        </div>
+        <div data-empty></div>
+        <div class="dm-foot" data-foot></div>
+      </div>
+    </main>
+  </div>
+
+  <div class="dm-bd" data-bd></div>
+  <aside class="dm-dr" data-dr></aside>
+</div>
+
+<script>
+(function () {
+  "use strict";
+  var root = document.querySelector('.huong-dm');
+  if (!root || !window.SNAP) return;
+  var S = window.SNAP, CAT = S.catalog;
+
+  function q(sel) { return root.querySelector(sel); }
+  function all(sel) { return [].slice.call(root.querySelectorAll(sel)); }
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  }
+
+  /* ---------------- chữ hai thứ tiếng ----------------
+     Số và ngày giữ nguyên lối viết Việt ở cả hai — đây là công cụ nội bộ
+     của một công ty Việt Nam, không phải sản phẩm bán ra nước ngoài. */
+  var T = {
+    vi: {
+      internal: 'Nội bộ', h1: 'Danh mục bản ghi',
+      navOps: 'Vận hành', navOverview: 'Tổng quan', navPeriods: 'Kỳ doanh thu',
+      navRecon: 'Đối chiếu', navQueue: 'Tiền treo',
+      navCatalog: 'Danh mục', navRec: 'Bản ghi', navStores: 'Cửa hàng', navTerr: 'Lãnh thổ',
+      navMoney: 'Chi trả', navPayees: 'Bên nhận', navAdv: 'Tạm ứng',
+      tabRec: 'Bản ghi', tabArtist: 'Nghệ sĩ & label', tabProduct: 'Sản phẩm', tabChannel: 'Kênh',
+      kTotal: 'Bản ghi trong danh mục', kEarning: 'Có doanh thu kỳ này', kGross: 'Doanh thu gộp kỳ',
+      qPlaceholder: 'Tìm tên bài, mã ISRC, nghệ sĩ…',
+      fType: 'Loại', fOwner: 'Chủ sở hữu', fAll: 'Tất cả',
+      indie: 'Độc lập', label: 'Thuộc label',
+      aExport: 'XUẤT CSV', aCols: 'TUỲ CHỈNH CỘT',
+      cTitle: 'Bản ghi', cArtist: 'Nghệ sĩ', cOwner: 'Chủ sở hữu', cRelease: 'Phát hành',
+      cStreams: 'Lượt nghe', cGross: 'Doanh thu gộp', cFee: 'Phí Haustek', cArtistCut: 'Về tay nghệ sĩ',
+      rangeOf: '{a}–{b} trong {n}', showing: 'Hiện', rows: 'dòng mỗi trang',
+      foundA: 'Đang lọc', foundB: 'trên {n} bản ghi có doanh thu kỳ này',
+      clear: 'Bỏ hết bộ lọc',
+      emptyH: 'Không có bản ghi nào khớp', emptyS: 'Thử bỏ bớt một bộ lọc, hoặc tìm bằng mã ISRC.',
+      emptyB: 'Bỏ hết bộ lọc',
+      altIsrc: 'có mã phụ',
+      drTitle: 'Chi tiết bản ghi', drMoney: 'Chia tiền kỳ này', drMeta: 'Thông tin danh mục',
+      dIsrc: 'Mã ISRC', dType: 'Loại', dArtist: 'Nghệ sĩ', dOwner: 'Chủ sở hữu',
+      dRelease: 'Kỳ phát hành', dStreams: 'Lượt nghe kỳ này', dPerStream: 'Trung bình mỗi 1.000 lượt',
+      dGross: 'Doanh thu gộp', dFee: 'Phí Haustek', dRest: 'Phần label giữ hoặc Haustek giữ thêm',
+      dArtistCut: 'Về tay nghệ sĩ', dShare: 'Tỷ trọng trong kỳ',
+      dAltNote: 'Bản ghi này mang hai mã ISRC. Báo cáo về theo từng mã riêng và phải gộp lại — '
+              + 'đây là câu hỏi số 2 còn treo trong tài liệu bàn giao.',
+      sample: 'Bảng đang chạy trên {n} bản ghi mẫu trích từ danh mục thật.'
+    },
+    en: {
+      internal: 'Internal', h1: 'Recording catalogue',
+      navOps: 'Operations', navOverview: 'Overview', navPeriods: 'Revenue periods',
+      navRecon: 'Reconciliation', navQueue: 'Suspense',
+      navCatalog: 'Catalogue', navRec: 'Recordings', navStores: 'Stores', navTerr: 'Territories',
+      navMoney: 'Payouts', navPayees: 'Payees', navAdv: 'Advances',
+      tabRec: 'Recordings', tabArtist: 'Artists & labels', tabProduct: 'Products', tabChannel: 'Channels',
+      kTotal: 'Recordings in catalogue', kEarning: 'Earning this period', kGross: 'Gross revenue',
+      qPlaceholder: 'Search title, ISRC, artist…',
+      fType: 'Type', fOwner: 'Owner', fAll: 'All',
+      indie: 'Independent', label: 'On a label',
+      aExport: 'EXPORT CSV', aCols: 'CUSTOMISE COLUMNS',
+      cTitle: 'Recording', cArtist: 'Artist', cOwner: 'Owner', cRelease: 'Released',
+      cStreams: 'Streams', cGross: 'Gross revenue', cFee: 'Haustek fee', cArtistCut: 'To the artist',
+      rangeOf: '{a}–{b} of {n}', showing: 'Show', rows: 'rows per page',
+      foundA: 'Filtered', foundB: 'of {n} recordings earning this period',
+      clear: 'Clear all filters',
+      emptyH: 'No recordings match', emptyS: 'Try removing a filter, or search by ISRC.',
+      emptyB: 'Clear all filters',
+      altIsrc: 'second ISRC',
+      drTitle: 'Recording detail', drMoney: 'Split this period', drMeta: 'Catalogue data',
+      dIsrc: 'ISRC', dType: 'Type', dArtist: 'Artist', dOwner: 'Owner',
+      dRelease: 'Released', dStreams: 'Streams this period', dPerStream: 'Average per 1,000 streams',
+      dGross: 'Gross revenue', dFee: 'Haustek fee', dRest: 'Label share, or extra Haustek share',
+      dArtistCut: 'To the artist', dShare: 'Share of the period',
+      dAltNote: 'This recording carries two ISRCs. Reports arrive under each code separately and must '
+              + 'be merged — open question 2 in the handover document.',
+      sample: 'The table runs on {n} sample recordings drawn from the real catalogue.'
+    }
+  };
+  var lang = 'vi';
+  function t() { return T[lang]; }
+  function fill(s, m) {
+    return String(s).replace(/\{(\w+)\}/g, function (_, k) { return m[k] == null ? '' : m[k]; });
+  }
+
+  /* ---------------- định dạng số kiểu Việt ---------------- */
+  function num(v) { return Math.round(v).toLocaleString('vi-VN'); }
+  function usd(v) {
+    return '$' + v.toLocaleString('vi-VN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+  function usd0(v) { return '$' + Math.round(v).toLocaleString('vi-VN'); }
+  function pct(v) { return (v * 100).toLocaleString('vi-VN', { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + '%'; }
+
+  /* ---------------- icon ---------------- */
+  var IC = {
+    grid: '<path d="M2 2h5v5H2zM9 2h5v5H9zM2 9h5v5H2zM9 9h5v5H9"/>',
+    cal: '<rect x="2" y="3" width="12" height="11" rx="1.5"/><path d="M2 6.5h12M5.5 1.5v3M10.5 1.5v3"/>',
+    swap: '<path d="M3 5h10l-3-3M13 11H3l3 3"/>',
+    clock: '<circle cx="8" cy="8" r="6"/><path d="M8 4.5V8l2.5 1.5"/>',
+    disc: '<circle cx="8" cy="8" r="6"/><circle cx="8" cy="8" r="1.6"/>',
+    shop: '<path d="M2.5 6h11l-1 7.5h-9zM5.5 6V4a2.5 2.5 0 0 1 5 0v2"/>',
+    globe: '<circle cx="8" cy="8" r="6"/><path d="M2 8h12M8 2c1.8 2 1.8 10 0 12M8 2c-1.8 2-1.8 10 0 12"/>',
+    out: '<path d="M3 8h10M9 4l4 4-4 4"/>',
+    user: '<circle cx="8" cy="5.5" r="2.6"/><path d="M3 13.5c0-2.5 2.2-4 5-4s5 1.5 5 4"/>',
+    cash: '<rect x="2" y="4" width="12" height="8" rx="1.5"/><circle cx="8" cy="8" r="1.8"/>',
+    note: '<path d="M6 12V3.5l7-1.5V11"/><circle cx="4.5" cy="12" r="1.6"/><circle cx="11.5" cy="11" r="1.6"/>',
+    box: '<path d="M8 1.8 14 5v6l-6 3.2L2 11V5z"/><path d="M2 5l6 3.2L14 5M8 8.2V14"/>',
+    vid: '<rect x="2" y="4" width="9" height="8" rx="1.5"/><path d="M11 7.5 14 5.5v5L11 8.5"/>',
+    x: '<path d="M3 3l8 8M11 3l-8 8"/>',
+    empty: '<circle cx="12" cy="12" r="9"/><path d="M8.5 13.5h7"/>'
+  };
+  function icon(n, cls) {
+    return '<svg viewBox="0 0 16 16"' + (cls ? ' class="' + cls + '"' : '') + '>' + IC[n] + '</svg>';
+  }
+
+  /* ---------------- điều hướng bên trái ---------------- */
+  var NAV = [
+    { g: 'navOps' },
+    { k: 'navOverview', i: 'grid' }, { k: 'navPeriods', i: 'cal', c: S.counts.periods },
+    { k: 'navRecon', i: 'swap' }, { k: 'navQueue', i: 'clock', c: S.queue.rows },
+    { g: 'navCatalog' },
+    { k: 'navRec', i: 'disc', c: S.counts.tracks, on: true },
+    { k: 'navStores', i: 'shop', c: S.counts.stores },
+    { k: 'navTerr', i: 'globe', c: S.counts.territories },
+    { g: 'navMoney' },
+    { k: 'navPayees', i: 'user', c: 940 }, { k: 'navAdv', i: 'cash', c: S.advances.parties }
+  ];
+  function paintSide() {
+    q('[data-side]').innerHTML = NAV.map(function (n) {
+      if (n.g) return '<div class="dm-grp">' + esc(t()[n.g]) + '</div>';
+      return '<div class="dm-nav' + (n.on ? ' on' : '') + '">' + icon(n.i) +
+        '<span>' + esc(t()[n.k]) + '</span>' +
+        (n.c != null ? '<span class="dm-c">' + num(n.c) + '</span>' : '') + '</div>';
+    }).join('');
+  }
+
+  var TABS = [
+    { k: 'tabRec', i: 'disc', on: true }, { k: 'tabArtist', i: 'user' },
+    { k: 'tabProduct', i: 'box' }, { k: 'tabChannel', i: 'vid' }
+  ];
+  function paintTabs() {
+    q('[data-tabs]').innerHTML = TABS.map(function (x) {
+      return '<button type="button" class="dm-tab' + (x.on ? ' on' : '') + '">' +
+        icon(x.i) + esc(t()[x.k]) + '</button>';
+    }).join('');
+  }
+
+  /* ---------------- trạng thái bảng ---------------- */
+  var st = { q: '', type: null, owner: null, sort: 'gross', dir: -1, page: 0, size: 24, sel: -1 };
+
+  var COLS = [
+    { k: 'title', l: 'cTitle' },
+    { k: 'artist', l: 'cArtist' },
+    { k: 'owner', l: 'cOwner' },
+    { k: 'release', l: 'cRelease' },
+    { k: 'streams', l: 'cStreams', num: true },
+    { k: 'gross', l: 'cGross', num: true },
+    { k: 'fee', l: 'cFee', num: true },
+    { k: 'artistCut', l: 'cArtistCut', num: true }
+  ];
+
+  function boDau(x) {
+    return String(x || '').toLowerCase().normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '').replace(/đ/g, 'd');
+  }
+
+  function loc() {
+    var needle = boDau(st.q.trim());
+    return CAT.mau.filter(function (r) {
+      if (st.type && r.type !== st.type) return false;
+      if (st.owner === 'indie' && r.owner) return false;
+      if (st.owner === 'label' && !r.owner) return false;
+      if (needle) {
+        if (boDau(r.title).indexOf(needle) < 0 &&
+            boDau(r.isrc).indexOf(needle) < 0 &&
+            boDau(r.artist).indexOf(needle) < 0) return false;
+      }
+      return true;
+    }).sort(function (a, b) {
+      var x = a[st.sort], y = b[st.sort];
+      if (st.sort === 'owner') { x = x || ''; y = y || ''; }
+      if (typeof x === 'string') return x.localeCompare(y, 'vi') * st.dir;
+      return ((x || 0) - (y || 0)) * st.dir;
+    });
+  }
+
+  function paintHead() {
+    q('[data-th]').innerHTML = COLS.map(function (c) {
+      var on = st.sort === c.k;
+      return '<th class="' + (c.num ? 'num ' : '') + (on ? 'sorted band' : '') + '" data-sort="' + c.k + '">' +
+        esc(t()[c.l]) + (on ? '<span class="dm-ar">' + (st.dir > 0 ? '↑' : '↓') + '</span>' : '') + '</th>';
+    }).join('');
+  }
+
+  function paintRows(rows) {
+    var a = st.page * st.size, page = rows.slice(a, a + st.size);
+    var tb = q('[data-tb]');
+    tb.innerHTML = page.map(function (r, i) {
+      var band = function (k) { return st.sort === k ? ' band' : ''; };
+      return '<tr data-i="' + (a + i) + '">' +
+        '<td class="' + band('title') + '"><div class="dm-ttl">' + esc(r.title) +
+          (r.hasAlt ? '<span class="dm-alt">' + esc(t().altIsrc) + '</span>' : '') + '</div>' +
+          '<div class="dm-sub">' + esc(r.isrc) + ' · ' + esc(r.type) + '</div></td>' +
+        '<td class="' + band('artist') + '"><span class="dm-link">' + esc(r.artist) + '</span></td>' +
+        '<td class="' + band('owner') + '">' + (r.owner
+            ? '<span class="dm-own" title="' + esc(r.owner) + '">' + esc(r.owner) + '</span>'
+            : '<span class="dm-own indie">' + esc(t().indie) + '</span>') + '</td>' +
+        '<td class="' + band('release') + '">' + esc(r.release) + '</td>' +
+        '<td class="num' + band('streams') + '">' + num(r.streams) + '</td>' +
+        '<td class="num' + band('gross') + '">' + usd(r.gross) + '</td>' +
+        '<td class="num' + band('fee') + '">' + usd(r.fee) + '</td>' +
+        '<td class="num' + band('artistCut') + '">' + usd(r.artistCut) + '</td>' +
+        '</tr>';
+    }).join('');
+
+    var em = q('[data-empty]');
+    if (!rows.length) {
+      em.innerHTML = '<div class="dm-empty">' + icon('empty') +
+        '<b>' + esc(t().emptyH) + '</b><span>' + esc(t().emptyS) + '</span>' +
+        '<button type="button" data-clear>' + esc(t().emptyB) + '</button></div>';
+    } else em.innerHTML = '';
+  }
+
+  function paintBar(rows) {
+    var a = rows.length ? st.page * st.size + 1 : 0;
+    var b = Math.min(rows.length, (st.page + 1) * st.size);
+    q('[data-range]').textContent = fill(t().rangeOf, { a: num(a), b: num(b), n: num(rows.length) });
+    q('[data-prev]').disabled = st.page === 0;
+    q('[data-next]').disabled = b >= rows.length;
+  }
+
+  function paintFoot(rows) {
+    var loc2 = (st.q || st.type || st.owner);
+    q('[data-foot]').innerHTML =
+      '<span>' + (loc2 ? esc(t().foundA) + ' <b>' + num(rows.length) + '</b> ' : '<b>' + num(rows.length) + '</b> ') +
+      esc(fill(t().foundB, { n: num(CAT.mau.length) })) + '</span>' +
+      '<span style="margin-left:auto">' + esc(t().showing) +
+      ' <select data-size>' + [12, 24, 48, 96].map(function (n) {
+        return '<option value="' + n + '"' + (n === st.size ? ' selected' : '') + '>' + n + '</option>';
+      }).join('') + '</select> ' + esc(t().rows) + '</span>';
+  }
+
+  function paintChips() {
+    var out = [];
+    function chip(kind, label, val) {
+      return '<span class="dm-chip"><b>' + esc(label) + ':</b> ' + esc(val) +
+        '<button type="button" data-drop="' + kind + '" aria-label="bỏ">' + icon('x') + '</button></span>';
+    }
+    if (st.type) out.push(chip('type', t().fType, st.type));
+    if (st.owner) out.push(chip('owner', t().fOwner, st.owner === 'indie' ? t().indie : t().label));
+    if (st.q) out.push(chip('q', 'Tìm', st.q));
+    if (out.length > 1) out.push('<button type="button" class="dm-clear" data-clear>' + esc(t().clear) + '</button>');
+    q('[data-chips]').innerHTML = out.join('');
+  }
+
+  /* ---------------- ngăn chi tiết ---------------- */
+  function openDrawer(r) {
+    var rest = r.gross - r.fee - r.artistCut;
+    function dl(k, v) { return '<dl class="dm-dl"><dt>' + k + '</dt><dd>' + v + '</dd></dl>'; }
+    q('[data-dr]').innerHTML =
+      '<div class="dm-dr-h"><div class="dm-dr-t"><h3>' + esc(r.title) + '</h3>' +
+        '<p>' + esc(r.isrc) + ' · ' + esc(r.type) + '</p></div>' +
+        '<button type="button" class="dm-x" data-close>' + icon('x') + '</button></div>' +
+      '<div class="dm-dr-s"><h4>' + esc(t().drMeta) + '</h4>' +
+        dl(esc(t().dArtist), esc(r.artist)) +
+        dl(esc(t().dOwner), r.owner ? esc(r.owner) : esc(t().indie)) +
+        dl(esc(t().dRelease), esc(r.release)) +
+        dl(esc(t().dStreams), num(r.streams)) +
+        dl(esc(t().dPerStream), usd(r.streams ? r.gross / r.streams * 1000 : 0)) +
+      '<h4>' + esc(t().drMoney) + '</h4>' +
+        dl(esc(t().dGross), usd(r.gross)) +
+        dl(esc(t().dFee), '−' + usd(r.fee)) +
+        dl(esc(t().dRest), '−' + usd(rest)) +
+        dl('<b>' + esc(t().dArtistCut) + '</b>', '<b>' + usd(r.artistCut) + '</b>') +
+        dl(esc(t().dShare), pct(r.gross / S.now.gross)) +
+      (r.hasAlt ? '<p style="margin-top:16px;font-size:12.5px;color:var(--ink-2);line-height:1.65">'
+        + esc(t().dAltNote) + '</p>' : '') +
+      '</div>';
+    q('[data-dr]').classList.add('on');
+    q('[data-bd]').classList.add('on');
+  }
+  function closeDrawer() {
+    q('[data-dr]').classList.remove('on');
+    q('[data-bd]').classList.remove('on');
+    st.sel = -1;
+  }
+
+  /* ---------------- vẽ ---------------- */
+  var ROWS = [];
+  function render() {
+    all('[data-t]').forEach(function (n) {
+      var v = t()[n.getAttribute('data-t')];
+      if (typeof v === 'string' && v.indexOf('{') < 0) n.textContent = v;
+    });
+    q('[data-q]').placeholder = t().qPlaceholder;
+    q('[data-per]').textContent = S.period.label;
+    q('[data-fx]').textContent = '1 USD = ' + num(S.fx) + ' ₫';
+    q('[data-period-btn]').textContent = 'Kỳ ' + S.period.label;
+    q('[data-k-total]').textContent = num(CAT.total);
+    q('[data-k-earn]').textContent = num(CAT.coDoanhThu);
+    q('[data-k-gross]').textContent = usd0(S.now.gross);
+    paintSide(); paintTabs(); paintChips(); paintHead();
+    ROWS = loc();
+    var maxPage = Math.max(0, Math.ceil(ROWS.length / st.size) - 1);
+    if (st.page > maxPage) st.page = maxPage;
+    paintRows(ROWS); paintBar(ROWS); paintFoot(ROWS);
+    var con = (root.textContent || '').match(/\{[a-z]+\}/gi);
+    if (con) console.error('[huong-dm] còn chỗ trống chưa điền: ' + con.join(' '));
+  }
+
+  /* ---------------- sự kiện ---------------- */
+  root.addEventListener('click', function (e) {
+    var th = e.target.closest('[data-sort]');
+    if (th) {
+      var k = th.getAttribute('data-sort');
+      if (st.sort === k) st.dir = -st.dir; else { st.sort = k; st.dir = (k === 'title' || k === 'artist' || k === 'owner') ? 1 : -1; }
+      st.page = 0; return render();
+    }
+    var drop = e.target.closest('[data-drop]');
+    if (drop) { st[drop.getAttribute('data-drop')] = drop.getAttribute('data-drop') === 'q' ? '' : null;
+      if (drop.getAttribute('data-drop') === 'q') q('[data-q]').value = '';
+      st.page = 0; return render(); }
+    if (e.target.closest('[data-clear]')) {
+      st.q = ''; st.type = null; st.owner = null; st.page = 0;
+      q('[data-q]').value = ''; return render();
+    }
+    var menu = e.target.closest('[data-menu]');
+    if (menu) {
+      var kind = menu.getAttribute('data-menu');
+      if (kind === 'type') {
+        var order = [null, 'Single', 'EP', 'Album'];
+        st.type = order[(order.indexOf(st.type) + 1) % order.length];
+      } else if (kind === 'owner') {
+        var o = [null, 'label', 'indie'];
+        st.owner = o[(o.indexOf(st.owner) + 1) % o.length];
+      } else return;
+      st.page = 0; return render();
+    }
+    if (e.target.closest('[data-prev]')) { if (st.page > 0) { st.page--; paintRows(ROWS); paintBar(ROWS); } return; }
+    if (e.target.closest('[data-next]')) {
+      if ((st.page + 1) * st.size < ROWS.length) { st.page++; paintRows(ROWS); paintBar(ROWS); } return;
+    }
+    if (e.target.closest('[data-close]') || e.target.closest('[data-bd]')) return closeDrawer();
+    var tr = e.target.closest('tr[data-i]');
+    if (tr) { var r = ROWS[+tr.getAttribute('data-i')]; if (r) openDrawer(r); }
+  });
+
+  root.addEventListener('change', function (e) {
+    var sz = e.target.closest('[data-size]');
+    if (sz) { st.size = +sz.value; st.page = 0; render(); }
+  });
+
+  var qt = null;
+  q('[data-q]').addEventListener('input', function (e) {
+    clearTimeout(qt);
+    var el = e.target;
+    qt = setTimeout(function () {
+      if (!el.isConnected) return;
+      st.q = el.value; st.page = 0; render();
+    }, 180);
+  });
+
+  all('[data-lang]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      lang = b.getAttribute('data-lang');
+      all('[data-lang]').forEach(function (x) { x.classList.toggle('on', x === b); });
+      closeDrawer(); render();
+    });
+  });
+
+  /* Bàn phím không gõ vào một thẻ div, nên nghe trên chính div thì Esc không
+     bao giờ tới. Nghe ở document và chỉ động tay khi ngăn đang mở — bảy hướng
+     dùng chung một trang, không được giành phím của nhau. */
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && q('[data-dr]').classList.contains('on')) closeDrawer();
+  });
+
+  render();
+})();
+</script>
