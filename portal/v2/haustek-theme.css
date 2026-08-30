@@ -282,10 +282,16 @@ main{padding:22px 24px 56px;min-width:0}
 .srch{position:relative;flex:0 1 300px;min-width:180px}
 .srch svg{position:absolute;left:11px;top:50%;transform:translateY(-50%);width:15px;height:15px;
   stroke:var(--faint);fill:none;stroke-width:1.6}
-.srch input{width:100%;height:34px;padding:0 12px 0 33px;font:inherit;font-size:13px;
+/* Viết là .srch input[type=search] chứ không phải .srch input.
+   Khối "TRƯỜNG NHẬP" bên dưới có .srch input[type=search] cùng độ ưu tiên
+   (0,1,1) và nằm SAU, nên nó thắng: ô tìm mất padding trái 33px, và cái
+   kính lúp ngồi đè lên chữ đầu tiên của dòng gợi ý. Thêm một bộ chọn nữa
+   để độ ưu tiên cao hơn hẳn, thay vì trông chờ vào thứ tự dòng. */
+.srch input[type=search]{width:100%;height:34px;padding:0 14px 0 34px;font:inherit;font-size:13px;
   color:var(--ink);background:var(--card);border:1px solid var(--line);border-radius:17px;outline:0}
-.srch input:focus{border-color:var(--accent)}
-.srch input::placeholder{color:var(--faint)}
+.srch input[type=search]:focus{border-color:var(--accent)}
+.srch input[type=search]::placeholder{color:var(--faint)}
+.srch input[type=search]::-webkit-search-cancel-button{cursor:pointer}
 
 .chips{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-bottom:12px;min-height:26px}
 .chip{display:inline-flex;align-items:center;gap:8px;height:26px;padding:0 5px 0 11px;

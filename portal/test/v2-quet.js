@@ -68,6 +68,21 @@ const RONG = (process.argv[3] || '1500').split(',').map(Number);
               });
               if (main.textContent.includes('Màn hình này lỗi') || main.textContent.includes('This screen failed'))
                 out.trong = true;
+              /* Đè kiểu do trùng độ ưu tiên: hai bộ chọn cùng (0,1,1) thì
+                 cái viết sau thắng, và thành phần mất kiểu riêng của nó mà
+                 không báo lỗi gì. Bắt bằng HÌNH HỌC chứ không bằng đọc CSS:
+                 icon trong ô tìm có đè lên chữ không. Đây là cách duy nhất
+                 thấy được, vì trang vẫn dựng ra bình thường. */
+              out.de = [];
+              main.querySelectorAll('.srch').forEach(function (s) {
+                var svg = s.querySelector('svg'), inp = s.querySelector('input');
+                if (!svg || !inp) return;
+                var rv = svg.getBoundingClientRect(), ri = inp.getBoundingClientRect();
+                var pad = parseFloat(getComputedStyle(inp).paddingLeft) || 0;
+                if (ri.left + pad < rv.right + 2)
+                  out.de.push('icon đè chữ trong ô tìm (padding ' + pad + 'px, icon hết ở ' +
+                    Math.round(rv.right - ri.left) + 'px)');
+              });
               /* nhãn viết hoa hết kiểu máy — dấu hiệu "trông như AI" khách đã chỉ ra */
               document.querySelectorAll('main .l, main .card-h h2, main th').forEach(e => {
                 const t = (e.textContent || '').trim();
@@ -83,6 +98,7 @@ const RONG = (process.argv[3] || '1500').split(',').map(Number);
             if (r.ph.length) loi.push('placeholder: ' + [...new Set(r.ph)].slice(0, 2).join(' | '));
             if (r.tran.length) loi.push('tràn: ' + [...new Set(r.tran)].slice(0, 2).join(' | '));
             if (r.chuHoa) loi.push('nhãn HOA×' + r.chuHoa);
+            if (r.de && r.de.length) loi.push(r.de[0]);
             if (r.dai < 400) loi.push('quá ít nội dung (' + r.dai + ' ký tự)');
             if (loi.length) { doi.push(nhan + ' → ' + loi.join(' · ')); hong++; }
           }
