@@ -117,7 +117,7 @@ HT.dangKy({
       '<select class="in" data-f="luong" style="width:auto;height:34px">' +
         '<option value="">' + HM.esc(t('moiLuong')) + '</option>' +
         A.feeds.map(function (f) {
-          return '<option value="' + f.id + '"' + (LOC.luong === String(f.id) ? ' selected' : '') + '>' + HM.esc(f.short) + '</option>';
+          return '<option value="' + f.id + '"' + (LOC.luong === String(f.id) ? ' selected' : '') + '>' + HM.esc(c.song(f, 'short')) + '</option>';
         }).join('') + '</select>' +
       ['pending', 'matched', 'parked', ''].map(function (s) {
         var nhan = s === 'pending' ? t('treo') : s === 'matched' ? t('daKhop') : s === 'parked' ? t('deLai') : (c.lang === 'vi' ? 'Tất cả' : 'All');
@@ -154,7 +154,7 @@ HT.dangKy({
             (q.isrc ? '<span class="mono">' + HM.esc(q.isrc) + '</span>'
                     : '<span class="nil">' + HM.esc(c.lang === 'vi' ? 'thiếu mã' : 'no code') + '</span>') +
             '<div class="t-sub">' + HM.esc(A.periods[A.pIndexOf(q.periodKey)].label) + ' · ' +
-            HM.esc(A.feeds[q.feedId].short) + '</div></td>' +
+            HM.esc(c.song(A.feeds[q.feedId], 'short')) + '</div></td>' +
           '<td><div class="t-ttl">' + HM.esc(HM.dai(q.title, 26)) + '</div>' +
             '<div class="t-sub">' + HM.esc(HM.dai(q.artist, 22)) + ' · ' +
             (q.status === 'pending' ? HM.esc(c.lang === 'vi' ? 'treo' : 'held')
@@ -182,7 +182,7 @@ HT.dangKy({
       HM.csv('hang-cho-khop-isrc.csv',
         ['ID', 'Kỳ', 'Luồng', 'Mã trong file', 'Tên bài', 'Nghệ sĩ', 'Cửa hàng', 'Lãnh thổ', 'Lượt', 'Số tiền USD', 'Lý do', 'Trạng thái'],
         ds.map(function (q) {
-          return [q.id, A.periods[A.pIndexOf(q.periodKey)].label, A.feeds[q.feedId].short, q.isrc,
+          return [q.id, A.periods[A.pIndexOf(q.periodKey)].label, c.song(A.feeds[q.feedId], 'short'), q.isrc,
                   q.title, q.artist, q.store, q.territory, q.streams,
                   q.amount.toFixed(2).replace('.', ','), q.reason, q.status];
         }));
@@ -231,7 +231,7 @@ function veChiTiet(root, c) {
         ? { kieu: 'warn', icon: 'clock', chu: HM.esc(t('deLai') + (q.note ? ' · ' + q.note : '')) }
         : { kieu: 'no', icon: 'alert', chu: HM.esc(q.reason) },
     h2: HM.esc(q.title || (c.lang === 'vi' ? '(file không ghi tên bài)' : '(no title in file)')),
-    p: HM.esc(q.id + ' · ' + A.feeds[q.feedId].name),
+    p: HM.esc(q.id + ' · ' + c.song(A.feeds[q.feedId], 'name')),
     than: HM.kv([
       { t: t('cot_ma'), v: q.isrc || (c.lang === 'vi' ? 'thiếu hẳn' : 'missing'), vHtml: false },
       { t: c.lang === 'vi' ? 'Nghệ sĩ trong file' : 'Artist in file', v: q.artist },

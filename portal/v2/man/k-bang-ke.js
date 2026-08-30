@@ -107,7 +107,7 @@ HT.dangKy({
           { t: t('maKh'), v: me.clientId },
           { t: t('loaiHd'), v: la ? 'Label' : (me.independent ? (c.lang === 'vi' ? 'Nghệ sĩ độc lập' : 'Independent artist')
                                                               : (c.lang === 'vi' ? 'Nghệ sĩ thuộc label' : 'Artist under a label')) },
-          !la && me.belongsTo ? { t: t('thuoc'), v: me.belongsTo } : null
+          !la && me.belongsTo ? { t: t('thuoc'), v: c.song(me, 'belongsTo') } : null
         ]) + '</div>' +
         '<div>' + HM.kv([
           { t: t('ky'), v: c.ky.label, manh: true },
@@ -123,15 +123,15 @@ HT.dangKy({
     var them = function (muc, gt, ghi, kieu) { dong.push({ muc: muc, gt: gt, ghi: ghi || '', kieu: kieu || '' }); };
 
     rec.chain.forEach(function (b) {
-      them(b.label, b.value, b.note, b.kind === 'final' ? 'tong' : b.kind === 'top' ? 'dau' : 'tru');
+      them(c.song(b, 'label'), b.value, c.song(b, 'note'), b.kind === 'final' ? 'tong' : b.kind === 'top' ? 'dau' : 'tru');
     });
     if (coTq) {
       them('—', null, '', 'ngan');
       pub.chain.forEach(function (b) {
-        them(b.label, b.value, b.note, b.kind === 'final' ? 'tong' : b.kind === 'top' ? 'dau' : 'tru');
+        them(c.song(b, 'label'), b.value, c.song(b, 'note'), b.kind === 'final' ? 'tong' : b.kind === 'top' ? 'dau' : 'tru');
       });
     } else if (me.hasPublishing) {
-      them(t('khongTq'), null, pub && pub.emptyReason ? pub.emptyReason : '', 'ngan');
+      them(t('khongTq'), null, pub ? c.song(pub, 'emptyReason') : '', 'ngan');
     }
 
     them(t('cong'), congPs, '', 'tongto');
@@ -141,7 +141,7 @@ HT.dangKy({
       if (rec.advance && rec.advance.recoupedThisPeriod > 0.004)
         them(t('truUng'), -rec.advance.recoupedThisPeriod,
           (c.lang === 'vi' ? 'còn lại sau kỳ này: ' : 'left after this period: ') + HT.fmt.usd(rec.advance.left), 'tru');
-      them(t('thucChi'), chi.payable, chi.note, 'tongto');
+      them(t('thucChi'), chi.payable, c.song(chi, 'note'), 'tongto');
       if (chi.carryOut > 0.004)
         them(t('donSau'), chi.carryOut,
           (c.lang === 'vi' ? 'dưới ngưỡng ' : 'below the ') + HT.fmt.usd0(chi.threshold) +

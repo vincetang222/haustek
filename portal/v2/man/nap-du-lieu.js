@@ -114,7 +114,7 @@ function veLuoi(c) {
   var A = c.A, t = c.t, P = HB.dayMau();
   var than = '<div class="mx"><table><thead><tr>' +
     '<th>' + (c.lang === 'vi' ? 'Kỳ' : 'Period') + '</th>' +
-    A.feeds.map(function (f) { return '<th>' + HM.esc(f.short) + '</th>'; }).join('') +
+    A.feeds.map(function (f) { return '<th>' + HM.esc(c.song(f, 'short')) + '</th>'; }).join('') +
     '<th>' + HM.esc(t('tacQuyen')) + '</th>' +
     '<th class="num">' + (c.lang === 'vi' ? 'Doanh thu vào sổ' : 'Booked') + '</th>' +
     '<th>' + (c.lang === 'vi' ? 'Trạng thái kỳ' : 'Period') + '</th>' +
@@ -131,9 +131,9 @@ function veLuoi(c) {
         ? '<div class="cell">' + HM.cham(co ? 'ok' : 'no', co ? t('daNap') : t('thieu')) + '</div>'
         : '<button type="button" class="cell" ' +
           (co ? 'data-go="' + i + ':' + f.id + '"' : 'data-nap="' + i + ':' + f.id + '"') +
-          ' data-tip="' + HM.esc('<b>' + f.name + '</b>' + (co
+          ' data-tip="' + HM.esc('<b>' + c.song(f, 'name') + '</b>' + (co
             ? '<span class="d">' + HM.esc(st.file) + '<br>' + HT.fmt.luc(st.at) + '<br>Bấm để gỡ</span>'
-            : '<span class="d">' + HM.esc(f.fmt) + '<br>Bấm để nạp</span>')) + '">' +
+            : '<span class="d">' + HM.esc(c.song(f, 'fmt')) + '<br>Bấm để nạp</span>')) + '">' +
           HM.cham(co ? 'ok' : 'no', co ? t('daNap') : t('thieu')) + '</button>') + '</td>';
     });
     var pb = A.state().pub[p.k], coPub = pb && pb.status === 'loaded';
@@ -142,7 +142,7 @@ function veLuoi(c) {
       ? '<div class="cell">' + (coPub ? HM.cham('ok', t('quy') + p.quarter) : '<span class="nil">—</span>') + '</div>'
       : '<button type="button" class="cell" ' +
         (coPub ? 'data-gopub="' + i + '"' : 'data-pub="' + i + '"') +
-        ' data-tip="' + HM.esc('<b>' + A.pubFeed.name + '</b><span class="d">' +
+        ' data-tip="' + HM.esc('<b>' + c.song(A.pubFeed, 'name') + '</b><span class="d">' +
           (coPub ? HM.esc(pb.file) : cuoiQuy ? 'Cuối quý ' + p.quarter + ' — nạp được'
                  : 'Tháng ' + p.month + ' ' + HM.esc(t('khongQuy')) + ' — nạp vào đây là đặt cả quý tiền vào sai kỳ') +
           '</span>') + '">' +
@@ -195,13 +195,13 @@ function veLuong(c) {
       dai: co ? { kieu: 'ok', icon: 'check', chu: HM.esc(c.ky.label + ' · ' + t('daNap')) }
               : { kieu: 'no', icon: 'alert', chu: HM.esc(c.ky.label + ' · ' + t('thieu')) },
       h2: '<span style="display:inline-block;width:9px;height:9px;border-radius:2px;background:' +
-          P[fi] + ';margin-right:8px"></span>' + HM.esc(f.name),
-      p: HM.esc(f.fmt),
+          P[fi] + ';margin-right:8px"></span>' + HM.esc(c.song(f, 'name')),
+      p: HM.esc(c.song(f, 'fmt')),
       hanhDong: duyet ? '' : (co
         ? '<button type="button" class="btn sm" data-nap="' + c.ky.idx + ':' + f.id + '" data-lai>' + HM.esc(t('napLai')) + '</button>' +
           '<button type="button" class="btn sm dang" data-go="' + c.ky.idx + ':' + f.id + '">' + HM.esc(t('go')) + '</button>'
         : '<button type="button" class="btn sm pri" data-nap="' + c.ky.idx + ':' + f.id + '">' + HM.esc(t('nap')) + '</button>'),
-      than: '<p class="say">' + HM.esc(f.note) + '</p>' +
+      than: '<p class="say">' + HM.esc(c.song(f, 'note')) + '</p>' +
         HM.kv([
           { t: c.lang === 'vi' ? 'Đã nạp' : 'Loaded periods', v: daNap + '/' + A.periods.length },
           { t: t('tenFile') + ' · ' + c.ky.label, v: co ? st.file : '—' },
@@ -213,9 +213,9 @@ function veLuong(c) {
         '<div style="margin-top:14px">' + HB.o({
           loai: 'cot', cao: 130, anTruc: true, chuThich: false,
           truc: A.periods.map(function (p) { return p.label.slice(0, 2); }),
-          tieuDeTip: function (i) { return f.short + ' · kỳ ' + A.periods[i].label; },
+          tieuDeTip: function (i) { return c.song(f, 'short') + ' · ' + (c.lang === 'vi' ? 'kỳ ' : 'period ') + A.periods[i].label; },
           chuTrong: c.lang === 'vi' ? 'Luồng này chưa nạp cho kỳ đó' : 'Feed not loaded for that period',
-          chuoi: [{ ten: f.short, gt: theoKy.map(function (v, i) { return A.feedLoaded(i, f.id) ? v : null; }), mau: P[fi] }],
+          chuoi: [{ ten: c.song(f, 'short'), gt: theoKy.map(function (v, i) { return A.feedLoaded(i, f.id) ? v : null; }), mau: P[fi] }],
           noiBat: c.ky.idx
         }) + '</div>'
     });
@@ -241,13 +241,13 @@ function veLuong(c) {
         : { kieu: 'info', icon: 'info', chu: HM.esc(c.lang === 'vi'
             ? c.ky.label + ' không phải cuối quý — kỳ này không có báo cáo tác quyền là đúng'
             : c.ky.label + ' is not a quarter end — no publishing report is expected') },
-    h2: HM.esc(A.pubFeed.name),
-    p: HM.esc(A.pubFeed.fmt),
+    h2: HM.esc(c.song(A.pubFeed, 'name')),
+    p: HM.esc(c.song(A.pubFeed, 'fmt')),
     hanhDong: A.isApproved(c.kyKey) ? '' : (coPub
       ? '<button type="button" class="btn sm dang" data-gopub="' + c.ky.idx + '">' + HM.esc(t('go')) + '</button>'
       : '<button type="button" class="btn sm' + (cuoiQuyNay ? ' pri' : '') + '" data-pub="' + c.ky.idx + '">' +
         HM.esc(t('nap')) + '</button>'),
-    than: '<p class="say">' + HM.esc(A.pubFeed.note) + ' ' +
+    than: '<p class="say">' + HM.esc(c.song(A.pubFeed, 'note')) + ' ' +
       (c.lang === 'vi'
         ? '<b>Tác quyền là dòng tiền tách rời</b>: nó thuộc về người sáng tác, không đi qua label, và không tính vào điều kiện “đủ ba luồng” của kỳ.'
         : '<b>Publishing is a separate money stream</b>: it belongs to the writers, never passes through a label, and does not count towards the period’s “all three feeds” condition.') + '</p>' +
@@ -283,7 +283,7 @@ function veOng(c) {
       : 'Each “Load” in this prototype simulates these eight steps. In the real system they are the hardest and most expensive part of the project — not the interface.',
     than: '<div class="steps">' + A.ingest.steps.map(function (s, i) {
       return '<div class="s ' + (i === 2 ? 'now' : 'ok') + '">' +
-        '<b>' + (i + 1) + '. ' + HM.esc(s.t) + '</b><span>' + HM.esc(s.d) + '</span>' +
+        '<b>' + (i + 1) + '. ' + HM.esc(c.song(s, 't')) + '</b><span>' + HM.esc(c.song(s, 'd')) + '</span>' +
         (i === 2 ? '<div class="tm">' + HM.esc(c.lang === 'vi'
           ? 'Dòng không khớp đi vào hàng chờ — xem màn Khớp ISRC'
           : 'Unmatched rows go to the queue — see ISRC matching') + '</div>' : '') + '</div>';
@@ -334,8 +334,8 @@ function veSu(c) {
 function napLuong(c, pi, fid, lai) {
   var A = c.A, f = A.feeds[fid], p = A.periods[pi];
   c.hoiThoai({
-    tieuDe: c.t('hoiNap') + ' · ' + f.name,
-    moTa: HM.esc(p.label) + ' · ' + HM.esc(f.fmt),
+    tieuDe: c.t('hoiNap') + ' · ' + c.song(f, 'name'),
+    moTa: HM.esc(p.label) + ' · ' + HM.esc(c.song(f, 'fmt')),
     than: '<label class="fld">' + (c.lang === 'vi' ? 'Tên file báo cáo' : 'Report file name') + '</label>' +
       '<input class="in" data-o="file" value="' + HM.esc(f.id === 0 ? 'sales-report-' + p.k.replace('-', '') + '.csv'
         : f.id === 1 ? 'yt-' + p.k.replace('-', '') + '-partner.csv.gz' : 'tiktok-' + p.k.replace('-', '') + '.xlsx') + '">' +
@@ -347,7 +347,7 @@ function napLuong(c, pi, fid, lai) {
     if (!r) return;
     try {
       var kq = A.ingest.load(pi, fid, { file: r.file, replace: !!lai });
-      c.thongBao(f.short + ' · ' + p.label + ' — ' + (c.lang === 'vi' ? 'đã nạp · ' : 'loaded · ') +
+      c.thongBao(c.song(f, 'short') + ' · ' + p.label + ' — ' + (c.lang === 'vi' ? 'đã nạp · ' : 'loaded · ') +
         kq.added + ' ' + c.t('sinhDong'), 'ok');
       HM.quenHet(); c.veLai();
     } catch (e) { c.thongBao(e.message, 'no'); }
@@ -358,13 +358,13 @@ function goLuong(c, pi, fid) {
   var A = c.A, f = A.feeds[fid], p = A.periods[pi];
   var mat = 0;
   for (var k = 0; k < A.trackCount; k++) mat += A.grossRecByFeed(k, pi, fid);
-  c.xacNhan(c.t('hoiGo') + ' · ' + f.short + ' · ' + p.label,
+  c.xacNhan(c.t('hoiGo') + ' · ' + c.song(f, 'short') + ' · ' + p.label,
     HM.esc(c.t('hoiGoMo')) + '<br><br>' +
     (c.lang === 'vi' ? 'Tổng của kỳ sẽ giảm ' : 'The period total will drop by ') +
     '<b>' + HM.esc(c.tien2(mat)) + '</b>.',
     c.t('go'), true).then(function (ok) {
       if (!ok) return;
-      try { A.ingest.unload(pi, fid); c.thongBao(f.short + ' · ' + p.label + ' — ' + (c.lang === 'vi' ? 'đã gỡ' : 'unloaded')); HM.quenHet(); c.veLai(); }
+      try { A.ingest.unload(pi, fid); c.thongBao(c.song(f, 'short') + ' · ' + p.label + ' — ' + (c.lang === 'vi' ? 'đã gỡ' : 'unloaded')); HM.quenHet(); c.veLai(); }
       catch (e) { c.thongBao(e.message, 'no'); }
     });
 }

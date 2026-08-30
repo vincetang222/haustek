@@ -113,16 +113,30 @@ const pIndexOf = k => PERIODS.findIndex(p => p.k === k);
    Tác quyền là dòng tiền tách rời, về theo quý — để riêng, không đếm vào
    "đủ 3 luồng".
    --------------------------------------------------------------------- */
+/* Chuỗi hiển thị mang kèm bản tiếng Anh ngay tại chỗ.
+   Giao diện có hai ngôn ngữ, mà những chuỗi này sinh ra ở TẦNG DỮ LIỆU chứ
+   không ở màn hình — nên nếu chỉ có một bản thì bật EN xong vẫn đọc ra
+   tiếng Việt, và bản dịch trông như làm dở. Đặt cạnh nhau ở đây để thêm
+   một luồng mới là buộc phải nghĩ tới cả hai. */
 const FEEDS = [
   { id: 0, name: "Đơn vị phân phối chính", short: "Chính",   fmt: "CSV · 41 cột · hằng tháng, ngày 20",
-    note: "Gộp toàn bộ cửa hàng trừ YouTube và TikTok" },
+    note: "Gộp toàn bộ cửa hàng trừ YouTube và TikTok",
+    nameEn: "Main distribution partner", shortEn: "Main", fmtEn: "CSV · 41 columns · monthly, on the 20th",
+    noteEn: "Every store except YouTube and TikTok, in one file" },
   { id: 1, name: "YouTube (mối riêng)",     short: "YouTube", fmt: "CSV nén · 3 file/kỳ · hằng tháng, ngày 25",
-    note: "Tách Content ID và YouTube Music thành hai loại dòng" },
+    note: "Tách Content ID và YouTube Music thành hai loại dòng",
+    nameEn: "YouTube (direct deal)", shortEn: "YouTube", fmtEn: "gzipped CSV · 3 files per period · monthly, on the 25th",
+    noteEn: "Content ID and YouTube Music arrive as two different row types" },
   { id: 2, name: "TikTok (mối riêng)",      short: "TikTok",  fmt: "XLSX · 1 sheet/lãnh thổ · hằng tháng, thất thường",
-    note: "Về trễ nhất, hay thiếu lãnh thổ nhỏ" }
+    note: "Về trễ nhất, hay thiếu lãnh thổ nhỏ",
+    nameEn: "TikTok (direct deal)", shortEn: "TikTok", fmtEn: "XLSX · one sheet per territory · monthly, irregular",
+    noteEn: "Arrives last, and often drops the smaller territories" }
 ];
 const PUB_FEED = { id: 9, name: "Tác quyền (các tổ chức quản lý)", short: "Tác quyền",
-  fmt: "mỗi tổ chức một định dạng · theo quý", note: "VCPMC, The MLC, ASCAP… về trễ 1–2 quý" };
+  fmt: "mỗi tổ chức một định dạng · theo quý", note: "VCPMC, The MLC, ASCAP… về trễ 1–2 quý",
+  nameEn: "Publishing (collecting societies)", shortEn: "Publishing",
+  fmtEn: "a different format per society · quarterly",
+  noteEn: "VCPMC, The MLC, ASCAP… one to two quarters behind" };
 
 const STORE_TOP = [
   { n: "Spotify",       w: .285, f: 0 }, { n: "YouTube Music", w: .155, f: 1 },
@@ -745,15 +759,25 @@ function approvalChecks(pIdx) {
   const unresolvedDiff = r.rows.filter(x => Math.abs(x.diff) > 0.005 && !x.accepted);
   return [
     { id: "feeds", ok: miss.length === 0, label: "Đã nạp đủ " + FEEDS.length + " luồng dữ liệu",
-      detail: miss.length ? "Còn thiếu: " + miss.map(f => f.name).join(", ") : "Đủ cả " + FEEDS.length + " luồng" },
+      detail: miss.length ? "Còn thiếu: " + miss.map(f => f.name).join(", ") : "Đủ cả " + FEEDS.length + " luồng",
+      labelEn: "All " + FEEDS.length + " data feeds loaded",
+      detailEn: miss.length ? "Still missing: " + miss.map(f => f.nameEn).join(", ") : "All " + FEEDS.length + " feeds are in" },
     { id: "recon", ok: unresolvedDiff.length === 0, label: "Đối chiếu khớp tới từng xu",
       detail: unresolvedDiff.length ? unresolvedDiff.map(x => x.feed.short + " lệch " + fmt.usd(x.diff)).join(" · ")
-                                    : "Tổng hệ thống khớp tổng trên file gốc" },
+                                    : "Tổng hệ thống khớp tổng trên file gốc",
+      labelEn: "Reconciliation balances to the cent",
+      detailEn: unresolvedDiff.length ? unresolvedDiff.map(x => x.feed.shortEn + " out by " + fmt.usd(x.diff)).join(" · ")
+                                      : "The system total matches the source files" },
     { id: "queue", ok: ratio <= CFG.BLACKBOX_CAP, label: "Tiền treo dưới " + (CFG.BLACKBOX_CAP * 100).toFixed(1) + "% doanh thu kỳ",
-      detail: fmt.usd(pendingAmt) + " đang treo · " + (ratio * 100).toFixed(2) + "% doanh thu kỳ" },
+      detail: fmt.usd(pendingAmt) + " đang treo · " + (ratio * 100).toFixed(2) + "% doanh thu kỳ",
+      labelEn: "Money on hold under " + (CFG.BLACKBOX_CAP * 100).toFixed(1) + "% of period revenue",
+      detailEn: fmt.usd(pendingAmt) + " on hold · " + (ratio * 100).toFixed(2) + "% of period revenue" },
     { id: "fx", ok: !!state.fx.locked[pk], label: "Đã chốt tỷ giá cho kỳ",
       detail: state.fx.locked[pk] ? "1 USD = " + fmt.num(state.fx.locked[pk].rate) + " ₫ · chốt " + state.fx.locked[pk].at
-                                  : "Chưa chốt — số quy đổi sang VND sẽ trôi theo tỷ giá hôm nay" }
+                                  : "Chưa chốt — số quy đổi sang VND sẽ trôi theo tỷ giá hôm nay",
+      labelEn: "FX rate locked for the period",
+      detailEn: state.fx.locked[pk] ? "1 USD = " + fmt.num(state.fx.locked[pk].rate) + " ₫ · locked " + state.fx.locked[pk].at
+                                    : "Not locked — VND figures will drift with today’s rate" }
   ];
 }
 function canApprove(pIdx) { return approvalChecks(pIdx).every(c => c.ok); }
@@ -929,22 +953,40 @@ function nowISO() { return new Date().toISOString().slice(0, 19).replace("T", " 
 const QUESTIONS = [
   { id: "q1", t: "Client ID có duy nhất cho mỗi nghệ sĩ không?",
     why: "Đây là chỗ quyết định ai đăng nhập thì thấy dòng nào. Nếu một bản ghi mang nhiều Client ID thì phải có bảng nối riêng, không thể để một cột.",
-    guess: "Bản mẫu đang giả định 1 nghệ sĩ = 1 Client ID, và bản ghi trỏ về đúng một nghệ sĩ chính." },
+    guess: "Bản mẫu đang giả định 1 nghệ sĩ = 1 Client ID, và bản ghi trỏ về đúng một nghệ sĩ chính." ,
+    tEn: "Is a Client ID unique per artist?",
+    whyEn: "This decides who sees which rows when they log in. If one recording can carry several Client IDs, that needs its own join table — it cannot be a single column.",
+    guessEn: "The prototype assumes 1 artist = 1 Client ID, and that a recording points at exactly one main artist." },
   { id: "q2", t: "ISRC (Optional 1) nghĩa là gì?",
     why: "Tên cột hàm ý sau này còn Optional 2. Nếu một bài mang hai mã (phát hành lại, đổi nhà phân phối) thì báo cáo về theo từng mã riêng và phải gộp lại, không thì một bài hiện thành hai dòng rời rạc.",
-    guess: "Bản mẫu để mã phụ thành bảng riêng (mỗi bài 0..n mã), không thêm cột." },
+    guess: "Bản mẫu để mã phụ thành bảng riêng (mỗi bài 0..n mã), không thêm cột." ,
+    tEn: "What does ISRC (Optional 1) mean?",
+    whyEn: "The column name implies an Optional 2 will follow. If one track carries two codes (a re-release, a change of distributor), reports arrive against each code separately and have to be merged — otherwise one track shows as two disconnected rows.",
+    guessEn: "The prototype keeps alternate codes in a separate table (0..n per track) rather than adding columns." },
   { id: "q3", t: "Rate Share một cột có đủ không?",
     why: "Nếu là 'phần khách vs phần Haustek' thì đủ. Nếu nghệ sĩ / producer / songwriter mỗi người một phần thì phải tách bảng chia phần, mỗi dòng một người.",
-    guess: "Bản mẫu tách: tỷ lệ bên nhận chính nằm ở bảng có ngày hiệu lực, điểm producer là trường riêng trên bản ghi, phần sáng tác là bảng riêng." },
+    guess: "Bản mẫu tách: tỷ lệ bên nhận chính nằm ở bảng có ngày hiệu lực, điểm producer là trường riêng trên bản ghi, phần sáng tác là bảng riêng." ,
+    tEn: "Is one Rate Share column enough?",
+    whyEn: "If it means 'the client's share vs Haustek's', then yes. If artist / producer / songwriter each have their own share, it needs a split table with one row per person.",
+    guessEn: "The prototype separates them: the main payee's rate lives in a dated table, producer points are a field on the recording, and writer shares are their own table." },
   { id: "q4", t: "Tính bằng tiền gì, quy đổi lúc nào?",
     why: "Chuẩn ngành là giữ tiền tệ gốc của từng nền tảng rồi quy đổi sang tiền chi trả. Cần chốt: quy sang VND hay giữ USD, dùng tỷ giá ngày nhận báo cáo, ngày chốt kỳ hay ngày chi trả.",
-    guess: "Bản mẫu tính bằng USD, chốt một tỷ giá cho mỗi kỳ tại thời điểm duyệt kỳ, và khoá tỷ giá đó lại." },
+    guess: "Bản mẫu tính bằng USD, chốt một tỷ giá cho mỗi kỳ tại thời điểm duyệt kỳ, và khoá tỷ giá đó lại." ,
+    tEn: "Which currency, converted when?",
+    whyEn: "Industry practice is to keep each platform's source currency and convert at payout. We need to settle: convert to VND or stay in USD, and use the rate on the report date, the period-close date, or the payment date.",
+    guessEn: "The prototype computes in USD, locks one rate per period at approval, and freezes it." },
   { id: "q5", t: "Album / Track / Composition có tách làm ba thực thể không?",
     why: "Hệ thống tham chiếu đang xài tách hẳn ba mục. Bản mẫu đang gộp track với composition — biết là sai nhưng phải chốt cùng lúc với schema.",
-    guess: "Bản mẫu vẫn gộp track với composition, chỉ tách phần sáng tác thành bảng chia phần." },
+    guess: "Bản mẫu vẫn gộp track với composition, chỉ tách phần sáng tác thành bảng chia phần." ,
+    tEn: "Are Album / Track / Composition three separate entities?",
+    whyEn: "The reference system keeps all three apart. The prototype merges track with composition — we know that is wrong, but it has to be settled together with the schema.",
+    guessEn: "The prototype still merges track with composition, and only separates writer shares into their own split table." },
   { id: "q6", t: "Label có kiêm publisher không?",
     why: "Quyết định label có thấy tab tác quyền hay không.",
-    guess: "Bản mẫu giả định KHÔNG — tác quyền thuộc người sáng tác, không đi qua label." },
+    guess: "Bản mẫu giả định KHÔNG — tác quyền thuộc người sáng tác, không đi qua label." ,
+    tEn: "Does a label also act as publisher?",
+    whyEn: "This decides whether a label sees a publishing tab at all.",
+    guessEn: "The prototype assumes NOT — publishing belongs to the writers and never passes through a label." },
   { id: "q7", t: "Con số ở cột doanh thu trong file báo cáo là TRƯỚC hay SAU khi đơn vị phân phối giữ phần của họ?",
     why: "Đây là câu hỏi đắt nhất trong danh sách, và tài liệu bàn giao chưa nêu. "
        + "Nếu con số trong file đã trừ phần của đối tác rồi mà hệ thống lại tính phí Haustek 15% trên đó, "
@@ -954,13 +996,20 @@ const QUESTIONS = [
        + "Không đoán được — phải nhìn file báo cáo doanh thu mẫu.",
     guess: "Bản mẫu đang coi con số trong file là doanh thu gộp thật, và phí Haustek 15% tính trên đó. "
          + "Phần đối tác phân phối giữ nằm ngoài mô hình. Nếu thực tế ngược lại thì phải sửa chuỗi chia tiền, "
-         + "không phải sửa giao diện." }
+         + "không phải sửa giao diện." ,
+    tEn: "Is the revenue figure in the report file BEFORE or AFTER the distributor takes their share?",
+    whyEn: "This is the most expensive question on the list, and the handoff document does not address it. If the figure in the file is already net of the partner's share and the system then charges the 15% Haustek fee on top of it, then what an artist reads as 'gross revenue' is not gross revenue — and every step after it is off by the same amount. Conversely, if it is a true gross figure and the system does not deduct the partner's share, Haustek is short. The gap between the two readings is over 10% on every line, every period, every person. It cannot be guessed — it needs a sample revenue report.",
+    guessEn: "The prototype treats the figure in the file as a true gross number and charges the 15% Haustek fee on it. The distributor's own share sits outside the model. If reality is the other way round, the money chain has to change — not the interface." }
 ];
 const SAMPLES_NEEDED = [
   { id: "s1", t: "File mẫu master data 10–15 dòng",
-    why: "Đã xoá hai cột Distribution và Rate Share. Cần thấy ĐỊNH DẠNG GIÁ TRỊ THẬT, không phải tên cột: ISRC viết hoa hay thường, ngày kiểu nào, Client ID có tiền tố gì, tên nghệ sĩ có dấu ra sao." },
+    why: "Đã xoá hai cột Distribution và Rate Share. Cần thấy ĐỊNH DẠNG GIÁ TRỊ THẬT, không phải tên cột: ISRC viết hoa hay thường, ngày kiểu nào, Client ID có tiền tố gì, tên nghệ sĩ có dấu ra sao." ,
+    tEn: "A sample master-data file, 10–15 rows",
+    whyEn: "The Distribution and Rate Share columns have been removed. What we need to see is the ACTUAL VALUE FORMAT, not the column names: is the ISRC upper or lower case, which date format, does the Client ID carry a prefix, how are Vietnamese artist names accented." },
   { id: "s2", t: "File báo cáo doanh thu mẫu của cả 3 luồng",
-    why: "Che số tiền, giữ nguyên tên cột và 1–2 dòng. Cấu trúc ba file này quyết định toàn bộ thiết kế đường ống nạp — đây là phần khó nhất và cũng là phần không đoán được." }
+    why: "Che số tiền, giữ nguyên tên cột và 1–2 dòng. Cấu trúc ba file này quyết định toàn bộ thiết kế đường ống nạp — đây là phần khó nhất và cũng là phần không đoán được." ,
+    tEn: "A sample revenue report from each of the 3 feeds",
+    whyEn: "Mask the amounts, keep the column names and one or two rows. The structure of these three files determines the entire ingest design — the hardest part of the project, and the part that cannot be guessed." }
 ];
 
 /* =====================================================================
@@ -992,14 +1041,22 @@ const fx = {
    giao diện.
    ===================================================================== */
 const INGEST_STEPS = [
-  { k: "parse",     t: "Đọc file thô",              d: "Mỗi luồng một parser riêng — định dạng khác nhau hoàn toàn" },
-  { k: "normalise", t: "Chuẩn hoá về một schema",    d: "Tên cột, đơn vị, kiểu ngày, cách viết tên cửa hàng" },
-  { k: "match",     t: "Khớp ISRC với danh mục",     d: "Khâu dễ mất tiền nhất — dòng không khớp phải vào hàng chờ, không được bỏ im" },
-  { k: "fxconv",    t: "Quy đổi tiền tệ",            d: "Theo tỷ giá đã chốt cho kỳ" },
-  { k: "write",     t: "Ghi vào bảng thô",           d: "Đánh dấu rõ về từ luồng nào, kỳ nào" },
-  { k: "rollup",    t: "Dựng lại bảng tổng hợp",     d: "rollup theo bản ghi × kỳ, thêm cửa hàng, thêm lãnh thổ, theo bên nhận" },
-  { k: "flag",      t: "Đánh dấu đã nạp luồng",      d: "Để hệ thống biết kỳ nào còn thiếu gì" },
-  { k: "notify",    t: "Báo cho người đối chiếu",    d: "Chưa duyệt kỳ thì khách chưa thấy gì" }
+  { k: "parse",     t: "Đọc file thô",              d: "Mỗi luồng một parser riêng — định dạng khác nhau hoàn toàn",
+    tEn: "Read the raw file",           dEn: "One parser per feed — the formats have nothing in common" },
+  { k: "normalise", t: "Chuẩn hoá về một schema",    d: "Tên cột, đơn vị, kiểu ngày, cách viết tên cửa hàng",
+    tEn: "Normalise to one schema",     dEn: "Column names, units, date formats, how each store spells its own name" },
+  { k: "match",     t: "Khớp ISRC với danh mục",     d: "Khâu dễ mất tiền nhất — dòng không khớp phải vào hàng chờ, không được bỏ im",
+    tEn: "Match ISRCs to the catalogue", dEn: "Where money goes missing — an unmatched row goes to the queue, never quietly nowhere" },
+  { k: "fxconv",    t: "Quy đổi tiền tệ",            d: "Theo tỷ giá đã chốt cho kỳ",
+    tEn: "Convert currency",            dEn: "At the rate locked for the period" },
+  { k: "write",     t: "Ghi vào bảng thô",           d: "Đánh dấu rõ về từ luồng nào, kỳ nào",
+    tEn: "Write to the raw table",      dEn: "Stamped with which feed and which period it came from" },
+  { k: "rollup",    t: "Dựng lại bảng tổng hợp",     d: "rollup theo bản ghi × kỳ, thêm cửa hàng, thêm lãnh thổ, theo bên nhận",
+    tEn: "Rebuild the rollups",         dEn: "By recording × period, then by store, by territory, by payee" },
+  { k: "flag",      t: "Đánh dấu đã nạp luồng",      d: "Để hệ thống biết kỳ nào còn thiếu gì",
+    tEn: "Flag the feed as loaded",     dEn: "So the system knows which period is still short of what" },
+  { k: "notify",    t: "Báo cho người đối chiếu",    d: "Chưa duyệt kỳ thì khách chưa thấy gì",
+    tEn: "Tell the reconciler",         dEn: "Until the period is approved, no client sees anything" }
 ];
 const ingest = {
   steps: INGEST_STEPS,
@@ -1333,12 +1390,14 @@ const api = {
     return scrub({
       role, partyId, clientId: me.clientId, name: me.name,
       belongsTo: isLabel ? null : (me.labelId >= 0 ? LABELS[me.labelId].name : "Độc lập"),
+      belongsToEn: isLabel ? null : (me.labelId >= 0 ? LABELS[me.labelId].name : "Independent"),
       independent: isLabel ? false : me.labelId < 0,
       hasRecording: recCount > 0,
       /* Tác quyền thuộc người sáng tác, không đi qua label — mục 2.3 */
       hasPublishing: !isLabel && pubCount > 0,
       trackCount: recCount, compositionCount: pubCount,
-      currency: "USD", fxNote: "Số liệu tính bằng USD · tỷ giá quy đổi chốt tại thời điểm duyệt kỳ"
+      currency: "USD", fxNote: "Số liệu tính bằng USD · tỷ giá quy đổi chốt tại thời điểm duyệt kỳ",
+      fxNoteEn: "Figures are in USD · the conversion rate is locked when the period is approved"
     });
   },
 
@@ -1371,21 +1430,29 @@ const api = {
     const chain = [];
     if (stream === "rec") {
       chain.push({ key: "gross", label: role === "label" ? "Doanh thu gộp nghệ sĩ trong label" : "Doanh thu gộp bài của bạn",
-                   value: a.gross, note: "trước mọi khoản trừ", kind: "top" });
-      chain.push({ key: "fee", label: "Phí Haustek", value: -a.fee,
-                   note: fmt.pct(CFG.HAUSTEK_FEE) + " doanh thu gộp · theo hợp đồng", kind: "out" });
+                   labelEn: role === "label" ? "Gross revenue, artists on your label" : "Gross revenue on your tracks",
+                   value: a.gross, note: "trước mọi khoản trừ", noteEn: "before any deduction", kind: "top" });
+      chain.push({ key: "fee", label: "Phí Haustek", labelEn: "Haustek fee", value: -a.fee,
+                   note: fmt.pct(CFG.HAUSTEK_FEE) + " doanh thu gộp · theo hợp đồng",
+                   noteEn: fmt.pct(CFG.HAUSTEK_FEE) + " of gross · per your contract", kind: "out" });
       if (role === "label") {
-        chain.push({ key: "artist", label: "Trả cho nghệ sĩ", value: -cents(a.artist + a.producer),
-                     note: "theo tỷ lệ bạn đặt, tính theo tỷ lệ có hiệu lực trong kỳ", kind: "out" });
-        chain.push({ key: "final", label: "Label giữ lại", value: a.labelCut, note: "phần của bạn kỳ này", kind: "final" });
+        chain.push({ key: "artist", label: "Trả cho nghệ sĩ", labelEn: "Paid to your artists",
+                     value: -cents(a.artist + a.producer),
+                     note: "theo tỷ lệ bạn đặt, tính theo tỷ lệ có hiệu lực trong kỳ",
+                     noteEn: "at the rate you set, as it stood during the period", kind: "out" });
+        chain.push({ key: "final", label: "Label giữ lại", labelEn: "Your label keeps",
+                     value: a.labelCut, note: "phần của bạn kỳ này", noteEn: "your share this period", kind: "final" });
       } else {
         const me = ARTISTS[partyId];
         chain.push({ key: "cut", label: me.labelId >= 0 ? "Phần label giữ" : "Phần Haustek giữ thêm",
+                     labelEn: me.labelId >= 0 ? "Your label’s share" : "Haustek’s additional share",
                      value: -a.labelCut,
-                     note: me.labelId >= 0 ? LABELS[me.labelId].name : "theo hợp đồng độc lập", kind: "out" });
+                     note: me.labelId >= 0 ? LABELS[me.labelId].name : "theo hợp đồng độc lập",
+                     noteEn: me.labelId >= 0 ? LABELS[me.labelId].name : "per your independent agreement", kind: "out" });
         if (a.producer > 0.005)
-          chain.push({ key: "producer", label: "Điểm producer", value: -a.producer,
-                       note: "trừ vào phần của bạn, không cộng thêm bên trên", kind: "out" });
+          chain.push({ key: "producer", label: "Điểm producer", labelEn: "Producer points", value: -a.producer,
+                       note: "trừ vào phần của bạn, không cộng thêm bên trên",
+                       noteEn: "taken off your share, not added on top", kind: "out" });
         if (advLeft > 0 || (payoutRow && payoutRow.recoup > 0)) {
           /* Thu hồi tạm ứng chạy ở cấp BÊN NHẬN — gộp cả doanh thu bản ghi
              lẫn tác quyền lẫn phần dồn từ kỳ trước. Nhưng chuỗi này chỉ nói
@@ -1400,39 +1467,54 @@ const api = {
           const rec = Math.min(cents(recAll * phan), a.artist);
           const conNo = payoutRow ? payoutRow.advanceLeft : Math.max(advLeft - recAll, 0);
           const camCaHai = payoutRow && payoutRow.earned > a.artist + 0.005;
-          chain.push({ key: "recoup", label: "Trừ vào khoản tạm ứng", value: -rec,
+          chain.push({ key: "recoup", label: "Trừ vào khoản tạm ứng", labelEn: "Offset against your advance", value: -rec,
                        note: "đã ứng " + fmt.usd0(advOpening) + " · còn phải thu hồi " + fmt.usd0(conNo)
                            + (camCaHai ? " · phần thu hồi tính trên cả doanh thu bản ghi lẫn tác quyền, đây là phần rơi vào dòng này" : ""),
+                       noteEn: fmt.usd0(advOpening) + " advanced · " + fmt.usd0(conNo) + " still to recover"
+                           + (camCaHai ? " · recoupment covers recording and publishing together; this is the part falling on this stream" : ""),
                        kind: "out" });
-          chain.push({ key: "final", label: "Thực nhận kỳ này", value: cents(a.artist - rec),
-                       note: conNo <= 0 ? "đã thu hồi xong khoản tạm ứng" : "đang trừ dần vào khoản tạm ứng", kind: "final" });
+          chain.push({ key: "final", label: "Thực nhận kỳ này", labelEn: "Yours this period", value: cents(a.artist - rec),
+                       note: conNo <= 0 ? "đã thu hồi xong khoản tạm ứng" : "đang trừ dần vào khoản tạm ứng",
+                       noteEn: conNo <= 0 ? "your advance is now fully recovered" : "still being offset against your advance",
+                       kind: "final" });
         } else {
-          chain.push({ key: "final", label: "Về tay bạn", value: a.artist, note: "số tiền kỳ này", kind: "final" });
+          chain.push({ key: "final", label: "Về tay bạn", labelEn: "Yours", value: a.artist,
+                       note: "số tiền kỳ này", noteEn: "the amount for this period", kind: "final" });
         }
       }
     } else {
       const net = cents(a.gross - a.fee);
-      chain.push({ key: "gross", label: "Tác quyền thu được", value: a.gross, note: "từ VCPMC, The MLC và các tổ chức khác", kind: "top" });
-      chain.push({ key: "fee", label: "Phí quản lý", value: -a.fee, note: fmt.pct(CFG.PUB_FEE), kind: "out" });
+      chain.push({ key: "gross", label: "Tác quyền thu được", labelEn: "Publishing collected", value: a.gross,
+                   note: "từ VCPMC, The MLC và các tổ chức khác",
+                   noteEn: "from VCPMC, The MLC and other societies", kind: "top" });
+      chain.push({ key: "fee", label: "Phí quản lý", labelEn: "Administration fee", value: -a.fee,
+                   note: fmt.pct(CFG.PUB_FEE), noteEn: fmt.pct(CFG.PUB_FEE), kind: "out" });
       if (net - a.total > 0.005)
-        chain.push({ key: "co", label: "Phần đồng tác giả", value: -cents(net - a.total), note: "theo phần sáng tác đã đăng ký", kind: "out" });
-      chain.push({ key: "final", label: "Về tay bạn", value: a.total, note: "số tiền kỳ này", kind: "final" });
+        chain.push({ key: "co", label: "Phần đồng tác giả", labelEn: "Co-writers’ shares", value: -cents(net - a.total),
+                     note: "theo phần sáng tác đã đăng ký", noteEn: "per the registered writer splits", kind: "out" });
+      chain.push({ key: "final", label: "Về tay bạn", labelEn: "Yours", value: a.total,
+                   note: "số tiền kỳ này", noteEn: "the amount for this period", kind: "final" });
     }
 
     /* Kỳ trống vì hai lý do rất khác nhau: chưa có báo cáo về (tác quyền
        theo quý), hay có báo cáo mà bài của người này không phát sinh gì.
        Nói nhầm lý do là làm người ta hoang mang vô cớ. */
-    let emptyReason = null, nextPub = null;
+    let emptyReason = null, emptyReasonEn = null, nextPub = null;
     if (a.gross <= 0) {
       if (stream === "pub") {
         if (!pubLoaded(p)) {
           emptyReason = "Tác quyền về theo quý, không phải hằng tháng — kỳ này chưa có tổ chức nào báo cáo.";
+          emptyReasonEn = "Publishing settles quarterly, not monthly — no society has reported for this period.";
           const withPub = PERIODS.filter(x => state.approved[x.k] && pubLoaded(x.idx));
           const before = withPub.filter(x => x.idx < p).pop() || withPub[withPub.length - 1];
           nextPub = before ? { k: before.k, label: before.label } : null;
-        } else emptyReason = "Kỳ này có báo cáo tác quyền, nhưng chưa bài nào của bạn phát sinh.";
+        } else {
+          emptyReason = "Kỳ này có báo cáo tác quyền, nhưng chưa bài nào của bạn phát sinh.";
+          emptyReasonEn = "There is a publishing report for this period, but none of your works earned.";
+        }
       } else {
         emptyReason = "Kỳ này chưa bài nào của bạn phát sinh doanh thu.";
+        emptyReasonEn = "None of your tracks earned anything this period.";
       }
     }
     /* Tỷ giá của kỳ KHÔNG phải bí mật — đó là tỷ giá dùng để trả tiền cho
@@ -1440,7 +1522,7 @@ const api = {
        lại báo cáo cũ sau nửa năm vẫn phải ra đúng con số đã chuyển đi. */
     const lockedFx = state.fx.locked[periodKey] || null;
     return scrub({
-      periodKey, stream, emptyReason, nextPub,
+      periodKey, stream, emptyReason, emptyReasonEn, nextPub,
       fx: { rate: lockedFx ? lockedFx.rate : state.fx.rate,
             at: lockedFx ? lockedFx.at : null,
             locked: !!lockedFx },
@@ -1465,7 +1547,9 @@ const api = {
         coversBothStreams: payoutRow.earned > a.artist + 0.005,
         threshold: CFG.PAYOUT_MIN,
         note: payoutRow.payable > 0 ? "sẽ chi trong kỳ chi trả tới"
-          : (payoutRow.carryOut > 0 ? "dưới ngưỡng " + fmt.usd0(CFG.PAYOUT_MIN) + " — dồn sang kỳ sau" : "") } : null,
+          : (payoutRow.carryOut > 0 ? "dưới ngưỡng " + fmt.usd0(CFG.PAYOUT_MIN) + " — dồn sang kỳ sau" : ""),
+        noteEn: payoutRow.payable > 0 ? "will be transferred in the next payout run"
+          : (payoutRow.carryOut > 0 ? "below the " + fmt.usd0(CFG.PAYOUT_MIN) + " threshold — carried to the next period" : "") } : null,
       approvedAt: state.approved[periodKey].at
     });
   },
@@ -1588,25 +1672,27 @@ const api = {
     if (stream === "rec") {
       const s = splitRec(i, g, periodKey);
       out.steps = [
-        { label: "Doanh thu gộp", value: s.gross },
-        { label: "Phí Haustek", value: -s.fee },
-        { label: tLabel[i] >= 0 ? "Label giữ" : "Haustek giữ thêm", value: -s.labelCut }
+        { label: "Doanh thu gộp", labelEn: "Gross revenue", value: s.gross },
+        { label: "Phí Haustek", labelEn: "Haustek fee", value: -s.fee },
+        { label: tLabel[i] >= 0 ? "Label giữ" : "Haustek giữ thêm",
+          labelEn: tLabel[i] >= 0 ? "Label’s share" : "Haustek’s additional share", value: -s.labelCut }
       ];
-      if (s.producer > 0.004) out.steps.push({ label: "Điểm producer", value: -s.producer });
-      out.steps.push({ label: role === "label" ? "Về tay nghệ sĩ" : "Về tay bạn", value: s.artist, strong: true });
+      if (s.producer > 0.004) out.steps.push({ label: "Điểm producer", labelEn: "Producer points", value: -s.producer });
+      out.steps.push({ label: role === "label" ? "Về tay nghệ sĩ" : "Về tay bạn",
+                       labelEn: role === "label" ? "To the artist" : "Yours", value: s.artist, strong: true });
       if (role === "label") out.steps = [
-        { label: "Doanh thu gộp", value: s.gross },
-        { label: "Phí Haustek", value: -s.fee },
-        { label: "Trả cho nghệ sĩ", value: -cents(s.artist + s.producer) },
-        { label: "Label giữ", value: s.labelCut, strong: true }
+        { label: "Doanh thu gộp", labelEn: "Gross revenue", value: s.gross },
+        { label: "Phí Haustek", labelEn: "Haustek fee", value: -s.fee },
+        { label: "Trả cho nghệ sĩ", labelEn: "Paid to the artist", value: -cents(s.artist + s.producer) },
+        { label: "Label giữ", labelEn: "Label keeps", value: s.labelCut, strong: true }
       ];
     } else {
       const share = writerShare(i, partyId);
       out.steps = [
-        { label: "Tác quyền thu được", value: cents(g) },
-        { label: "Phí quản lý", value: -cents(g * CFG.PUB_FEE) },
-        { label: "Phần sáng tác của bạn", value: null, text: fmt.pct(share) },
-        { label: "Về tay bạn", value: m, strong: true }
+        { label: "Tác quyền thu được", labelEn: "Publishing collected", value: cents(g) },
+        { label: "Phí quản lý", labelEn: "Administration fee", value: -cents(g * CFG.PUB_FEE) },
+        { label: "Phần sáng tác của bạn", labelEn: "Your writer share", value: null, text: fmt.pct(share) },
+        { label: "Về tay bạn", labelEn: "Yours", value: m, strong: true }
       ];
     }
     return scrub(out);

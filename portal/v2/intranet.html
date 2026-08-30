@@ -49,15 +49,20 @@ HT.chay({
   A: A,
   kyDanhSach: function () {
     return A.periods.map(function (p) {
+      /* Nhãn này hiện trong ô chọn kỳ ở thanh trên, nên nó là CHỮ GIAO
+         DIỆN và phải đổi theo ngôn ngữ. HT.lang là nguồn duy nhất. */
+      var en = HT.lang === 'en';
       return { k: p.k, label: p.label, idx: p.idx,
-               nhan: A.isApproved(p.k) ? 'đã duyệt' : 'chưa duyệt' };
+               nhan: A.isApproved(p.k) ? (en ? 'approved' : 'đã duyệt')
+                                       : (en ? 'not approved' : 'chưa duyệt') };
     });
   },
   kyMacDinh: A.periods[A.periods.length - 1].k,
   ghiChu: function (c) {
     var f = A.fx.get();
-    return '1 USD = ' + HT.fmt.n(f.locked[c.kyKey] ? f.locked[c.kyKey].rate : f.rate) + ' ₫'
-      + (f.locked[c.kyKey] ? '' : ' · chưa chốt');
+    var khoa = f.locked[c.kyKey];
+    return '1 USD = ' + HT.fmt.n(khoa ? khoa.rate : f.rate) + ' ₫'
+      + (khoa ? '' : (c.lang === 'vi' ? ' · chưa chốt' : ' · not locked'));
   },
   chanTrai: function (c) {
     return '<b>' + HT.esc('ops@haustek-group.com') + '</b><span>' +

@@ -150,8 +150,11 @@ function csv(ten, cot, dong) {
 function lech(nay, truoc, nhanTruoc) {
   if (truoc == null || !truoc) return null;
   var d = (nay - truoc) / truoc;
-  var s = (d >= 0 ? '▲ ' : '▼ ') + Math.abs(d * 100).toFixed(1).replace('.', ',') + '%';
-  return { chu: s + (nhanTruoc ? ' so với ' + nhanTruoc : ''), duong: d >= 0, ty: d };
+  var pt = Math.abs(d * 100).toFixed(1);
+  if (HT.lang !== 'en') pt = pt.replace('.', ',');
+  var s = (d >= 0 ? '▲ ' : '▼ ') + pt + '%';
+  var noi = HT.lang === 'en' ? ' vs ' : ' so với ';
+  return { chu: s + (nhanTruoc ? noi + nhanTruoc : ''), duong: d >= 0, ty: d };
 }
 function lechHtml(nay, truoc, nhanTruoc) {
   var l = lech(nay, truoc, nhanTruoc);

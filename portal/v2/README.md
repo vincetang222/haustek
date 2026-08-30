@@ -59,6 +59,28 @@ gọi `HAUSTEK.lockdown()` **trước khi** nạp bất cứ màn hình nào, v�
 | Tạm ứng | `man/k-tam-ung.js` | Vì sao kỳ này có doanh thu mà không nhận được tiền |
 | Tài liệu | `man/k-tai-lieu.js` | Bảng kê các kỳ cũ, và câu trả lời cho những câu hay hỏi |
 
+## Hai ngôn ngữ
+
+Nút VI / EN trên thanh trên, lưu ở `localStorage` (`haustek.lang`). Ba tầng chữ:
+
+| Chữ ở đâu | Lấy bằng | Ví dụ |
+|---|---|---|
+| Của một màn hình | `c.t('khoa')` — từ điển `chu:{vi,en}` của chính màn đó | "Bảng kê kỳ" / "Period statement" |
+| Của khung | `c.t()` rơi về từ điển khung khi màn không có khoá | "Kỳ", "Huỷ", "Đóng" |
+| **Của tầng dữ liệu** | `c.song(o, 'label')` → `o.labelEn` khi đang EN | tên luồng, điều kiện duyệt, từng chặng chuỗi tiền |
+
+Tầng thứ ba là chỗ dễ quên nhất: những chuỗi đó **sinh ra ở `haustek-core.js`**, không ở
+màn hình, nên chúng mang sẵn bản tiếng Anh bên cạnh (`name`/`nameEn`, `label`/`labelEn`,
+`note`/`noteEn`). Đọc thẳng `x.label` là bật EN xong vẫn ra tiếng Việt.
+
+**Tên nghệ sĩ, tên bài, tên label, tên cửa hàng KHÔNG dịch** — đó là dữ liệu, và
+`nae & de'lay` ở chế độ EN vẫn là `nae & de'lay`.
+
+Số và ngày **đi theo ngôn ngữ**: `$7.537,23` và `22.06.2026` ở VI, `$7,537.23` và
+`22 Jun 2026` ở EN. Lúc đầu tôi cố định kiểu Việt với lý do "công cụ nội bộ của công ty
+Việt Nam" — đúng với cửa nội bộ, sai hẳn với cổng khách, vì người bật EN là đối tác nước
+ngoài và với họ `$7.537,23` đọc ra bảy nghìn hay bảy đô là chuyện hên xui.
+
 ## Chế độ sáng/tối
 
 Ba trạng thái, không phải hai. Nút bật/tắt nằm trên thanh trên của cả hai cửa.

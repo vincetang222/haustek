@@ -125,7 +125,7 @@ HT.dangKy({
     if (s.emptyReason) {
       html += HM.the({
         than: HM.trong({ icon: LUONG === 'pub' ? 'cal' : 'empty',
-          tieuDe: t('trongMo'), moTa: s.emptyReason,
+          tieuDe: t('trongMo'), moTa: c.song(s, 'emptyReason'),
           nut: s.nextPub ? '<button type="button" class="btn pri" data-kyto="' + HM.esc(s.nextPub.k) + '">' +
             HM.esc((c.lang === 'vi' ? 'Xem kỳ ' : 'See ') + s.nextPub.label) + '</button>' : '' })
       });
@@ -159,13 +159,13 @@ HT.dangKy({
         than: '<div class="wf">' + s.chain.map(function (b) {
           return '<div class="st ' + (b.kind === 'out' ? 'out' : b.kind === 'final' ? 'fin' : '') + '">' +
             '<div class="mk"></div>' +
-            '<div><div class="lbl">' + HM.esc(b.label) + '</div>' +
-            (b.note ? '<div class="nt">' + HM.esc(b.note) + '</div>' : '') + '</div>' +
+            '<div><div class="lbl">' + HM.esc(c.song(b, 'label')) + '</div>' +
+            (c.song(b, 'note') ? '<div class="nt">' + HM.esc(c.song(b, 'note')) + '</div>' : '') + '</div>' +
             '<div class="amt">' + HM.esc(HT.fmt.usd(b.value)) + '</div></div>';
         }).join('') + '</div>' +
         '<div style="margin-top:16px">' + HB.o({ loai: 'thac', cao: 190,
           buoc: s.chain.map(function (b) {
-            return { l: b.label, v: b.value, nt: b.note,
+            return { l: c.song(b, 'label'), v: b.value, nt: c.song(b, 'note'),
                      kind: b.kind === 'top' ? 'top' : b.kind === 'final' ? 'final' : 'out' };
           }) }) + '</div>'
       }) +
@@ -403,7 +403,7 @@ function moBai(c, id, luong) {
     '<h4 class="sec">' + (c.lang === 'vi' ? 'Tiền của bài này' : 'This track’s money') + '</h4>' +
     '<div class="wf">' + d.steps.map(function (st) {
       return '<div class="st ' + (st.strong ? 'fin' : (st.value != null && st.value < 0 ? 'out' : '')) + '">' +
-        '<div class="mk"></div><div><div class="lbl">' + HM.esc(st.label) + '</div></div>' +
+        '<div class="mk"></div><div><div class="lbl">' + HM.esc(c.song(st, 'label')) + '</div></div>' +
         '<div class="amt">' + HM.esc(st.value != null ? HT.fmt.usd(st.value) : st.text) + '</div></div>';
     }).join('') + '</div>' +
     (d.byStore.length ? '<h4 class="sec">' + (c.lang === 'vi' ? 'Nghe ở đâu' : 'Where it was played') + '</h4>' +

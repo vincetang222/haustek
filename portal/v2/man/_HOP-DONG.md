@@ -42,6 +42,23 @@ Màn hình của cửa nội bộ dùng `c.A`; màn hình của cổng khách d�
 **Không màn nào được dùng cả hai** — dùng cả hai nghĩa là màn đó chạy được ở cả hai
 cửa, và đó là con đường ngắn nhất để một ngày nào đó nó chạy nhầm cửa.
 
+## Chuỗi hai thứ tiếng đến từ tầng dữ liệu
+
+`c.t('khoa')` chỉ tra được từ điển của chính màn hình. Nhưng một phần chữ trên màn
+hình **sinh ra ở lõi**, không ở màn hình: tên luồng dữ liệu, điều kiện duyệt kỳ, từng
+chặng trong chuỗi tiền của khách, lý do một kỳ trống. Những chuỗi đó mang sẵn bản
+tiếng Anh bên cạnh (`name` / `nameEn`, `label` / `labelEn`, `note` / `noteEn`), và màn
+hình lấy bằng:
+
+```js
+c.song(doiTuong, 'label')   // → labelEn khi đang EN và có bản EN, còn lại → label
+```
+
+Đọc thẳng `x.label` là bật EN xong vẫn ra tiếng Việt, và bản dịch trông như làm dở.
+
+Ngược lại, **tên nghệ sĩ, tên bài, tên label, tên cửa hàng là dữ liệu** — chúng giữ
+nguyên tiếng Việt ở cả hai chế độ, và không được dịch.
+
 ## Bốn luật màn hình phải giữ
 
 1. **Mọi chuỗi từ dữ liệu đi qua `HM.esc()` trước khi ghép vào HTML.**

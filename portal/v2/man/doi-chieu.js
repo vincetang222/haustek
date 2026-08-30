@@ -101,7 +101,7 @@ HT.dangKy({
     } else {
       html += HM.ghi({ kieu: 'warn',
         tieuDe: HM.esc(c.lang === 'vi' ? hong.length + ' điều kiện chưa đạt' : hong.length + ' conditions not met'),
-        than: hong.map(function (x) { return '<b>' + HM.esc(x.label) + '</b> — ' + HM.esc(x.detail); }).join('<br>'),
+        than: hong.map(function (x) { return '<b>' + HM.esc(c.song(x, 'label')) + '</b> — ' + HM.esc(c.song(x, 'detail')); }).join('<br>'),
         nut: '<button type="button" class="btn sm dang" data-boqua>' + HM.esc(t('boQua')) + '</button>' });
     }
 
@@ -134,7 +134,7 @@ HT.dangKy({
       HM.csv('doi-chieu-' + c.kyKey + '.csv',
         ['Luồng', 'Trạng thái', 'Tổng trên file', 'Đã khớp', 'Truy thu kỳ khác', 'Từ file kỳ này', 'Đang treo', 'Chênh lệch', 'Đã ghi nhận'],
         A.recon(c.ky.idx).rows.map(function (x) {
-          return [x.feed.name, x.status, x.control.toFixed(2), x.attributed.toFixed(2),
+          return [c.song(x.feed, 'name'), x.status, x.control.toFixed(2), x.attributed.toFixed(2),
                   x.adjustments.toFixed(2), x.fromFile.toFixed(2), x.pending.toFixed(2),
                   x.diff.toFixed(2), x.accepted ? x.accepted.note || 'có' : ''];
         }));
@@ -162,7 +162,7 @@ function veDoi(c, r) {
     (coViec ? '<th style="width:170px"></th>' : '') + '</tr></thead><tbody>' +
     r.rows.map(function (x) {
       var lech = Math.abs(x.diff) > 0.005;
-      return '<tr><td><div class="t-ttl">' + HM.esc(x.feed.name) + '</div>' +
+      return '<tr><td><div class="t-ttl">' + HM.esc(c.song(x.feed, 'name')) + '</div>' +
           '<div class="t-sub">' + (x.status === 'loaded' ? HM.esc(x.file) : HM.esc(t('chuaNap'))) + '</div></td>' +
         '<td class="num">' + (x.status === 'loaded' ? HM.esc(c.tien2(x.control)) : '<span class="nil">—</span>') + '</td>' +
         '<td class="num">' + (x.status === 'loaded' ? HM.esc(c.tien2(x.attributed)) : '<span class="nil">—</span>') + '</td>' +
@@ -202,7 +202,7 @@ function veDoi(c, r) {
       p: c.lang === 'vi' ? 'Ghi nhận không làm chênh lệch biến mất. Nó nói: chúng tôi biết, đây là lý do, và đây là người chịu trách nhiệm.'
                          : 'Accepting does not make a variance disappear. It records: we know, this is why, and this is who is accountable.',
       than: daGhi.map(function (x) {
-        return '<div class="stat"><b>' + HM.esc(x.feed.name) + '<p>' + HM.esc(x.accepted.note || (c.lang === 'vi' ? '(không ghi chú)' : '(no note)')) + '</p></b>' +
+        return '<div class="stat"><b>' + HM.esc(c.song(x.feed, 'name')) + '<p>' + HM.esc(x.accepted.note || (c.lang === 'vi' ? '(không ghi chú)' : '(no note)')) + '</p></b>' +
           '<span class="v">' + HM.esc(c.tien2(x.accepted.amount)) + '<em>' + HM.esc(HT.fmt.luc(x.accepted.at)) + '</em></span></div>';
       }).join('')
     });
@@ -213,7 +213,7 @@ function veDoi(c, r) {
     HM.the({
       h2: c.lang === 'vi' ? 'Ba luồng của kỳ ' + c.ky.label : 'The three feeds, ' + c.ky.label,
       than: HB.o({ loai: 'thanh', hang: r.rows.map(function (x, i) {
-        return { ten: x.feed.short, gt: x.attributed, mau: P[i],
+        return { ten: c.song(x.feed, 'short'), gt: x.attributed, mau: P[i],
                  phu: x.status === 'loaded' ? x.file : t('chuaNap') };
       }) })
     }) +
@@ -268,8 +268,8 @@ function veDk(c, dk, nay) {
       : 'Four conditions. The first three are hard blocks because getting them wrong loses other people’s money; the fourth because getting it wrong makes the report impossible to audit.',
     than: '<div class="checks">' + dk.map(function (x) {
       return '<div class="check ' + (x.ok ? 'ok' : 'no') + '">' + HM.icon(x.ok ? 'check' : 'alert') +
-        '<div style="min-width:0;flex:1"><b>' + HM.esc(x.label) + '</b>' +
-        '<span>' + HM.esc(x.detail) + '</span>' +
+        '<div style="min-width:0;flex:1"><b>' + HM.esc(c.song(x, 'label')) + '</b>' +
+        '<span>' + HM.esc(c.song(x, 'detail')) + '</span>' +
         '<span style="margin-top:6px;color:var(--faint)">' + HM.esc(giaiThich[x.id] || '') + '</span></div>' +
         (noiToi[x.id] && !x.ok ? '<div class="r"><button type="button" class="btn sm" data-di="' + noiToi[x.id] + '">' +
           HM.esc(c.lang === 'vi' ? 'Xử lý' : 'Fix') + '</button></div>' : '') + '</div>';
@@ -394,9 +394,9 @@ function veLs(c) {
           '<td class="mono">' + HM.esc(p.label) + '</td>' +
           '<td>' + A.feeds.map(function (fd) {
             return '<span class="dot ' + (A.feedLoaded(i, fd.id) ? 'ok' : 'no') + '" data-tip="' +
-              HM.esc(fd.name + ' — ' + (A.feedLoaded(i, fd.id) ? 'đã nạp' : 'chưa nạp')) + '"></span>';
+              HM.esc(c.song(fd, 'name') + ' — ' + (A.feedLoaded(i, fd.id) ? 'đã nạp' : 'chưa nạp')) + '"></span>';
           }).join('') + (thieu.length ? '<span class="faint" style="font-size:11.5px">' +
-            HM.esc(thieu.map(function (x) { return x.short; }).join(', ')) + '</span>' : '') + '</td>' +
+            HM.esc(thieu.map(function (x) { return c.song(x, 'short'); }).join(', ')) + '</span>' : '') + '</td>' +
           '<td class="num">' + HM.esc(c.tien(A.agg('admin', 0, i, 'rec').gross)) + '</td>' +
           '<td class="num">' + (A.queue.pendingTotal(p.k) > 0.004
             ? HM.esc(c.tien(A.queue.pendingTotal(p.k))) : '<span class="nil">—</span>') + '</td>' +
@@ -428,7 +428,7 @@ function duyetKy(c, boQua) {
       { t: c.lang === 'vi' ? 'Sẽ chi cho' : 'Payable to', v: HT.fmt.n(soBen) + ' ' + c.t('benNhan') },
       { t: c.lang === 'vi' ? 'Tổng sẽ chi' : 'Total payable', v: HT.fmt.usd(seChi), manh: true },
       hong.length ? { t: c.lang === 'vi' ? 'Điều kiện chưa đạt' : 'Unmet conditions',
-        v: hong.map(function (x) { return x.label; }).join(' · ') } : null
+        v: hong.map(function (x) { return c.song(x, 'label'); }).join(' · ') } : null
     ]) +
     '<label class="fld" style="margin-top:14px">' + (c.lang === 'vi' ? 'Người duyệt' : 'Approved by') + '</label>' +
     '<input class="in" data-o="by" value="ops@haustek-group.com">' +
@@ -472,7 +472,7 @@ function thuHoi(c) {
 function ghiNhanLech(c, fid) {
   var A = c.A, tt = A.feedTotals(c.ky.idx, fid);
   c.hoiThoai({
-    tieuDe: c.t('ghiNhan') + ' · ' + A.feeds[fid].name,
+    tieuDe: c.t('ghiNhan') + ' · ' + c.song(A.feeds[fid], 'name'),
     moTa: HM.esc(c.lang === 'vi'
       ? 'Ghi nhận không làm chênh lệch biến mất và không sửa số. Nó nói: chúng tôi đã nhìn, đây là lý do, và đây là người chịu trách nhiệm. Sau khi ghi nhận, kỳ mới duyệt được.'
       : 'Accepting does not make the variance vanish and does not change any figure. It records that a person looked, why, and who is accountable. Only then can the period be approved.'),

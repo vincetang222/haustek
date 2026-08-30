@@ -37,23 +37,33 @@ function esc(s) {
   return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;')
     .replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 }
-function so(v) { return Math.round(v).toLocaleString('vi-VN'); }
-function usd0(v) { return (v < 0 ? '−$' : '$') + Math.round(Math.abs(v)).toLocaleString('vi-VN'); }
+/* Ngôn ngữ do khung giữ; biểu đồ đọc nhờ, không giữ bản sao — giữ bản sao
+   là một ngày nào đó hai bên lệch nhau và trục tung viết một kiểu, ô số
+   bên cạnh viết kiểu khác. */
+function en() { return typeof HT !== 'undefined' && HT.lang === 'en'; }
+function loc() { return en() ? 'en-US' : 'vi-VN'; }
+function so(v) { return Math.round(v).toLocaleString(loc()); }
+function usd0(v) { return (v < 0 ? '−$' : '$') + Math.round(Math.abs(v)).toLocaleString(loc()); }
 /* Trục tung của báo cáo tiền: rút gọn tới mức đọc lướt được, nhưng không
    rút tới mức mất nghĩa. $1,2Tr thay cho $1.234.567 là được; $1Tr thì
    không, vì $1.4Tr cũng ra $1Tr. */
+function thapPhan(x, n) {
+  var s = x.toFixed(n);
+  return en() ? s : s.replace('.', ',');
+}
 function gonTien(v) {
-  var a = Math.abs(v);
-  if (a >= 1e9) return (v < 0 ? '−' : '') + '$' + (a / 1e9).toFixed(a >= 1e10 ? 0 : 1).replace('.', ',') + ' tỷ';
-  if (a >= 1e6) return (v < 0 ? '−' : '') + '$' + (a / 1e6).toFixed(a >= 1e7 ? 0 : 1).replace('.', ',') + 'Tr';
-  if (a >= 1e3) return (v < 0 ? '−' : '') + '$' + Math.round(a / 1e3) + 'N';
+  var a = Math.abs(v), E = en();
+  var dau = (v < 0 ? '−' : '') + '$';
+  if (a >= 1e9) return dau + thapPhan(a / 1e9, a >= 1e10 ? 0 : 1) + (E ? 'B' : ' tỷ');
+  if (a >= 1e6) return dau + thapPhan(a / 1e6, a >= 1e7 ? 0 : 1) + (E ? 'M' : 'Tr');
+  if (a >= 1e3) return dau + Math.round(a / 1e3) + (E ? 'K' : 'N');
   return usd0(v);
 }
 function gonSo(v) {
-  var a = Math.abs(v);
-  if (a >= 1e9) return (a / 1e9).toFixed(1).replace('.', ',') + ' tỷ';
-  if (a >= 1e6) return (a / 1e6).toFixed(a >= 1e7 ? 0 : 1).replace('.', ',') + 'Tr';
-  if (a >= 1e3) return Math.round(a / 1e3) + 'N';
+  var a = Math.abs(v), E = en();
+  if (a >= 1e9) return thapPhan(a / 1e9, 1) + (E ? 'B' : ' tỷ');
+  if (a >= 1e6) return thapPhan(a / 1e6, a >= 1e7 ? 0 : 1) + (E ? 'M' : 'Tr');
+  if (a >= 1e3) return Math.round(a / 1e3) + (E ? 'K' : 'N');
   return so(v);
 }
 
@@ -324,13 +334,13 @@ function veThanh(cfg, W) {
     return '<div class="row"' + (cfg.chon ? ' data-h="' + i + '" tabindex="0"' : '') +
       ' data-tip="' + esc('<b>' + esc(r.ten) + '</b>' +
         dongTip(cfg.tenTong || 'Doanh thu', dayDu(r.gt || 0), r.mau || P[i % 8]) +
-        '<span class="d">' + (phanTram * 100).toFixed(1).replace('.', ',') + '% của phần đang xem' +
+        '<span class="d">' + thapPhan(phanTram * 100, 1) + '% của phần đang xem' +
         (r.phu ? ' · ' + esc(r.phu) : '') + '</span>') + '">' +
       '<div class="nm">' + esc(r.ten) + (r.phu ? '<em>' + esc(r.phu) + '</em>' : '') +
       '<div class="bar"><i style="width:' + (pc * 100).toFixed(2) + '%;background:' +
       (r.mau || P[i % 8]) + '"></i></div></div>' +
       '<div class="vv">' + esc(dayDu(r.gt || 0)) +
-      '<em>' + (phanTram * 100).toFixed(1).replace('.', ',') + '%</em></div></div>';
+      '<em>' + thapPhan(phanTram * 100, 1) + '%</em></div></div>';
   }).join('') + '</div>';
 }
 
@@ -358,7 +368,7 @@ function veVong(cfg, W) {
     var mauP = p.mau || P[i % 8];
     s += '<g class="hz" tabindex="0" data-tip="' + esc('<b>' + esc(p.ten) + '</b>' +
       dongTip(cfg.tenTong || 'Số tiền', dayDu(p.gt), mauP) +
-      '<span class="d">' + (p.gt / tong * 100).toFixed(1).replace('.', ',') + '% tổng</span>') + '">' +
+      '<span class="d">' + thapPhan(p.gt / tong * 100, 1) + '% tổng</span>') + '">' +
       '<path class="b" fill="' + mauP + '" d="M' + x1.toFixed(1) + ' ' + y1.toFixed(1) +
       'A' + R + ' ' + R + ' 0 ' + lon + ' 1 ' + x2.toFixed(1) + ' ' + y2.toFixed(1) +
       'L' + x3.toFixed(1) + ' ' + y3.toFixed(1) +
@@ -376,7 +386,7 @@ function veVong(cfg, W) {
     return '<div class="stat" style="padding:5px 0;border:0;font-size:12.5px">' +
       '<b><span style="display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:7px;background:' +
       (p.mau || P[i % 8]) + '"></span>' + esc(p.ten) + '</b>' +
-      '<span class="v">' + esc(dayDu(p.gt)) + '<em>' + (p.gt / tong * 100).toFixed(1).replace('.', ',') + '%</em></span></div>';
+      '<span class="v">' + esc(dayDu(p.gt)) + '<em>' + thapPhan(p.gt / tong * 100, 1) + '%</em></span></div>';
   }).join('') + '</div>';
   return '<div style="display:flex;gap:16px;align-items:center;flex-wrap:wrap">' +
     '<div style="width:' + W2 + 'px;flex:none">' + s.replace('viewBox="0 0 ' + W + ' ', 'viewBox="0 0 ' + W2 + ' ') + '</div>' +
@@ -481,7 +491,7 @@ function chia(phan, opt) {
       return '<i style="width:' + ((p.gt || 0) / tong * 100).toFixed(2) + '%;background:' +
         (p.mau || P[i % 8]) + '" data-tip="' + esc('<b>' + esc(p.ten) + '</b>' +
         dongTip('Số tiền', dayDu(p.gt || 0), p.mau || P[i % 8]) +
-        '<span class="d">' + ((p.gt || 0) / tong * 100).toFixed(1).replace('.', ',') + '% tổng</span>') + '"></i>';
+        '<span class="d">' + thapPhan((p.gt || 0) / tong * 100, 1) + '% tổng</span>') + '"></i>';
     }).join('') + '</div>' +
     (opt.chuThich === false ? '' : '<div class="leg">' + phan.map(function (p, i) {
       return '<span><i style="background:' + (p.mau || P[i % 8]) + '"></i>' + esc(p.ten) +

@@ -79,7 +79,7 @@ HT.dangKy({
 
     /* 12 kỳ × 3 luồng — nặng, nhớ lại theo dấu mốc trạng thái */
     var day = HM.nho(A, 'chuoiLuong', function () {
-      var out = A.feeds.map(function (f) { return { ten: f.short, gt: [], mau: null }; });
+      var out = A.feeds.map(function (f) { return { ten: f.id, gt: [], mau: null }; });
       var luot = [];
       A.periods.forEach(function (p, i) {
         var s = 0;
@@ -93,7 +93,10 @@ HT.dangKy({
       });
       return { chuoi: out, luot: luot };
     });
-    day.chuoi.forEach(function (s, i) { s.mau = P[i]; });
+    /* Tên luồng gắn vào lúc VẼ, không lúc nhớ tạm: bộ nhớ tạm sống
+       qua cả lần đổi ngôn ngữ, nên nhét tên vào đó là đổi sang EN mà
+       chú thích biểu đồ vẫn tiếng Việt. */
+    day.chuoi.forEach(function (s, i) { s.mau = P[i]; s.ten = c.song(A.feeds[i], 'short'); });
 
     var chuaDuyetIdx = A.periods.filter(function (p) { return !A.isApproved(p.k); }).map(function (p) { return p.idx; });
 
@@ -157,7 +160,7 @@ HT.dangKy({
            Nhãn viết ở thể khẳng định ("Đã nạp đủ 3 luồng"), nên ghép sau
            chữ "Còn thiếu:" là ra một câu nói ngược hẳn nghĩa. */
         than: HM.esc(t('dangMo')) + '<br>' +
-              hong.map(function (x) { return '<b>' + HM.esc(x.label) + '</b> — ' + HM.esc(x.detail); }).join('<br>'),
+              hong.map(function (x) { return '<b>' + HM.esc(c.song(x, 'label')) + '</b> — ' + HM.esc(c.song(x, 'detail')); }).join('<br>'),
         nut: '<button type="button" class="btn sm" data-di="doi-chieu">' + HM.esc(t('xemDoiChieu')) + '</button>' });
     } else {
       html += HM.ghi({ kieu: 'ok', tieuDe: HM.esc(t('xong')),
@@ -264,7 +267,7 @@ HT.dangKy({
         hanhDong: '<button type="button" class="btn sm" data-di="doi-chieu">' + HM.esc(t('xemDoiChieu')) + '</button>',
         than: '<div class="checks">' + dk.map(function (x) {
           return '<div class="check ' + (x.ok ? 'ok' : 'no') + '">' + HM.icon(x.ok ? 'check' : 'alert') +
-            '<div style="min-width:0"><b>' + HM.esc(x.label) + '</b><span>' + HM.esc(x.detail) + '</span></div></div>';
+            '<div style="min-width:0"><b>' + HM.esc(c.song(x, 'label')) + '</b><span>' + HM.esc(c.song(x, 'detail')) + '</span></div></div>';
         }).join('') + '</div>'
       }) +
       HM.the({
@@ -292,7 +295,7 @@ HT.dangKy({
                 var d = {};
                 qCho.forEach(function (q) { d[q.feedId] = (d[q.feedId] || 0) + q.amount; });
                 return A.feeds.map(function (f, i) {
-                  return { ten: f.short, gt: Math.round((d[f.id] || 0) * 100) / 100, mau: P[i] };
+                  return { ten: c.song(f, 'short'), gt: Math.round((d[f.id] || 0) * 100) / 100, mau: P[i] };
                 });
               })() }) + '</div>'
           : HM.trong({ tieuDe: t('khong'),

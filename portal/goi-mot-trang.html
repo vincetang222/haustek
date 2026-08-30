@@ -878,16 +878,30 @@ const pIndexOf = k => PERIODS.findIndex(p => p.k === k);
    Tác quyền là dòng tiền tách rời, về theo quý — để riêng, không đếm vào
    "đủ 3 luồng".
    --------------------------------------------------------------------- */
+/* Chuỗi hiển thị mang kèm bản tiếng Anh ngay tại chỗ.
+   Giao diện có hai ngôn ngữ, mà những chuỗi này sinh ra ở TẦNG DỮ LIỆU chứ
+   không ở màn hình — nên nếu chỉ có một bản thì bật EN xong vẫn đọc ra
+   tiếng Việt, và bản dịch trông như làm dở. Đặt cạnh nhau ở đây để thêm
+   một luồng mới là buộc phải nghĩ tới cả hai. */
 const FEEDS = [
   { id: 0, name: "Đơn vị phân phối chính", short: "Chính",   fmt: "CSV · 41 cột · hằng tháng, ngày 20",
-    note: "Gộp toàn bộ cửa hàng trừ YouTube và TikTok" },
+    note: "Gộp toàn bộ cửa hàng trừ YouTube và TikTok",
+    nameEn: "Main distribution partner", shortEn: "Main", fmtEn: "CSV · 41 columns · monthly, on the 20th",
+    noteEn: "Every store except YouTube and TikTok, in one file" },
   { id: 1, name: "YouTube (mối riêng)",     short: "YouTube", fmt: "CSV nén · 3 file/kỳ · hằng tháng, ngày 25",
-    note: "Tách Content ID và YouTube Music thành hai loại dòng" },
+    note: "Tách Content ID và YouTube Music thành hai loại dòng",
+    nameEn: "YouTube (direct deal)", shortEn: "YouTube", fmtEn: "gzipped CSV · 3 files per period · monthly, on the 25th",
+    noteEn: "Content ID and YouTube Music arrive as two different row types" },
   { id: 2, name: "TikTok (mối riêng)",      short: "TikTok",  fmt: "XLSX · 1 sheet/lãnh thổ · hằng tháng, thất thường",
-    note: "Về trễ nhất, hay thiếu lãnh thổ nhỏ" }
+    note: "Về trễ nhất, hay thiếu lãnh thổ nhỏ",
+    nameEn: "TikTok (direct deal)", shortEn: "TikTok", fmtEn: "XLSX · one sheet per territory · monthly, irregular",
+    noteEn: "Arrives last, and often drops the smaller territories" }
 ];
 const PUB_FEED = { id: 9, name: "Tác quyền (các tổ chức quản lý)", short: "Tác quyền",
-  fmt: "mỗi tổ chức một định dạng · theo quý", note: "VCPMC, The MLC, ASCAP… về trễ 1–2 quý" };
+  fmt: "mỗi tổ chức một định dạng · theo quý", note: "VCPMC, The MLC, ASCAP… về trễ 1–2 quý",
+  nameEn: "Publishing (collecting societies)", shortEn: "Publishing",
+  fmtEn: "a different format per society · quarterly",
+  noteEn: "VCPMC, The MLC, ASCAP… one to two quarters behind" };
 
 const STORE_TOP = [
   { n: "Spotify",       w: .285, f: 0 }, { n: "YouTube Music", w: .155, f: 1 },
@@ -1510,15 +1524,25 @@ function approvalChecks(pIdx) {
   const unresolvedDiff = r.rows.filter(x => Math.abs(x.diff) > 0.005 && !x.accepted);
   return [
     { id: "feeds", ok: miss.length === 0, label: "Đã nạp đủ " + FEEDS.length + " luồng dữ liệu",
-      detail: miss.length ? "Còn thiếu: " + miss.map(f => f.name).join(", ") : "Đủ cả " + FEEDS.length + " luồng" },
+      detail: miss.length ? "Còn thiếu: " + miss.map(f => f.name).join(", ") : "Đủ cả " + FEEDS.length + " luồng",
+      labelEn: "All " + FEEDS.length + " data feeds loaded",
+      detailEn: miss.length ? "Still missing: " + miss.map(f => f.nameEn).join(", ") : "All " + FEEDS.length + " feeds are in" },
     { id: "recon", ok: unresolvedDiff.length === 0, label: "Đối chiếu khớp tới từng xu",
       detail: unresolvedDiff.length ? unresolvedDiff.map(x => x.feed.short + " lệch " + fmt.usd(x.diff)).join(" · ")
-                                    : "Tổng hệ thống khớp tổng trên file gốc" },
+                                    : "Tổng hệ thống khớp tổng trên file gốc",
+      labelEn: "Reconciliation balances to the cent",
+      detailEn: unresolvedDiff.length ? unresolvedDiff.map(x => x.feed.shortEn + " out by " + fmt.usd(x.diff)).join(" · ")
+                                      : "The system total matches the source files" },
     { id: "queue", ok: ratio <= CFG.BLACKBOX_CAP, label: "Tiền treo dưới " + (CFG.BLACKBOX_CAP * 100).toFixed(1) + "% doanh thu kỳ",
-      detail: fmt.usd(pendingAmt) + " đang treo · " + (ratio * 100).toFixed(2) + "% doanh thu kỳ" },
+      detail: fmt.usd(pendingAmt) + " đang treo · " + (ratio * 100).toFixed(2) + "% doanh thu kỳ",
+      labelEn: "Money on hold under " + (CFG.BLACKBOX_CAP * 100).toFixed(1) + "% of period revenue",
+      detailEn: fmt.usd(pendingAmt) + " on hold · " + (ratio * 100).toFixed(2) + "% of period revenue" },
     { id: "fx", ok: !!state.fx.locked[pk], label: "Đã chốt tỷ giá cho kỳ",
       detail: state.fx.locked[pk] ? "1 USD = " + fmt.num(state.fx.locked[pk].rate) + " ₫ · chốt " + state.fx.locked[pk].at
-                                  : "Chưa chốt — số quy đổi sang VND sẽ trôi theo tỷ giá hôm nay" }
+                                  : "Chưa chốt — số quy đổi sang VND sẽ trôi theo tỷ giá hôm nay",
+      labelEn: "FX rate locked for the period",
+      detailEn: state.fx.locked[pk] ? "1 USD = " + fmt.num(state.fx.locked[pk].rate) + " ₫ · locked " + state.fx.locked[pk].at
+                                    : "Not locked — VND figures will drift with today’s rate" }
   ];
 }
 function canApprove(pIdx) { return approvalChecks(pIdx).every(c => c.ok); }
@@ -1694,22 +1718,40 @@ function nowISO() { return new Date().toISOString().slice(0, 19).replace("T", " 
 const QUESTIONS = [
   { id: "q1", t: "Client ID có duy nhất cho mỗi nghệ sĩ không?",
     why: "Đây là chỗ quyết định ai đăng nhập thì thấy dòng nào. Nếu một bản ghi mang nhiều Client ID thì phải có bảng nối riêng, không thể để một cột.",
-    guess: "Bản mẫu đang giả định 1 nghệ sĩ = 1 Client ID, và bản ghi trỏ về đúng một nghệ sĩ chính." },
+    guess: "Bản mẫu đang giả định 1 nghệ sĩ = 1 Client ID, và bản ghi trỏ về đúng một nghệ sĩ chính." ,
+    tEn: "Is a Client ID unique per artist?",
+    whyEn: "This decides who sees which rows when they log in. If one recording can carry several Client IDs, that needs its own join table — it cannot be a single column.",
+    guessEn: "The prototype assumes 1 artist = 1 Client ID, and that a recording points at exactly one main artist." },
   { id: "q2", t: "ISRC (Optional 1) nghĩa là gì?",
     why: "Tên cột hàm ý sau này còn Optional 2. Nếu một bài mang hai mã (phát hành lại, đổi nhà phân phối) thì báo cáo về theo từng mã riêng và phải gộp lại, không thì một bài hiện thành hai dòng rời rạc.",
-    guess: "Bản mẫu để mã phụ thành bảng riêng (mỗi bài 0..n mã), không thêm cột." },
+    guess: "Bản mẫu để mã phụ thành bảng riêng (mỗi bài 0..n mã), không thêm cột." ,
+    tEn: "What does ISRC (Optional 1) mean?",
+    whyEn: "The column name implies an Optional 2 will follow. If one track carries two codes (a re-release, a change of distributor), reports arrive against each code separately and have to be merged — otherwise one track shows as two disconnected rows.",
+    guessEn: "The prototype keeps alternate codes in a separate table (0..n per track) rather than adding columns." },
   { id: "q3", t: "Rate Share một cột có đủ không?",
     why: "Nếu là 'phần khách vs phần Haustek' thì đủ. Nếu nghệ sĩ / producer / songwriter mỗi người một phần thì phải tách bảng chia phần, mỗi dòng một người.",
-    guess: "Bản mẫu tách: tỷ lệ bên nhận chính nằm ở bảng có ngày hiệu lực, điểm producer là trường riêng trên bản ghi, phần sáng tác là bảng riêng." },
+    guess: "Bản mẫu tách: tỷ lệ bên nhận chính nằm ở bảng có ngày hiệu lực, điểm producer là trường riêng trên bản ghi, phần sáng tác là bảng riêng." ,
+    tEn: "Is one Rate Share column enough?",
+    whyEn: "If it means 'the client's share vs Haustek's', then yes. If artist / producer / songwriter each have their own share, it needs a split table with one row per person.",
+    guessEn: "The prototype separates them: the main payee's rate lives in a dated table, producer points are a field on the recording, and writer shares are their own table." },
   { id: "q4", t: "Tính bằng tiền gì, quy đổi lúc nào?",
     why: "Chuẩn ngành là giữ tiền tệ gốc của từng nền tảng rồi quy đổi sang tiền chi trả. Cần chốt: quy sang VND hay giữ USD, dùng tỷ giá ngày nhận báo cáo, ngày chốt kỳ hay ngày chi trả.",
-    guess: "Bản mẫu tính bằng USD, chốt một tỷ giá cho mỗi kỳ tại thời điểm duyệt kỳ, và khoá tỷ giá đó lại." },
+    guess: "Bản mẫu tính bằng USD, chốt một tỷ giá cho mỗi kỳ tại thời điểm duyệt kỳ, và khoá tỷ giá đó lại." ,
+    tEn: "Which currency, converted when?",
+    whyEn: "Industry practice is to keep each platform's source currency and convert at payout. We need to settle: convert to VND or stay in USD, and use the rate on the report date, the period-close date, or the payment date.",
+    guessEn: "The prototype computes in USD, locks one rate per period at approval, and freezes it." },
   { id: "q5", t: "Album / Track / Composition có tách làm ba thực thể không?",
     why: "Hệ thống tham chiếu đang xài tách hẳn ba mục. Bản mẫu đang gộp track với composition — biết là sai nhưng phải chốt cùng lúc với schema.",
-    guess: "Bản mẫu vẫn gộp track với composition, chỉ tách phần sáng tác thành bảng chia phần." },
+    guess: "Bản mẫu vẫn gộp track với composition, chỉ tách phần sáng tác thành bảng chia phần." ,
+    tEn: "Are Album / Track / Composition three separate entities?",
+    whyEn: "The reference system keeps all three apart. The prototype merges track with composition — we know that is wrong, but it has to be settled together with the schema.",
+    guessEn: "The prototype still merges track with composition, and only separates writer shares into their own split table." },
   { id: "q6", t: "Label có kiêm publisher không?",
     why: "Quyết định label có thấy tab tác quyền hay không.",
-    guess: "Bản mẫu giả định KHÔNG — tác quyền thuộc người sáng tác, không đi qua label." },
+    guess: "Bản mẫu giả định KHÔNG — tác quyền thuộc người sáng tác, không đi qua label." ,
+    tEn: "Does a label also act as publisher?",
+    whyEn: "This decides whether a label sees a publishing tab at all.",
+    guessEn: "The prototype assumes NOT — publishing belongs to the writers and never passes through a label." },
   { id: "q7", t: "Con số ở cột doanh thu trong file báo cáo là TRƯỚC hay SAU khi đơn vị phân phối giữ phần của họ?",
     why: "Đây là câu hỏi đắt nhất trong danh sách, và tài liệu bàn giao chưa nêu. "
        + "Nếu con số trong file đã trừ phần của đối tác rồi mà hệ thống lại tính phí Haustek 15% trên đó, "
@@ -1719,13 +1761,20 @@ const QUESTIONS = [
        + "Không đoán được — phải nhìn file báo cáo doanh thu mẫu.",
     guess: "Bản mẫu đang coi con số trong file là doanh thu gộp thật, và phí Haustek 15% tính trên đó. "
          + "Phần đối tác phân phối giữ nằm ngoài mô hình. Nếu thực tế ngược lại thì phải sửa chuỗi chia tiền, "
-         + "không phải sửa giao diện." }
+         + "không phải sửa giao diện." ,
+    tEn: "Is the revenue figure in the report file BEFORE or AFTER the distributor takes their share?",
+    whyEn: "This is the most expensive question on the list, and the handoff document does not address it. If the figure in the file is already net of the partner's share and the system then charges the 15% Haustek fee on top of it, then what an artist reads as 'gross revenue' is not gross revenue — and every step after it is off by the same amount. Conversely, if it is a true gross figure and the system does not deduct the partner's share, Haustek is short. The gap between the two readings is over 10% on every line, every period, every person. It cannot be guessed — it needs a sample revenue report.",
+    guessEn: "The prototype treats the figure in the file as a true gross number and charges the 15% Haustek fee on it. The distributor's own share sits outside the model. If reality is the other way round, the money chain has to change — not the interface." }
 ];
 const SAMPLES_NEEDED = [
   { id: "s1", t: "File mẫu master data 10–15 dòng",
-    why: "Đã xoá hai cột Distribution và Rate Share. Cần thấy ĐỊNH DẠNG GIÁ TRỊ THẬT, không phải tên cột: ISRC viết hoa hay thường, ngày kiểu nào, Client ID có tiền tố gì, tên nghệ sĩ có dấu ra sao." },
+    why: "Đã xoá hai cột Distribution và Rate Share. Cần thấy ĐỊNH DẠNG GIÁ TRỊ THẬT, không phải tên cột: ISRC viết hoa hay thường, ngày kiểu nào, Client ID có tiền tố gì, tên nghệ sĩ có dấu ra sao." ,
+    tEn: "A sample master-data file, 10–15 rows",
+    whyEn: "The Distribution and Rate Share columns have been removed. What we need to see is the ACTUAL VALUE FORMAT, not the column names: is the ISRC upper or lower case, which date format, does the Client ID carry a prefix, how are Vietnamese artist names accented." },
   { id: "s2", t: "File báo cáo doanh thu mẫu của cả 3 luồng",
-    why: "Che số tiền, giữ nguyên tên cột và 1–2 dòng. Cấu trúc ba file này quyết định toàn bộ thiết kế đường ống nạp — đây là phần khó nhất và cũng là phần không đoán được." }
+    why: "Che số tiền, giữ nguyên tên cột và 1–2 dòng. Cấu trúc ba file này quyết định toàn bộ thiết kế đường ống nạp — đây là phần khó nhất và cũng là phần không đoán được." ,
+    tEn: "A sample revenue report from each of the 3 feeds",
+    whyEn: "Mask the amounts, keep the column names and one or two rows. The structure of these three files determines the entire ingest design — the hardest part of the project, and the part that cannot be guessed." }
 ];
 
 /* =====================================================================
@@ -1757,14 +1806,22 @@ const fx = {
    giao diện.
    ===================================================================== */
 const INGEST_STEPS = [
-  { k: "parse",     t: "Đọc file thô",              d: "Mỗi luồng một parser riêng — định dạng khác nhau hoàn toàn" },
-  { k: "normalise", t: "Chuẩn hoá về một schema",    d: "Tên cột, đơn vị, kiểu ngày, cách viết tên cửa hàng" },
-  { k: "match",     t: "Khớp ISRC với danh mục",     d: "Khâu dễ mất tiền nhất — dòng không khớp phải vào hàng chờ, không được bỏ im" },
-  { k: "fxconv",    t: "Quy đổi tiền tệ",            d: "Theo tỷ giá đã chốt cho kỳ" },
-  { k: "write",     t: "Ghi vào bảng thô",           d: "Đánh dấu rõ về từ luồng nào, kỳ nào" },
-  { k: "rollup",    t: "Dựng lại bảng tổng hợp",     d: "rollup theo bản ghi × kỳ, thêm cửa hàng, thêm lãnh thổ, theo bên nhận" },
-  { k: "flag",      t: "Đánh dấu đã nạp luồng",      d: "Để hệ thống biết kỳ nào còn thiếu gì" },
-  { k: "notify",    t: "Báo cho người đối chiếu",    d: "Chưa duyệt kỳ thì khách chưa thấy gì" }
+  { k: "parse",     t: "Đọc file thô",              d: "Mỗi luồng một parser riêng — định dạng khác nhau hoàn toàn",
+    tEn: "Read the raw file",           dEn: "One parser per feed — the formats have nothing in common" },
+  { k: "normalise", t: "Chuẩn hoá về một schema",    d: "Tên cột, đơn vị, kiểu ngày, cách viết tên cửa hàng",
+    tEn: "Normalise to one schema",     dEn: "Column names, units, date formats, how each store spells its own name" },
+  { k: "match",     t: "Khớp ISRC với danh mục",     d: "Khâu dễ mất tiền nhất — dòng không khớp phải vào hàng chờ, không được bỏ im",
+    tEn: "Match ISRCs to the catalogue", dEn: "Where money goes missing — an unmatched row goes to the queue, never quietly nowhere" },
+  { k: "fxconv",    t: "Quy đổi tiền tệ",            d: "Theo tỷ giá đã chốt cho kỳ",
+    tEn: "Convert currency",            dEn: "At the rate locked for the period" },
+  { k: "write",     t: "Ghi vào bảng thô",           d: "Đánh dấu rõ về từ luồng nào, kỳ nào",
+    tEn: "Write to the raw table",      dEn: "Stamped with which feed and which period it came from" },
+  { k: "rollup",    t: "Dựng lại bảng tổng hợp",     d: "rollup theo bản ghi × kỳ, thêm cửa hàng, thêm lãnh thổ, theo bên nhận",
+    tEn: "Rebuild the rollups",         dEn: "By recording × period, then by store, by territory, by payee" },
+  { k: "flag",      t: "Đánh dấu đã nạp luồng",      d: "Để hệ thống biết kỳ nào còn thiếu gì",
+    tEn: "Flag the feed as loaded",     dEn: "So the system knows which period is still short of what" },
+  { k: "notify",    t: "Báo cho người đối chiếu",    d: "Chưa duyệt kỳ thì khách chưa thấy gì",
+    tEn: "Tell the reconciler",         dEn: "Until the period is approved, no client sees anything" }
 ];
 const ingest = {
   steps: INGEST_STEPS,
@@ -2098,12 +2155,14 @@ const api = {
     return scrub({
       role, partyId, clientId: me.clientId, name: me.name,
       belongsTo: isLabel ? null : (me.labelId >= 0 ? LABELS[me.labelId].name : "Độc lập"),
+      belongsToEn: isLabel ? null : (me.labelId >= 0 ? LABELS[me.labelId].name : "Independent"),
       independent: isLabel ? false : me.labelId < 0,
       hasRecording: recCount > 0,
       /* Tác quyền thuộc người sáng tác, không đi qua label — mục 2.3 */
       hasPublishing: !isLabel && pubCount > 0,
       trackCount: recCount, compositionCount: pubCount,
-      currency: "USD", fxNote: "Số liệu tính bằng USD · tỷ giá quy đổi chốt tại thời điểm duyệt kỳ"
+      currency: "USD", fxNote: "Số liệu tính bằng USD · tỷ giá quy đổi chốt tại thời điểm duyệt kỳ",
+      fxNoteEn: "Figures are in USD · the conversion rate is locked when the period is approved"
     });
   },
 
@@ -2136,21 +2195,29 @@ const api = {
     const chain = [];
     if (stream === "rec") {
       chain.push({ key: "gross", label: role === "label" ? "Doanh thu gộp nghệ sĩ trong label" : "Doanh thu gộp bài của bạn",
-                   value: a.gross, note: "trước mọi khoản trừ", kind: "top" });
-      chain.push({ key: "fee", label: "Phí Haustek", value: -a.fee,
-                   note: fmt.pct(CFG.HAUSTEK_FEE) + " doanh thu gộp · theo hợp đồng", kind: "out" });
+                   labelEn: role === "label" ? "Gross revenue, artists on your label" : "Gross revenue on your tracks",
+                   value: a.gross, note: "trước mọi khoản trừ", noteEn: "before any deduction", kind: "top" });
+      chain.push({ key: "fee", label: "Phí Haustek", labelEn: "Haustek fee", value: -a.fee,
+                   note: fmt.pct(CFG.HAUSTEK_FEE) + " doanh thu gộp · theo hợp đồng",
+                   noteEn: fmt.pct(CFG.HAUSTEK_FEE) + " of gross · per your contract", kind: "out" });
       if (role === "label") {
-        chain.push({ key: "artist", label: "Trả cho nghệ sĩ", value: -cents(a.artist + a.producer),
-                     note: "theo tỷ lệ bạn đặt, tính theo tỷ lệ có hiệu lực trong kỳ", kind: "out" });
-        chain.push({ key: "final", label: "Label giữ lại", value: a.labelCut, note: "phần của bạn kỳ này", kind: "final" });
+        chain.push({ key: "artist", label: "Trả cho nghệ sĩ", labelEn: "Paid to your artists",
+                     value: -cents(a.artist + a.producer),
+                     note: "theo tỷ lệ bạn đặt, tính theo tỷ lệ có hiệu lực trong kỳ",
+                     noteEn: "at the rate you set, as it stood during the period", kind: "out" });
+        chain.push({ key: "final", label: "Label giữ lại", labelEn: "Your label keeps",
+                     value: a.labelCut, note: "phần của bạn kỳ này", noteEn: "your share this period", kind: "final" });
       } else {
         const me = ARTISTS[partyId];
         chain.push({ key: "cut", label: me.labelId >= 0 ? "Phần label giữ" : "Phần Haustek giữ thêm",
+                     labelEn: me.labelId >= 0 ? "Your label’s share" : "Haustek’s additional share",
                      value: -a.labelCut,
-                     note: me.labelId >= 0 ? LABELS[me.labelId].name : "theo hợp đồng độc lập", kind: "out" });
+                     note: me.labelId >= 0 ? LABELS[me.labelId].name : "theo hợp đồng độc lập",
+                     noteEn: me.labelId >= 0 ? LABELS[me.labelId].name : "per your independent agreement", kind: "out" });
         if (a.producer > 0.005)
-          chain.push({ key: "producer", label: "Điểm producer", value: -a.producer,
-                       note: "trừ vào phần của bạn, không cộng thêm bên trên", kind: "out" });
+          chain.push({ key: "producer", label: "Điểm producer", labelEn: "Producer points", value: -a.producer,
+                       note: "trừ vào phần của bạn, không cộng thêm bên trên",
+                       noteEn: "taken off your share, not added on top", kind: "out" });
         if (advLeft > 0 || (payoutRow && payoutRow.recoup > 0)) {
           /* Thu hồi tạm ứng chạy ở cấp BÊN NHẬN — gộp cả doanh thu bản ghi
              lẫn tác quyền lẫn phần dồn từ kỳ trước. Nhưng chuỗi này chỉ nói
@@ -2165,39 +2232,54 @@ const api = {
           const rec = Math.min(cents(recAll * phan), a.artist);
           const conNo = payoutRow ? payoutRow.advanceLeft : Math.max(advLeft - recAll, 0);
           const camCaHai = payoutRow && payoutRow.earned > a.artist + 0.005;
-          chain.push({ key: "recoup", label: "Trừ vào khoản tạm ứng", value: -rec,
+          chain.push({ key: "recoup", label: "Trừ vào khoản tạm ứng", labelEn: "Offset against your advance", value: -rec,
                        note: "đã ứng " + fmt.usd0(advOpening) + " · còn phải thu hồi " + fmt.usd0(conNo)
                            + (camCaHai ? " · phần thu hồi tính trên cả doanh thu bản ghi lẫn tác quyền, đây là phần rơi vào dòng này" : ""),
+                       noteEn: fmt.usd0(advOpening) + " advanced · " + fmt.usd0(conNo) + " still to recover"
+                           + (camCaHai ? " · recoupment covers recording and publishing together; this is the part falling on this stream" : ""),
                        kind: "out" });
-          chain.push({ key: "final", label: "Thực nhận kỳ này", value: cents(a.artist - rec),
-                       note: conNo <= 0 ? "đã thu hồi xong khoản tạm ứng" : "đang trừ dần vào khoản tạm ứng", kind: "final" });
+          chain.push({ key: "final", label: "Thực nhận kỳ này", labelEn: "Yours this period", value: cents(a.artist - rec),
+                       note: conNo <= 0 ? "đã thu hồi xong khoản tạm ứng" : "đang trừ dần vào khoản tạm ứng",
+                       noteEn: conNo <= 0 ? "your advance is now fully recovered" : "still being offset against your advance",
+                       kind: "final" });
         } else {
-          chain.push({ key: "final", label: "Về tay bạn", value: a.artist, note: "số tiền kỳ này", kind: "final" });
+          chain.push({ key: "final", label: "Về tay bạn", labelEn: "Yours", value: a.artist,
+                       note: "số tiền kỳ này", noteEn: "the amount for this period", kind: "final" });
         }
       }
     } else {
       const net = cents(a.gross - a.fee);
-      chain.push({ key: "gross", label: "Tác quyền thu được", value: a.gross, note: "từ VCPMC, The MLC và các tổ chức khác", kind: "top" });
-      chain.push({ key: "fee", label: "Phí quản lý", value: -a.fee, note: fmt.pct(CFG.PUB_FEE), kind: "out" });
+      chain.push({ key: "gross", label: "Tác quyền thu được", labelEn: "Publishing collected", value: a.gross,
+                   note: "từ VCPMC, The MLC và các tổ chức khác",
+                   noteEn: "from VCPMC, The MLC and other societies", kind: "top" });
+      chain.push({ key: "fee", label: "Phí quản lý", labelEn: "Administration fee", value: -a.fee,
+                   note: fmt.pct(CFG.PUB_FEE), noteEn: fmt.pct(CFG.PUB_FEE), kind: "out" });
       if (net - a.total > 0.005)
-        chain.push({ key: "co", label: "Phần đồng tác giả", value: -cents(net - a.total), note: "theo phần sáng tác đã đăng ký", kind: "out" });
-      chain.push({ key: "final", label: "Về tay bạn", value: a.total, note: "số tiền kỳ này", kind: "final" });
+        chain.push({ key: "co", label: "Phần đồng tác giả", labelEn: "Co-writers’ shares", value: -cents(net - a.total),
+                     note: "theo phần sáng tác đã đăng ký", noteEn: "per the registered writer splits", kind: "out" });
+      chain.push({ key: "final", label: "Về tay bạn", labelEn: "Yours", value: a.total,
+                   note: "số tiền kỳ này", noteEn: "the amount for this period", kind: "final" });
     }
 
     /* Kỳ trống vì hai lý do rất khác nhau: chưa có báo cáo về (tác quyền
        theo quý), hay có báo cáo mà bài của người này không phát sinh gì.
        Nói nhầm lý do là làm người ta hoang mang vô cớ. */
-    let emptyReason = null, nextPub = null;
+    let emptyReason = null, emptyReasonEn = null, nextPub = null;
     if (a.gross <= 0) {
       if (stream === "pub") {
         if (!pubLoaded(p)) {
           emptyReason = "Tác quyền về theo quý, không phải hằng tháng — kỳ này chưa có tổ chức nào báo cáo.";
+          emptyReasonEn = "Publishing settles quarterly, not monthly — no society has reported for this period.";
           const withPub = PERIODS.filter(x => state.approved[x.k] && pubLoaded(x.idx));
           const before = withPub.filter(x => x.idx < p).pop() || withPub[withPub.length - 1];
           nextPub = before ? { k: before.k, label: before.label } : null;
-        } else emptyReason = "Kỳ này có báo cáo tác quyền, nhưng chưa bài nào của bạn phát sinh.";
+        } else {
+          emptyReason = "Kỳ này có báo cáo tác quyền, nhưng chưa bài nào của bạn phát sinh.";
+          emptyReasonEn = "There is a publishing report for this period, but none of your works earned.";
+        }
       } else {
         emptyReason = "Kỳ này chưa bài nào của bạn phát sinh doanh thu.";
+        emptyReasonEn = "None of your tracks earned anything this period.";
       }
     }
     /* Tỷ giá của kỳ KHÔNG phải bí mật — đó là tỷ giá dùng để trả tiền cho
@@ -2205,7 +2287,7 @@ const api = {
        lại báo cáo cũ sau nửa năm vẫn phải ra đúng con số đã chuyển đi. */
     const lockedFx = state.fx.locked[periodKey] || null;
     return scrub({
-      periodKey, stream, emptyReason, nextPub,
+      periodKey, stream, emptyReason, emptyReasonEn, nextPub,
       fx: { rate: lockedFx ? lockedFx.rate : state.fx.rate,
             at: lockedFx ? lockedFx.at : null,
             locked: !!lockedFx },
@@ -2230,7 +2312,9 @@ const api = {
         coversBothStreams: payoutRow.earned > a.artist + 0.005,
         threshold: CFG.PAYOUT_MIN,
         note: payoutRow.payable > 0 ? "sẽ chi trong kỳ chi trả tới"
-          : (payoutRow.carryOut > 0 ? "dưới ngưỡng " + fmt.usd0(CFG.PAYOUT_MIN) + " — dồn sang kỳ sau" : "") } : null,
+          : (payoutRow.carryOut > 0 ? "dưới ngưỡng " + fmt.usd0(CFG.PAYOUT_MIN) + " — dồn sang kỳ sau" : ""),
+        noteEn: payoutRow.payable > 0 ? "will be transferred in the next payout run"
+          : (payoutRow.carryOut > 0 ? "below the " + fmt.usd0(CFG.PAYOUT_MIN) + " threshold — carried to the next period" : "") } : null,
       approvedAt: state.approved[periodKey].at
     });
   },
@@ -2353,25 +2437,27 @@ const api = {
     if (stream === "rec") {
       const s = splitRec(i, g, periodKey);
       out.steps = [
-        { label: "Doanh thu gộp", value: s.gross },
-        { label: "Phí Haustek", value: -s.fee },
-        { label: tLabel[i] >= 0 ? "Label giữ" : "Haustek giữ thêm", value: -s.labelCut }
+        { label: "Doanh thu gộp", labelEn: "Gross revenue", value: s.gross },
+        { label: "Phí Haustek", labelEn: "Haustek fee", value: -s.fee },
+        { label: tLabel[i] >= 0 ? "Label giữ" : "Haustek giữ thêm",
+          labelEn: tLabel[i] >= 0 ? "Label’s share" : "Haustek’s additional share", value: -s.labelCut }
       ];
-      if (s.producer > 0.004) out.steps.push({ label: "Điểm producer", value: -s.producer });
-      out.steps.push({ label: role === "label" ? "Về tay nghệ sĩ" : "Về tay bạn", value: s.artist, strong: true });
+      if (s.producer > 0.004) out.steps.push({ label: "Điểm producer", labelEn: "Producer points", value: -s.producer });
+      out.steps.push({ label: role === "label" ? "Về tay nghệ sĩ" : "Về tay bạn",
+                       labelEn: role === "label" ? "To the artist" : "Yours", value: s.artist, strong: true });
       if (role === "label") out.steps = [
-        { label: "Doanh thu gộp", value: s.gross },
-        { label: "Phí Haustek", value: -s.fee },
-        { label: "Trả cho nghệ sĩ", value: -cents(s.artist + s.producer) },
-        { label: "Label giữ", value: s.labelCut, strong: true }
+        { label: "Doanh thu gộp", labelEn: "Gross revenue", value: s.gross },
+        { label: "Phí Haustek", labelEn: "Haustek fee", value: -s.fee },
+        { label: "Trả cho nghệ sĩ", labelEn: "Paid to the artist", value: -cents(s.artist + s.producer) },
+        { label: "Label giữ", labelEn: "Label keeps", value: s.labelCut, strong: true }
       ];
     } else {
       const share = writerShare(i, partyId);
       out.steps = [
-        { label: "Tác quyền thu được", value: cents(g) },
-        { label: "Phí quản lý", value: -cents(g * CFG.PUB_FEE) },
-        { label: "Phần sáng tác của bạn", value: null, text: fmt.pct(share) },
-        { label: "Về tay bạn", value: m, strong: true }
+        { label: "Tác quyền thu được", labelEn: "Publishing collected", value: cents(g) },
+        { label: "Phí quản lý", labelEn: "Administration fee", value: -cents(g * CFG.PUB_FEE) },
+        { label: "Phần sáng tác của bạn", labelEn: "Your writer share", value: null, text: fmt.pct(share) },
+        { label: "Về tay bạn", labelEn: "Yours", value: m, strong: true }
       ];
     }
     return scrub(out);
@@ -2671,26 +2757,38 @@ function icon(n, extra) {
 }
 
 /* ---------------------------------------------------------------------
-   Định dạng — số và ngày luôn viết kiểu Việt, kể cả khi giao diện là EN.
-   Đây là công cụ nội bộ của một công ty Việt Nam.
+   Định dạng số và ngày — ĐI THEO NGÔN NGỮ đang chọn.
+
+   Trước đây chỗ này cố định kiểu Việt với lý do "công cụ nội bộ của một
+   công ty Việt Nam". Lý do đó đúng với cửa nội bộ, nhưng sai hẳn với cổng
+   khách: người bật EN là đối tác nước ngoài, và với họ "$7.537,23" đọc ra
+   bảy nghìn hay bảy đô là chuyện hên xui. Tiền là chỗ không được để ai
+   đoán, nên tiếng nào thì viết số theo tiếng đó.
+
+   Ngày cũng vậy: 06.07.2026 ở VI là 6 tháng 7, ở EN người đọc rất dễ hiểu
+   thành 7 tháng 6. Nên bản EN viết hẳn tên tháng ra.
    --------------------------------------------------------------------- */
 var fx = 26150;
 function setFx(v) { fx = v || fx; }
+function loc() { return lang === 'en' ? 'en-US' : 'vi-VN'; }
+var THANG_EN = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 var fmt = {
-  n:  function (v) { return Math.round(v).toLocaleString('vi-VN'); },
-  n1: function (v) { return v.toLocaleString('vi-VN', { minimumFractionDigits: 1, maximumFractionDigits: 1 }); },
+  n:  function (v) { return Math.round(v).toLocaleString(loc()); },
+  n1: function (v) { return v.toLocaleString(loc(), { minimumFractionDigits: 1, maximumFractionDigits: 1 }); },
   usd: function (v) {
-    return (v < 0 ? '−$' : '$') + Math.abs(v).toLocaleString('vi-VN',
+    return (v < 0 ? '−$' : '$') + Math.abs(v).toLocaleString(loc(),
       { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   },
   usd0: function (v) {
-    return (v < 0 ? '−$' : '$') + Math.round(Math.abs(v)).toLocaleString('vi-VN');
+    return (v < 0 ? '−$' : '$') + Math.round(Math.abs(v)).toLocaleString(loc());
   },
+  /* Đồng Việt Nam thì luôn viết kiểu Việt, kể cả ở giao diện EN — đó là
+     cách con số ấy in ra trên uỷ nhiệm chi. */
   vnd: function (v) { return Math.round(v * fx).toLocaleString('vi-VN') + ' ₫'; },
   tien: function (v, cur) { return cur === 'VND' ? fmt.vnd(v) : fmt.usd0(v); },
   tien2: function (v, cur) { return cur === 'VND' ? fmt.vnd(v) : fmt.usd(v); },
   pct: function (v, d) {
-    return (v * 100).toLocaleString('vi-VN',
+    return (v * 100).toLocaleString(loc(),
       { minimumFractionDigits: d == null ? 1 : d, maximumFractionDigits: d == null ? 1 : d }) + '%';
   },
   delta: function (a, b) {
@@ -2700,11 +2798,16 @@ var fmt = {
   luc: function (s) {
     if (!s) return '—';
     s = String(s);
+    if (lang === 'en')
+      return s.slice(8, 10) + ' ' + (THANG_EN[+s.slice(5, 7) - 1] || '') + ' ' + s.slice(0, 4) +
+        ', ' + s.slice(11, 16);
     return s.slice(8, 10) + '.' + s.slice(5, 7) + '.' + s.slice(0, 4) + ' ' + s.slice(11, 16);
   },
   ngay: function (s) {
     if (!s) return '—';
     s = String(s);
+    if (lang === 'en')
+      return s.slice(8, 10) + ' ' + (THANG_EN[+s.slice(5, 7) - 1] || '') + ' ' + s.slice(0, 4);
     return s.slice(8, 10) + '.' + s.slice(5, 7) + '.' + s.slice(0, 4);
   }
 };
@@ -2924,6 +3027,19 @@ function chay(cauHinh) {
       fmt: fmt, esc: esc, icon: icon, CHU: CHU,
       tien: function (v) { return fmt.tien(v, cur); },
       tien2: function (v) { return fmt.tien2(v, cur); },
+      /* Chuỗi hai thứ tiếng đến từ TẦNG DỮ LIỆU: tên luồng, điều kiện
+         duyệt, từng chặng trong chuỗi tiền của khách. Chúng không nằm
+         trong từ điển của màn hình vì màn hình không sinh ra chúng —
+         nên lấy bằng hàm này: c.song(o, 'label') trả về o.labelEn khi
+         đang ở EN và có bản EN, còn lại trả về o.label. */
+      song: function (o, khoa) {
+        if (!o) return '';
+        if (lang === 'en') {
+          var kEn = khoa + 'En';
+          if (o[kEn] != null && o[kEn] !== '') return o[kEn];
+        }
+        return o[khoa] == null ? '' : o[khoa];
+      },
       /* chữ của màn hình, thiếu thì rơi về chữ của khung */
       t: function (k) {
         if (man && man.chu && man.chu[lang] && man.chu[lang][k] != null) return man.chu[lang][k];
@@ -3013,6 +3129,11 @@ function chay(cauHinh) {
   }
 
   function ve() {
+    /* Dựng lại danh sách kỳ mỗi lần vẽ, không nhớ từ lúc khởi động.
+       Nhãn trong ô chọn kỳ ("đã duyệt" / "chưa duyệt") là chữ giao diện và
+       phải đổi theo ngôn ngữ; nó cũng đổi khi người vận hành vừa duyệt xong
+       một kỳ. Nhớ một lần lúc khởi động là cả hai thứ đó đứng im. */
+    kys = cauHinh.kyDanhSach();
     var id = (location.hash || '').replace('#', '') || (MAN[0] && MAN[0].id);
     var man = MAN.filter(function (m) { return m.id === id; })[0] || MAN[0];
     if (!man) return;
@@ -3137,23 +3258,33 @@ function esc(s) {
   return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;')
     .replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 }
-function so(v) { return Math.round(v).toLocaleString('vi-VN'); }
-function usd0(v) { return (v < 0 ? '−$' : '$') + Math.round(Math.abs(v)).toLocaleString('vi-VN'); }
+/* Ngôn ngữ do khung giữ; biểu đồ đọc nhờ, không giữ bản sao — giữ bản sao
+   là một ngày nào đó hai bên lệch nhau và trục tung viết một kiểu, ô số
+   bên cạnh viết kiểu khác. */
+function en() { return typeof HT !== 'undefined' && HT.lang === 'en'; }
+function loc() { return en() ? 'en-US' : 'vi-VN'; }
+function so(v) { return Math.round(v).toLocaleString(loc()); }
+function usd0(v) { return (v < 0 ? '−$' : '$') + Math.round(Math.abs(v)).toLocaleString(loc()); }
 /* Trục tung của báo cáo tiền: rút gọn tới mức đọc lướt được, nhưng không
    rút tới mức mất nghĩa. $1,2Tr thay cho $1.234.567 là được; $1Tr thì
    không, vì $1.4Tr cũng ra $1Tr. */
+function thapPhan(x, n) {
+  var s = x.toFixed(n);
+  return en() ? s : s.replace('.', ',');
+}
 function gonTien(v) {
-  var a = Math.abs(v);
-  if (a >= 1e9) return (v < 0 ? '−' : '') + '$' + (a / 1e9).toFixed(a >= 1e10 ? 0 : 1).replace('.', ',') + ' tỷ';
-  if (a >= 1e6) return (v < 0 ? '−' : '') + '$' + (a / 1e6).toFixed(a >= 1e7 ? 0 : 1).replace('.', ',') + 'Tr';
-  if (a >= 1e3) return (v < 0 ? '−' : '') + '$' + Math.round(a / 1e3) + 'N';
+  var a = Math.abs(v), E = en();
+  var dau = (v < 0 ? '−' : '') + '$';
+  if (a >= 1e9) return dau + thapPhan(a / 1e9, a >= 1e10 ? 0 : 1) + (E ? 'B' : ' tỷ');
+  if (a >= 1e6) return dau + thapPhan(a / 1e6, a >= 1e7 ? 0 : 1) + (E ? 'M' : 'Tr');
+  if (a >= 1e3) return dau + Math.round(a / 1e3) + (E ? 'K' : 'N');
   return usd0(v);
 }
 function gonSo(v) {
-  var a = Math.abs(v);
-  if (a >= 1e9) return (a / 1e9).toFixed(1).replace('.', ',') + ' tỷ';
-  if (a >= 1e6) return (a / 1e6).toFixed(a >= 1e7 ? 0 : 1).replace('.', ',') + 'Tr';
-  if (a >= 1e3) return Math.round(a / 1e3) + 'N';
+  var a = Math.abs(v), E = en();
+  if (a >= 1e9) return thapPhan(a / 1e9, 1) + (E ? 'B' : ' tỷ');
+  if (a >= 1e6) return thapPhan(a / 1e6, a >= 1e7 ? 0 : 1) + (E ? 'M' : 'Tr');
+  if (a >= 1e3) return Math.round(a / 1e3) + (E ? 'K' : 'N');
   return so(v);
 }
 
@@ -3424,13 +3555,13 @@ function veThanh(cfg, W) {
     return '<div class="row"' + (cfg.chon ? ' data-h="' + i + '" tabindex="0"' : '') +
       ' data-tip="' + esc('<b>' + esc(r.ten) + '</b>' +
         dongTip(cfg.tenTong || 'Doanh thu', dayDu(r.gt || 0), r.mau || P[i % 8]) +
-        '<span class="d">' + (phanTram * 100).toFixed(1).replace('.', ',') + '% của phần đang xem' +
+        '<span class="d">' + thapPhan(phanTram * 100, 1) + '% của phần đang xem' +
         (r.phu ? ' · ' + esc(r.phu) : '') + '</span>') + '">' +
       '<div class="nm">' + esc(r.ten) + (r.phu ? '<em>' + esc(r.phu) + '</em>' : '') +
       '<div class="bar"><i style="width:' + (pc * 100).toFixed(2) + '%;background:' +
       (r.mau || P[i % 8]) + '"></i></div></div>' +
       '<div class="vv">' + esc(dayDu(r.gt || 0)) +
-      '<em>' + (phanTram * 100).toFixed(1).replace('.', ',') + '%</em></div></div>';
+      '<em>' + thapPhan(phanTram * 100, 1) + '%</em></div></div>';
   }).join('') + '</div>';
 }
 
@@ -3458,7 +3589,7 @@ function veVong(cfg, W) {
     var mauP = p.mau || P[i % 8];
     s += '<g class="hz" tabindex="0" data-tip="' + esc('<b>' + esc(p.ten) + '</b>' +
       dongTip(cfg.tenTong || 'Số tiền', dayDu(p.gt), mauP) +
-      '<span class="d">' + (p.gt / tong * 100).toFixed(1).replace('.', ',') + '% tổng</span>') + '">' +
+      '<span class="d">' + thapPhan(p.gt / tong * 100, 1) + '% tổng</span>') + '">' +
       '<path class="b" fill="' + mauP + '" d="M' + x1.toFixed(1) + ' ' + y1.toFixed(1) +
       'A' + R + ' ' + R + ' 0 ' + lon + ' 1 ' + x2.toFixed(1) + ' ' + y2.toFixed(1) +
       'L' + x3.toFixed(1) + ' ' + y3.toFixed(1) +
@@ -3476,7 +3607,7 @@ function veVong(cfg, W) {
     return '<div class="stat" style="padding:5px 0;border:0;font-size:12.5px">' +
       '<b><span style="display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:7px;background:' +
       (p.mau || P[i % 8]) + '"></span>' + esc(p.ten) + '</b>' +
-      '<span class="v">' + esc(dayDu(p.gt)) + '<em>' + (p.gt / tong * 100).toFixed(1).replace('.', ',') + '%</em></span></div>';
+      '<span class="v">' + esc(dayDu(p.gt)) + '<em>' + thapPhan(p.gt / tong * 100, 1) + '%</em></span></div>';
   }).join('') + '</div>';
   return '<div style="display:flex;gap:16px;align-items:center;flex-wrap:wrap">' +
     '<div style="width:' + W2 + 'px;flex:none">' + s.replace('viewBox="0 0 ' + W + ' ', 'viewBox="0 0 ' + W2 + ' ') + '</div>' +
@@ -3581,7 +3712,7 @@ function chia(phan, opt) {
       return '<i style="width:' + ((p.gt || 0) / tong * 100).toFixed(2) + '%;background:' +
         (p.mau || P[i % 8]) + '" data-tip="' + esc('<b>' + esc(p.ten) + '</b>' +
         dongTip('Số tiền', dayDu(p.gt || 0), p.mau || P[i % 8]) +
-        '<span class="d">' + ((p.gt || 0) / tong * 100).toFixed(1).replace('.', ',') + '% tổng</span>') + '"></i>';
+        '<span class="d">' + thapPhan((p.gt || 0) / tong * 100, 1) + '% tổng</span>') + '"></i>';
     }).join('') + '</div>' +
     (opt.chuThich === false ? '' : '<div class="leg">' + phan.map(function (p, i) {
       return '<span><i style="background:' + (p.mau || P[i % 8]) + '"></i>' + esc(p.ten) +
@@ -3754,8 +3885,11 @@ function csv(ten, cot, dong) {
 function lech(nay, truoc, nhanTruoc) {
   if (truoc == null || !truoc) return null;
   var d = (nay - truoc) / truoc;
-  var s = (d >= 0 ? '▲ ' : '▼ ') + Math.abs(d * 100).toFixed(1).replace('.', ',') + '%';
-  return { chu: s + (nhanTruoc ? ' so với ' + nhanTruoc : ''), duong: d >= 0, ty: d };
+  var pt = Math.abs(d * 100).toFixed(1);
+  if (HT.lang !== 'en') pt = pt.replace('.', ',');
+  var s = (d >= 0 ? '▲ ' : '▼ ') + pt + '%';
+  var noi = HT.lang === 'en' ? ' vs ' : ' so với ';
+  return { chu: s + (nhanTruoc ? noi + nhanTruoc : ''), duong: d >= 0, ty: d };
 }
 function lechHtml(nay, truoc, nhanTruoc) {
   var l = lech(nay, truoc, nhanTruoc);
@@ -3891,7 +4025,7 @@ HT.dangKy({
 
     /* 12 kỳ × 3 luồng — nặng, nhớ lại theo dấu mốc trạng thái */
     var day = HM.nho(A, 'chuoiLuong', function () {
-      var out = A.feeds.map(function (f) { return { ten: f.short, gt: [], mau: null }; });
+      var out = A.feeds.map(function (f) { return { ten: f.id, gt: [], mau: null }; });
       var luot = [];
       A.periods.forEach(function (p, i) {
         var s = 0;
@@ -3905,7 +4039,10 @@ HT.dangKy({
       });
       return { chuoi: out, luot: luot };
     });
-    day.chuoi.forEach(function (s, i) { s.mau = P[i]; });
+    /* Tên luồng gắn vào lúc VẼ, không lúc nhớ tạm: bộ nhớ tạm sống
+       qua cả lần đổi ngôn ngữ, nên nhét tên vào đó là đổi sang EN mà
+       chú thích biểu đồ vẫn tiếng Việt. */
+    day.chuoi.forEach(function (s, i) { s.mau = P[i]; s.ten = c.song(A.feeds[i], 'short'); });
 
     var chuaDuyetIdx = A.periods.filter(function (p) { return !A.isApproved(p.k); }).map(function (p) { return p.idx; });
 
@@ -3969,7 +4106,7 @@ HT.dangKy({
            Nhãn viết ở thể khẳng định ("Đã nạp đủ 3 luồng"), nên ghép sau
            chữ "Còn thiếu:" là ra một câu nói ngược hẳn nghĩa. */
         than: HM.esc(t('dangMo')) + '<br>' +
-              hong.map(function (x) { return '<b>' + HM.esc(x.label) + '</b> — ' + HM.esc(x.detail); }).join('<br>'),
+              hong.map(function (x) { return '<b>' + HM.esc(c.song(x, 'label')) + '</b> — ' + HM.esc(c.song(x, 'detail')); }).join('<br>'),
         nut: '<button type="button" class="btn sm" data-di="doi-chieu">' + HM.esc(t('xemDoiChieu')) + '</button>' });
     } else {
       html += HM.ghi({ kieu: 'ok', tieuDe: HM.esc(t('xong')),
@@ -4076,7 +4213,7 @@ HT.dangKy({
         hanhDong: '<button type="button" class="btn sm" data-di="doi-chieu">' + HM.esc(t('xemDoiChieu')) + '</button>',
         than: '<div class="checks">' + dk.map(function (x) {
           return '<div class="check ' + (x.ok ? 'ok' : 'no') + '">' + HM.icon(x.ok ? 'check' : 'alert') +
-            '<div style="min-width:0"><b>' + HM.esc(x.label) + '</b><span>' + HM.esc(x.detail) + '</span></div></div>';
+            '<div style="min-width:0"><b>' + HM.esc(c.song(x, 'label')) + '</b><span>' + HM.esc(c.song(x, 'detail')) + '</span></div></div>';
         }).join('') + '</div>'
       }) +
       HM.the({
@@ -4104,7 +4241,7 @@ HT.dangKy({
                 var d = {};
                 qCho.forEach(function (q) { d[q.feedId] = (d[q.feedId] || 0) + q.amount; });
                 return A.feeds.map(function (f, i) {
-                  return { ten: f.short, gt: Math.round((d[f.id] || 0) * 100) / 100, mau: P[i] };
+                  return { ten: c.song(f, 'short'), gt: Math.round((d[f.id] || 0) * 100) / 100, mau: P[i] };
                 });
               })() }) + '</div>'
           : HM.trong({ tieuDe: t('khong'),
@@ -4311,7 +4448,7 @@ function veLuoi(c) {
   var A = c.A, t = c.t, P = HB.dayMau();
   var than = '<div class="mx"><table><thead><tr>' +
     '<th>' + (c.lang === 'vi' ? 'Kỳ' : 'Period') + '</th>' +
-    A.feeds.map(function (f) { return '<th>' + HM.esc(f.short) + '</th>'; }).join('') +
+    A.feeds.map(function (f) { return '<th>' + HM.esc(c.song(f, 'short')) + '</th>'; }).join('') +
     '<th>' + HM.esc(t('tacQuyen')) + '</th>' +
     '<th class="num">' + (c.lang === 'vi' ? 'Doanh thu vào sổ' : 'Booked') + '</th>' +
     '<th>' + (c.lang === 'vi' ? 'Trạng thái kỳ' : 'Period') + '</th>' +
@@ -4328,9 +4465,9 @@ function veLuoi(c) {
         ? '<div class="cell">' + HM.cham(co ? 'ok' : 'no', co ? t('daNap') : t('thieu')) + '</div>'
         : '<button type="button" class="cell" ' +
           (co ? 'data-go="' + i + ':' + f.id + '"' : 'data-nap="' + i + ':' + f.id + '"') +
-          ' data-tip="' + HM.esc('<b>' + f.name + '</b>' + (co
+          ' data-tip="' + HM.esc('<b>' + c.song(f, 'name') + '</b>' + (co
             ? '<span class="d">' + HM.esc(st.file) + '<br>' + HT.fmt.luc(st.at) + '<br>Bấm để gỡ</span>'
-            : '<span class="d">' + HM.esc(f.fmt) + '<br>Bấm để nạp</span>')) + '">' +
+            : '<span class="d">' + HM.esc(c.song(f, 'fmt')) + '<br>Bấm để nạp</span>')) + '">' +
           HM.cham(co ? 'ok' : 'no', co ? t('daNap') : t('thieu')) + '</button>') + '</td>';
     });
     var pb = A.state().pub[p.k], coPub = pb && pb.status === 'loaded';
@@ -4339,7 +4476,7 @@ function veLuoi(c) {
       ? '<div class="cell">' + (coPub ? HM.cham('ok', t('quy') + p.quarter) : '<span class="nil">—</span>') + '</div>'
       : '<button type="button" class="cell" ' +
         (coPub ? 'data-gopub="' + i + '"' : 'data-pub="' + i + '"') +
-        ' data-tip="' + HM.esc('<b>' + A.pubFeed.name + '</b><span class="d">' +
+        ' data-tip="' + HM.esc('<b>' + c.song(A.pubFeed, 'name') + '</b><span class="d">' +
           (coPub ? HM.esc(pb.file) : cuoiQuy ? 'Cuối quý ' + p.quarter + ' — nạp được'
                  : 'Tháng ' + p.month + ' ' + HM.esc(t('khongQuy')) + ' — nạp vào đây là đặt cả quý tiền vào sai kỳ') +
           '</span>') + '">' +
@@ -4392,13 +4529,13 @@ function veLuong(c) {
       dai: co ? { kieu: 'ok', icon: 'check', chu: HM.esc(c.ky.label + ' · ' + t('daNap')) }
               : { kieu: 'no', icon: 'alert', chu: HM.esc(c.ky.label + ' · ' + t('thieu')) },
       h2: '<span style="display:inline-block;width:9px;height:9px;border-radius:2px;background:' +
-          P[fi] + ';margin-right:8px"></span>' + HM.esc(f.name),
-      p: HM.esc(f.fmt),
+          P[fi] + ';margin-right:8px"></span>' + HM.esc(c.song(f, 'name')),
+      p: HM.esc(c.song(f, 'fmt')),
       hanhDong: duyet ? '' : (co
         ? '<button type="button" class="btn sm" data-nap="' + c.ky.idx + ':' + f.id + '" data-lai>' + HM.esc(t('napLai')) + '</button>' +
           '<button type="button" class="btn sm dang" data-go="' + c.ky.idx + ':' + f.id + '">' + HM.esc(t('go')) + '</button>'
         : '<button type="button" class="btn sm pri" data-nap="' + c.ky.idx + ':' + f.id + '">' + HM.esc(t('nap')) + '</button>'),
-      than: '<p class="say">' + HM.esc(f.note) + '</p>' +
+      than: '<p class="say">' + HM.esc(c.song(f, 'note')) + '</p>' +
         HM.kv([
           { t: c.lang === 'vi' ? 'Đã nạp' : 'Loaded periods', v: daNap + '/' + A.periods.length },
           { t: t('tenFile') + ' · ' + c.ky.label, v: co ? st.file : '—' },
@@ -4410,9 +4547,9 @@ function veLuong(c) {
         '<div style="margin-top:14px">' + HB.o({
           loai: 'cot', cao: 130, anTruc: true, chuThich: false,
           truc: A.periods.map(function (p) { return p.label.slice(0, 2); }),
-          tieuDeTip: function (i) { return f.short + ' · kỳ ' + A.periods[i].label; },
+          tieuDeTip: function (i) { return c.song(f, 'short') + ' · ' + (c.lang === 'vi' ? 'kỳ ' : 'period ') + A.periods[i].label; },
           chuTrong: c.lang === 'vi' ? 'Luồng này chưa nạp cho kỳ đó' : 'Feed not loaded for that period',
-          chuoi: [{ ten: f.short, gt: theoKy.map(function (v, i) { return A.feedLoaded(i, f.id) ? v : null; }), mau: P[fi] }],
+          chuoi: [{ ten: c.song(f, 'short'), gt: theoKy.map(function (v, i) { return A.feedLoaded(i, f.id) ? v : null; }), mau: P[fi] }],
           noiBat: c.ky.idx
         }) + '</div>'
     });
@@ -4438,13 +4575,13 @@ function veLuong(c) {
         : { kieu: 'info', icon: 'info', chu: HM.esc(c.lang === 'vi'
             ? c.ky.label + ' không phải cuối quý — kỳ này không có báo cáo tác quyền là đúng'
             : c.ky.label + ' is not a quarter end — no publishing report is expected') },
-    h2: HM.esc(A.pubFeed.name),
-    p: HM.esc(A.pubFeed.fmt),
+    h2: HM.esc(c.song(A.pubFeed, 'name')),
+    p: HM.esc(c.song(A.pubFeed, 'fmt')),
     hanhDong: A.isApproved(c.kyKey) ? '' : (coPub
       ? '<button type="button" class="btn sm dang" data-gopub="' + c.ky.idx + '">' + HM.esc(t('go')) + '</button>'
       : '<button type="button" class="btn sm' + (cuoiQuyNay ? ' pri' : '') + '" data-pub="' + c.ky.idx + '">' +
         HM.esc(t('nap')) + '</button>'),
-    than: '<p class="say">' + HM.esc(A.pubFeed.note) + ' ' +
+    than: '<p class="say">' + HM.esc(c.song(A.pubFeed, 'note')) + ' ' +
       (c.lang === 'vi'
         ? '<b>Tác quyền là dòng tiền tách rời</b>: nó thuộc về người sáng tác, không đi qua label, và không tính vào điều kiện “đủ ba luồng” của kỳ.'
         : '<b>Publishing is a separate money stream</b>: it belongs to the writers, never passes through a label, and does not count towards the period’s “all three feeds” condition.') + '</p>' +
@@ -4480,7 +4617,7 @@ function veOng(c) {
       : 'Each “Load” in this prototype simulates these eight steps. In the real system they are the hardest and most expensive part of the project — not the interface.',
     than: '<div class="steps">' + A.ingest.steps.map(function (s, i) {
       return '<div class="s ' + (i === 2 ? 'now' : 'ok') + '">' +
-        '<b>' + (i + 1) + '. ' + HM.esc(s.t) + '</b><span>' + HM.esc(s.d) + '</span>' +
+        '<b>' + (i + 1) + '. ' + HM.esc(c.song(s, 't')) + '</b><span>' + HM.esc(c.song(s, 'd')) + '</span>' +
         (i === 2 ? '<div class="tm">' + HM.esc(c.lang === 'vi'
           ? 'Dòng không khớp đi vào hàng chờ — xem màn Khớp ISRC'
           : 'Unmatched rows go to the queue — see ISRC matching') + '</div>' : '') + '</div>';
@@ -4531,8 +4668,8 @@ function veSu(c) {
 function napLuong(c, pi, fid, lai) {
   var A = c.A, f = A.feeds[fid], p = A.periods[pi];
   c.hoiThoai({
-    tieuDe: c.t('hoiNap') + ' · ' + f.name,
-    moTa: HM.esc(p.label) + ' · ' + HM.esc(f.fmt),
+    tieuDe: c.t('hoiNap') + ' · ' + c.song(f, 'name'),
+    moTa: HM.esc(p.label) + ' · ' + HM.esc(c.song(f, 'fmt')),
     than: '<label class="fld">' + (c.lang === 'vi' ? 'Tên file báo cáo' : 'Report file name') + '</label>' +
       '<input class="in" data-o="file" value="' + HM.esc(f.id === 0 ? 'sales-report-' + p.k.replace('-', '') + '.csv'
         : f.id === 1 ? 'yt-' + p.k.replace('-', '') + '-partner.csv.gz' : 'tiktok-' + p.k.replace('-', '') + '.xlsx') + '">' +
@@ -4544,7 +4681,7 @@ function napLuong(c, pi, fid, lai) {
     if (!r) return;
     try {
       var kq = A.ingest.load(pi, fid, { file: r.file, replace: !!lai });
-      c.thongBao(f.short + ' · ' + p.label + ' — ' + (c.lang === 'vi' ? 'đã nạp · ' : 'loaded · ') +
+      c.thongBao(c.song(f, 'short') + ' · ' + p.label + ' — ' + (c.lang === 'vi' ? 'đã nạp · ' : 'loaded · ') +
         kq.added + ' ' + c.t('sinhDong'), 'ok');
       HM.quenHet(); c.veLai();
     } catch (e) { c.thongBao(e.message, 'no'); }
@@ -4555,13 +4692,13 @@ function goLuong(c, pi, fid) {
   var A = c.A, f = A.feeds[fid], p = A.periods[pi];
   var mat = 0;
   for (var k = 0; k < A.trackCount; k++) mat += A.grossRecByFeed(k, pi, fid);
-  c.xacNhan(c.t('hoiGo') + ' · ' + f.short + ' · ' + p.label,
+  c.xacNhan(c.t('hoiGo') + ' · ' + c.song(f, 'short') + ' · ' + p.label,
     HM.esc(c.t('hoiGoMo')) + '<br><br>' +
     (c.lang === 'vi' ? 'Tổng của kỳ sẽ giảm ' : 'The period total will drop by ') +
     '<b>' + HM.esc(c.tien2(mat)) + '</b>.',
     c.t('go'), true).then(function (ok) {
       if (!ok) return;
-      try { A.ingest.unload(pi, fid); c.thongBao(f.short + ' · ' + p.label + ' — ' + (c.lang === 'vi' ? 'đã gỡ' : 'unloaded')); HM.quenHet(); c.veLai(); }
+      try { A.ingest.unload(pi, fid); c.thongBao(c.song(f, 'short') + ' · ' + p.label + ' — ' + (c.lang === 'vi' ? 'đã gỡ' : 'unloaded')); HM.quenHet(); c.veLai(); }
       catch (e) { c.thongBao(e.message, 'no'); }
     });
 }
@@ -4733,7 +4870,7 @@ HT.dangKy({
       '<select class="in" data-f="luong" style="width:auto;height:34px">' +
         '<option value="">' + HM.esc(t('moiLuong')) + '</option>' +
         A.feeds.map(function (f) {
-          return '<option value="' + f.id + '"' + (LOC.luong === String(f.id) ? ' selected' : '') + '>' + HM.esc(f.short) + '</option>';
+          return '<option value="' + f.id + '"' + (LOC.luong === String(f.id) ? ' selected' : '') + '>' + HM.esc(c.song(f, 'short')) + '</option>';
         }).join('') + '</select>' +
       ['pending', 'matched', 'parked', ''].map(function (s) {
         var nhan = s === 'pending' ? t('treo') : s === 'matched' ? t('daKhop') : s === 'parked' ? t('deLai') : (c.lang === 'vi' ? 'Tất cả' : 'All');
@@ -4770,7 +4907,7 @@ HT.dangKy({
             (q.isrc ? '<span class="mono">' + HM.esc(q.isrc) + '</span>'
                     : '<span class="nil">' + HM.esc(c.lang === 'vi' ? 'thiếu mã' : 'no code') + '</span>') +
             '<div class="t-sub">' + HM.esc(A.periods[A.pIndexOf(q.periodKey)].label) + ' · ' +
-            HM.esc(A.feeds[q.feedId].short) + '</div></td>' +
+            HM.esc(c.song(A.feeds[q.feedId], 'short')) + '</div></td>' +
           '<td><div class="t-ttl">' + HM.esc(HM.dai(q.title, 26)) + '</div>' +
             '<div class="t-sub">' + HM.esc(HM.dai(q.artist, 22)) + ' · ' +
             (q.status === 'pending' ? HM.esc(c.lang === 'vi' ? 'treo' : 'held')
@@ -4798,7 +4935,7 @@ HT.dangKy({
       HM.csv('hang-cho-khop-isrc.csv',
         ['ID', 'Kỳ', 'Luồng', 'Mã trong file', 'Tên bài', 'Nghệ sĩ', 'Cửa hàng', 'Lãnh thổ', 'Lượt', 'Số tiền USD', 'Lý do', 'Trạng thái'],
         ds.map(function (q) {
-          return [q.id, A.periods[A.pIndexOf(q.periodKey)].label, A.feeds[q.feedId].short, q.isrc,
+          return [q.id, A.periods[A.pIndexOf(q.periodKey)].label, c.song(A.feeds[q.feedId], 'short'), q.isrc,
                   q.title, q.artist, q.store, q.territory, q.streams,
                   q.amount.toFixed(2).replace('.', ','), q.reason, q.status];
         }));
@@ -4847,7 +4984,7 @@ function veChiTiet(root, c) {
         ? { kieu: 'warn', icon: 'clock', chu: HM.esc(t('deLai') + (q.note ? ' · ' + q.note : '')) }
         : { kieu: 'no', icon: 'alert', chu: HM.esc(q.reason) },
     h2: HM.esc(q.title || (c.lang === 'vi' ? '(file không ghi tên bài)' : '(no title in file)')),
-    p: HM.esc(q.id + ' · ' + A.feeds[q.feedId].name),
+    p: HM.esc(q.id + ' · ' + c.song(A.feeds[q.feedId], 'name')),
     than: HM.kv([
       { t: t('cot_ma'), v: q.isrc || (c.lang === 'vi' ? 'thiếu hẳn' : 'missing'), vHtml: false },
       { t: c.lang === 'vi' ? 'Nghệ sĩ trong file' : 'Artist in file', v: q.artist },
@@ -5117,7 +5254,7 @@ HT.dangKy({
     } else {
       html += HM.ghi({ kieu: 'warn',
         tieuDe: HM.esc(c.lang === 'vi' ? hong.length + ' điều kiện chưa đạt' : hong.length + ' conditions not met'),
-        than: hong.map(function (x) { return '<b>' + HM.esc(x.label) + '</b> — ' + HM.esc(x.detail); }).join('<br>'),
+        than: hong.map(function (x) { return '<b>' + HM.esc(c.song(x, 'label')) + '</b> — ' + HM.esc(c.song(x, 'detail')); }).join('<br>'),
         nut: '<button type="button" class="btn sm dang" data-boqua>' + HM.esc(t('boQua')) + '</button>' });
     }
 
@@ -5150,7 +5287,7 @@ HT.dangKy({
       HM.csv('doi-chieu-' + c.kyKey + '.csv',
         ['Luồng', 'Trạng thái', 'Tổng trên file', 'Đã khớp', 'Truy thu kỳ khác', 'Từ file kỳ này', 'Đang treo', 'Chênh lệch', 'Đã ghi nhận'],
         A.recon(c.ky.idx).rows.map(function (x) {
-          return [x.feed.name, x.status, x.control.toFixed(2), x.attributed.toFixed(2),
+          return [c.song(x.feed, 'name'), x.status, x.control.toFixed(2), x.attributed.toFixed(2),
                   x.adjustments.toFixed(2), x.fromFile.toFixed(2), x.pending.toFixed(2),
                   x.diff.toFixed(2), x.accepted ? x.accepted.note || 'có' : ''];
         }));
@@ -5178,7 +5315,7 @@ function veDoi(c, r) {
     (coViec ? '<th style="width:170px"></th>' : '') + '</tr></thead><tbody>' +
     r.rows.map(function (x) {
       var lech = Math.abs(x.diff) > 0.005;
-      return '<tr><td><div class="t-ttl">' + HM.esc(x.feed.name) + '</div>' +
+      return '<tr><td><div class="t-ttl">' + HM.esc(c.song(x.feed, 'name')) + '</div>' +
           '<div class="t-sub">' + (x.status === 'loaded' ? HM.esc(x.file) : HM.esc(t('chuaNap'))) + '</div></td>' +
         '<td class="num">' + (x.status === 'loaded' ? HM.esc(c.tien2(x.control)) : '<span class="nil">—</span>') + '</td>' +
         '<td class="num">' + (x.status === 'loaded' ? HM.esc(c.tien2(x.attributed)) : '<span class="nil">—</span>') + '</td>' +
@@ -5218,7 +5355,7 @@ function veDoi(c, r) {
       p: c.lang === 'vi' ? 'Ghi nhận không làm chênh lệch biến mất. Nó nói: chúng tôi biết, đây là lý do, và đây là người chịu trách nhiệm.'
                          : 'Accepting does not make a variance disappear. It records: we know, this is why, and this is who is accountable.',
       than: daGhi.map(function (x) {
-        return '<div class="stat"><b>' + HM.esc(x.feed.name) + '<p>' + HM.esc(x.accepted.note || (c.lang === 'vi' ? '(không ghi chú)' : '(no note)')) + '</p></b>' +
+        return '<div class="stat"><b>' + HM.esc(c.song(x.feed, 'name')) + '<p>' + HM.esc(x.accepted.note || (c.lang === 'vi' ? '(không ghi chú)' : '(no note)')) + '</p></b>' +
           '<span class="v">' + HM.esc(c.tien2(x.accepted.amount)) + '<em>' + HM.esc(HT.fmt.luc(x.accepted.at)) + '</em></span></div>';
       }).join('')
     });
@@ -5229,7 +5366,7 @@ function veDoi(c, r) {
     HM.the({
       h2: c.lang === 'vi' ? 'Ba luồng của kỳ ' + c.ky.label : 'The three feeds, ' + c.ky.label,
       than: HB.o({ loai: 'thanh', hang: r.rows.map(function (x, i) {
-        return { ten: x.feed.short, gt: x.attributed, mau: P[i],
+        return { ten: c.song(x.feed, 'short'), gt: x.attributed, mau: P[i],
                  phu: x.status === 'loaded' ? x.file : t('chuaNap') };
       }) })
     }) +
@@ -5284,8 +5421,8 @@ function veDk(c, dk, nay) {
       : 'Four conditions. The first three are hard blocks because getting them wrong loses other people’s money; the fourth because getting it wrong makes the report impossible to audit.',
     than: '<div class="checks">' + dk.map(function (x) {
       return '<div class="check ' + (x.ok ? 'ok' : 'no') + '">' + HM.icon(x.ok ? 'check' : 'alert') +
-        '<div style="min-width:0;flex:1"><b>' + HM.esc(x.label) + '</b>' +
-        '<span>' + HM.esc(x.detail) + '</span>' +
+        '<div style="min-width:0;flex:1"><b>' + HM.esc(c.song(x, 'label')) + '</b>' +
+        '<span>' + HM.esc(c.song(x, 'detail')) + '</span>' +
         '<span style="margin-top:6px;color:var(--faint)">' + HM.esc(giaiThich[x.id] || '') + '</span></div>' +
         (noiToi[x.id] && !x.ok ? '<div class="r"><button type="button" class="btn sm" data-di="' + noiToi[x.id] + '">' +
           HM.esc(c.lang === 'vi' ? 'Xử lý' : 'Fix') + '</button></div>' : '') + '</div>';
@@ -5410,9 +5547,9 @@ function veLs(c) {
           '<td class="mono">' + HM.esc(p.label) + '</td>' +
           '<td>' + A.feeds.map(function (fd) {
             return '<span class="dot ' + (A.feedLoaded(i, fd.id) ? 'ok' : 'no') + '" data-tip="' +
-              HM.esc(fd.name + ' — ' + (A.feedLoaded(i, fd.id) ? 'đã nạp' : 'chưa nạp')) + '"></span>';
+              HM.esc(c.song(fd, 'name') + ' — ' + (A.feedLoaded(i, fd.id) ? 'đã nạp' : 'chưa nạp')) + '"></span>';
           }).join('') + (thieu.length ? '<span class="faint" style="font-size:11.5px">' +
-            HM.esc(thieu.map(function (x) { return x.short; }).join(', ')) + '</span>' : '') + '</td>' +
+            HM.esc(thieu.map(function (x) { return c.song(x, 'short'); }).join(', ')) + '</span>' : '') + '</td>' +
           '<td class="num">' + HM.esc(c.tien(A.agg('admin', 0, i, 'rec').gross)) + '</td>' +
           '<td class="num">' + (A.queue.pendingTotal(p.k) > 0.004
             ? HM.esc(c.tien(A.queue.pendingTotal(p.k))) : '<span class="nil">—</span>') + '</td>' +
@@ -5444,7 +5581,7 @@ function duyetKy(c, boQua) {
       { t: c.lang === 'vi' ? 'Sẽ chi cho' : 'Payable to', v: HT.fmt.n(soBen) + ' ' + c.t('benNhan') },
       { t: c.lang === 'vi' ? 'Tổng sẽ chi' : 'Total payable', v: HT.fmt.usd(seChi), manh: true },
       hong.length ? { t: c.lang === 'vi' ? 'Điều kiện chưa đạt' : 'Unmet conditions',
-        v: hong.map(function (x) { return x.label; }).join(' · ') } : null
+        v: hong.map(function (x) { return c.song(x, 'label'); }).join(' · ') } : null
     ]) +
     '<label class="fld" style="margin-top:14px">' + (c.lang === 'vi' ? 'Người duyệt' : 'Approved by') + '</label>' +
     '<input class="in" data-o="by" value="ops@haustek-group.com">' +
@@ -5488,7 +5625,7 @@ function thuHoi(c) {
 function ghiNhanLech(c, fid) {
   var A = c.A, tt = A.feedTotals(c.ky.idx, fid);
   c.hoiThoai({
-    tieuDe: c.t('ghiNhan') + ' · ' + A.feeds[fid].name,
+    tieuDe: c.t('ghiNhan') + ' · ' + c.song(A.feeds[fid], 'name'),
     moTa: HM.esc(c.lang === 'vi'
       ? 'Ghi nhận không làm chênh lệch biến mất và không sửa số. Nó nói: chúng tôi đã nhìn, đây là lý do, và đây là người chịu trách nhiệm. Sau khi ghi nhận, kỳ mới duyệt được.'
       : 'Accepting does not make the variance vanish and does not change any figure. It records that a person looked, why, and who is accountable. Only then can the period be approved.'),
@@ -7674,7 +7811,7 @@ function moBanGhi(c, i) {
           : 'This track earned nothing in ' + c.ky.label + '.') + '</p>') +
     '<h4 class="sec">' + HM.esc(c.t('ctLuong')) + '</h4>' +
     HB.o({ loai: 'thanh', hang: A.feeds.map(function (f, fi) {
-      return { ten: f.short, gt: A.grossRecByFeed(i, pi, f.id), mau: P[fi],
+      return { ten: c.song(f, 'short'), gt: A.grossRecByFeed(i, pi, f.id), mau: P[fi],
                phu: A.feedLoaded(pi, f.id) ? '' : (c.lang === 'vi' ? 'chưa nạp cho kỳ này' : 'not loaded') };
     }) }) +
     '<h4 class="sec">' + HM.esc(c.t('ctKy')) + '</h4>' +
@@ -7980,11 +8117,11 @@ function veCauHoi(c) {
     return HM.the({
       dai: da ? { kieu: 'ok', icon: 'check', chu: HM.esc(c.lang === 'vi' ? 'Đã có câu trả lời' : 'Answered') }
               : { kieu: 'warn', icon: 'ask', chu: HM.esc(c.lang === 'vi' ? 'Chưa trả lời — bản mẫu đang đoán' : 'Unanswered — the prototype is guessing') },
-      h2: (i + 1) + '. ' + HM.esc(q.t),
+      h2: (i + 1) + '. ' + HM.esc(c.song(q, 't')),
       than: '<h4 class="sec">' + HM.esc(t('chViSao')) + '</h4>' +
-        '<p class="say">' + HM.esc(q.why) + '</p>' +
+        '<p class="say">' + HM.esc(c.song(q, 'why')) + '</p>' +
         '<h4 class="sec">' + HM.esc(t('chDoan')) + '</h4>' +
-        '<p class="say">' + HM.esc(q.guess) + '</p>' +
+        '<p class="say">' + HM.esc(c.song(q, 'guess')) + '</p>' +
         '<h4 class="sec">' + HM.esc(t('chTraLoi')) + '</h4>' +
         '<textarea class="in" data-ch="' + q.id + '" rows="3" placeholder="' +
         HM.esc(c.lang === 'vi' ? 'Viết câu trả lời ở đây…' : 'Write the answer here…') + '">' +
@@ -7999,8 +8136,8 @@ function veCauHoi(c) {
       ? 'Hai file này quyết định toàn bộ thiết kế đường ống nạp — phần khó nhất, và cũng là phần không đoán được.'
       : 'These two files determine the whole ingest design — the hardest part, and the part that cannot be guessed.',
     than: A.samplesNeeded.map(function (s) {
-      return '<div class="stat" style="align-items:flex-start"><b style="max-width:none">' + HM.esc(s.t) +
-        '<p>' + HM.esc(s.why) + '</p></b></div>';
+      return '<div class="stat" style="align-items:flex-start"><b style="max-width:none">' + HM.esc(c.song(s, 't')) +
+        '<p>' + HM.esc(c.song(s, 'why')) + '</p></b></div>';
     }).join('')
   });
 }
@@ -8383,7 +8520,7 @@ HT.dangKy({
     if (s.emptyReason) {
       html += HM.the({
         than: HM.trong({ icon: LUONG === 'pub' ? 'cal' : 'empty',
-          tieuDe: t('trongMo'), moTa: s.emptyReason,
+          tieuDe: t('trongMo'), moTa: c.song(s, 'emptyReason'),
           nut: s.nextPub ? '<button type="button" class="btn pri" data-kyto="' + HM.esc(s.nextPub.k) + '">' +
             HM.esc((c.lang === 'vi' ? 'Xem kỳ ' : 'See ') + s.nextPub.label) + '</button>' : '' })
       });
@@ -8417,13 +8554,13 @@ HT.dangKy({
         than: '<div class="wf">' + s.chain.map(function (b) {
           return '<div class="st ' + (b.kind === 'out' ? 'out' : b.kind === 'final' ? 'fin' : '') + '">' +
             '<div class="mk"></div>' +
-            '<div><div class="lbl">' + HM.esc(b.label) + '</div>' +
-            (b.note ? '<div class="nt">' + HM.esc(b.note) + '</div>' : '') + '</div>' +
+            '<div><div class="lbl">' + HM.esc(c.song(b, 'label')) + '</div>' +
+            (c.song(b, 'note') ? '<div class="nt">' + HM.esc(c.song(b, 'note')) + '</div>' : '') + '</div>' +
             '<div class="amt">' + HM.esc(HT.fmt.usd(b.value)) + '</div></div>';
         }).join('') + '</div>' +
         '<div style="margin-top:16px">' + HB.o({ loai: 'thac', cao: 190,
           buoc: s.chain.map(function (b) {
-            return { l: b.label, v: b.value, nt: b.note,
+            return { l: c.song(b, 'label'), v: b.value, nt: c.song(b, 'note'),
                      kind: b.kind === 'top' ? 'top' : b.kind === 'final' ? 'final' : 'out' };
           }) }) + '</div>'
       }) +
@@ -8661,7 +8798,7 @@ function moBai(c, id, luong) {
     '<h4 class="sec">' + (c.lang === 'vi' ? 'Tiền của bài này' : 'This track’s money') + '</h4>' +
     '<div class="wf">' + d.steps.map(function (st) {
       return '<div class="st ' + (st.strong ? 'fin' : (st.value != null && st.value < 0 ? 'out' : '')) + '">' +
-        '<div class="mk"></div><div><div class="lbl">' + HM.esc(st.label) + '</div></div>' +
+        '<div class="mk"></div><div><div class="lbl">' + HM.esc(c.song(st, 'label')) + '</div></div>' +
         '<div class="amt">' + HM.esc(st.value != null ? HT.fmt.usd(st.value) : st.text) + '</div></div>';
     }).join('') + '</div>' +
     (d.byStore.length ? '<h4 class="sec">' + (c.lang === 'vi' ? 'Nghe ở đâu' : 'Where it was played') + '</h4>' +
@@ -8915,7 +9052,7 @@ function moBai(c, id, luong, la) {
     '<h4 class="sec">' + (c.lang === 'vi' ? 'Tiền của bài này đi đâu' : 'Where this track’s money went') + '</h4>' +
     '<div class="wf">' + d.steps.map(function (st) {
       return '<div class="st ' + (st.strong ? 'fin' : (st.value != null && st.value < 0 ? 'out' : '')) + '">' +
-        '<div class="mk"></div><div><div class="lbl">' + HM.esc(st.label) + '</div></div>' +
+        '<div class="mk"></div><div><div class="lbl">' + HM.esc(c.song(st, 'label')) + '</div></div>' +
         '<div class="amt">' + HM.esc(st.value != null ? HT.fmt.usd(st.value) : st.text) + '</div></div>';
     }).join('') + '</div>' +
     (d.byStore.length ? '<h4 class="sec">' + (c.lang === 'vi' ? 'Nghe ở đâu' : 'Where it was played') + '</h4>' +
@@ -9043,7 +9180,7 @@ HT.dangKy({
           { t: t('maKh'), v: me.clientId },
           { t: t('loaiHd'), v: la ? 'Label' : (me.independent ? (c.lang === 'vi' ? 'Nghệ sĩ độc lập' : 'Independent artist')
                                                               : (c.lang === 'vi' ? 'Nghệ sĩ thuộc label' : 'Artist under a label')) },
-          !la && me.belongsTo ? { t: t('thuoc'), v: me.belongsTo } : null
+          !la && me.belongsTo ? { t: t('thuoc'), v: c.song(me, 'belongsTo') } : null
         ]) + '</div>' +
         '<div>' + HM.kv([
           { t: t('ky'), v: c.ky.label, manh: true },
@@ -9059,15 +9196,15 @@ HT.dangKy({
     var them = function (muc, gt, ghi, kieu) { dong.push({ muc: muc, gt: gt, ghi: ghi || '', kieu: kieu || '' }); };
 
     rec.chain.forEach(function (b) {
-      them(b.label, b.value, b.note, b.kind === 'final' ? 'tong' : b.kind === 'top' ? 'dau' : 'tru');
+      them(c.song(b, 'label'), b.value, c.song(b, 'note'), b.kind === 'final' ? 'tong' : b.kind === 'top' ? 'dau' : 'tru');
     });
     if (coTq) {
       them('—', null, '', 'ngan');
       pub.chain.forEach(function (b) {
-        them(b.label, b.value, b.note, b.kind === 'final' ? 'tong' : b.kind === 'top' ? 'dau' : 'tru');
+        them(c.song(b, 'label'), b.value, c.song(b, 'note'), b.kind === 'final' ? 'tong' : b.kind === 'top' ? 'dau' : 'tru');
       });
     } else if (me.hasPublishing) {
-      them(t('khongTq'), null, pub && pub.emptyReason ? pub.emptyReason : '', 'ngan');
+      them(t('khongTq'), null, pub ? c.song(pub, 'emptyReason') : '', 'ngan');
     }
 
     them(t('cong'), congPs, '', 'tongto');
@@ -9077,7 +9214,7 @@ HT.dangKy({
       if (rec.advance && rec.advance.recoupedThisPeriod > 0.004)
         them(t('truUng'), -rec.advance.recoupedThisPeriod,
           (c.lang === 'vi' ? 'còn lại sau kỳ này: ' : 'left after this period: ') + HT.fmt.usd(rec.advance.left), 'tru');
-      them(t('thucChi'), chi.payable, chi.note, 'tongto');
+      them(t('thucChi'), chi.payable, c.song(chi, 'note'), 'tongto');
       if (chi.carryOut > 0.004)
         them(t('donSau'), chi.carryOut,
           (c.lang === 'vi' ? 'dưới ngưỡng ' : 'below the ') + HT.fmt.usd0(chi.threshold) +
@@ -9783,14 +9920,20 @@ if (cua === 'khach') {
     ten: 'internal', A: A,
     kyDanhSach: function () {
       return A.periods.map(function (p) {
-        return { k: p.k, label: p.label, idx: p.idx, nhan: A.isApproved(p.k) ? 'đã duyệt' : 'chưa duyệt' };
+        /* Nhãn này hiện trong ô chọn kỳ ở thanh trên, nên nó là CHỮ GIAO
+           DIỆN và phải đổi theo ngôn ngữ. HT.lang là nguồn duy nhất. */
+        var en = HT.lang === 'en';
+        return { k: p.k, label: p.label, idx: p.idx,
+                 nhan: A.isApproved(p.k) ? (en ? 'approved' : 'đã duyệt')
+                                         : (en ? 'not approved' : 'chưa duyệt') };
       });
     },
     kyMacDinh: A.periods[A.periods.length - 1].k,
     ghiChu: function (c) {
       var f = A.fx.get();
-      return '1 USD = ' + HT.fmt.n(f.locked[c.kyKey] ? f.locked[c.kyKey].rate : f.rate) + ' ₫' +
-        (f.locked[c.kyKey] ? '' : ' · chưa chốt');
+      var khoa = f.locked[c.kyKey];
+      return '1 USD = ' + HT.fmt.n(khoa ? khoa.rate : f.rate) + ' ₫' +
+        (khoa ? '' : (c.lang === 'vi' ? ' · chưa chốt' : ' · not locked'));
     },
     chanTrai: function (c) {
       return '<b>ops@haustek-group.com</b><span>' +

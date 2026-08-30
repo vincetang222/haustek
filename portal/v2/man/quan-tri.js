@@ -259,11 +259,11 @@ function veCauHoi(c) {
     return HM.the({
       dai: da ? { kieu: 'ok', icon: 'check', chu: HM.esc(c.lang === 'vi' ? 'Đã có câu trả lời' : 'Answered') }
               : { kieu: 'warn', icon: 'ask', chu: HM.esc(c.lang === 'vi' ? 'Chưa trả lời — bản mẫu đang đoán' : 'Unanswered — the prototype is guessing') },
-      h2: (i + 1) + '. ' + HM.esc(q.t),
+      h2: (i + 1) + '. ' + HM.esc(c.song(q, 't')),
       than: '<h4 class="sec">' + HM.esc(t('chViSao')) + '</h4>' +
-        '<p class="say">' + HM.esc(q.why) + '</p>' +
+        '<p class="say">' + HM.esc(c.song(q, 'why')) + '</p>' +
         '<h4 class="sec">' + HM.esc(t('chDoan')) + '</h4>' +
-        '<p class="say">' + HM.esc(q.guess) + '</p>' +
+        '<p class="say">' + HM.esc(c.song(q, 'guess')) + '</p>' +
         '<h4 class="sec">' + HM.esc(t('chTraLoi')) + '</h4>' +
         '<textarea class="in" data-ch="' + q.id + '" rows="3" placeholder="' +
         HM.esc(c.lang === 'vi' ? 'Viết câu trả lời ở đây…' : 'Write the answer here…') + '">' +
@@ -278,8 +278,8 @@ function veCauHoi(c) {
       ? 'Hai file này quyết định toàn bộ thiết kế đường ống nạp — phần khó nhất, và cũng là phần không đoán được.'
       : 'These two files determine the whole ingest design — the hardest part, and the part that cannot be guessed.',
     than: A.samplesNeeded.map(function (s) {
-      return '<div class="stat" style="align-items:flex-start"><b style="max-width:none">' + HM.esc(s.t) +
-        '<p>' + HM.esc(s.why) + '</p></b></div>';
+      return '<div class="stat" style="align-items:flex-start"><b style="max-width:none">' + HM.esc(c.song(s, 't')) +
+        '<p>' + HM.esc(c.song(s, 'why')) + '</p></b></div>';
     }).join('')
   });
 }

@@ -107,26 +107,38 @@ function icon(n, extra) {
 }
 
 /* ---------------------------------------------------------------------
-   Định dạng — số và ngày luôn viết kiểu Việt, kể cả khi giao diện là EN.
-   Đây là công cụ nội bộ của một công ty Việt Nam.
+   Định dạng số và ngày — ĐI THEO NGÔN NGỮ đang chọn.
+
+   Trước đây chỗ này cố định kiểu Việt với lý do "công cụ nội bộ của một
+   công ty Việt Nam". Lý do đó đúng với cửa nội bộ, nhưng sai hẳn với cổng
+   khách: người bật EN là đối tác nước ngoài, và với họ "$7.537,23" đọc ra
+   bảy nghìn hay bảy đô là chuyện hên xui. Tiền là chỗ không được để ai
+   đoán, nên tiếng nào thì viết số theo tiếng đó.
+
+   Ngày cũng vậy: 06.07.2026 ở VI là 6 tháng 7, ở EN người đọc rất dễ hiểu
+   thành 7 tháng 6. Nên bản EN viết hẳn tên tháng ra.
    --------------------------------------------------------------------- */
 var fx = 26150;
 function setFx(v) { fx = v || fx; }
+function loc() { return lang === 'en' ? 'en-US' : 'vi-VN'; }
+var THANG_EN = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 var fmt = {
-  n:  function (v) { return Math.round(v).toLocaleString('vi-VN'); },
-  n1: function (v) { return v.toLocaleString('vi-VN', { minimumFractionDigits: 1, maximumFractionDigits: 1 }); },
+  n:  function (v) { return Math.round(v).toLocaleString(loc()); },
+  n1: function (v) { return v.toLocaleString(loc(), { minimumFractionDigits: 1, maximumFractionDigits: 1 }); },
   usd: function (v) {
-    return (v < 0 ? '−$' : '$') + Math.abs(v).toLocaleString('vi-VN',
+    return (v < 0 ? '−$' : '$') + Math.abs(v).toLocaleString(loc(),
       { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   },
   usd0: function (v) {
-    return (v < 0 ? '−$' : '$') + Math.round(Math.abs(v)).toLocaleString('vi-VN');
+    return (v < 0 ? '−$' : '$') + Math.round(Math.abs(v)).toLocaleString(loc());
   },
+  /* Đồng Việt Nam thì luôn viết kiểu Việt, kể cả ở giao diện EN — đó là
+     cách con số ấy in ra trên uỷ nhiệm chi. */
   vnd: function (v) { return Math.round(v * fx).toLocaleString('vi-VN') + ' ₫'; },
   tien: function (v, cur) { return cur === 'VND' ? fmt.vnd(v) : fmt.usd0(v); },
   tien2: function (v, cur) { return cur === 'VND' ? fmt.vnd(v) : fmt.usd(v); },
   pct: function (v, d) {
-    return (v * 100).toLocaleString('vi-VN',
+    return (v * 100).toLocaleString(loc(),
       { minimumFractionDigits: d == null ? 1 : d, maximumFractionDigits: d == null ? 1 : d }) + '%';
   },
   delta: function (a, b) {
@@ -136,11 +148,16 @@ var fmt = {
   luc: function (s) {
     if (!s) return '—';
     s = String(s);
+    if (lang === 'en')
+      return s.slice(8, 10) + ' ' + (THANG_EN[+s.slice(5, 7) - 1] || '') + ' ' + s.slice(0, 4) +
+        ', ' + s.slice(11, 16);
     return s.slice(8, 10) + '.' + s.slice(5, 7) + '.' + s.slice(0, 4) + ' ' + s.slice(11, 16);
   },
   ngay: function (s) {
     if (!s) return '—';
     s = String(s);
+    if (lang === 'en')
+      return s.slice(8, 10) + ' ' + (THANG_EN[+s.slice(5, 7) - 1] || '') + ' ' + s.slice(0, 4);
     return s.slice(8, 10) + '.' + s.slice(5, 7) + '.' + s.slice(0, 4);
   }
 };
@@ -360,6 +377,19 @@ function chay(cauHinh) {
       fmt: fmt, esc: esc, icon: icon, CHU: CHU,
       tien: function (v) { return fmt.tien(v, cur); },
       tien2: function (v) { return fmt.tien2(v, cur); },
+      /* Chuỗi hai thứ tiếng đến từ TẦNG DỮ LIỆU: tên luồng, điều kiện
+         duyệt, từng chặng trong chuỗi tiền của khách. Chúng không nằm
+         trong từ điển của màn hình vì màn hình không sinh ra chúng —
+         nên lấy bằng hàm này: c.song(o, 'label') trả về o.labelEn khi
+         đang ở EN và có bản EN, còn lại trả về o.label. */
+      song: function (o, khoa) {
+        if (!o) return '';
+        if (lang === 'en') {
+          var kEn = khoa + 'En';
+          if (o[kEn] != null && o[kEn] !== '') return o[kEn];
+        }
+        return o[khoa] == null ? '' : o[khoa];
+      },
       /* chữ của màn hình, thiếu thì rơi về chữ của khung */
       t: function (k) {
         if (man && man.chu && man.chu[lang] && man.chu[lang][k] != null) return man.chu[lang][k];
@@ -449,6 +479,11 @@ function chay(cauHinh) {
   }
 
   function ve() {
+    /* Dựng lại danh sách kỳ mỗi lần vẽ, không nhớ từ lúc khởi động.
+       Nhãn trong ô chọn kỳ ("đã duyệt" / "chưa duyệt") là chữ giao diện và
+       phải đổi theo ngôn ngữ; nó cũng đổi khi người vận hành vừa duyệt xong
+       một kỳ. Nhớ một lần lúc khởi động là cả hai thứ đó đứng im. */
+    kys = cauHinh.kyDanhSach();
     var id = (location.hash || '').replace('#', '') || (MAN[0] && MAN[0].id);
     var man = MAN.filter(function (m) { return m.id === id; })[0] || MAN[0];
     if (!man) return;

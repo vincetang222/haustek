@@ -292,7 +292,7 @@ function moBanGhi(c, i) {
           : 'This track earned nothing in ' + c.ky.label + '.') + '</p>') +
     '<h4 class="sec">' + HM.esc(c.t('ctLuong')) + '</h4>' +
     HB.o({ loai: 'thanh', hang: A.feeds.map(function (f, fi) {
-      return { ten: f.short, gt: A.grossRecByFeed(i, pi, f.id), mau: P[fi],
+      return { ten: c.song(f, 'short'), gt: A.grossRecByFeed(i, pi, f.id), mau: P[fi],
                phu: A.feedLoaded(pi, f.id) ? '' : (c.lang === 'vi' ? 'chưa nạp cho kỳ này' : 'not loaded') };
     }) }) +
     '<h4 class="sec">' + HM.esc(c.t('ctKy')) + '</h4>' +

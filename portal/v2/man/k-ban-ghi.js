@@ -236,7 +236,7 @@ function moBai(c, id, luong, la) {
     '<h4 class="sec">' + (c.lang === 'vi' ? 'Tiền của bài này đi đâu' : 'Where this track’s money went') + '</h4>' +
     '<div class="wf">' + d.steps.map(function (st) {
       return '<div class="st ' + (st.strong ? 'fin' : (st.value != null && st.value < 0 ? 'out' : '')) + '">' +
-        '<div class="mk"></div><div><div class="lbl">' + HM.esc(st.label) + '</div></div>' +
+        '<div class="mk"></div><div><div class="lbl">' + HM.esc(c.song(st, 'label')) + '</div></div>' +
         '<div class="amt">' + HM.esc(st.value != null ? HT.fmt.usd(st.value) : st.text) + '</div></div>';
     }).join('') + '</div>' +
     (d.byStore.length ? '<h4 class="sec">' + (c.lang === 'vi' ? 'Nghe ở đâu' : 'Where it was played') + '</h4>' +
