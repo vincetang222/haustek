@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Haustek — Cổng báo cáo doanh thu</title>
+<link rel="icon" href="../../favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="haustek-theme.css">
+</head>
+<body>
+<script src="../haustek-core.js"></script>
+<script>
+/* Khoá cửa NGAY, trước khi nạp bất cứ màn hình nào. Sau dòng này
+   HAUSTEK.admin không còn tồn tại trong trang. */
+HAUSTEK.lockdown();
+</script>
+<script src="haustek-shell.js"></script>
+<script src="haustek-bieudo.js"></script>
+<script src="haustek-man.js"></script>
+
+<script src="man/k-tong-quan.js"></script>
+<script src="man/k-ban-ghi.js"></script>
+<script src="man/k-bang-ke.js"></script>
+<script src="man/k-tam-ung.js"></script>
+<script src="man/k-tai-lieu.js"></script>
+
+<script>
+"use strict";
+/* =====================================================================
+   CỔNG KHÁCH — chỉ có HAUSTEK.api.
+   Ô chọn tài khoản ở chân cột trái là mô phỏng đăng nhập cho bản mẫu.
+   Hệ thật không có nó: mỗi người chỉ vào được chính tài khoản của mình,
+   và phiên đăng nhập trên máy chủ mới là thứ quyết định partyId.
+   ===================================================================== */
+var api = HAUSTEK.api;
+var TK = api.demoLogins().accounts.filter(function (a) { return a.status === 'active'; });
+/* Giữ lựa chọn qua lần nạp lại. Không giữ thì bấm đổi tài khoản xong
+   trang nạp lại và quay về tài khoản đầu — trông như nút hỏng. */
+var CHON = 'haustek.demo.tk';
+function nhoLai() {
+  try { var v = +sessionStorage.getItem(CHON); return (v >= 0 && v < TK.length) ? v : 0; }
+  catch (e) { return 0; }
+}
+var toi = TK[nhoLai()];
+
+function nạpPhien() {
+  var s = api.session(toi.role, toi.partyId);
+  var p = api.periods(toi.role, toi.partyId);
+  return { me: s, kys: p.open, cho: p.waiting, kyTacQuyen: p.pubOpen, moiNhat: p.latest };
+}
+var PHIEN = nạpPhien();
+
+HT.chay({
+  ten: 'portal',
+  api: api,
+  phien: PHIEN,
+  coTienTe: false,
+  kyDanhSach: function () {
+    return PHIEN.kys.map(function (p) { return { k: p.k, label: p.label }; });
+  },
+  kyMacDinh: PHIEN.moiNhat,
+  ghiChu: function () { return PHIEN.me.clientId; },
+  chanTrai: function (c) {
+    var opts = TK.map(function (a, i) {
+      return '<option value="' + i + '"' + (a === toi ? ' selected' : '') + '>' +
+        HT.esc(a.name) + '</option>';
+    }).join('');
+    return '<b>' + HT.esc(PHIEN.me.name) + '</b>' +
+      '<span>' + HT.esc(toi.role === 'label'
+        ? (c.lang === 'vi' ? 'Label' : 'Label')
+        : (PHIEN.me.independent ? (c.lang === 'vi' ? 'Nghệ sĩ độc lập' : 'Independent artist')
+                                : (c.lang === 'vi' ? 'Nghệ sĩ' : 'Artist'))) + '</span>' +
+      '<select class="inline-sel" data-ai style="margin-top:9px;width:100%">' + opts + '</select>' +
+      '<span style="display:block;margin-top:7px;line-height:1.5">' +
+      HT.esc(c.lang === 'vi'
+        ? 'Bản mẫu: đổi tài khoản để xem góc nhìn khác. Hệ thật không có ô này.'
+        : 'Prototype only: switch accounts to see another view. The real system has no such control.') +
+      '</span>';
+  }
+});
+
+document.addEventListener('change', function (e) {
+  var s = e.target.closest('[data-ai]');
+  if (!s) return;
+  try { sessionStorage.setItem(CHON, s.value); } catch (err) {}
+  location.hash = '#k-tong-quan';
+  location.reload();
+});
+</script>
+</body>
+</html>

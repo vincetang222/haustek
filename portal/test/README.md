@@ -84,3 +84,39 @@ console.
 
 Biến môi trường: `BASE` (mặc định `http://127.0.0.1:8099`), `CHROMIUM` (đường dẫn
 chromium nếu playwright không tự tìm được), `SHOTS` (nơi lưu ảnh chụp).
+
+---
+
+## Bài kiểm cho v2
+
+| Bài | Kiểm gì |
+|---|---|
+| `v2-quet.js <trang> <bề ngang>` | Mở mọi màn × mọi tab × 2 chế độ × 2 ngôn ngữ. Bắt màn trống, màn lỗi, chữ tràn khung, placeholder `{…}` lọt ra, nhãn viết hoa kiểu máy. |
+| `v2-bam.js` | Bấm thật: mở 3 dòng đầu mỗi bảng, mở mọi hộp thoại an toàn, rê chuột lên biểu đồ. Bắt `NaN`, `undefined`, hộp thoại chồng nhau, Escape không đóng được. |
+| `v2-khach-tk.js` | Lặp qua cả 11 tài khoản mẫu. Label không có tab tác quyền, nghệ sĩ độc lập có chặng "Haustek giữ thêm", người đang nợ tạm ứng có màn riêng — quét một tài khoản là quét đúng một trong số đó. |
+| `v2-luong.js` | Chuỗi vận hành đầu-cuối, bấm bằng chuột: ghi nhận chênh lệch → chốt tỷ giá → duyệt kỳ → khách nhìn thấy → sổ kế toán cân → thu hồi → mọi thứ trả về. |
+| `v2-tuong-phan.js` | Đo tương phản chữ/nền **trên trang đã render**, không phải theo cặp biến. Đây là điểm khác biệt quan trọng: bộ biến có thể đúng mà thành phần vẫn ghép nhầm cặp, và chữ 11px trên nền thẻ thì chuẩn AA đòi 4,5:1 chứ không phải 3:1. |
+
+Chạy:
+
+```bash
+cd portal && python3 -m http.server 8099 &
+export NODE_PATH=$(npm root -g)
+node test/v2-quet.js v2/intranet.html 1500,1280,1100
+node test/v2-quet.js v2/khach.html    1500,1280,1100
+node test/v2-bam.js && node test/v2-khach-tk.js && node test/v2-luong.js
+node test/v2-tuong-phan.js && node test/api-guard.js
+```
+
+### Ba lần bài kiểm đo nhầm thứ
+
+Ghi lại để lần sau đỡ mất thời gian tìm lại:
+
+1. **Font.** Proxy chặn `fonts.googleapis.com`, nên Chromium ở đây render bằng font dự
+   phòng rộng hơn Be Vietnam Pro. Mọi bài kiểm bố cục phải gọi `font-that.js` trước,
+   không thì đo một trang không ai nhìn thấy.
+2. **Khung cuộn ngang.** Bảng rộng nằm trong `.tw{overflow-x:auto}` là thiết kế có
+   chủ ý, không phải tràn. Bài kiểm phải bỏ qua phần tử có tổ tiên đang cuộn ngang.
+3. **Cuộn trang.** Bấm vào một dòng bảng làm trang cuộn xuống; đo toạ độ trước rồi
+   mới rê chuột là rê vào chỗ không có gì, và bài kiểm báo "mách nước hỏng" trong khi
+   nó vẫn chạy. Phải `scrollIntoViewIfNeeded()` rồi mới đo.

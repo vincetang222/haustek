@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Haustek — Intranet vận hành</title>
+<link rel="icon" href="../../favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="haustek-theme.css">
+</head>
+<body>
+<script src="../haustek-core.js"></script>
+<script src="haustek-shell.js"></script>
+<script src="haustek-bieudo.js"></script>
+<script src="haustek-man.js"></script>
+
+<script src="man/tong-quan.js"></script>
+<script src="man/nap-du-lieu.js"></script>
+<script src="man/khop-isrc.js"></script>
+<script src="man/doi-chieu.js"></script>
+<script src="man/ke-toan.js"></script>
+<script src="man/chi-tra.js"></script>
+<script src="man/tam-ung.js"></script>
+<script src="man/ty-le.js"></script>
+<script src="man/danh-muc.js"></script>
+<script src="man/quan-tri.js"></script>
+
+<script>
+"use strict";
+/* =====================================================================
+   CỬA NỘI BỘ — giữ nguyên HAUSTEK.admin, không khoá cửa.
+   Hai bí mật kinh doanh nạp ở đây, không nằm trong file lõi mà cổng
+   khách cũng tải về.
+   ===================================================================== */
+var A = HAUSTEK.admin;
+A.provideSecrets({
+  code: 'DIST-1',
+  name: 'Đối tác phân phối chính (tên thật điền khi triển khai)',
+  grossRate: 0.86,
+  contact: 'nội bộ · không hiển thị cho khách'
+});
+HT.setFx(A.fx.get().rate);
+
+HT.chay({
+  ten: 'internal',
+  A: A,
+  kyDanhSach: function () {
+    return A.periods.map(function (p) {
+      return { k: p.k, label: p.label, idx: p.idx,
+               nhan: A.isApproved(p.k) ? 'đã duyệt' : 'chưa duyệt' };
+    });
+  },
+  kyMacDinh: A.periods[A.periods.length - 1].k,
+  ghiChu: function (c) {
+    var f = A.fx.get();
+    return '1 USD = ' + HT.fmt.n(f.locked[c.kyKey] ? f.locked[c.kyKey].rate : f.rate) + ' ₫'
+      + (f.locked[c.kyKey] ? '' : ' · chưa chốt');
+  },
+  chanTrai: function (c) {
+    return '<b>' + HT.esc('ops@haustek-group.com') + '</b><span>' +
+      HT.esc(c.lang === 'vi' ? 'Tài khoản vận hành' : 'Operations account') + '</span>';
+  }
+});
+</script>
+</body>
+</html>

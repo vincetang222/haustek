@@ -8,98 +8,151 @@
 <link rel="icon" href="../favicon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=Be+Vietnam+Pro:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="haustek-ui.css">
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="v2/haustek-theme.css">
 <style>
-main{max-width:900px}
-.doors{display:grid;gap:12px;grid-template-columns:1fr;margin:22px 0}
-@media(min-width:820px){.doors{grid-template-columns:1fr 1fr}}
-.door{display:block;background:var(--card);border:1px solid var(--hair);border-radius:13px;
-  padding:20px;text-decoration:none;color:inherit;transition:.15s}
-.door:hover{border-color:var(--ink);transform:translateY(-1px)}
-.door .k{font-family:var(--mono);font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
-.door h2{font-family:var(--disp);font-weight:800;font-size:21px;letter-spacing:-.02em;margin:7px 0 8px}
-.door p{font-size:13px;color:var(--ink2);line-height:1.65}
-.door ul{margin:11px 0 0 16px;font-family:var(--mono);font-size:10.5px;color:var(--muted);line-height:1.9}
-.door.pri{border-color:var(--red);background:var(--red-soft)}
-.door.pri h2{color:var(--red)}
-.flow{font-family:var(--mono);font-size:11px;line-height:2.1;color:var(--ink2);
-  background:#FAFAFC;border:1px solid var(--hair);border-radius:11px;padding:16px;overflow:auto}
-.flow b{color:var(--red)}
+body{display:flex;flex-direction:column;min-height:100vh}
+.hd{display:flex;align-items:center;gap:12px;height:var(--top-h);padding:0 24px;
+  background:var(--chrome);color:var(--on-chrome);flex:none}
+.hd .brand{display:flex;align-items:center;gap:9px;font-weight:600;letter-spacing:.13em;font-size:13px}
+.hd .brand i{width:8px;height:8px;border-radius:50%;background:var(--danger);display:block}
+.hd .brand em{font-style:normal;color:var(--on-chrome-3);font-weight:500;letter-spacing:.06em;font-size:11px}
+.hd .sp{flex:1}
+.wrap{flex:1;padding:40px 24px 64px}
+.in{max-width:1000px;margin:0 auto}
+.cua{display:grid;gap:14px;grid-template-columns:minmax(0,1fr);margin:24px 0}
+@media(min-width:860px){.cua{grid-template-columns:1fr 1fr}}
+.cua a{display:block;background:var(--card);border-radius:var(--r);box-shadow:var(--shadow);
+  padding:22px;text-decoration:none;color:inherit;border:1px solid transparent;transition:.15s}
+.cua a:hover{border-color:var(--accent);transform:translateY(-1px);box-shadow:var(--shadow-2);text-decoration:none}
+.cua .k{font-size:11.5px;color:var(--faint);margin-bottom:6px}
+.cua h2{font-size:20px;font-weight:600;letter-spacing:-.015em;margin-bottom:8px}
+.cua p{font-size:13px;color:var(--ink-2);line-height:1.7}
+.cua ul{margin:12px 0 0;font-size:12.5px;color:var(--ink-2);line-height:1.9}
+.cua li{padding-left:15px;position:relative}
+.cua li::before{content:"";position:absolute;left:0;top:11px;width:5px;height:5px;
+  border-radius:50%;background:var(--accent-3)}
+.cua a.pri{border-color:var(--accent)}
+.cua a.pri h2{color:var(--accent)}
+.luong{font-family:var(--mono);font-size:12px;line-height:2.1;color:var(--ink-2);
+  background:var(--band);border-radius:var(--r-sm);padding:16px;overflow-x:auto;white-space:pre}
+.luong b{color:var(--danger)}
+.ft{padding:18px 24px;font-size:12px;color:var(--faint);border-top:1px solid var(--line)}
+.seg{display:flex;gap:6px}
+/* Nút đang chọn: nền chrome-3 chứ không phải .btn.pri. Ở chế độ tối,
+   --accent là màu xanh nhạt, mà .btn.pri viết chữ trắng lên nền accent —
+   trắng trên xanh nhạt thì đọc không ra. */
+.seg .btn.on{background:var(--chrome-3);color:#fff;border-color:var(--chrome-3)}
 </style>
 </head>
 <body>
-<header class="top"><div class="top-in">
-  <div class="logo"><i>●</i> HAUSTEK <em>PORTAL</em></div>
-  <div class="crumb">Bản mẫu · 26.08.2026</div>
-</div></header>
-
-<main>
-  <div class="page-head">
-    <h1>Hai cửa, một lõi</h1>
-    <p>Portal báo cáo doanh thu. Số liệu sinh tại chỗ ở quy mô thật — 50.000 bản ghi, 3 luồng dữ liệu,
-      218 cửa hàng — để thử kiến trúc chứ không phải doanh thu thật.</p>
+<header class="hd">
+  <div class="brand"><i></i>HAUSTEK <em>PORTAL</em></div>
+  <div class="sp"></div>
+  <div class="seg" data-th>
+    <button type="button" class="btn sm" data-set="auto" style="color:var(--on-chrome-2);border-color:var(--chrome-line)">Theo máy</button>
+    <button type="button" class="btn sm" data-set="light" style="color:var(--on-chrome-2);border-color:var(--chrome-line)">Sáng</button>
+    <button type="button" class="btn sm" data-set="dark" style="color:var(--on-chrome-2);border-color:var(--chrome-line)">Tối</button>
   </div>
+</header>
 
-  <div class="doors">
-    <a class="door pri" href="intranet.html">
-      <div class="k">Nội bộ Haustek</div>
+<div class="wrap"><div class="in">
+  <div class="page"><div>
+    <h1>Hai cửa, một lõi</h1>
+    <p>Portal báo cáo doanh thu. Số liệu sinh tại chỗ ở quy mô thật — 50.000 bản ghi, 3 luồng
+      dữ liệu, 218 cửa hàng, 12 kỳ — để thử kiến trúc, không phải doanh thu thật.</p>
+  </div></div>
+
+  <div class="cua">
+    <a class="pri" href="v2/intranet.html">
+      <div class="k">Nội bộ Haustek · 10 màn hình</div>
       <h2>Intranet vận hành</h2>
       <p>Nơi số liệu được làm ra: nạp ba luồng, khớp những dòng không tìm được chủ,
         đối chiếu tới từng xu, rồi duyệt kỳ.</p>
       <ul>
-        <li>Nạp dữ liệu · hàng chờ khớp ISRC · đối chiếu &amp; duyệt kỳ</li>
-        <li>Tỷ lệ chia có ngày hiệu lực · tạm ứng · chi trả</li>
+        <li>Nạp dữ liệu · khớp ISRC · đối chiếu &amp; duyệt kỳ</li>
+        <li><b>Kế toán</b> — bút toán, công nợ, tạm ứng phải thu, thuế</li>
+        <li>Chi trả · tạm ứng · tỷ lệ chia có ngày hiệu lực</li>
         <li>Danh mục 50.000 bản ghi · tài khoản · nhật ký</li>
         <li>Chỉ ở đây mới có tên đơn vị phân phối và tỷ lệ gốc</li>
       </ul>
     </a>
-    <a class="door" href="dashboard.html">
-      <div class="k">Label và nghệ sĩ</div>
+    <a href="v2/khach.html">
+      <div class="k">Label và nghệ sĩ · 5 màn hình</div>
       <h2>Cổng khách</h2>
       <p>Nơi số liệu được đọc. Chỉ thấy kỳ đã duyệt, chỉ thấy phần của mình,
-        và thấy rõ tiền đi qua những chặng nào.</p>
+        và thấy rõ tiền đi qua những chặng nào trước khi về tay.</p>
       <ul>
-        <li>Tiền đi đâu · bóc theo cửa hàng và lãnh thổ</li>
-        <li>Tạm ứng còn phải thu hồi · thực nhận kỳ này</li>
-        <li>Doanh thu bản ghi và tác quyền tách rời</li>
-        <li>Có khối soi đúng những gói dữ liệu trình duyệt nhận được</li>
+        <li>Tổng quan · chuỗi tiền · bóc theo cửa hàng và lãnh thổ</li>
+        <li>Bài của tôi · mở từng bài xem tiền của riêng bài đó</li>
+        <li>Bảng kê kỳ — in ra, tải về, gửi cho kế toán</li>
+        <li>Tạm ứng — vì sao có doanh thu mà chưa nhận được tiền</li>
+        <li>Tài liệu · câu hỏi thường gặp</li>
       </ul>
     </a>
   </div>
 
-  <div class="panel">
-    <h3>Số liệu chảy từ intranet sang cổng khách thế nào</h3>
-    <p class="hint">Danh mục và doanh thu không được truyền đi — chúng sinh lại y hệt nhờ hạt giống cố định.
-      Thứ được truyền là quyết định của admin, và quan trọng nhất là: đã duyệt kỳ nào.</p>
-    <div class="flow">
-intranet &nbsp;nạp đủ 3 luồng cho kỳ X<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;→ khớp nốt các dòng treo ở hàng chờ ISRC<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;→ đối chiếu: tổng file gốc = đã khớp + đang treo, lệch phải bằng 0<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;→ chốt tỷ giá cho kỳ<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;→ <b>DUYỆT KỲ</b> ← cánh cửa duy nhất<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;→ chạy bảng chi trả (trừ tạm ứng, áp ngưỡng chi trả)<br>
-<br>
-cổng khách &nbsp;kỳ X hiện ra trong ô chọn kỳ — và chỉ lúc này mới hiện
-    </div>
-    <p class="note" style="margin-top:12px">
-      Mở hai tab cạnh nhau rồi duyệt một kỳ ở intranet: tab cổng khách tự nhận ra và tải lại.<br>
+  <div class="card"><div class="card-h"><div>
+    <h2>Số liệu chảy từ intranet sang cổng khách thế nào</h2>
+    <p>Danh mục và doanh thu không được truyền đi — chúng sinh lại y hệt nhờ hạt giống cố định.
+      Thứ được truyền là quyết định của người vận hành, quan trọng nhất là: đã duyệt kỳ nào.</p>
+  </div></div><div class="card-b">
+    <div class="luong">intranet   nạp đủ 3 luồng cho kỳ X
+           → khớp nốt các dòng treo ở hàng chờ ISRC
+           → đối chiếu: tổng file gốc = đã khớp + đang treo, lệch phải bằng 0
+           → chốt tỷ giá cho kỳ
+           → <b>DUYỆT KỲ</b>  ← cánh cửa duy nhất
+           → chạy bảng chi trả (trừ tạm ứng, áp ngưỡng chi trả)
+
+cổng khách kỳ X hiện ra trong ô chọn kỳ — và chỉ lúc này mới hiện</div>
+    <p class="hint" style="margin-top:12px">
+      Mở hai tab cạnh nhau rồi duyệt một kỳ ở intranet, tải lại tab cổng khách: kỳ đó xuất hiện.<br>
       Trạng thái khởi điểm: 10 kỳ đầu đã duyệt · 06/2026 đối chiếu còn lệch $41,37 · 07/2026 chưa nạp TikTok.
     </p>
-  </div>
+  </div></div>
 
-  <div class="panel">
-    <h3>Đọc trước khi đụng vào code</h3>
-    <p class="hint">
-      <code>README.md</code> — cách chạy, cái gì thật cái gì giả, bước tiếp theo<br>
-      <code>screens/_CONTRACT.md</code> — giao kèo để viết thêm màn hình intranet<br>
-      <code>haustek-core.js</code> — lõi dữ liệu, đóng vai database và API
-    </p>
+  <div class="grid g2">
+    <div class="card"><div class="card-h"><div><h2>Đọc trước khi đụng vào code</h2></div></div>
+      <div class="card-b"><div class="say">
+        <code>v2/README.md</code> — cấu trúc, cách chạy, cách thêm màn hình<br>
+        <code>v2/man/_HOP-DONG.md</code> — giao kèo giữa khung và màn hình<br>
+        <code>haustek-core.js</code> — lõi dữ liệu, đóng vai database và API<br>
+        <code>test/README.md</code> — các bài kiểm và cách chạy
+      </div></div>
+    </div>
+    <div class="card"><div class="card-h"><div><h2>Bản thiết kế cũ</h2>
+      <p>Giữ lại để đối chiếu, không phát triển tiếp.</p></div></div>
+      <div class="card-b"><div class="btnrow">
+        <a class="btn sm" href="intranet.html">Intranet v1</a>
+        <a class="btn sm" href="dashboard.html">Dashboard v1</a>
+        <a class="btn sm" href="design/chon-huong.html">So sánh các hướng thiết kế</a>
+      </div></div>
+    </div>
   </div>
-</main>
+</div></div>
 
-<footer>
-  Bản mẫu nội bộ · không phải doanh thu Haustek · không public
-</footer>
+<footer class="ft">Bản mẫu nội bộ · không phải doanh thu Haustek · chưa có đăng nhập, đừng đặt ở tên miền công khai</footer>
+
+<script>
+(function () {
+  var K = 'haustek.theme';
+  function ap() {
+    var v = null;
+    try { v = localStorage.getItem(K); } catch (e) {}
+    var el = document.documentElement;
+    if (!v || v === 'auto') el.removeAttribute('data-theme'); else el.setAttribute('data-theme', v);
+    document.querySelectorAll('[data-set]').forEach(function (b) {
+      b.classList.toggle('on', b.dataset.set === (v || 'auto'));
+    });
+  }
+  document.addEventListener('click', function (e) {
+    var b = e.target.closest('[data-set]');
+    if (!b) return;
+    try { localStorage.setItem(K, b.dataset.set); } catch (err) {}
+    ap();
+  });
+  ap();
+})();
+</script>
 </body>
 </html>
