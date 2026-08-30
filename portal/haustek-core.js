@@ -1725,6 +1725,17 @@ if (FRESH) {
     try {
       fx.lock(pi, 25800 + pi * 30);
       approve(pi, "ops@haustek-group.com", "Đối chiếu xong, đã duyệt");
+      /* approve() đóng dấu thời điểm HIỆN TẠI — đúng cho lần duyệt thật,
+         nhưng mười kỳ lịch sử duyệt lúc khởi tạo thì mang chung một dấu
+         thời gian, và bảng kê của khách hiện mười kỳ cùng ngày chốt sổ.
+         Đặt lại thành ngày hợp lý: khoảng ba tuần sau khi kỳ kết thúc,
+         là lúc luồng cuối cùng về đủ và đối chiếu xong. */
+      const p = PERIODS[pi];
+      const d = new Date(p.year, p.month, 18 + (pi % 5), 9, 40 + (pi * 7) % 20);
+      state.approved[p.k].at = d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0")
+        + "-" + String(d.getDate()).padStart(2, "0") + " "
+        + String(d.getHours()).padStart(2, "0") + ":" + String(d.getMinutes()).padStart(2, "0") + ":00";
+      state.fx.locked[p.k].at = state.approved[p.k].at.slice(0, 10);
     } catch (e) { console.warn("[haustek-core] không duyệt được kỳ " + PERIODS[pi].label + ": " + e.message); }
   }
   /* Những lần nạp trong lịch sử cũng phải để lại dấu vết, không thì mở

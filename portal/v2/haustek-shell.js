@@ -336,6 +336,13 @@ function bang(o) {
    --------------------------------------------------------------------- */
 function chay(cauHinh) {
   /* cauHinh: { ten, phu, kyDanhSach(), kyMacDinh, doiKy, chanTrai, coTienTe } */
+  /* Gọi lúc trình duyệt còn đang đọc phần đầu trang thì document.body chưa
+     tồn tại. Ở bản nhiều file điều đó không xảy ra vì thẻ script nằm trong
+     body; ở bản gói một trang thì có. Đợi rồi chạy lại, thay vì ném lỗi. */
+  if (!document.body) {
+    document.addEventListener('DOMContentLoaded', function () { chay(cauHinh); });
+    return null;
+  }
   var kys = cauHinh.kyDanhSach();
   var kyHienTai = cauHinh.kyMacDinh != null ? cauHinh.kyMacDinh
                 : (kys.length ? kys[kys.length - 1].k : null);
