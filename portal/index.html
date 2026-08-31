@@ -6,9 +6,11 @@
 <title>Haustek Portal — bản mẫu</title>
 <meta name="robots" content="noindex, nofollow">
 <link rel="icon" href="../favicon.svg">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<!-- Bộ chữ nạp từ chính máy chủ này, không gọi ra fonts.googleapis.com.
+     Thẻ <link rel=stylesheet> CHẶN việc chạy script cho tới khi tải xong,
+     mà mọi màn hình ở đây đều do script dựng ra — nên fonts.googleapis.com
+     chậm hoặc bị chặn là trang đứng lại ở khoảng trắng, không báo lỗi gì. -->
+<link rel="stylesheet" href="v2/fonts-nhung.css">
 <link rel="stylesheet" href="v2/haustek-theme.css">
 <style>
 body{display:flex;flex-direction:column;min-height:100vh}
