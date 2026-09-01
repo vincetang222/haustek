@@ -404,9 +404,25 @@ function chay(cauHinh) {
     };
   }
 
-  /* ---- khung HTML ---- */
-  document.body.innerHTML =
-    '<div class="app">' +
+  /* ---- khung HTML ----
+     KHÔNG ghi đè document.body.innerHTML.
+
+     Bản nhiều file để <style> và <link> trong <head>, nên ghi đè body
+     không đụng tới chúng. Nhưng bản gói một trang thì toàn bộ nội dung —
+     kể cả thẻ <style> mang cả hệ giao diện lẫn bộ chữ nhúng — nằm trong
+     <body>, vì trình xem artifact bọc nội dung vào body. Ghi đè body ở
+     đó là ứng dụng tự xoá mất bảng màu của chính nó: DOM vẫn dựng đủ,
+     nhưng không còn một dòng CSS nào. Trang ra một mớ chữ trần và mấy ô
+     đen to bằng nửa màn hình — chính là mấy ô vuông đen.
+
+     Nên chỉ thay đúng phần tử gốc của ứng dụng, không đụng anh em bên
+     cạnh. Cách này đúng ở cả hai chỗ, không cần biết tài sản nằm ở đâu. */
+  var cuGoc = document.querySelector('.app');
+  if (cuGoc) cuGoc.remove();
+  var goc = document.createElement('div');
+  goc.className = 'app';
+  document.body.appendChild(goc);
+  goc.innerHTML =
       '<aside class="side">' +
         '<div class="side-top"><div class="brand"><i></i>HAUSTEK <em data-ten></em></div></div>' +
         '<nav class="nav" data-nav></nav>' +
@@ -432,8 +448,7 @@ function chay(cauHinh) {
             '<button type="button" data-l="en">EN</button></div>' +
         '</header>' +
         '<main data-main></main>' +
-      '</div>' +
-    '</div>';
+      '</div>';
 
   var $ = function (s) { return document.querySelector(s); };
 
