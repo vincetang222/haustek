@@ -101,7 +101,7 @@ HT.dangKy({
     } else {
       html += HM.ghi({ kieu: 'warn',
         tieuDe: HM.esc(c.lang === 'vi' ? hong.length + ' điều kiện chưa đạt' : hong.length + ' conditions not met'),
-        than: hong.map(function (x) { return '<b>' + HM.esc(c.song(x, 'label')) + '</b> — ' + HM.esc(c.song(x, 'detail')); }).join('<br>'),
+        than: hong.map(function (x) { return '<b>' + HM.esc(c.song(x, 'label')) + '</b>' + (c.lang === 'vi' ? ' · ' : ' — ') + HM.esc(c.song(x, 'detail')); }).join('<br>'),
         nut: '<button type="button" class="btn sm dang" data-boqua>' + HM.esc(t('boQua')) + '</button>' });
     }
 
@@ -441,8 +441,8 @@ function duyetKy(c, boQua) {
     if (!r) return;
     try {
       A.approve(c.ky.idx, r.by, r.note, !!boQua);
-      c.thongBao((c.lang === 'vi' ? 'Đã duyệt kỳ ' : 'Approved ') + c.ky.label + ' — ' +
-        (c.lang === 'vi' ? 'khách hàng đã xem được số liệu' : 'clients can now see it'), 'ok');
+      c.thongBao(c.lang === 'vi' ? 'Đã duyệt kỳ ' + c.ky.label + '. Khách hàng đã xem được số liệu'
+                                  : 'Approved ' + c.ky.label + ' — clients can now see it', 'ok');
       HM.quenHet(); c.veLai();
     } catch (e) { c.thongBao(e.message, 'no'); }
   });

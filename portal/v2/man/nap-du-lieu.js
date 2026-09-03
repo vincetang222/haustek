@@ -347,7 +347,7 @@ function napLuong(c, pi, fid, lai) {
     if (!r) return;
     try {
       var kq = A.ingest.load(pi, fid, { file: r.file, replace: !!lai });
-      c.thongBao(c.song(f, 'short') + ' · ' + p.label + ' — ' + (c.lang === 'vi' ? 'đã nhập · ' : 'loaded · ') +
+      c.thongBao(c.song(f, 'short') + ' · ' + p.label + (c.lang === 'vi' ? ': đã nhập · ' : ' — loaded · ') +
         kq.added + ' ' + c.t('sinhDong'), 'ok');
       HM.quenHet(); c.veLai();
     } catch (e) { c.thongBao(e.message, 'no'); }
@@ -364,7 +364,7 @@ function goLuong(c, pi, fid) {
     '<b>' + HM.esc(c.tien2(mat)) + '</b>.',
     c.t('go'), true).then(function (ok) {
       if (!ok) return;
-      try { A.ingest.unload(pi, fid); c.thongBao(c.song(f, 'short') + ' · ' + p.label + ' — ' + (c.lang === 'vi' ? 'đã gỡ' : 'unloaded')); HM.quenHet(); c.veLai(); }
+      try { A.ingest.unload(pi, fid); c.thongBao(c.song(f, 'short') + ' · ' + p.label + (c.lang === 'vi' ? ': đã gỡ' : ' — unloaded')); HM.quenHet(); c.veLai(); }
       catch (e) { c.thongBao(e.message, 'no'); }
     });
 }

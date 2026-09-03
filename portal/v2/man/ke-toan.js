@@ -26,14 +26,14 @@ var SAU = [];   /* việc phải làm SAU khi HTML đã vào DOM */
    cách kế toán Việt Nam gọi, không dịch lại cho "dễ hiểu" — người đọc
    bảng này là kế toán, và họ tìm theo số hiệu. */
 var TK = {
-  '131': { ten: 'Phải thu của khách hàng — đối tác phân phối & nền tảng', loai: 'ts' },
-  '138': { ten: 'Phải thu khác — tạm ứng cho nghệ sĩ, label', loai: 'ts' },
-  '511': { ten: 'Doanh thu cung cấp dịch vụ — phí Haustek', loai: 'dt' },
+  '131': { ten: 'Phải thu của khách hàng (đối tác phân phối, nền tảng)', loai: 'ts' },
+  '138': { ten: 'Phải thu khác (tạm ứng cho nghệ sĩ, label)', loai: 'ts' },
+  '511': { ten: 'Doanh thu cung cấp dịch vụ (phí Haustek)', loai: 'dt' },
   '3311': { ten: 'Phải trả label', loai: 'no' },
   '3312': { ten: 'Phải trả nghệ sĩ', loai: 'no' },
-  '3313': { ten: 'Phải trả producer — chưa gắn được danh tính', loai: 'no' },
-  '3314': { ten: 'Phải trả tác giả — tác quyền', loai: 'no' },
-  '338': { ten: 'Phải trả khác — tiền chưa xác định chủ', loai: 'no' }
+  '3313': { ten: 'Phải trả producer (chưa rõ người nhận)', loai: 'no' },
+  '3314': { ten: 'Phải trả tác giả (tác quyền)', loai: 'no' },
+  '338': { ten: 'Phải trả khác (tiền chưa rõ chủ)', loai: 'no' }
 };
 
 HT.dangKy({

@@ -372,7 +372,7 @@ function xacNhanKhop(c, q, i) {
   c.hoiThoai({
     tieuDe: c.t('xacKhop'),
     moTa: '<b>' + HM.esc(q.amount.toFixed(2)) + ' USD</b> ' + HM.esc(c.lang === 'vi' ? 'sẽ ghi vào bản ghi ' : 'will be booked to ') +
-      '<b>' + HM.esc(tr.title) + '</b> (' + HM.esc(tr.isrc) + ') — ' + HM.esc(tr.artist) + '.' +
+      '<b>' + HM.esc(tr.title) + '</b> (' + HM.esc(tr.isrc) + ')' + (c.lang === 'vi' ? ' · ' : ' — ') + HM.esc(tr.artist) + '.' +
       (dat && dat.adjustment
         ? '<br><br><span class="neg">' + HM.esc(c.t('truyThuMo')) + '</span>'
         : ''),

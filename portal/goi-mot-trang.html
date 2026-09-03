@@ -4348,7 +4348,7 @@ HT.dangKy({
            Nhãn viết ở thể khẳng định ("Đã nạp đủ 3 luồng"), nên ghép sau
            chữ "Còn thiếu:" là ra một câu nói ngược hẳn nghĩa. */
         than: HM.esc(t('dangMo')) + '<br>' +
-              hong.map(function (x) { return '<b>' + HM.esc(c.song(x, 'label')) + '</b> — ' + HM.esc(c.song(x, 'detail')); }).join('<br>'),
+              hong.map(function (x) { return '<b>' + HM.esc(c.song(x, 'label')) + '</b>' + (c.lang === 'vi' ? ' · ' : ' — ') + HM.esc(c.song(x, 'detail')); }).join('<br>'),
         nut: '<button type="button" class="btn sm" data-di="doi-chieu">' + HM.esc(t('xemDoiChieu')) + '</button>' });
     } else {
       html += HM.ghi({ kieu: 'ok', tieuDe: HM.esc(t('xong')),
@@ -4923,7 +4923,7 @@ function napLuong(c, pi, fid, lai) {
     if (!r) return;
     try {
       var kq = A.ingest.load(pi, fid, { file: r.file, replace: !!lai });
-      c.thongBao(c.song(f, 'short') + ' · ' + p.label + ' — ' + (c.lang === 'vi' ? 'đã nhập · ' : 'loaded · ') +
+      c.thongBao(c.song(f, 'short') + ' · ' + p.label + (c.lang === 'vi' ? ': đã nhập · ' : ' — loaded · ') +
         kq.added + ' ' + c.t('sinhDong'), 'ok');
       HM.quenHet(); c.veLai();
     } catch (e) { c.thongBao(e.message, 'no'); }
@@ -4940,7 +4940,7 @@ function goLuong(c, pi, fid) {
     '<b>' + HM.esc(c.tien2(mat)) + '</b>.',
     c.t('go'), true).then(function (ok) {
       if (!ok) return;
-      try { A.ingest.unload(pi, fid); c.thongBao(c.song(f, 'short') + ' · ' + p.label + ' — ' + (c.lang === 'vi' ? 'đã gỡ' : 'unloaded')); HM.quenHet(); c.veLai(); }
+      try { A.ingest.unload(pi, fid); c.thongBao(c.song(f, 'short') + ' · ' + p.label + (c.lang === 'vi' ? ': đã gỡ' : ' — unloaded')); HM.quenHet(); c.veLai(); }
       catch (e) { c.thongBao(e.message, 'no'); }
     });
 }
@@ -5367,7 +5367,7 @@ function xacNhanKhop(c, q, i) {
   c.hoiThoai({
     tieuDe: c.t('xacKhop'),
     moTa: '<b>' + HM.esc(q.amount.toFixed(2)) + ' USD</b> ' + HM.esc(c.lang === 'vi' ? 'sẽ ghi vào bản ghi ' : 'will be booked to ') +
-      '<b>' + HM.esc(tr.title) + '</b> (' + HM.esc(tr.isrc) + ') — ' + HM.esc(tr.artist) + '.' +
+      '<b>' + HM.esc(tr.title) + '</b> (' + HM.esc(tr.isrc) + ')' + (c.lang === 'vi' ? ' · ' : ' — ') + HM.esc(tr.artist) + '.' +
       (dat && dat.adjustment
         ? '<br><br><span class="neg">' + HM.esc(c.t('truyThuMo')) + '</span>'
         : ''),
@@ -5496,7 +5496,7 @@ HT.dangKy({
     } else {
       html += HM.ghi({ kieu: 'warn',
         tieuDe: HM.esc(c.lang === 'vi' ? hong.length + ' điều kiện chưa đạt' : hong.length + ' conditions not met'),
-        than: hong.map(function (x) { return '<b>' + HM.esc(c.song(x, 'label')) + '</b> — ' + HM.esc(c.song(x, 'detail')); }).join('<br>'),
+        than: hong.map(function (x) { return '<b>' + HM.esc(c.song(x, 'label')) + '</b>' + (c.lang === 'vi' ? ' · ' : ' — ') + HM.esc(c.song(x, 'detail')); }).join('<br>'),
         nut: '<button type="button" class="btn sm dang" data-boqua>' + HM.esc(t('boQua')) + '</button>' });
     }
 
@@ -5836,8 +5836,8 @@ function duyetKy(c, boQua) {
     if (!r) return;
     try {
       A.approve(c.ky.idx, r.by, r.note, !!boQua);
-      c.thongBao((c.lang === 'vi' ? 'Đã duyệt kỳ ' : 'Approved ') + c.ky.label + ' — ' +
-        (c.lang === 'vi' ? 'khách hàng đã xem được số liệu' : 'clients can now see it'), 'ok');
+      c.thongBao(c.lang === 'vi' ? 'Đã duyệt kỳ ' + c.ky.label + '. Khách hàng đã xem được số liệu'
+                                  : 'Approved ' + c.ky.label + ' — clients can now see it', 'ok');
       HM.quenHet(); c.veLai();
     } catch (e) { c.thongBao(e.message, 'no'); }
   });
@@ -5946,14 +5946,14 @@ var SAU = [];   /* việc phải làm SAU khi HTML đã vào DOM */
    cách kế toán Việt Nam gọi, không dịch lại cho "dễ hiểu" — người đọc
    bảng này là kế toán, và họ tìm theo số hiệu. */
 var TK = {
-  '131': { ten: 'Phải thu của khách hàng — đối tác phân phối & nền tảng', loai: 'ts' },
-  '138': { ten: 'Phải thu khác — tạm ứng cho nghệ sĩ, label', loai: 'ts' },
-  '511': { ten: 'Doanh thu cung cấp dịch vụ — phí Haustek', loai: 'dt' },
+  '131': { ten: 'Phải thu của khách hàng (đối tác phân phối, nền tảng)', loai: 'ts' },
+  '138': { ten: 'Phải thu khác (tạm ứng cho nghệ sĩ, label)', loai: 'ts' },
+  '511': { ten: 'Doanh thu cung cấp dịch vụ (phí Haustek)', loai: 'dt' },
   '3311': { ten: 'Phải trả label', loai: 'no' },
   '3312': { ten: 'Phải trả nghệ sĩ', loai: 'no' },
-  '3313': { ten: 'Phải trả producer — chưa gắn được danh tính', loai: 'no' },
-  '3314': { ten: 'Phải trả tác giả — tác quyền', loai: 'no' },
-  '338': { ten: 'Phải trả khác — tiền chưa xác định chủ', loai: 'no' }
+  '3313': { ten: 'Phải trả producer (chưa rõ người nhận)', loai: 'no' },
+  '3314': { ten: 'Phải trả tác giả (tác quyền)', loai: 'no' },
+  '338': { ten: 'Phải trả khác (tiền chưa rõ chủ)', loai: 'no' }
 };
 
 HT.dangKy({
@@ -9413,7 +9413,7 @@ HT.dangKy({
 
     /* ---- đầu bảng kê: ai, kỳ nào, chốt lúc nào, tỷ giá bao nhiêu ---- */
     html += HM.the({
-      h2: HM.esc(t('h1')) + ' — ' + HM.esc(c.ky.label),
+      h2: HM.esc(t('h1')) + ' ' + HM.esc(c.ky.label),
       hanhDong: '<button type="button" class="btn sm" data-in>' + HM.icon('file') + HM.esc(t('inRa')) + '</button>' +
         '<button type="button" class="btn sm pri" data-xuat>' + HM.icon('down2') + HM.esc(t('taiVe')) + '</button>',
       than: '<div class="fldrow two-up">' +
@@ -9472,7 +9472,7 @@ HT.dangKy({
         dong.map(function (d) {
           if (d.kieu === 'ngan')
             return '<tr><td colspan="3" style="background:var(--band);padding:8px 14px;font-size:12px;color:var(--faint)">' +
-              (d.muc === '—' ? HM.esc(c.t('tacQuyen')) : HM.esc(d.muc) + (d.ghi ? ' — ' + HM.esc(d.ghi) : '')) + '</td></tr>';
+              (d.muc === '—' ? HM.esc(c.t('tacQuyen')) : HM.esc(d.muc) + (d.ghi ? (c.lang === 'vi' ? ': ' : ' — ') + HM.esc(d.ghi) : '')) + '</td></tr>';
           var manh = d.kieu === 'tong' || d.kieu === 'tongto';
           return '<tr' + (d.kieu === 'tongto' ? ' style="background:var(--band)"' : '') + '>' +
             '<td><div class="t-ttl"' + (manh ? ' style="font-weight:600"' : '') + '>' + HM.esc(d.muc) + '</div>' +

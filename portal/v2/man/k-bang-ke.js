@@ -98,7 +98,7 @@ HT.dangKy({
 
     /* ---- đầu bảng kê: ai, kỳ nào, chốt lúc nào, tỷ giá bao nhiêu ---- */
     html += HM.the({
-      h2: HM.esc(t('h1')) + ' — ' + HM.esc(c.ky.label),
+      h2: HM.esc(t('h1')) + ' ' + HM.esc(c.ky.label),
       hanhDong: '<button type="button" class="btn sm" data-in>' + HM.icon('file') + HM.esc(t('inRa')) + '</button>' +
         '<button type="button" class="btn sm pri" data-xuat>' + HM.icon('down2') + HM.esc(t('taiVe')) + '</button>',
       than: '<div class="fldrow two-up">' +
@@ -157,7 +157,7 @@ HT.dangKy({
         dong.map(function (d) {
           if (d.kieu === 'ngan')
             return '<tr><td colspan="3" style="background:var(--band);padding:8px 14px;font-size:12px;color:var(--faint)">' +
-              (d.muc === '—' ? HM.esc(c.t('tacQuyen')) : HM.esc(d.muc) + (d.ghi ? ' — ' + HM.esc(d.ghi) : '')) + '</td></tr>';
+              (d.muc === '—' ? HM.esc(c.t('tacQuyen')) : HM.esc(d.muc) + (d.ghi ? (c.lang === 'vi' ? ': ' : ' — ') + HM.esc(d.ghi) : '')) + '</td></tr>';
           var manh = d.kieu === 'tong' || d.kieu === 'tongto';
           return '<tr' + (d.kieu === 'tongto' ? ' style="background:var(--band)"' : '') + '>' +
             '<td><div class="t-ttl"' + (manh ? ' style="font-weight:600"' : '') + '>' + HM.esc(d.muc) + '</div>' +

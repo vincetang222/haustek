@@ -160,7 +160,7 @@ HT.dangKy({
            Nhãn viết ở thể khẳng định ("Đã nạp đủ 3 luồng"), nên ghép sau
            chữ "Còn thiếu:" là ra một câu nói ngược hẳn nghĩa. */
         than: HM.esc(t('dangMo')) + '<br>' +
-              hong.map(function (x) { return '<b>' + HM.esc(c.song(x, 'label')) + '</b> — ' + HM.esc(c.song(x, 'detail')); }).join('<br>'),
+              hong.map(function (x) { return '<b>' + HM.esc(c.song(x, 'label')) + '</b>' + (c.lang === 'vi' ? ' · ' : ' — ') + HM.esc(c.song(x, 'detail')); }).join('<br>'),
         nut: '<button type="button" class="btn sm" data-di="doi-chieu">' + HM.esc(t('xemDoiChieu')) + '</button>' });
     } else {
       html += HM.ghi({ kieu: 'ok', tieuDe: HM.esc(t('xong')),
