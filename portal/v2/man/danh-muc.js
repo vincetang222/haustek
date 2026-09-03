@@ -19,21 +19,21 @@ HT.dangKy({
 
   chu: {
     vi: {
-      nhomDuLieu: 'Dữ liệu', navDanhMuc: 'Danh mục', h1: 'Danh mục bản ghi',
-      mo: 'Toàn bộ bản ghi Haustek đang phân phối. Bấm một dòng để xem tiền của bài đó đi đâu.',
+      nhomDuLieu: 'Danh mục', navDanhMuc: 'Danh mục', h1: 'Danh mục bản ghi',
+      mo: 'Toàn bộ bản ghi Haustek đang phân phối. Bấm vào một dòng để xem chi tiết dòng tiền của bản ghi đó.',
       tong: 'Tổng bản ghi', coTien: 'Có doanh thu kỳ này', nghesi: 'Nghệ sĩ', labelKho: 'Label',
-      tim: 'Tìm theo ISRC, tên bài, nghệ sĩ…',
+      tim: 'Tìm theo ISRC, tên bản ghi, nghệ sĩ…',
       moiLoai: 'Mọi loại', moiChu: 'Mọi chủ sở hữu', thuocLabel: 'Thuộc label', docLap: 'Độc lập',
-      locCoTien: 'Chỉ bài có doanh thu kỳ này', locMaPhu: 'Chỉ bài có hai mã ISRC',
+      locCoTien: 'Chỉ bản ghi có doanh thu kỳ này', locMaPhu: 'Chỉ bản ghi có hai mã ISRC',
       cBai: 'Bản ghi', cLoai: 'Loại', cChu: 'Chủ sở hữu', cPh: 'Phát hành',
-      cLuot: 'Lượt nghe', cGop: 'Doanh thu gộp', cNs: 'Về tay nghệ sĩ', cTyLe: 'Tỷ lệ',
+      cLuot: 'Lượt nghe', cGop: 'Doanh thu gộp', cNs: 'Nghệ sĩ được hưởng', cTyLe: 'Tỷ lệ',
       khong: 'Không tìm thấy bản ghi nào',
       khongMo: 'Thử bỏ bớt bộ lọc, hoặc tìm theo mã ISRC.',
-      ctGop: 'Doanh thu gộp kỳ này', ctChuoi: 'Tiền của bài này đi đâu',
+      ctGop: 'Doanh thu gộp kỳ này', ctChuoi: 'Chi tiết dòng tiền của bản ghi',
       ctKy: 'Doanh thu 12 kỳ', ctCh: 'Theo nền tảng', ctLt: 'Theo thị trường',
-      ctTt: 'Thông tin bản ghi', ctSt: 'Chia phần tác giả', ctLuong: 'Theo nguồn dữ liệu',
-      maPhuMo: 'Bài này có hai mã ISRC. Báo cáo về theo từng mã riêng nên phải gộp lại. Không gộp thì một bài tách thành hai dòng rời, mỗi dòng chỉ có một nửa tiền. Đây là câu hỏi còn treo số 2.',
-      xuat: 'Xuất CSV', hienThi: 'Đang hiện'
+      ctTt: 'Thông tin bản ghi', ctSt: 'Tỷ lệ chia tác quyền', ctLuong: 'Theo nguồn báo cáo',
+      maPhuMo: 'Bản ghi này có hai mã ISRC. Báo cáo về theo từng mã riêng nên phải gộp lại. Nếu không gộp, một bản ghi sẽ tách thành hai dòng rời, mỗi dòng chỉ có một nửa doanh thu. Đây là câu hỏi cần chốt số 2.',
+      xuat: 'Xuất CSV', hienThi: 'Đang hiển thị'
     },
     en: {
       nhomDuLieu: 'Data', navDanhMuc: 'Catalogue', h1: 'Recording catalogue',
@@ -230,8 +230,8 @@ HT.dangKy({
     HM.bam(root, '[data-xuat]', function () {
       var lay = idx.slice(0, 5000);
       HM.csv('danh-muc-' + c.kyKey + '.csv',
-        ['ISRC', 'ISRC phụ', 'UPC', 'Tên bài', 'Loại', 'Nghệ sĩ', 'Mã nghệ sĩ', 'Chủ sở hữu', 'Phát hành',
-         'Lượt nghe', 'Doanh thu gộp USD', 'Phí Haustek', 'Label/Haustek giữ', 'Điểm producer', 'Về tay nghệ sĩ'],
+        ['ISRC', 'ISRC phụ', 'UPC', 'Tên bản ghi', 'Loại', 'Nghệ sĩ', 'Mã nghệ sĩ', 'Chủ sở hữu', 'Phát hành',
+         'Lượt nghe', 'Doanh thu gộp USD', 'Phí dịch vụ Haustek', 'Phần label/Haustek được hưởng', 'Điểm producer', 'Phần nghệ sĩ được hưởng'],
         lay.map(function (i) {
           var tr = A.track(i), g = A.grossRec(i, pi);
           var sp = A.splitRec(i, g, c.kyKey);
@@ -241,7 +241,7 @@ HT.dangKy({
                   sp.producer.toFixed(2), sp.artist.toFixed(2)];
         }));
       if (idx.length > 5000)
-        c.thongBao(c.lang === 'vi' ? 'Chỉ xuất 5.000 dòng đầu trong ' + HT.fmt.n(idx.length) : 'First 5,000 of ' + HT.fmt.n(idx.length));
+        c.thongBao(c.lang === 'vi' ? 'Chỉ xuất 5.000 dòng đầu trong tổng số ' + HT.fmt.n(idx.length) : 'First 5,000 of ' + HT.fmt.n(idx.length));
     });
   }
 });
@@ -264,17 +264,17 @@ function moBanGhi(c, i) {
   };
 
   var buoc = [
-    { l: c.lang === 'vi' ? 'Gộp' : 'Gross', v: sp.gross, kind: 'top' },
-    { l: c.lang === 'vi' ? 'Phí' : 'Fee', v: -sp.fee, kind: 'out', nt: HT.fmt.pct(A.cfg.HAUSTEK_FEE) },
+    { l: c.lang === 'vi' ? 'Doanh thu gộp' : 'Gross', v: sp.gross, kind: 'top' },
+    { l: c.lang === 'vi' ? 'Phí dịch vụ' : 'Fee', v: -sp.fee, kind: 'out', nt: HT.fmt.pct(A.cfg.HAUSTEK_FEE) },
     { l: tr.label ? 'Label' : 'Haustek', v: -sp.labelCut, kind: 'out',
-      nt: tr.label || (c.lang === 'vi' ? 'phần giữ thêm với nghệ sĩ độc lập' : 'extra share on independents') }
+      nt: tr.label || (c.lang === 'vi' ? 'phần Haustek theo hợp đồng độc lập' : 'extra share on independents') }
   ];
   if (sp.producer > 0.004) buoc.push({ l: 'Producer', v: -sp.producer, kind: 'out', nt: HT.fmt.pct(tr.producerPts) });
   buoc.push({ l: c.lang === 'vi' ? 'Nghệ sĩ' : 'Artist', v: sp.artist, kind: 'final' });
 
   c.nganTruot(
     (tr.isrcAlt ? HM.ghi({ kieu: 'warn',
-      tieuDe: HM.esc(c.lang === 'vi' ? 'Bài này có hai mã ISRC' : 'Two ISRCs on this track'),
+      tieuDe: HM.esc(c.lang === 'vi' ? 'Bản ghi này có hai mã ISRC' : 'Two ISRCs on this track'),
       than: '<span class="mono">' + HM.esc(tr.isrc) + '</span> · <span class="mono">' + HM.esc(tr.isrcAlt) + '</span><br>' +
         HM.esc(c.t('maPhuMo')) }) : '') +
     HM.so([
@@ -285,15 +285,15 @@ function moBanGhi(c, i) {
     (g > 0
       ? HB.o({ loai: 'thac', cao: 190, buoc: buoc }) +
         '<div class="hint">' + HM.esc(c.lang === 'vi'
-          ? 'Tỷ lệ áp cho kỳ ' + c.ky.label + ': ' + HT.fmt.pct(sp.rate) + '. Lấy từ bảng tỷ lệ theo ngày hiệu lực, không phải từ một cột trên hồ sơ nghệ sĩ.'
+          ? 'Tỷ lệ áp dụng cho kỳ ' + c.ky.label + ': ' + HT.fmt.pct(sp.rate) + '. Tỷ lệ này lấy từ bảng tỷ lệ theo ngày hiệu lực, không phải từ một cột trên hồ sơ nghệ sĩ.'
           : 'Rate for ' + c.ky.label + ': ' + HT.fmt.pct(sp.rate) + ' — read from the dated rate table, not a column on the artist row.') + '</div>'
       : '<p class="hint">' + HM.esc(c.lang === 'vi'
-          ? 'Bài này không có doanh thu trong kỳ ' + c.ky.label + '.'
+          ? 'Bản ghi này không có doanh thu trong kỳ ' + c.ky.label + '.'
           : 'This track earned nothing in ' + c.ky.label + '.') + '</p>') +
     '<h4 class="sec">' + HM.esc(c.t('ctLuong')) + '</h4>' +
     HB.o({ loai: 'thanh', hang: A.feeds.map(function (f, fi) {
       return { ten: c.song(f, 'short'), gt: A.grossRecByFeed(i, pi, f.id), mau: P[fi],
-               phu: A.feedLoaded(pi, f.id) ? '' : (c.lang === 'vi' ? 'chưa nhập cho kỳ này' : 'not loaded') };
+               phu: A.feedLoaded(pi, f.id) ? '' : (c.lang === 'vi' ? 'chưa nhập báo cáo cho kỳ này' : 'not loaded') };
     }) }) +
     '<h4 class="sec">' + HM.esc(c.t('ctKy')) + '</h4>' +
     HB.o({ loai: 'cot', cao: 160, anTruc: true, chuThich: false,
@@ -318,7 +318,7 @@ function moBanGhi(c, i) {
         v: tr.label ? tr.label + ' · ' + A.labels[tr.labelId].clientId : (c.lang === 'vi' ? 'Nghệ sĩ độc lập' : 'Independent') },
       { t: c.lang === 'vi' ? 'Kỳ phát hành' : 'Released', v: tr.releasePeriod },
       { t: c.lang === 'vi' ? 'Điểm producer' : 'Producer points',
-        v: tr.producerPts ? HT.fmt.pct(tr.producerPts) + (c.lang === 'vi' ? ', trừ vào phần nghệ sĩ' : ' — off the artist share') : '—' }
+        v: tr.producerPts ? HT.fmt.pct(tr.producerPts) + (c.lang === 'vi' ? ', khấu trừ từ phần nghệ sĩ' : ' — off the artist share') : '—' }
     ]) +
     '<h4 class="sec">' + HM.esc(c.t('ctSt')) + '</h4>' +
     HM.kv([
@@ -326,7 +326,7 @@ function moBanGhi(c, i) {
       tr.writer2 ? { t: tr.writer2, v: HT.fmt.pct(1 - tr.writer1Share) } : null
     ]) +
     '<div class="hint">' + HM.esc(c.lang === 'vi'
-      ? 'Tác quyền chia theo bảng này, tách hẳn khỏi doanh thu bản ghi bên trên và không bao giờ đi qua label.'
+      ? 'Tác quyền được chia theo bảng này, tách riêng khỏi doanh thu bản ghi bên trên và không đi qua label.'
       : 'Publishing follows this table, entirely separate from the recording revenue above, and never passes through a label.') + '</div>',
     { tieuDe: tr.title, phu: tr.isrc + ' · ' + tr.artist,
       khiMo: function (dr) { HB.gan(dr); } });

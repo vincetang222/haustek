@@ -21,27 +21,27 @@ HT.dangKy({
 
   chu: {
     vi: {
-      navKhop: 'Khớp ISRC', h1: 'Hàng chờ khớp ISRC',
-      mo: 'Những dòng doanh thu về mà không tìm được bản ghi. Chưa khớp thì tiền chưa thuộc về ai.',
-      treo: 'Đang treo', tienTreo: 'Tiền treo', daKhop: 'Đã khớp', deLai: 'Tạm gác',
+      navKhop: 'Khớp ISRC', h1: 'Danh sách chờ khớp ISRC',
+      mo: 'Những dòng doanh thu về mà không tìm được bản ghi tương ứng. Chưa khớp thì khoản tiền chưa thuộc về ai.',
+      treo: 'Chờ khớp', tienTreo: 'Tiền chưa khớp', daKhop: 'Đã khớp', deLai: 'Tạm hoãn',
       tatCaKy: 'Mọi kỳ', kyNay: 'Kỳ đang xem', moiLuong: 'Mọi nguồn',
-      tim: 'Tìm mã, tên bài, nghệ sĩ…',
-      cot_ma: 'Mã trong file', cot_bai: 'Tên bài trong file', cot_luong: 'Nguồn',
+      tim: 'Tìm mã, tên bài hát, nghệ sĩ…',
+      cot_ma: 'Mã trong file', cot_bai: 'Tên bài hát trong file', cot_luong: 'Nguồn',
       cot_ky: 'Kỳ', cot_tien: 'Số tiền', cot_lydo: 'Lý do không khớp', cot_tt: 'Trạng thái',
-      goiY: 'Bản ghi gợi ý', diem: 'điểm', khop: 'Khớp vào đây',
-      deLaiNut: 'Gác lại, chờ đối tác', traLai: 'Trả về hàng chờ',
+      goiY: 'Bản ghi gợi ý', diem: 'điểm', khop: 'Khớp vào bản ghi này',
+      deLaiNut: 'Tạm hoãn', traLai: 'Trả về danh sách chờ khớp',
       chonDong: 'Chọn một dòng bên trái',
-      chonDongMo: 'Mỗi dòng là một khoản tiền chưa có chủ. Bấm vào để xem hệ thống gợi ý bản ghi nào và vì sao.',
+      chonDongMo: 'Mỗi dòng là một khoản tiền chưa xác định người thụ hưởng. Bấm vào một dòng để xem hệ thống gợi ý bản ghi nào và vì sao.',
       truyThu: 'Khoản truy thu',
-      truyThuMo: 'Kỳ của dòng này đã duyệt và đã chi tiền. Khớp bây giờ không sửa lại kỳ cũ: tiền vào kỳ đang mở, ghi rõ là truy thu của kỳ nào.',
+      truyThuMo: 'Kỳ của dòng này đã xét duyệt và đã thanh toán. Khớp bây giờ không sửa lại kỳ cũ: khoản tiền được ghi vào kỳ đang mở, kèm ghi chú truy thu từ kỳ nào.',
       vaoKy: 'Sẽ ghi vào kỳ',
       khongCon: 'Không còn kỳ nào đang mở để ghi khoản truy thu.',
       xacKhop: 'Khớp dòng này vào bản ghi',
-      timTay: 'Không có gợi ý nào đúng? Tìm tay trong danh mục',
-      timTayMo: 'Gõ mã ISRC hoặc tên bài. Hệ thống chỉ hiện kết quả, không tự chọn.',
-      khongCoDong: 'Không còn dòng nào', khongCoDongMo: 'Với bộ lọc hiện tại, hàng chờ trống.',
+      timTay: 'Không có gợi ý nào đúng? Tìm thủ công trong danh mục',
+      timTayMo: 'Nhập mã ISRC hoặc tên bài hát. Hệ thống chỉ hiển thị kết quả, không tự chọn.',
+      khongCoDong: 'Không còn dòng nào', khongCoDongMo: 'Với bộ lọc hiện tại, danh sách chờ khớp trống.',
       xuat: 'Xuất CSV',
-      pct: 'tỷ lệ treo trên doanh thu', nguong: 'ngưỡng chặn duyệt'
+      pct: 'tỷ lệ chưa khớp trên doanh thu', nguong: 'ngưỡng chặn xét duyệt'
     },
     en: {
       navKhop: 'ISRC matching', h1: 'ISRC matching queue',
@@ -97,10 +97,10 @@ HT.dangKy({
     if (tyLe > A.cfg.BLACKBOX_CAP) {
       html += HM.ghi({ kieu: 'no',
         tieuDe: HM.esc(c.lang === 'vi'
-          ? 'Tiền treo của kỳ ' + c.ky.label + ' vượt ngưỡng ' + HT.fmt.pct(A.cfg.BLACKBOX_CAP, 1)
+          ? 'Tiền chưa khớp của kỳ ' + c.ky.label + ' vượt ngưỡng ' + HT.fmt.pct(A.cfg.BLACKBOX_CAP, 1)
           : 'Held money in ' + c.ky.label + ' exceeds the ' + HT.fmt.pct(A.cfg.BLACKBOX_CAP, 1) + ' threshold'),
         than: HM.esc(c.lang === 'vi'
-          ? 'Kỳ này không duyệt được cho tới khi tiền treo xuống dưới ngưỡng. Đây là chặn cứng, không phải nhắc nhở.'
+          ? 'Kỳ này không thể xét duyệt cho tới khi tiền chưa khớp giảm xuống dưới ngưỡng. Đây là điều kiện chặn bắt buộc, không phải lời nhắc.'
           : 'The period cannot be approved until the held amount drops below the threshold. This is a hard block, not a reminder.') });
     }
 
@@ -157,7 +157,7 @@ HT.dangKy({
             HM.esc(c.song(A.feeds[q.feedId], 'short')) + '</div></td>' +
           '<td><div class="t-ttl">' + HM.esc(HM.dai(q.title, 26)) + '</div>' +
             '<div class="t-sub">' + HM.esc(HM.dai(q.artist, 22)) + ' · ' +
-            (q.status === 'pending' ? HM.esc(c.lang === 'vi' ? 'treo' : 'held')
+            (q.status === 'pending' ? HM.esc(c.lang === 'vi' ? 'chờ khớp' : 'held')
               : q.status === 'matched' ? '<span class="pos">' + HM.esc(t('daKhop')) + '</span>'
               : '<span class="muted">' + HM.esc(t('deLai')) + '</span>') + '</div></td>' +
           '<td class="num">' + HM.esc(c.tien2(q.amount)) +
@@ -180,7 +180,7 @@ HT.dangKy({
     HM.nhap(root, '[data-q]', function (el) { LOC.q = el.value; DANG_CHON = null; c.veLai(); });
     HM.bam(root, '[data-xuat]', function () {
       HM.csv('hang-cho-khop-isrc.csv',
-        ['ID', 'Kỳ', 'Nguồn', 'Mã trong file', 'Tên bài', 'Nghệ sĩ', 'Nền tảng', 'Thị trường', 'Lượt nghe', 'Số tiền USD', 'Lý do', 'Trạng thái'],
+        ['ID', 'Kỳ', 'Nguồn', 'Mã trong file', 'Tên bài hát', 'Nghệ sĩ', 'Nền tảng', 'Thị trường', 'Lượt nghe', 'Số tiền USD', 'Lý do', 'Trạng thái'],
         ds.map(function (q) {
           return [q.id, A.periods[A.pIndexOf(q.periodKey)].label, c.song(A.feeds[q.feedId], 'short'), q.isrc,
                   q.title, q.artist, q.store, q.territory, q.streams,
@@ -230,7 +230,7 @@ function veChiTiet(root, c) {
       : q.status === 'parked'
         ? { kieu: 'warn', icon: 'clock', chu: HM.esc(t('deLai') + (q.note ? ' · ' + q.note : '')) }
         : { kieu: 'no', icon: 'alert', chu: HM.esc(q.reason) },
-    h2: HM.esc(q.title || (c.lang === 'vi' ? '(file không ghi tên bài)' : '(no title in file)')),
+    h2: HM.esc(q.title || (c.lang === 'vi' ? '(file không ghi tên bài hát)' : '(no title in file)')),
     p: HM.esc(q.id + ' · ' + c.song(A.feeds[q.feedId], 'name')),
     than: HM.kv([
       { t: t('cot_ma'), v: q.isrc || (c.lang === 'vi' ? 'không có' : 'missing'), vHtml: false },
@@ -239,7 +239,7 @@ function veChiTiet(root, c) {
       { t: c.lang === 'vi' ? 'Lượt nghe' : 'Streams', v: HT.fmt.n(q.streams) },
       { t: t('cot_tien'), v: c.tien2(q.amount), manh: true },
       { t: t('cot_ky'), v: A.periods[A.pIndexOf(q.periodKey)].label +
-          (A.isApproved(q.periodKey) ? ' · ' + (c.lang === 'vi' ? 'đã duyệt' : 'approved') : '') }
+          (A.isApproved(q.periodKey) ? ' · ' + (c.lang === 'vi' ? 'đã xét duyệt' : 'approved') : '') }
     ])
   });
 
@@ -256,7 +256,7 @@ function veChiTiet(root, c) {
     html += HM.the({
       h2: HM.esc(t('goiY')),
       p: c.lang === 'vi'
-        ? 'Hệ thống chấm điểm, xếp hạng, rồi dừng. Người quyết định bước cuối: để máy tự khớp là cách nhanh nhất để trả tiền nhầm người.'
+        ? 'Hệ thống chấm điểm, xếp hạng, rồi dừng lại. Người vận hành quyết định bước cuối: để hệ thống tự khớp là cách nhanh nhất dẫn đến thanh toán nhầm người.'
         : 'The system scores and ranks, then stops. A person decides — auto-matching is the fastest way to pay the wrong person.',
       than: goiY.length ? '<div class="bars pick">' + goiY.map(function (g) {
         var tr = A.track(g.i);
@@ -271,7 +271,7 @@ function veChiTiet(root, c) {
           '</div>';
       }).join('') + '</div>'
         : HM.trong({ tieuDe: c.lang === 'vi' ? 'Không có gợi ý nào' : 'No suggestion',
-            moTa: c.lang === 'vi' ? 'Mã trong file không giống mã nào trong danh mục, tên bài cũng không khớp. Tìm tay bên dưới, hoặc gác lại chờ đối tác xác nhận.'
+            moTa: c.lang === 'vi' ? 'Mã trong file không trùng mã nào trong danh mục, tên bài hát cũng không khớp. Tìm thủ công bên dưới, hoặc tạm hoãn chờ đối tác xác nhận.'
                                   : 'The code in the file matches nothing in the catalogue, and the title does not match either. Search by hand below, or park it pending the partner.' }),
       chan: '<button type="button" class="btn sm" data-park>' + HM.icon('clock') + HM.esc(t('deLaiNut')) + '</button>'
     });
@@ -279,7 +279,7 @@ function veChiTiet(root, c) {
     html += HM.the({
       h2: HM.esc(t('timTay')), p: HM.esc(t('timTayMo')),
       than: '<div class="srch" style="flex:1 1 100%;max-width:none">' + HM.icon('tim') +
-        '<input type="search" data-tay placeholder="VN25… / ' + HM.esc(c.lang === 'vi' ? 'tên bài' : 'title') + '"></div>' +
+        '<input type="search" data-tay placeholder="VN25… / ' + HM.esc(c.lang === 'vi' ? 'tên bài hát' : 'title') + '"></div>' +
         '<div data-ketqua style="margin-top:12px"></div>'
     });
   } else {
@@ -290,8 +290,8 @@ function veChiTiet(root, c) {
         q.resolvedTo != null ? { t: c.lang === 'vi' ? 'Khớp vào bản ghi' : 'Matched to',
           v: A.titleOf(q.resolvedTo) + ' · ' + A.isrcOf(q.resolvedTo) } : null,
         q.intoPeriod ? { t: t('vaoKy'), v: A.periods[A.pIndexOf(q.intoPeriod)].label + ' · ' + t('truyThu'), manh: true } : null,
-        { t: c.lang === 'vi' ? 'Lúc' : 'When', v: HT.fmt.luc(q.at) },
-        q.by ? { t: c.lang === 'vi' ? 'Người làm' : 'By', v: q.by } : null,
+        { t: c.lang === 'vi' ? 'Thời điểm' : 'When', v: HT.fmt.luc(q.at) },
+        q.by ? { t: c.lang === 'vi' ? 'Người thực hiện' : 'By', v: q.by } : null,
         q.note ? { t: c.lang === 'vi' ? 'Ghi chú' : 'Note', v: q.note } : null
       ]),
       chan: '<button type="button" class="btn sm dang" data-unpark>' + HM.icon('swap') + HM.esc(t('traLai')) + '</button>'
@@ -304,19 +304,19 @@ function veChiTiet(root, c) {
   HM.bam(host, '[data-xem]', function (el) { xemBanGhi(c, +el.getAttribute('data-xem')); });
   HM.bam(host, '[data-park]', function () {
     c.hoiThoai({ tieuDe: t('deLaiNut'), moTa: HM.esc(c.lang === 'vi'
-      ? 'Dòng rời hàng chờ nhưng tiền vẫn treo: vẫn tính vào phần treo của kỳ và vẫn chặn duyệt nếu vượt ngưỡng. Gác lại không phải là xoá.'
+      ? 'Dòng này rời khỏi danh sách chờ khớp nhưng khoản tiền vẫn chưa khớp: vẫn tính vào tiền chưa khớp của kỳ và vẫn chặn xét duyệt nếu vượt ngưỡng. Tạm hoãn không phải là xoá.'
       : 'The row leaves the working queue but the money stays held — it still counts towards the period’s held total and still blocks approval above the threshold. Parking is not deleting.'),
-      than: '<label class="fld">' + (c.lang === 'vi' ? 'Ghi chú (đang chờ ai, chờ gì)' : 'Note (waiting on whom, for what)') + '</label>' +
+      than: '<label class="fld">' + (c.lang === 'vi' ? 'Ghi chú (đang chờ đối tác nào, chờ nội dung gì)' : 'Note (waiting on whom, for what)') + '</label>' +
         '<textarea class="in" data-o="note" rows="3" placeholder="' +
-        HM.esc(c.lang === 'vi' ? 'VD: đã gửi mail cho đối tác YouTube ngày 20.08, chờ họ xác nhận mã' : '') + '"></textarea>',
-      dong: c.lang === 'vi' ? 'Gác lại' : 'Park' }).then(function (r) {
+        HM.esc(c.lang === 'vi' ? 'Ví dụ: đã gửi email cho đối tác YouTube ngày 20.08, chờ xác nhận mã' : '') + '"></textarea>',
+      dong: c.lang === 'vi' ? 'Tạm hoãn' : 'Park' }).then(function (r) {
         if (!r) return;
-        A.queue.park(q.id, r.note); c.thongBao(c.lang === 'vi' ? 'Đã gác lại ' + q.id : 'Parked ' + q.id);
+        A.queue.park(q.id, r.note); c.thongBao(c.lang === 'vi' ? 'Đã tạm hoãn ' + q.id : 'Parked ' + q.id);
         HM.quenHet(); c.veLai();
       });
   });
   HM.bam(host, '[data-unpark]', function () {
-    try { A.queue.unpark(q.id); c.thongBao(c.lang === 'vi' ? 'Đã trả về hàng chờ' : 'Returned to queue'); HM.quenHet(); c.veLai(); }
+    try { A.queue.unpark(q.id); c.thongBao(c.lang === 'vi' ? 'Đã trả về danh sách chờ khớp' : 'Returned to queue'); HM.quenHet(); c.veLai(); }
     catch (e) { c.thongBao(e.message, 'no'); }
   });
   HM.nhap(host, '[data-tay]', function (el) { timTay(host, c, q, el.value); }, 240);
@@ -380,7 +380,7 @@ function xacNhanKhop(c, q, i) {
       { t: c.lang === 'vi' ? 'Dòng trong file' : 'Row in file', v: (q.isrc || '—') + ' · ' + q.title },
       { t: c.lang === 'vi' ? 'Kỳ của dòng' : 'Row’s period', v: A.periods[A.pIndexOf(q.periodKey)].label },
       { t: c.t('vaoKy'), v: dat ? dat.label + (dat.adjustment ? ' · ' + c.t('truyThu') : '') : '—', manh: true },
-      { t: c.lang === 'vi' ? 'Bên nhận' : 'Payee', v: A.partyName(tr.partyKey) + ' · ' + A.partyClientId(tr.partyKey) }
+      { t: c.lang === 'vi' ? 'Bên thụ hưởng' : 'Payee', v: A.partyName(tr.partyKey) + ' · ' + A.partyClientId(tr.partyKey) }
     ]),
     dong: c.t('khop')
   }).then(function (r) {

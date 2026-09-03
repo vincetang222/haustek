@@ -21,18 +21,18 @@ HT.dangKy({
 
   chu: {
     vi: {
-      navNap: 'Nhập dữ liệu', h1: 'Nhập dữ liệu',
-      mo: 'Ba nguồn doanh thu bản ghi và một dòng tiền tác quyền theo quý. Kỳ còn thiếu nguồn thì chưa duyệt được.',
-      tLuoi: 'Bảng kỳ × nguồn', tLuong: 'Từng nguồn', tOng: 'Quy trình nhập 8 bước', tSu: 'Lịch sử nhập',
-      nap: 'Nhập', napLai: 'Nhập lại', go: 'Gỡ', daNap: 'đã nhập', thieu: 'chưa nhập',
-      kyDuyet: 'đã duyệt', tenFile: 'Tên file', khiNao: 'Nhập lúc',
+      navNap: 'Nhập báo cáo', h1: 'Nhập báo cáo',
+      mo: 'Ba nguồn báo cáo doanh thu bản ghi và một dòng tiền tác quyền theo quý. Kỳ còn thiếu nguồn báo cáo thì chưa thể xét duyệt.',
+      tLuoi: 'Bảng kỳ × nguồn', tLuong: 'Theo từng nguồn', tOng: 'Quy trình nhập báo cáo 8 bước', tSu: 'Lịch sử nhập báo cáo',
+      nap: 'Nhập báo cáo', napLai: 'Nhập lại báo cáo', go: 'Gỡ báo cáo', daNap: 'đã nhập', thieu: 'chưa nhập',
+      kyDuyet: 'đã xét duyệt', tenFile: 'Tên file', khiNao: 'Nhập lúc',
       tacQuyen: 'Tác quyền', quy: 'Quý',
-      dongDuoc: 'Kỳ đủ nguồn', chuaDu: 'Kỳ còn thiếu', tongTien: 'Doanh thu đã vào sổ',
-      hoiNap: 'Nhập báo cáo', hoiGo: 'Gỡ nguồn khỏi kỳ',
-      hoiGoMo: 'Gỡ nguồn là rút toàn bộ tiền của nguồn đó khỏi tổng của kỳ. Những dòng đã khớp tay từ hàng chờ vẫn còn, nhưng chưa tính vào tổng cho tới khi nhập lại nguồn.',
-      khongSua: 'Kỳ đã duyệt. Muốn nhập lại phải huỷ duyệt trước.',
+      dongDuoc: 'Kỳ đủ nguồn báo cáo', chuaDu: 'Kỳ còn thiếu nguồn', tongTien: 'Doanh thu đã ghi sổ',
+      hoiNap: 'Nhập báo cáo', hoiGo: 'Gỡ báo cáo khỏi kỳ',
+      hoiGoMo: 'Gỡ báo cáo là rút toàn bộ doanh thu của nguồn đó khỏi tổng của kỳ. Những dòng đã khớp thủ công từ danh sách chờ khớp vẫn còn, nhưng chưa tính vào tổng cho tới khi nhập lại báo cáo.',
+      khongSua: 'Kỳ đã xét duyệt. Muốn nhập lại báo cáo, cần huỷ xét duyệt trước.',
       chonKy: 'Chọn kỳ', chonLuong: 'Chọn nguồn',
-      sinhDong: 'dòng mới vào hàng chờ khớp ISRC',
+      sinhDong: 'dòng mới vào danh sách chờ khớp ISRC',
       khongQuy: 'không phải cuối quý'
     },
     en: {
@@ -116,7 +116,7 @@ function veLuoi(c) {
     '<th>' + (c.lang === 'vi' ? 'Kỳ' : 'Period') + '</th>' +
     A.feeds.map(function (f) { return '<th>' + HM.esc(c.song(f, 'short')) + '</th>'; }).join('') +
     '<th>' + HM.esc(t('tacQuyen')) + '</th>' +
-    '<th class="num">' + (c.lang === 'vi' ? 'Doanh thu vào sổ' : 'Booked') + '</th>' +
+    '<th class="num">' + (c.lang === 'vi' ? 'Doanh thu đã ghi sổ' : 'Booked') + '</th>' +
     '<th>' + (c.lang === 'vi' ? 'Trạng thái kỳ' : 'Period') + '</th>' +
     '</tr></thead><tbody>';
 
@@ -132,8 +132,8 @@ function veLuoi(c) {
         : '<button type="button" class="cell" ' +
           (co ? 'data-go="' + i + ':' + f.id + '"' : 'data-nap="' + i + ':' + f.id + '"') +
           ' data-tip="' + HM.esc('<b>' + c.song(f, 'name') + '</b>' + (co
-            ? '<span class="d">' + HM.esc(st.file) + '<br>' + HT.fmt.luc(st.at) + '<br>Bấm để gỡ</span>'
-            : '<span class="d">' + HM.esc(c.song(f, 'fmt')) + '<br>Bấm để nhập</span>')) + '">' +
+            ? '<span class="d">' + HM.esc(st.file) + '<br>' + HT.fmt.luc(st.at) + '<br>Bấm để gỡ báo cáo</span>'
+            : '<span class="d">' + HM.esc(c.song(f, 'fmt')) + '<br>Bấm để nhập báo cáo</span>')) + '">' +
           HM.cham(co ? 'ok' : 'no', co ? t('daNap') : t('thieu')) + '</button>') + '</td>';
     });
     var pb = A.state().pub[p.k], coPub = pb && pb.status === 'loaded';
@@ -143,8 +143,8 @@ function veLuoi(c) {
       : '<button type="button" class="cell" ' +
         (coPub ? 'data-gopub="' + i + '"' : 'data-pub="' + i + '"') +
         ' data-tip="' + HM.esc('<b>' + c.song(A.pubFeed, 'name') + '</b><span class="d">' +
-          (coPub ? HM.esc(pb.file) : cuoiQuy ? 'Cuối quý ' + p.quarter + ', nhập được'
-                 : 'Tháng ' + p.month + ' ' + HM.esc(t('khongQuy')) + '. Nhập vào đây là đặt cả quý tiền vào sai kỳ') +
+          (coPub ? HM.esc(pb.file) : cuoiQuy ? 'Cuối quý ' + p.quarter + ', có thể nhập báo cáo'
+                 : 'Tháng ' + p.month + ' ' + HM.esc(t('khongQuy')) + '. Nhập báo cáo vào đây sẽ đặt doanh thu cả quý vào sai kỳ') +
           '</span>') + '">' +
         (coPub ? HM.cham('ok', t('quy') + p.quarter)
                : cuoiQuy ? HM.cham('warn', t('quy') + p.quarter) : '<span class="nil">—</span>') +
@@ -152,19 +152,19 @@ function veLuoi(c) {
     than += '<td class="num"><div class="cell" style="justify-content:flex-end">' +
       HM.esc(c.tien(A.agg('admin', 0, i, 'rec').gross)) + '</div></td>' +
       '<td><div class="cell">' + (duyet ? HM.tag(t('kyDuyet'), 'ok')
-        : A.canApprove(i) ? HM.tag(c.lang === 'vi' ? 'sẵn sàng duyệt' : 'ready', 'info')
-        : HM.tag(c.lang === 'vi' ? 'còn vướng' : 'blocked', 'warn')) + '</div></td></tr>';
+        : A.canApprove(i) ? HM.tag(c.lang === 'vi' ? 'đủ điều kiện xét duyệt' : 'ready', 'info')
+        : HM.tag(c.lang === 'vi' ? 'chưa đủ điều kiện' : 'blocked', 'warn')) + '</div></td></tr>';
   });
   than += '</tbody></table></div>';
 
   return HM.the({
     h2: HM.esc(t('tLuoi')),
     p: c.lang === 'vi'
-      ? 'Bấm một ô của kỳ chưa duyệt để nhập hoặc gỡ nguồn đó. Kỳ đã duyệt thì khoá lại: sửa số của kỳ mà label và nghệ sĩ đã đọc phải là việc có chủ ý, không phải bấm nhầm.'
+      ? 'Bấm một ô của kỳ chưa xét duyệt để nhập hoặc gỡ báo cáo của nguồn đó. Kỳ đã xét duyệt được khoá lại: sửa số liệu của kỳ mà label và nghệ sĩ đã đọc phải là thao tác có chủ ý.'
       : 'Click a cell on an unapproved period to load or unload that feed. Approved periods are locked — changing figures a client has already read must be deliberate.',
     thoBody: true, than: than,
     chan: (c.lang === 'vi'
-      ? 'Ô đỏ không có nghĩa là mất tiền. Chỉ là tiền của nguồn đó chưa được tính, và mọi con số của kỳ đang thiếu đúng phần ấy.'
+      ? 'Ô đỏ không có nghĩa là mất tiền. Doanh thu của nguồn đó chưa được tính, nên mọi con số của kỳ đang thiếu đúng phần ấy.'
       : 'A red cell does not mean lost money. It means that feed’s money is not being counted — every figure for the period is short by exactly that much.')
   });
 }
@@ -207,14 +207,14 @@ function veLuong(c) {
           { t: t('tenFile') + ' · ' + c.ky.label, v: co ? st.file : '—' },
           { t: t('khiNao'), v: co ? HT.fmt.luc(st.at) : '—' },
           { t: c.lang === 'vi' ? 'Doanh thu kỳ này' : 'This period', v: c.tien(theoKy[c.ky.idx] || 0), manh: true },
-          { t: c.lang === 'vi' ? 'Đang treo ở hàng chờ' : 'On hold in queue',
+          { t: c.lang === 'vi' ? 'Chờ khớp ISRC' : 'On hold in queue',
             v: treo.length ? HT.fmt.n(treo.length) + ' dòng · ' + c.tien(treo.reduce(function (s, q) { return s + q.amount; }, 0)) : '—' }
         ]) +
         '<div style="margin-top:14px">' + HB.o({
           loai: 'cot', cao: 130, anTruc: true, chuThich: false,
           truc: A.periods.map(function (p) { return p.label.slice(0, 2); }),
           tieuDeTip: function (i) { return c.song(f, 'short') + ' · ' + (c.lang === 'vi' ? 'kỳ ' : 'period ') + A.periods[i].label; },
-          chuTrong: c.lang === 'vi' ? 'Nguồn này chưa nhập cho kỳ đó' : 'Feed not loaded for that period',
+          chuTrong: c.lang === 'vi' ? 'Nguồn này chưa nhập báo cáo cho kỳ đó' : 'Feed not loaded for that period',
           chuoi: [{ ten: c.song(f, 'short'), gt: theoKy.map(function (v, i) { return A.feedLoaded(i, f.id) ? v : null; }), mau: P[fi] }],
           noiBat: c.ky.idx
         }) + '</div>'
@@ -239,7 +239,7 @@ function veLuong(c) {
             ? c.ky.label + ' là cuối quý ' + kyNay.quarter + ', còn thiếu báo cáo tác quyền'
             : c.ky.label + ' ends Q' + kyNay.quarter + ' — publishing report missing') }
         : { kieu: 'info', icon: 'info', chu: HM.esc(c.lang === 'vi'
-            ? c.ky.label + ' không phải cuối quý, không có báo cáo tác quyền là đúng'
+            ? c.ky.label + ' không phải cuối quý, nên không có báo cáo tác quyền là bình thường'
             : c.ky.label + ' is not a quarter end — no publishing report is expected') },
     h2: HM.esc(c.song(A.pubFeed, 'name')),
     p: HM.esc(c.song(A.pubFeed, 'fmt')),
@@ -249,7 +249,7 @@ function veLuong(c) {
         HM.esc(t('nap')) + '</button>'),
     than: '<p class="say">' + HM.esc(c.song(A.pubFeed, 'note')) + ' ' +
       (c.lang === 'vi'
-        ? '<b>Tác quyền là dòng tiền tách rời</b>: thuộc về người sáng tác, không đi qua label, và không tính vào điều kiện “đủ ba nguồn” của kỳ.'
+        ? '<b>Tác quyền là dòng tiền riêng</b>: thuộc về người sáng tác, không đi qua label, và không tính vào điều kiện “đủ 3 nguồn báo cáo” của kỳ.'
         : '<b>Publishing is a separate money stream</b>: it belongs to the writers, never passes through a label, and does not count towards the period’s “all three feeds” condition.') + '</p>' +
       HM.kv([
         { t: c.lang === 'vi' ? 'Kỳ có báo cáo' : 'Periods with a report',
@@ -279,25 +279,25 @@ function veOng(c) {
   return HM.the({
     h2: HM.esc(t('tOng')),
     p: c.lang === 'vi'
-      ? 'Mỗi lần bấm “Nhập” ở bản mẫu là mô phỏng tám bước này. Trong hệ thống thật, tám bước này mới là phần khó và tốn công nhất của dự án, không phải giao diện.'
+      ? 'Mỗi lần bấm “Nhập báo cáo” ở bản mẫu là mô phỏng tám bước này. Trong hệ thống thật, tám bước này là phần khó và tốn công nhất của dự án, không phải giao diện.'
       : 'Each “Load” in this prototype simulates these eight steps. In the real system they are the hardest and most expensive part of the project — not the interface.',
     than: '<div class="steps">' + A.ingest.steps.map(function (s, i) {
       return '<div class="s ' + (i === 2 ? 'now' : 'ok') + '">' +
         '<b>' + (i + 1) + '. ' + HM.esc(c.song(s, 't')) + '</b><span>' + HM.esc(c.song(s, 'd')) + '</span>' +
         (i === 2 ? '<div class="tm">' + HM.esc(c.lang === 'vi'
-          ? 'Dòng không khớp đi vào hàng chờ, xem trang Khớp ISRC'
+          ? 'Dòng không khớp được đưa vào danh sách chờ khớp, xem trang Khớp ISRC'
           : 'Unmatched rows go to the queue — see ISRC matching') + '</div>' : '') + '</div>';
     }).join('') + '</div>',
     chan: '<button type="button" class="btn sm" data-di="khop-isrc">' + HM.icon('out') +
-      (c.lang === 'vi' ? 'Mở hàng chờ khớp ISRC' : 'Open the matching queue') + '</button>'
+      (c.lang === 'vi' ? 'Mở danh sách chờ khớp ISRC' : 'Open the matching queue') + '</button>'
   }) + HM.the({
-    h2: c.lang === 'vi' ? 'Vì sao khâu khớp ISRC là chỗ dễ mất tiền nhất' : 'Why ISRC matching is where money goes missing',
+    h2: c.lang === 'vi' ? 'Vì sao khâu khớp ISRC là nơi dễ thất thoát tiền nhất' : 'Why ISRC matching is where money goes missing',
     than: '<p class="say">' + (c.lang === 'vi'
-      ? 'Một dòng doanh thu về mà không khớp được bản ghi nào thì không thuộc về ai. Nếu hệ thống bỏ im, tiền đó nằm lại trong tài khoản Haustek và không ai biết. Riêng The MLC ở Mỹ đang giữ hơn 424 triệu đô chưa tìm ra chủ, không phải vì gian lận mà vì không khớp được.'
+      ? 'Một dòng doanh thu về mà không khớp được bản ghi nào thì chưa thuộc về ai. Nếu hệ thống không báo, khoản tiền đó nằm lại trong tài khoản Haustek và không ai biết. Riêng The MLC ở Mỹ đang giữ hơn 424 triệu USD chưa xác định được người thụ hưởng, không phải vì gian lận mà vì không khớp được.'
       : 'A revenue line that matches no recording belongs to nobody. If the system stays quiet, that money sits in Haustek’s account and nobody knows. The MLC in the US alone holds over $424m of unmatched royalties — not through dishonesty, but because nothing matched.') + '</p>' +
       '<p class="say">' + (c.lang === 'vi'
       ? 'Vì vậy quy trình ở đây <b>không được phép tự khớp</b>. Hệ thống chấm điểm gợi ý, xếp hạng, rồi dừng lại chờ người quyết định. Ngưỡng <code>' +
-        HT.fmt.pct(A.cfg.BLACKBOX_CAP, 1) + '</code> doanh thu kỳ chặn hẳn nút duyệt: treo quá ngưỡng thì không duyệt kỳ được.'
+        HT.fmt.pct(A.cfg.BLACKBOX_CAP, 1) + '</code> doanh thu kỳ chặn hẳn nút xét duyệt: tiền chưa khớp vượt ngưỡng thì không thể xét duyệt kỳ.'
       : 'So the pipeline here <b>never auto-matches</b>. It scores suggestions, ranks them, then stops and waits for a person. And the <code>' +
         HT.fmt.pct(A.cfg.BLACKBOX_CAP, 1) + '</code> threshold blocks the approve button outright: too much on hold, no period close.') + '</p>'
   });
@@ -309,16 +309,16 @@ function veOng(c) {
 function veSu(c) {
   var A = c.A;
   var ds = A.audit.list(400).filter(function (a) { return a.action.indexOf('ingest') === 0; });
-  if (!ds.length) return HM.the({ than: HM.trong({ tieuDe: c.lang === 'vi' ? 'Chưa nhập lần nào' : 'No loads yet', moTa: '' }) });
+  if (!ds.length) return HM.the({ than: HM.trong({ tieuDe: c.lang === 'vi' ? 'Chưa có lần nhập báo cáo nào' : 'No loads yet', moTa: '' }) });
   return HM.the({
-    h2: c.lang === 'vi' ? 'Lịch sử nhập' : 'Load history',
-    p: HT.fmt.n(ds.length) + (c.lang === 'vi' ? ' lần nhập trong nhật ký' : ' recorded loads'),
+    h2: c.lang === 'vi' ? 'Lịch sử nhập báo cáo' : 'Load history',
+    p: HT.fmt.n(ds.length) + (c.lang === 'vi' ? ' lần nhập báo cáo trong nhật ký thao tác' : ' recorded loads'),
     thoBody: true,
     than: '<div class="tw"><table class="t"><thead><tr>' +
-      '<th style="width:150px">' + (c.lang === 'vi' ? 'Lúc' : 'When') + '</th>' +
-      '<th style="width:120px">' + (c.lang === 'vi' ? 'Việc' : 'Action') + '</th>' +
+      '<th style="width:150px">' + (c.lang === 'vi' ? 'Thời điểm' : 'When') + '</th>' +
+      '<th style="width:120px">' + (c.lang === 'vi' ? 'Thao tác' : 'Action') + '</th>' +
       '<th>' + (c.lang === 'vi' ? 'Chi tiết' : 'Detail') + '</th>' +
-      '<th style="width:200px">' + (c.lang === 'vi' ? 'Người làm' : 'By') + '</th></tr></thead><tbody>' +
+      '<th style="width:200px">' + (c.lang === 'vi' ? 'Người thực hiện' : 'By') + '</th></tr></thead><tbody>' +
       ds.slice(0, 120).map(function (a) {
         return '<tr><td class="num mono">' + HM.esc(HT.fmt.luc(a.at)) + '</td>' +
           '<td>' + HM.tag(a.action.replace('ingest.', ''), a.action === 'ingest.unload' ? 'no' : 'info') + '</td>' +
@@ -340,7 +340,7 @@ function napLuong(c, pi, fid, lai) {
       '<input class="in" data-o="file" value="' + HM.esc(f.id === 0 ? 'sales-report-' + p.k.replace('-', '') + '.csv'
         : f.id === 1 ? 'yt-' + p.k.replace('-', '') + '-partner.csv.gz' : 'tiktok-' + p.k.replace('-', '') + '.xlsx') + '">' +
       '<div class="hint">' + (c.lang === 'vi'
-        ? 'Bản mẫu không đọc file thật. Thao tác này đánh dấu nguồn là “đã nhập”, đưa tiền của nguồn vào tổng của kỳ, và đẩy vài dòng không khớp được vào hàng chờ, giống hệt một lần nhập thật.'
+        ? 'Bản mẫu không đọc file thật. Thao tác này đánh dấu nguồn là “đã nhập”, đưa doanh thu của nguồn vào tổng của kỳ, và đưa một vài dòng không khớp được vào danh sách chờ khớp, giống như một lần nhập báo cáo thật.'
         : 'The prototype does not read a real file. It flags the feed as loaded, brings its money into the period total, and drops a few unmatchable rows into the queue — exactly as a real load would.') + '</div>',
     dong: c.t('nap')
   }).then(function (r) {
@@ -378,12 +378,12 @@ function napPub(c, pi) {
       ? HM.esc(c.lang === 'vi' ? 'Cuối quý ' + p.quarter + '/' + p.year + ', đúng kỳ chốt tác quyền.'
                                : 'End of Q' + p.quarter + ' ' + p.year + ' — the correct publishing period.')
       : '<span class="neg">' + HM.esc(c.lang === 'vi'
-        ? 'Tháng ' + p.month + ' không phải cuối quý. Tác quyền chốt theo quý: nhập báo cáo quý vào đây là đặt cả quý tiền vào sai kỳ, và không ai phát hiện vì con số vẫn “có”.'
+        ? 'Tháng ' + p.month + ' không phải cuối quý. Tác quyền chốt theo quý: nhập báo cáo quý vào đây sẽ đặt doanh thu cả quý vào sai kỳ, và không ai phát hiện vì con số vẫn hiển thị trên hệ thống.'
         : 'Month ' + p.month + ' is not a quarter end. Publishing settles quarterly — loading a quarterly report here puts a whole quarter of money in the wrong period, and nobody notices because the figure still "exists".') + '</span>',
     than: '<label class="fld">' + (c.lang === 'vi' ? 'Tên file' : 'File name') + '</label>' +
       '<input class="in" data-o="file" value="vcpmc-quy' + p.quarter + '-' + p.year + '.xlsx">' +
       (cuoiQuy ? '' : '<label class="opt" style="margin-top:12px"><input type="checkbox" data-buoc>' +
-        '<div><b>' + (c.lang === 'vi' ? 'Vẫn nhập vào kỳ này' : 'Load into this period anyway') + '</b>' +
+        '<div><b>' + (c.lang === 'vi' ? 'Vẫn nhập báo cáo vào kỳ này' : 'Load into this period anyway') + '</b>' +
         '<span>' + (c.lang === 'vi' ? 'Chỉ chọn khi chắc chắn báo cáo này thuộc tháng ' + p.month + '.'
                                     : 'Only if this report genuinely belongs to month ' + p.month + '.') + '</span></div></label>'),
     dong: c.t('nap'),
@@ -395,7 +395,7 @@ function napPub(c, pi) {
     if (!r) return;
     try {
       A.ingest.loadPub(pi, { file: r.file, force: !cuoiQuy });
-      c.thongBao((c.lang === 'vi' ? 'Đã nhập tác quyền quý ' : 'Publishing loaded, Q') + p.quarter + '/' + p.year, 'ok');
+      c.thongBao((c.lang === 'vi' ? 'Đã nhập báo cáo tác quyền quý ' : 'Publishing loaded, Q') + p.quarter + '/' + p.year, 'ok');
       HM.quenHet(); c.veLai();
     } catch (e) { c.thongBao(e.message, 'no'); }
   });
@@ -404,10 +404,10 @@ function napPub(c, pi) {
 function goPub(c, pi) {
   var A = c.A, p = A.periods[pi];
   c.xacNhan((c.lang === 'vi' ? 'Gỡ báo cáo tác quyền · ' : 'Unload publishing · ') + p.label,
-    c.lang === 'vi' ? 'Toàn bộ tiền tác quyền của kỳ này sẽ ra khỏi tổng.' : 'All publishing money for this period leaves the total.',
+    c.lang === 'vi' ? 'Toàn bộ tiền tác quyền của kỳ này sẽ được rút khỏi tổng.' : 'All publishing money for this period leaves the total.',
     c.t('go'), true).then(function (ok) {
       if (!ok) return;
-      try { A.ingest.unloadPub(pi); c.thongBao(c.lang === 'vi' ? 'Đã gỡ' : 'Unloaded'); HM.quenHet(); c.veLai(); }
+      try { A.ingest.unloadPub(pi); c.thongBao(c.lang === 'vi' ? 'Đã gỡ báo cáo tác quyền' : 'Unloaded'); HM.quenHet(); c.veLai(); }
       catch (e) { c.thongBao(e.message, 'no'); }
     });
 }
