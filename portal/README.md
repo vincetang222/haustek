@@ -175,5 +175,9 @@ thái nằm chung trong `localStorage` nên duyệt một kỳ ở cổng nội 
 cổng khách hàng là thấy kỳ đó hiện ra.
 
 Một điểm khác duy nhất: trình xem online chạy trong khung cách ly và **chặn
-mọi lượt tải file**, nên nút Xuất CSV ở bản gói báo ra điều đó thay vì im
-lặng không làm gì (cờ `HAUSTEK_XEM_ONLINE`).
+mọi lượt tải file thẳng**. Nút Xuất CSV vì thế đi đường khác khi có: gọi
+`claude.use('downloads')` để trình xem hỏi người dùng có lưu file không, rồi
+mới lưu (bản gói được công bố với `capabilities: {downloads: true}`). Trình
+xem không cấp đường đó thì nút báo rõ là không lưu được, thay vì im lặng
+không làm gì (cờ `HAUSTEK_XEM_ONLINE`). `test/v2-nhu-artifact.js` giả lập cả
+hai tình huống.

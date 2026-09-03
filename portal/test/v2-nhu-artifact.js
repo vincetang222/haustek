@@ -81,6 +81,41 @@ function bocNhuTrinhXem(noiDung) {
   let hong = 0;
   kiem.forEach(([t, ok, ct]) => { console.log((ok ? '  ok   ' : '  HỎNG ') + t + ' · ' + ct); if (!ok) hong++; });
 
+  /* Xuất CSV trong trình xem: khung chặn tải thẳng, nhưng cấp
+     claude.use('downloads'). Giả lập đúng hình dạng đó: use() trả về
+     namespace SAU một nhịp (không bao giờ đồng bộ), save() ghi lại yêu
+     cầu. Nút Xuất CSV phải đưa đúng file .csv có BOM, có dòng đầu, có
+     dữ liệu; và khi use() trả về null thì phải NÓI là không lưu được,
+     không im lặng. */
+  async function thuXuat(coDownloads) {
+    const p2 = await ctx.newPage();
+    await p2.addInitScript(co => {
+      window.__luu = null;
+      window.claude = { use: name => new Promise(r => setTimeout(() =>
+        r(co && name === 'downloads'
+          ? { save: req => { window.__luu = { filename: req.filename, data: String(req.data) }; return Promise.resolve({ status: 'saved' }); } }
+          : null), 40)) };
+    }, coDownloads);
+    await p2.goto('http://127.0.0.1:8131/bocroi.html#danh-muc', { waitUntil: 'load' });
+    await p2.waitForTimeout(2500);
+    await p2.click('main [data-xuat]');
+    await p2.waitForTimeout(900);
+    const r2 = await p2.evaluate(() => ({
+      luu: window.__luu,
+      toast: [...document.querySelectorAll('.toast')].map(t => t.textContent).join(' | ')
+    }));
+    await p2.close();
+    return r2;
+  }
+  const co = await thuXuat(true), khong = await thuXuat(false);
+  const dong = co.luu ? co.luu.data.split('\n') : [];
+  [
+    ['Xuất CSV đưa file qua downloads', !!co.luu && /\.csv$/.test(co.luu.filename), co.luu ? co.luu.filename : '(không gọi save)'],
+    ['file có BOM, dòng đầu và dữ liệu', dong.length > 2 && dong[0].charCodeAt(0) === 0xFEFF && dong[0].includes(';'), dong.length + ' dòng'],
+    ['báo đã xuất sau khi người xem đồng ý', /Đã xuất|Exported/.test(co.toast), co.toast.slice(0, 60) || '(không có toast)'],
+    ['không có downloads thì nói rõ, không im lặng', /không cho lưu file|does not allow saving/.test(khong.toast), khong.toast.slice(0, 60) || '(không có toast)']
+  ].forEach(([t, ok, ct]) => { console.log((ok ? '  ok   ' : '  HỎNG ') + t + ' · ' + ct); if (!ok) hong++; });
+
   await b.close();
   sv.kill();
   console.log(hong ? '\n>>> ' + hong + ' vấn đề khi bọc như trình xem artifact'

@@ -122,26 +122,55 @@ function csv(ten, cot, dong) {
     var s = String(v);
     return /[";\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
   };
-  var txt = '﻿' + cot.map(q).join(';') + '\n' +
+  var txt = '\uFEFF' + cot.map(q).join(';') + '\n' +
     dong.map(function (r) { return r.map(q).join(';'); }).join('\n');
-  try {
-    var b = new Blob([txt], { type: 'text/csv;charset=utf-8' });
-    var a = document.createElement('a');
-    a.href = URL.createObjectURL(b);
-    a.download = ten;
-    document.body.appendChild(a); a.click();
-    setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 400);
-    /* Bản xem online chạy trong khung cách ly, và khung đó chặn mọi lượt
-       tải file — không báo lỗi, chỉ đơn giản không có gì xảy ra. Nói ra
-       còn hơn để người dùng bấm ba lần rồi tưởng nút hỏng. */
-    if (global.HAUSTEK_XEM_ONLINE) {
-      HT.thongBao('Bản xem online không tải file được. Mở bản mã nguồn để xuất ' + ten, 'no');
-    } else {
-      HT.thongBao('Đã xuất ' + ten + ' · ' + dong.length.toLocaleString('vi-VN') + ' dòng', 'ok');
+  var vi = HT.lang !== 'en';
+  var soDong = dong.length.toLocaleString(vi ? 'vi-VN' : 'en-US');
+  var baoXong = function () {
+    HT.thongBao(vi ? 'Đã xuất ' + ten + ' · ' + soDong + ' dòng' : 'Exported ' + ten + ' · ' + soDong + ' rows', 'ok');
+  };
+  var baoKhongTai = function () {
+    HT.thongBao(vi ? 'Trình xem này không cho lưu file. Mở bản mã nguồn để xuất ' + ten
+                   : 'This viewer does not allow saving files. Open the source build to export ' + ten, 'no');
+  };
+
+  /* Tải thẳng: bản nhiều file, hoặc bản gói mở thẳng từ repo. */
+  function taiThang() {
+    try {
+      var b = new Blob([txt], { type: 'text/csv;charset=utf-8' });
+      var a = document.createElement('a');
+      a.href = URL.createObjectURL(b);
+      a.download = ten;
+      document.body.appendChild(a); a.click();
+      setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 400);
+      /* Khung cách ly của trình xem chặn mọi lượt tải file: không báo lỗi,
+         chỉ đơn giản không có gì xảy ra. Nói ra còn hơn để người dùng bấm
+         ba lần rồi tưởng nút hỏng. */
+      if (global.HAUSTEK_XEM_ONLINE) baoKhongTai(); else baoXong();
+    } catch (e) {
+      HT.thongBao((vi ? 'Trình duyệt chặn tải file: ' : 'The browser blocked the download: ') + e.message, 'no');
     }
-  } catch (e) {
-    HT.thongBao('Trình duyệt chặn tải file: ' + e.message, 'no');
   }
+
+  /* Trong trình xem artifact, trang không được tải file thẳng, nhưng được
+     ĐƯA file cho người xem qua claude.use('downloads'): người xem thấy hộp
+     xác nhận tên file và cỡ, đồng ý thì mới lưu. Có đường đó thì đi đường
+     đó; không có (bản nhiều file, hay trình xem không cấp) thì tải thẳng. */
+  var claude = global.claude;
+  if (!claude || typeof claude.use !== 'function') { taiThang(); return; }
+  claude.use('downloads').then(function (dl) {
+    if (!dl) { taiThang(); return; }
+    return dl.save({ filename: ten, data: txt }).then(baoXong, function (e) {
+      var ma = e && e.code;
+      if (ma === 'declined') return;   /* người xem đã từ chối, không cần nói thêm */
+      if (ma === 'rate_limited') {
+        HT.thongBao(vi ? 'Đang có một hộp lưu file chờ trả lời. Xong rồi hãy bấm lại.'
+                       : 'A save prompt is still open. Answer it, then try again.', 'no');
+        return;
+      }
+      baoKhongTai();
+    });
+  }, taiThang);
 }
 
 /* ---------------------------------------------------------------------
