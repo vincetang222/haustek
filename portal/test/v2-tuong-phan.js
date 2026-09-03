@@ -3,6 +3,17 @@
    theo công thức WCAG. Không đoán từ bảng biến — biến có thể đúng mà
    thành phần vẫn dùng nhầm cặp. */
 const { chromium } = require('playwright');
+/* Nút sáng/tối và VI/EN có hai bản — thanh trên và ngăn điều hướng —
+   bản nào hiện tuỳ bề rộng. Bấm bản đang hiện. */
+async function bamHien(p, sel) {
+  await p.evaluate(s => {
+    const ds = [...document.querySelectorAll(s)];
+    const el = ds.find(e => e.getBoundingClientRect().width > 0) || ds[0];
+    if (!el) throw new Error('không thấy ' + s);
+    el.click();
+  }, sel);
+}
+
 const f = require('/home/user/haustek/portal/test/font-that.js');
 (async () => {
   const b = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium-1194/chrome-linux/chrome' });
@@ -14,7 +25,7 @@ const f = require('/home/user/haustek/portal/test/font-that.js');
     await p.waitForTimeout(900);
     const man = await p.$$eval('.nav a', a => a.map(x => x.getAttribute('href').slice(1)));
     for (const th of ['light', 'dark']) {
-      await p.click('[data-th="' + th + '"]'); await p.waitForTimeout(250);
+      await bamHien(p, '[data-th="' + th + '"]'); await p.waitForTimeout(250);
       const xau = [];
       for (const m of man) {
         await p.evaluate(id => { location.hash = '#' + id; }, m);

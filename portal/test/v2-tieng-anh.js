@@ -3,6 +3,17 @@
    tên cửa hàng là DỮ LIỆU tiếng Việt và phải giữ nguyên ở chế độ EN;
    nên không soi ô dữ liệu, chỉ soi khung. */
 const { chromium } = require('playwright');
+/* Nút sáng/tối và VI/EN có hai bản — thanh trên và ngăn điều hướng —
+   bản nào hiện tuỳ bề rộng. Bấm bản đang hiện. */
+async function bamHien(p, sel) {
+  await p.evaluate(s => {
+    const ds = [...document.querySelectorAll(s)];
+    const el = ds.find(e => e.getBoundingClientRect().width > 0) || ds[0];
+    if (!el) throw new Error('không thấy ' + s);
+    el.click();
+  }, sel);
+}
+
 const dungFontThat = require('./font-that.js');
 
 /* KHÔNG soi 'main .card-h h2': tiêu đề thẻ nhiều chỗ là DỮ LIỆU — tên
@@ -22,7 +33,7 @@ const CHO = 'main .card-h p, main .kpi .l, main .kpi .s, main th, ' +
     await dungFontThat(p);
     await p.goto('http://127.0.0.1:8099/' + trang, { waitUntil: 'networkidle' });
     await p.waitForTimeout(900);
-    await p.click('[data-l="en"]'); await p.waitForTimeout(300);
+    await bamHien(p, '[data-l="en"]'); await p.waitForTimeout(300);
     const man = await p.$$eval('.nav a', a => a.map(x => x.getAttribute('href').slice(1)));
     const con = [];
     for (const m of man) {

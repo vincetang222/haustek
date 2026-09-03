@@ -142,7 +142,7 @@ file mẫu (xem màn hình **Câu hỏi còn treo**).
 ## Kiểm tra
 
 ```bash
-node portal/test/api-guard.js       # 18 phép kiểm ranh giới quyền, không cần trình duyệt
+node portal/test/api-guard.js       # 21 phép kiểm ranh giới quyền, không cần trình duyệt
 ```
 
 Đây là mốc số 2 trong tài liệu bàn giao — test chứng minh nghệ sĩ A không truy vấn được
@@ -155,24 +155,24 @@ một test SQL.
 
 Bản mẫu này là đặc tả để viết schema, không phải code để bê nguyên. Thứ tự đề nghị:
 
-1. Trả lời 6 câu hỏi ở màn hình **Câu hỏi còn treo**, gửi hai file mẫu → chốt schema
+1. Trả lời 7 câu hỏi ở tab **Câu hỏi còn treo**, gửi hai file mẫu → chốt schema
 2. Viết RLS cho ba vai **trước** khi viết giao diện, kèm test chứng minh nghệ sĩ A không
    truy vấn được dữ liệu nghệ sĩ B — test này phải chạy trong CI
-3. Nạp một luồng thật, một kỳ thật, đối chiếu tổng với file gốc tới từng xu
-4. Dựng bảng rollup, làm màn admin trước
+3. Nhập một nguồn thật, một kỳ thật, đối soát tổng với file gốc tới từng xu
+4. Dựng bảng rollup, làm cổng nội bộ trước
 5. Mở cho label, rồi nghệ sĩ
 
 ## Bản gói một trang
 
-`goi-mot-trang.html` (≈500 KB) là cả hai cửa gói vào một file, dựng bằng
-`node /tmp/dung-goi.js` — dùng để xem online mà không phải tải gì về.
+`goi-mot-trang.html` (≈800 KB, đã gồm bộ chữ nhúng) là cả hai cổng gói vào một file,
+dựng bằng `node portal/dung-goi.js` — dùng để xem online mà không phải tải gì về.
 
-Khác bản nhiều file ở đúng một chỗ: màn hình không tự đăng ký lúc nạp file
-nữa mà nằm trong hàm, và trang chọn chạy bộ nào tuỳ cửa đang mở. Nhờ vậy cửa
-khách **vẫn gọi `lockdown()` trước khi bất cứ màn nào chạy** — ranh giới giữ
-nguyên. Đổi cửa bằng ô ở chân cột trái; đổi xong trang nạp lại, và vì trạng
-thái nằm chung trong `localStorage` nên duyệt một kỳ ở cửa nội bộ rồi sang
-cửa khách là thấy kỳ đó hiện ra.
+Khác bản nhiều file ở đúng một chỗ: trang không tự đăng ký lúc tải file
+nữa mà nằm trong hàm, và bản gói chạy bộ nào tuỳ cổng đang mở. Nhờ vậy cổng
+khách hàng **vẫn gọi `lockdown()` trước khi bất cứ trang nào chạy** — ranh giới giữ
+nguyên. Đổi cổng bằng ô ở chân cột trái; đổi xong trang tải lại, và vì trạng
+thái nằm chung trong `localStorage` nên duyệt một kỳ ở cổng nội bộ rồi sang
+cổng khách hàng là thấy kỳ đó hiện ra.
 
 Một điểm khác duy nhất: trình xem online chạy trong khung cách ly và **chặn
 mọi lượt tải file**, nên nút Xuất CSV ở bản gói báo ra điều đó thay vì im

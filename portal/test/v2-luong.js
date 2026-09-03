@@ -44,7 +44,7 @@ const B = 'http://127.0.0.1:8099/v2/';
   dk = await p.$$eval('.check', cs => cs.map(c => ({ ten: c.querySelector('b').textContent, ok: c.classList.contains('ok') })));
   const hongDk = dk.filter(x => !x.ok);
   kiem('kỳ 06/2026 báo đúng hai điều kiện hỏng: đối chiếu lệch và chưa chốt tỷ giá',
-    hongDk.length === 2 && hongDk.some(x => /Đối chiếu/.test(x.ten)) && hongDk.some(x => /tỷ giá/.test(x.ten)),
+    hongDk.length === 2 && hongDk.some(x => /Đối (chiếu|soát)/.test(x.ten)) && hongDk.some(x => /tỷ giá/.test(x.ten)),
     hongDk.map(x => x.ten).join(' | '));
 
   /* ---- 2. ghi nhận chênh lệch qua hộp thoại ---- */

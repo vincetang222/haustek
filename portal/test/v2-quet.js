@@ -5,6 +5,17 @@
 const { chromium } = require('playwright');
 const dungFontThat = require('./font-that.js');
 
+/* Nút sáng/tối và VI/EN có hai bản — thanh trên và ngăn điều hướng —
+   bản nào hiện tuỳ bề rộng. Bấm bản đang hiện. */
+async function bamHien(p, sel) {
+  await p.evaluate(s => {
+    const ds = [...document.querySelectorAll(s)];
+    const el = ds.find(e => e.getBoundingClientRect().width > 0) || ds[0];
+    if (!el) throw new Error('không thấy ' + s);
+    el.click();
+  }, sel);
+}
+
 const TRANG = process.argv[2] || 'v2/intranet.html';
 const RONG = (process.argv[3] || '1500').split(',').map(Number);
 
@@ -29,10 +40,10 @@ const RONG = (process.argv[3] || '1500').split(',').map(Number);
     console.log('\n=== ' + W + 'px · ' + TRANG + ' · ' + man.length + ' màn ===');
 
     for (const theme of ['light', 'dark']) {
-      await p.click('[data-th="' + theme + '"]');
+      await bamHien(p, '[data-th="' + theme + '"]');
       await p.waitForTimeout(200);
       for (const lang of ['vi', 'en']) {
-        await p.click('[data-l="' + lang + '"]');
+        await bamHien(p, '[data-l="' + lang + '"]');
         await p.waitForTimeout(150);
         const doi = [];
         for (const m of man) {
@@ -88,6 +99,12 @@ const RONG = (process.argv[3] || '1500').split(',').map(Number);
                 const t = (e.textContent || '').trim();
                 if (t.length > 3 && t === t.toUpperCase() && /[A-ZĐÂÊÔƯ]/.test(t)) out.chuHoa++;
               });
+              out.traniO = [];
+              main.querySelectorAll('.kpi .v, .kpi .l, .page-kpi .v, .page-kpi .l, .card-h h2, td, th')
+                .forEach(e => {
+                  if (e.scrollWidth > e.clientWidth + 1 && getComputedStyle(e).overflowX === 'visible')
+                    out.traniO.push((e.textContent || '').trim().slice(0, 24) + ' (+' + (e.scrollWidth - e.clientWidth) + 'px)');
+                });
               out.dai = main.textContent.length;
               return out;
             });
@@ -99,6 +116,7 @@ const RONG = (process.argv[3] || '1500').split(',').map(Number);
             if (r.tran.length) loi.push('tràn: ' + [...new Set(r.tran)].slice(0, 2).join(' | '));
             if (r.chuHoa) loi.push('nhãn HOA×' + r.chuHoa);
             if (r.de && r.de.length) loi.push(r.de[0]);
+            if (r.traniO.length) loi.push('tràn ô: ' + [...new Set(r.traniO)].slice(0, 2).join(' | '));
             if (r.dai < 400) loi.push('quá ít nội dung (' + r.dai + ' ký tự)');
             if (loi.length) { doi.push(nhan + ' → ' + loi.join(' · ')); hong++; }
           }

@@ -237,8 +237,23 @@ ul,ol{list-style:none}
 .top{display:flex;align-items:center;gap:12px;height:var(--top-h);padding:0 24px;
   background:var(--chrome);color:var(--on-chrome-2);position:sticky;top:0;z-index:30;
   border-bottom:1px solid var(--chrome-line)}
-.crumb{font-size:12.5px;color:var(--on-chrome-3)}
+.crumb{font-size:12.5px;color:var(--on-chrome-3);white-space:nowrap;overflow:hidden;
+  text-overflow:ellipsis;min-width:0}
 .crumb b{color:var(--on-chrome-2);font-weight:400}
+.crumb i{font-style:normal;margin:0 6px}
+/* nút mở/đóng ngăn điều hướng và cụm cài đặt trong ngăn — chỉ hiện ở màn hẹp */
+.menu-btn,.menu-x,.side-ctl,.menu-bg{display:none}
+.menu-btn{width:36px;height:36px;margin-left:-8px;border-radius:var(--r-sm);place-items:center;
+  color:var(--on-chrome-2);flex:none}
+.menu-btn:hover{background:var(--chrome-2);color:var(--on-chrome)}
+.menu-btn svg,.menu-x svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.7;
+  stroke-linecap:round}
+.menu-x{width:32px;height:32px;margin-left:auto;border-radius:var(--r-sm);place-items:center;
+  color:var(--on-chrome-2);flex:none}
+.menu-x:hover{background:var(--chrome-2);color:var(--on-chrome)}
+.side-ctl{align-items:center;gap:8px;padding:12px 20px 14px;border-top:1px solid var(--chrome-line);
+  flex-wrap:wrap}
+.side-ctl span{font-size:11.5px;color:var(--on-chrome-3);margin-right:auto}
 .sp{flex:1}
 .top-note{font-size:12px;color:var(--on-chrome-3);white-space:nowrap}
 .seg{display:flex;border:1px solid var(--chrome-line);border-radius:var(--r-sm);overflow:hidden;flex:none}
@@ -323,15 +338,21 @@ main{padding:22px 24px 56px;min-width:0}
 }
 
 /* ---- dải ô số ---- */
-.kpis{display:grid;gap:0;grid-template-columns:repeat(auto-fit,minmax(min(100%,170px),1fr));
+.kpis{display:grid;gap:0;grid-template-columns:repeat(auto-fit,minmax(min(100%,180px),1fr));
   background:var(--card);border-radius:var(--r);box-shadow:var(--shadow);margin-bottom:14px;
   overflow:hidden}
-.kpi{padding:15px 18px;border-left:1px solid var(--line)}
+/* Mỗi ô số là một "container" để cỡ chữ của con số co theo BỀ RỘNG Ô,
+   không phải theo bề rộng cửa sổ. Cùng một dải ô có thể nằm trong main
+   (5 ô, 196px ở 1280px) hoặc trong một thẻ (152px) — cỡ chữ theo vw
+   không biết điều đó, và "$3.426.998" 30px tràn sang ô bên cạnh.
+   Con số 10 ký tự rộng ≈ 5,8 lần cỡ chữ, ô trừ lề 36px: cỡ = (ô − 36) / 5,8. */
+.kpi{padding:15px 18px;border-left:1px solid var(--line);container-type:inline-size;min-width:0}
 .kpi:first-child{border-left:0}
 .kpi .l{font-size:12px;color:var(--faint);margin-bottom:5px}
-.kpi .v{font-size:22px;font-weight:600;font-variant-numeric:tabular-nums;letter-spacing:-.015em}
+.kpi .v{font-size:clamp(17px,calc(17cqi - 6px),22px);font-weight:600;font-variant-numeric:tabular-nums;
+  letter-spacing:-.015em;white-space:nowrap}
 .kpi .s{font-size:11.5px;color:var(--ink-2);margin-top:4px}
-.kpi.hero .v{font-size:30px;letter-spacing:-.025em}
+.kpi.hero .v{font-size:clamp(20px,calc(17cqi - 6px),30px);letter-spacing:-.025em}
 
 /* =====================================================================
    NÚT
@@ -509,15 +530,52 @@ h4.sec:first-child{margin-top:0}
 /* =====================================================================
    THU HẸP
    ===================================================================== */
+/* Dưới 1080px cột điều hướng KHÔNG ép thành hàng ngang nữa. Mười mục
+   xếp ngang cần hơn 1000px, nên ở 900px mục "Chi trả" bị cắt và từ "Tạm
+   ứng" trở đi rơi hẳn ra ngoài khung; ở điện thoại thì cả trang cuộn
+   ngang. Thay vào đó cột giữ nguyên bố cục dọc — nhóm, số đếm, chân
+   cột — và trượt vào từ trái khi bấm nút ở thanh trên. */
 @media(max-width:1080px){
-  .app{grid-template-columns:1fr}
-  .side{position:static;height:auto;flex-direction:row;align-items:center;overflow-x:auto}
-  .side-top{border-bottom:0;border-right:1px solid var(--chrome-line)}
-  .nav{display:flex;padding:0;flex:1}
-  .nav-grp,.side-foot,.nav a .c{display:none}
-  .nav a{padding:0 14px;height:var(--top-h);white-space:nowrap}
-  .nav a.on{box-shadow:inset 0 -3px 0 var(--accent)}
-  .page-kpis{margin-left:0;width:100%;gap:24px}
+  .app{grid-template-columns:minmax(0,1fr)}
+  .side{position:fixed;top:0;left:0;bottom:0;height:auto;width:min(84vw,300px);z-index:70;
+    transform:translateX(-102%);transition:transform .2s ease-out;overflow:auto;
+    box-shadow:none}
+  .app.menu-mo .side{transform:none;box-shadow:var(--shadow-2)}
+  .menu-bg{display:block;position:fixed;inset:0;background:rgba(8,14,20,.46);z-index:69;
+    opacity:0;pointer-events:none;transition:opacity .2s}
+  .app.menu-mo .menu-bg{opacity:1;pointer-events:auto}
+  .menu-btn,.menu-x{display:grid}
+  body.menu-mo{overflow:hidden}
+  .page-kpis{margin-left:0;width:100%;gap:24px;flex-wrap:wrap}
+}
+@media(max-width:960px){
+  .top-note{display:none}
+}
+/* Điện thoại: thanh trên chỉ giữ tên màn, kỳ và tiền tệ; sáng/tối và
+   VI/EN chuyển vào ngăn điều hướng. Lề trang và lề thẻ hẹp lại. */
+@media(max-width:640px){
+  .top{padding:0 12px;gap:8px}
+  .crumb b,.crumb i{display:none}
+  .crumb span{color:var(--on-chrome)}
+  .top .seg[data-theme-sw],.top .seg[data-lang],.top .seg[data-cur]{display:none}
+  .crumb{font-size:13.5px}
+  .side-ctl{display:flex}
+  .top .inline-sel{max-width:44vw;text-overflow:ellipsis}
+  main{padding:14px 12px 48px}
+  .page{gap:12px;margin-bottom:12px}
+  .page h1{font-size:21px}
+  .page p{font-size:12.5px}
+  .page-kpis{gap:18px}
+  .page-kpi .v{font-size:17px}
+  .kpi{padding:12px 14px}
+  .card-h{padding:14px 14px 0}
+  .card-b{padding:14px}
+  .card-f{padding:10px 14px}
+  .tabs{gap:18px}
+  .drawer{width:100vw}
+  .drawer-h{padding:16px 16px 12px}
+  .drawer-b{padding:14px 16px 22px}
+  .toasts{right:10px;bottom:10px;left:10px;max-width:none}
 }
 @media(prefers-reduced-motion:reduce){
   *{transition:none!important;animation:none!important}

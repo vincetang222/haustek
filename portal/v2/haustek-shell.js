@@ -49,7 +49,9 @@ var CHU = {
     noScreen: 'Màn hình này chưa dựng xong.',
     errScreen: 'Màn hình này lỗi',
     of: 'trong', rows: 'dòng mỗi trang', showing: 'Hiện',
-    all: 'Tất cả', none: '—'
+    all: 'Tất cả', none: '—',
+    menu: 'Mở bảng điều hướng', closeMenu: 'Đóng bảng điều hướng',
+    display: 'Hiển thị'
   },
   en: {
     internal: 'Internal', portal: 'Client portal',
@@ -61,7 +63,9 @@ var CHU = {
     noScreen: 'This screen is not built yet.',
     errScreen: 'This screen failed',
     of: 'of', rows: 'rows per page', showing: 'Show',
-    all: 'All', none: '—'
+    all: 'All', none: '—',
+    menu: 'Open navigation', closeMenu: 'Close navigation',
+    display: 'Display'
   }
 };
 
@@ -100,7 +104,8 @@ var IC = {
      giúp, và người ta không bấm vào ô để gõ. */
   tim:   '<circle cx="7" cy="7" r="4.6"/><path d="M10.4 10.4 14 14"/>',
   empty: '<circle cx="8" cy="8" r="6.2"/><path d="M5.4 8.6h5.2"/>',
-  out:   '<path d="M6.5 3.5H3.2v9.3h9.3V9.5M9.5 2.5h4v4M13.5 2.5 7.8 8.2"/>'
+  out:   '<path d="M6.5 3.5H3.2v9.3h9.3V9.5M9.5 2.5h4v4M13.5 2.5 7.8 8.2"/>',
+  menu:  '<path d="M2.5 4.2h11M2.5 8h11M2.5 11.8h11"/>'
 };
 function icon(n, extra) {
   return '<svg viewBox="0 0 16 16"' + (extra || '') + '>' + (IC[n] || '') + '</svg>';
@@ -422,33 +427,52 @@ function chay(cauHinh) {
   var goc = document.createElement('div');
   goc.className = 'app';
   document.body.appendChild(goc);
+  /* Hai cụm nút sáng/tối và VI/EN được vẽ HAI LẦN: một ở thanh trên (màn
+     rộng), một trong cột điều hướng (điện thoại, thanh trên không còn chỗ).
+     CSS quyết định cụm nào hiện; cả hai cùng bắt sự kiện qua data-th /
+     data-l nên không cần biết mình đang ở đâu. */
+  function oCaiDat() {
+    return (cauHinh.coTienTe === false ? '' :
+        '<div class="seg" data-cur>' +
+          '<button type="button" data-c="USD" class="on">USD</button>' +
+          '<button type="button" data-c="VND">VND</button></div>') +
+      '<div class="seg" data-theme-sw>' +
+        '<button type="button" data-th="auto" title="' + esc(t('themeAuto')) + '">' + icon('auto') + '</button>' +
+        '<button type="button" data-th="light" title="' + esc(t('themeLight')) + '">' + icon('sun') + '</button>' +
+        '<button type="button" data-th="dark" title="' + esc(t('themeDark')) + '">' + icon('moon') + '</button>' +
+      '</div>' +
+      '<div class="seg" data-lang>' +
+        '<button type="button" data-l="vi">VI</button>' +
+        '<button type="button" data-l="en">EN</button></div>';
+  }
   goc.innerHTML =
-      '<aside class="side">' +
-        '<div class="side-top"><div class="brand"><i></i>HAUSTEK <em data-ten></em></div></div>' +
+      '<aside class="side" data-side>' +
+        '<div class="side-top"><div class="brand"><i></i>HAUSTEK <em data-ten></em></div>' +
+          '<button type="button" class="menu-x" data-menu-dong>' + icon('x') + '</button></div>' +
         '<nav class="nav" data-nav></nav>' +
+        '<div class="side-ctl"><span data-ctl-l></span>' + oCaiDat() + '</div>' +
         '<div class="side-foot" data-chan></div>' +
       '</aside>' +
-      '<div>' +
+      '<div class="menu-bg" data-menu-dong></div>' +
+      '<div class="body">' +
         '<header class="top">' +
+          '<button type="button" class="menu-btn" data-menu aria-expanded="false">' + icon('menu') + '</button>' +
           '<div class="crumb" data-crumb></div>' +
           '<div class="sp"></div>' +
           '<div class="top-note" data-note></div>' +
           '<select class="inline-sel" data-ky aria-label="Kỳ"></select>' +
-          (cauHinh.coTienTe === false ? '' :
-            '<div class="seg" data-cur>' +
-              '<button type="button" data-c="USD" class="on">USD</button>' +
-              '<button type="button" data-c="VND">VND</button></div>') +
-          '<div class="seg" data-theme-sw>' +
-            '<button type="button" data-th="auto" title="' + esc(t('themeAuto')) + '">' + icon('auto') + '</button>' +
-            '<button type="button" data-th="light" title="' + esc(t('themeLight')) + '">' + icon('sun') + '</button>' +
-            '<button type="button" data-th="dark" title="' + esc(t('themeDark')) + '">' + icon('moon') + '</button>' +
-          '</div>' +
-          '<div class="seg" data-lang>' +
-            '<button type="button" data-l="vi">VI</button>' +
-            '<button type="button" data-l="en">EN</button></div>' +
+          oCaiDat() +
         '</header>' +
         '<main data-main></main>' +
       '</div>';
+
+  /* Cột điều hướng ở màn hẹp là một ngăn trượt từ trái. */
+  function moMenu(mo) {
+    goc.classList.toggle('menu-mo', !!mo);
+    document.body.classList.toggle('menu-mo', !!mo);
+    var nut = goc.querySelector('[data-menu]');
+    if (nut) nut.setAttribute('aria-expanded', mo ? 'true' : 'false');
+  }
 
   var $ = function (s) { return document.querySelector(s); };
 
@@ -506,7 +530,12 @@ function chay(cauHinh) {
     var c = ctx();
 
     $('[data-ten]').textContent = c.t(cauHinh.ten);
-    $('[data-crumb]').innerHTML = '<b>' + esc(c.t(cauHinh.ten)) + '</b> / ' + esc(c.t(man.nav || man.id));
+    $('[data-crumb]').innerHTML = '<b>' + esc(c.t(cauHinh.ten)) + '</b><i>/</i><span>' +
+      esc(chuCua(man, man.nav || man.id)) + '</span>';
+    $('[data-menu]').setAttribute('aria-label', c.t('menu'));
+    $('[data-menu]').setAttribute('title', c.t('menu'));
+    $('.menu-x').setAttribute('aria-label', c.t('closeMenu'));
+    $('[data-ctl-l]').textContent = c.t('display');
     $('[data-note]').textContent = cauHinh.ghiChu ? cauHinh.ghiChu(c) : '';
     $('[data-chan]').innerHTML = cauHinh.chanTrai ? cauHinh.chanTrai(c) : '';
 
@@ -548,6 +577,8 @@ function chay(cauHinh) {
   }
 
   document.addEventListener('click', function (e) {
+    if (e.target.closest('[data-menu]')) { moMenu(!goc.classList.contains('menu-mo')); return; }
+    if (e.target.closest('[data-menu-dong]') || e.target.closest('.nav a')) moMenu(false);
     var th = e.target.closest('[data-th]');
     if (th) { theme = th.dataset.th; ghiKho(LS_THEME, theme); apTheme(); return ve(); }
     var l = e.target.closest('[data-l]');
@@ -559,7 +590,10 @@ function chay(cauHinh) {
     var k = e.target.closest('[data-ky]');
     if (k) { kyHienTai = k.value; if (cauHinh.doiKy) cauHinh.doiKy(kyHienTai); ve(); }
   });
-  global.addEventListener('hashchange', ve);
+  global.addEventListener('hashchange', function () { moMenu(false); ve(); });
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && goc.classList.contains('menu-mo')) moMenu(false);
+  });
   /* đổi cài đặt sáng/tối của máy khi đang để "theo máy" */
   if (global.matchMedia) {
     var mq = global.matchMedia('(prefers-color-scheme: dark)');

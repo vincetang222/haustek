@@ -6,7 +6,7 @@
 node portal/test/api-guard.js
 ```
 
-18 phép kiểm chạy thẳng trên lõi. Đây là thứ **phải chạy trong CI** — mốc số 2 trong tài
+21 phép kiểm chạy thẳng trên lõi. Đây là thứ **phải chạy trong CI** — mốc số 2 trong tài
 liệu bàn giao: chứng minh nghệ sĩ A không truy vấn được dữ liệu nghệ sĩ B.
 
 Kiểm những gì:
@@ -23,7 +23,7 @@ Kiểm những gì:
 
 Một phép kiểm mang **nhãn cảnh báo có chủ ý**: bản mẫu chưa có phiên đăng nhập nên
 `partyId` đến từ tham số. Khi lên thật, `partyId` phải lấy từ phiên trên máy chủ —
-không thì sửa một con số trên URL là xem được người khác, và 17 phép kiểm còn lại
+không thì sửa một con số trên URL là xem được người khác, và 20 phép kiểm còn lại
 trở nên vô nghĩa.
 
 Khi lên Postgres, dịch từng phép kiểm ở đây thành một test SQL trên policy RLS.
@@ -91,7 +91,10 @@ chromium nếu playwright không tự tìm được), `SHOTS` (nơi lưu ảnh c
 
 | Bài | Kiểm gì |
 |---|---|
-| `v2-quet.js <trang> <bề ngang>` | Mở mọi màn × mọi tab × 2 chế độ × 2 ngôn ngữ. Bắt màn trống, màn lỗi, chữ tràn khung, placeholder `{…}` lọt ra, nhãn viết hoa kiểu máy. |
+| `v2-quet.js <trang> <bề ngang>` | Mở mọi trang × mọi tab × 2 chế độ × 2 ngôn ngữ. Bắt trang trống, trang lỗi, chữ tràn khung, **số tràn ô** (ô số, đầu cột, ô bảng), icon ô tìm đè chữ, placeholder `{…}` lọt ra, nhãn viết hoa kiểu máy. Chạy ở 390 / 640 / 900 để kiểm điện thoại, máy tính bảng và bảng bên của trình xem artifact. |
+| `v2-hep.js [trang] [bề ngang]` | Khung ở màn hẹp: mọi thứ trong thanh trên phải nằm gọn trong thanh trên, trang không cuộn ngang, tên trang không bị cắt; ngăn điều hướng trượt ra đủ mục và đóng lại khi chọn mục, bấm nền, nhấn Escape; ở điện thoại cụm sáng/tối và VI/EN nằm trong ngăn. Mặc định 390 / 640 / 900 / 1024 / 1280, hai cổng. |
+| `v2-nhu-artifact.js` | Bọc bản gói một trang **đúng như trình xem artifact** (nội dung nằm trong `<body>`, chặn sạch mạng ngoài) rồi đo kiểu đã tính: cột trái phải ăn màu khung, icon điều hướng phải 16px chứ không phải ô vuông to, bộ chữ phải là Be Vietnam Pro. DOM dựng đủ mà không còn CSS thì bài này đỏ, các bài khác vẫn xanh. |
+| `v2-khong-mang.js` | Chặn mọi thứ không phải localhost, đòi cả bốn trang (hai cổng, bản gói, trang chọn) dựng được với **0 lời gọi ra ngoài**. |
 | `v2-bam.js` | Bấm thật: mở 3 dòng đầu mỗi bảng, mở mọi hộp thoại an toàn, rê chuột lên biểu đồ. Bắt `NaN`, `undefined`, hộp thoại chồng nhau, Escape không đóng được. |
 | `v2-khach-tk.js` | Lặp qua cả 11 tài khoản mẫu. Label không có tab tác quyền, nghệ sĩ độc lập có chặng "Haustek giữ thêm", người đang nợ tạm ứng có màn riêng — quét một tài khoản là quét đúng một trong số đó. |
 | `v2-luong.js` | Chuỗi vận hành đầu-cuối, bấm bằng chuột: ghi nhận chênh lệch → chốt tỷ giá → duyệt kỳ → khách nhìn thấy → sổ kế toán cân → thu hồi → mọi thứ trả về. |
@@ -105,9 +108,16 @@ cd portal && python3 -m http.server 8099 &
 export NODE_PATH=$(npm root -g)
 node test/v2-quet.js v2/intranet.html 1500,1280,1100
 node test/v2-quet.js v2/khach.html    1500,1280,1100
+node test/v2-quet.js v2/intranet.html 390,640,900      # điện thoại · máy tính bảng · bảng bên
+node test/v2-quet.js v2/khach.html    390,640,900
+node test/v2-hep.js
 node test/v2-bam.js && node test/v2-khach-tk.js && node test/v2-luong.js
 node test/v2-tuong-phan.js && node test/v2-tieng-anh.js && node test/api-guard.js
+node dung-goi.js && node test/v2-nhu-artifact.js && node test/v2-khong-mang.js
 ```
+
+`dung-goi.js` dựng `goi-mot-trang.html`: cả hai cổng, bộ chữ và hệ giao diện gói vào một
+file để dán lên trình xem artifact hoặc mở thẳng từ repo. Mỗi lần sửa nguồn phải dựng lại.
 
 ### Ba lần bài kiểm đo nhầm thứ
 
@@ -127,3 +137,13 @@ Ghi lại để lần sau đỡ mất thời gian tìm lại:
 5. **Chữ tiếng Việt trong chế độ EN.** Không thể chỉ tìm dấu tiếng Việt: một nửa nội
    dung trang là dữ liệu tiếng Việt và phải giữ nguyên. Phải chọn đúng những ô CHỈ
    chứa chữ giao diện, và bóc tên riêng trong ngoặc kép ra.
+6. **Trình xem artifact bọc nội dung vào body.** File rời mở thẳng thì trình duyệt tự
+   đẩy `<style>` lên head, nên không bài kiểm nào trên file rời gặp cảnh ứng dụng ghi
+   đè `body.innerHTML` và xoá mất CSS của chính nó. Phải bọc y như trình xem rồi đo
+   kiểu đã tính, không đo "có dựng được không".
+7. **Bề ngang.** Quét ở 1100–1500px thì cột điều hướng thu thành hàng ngang trông vẫn
+   ổn; ở 900px (bảng bên của trình xem) hàng đó dài hơn khung 468px và ở điện thoại
+   cả trang cuộn ngang. Người dùng nhìn ở bề ngang nào thì phải quét ở bề ngang đó.
+8. **Cỡ chữ theo `vw`.** Con số trong ô số co theo bề rộng cửa sổ vẫn tràn khi dải ô
+   nằm trong một thẻ hẹp hơn. Cỡ chữ phải theo bề rộng Ô (`cqi`), và bài kiểm phải đo
+   `scrollWidth > clientWidth` của từng ô chứ không chỉ so với mép `main`.
