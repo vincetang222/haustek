@@ -40,15 +40,15 @@ apTheme();
    --------------------------------------------------------------------- */
 var CHU = {
   vi: {
-    internal: 'Nội bộ', portal: 'Cổng khách hàng',
+    internal: 'Nội bộ', portal: 'Cổng đối tác',
     themeAuto: 'Theo máy', themeLight: 'Sáng', themeDark: 'Tối',
     period: 'Kỳ', currency: 'Tiền tệ', search: 'Tìm',
     cancel: 'Huỷ', confirm: 'Xác nhận', close: 'Đóng', save: 'Lưu',
-    approved: 'đã duyệt', notApproved: 'chưa duyệt',
+    approved: 'đã xét duyệt', notApproved: 'chưa xét duyệt',
     loading: 'Đang dựng số liệu…',
     noScreen: 'Trang này chưa dựng xong.',
     errScreen: 'Trang này lỗi',
-    of: 'trong', rows: 'dòng mỗi trang', showing: 'Hiện',
+    of: 'trong', rows: 'dòng mỗi trang', showing: 'Hiển thị',
     all: 'Tất cả', none: '—',
     menu: 'Mở menu', closeMenu: 'Đóng menu',
     display: 'Hiển thị'

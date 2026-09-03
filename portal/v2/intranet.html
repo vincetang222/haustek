@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<title>Haustek — Intranet vận hành</title>
+<title>Haustek · Cổng vận hành nội bộ</title>
 <link rel="icon" href="../../favicon.svg">
 <!-- Bộ chữ nạp từ chính máy chủ này, không gọi ra fonts.googleapis.com.
      Thẻ <link rel=stylesheet> CHẶN việc chạy script cho tới khi tải xong,
@@ -43,7 +43,7 @@ A.provideSecrets({
   code: 'DIST-1',
   name: 'Đối tác phân phối chính (tên thật điền khi triển khai)',
   grossRate: 0.86,
-  contact: 'nội bộ · không hiện cho khách hàng'
+  contact: 'nội bộ · không hiển thị cho đối tác'
 });
 HT.setFx(A.fx.get().rate);
 
@@ -56,8 +56,8 @@ HT.chay({
          DIỆN và phải đổi theo ngôn ngữ. HT.lang là nguồn duy nhất. */
       var en = HT.lang === 'en';
       return { k: p.k, label: p.label, idx: p.idx,
-               nhan: A.isApproved(p.k) ? (en ? 'approved' : 'đã duyệt')
-                                       : (en ? 'not approved' : 'chưa duyệt') };
+               nhan: A.isApproved(p.k) ? (en ? 'approved' : 'đã xét duyệt')
+                                       : (en ? 'not approved' : 'chưa xét duyệt') };
     });
   },
   kyMacDinh: A.periods[A.periods.length - 1].k,
@@ -65,7 +65,7 @@ HT.chay({
     var f = A.fx.get();
     var khoa = f.locked[c.kyKey];
     return '1 USD = ' + HT.fmt.n(khoa ? khoa.rate : f.rate) + ' ₫'
-      + (khoa ? '' : (c.lang === 'vi' ? ' · chưa chốt' : ' · not locked'));
+      + (khoa ? '' : (c.lang === 'vi' ? ' · chưa chốt tỷ giá' : ' · not locked'));
   },
   chanTrai: function (c) {
     return '<b>' + HT.esc('ops@haustek-group.com') + '</b><span>' +

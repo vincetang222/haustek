@@ -120,20 +120,20 @@ const pIndexOf = k => PERIODS.findIndex(p => p.k === k);
    một luồng mới là buộc phải nghĩ tới cả hai. */
 const FEEDS = [
   { id: 0, name: "Đơn vị phân phối chính", short: "Chính",   fmt: "CSV · 41 cột · hằng tháng, ngày 20",
-    note: "Gộp mọi nền tảng trừ YouTube và TikTok",
+    note: "Một file gộp mọi nền tảng, trừ YouTube và TikTok",
     nameEn: "Main distribution partner", shortEn: "Main", fmtEn: "CSV · 41 columns · monthly, on the 20th",
     noteEn: "Every store except YouTube and TikTok, in one file" },
   { id: 1, name: "YouTube (ký trực tiếp)",  short: "YouTube", fmt: "CSV nén · 3 file/kỳ · hằng tháng, ngày 25",
-    note: "Content ID và YouTube Music về thành hai loại dòng riêng",
+    note: "Content ID và YouTube Music được báo cáo thành hai loại dòng riêng",
     nameEn: "YouTube (direct deal)", shortEn: "YouTube", fmtEn: "gzipped CSV · 3 files per period · monthly, on the 25th",
     noteEn: "Content ID and YouTube Music arrive as two different row types" },
   { id: 2, name: "TikTok (ký trực tiếp)",   short: "TikTok",  fmt: "XLSX · 1 sheet/thị trường · hằng tháng, không đều",
-    note: "Về trễ nhất, hay thiếu các thị trường nhỏ",
+    note: "Về muộn nhất và thường thiếu các thị trường nhỏ",
     nameEn: "TikTok (direct deal)", shortEn: "TikTok", fmtEn: "XLSX · one sheet per territory · monthly, irregular",
     noteEn: "Arrives last, and often drops the smaller territories" }
 ];
-const PUB_FEED = { id: 9, name: "Tác quyền (các tổ chức quản lý)", short: "Tác quyền",
-  fmt: "mỗi tổ chức một định dạng · theo quý", note: "VCPMC, The MLC, ASCAP… về trễ 1–2 quý",
+const PUB_FEED = { id: 9, name: "Tác quyền (các tổ chức quản lý tác quyền)", short: "Tác quyền",
+  fmt: "mỗi tổ chức một định dạng · theo quý", note: "VCPMC, The MLC, ASCAP… về muộn 1–2 quý",
   nameEn: "Publishing (collecting societies)", shortEn: "Publishing",
   fmtEn: "a different format per society · quarterly",
   noteEn: "VCPMC, The MLC, ASCAP… one to two quarters behind" };
@@ -427,13 +427,13 @@ function normaliseTrack(tr, pos, artistName) {
 function validateRelease(payload, artistName) {
   if (!payload || !String(payload.title || "").trim()) throw new Error("Thiếu tên bản phát hành");
   if (RELEASE_TYPES.indexOf(payload.type) < 0) throw new Error("Loại phát hành không hợp lệ");
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(payload.releaseDate || "")) throw new Error("Ngày phát hành phải theo dạng yyyy-mm-dd");
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(payload.releaseDate || "")) throw new Error("Ngày phát hành phải theo định dạng yyyy-mm-dd");
   const tracks = (payload.tracks || []).map((t, i) => normaliseTrack(t, i + 1, artistName)).filter(t => t.title);
   if (!tracks.length) throw new Error("Hồ sơ phải có ít nhất một track");
   tracks.forEach(t => {
     if (t.isrc && !/^[A-Z]{2}[A-Z0-9]{3}\d{7}$/.test(t.isrc)) throw new Error("Mã ISRC không đúng định dạng: " + t.isrc);
     const tong = t.writers.reduce((a, w) => a + w.pct, 0);
-    if (tong > 100.001) throw new Error("Tổng tỉ lệ sáng tác của track \"" + t.title + "\" vượt 100%");
+    if (tong > 100.001) throw new Error("Tổng tỷ lệ sáng tác của track \"" + t.title + "\" vượt 100%");
   });
   return tracks;
 }
@@ -556,7 +556,7 @@ function buildQueueSeed() {
           territory: pick(TERR),
           streams: Math.round(200 + rnd() * 90000),
           amount: cents(2 + rnd() * 900),
-          reason: broken < 0.34 ? "Thiếu mã ISRC" : broken < 0.67 ? "Mã ISRC không có trong danh mục" : "Mã của nhà phát hành khác",
+          reason: broken < 0.34 ? "Thiếu mã ISRC" : broken < 0.67 ? "Mã ISRC không có trong danh mục" : "Mã ISRC của nhà phát hành khác",
           hint: seedTrack,     /* bản ghi "đúng" — dùng để chấm điểm gợi ý, không hiện cho ai */
           status: "pending", resolvedTo: null, at: null
         });
@@ -579,15 +579,15 @@ function suggestFor(q, limit) {
     }
     /* sai một ký tự cuối là lỗi gõ tay hay gặp nhất */
     const stem = q.isrc.slice(0, -1);
-    for (let i = 0; i < N && out.length < 40; i++) if (tIsrc[i].startsWith(stem)) push(i, 82, "Sai 1 ký tự cuối mã ISRC");
+    for (let i = 0; i < N && out.length < 40; i++) if (tIsrc[i].startsWith(stem)) push(i, 82, "Sai 1 ký tự cuối của mã ISRC");
   }
   for (let i = 0; i < N && out.length < 60; i++) {
     const t = norm(tTitle[i]);
     if (!t) continue;
     const a = norm(ARTISTS[tArtist[i]].name);
-    if (t === nq && a === na) push(i, 90, "Trùng tên bài và tên nghệ sĩ");
-    else if (t === nq) push(i, 62, "Trùng tên bài");
-    else if (na && a === na && nq.includes(t)) push(i, 55, "Cùng nghệ sĩ · tên bài gần giống");
+    if (t === nq && a === na) push(i, 90, "Trùng tên bài hát và tên nghệ sĩ");
+    else if (t === nq) push(i, 62, "Trùng tên bài hát");
+    else if (na && a === na && nq.includes(t)) push(i, 55, "Cùng nghệ sĩ · tên bài hát gần giống");
   }
   return out.sort((a, b) => b.score - a.score).slice(0, limit || 6);
 }
@@ -636,7 +636,7 @@ const rates = {
   },
   add(partyKey, rate, fromPeriodKey, by, note) {
     if (!(rate > 0 && rate < 1)) throw new Error("Tỷ lệ phải nằm giữa 0 và 1");
-    if (state.approved[fromPeriodKey]) throw new Error("Kỳ " + fromPeriodKey + " đã duyệt, không đặt được tỷ lệ mới vào kỳ đã chốt");
+    if (state.approved[fromPeriodKey]) throw new Error("Kỳ " + fromPeriodKey + " đã xét duyệt, không đặt được tỷ lệ mới cho kỳ đã chốt sổ");
     state.rates = state.rates.filter(r => !(r.partyKey === partyKey && r.from === fromPeriodKey));
     state.rates.push({ partyKey, rate, from: fromPeriodKey, by: by || "admin", at: nowISO(), note: note || "" });
     invalidateRates();
@@ -651,7 +651,7 @@ const rates = {
 };
 function partyKeyOfTrack(i) { return tLabel[i] >= 0 ? "L:" + tLabel[i] : "A:" + tArtist[i]; }
 function partyName(key) {
-  if (key === "P:*") return "Điểm producer, chưa rõ người nhận";
+  if (key === "P:*") return "Điểm producer, chưa xác định người thụ hưởng";
   const id = +key.slice(2);
   return key[0] === "L" ? (LABELS[id] ? LABELS[id].name : key) : (ARTISTS[id] ? ARTISTS[id].name : key);
 }
@@ -863,23 +863,23 @@ function approvalChecks(pIdx) {
   const ratio = a.gross > 0 ? pendingAmt / a.gross : 0;
   const unresolvedDiff = r.rows.filter(x => Math.abs(x.diff) > 0.005 && !x.accepted);
   return [
-    { id: "feeds", ok: miss.length === 0, label: "Đủ " + FEEDS.length + " nguồn dữ liệu",
+    { id: "feeds", ok: miss.length === 0, label: "Đủ " + FEEDS.length + " nguồn báo cáo",
       detail: miss.length ? "Còn thiếu: " + miss.map(f => f.name).join(", ") : "Đủ cả " + FEEDS.length + " nguồn",
       labelEn: "All " + FEEDS.length + " data feeds loaded",
       detailEn: miss.length ? "Still missing: " + miss.map(f => f.nameEn).join(", ") : "All " + FEEDS.length + " feeds are in" },
     { id: "recon", ok: unresolvedDiff.length === 0, label: "Đối soát khớp tới từng xu",
-      detail: unresolvedDiff.length ? unresolvedDiff.map(x => x.feed.short + " lệch " + fmt.usd(x.diff)).join(" · ")
+      detail: unresolvedDiff.length ? unresolvedDiff.map(x => x.feed.short + " chênh lệch " + fmt.usd(x.diff)).join(" · ")
                                     : "Tổng trên hệ thống khớp với file gốc",
       labelEn: "Reconciliation balances to the cent",
       detailEn: unresolvedDiff.length ? unresolvedDiff.map(x => x.feed.shortEn + " out by " + fmt.usd(x.diff)).join(" · ")
                                       : "The system total matches the source files" },
-    { id: "queue", ok: ratio <= CFG.BLACKBOX_CAP, label: "Tiền treo dưới " + (CFG.BLACKBOX_CAP * 100).toFixed(1) + "% doanh thu kỳ",
-      detail: fmt.usd(pendingAmt) + " đang treo · " + (ratio * 100).toFixed(2) + "% doanh thu kỳ",
+    { id: "queue", ok: ratio <= CFG.BLACKBOX_CAP, label: "Tiền chưa khớp dưới " + (CFG.BLACKBOX_CAP * 100).toFixed(1) + "% doanh thu kỳ",
+      detail: fmt.usd(pendingAmt) + " chưa khớp ISRC · " + (ratio * 100).toFixed(2) + "% doanh thu kỳ",
       labelEn: "Money on hold under " + (CFG.BLACKBOX_CAP * 100).toFixed(1) + "% of period revenue",
       detailEn: fmt.usd(pendingAmt) + " on hold · " + (ratio * 100).toFixed(2) + "% of period revenue" },
     { id: "fx", ok: !!state.fx.locked[pk], label: "Đã chốt tỷ giá cho kỳ",
       detail: state.fx.locked[pk] ? "1 USD = " + fmt.num(state.fx.locked[pk].rate) + " ₫ · chốt " + state.fx.locked[pk].at
-                                  : "Chưa chốt. Số quy đổi sang VND sẽ trôi theo tỷ giá hôm nay.",
+                                  : "Chưa chốt tỷ giá. Số quy đổi sang VND sẽ thay đổi theo tỷ giá hôm nay.",
       labelEn: "FX rate locked for the period",
       detailEn: state.fx.locked[pk] ? "1 USD = " + fmt.num(state.fx.locked[pk].rate) + " ₫ · locked " + state.fx.locked[pk].at
                                     : "Not locked — VND figures will drift with today’s rate" }
@@ -892,19 +892,19 @@ function canApprove(pIdx) { return approvalChecks(pIdx).every(c => c.ok); }
    hai chuỗi đó đứt, và không có cách nào phát hiện ra sau khi đã chi tiền. */
 function approve(pIdx, by, note, force) {
   const pk = PERIODS[pIdx].k;
-  if (state.approved[pk]) throw new Error("Kỳ " + pk + " đã duyệt rồi");
+  if (state.approved[pk]) throw new Error("Kỳ " + pk + " đã được xét duyệt");
   const openBefore = PERIODS.slice(0, pIdx).filter(p => !state.approved[p.k]);
   if (openBefore.length)
-    throw new Error("Phải duyệt xong kỳ trước đã: " + openBefore.map(p => p.label).join(", ")
-      + ", vì tiền dồn và thu hồi tạm ứng chạy nối tiếp qua từng kỳ");
+    throw new Error("Phải xét duyệt xong các kỳ trước: " + openBefore.map(p => p.label).join(", ")
+      + ", vì phần chuyển sang kỳ sau và thu hồi tạm ứng chạy nối tiếp qua từng kỳ");
   const checks = approvalChecks(pIdx);
   const failed = checks.filter(c => !c.ok);
-  if (failed.length && !force) throw new Error("Chưa đủ điều kiện duyệt: " + failed.map(c => c.label).join(" · "));
+  if (failed.length && !force) throw new Error("Chưa đủ điều kiện xét duyệt: " + failed.map(c => c.label).join(" · "));
   state.approved[pk] = { at: nowISO(), by: by || "admin", note: note || "",
                          overrides: failed.map(c => c.id) };
   state.payouts[pk] = runPayout(pIdx, true);
   state.publishedAt = nowISO();
-  audit.log("period.approve", "Duyệt kỳ " + PERIODS[pIdx].label + (failed.length ? " (bỏ qua: " + failed.map(c => c.label).join(", ") + ")" : ""));
+  audit.log("period.approve", "Xét duyệt kỳ " + PERIODS[pIdx].label + (failed.length ? " (ghi nhận ngoại lệ: " + failed.map(c => c.label).join(", ") + ")" : ""));
   store.save();
   return state.payouts[pk];
 }
@@ -913,7 +913,7 @@ function revoke(pIdx, why) {
   if (!state.approved[pk]) return;
   const approvedAfter = PERIODS.slice(pIdx + 1).filter(p => state.approved[p.k]);
   if (approvedAfter.length)
-    throw new Error("Phải huỷ duyệt kỳ sau trước: " + approvedAfter.map(p => p.label).join(", ")
+    throw new Error("Phải huỷ xét duyệt các kỳ sau trước: " + approvedAfter.map(p => p.label).join(", ")
       + ", vì các kỳ sau đã tính dựa trên kết quả của kỳ này");
   /* Trả lại đúng trạng thái trước khi duyệt: hoàn phần đã thu hồi tạm ứng
      (không thì kỳ sau thu hồi hai lần) và trả phần dồn về đúng số dồn VÀO
@@ -926,7 +926,7 @@ function revoke(pIdx, why) {
   });
   delete state.payouts[pk]; delete state.approved[pk];
   state.publishedAt = nowISO();
-  audit.log("period.revoke", "Huỷ duyệt kỳ " + PERIODS[pIdx].label + (why ? " · " + why : ""));
+  audit.log("period.revoke", "Huỷ xét duyệt kỳ " + PERIODS[pIdx].label + (why ? " · " + why : ""));
   store.save();
 }
 
@@ -1004,7 +1004,7 @@ function runPayout(pIdx, ghi) {
   if (producerHeld > 0) rows.push({
     partyKey: "P:*", kind: "producer", held: true,
     earned: producerHeld, carryIn: 0, recoup: 0, payable: 0, carryOut: producerHeld, advanceLeft: 0,
-    note: "Chưa rõ người nhận: danh mục chỉ có tên producer, chưa có mã"
+    note: "Chưa xác định người thụ hưởng: danh mục chỉ có tên producer, chưa có mã"
   });
   return rows;
 }
@@ -1069,7 +1069,7 @@ function seedReleases() {
     { artist: pick(artists, 4), title: "Khói", type: "album", date: "2026-11-14", genre: "R&B", status: "submitted",
       tracks: [["Khói", "Minh Hạo"], ["Xa", "Minh Hạo"], ["Bóng", ""], ["Chậm", "Khuê Trang"], ["Nghiêng", ""]] },
     { artist: pick(artists, 5), title: "Vệt nắng", type: "single", date: "2026-09-19", genre: "Pop", status: "returned",
-      tracks: [["Vệt nắng", "Sơn Bảo"]], note: "Thiếu link file WAV của track 1 và tên thật của người viết lời. Bổ sung rồi gửi lại." }
+      tracks: [["Vệt nắng", "Sơn Bảo"]], note: "Thiếu đường dẫn file WAV của track 1 và tên thật của người viết lời. Bổ sung rồi gửi lại." }
   ];
   const ngay = ["2026-08-11 09:42:00", "2026-08-14 15:10:00", "2026-08-19 10:05:00", "2026-08-25 16:48:00", "2026-08-28 11:30:00", "2026-09-01 08:55:00"];
   mau.forEach((m, k) => {
@@ -1119,20 +1119,20 @@ const QUESTIONS = [
     whyEn: "This decides who sees which rows when they log in. If one recording can carry several Client IDs, that needs its own join table — it cannot be a single column.",
     guessEn: "The prototype assumes 1 artist = 1 Client ID, and that a recording points at exactly one main artist." },
   { id: "q2", t: "ISRC (Optional 1) nghĩa là gì?",
-    why: "Tên cột hàm ý sau này còn Optional 2. Nếu một bài mang hai mã (phát hành lại, đổi nhà phân phối) thì báo cáo về theo từng mã riêng và phải gộp lại, không thì một bài hiện thành hai dòng rời rạc.",
+    why: "Tên cột hàm ý sau này còn Optional 2. Nếu một bài mang hai mã (phát hành lại, đổi nhà phân phối) thì báo cáo về theo từng mã riêng và phải gộp lại, không thì một bài hát hiện thành hai dòng rời rạc.",
     guess: "Bản mẫu để mã phụ thành bảng riêng (mỗi bài 0..n mã), không thêm cột." ,
     tEn: "What does ISRC (Optional 1) mean?",
     whyEn: "The column name implies an Optional 2 will follow. If one track carries two codes (a re-release, a change of distributor), reports arrive against each code separately and have to be merged — otherwise one track shows as two disconnected rows.",
     guessEn: "The prototype keeps alternate codes in a separate table (0..n per track) rather than adding columns." },
   { id: "q3", t: "Rate Share một cột có đủ không?",
-    why: "Nếu là 'phần khách hàng và phần Haustek' thì đủ. Nếu nghệ sĩ, producer, người sáng tác mỗi người một phần thì phải tách bảng chia phần, mỗi dòng một người.",
-    guess: "Bản mẫu tách: tỷ lệ bên nhận chính nằm ở bảng có ngày hiệu lực, điểm producer là trường riêng trên bản ghi, phần sáng tác là bảng riêng." ,
+    why: "Nếu là 'phần đối tác và phần Haustek' thì đủ. Nếu nghệ sĩ, producer, người sáng tác mỗi người một phần thì phải tách bảng chia phần, mỗi dòng một người.",
+    guess: "Bản mẫu tách: tỷ lệ của bên thụ hưởng chính nằm ở bảng có ngày hiệu lực, điểm producer là trường riêng trên bản ghi, phần sáng tác là bảng riêng." ,
     tEn: "Is one Rate Share column enough?",
     whyEn: "If it means 'the client's share vs Haustek's', then yes. If artist / producer / songwriter each have their own share, it needs a split table with one row per person.",
     guessEn: "The prototype separates them: the main payee's rate lives in a dated table, producer points are a field on the recording, and writer shares are their own table." },
   { id: "q4", t: "Tính bằng tiền gì, quy đổi lúc nào?",
-    why: "Chuẩn ngành là giữ tiền tệ gốc của từng nền tảng rồi quy đổi sang tiền chi trả. Cần chốt: quy sang VND hay giữ USD, dùng tỷ giá ngày nhận báo cáo, ngày chốt kỳ hay ngày chi trả.",
-    guess: "Bản mẫu tính bằng USD, chốt một tỷ giá cho mỗi kỳ lúc duyệt kỳ, và giữ nguyên tỷ giá đó về sau." ,
+    why: "Chuẩn ngành là giữ tiền tệ gốc của từng nền tảng rồi quy đổi sang đồng tiền thanh toán. Cần chốt: quy đổi sang VND hay giữ USD, dùng tỷ giá ngày nhận báo cáo, ngày chốt kỳ hay ngày thanh toán.",
+    guess: "Bản mẫu tính bằng USD, chốt một tỷ giá cho mỗi kỳ lúc xét duyệt kỳ, và giữ nguyên tỷ giá đó về sau." ,
     tEn: "Which currency, converted when?",
     whyEn: "Industry practice is to keep each platform's source currency and convert at payout. We need to settle: convert to VND or stay in USD, and use the rate on the report date, the period-close date, or the payment date.",
     guessEn: "The prototype computes in USD, locks one rate per period at approval, and freezes it." },
@@ -1150,19 +1150,19 @@ const QUESTIONS = [
     guessEn: "The prototype assumes NOT — publishing belongs to the writers and never passes through a label." },
   { id: "q7", t: "Con số ở cột doanh thu trong file báo cáo là trước hay sau khi đơn vị phân phối giữ phần của họ?",
     why: "Đây là câu hỏi đắt nhất trong danh sách, và tài liệu bàn giao chưa nêu. "
-       + "Nếu con số trong file đã trừ phần của đối tác rồi mà hệ thống lại tính phí Haustek 15% trên đó, "
+       + "Nếu con số trong file đã trừ phần của đối tác rồi mà hệ thống lại tính phí dịch vụ Haustek 15% trên đó, "
        + "thì cái mà nghệ sĩ đọc là 'doanh thu gộp' thật ra không phải doanh thu gộp, và mọi chặng phía sau "
-       + "đều lệch theo. Ngược lại, nếu là số gộp thật mà hệ thống không trừ phần đối tác thì Haustek thiếu tiền. "
+       + "đều sai lệch theo. Ngược lại, nếu là số gộp thật mà hệ thống không trừ phần đối tác thì Haustek thiếu tiền. "
        + "Chênh lệch giữa hai cách hiểu là hơn 10% trên từng dòng, từng kỳ, từng người. "
        + "Không đoán được, phải nhìn file báo cáo doanh thu mẫu.",
-    guess: "Bản mẫu đang coi con số trong file là doanh thu gộp thật, và phí Haustek 15% tính trên đó. "
+    guess: "Bản mẫu đang coi con số trong file là doanh thu gộp thật, và phí dịch vụ Haustek 15% tính trên đó. "
          + "Phần đối tác phân phối giữ nằm ngoài mô hình. Nếu thực tế ngược lại thì phải sửa chuỗi chia tiền, "
          + "không phải sửa giao diện." ,
     tEn: "Is the revenue figure in the report file BEFORE or AFTER the distributor takes their share?",
     whyEn: "This is the most expensive question on the list, and the handoff document does not address it. If the figure in the file is already net of the partner's share and the system then charges the 15% Haustek fee on top of it, then what an artist reads as 'gross revenue' is not gross revenue — and every step after it is off by the same amount. Conversely, if it is a true gross figure and the system does not deduct the partner's share, Haustek is short. The gap between the two readings is over 10% on every line, every period, every person. It cannot be guessed — it needs a sample revenue report.",
     guessEn: "The prototype treats the figure in the file as a true gross number and charges the 15% Haustek fee on it. The distributor's own share sits outside the model. If reality is the other way round, the money chain has to change — not the interface." },
   { id: "q8", t: "Nghệ sĩ thuộc label nhận tiền từ Haustek hay từ label?",
-    why: "Quyết định toàn bộ trang của ca sĩ thuộc label. Nếu Haustek thanh toán thẳng cho nghệ sĩ theo tỷ lệ label khai, "
+    why: "Quyết định toàn bộ trang của nghệ sĩ thuộc label. Nếu Haustek thanh toán thẳng cho nghệ sĩ theo tỷ lệ label khai, "
        + "nghệ sĩ có bảng kê và số thanh toán riêng như bản mẫu đang vẽ. Nếu Haustek chuyển cả gói cho label rồi label tự chia, "
        + "nghệ sĩ chỉ có 'phần được hưởng theo bảng chia của label' và không có khoản thanh toán nào từ Haustek; bảng kê, "
        + "ngưỡng thanh toán, tạm ứng của họ đều là chuyện giữa họ với label.",
@@ -1196,7 +1196,7 @@ const fx = {
   },
   lock(pIdx, rate) {
     const pk = PERIODS[pIdx].k;
-    if (state.approved[pk]) throw new Error("Kỳ đã duyệt, tỷ giá đã chốt, không đổi được nữa");
+    if (state.approved[pk]) throw new Error("Kỳ đã xét duyệt, tỷ giá đã chốt, không thay đổi được nữa");
     state.fx.locked[pk] = { rate: rate || state.fx.rate, at: nowISO().slice(0, 10) };
     audit.log("fx.lock", "Chốt tỷ giá kỳ " + PERIODS[pIdx].label + ": 1 USD = " + fmt.num(state.fx.locked[pk].rate) + " ₫");
     store.save();
@@ -1216,24 +1216,24 @@ const INGEST_STEPS = [
     tEn: "Read the raw file",           dEn: "One parser per feed — the formats have nothing in common" },
   { k: "normalise", t: "Chuẩn hoá về một schema",    d: "Tên cột, đơn vị, kiểu ngày, cách viết tên nền tảng",
     tEn: "Normalise to one schema",     dEn: "Column names, units, date formats, how each store spells its own name" },
-  { k: "match",     t: "Khớp ISRC với danh mục",     d: "Khâu dễ mất tiền nhất: dòng không khớp phải vào hàng chờ, không được bỏ im",
+  { k: "match",     t: "Khớp ISRC với danh mục",     d: "Khâu dễ thất thoát tiền nhất: dòng không khớp phải đưa vào danh sách chờ khớp, không được bỏ qua",
     tEn: "Match ISRCs to the catalogue", dEn: "Where money goes missing — an unmatched row goes to the queue, never quietly nowhere" },
   { k: "fxconv",    t: "Quy đổi tiền tệ",            d: "Theo tỷ giá đã chốt cho kỳ",
     tEn: "Convert currency",            dEn: "At the rate locked for the period" },
   { k: "write",     t: "Ghi vào bảng thô",           d: "Ghi rõ về từ nguồn nào, kỳ nào",
     tEn: "Write to the raw table",      dEn: "Stamped with which feed and which period it came from" },
-  { k: "rollup",    t: "Dựng lại bảng tổng hợp",     d: "Theo bản ghi × kỳ, rồi theo nền tảng, thị trường, bên nhận",
+  { k: "rollup",    t: "Dựng lại bảng tổng hợp",     d: "Theo bản ghi × kỳ, rồi theo nền tảng, thị trường, bên thụ hưởng",
     tEn: "Rebuild the rollups",         dEn: "By recording × period, then by store, by territory, by payee" },
   { k: "flag",      t: "Đánh dấu nguồn đã nhập",      d: "Để hệ thống biết kỳ nào còn thiếu gì",
     tEn: "Flag the feed as loaded",     dEn: "So the system knows which period is still short of what" },
-  { k: "notify",    t: "Báo cho người đối soát",    d: "Chưa duyệt kỳ thì khách hàng chưa thấy gì",
+  { k: "notify",    t: "Báo cho người đối soát",    d: "Kỳ chưa xét duyệt thì đối tác chưa thấy số liệu nào",
     tEn: "Tell the reconciler",         dEn: "Until the period is approved, no client sees anything" }
 ];
 const ingest = {
   steps: INGEST_STEPS,
   load(pIdx, fId, opts) {
     const pk = PERIODS[pIdx].k;
-    if (state.approved[pk]) throw new Error("Kỳ đã duyệt. Muốn nhập lại phải huỷ duyệt trước");
+    if (state.approved[pk]) throw new Error("Kỳ đã xét duyệt. Muốn nhập lại phải huỷ xét duyệt trước");
     const f = FEEDS.find(x => x.id === fId);
     const st = state.feeds[pk][fId];
     if (st.status === "loaded" && !(opts && opts.replace)) throw new Error("Nguồn này đã nhập cho kỳ " + PERIODS[pIdx].label);
@@ -1256,20 +1256,20 @@ const ingest = {
         hint: seedTrack, status: "pending", resolvedTo: null, at: null
       });
     }
-    audit.log("ingest.load", "Nhập " + f.name + " · kỳ " + PERIODS[pIdx].label + " · " + st.file + " · " + n + " dòng vào hàng chờ");
+    audit.log("ingest.load", "Nhập " + f.name + " · kỳ " + PERIODS[pIdx].label + " · " + st.file + " · " + n + " dòng vào danh sách chờ khớp");
     store.save();
     return { added: n };
   },
   unloadPub(pIdx) {
     const pk = PERIODS[pIdx].k;
-    if (state.approved[pk]) throw new Error("Kỳ đã duyệt, phải huỷ duyệt trước");
+    if (state.approved[pk]) throw new Error("Kỳ đã xét duyệt, phải huỷ xét duyệt trước");
     state.pub[pk] = { status: "missing", at: null, file: null };
     audit.log("ingest.pub", "Gỡ báo cáo tác quyền kỳ " + PERIODS[pIdx].label);
     store.save();
   },
   unload(pIdx, fId) {
     const pk = PERIODS[pIdx].k;
-    if (state.approved[pk]) throw new Error("Kỳ đã duyệt, phải huỷ duyệt trước");
+    if (state.approved[pk]) throw new Error("Kỳ đã xét duyệt, phải huỷ xét duyệt trước");
     state.feeds[pk][fId] = { status: "missing", at: null, file: null, rows: 0, control: null };
     audit.log("ingest.unload", "Gỡ nguồn " + FEEDS[fId].name + " khỏi kỳ " + PERIODS[pIdx].label);
     store.save();
@@ -1280,8 +1280,8 @@ const ingest = {
        đặt cả quý tiền vào sai kỳ — và không ai phát hiện ra, vì con số vẫn
        "có". Chặn ở đây; muốn cố tình thì phải nói rõ ra. */
     if (PERIODS[pIdx].month % 3 !== 0 && !(opts && opts.force))
-      throw new Error("Kỳ " + PERIODS[pIdx].label + " không phải cuối quý. Tác quyền chốt theo quý, nhập vào đây là đặt cả quý tiền vào sai kỳ");
-    if (state.approved[pk]) throw new Error("Kỳ đã duyệt, phải huỷ duyệt trước");
+      throw new Error("Kỳ " + PERIODS[pIdx].label + " không phải kỳ cuối quý. Tác quyền chốt theo quý, nhập vào kỳ này là đặt tiền của cả quý vào sai kỳ");
+    if (state.approved[pk]) throw new Error("Kỳ đã xét duyệt, phải huỷ xét duyệt trước");
     state.pub[pk] = { status: "loaded", at: nowISO(), file: (opts && opts.file) || ("cmo-" + pk + ".xlsx") };
     audit.log("ingest.pub", "Nhập báo cáo tác quyền kỳ " + PERIODS[pIdx].label);
     store.save();
@@ -1289,7 +1289,7 @@ const ingest = {
   acceptVariance(pIdx, fId, note) {
     const t = feedTotals(pIdx, fId);
     state.variance[PERIODS[pIdx].k + ":" + fId] = { amount: t.diff, note: note || "", at: nowISO() };
-    audit.log("recon.accept", "Ghi nhận chênh lệch " + fmt.usd(t.diff) + " · " + FEEDS[fId].short + " kỳ " + PERIODS[pIdx].label + " · " + (note || "không ghi chú"));
+    audit.log("recon.accept", "Ghi nhận chênh lệch " + fmt.usd(t.diff) + " · " + FEEDS[fId].short + " kỳ " + PERIODS[pIdx].label + " · " + (note || "không có ghi chú"));
     store.save();
   }
 };
@@ -1316,13 +1316,13 @@ const queue = {
   resolve(qid, trackIdx, by) {
     const q = state.queue.find(x => x.id === qid);
     if (!q) throw new Error("Không tìm thấy dòng " + qid);
-    if (q.status !== "pending") throw new Error("Dòng này đã xử lý rồi");
+    if (q.status !== "pending") throw new Error("Dòng này đã được xử lý");
     if (!(trackIdx >= 0 && trackIdx < N)) throw new Error("Bản ghi không hợp lệ");
     let p = pIndexOf(q.periodKey);
     let intoKey = null;
     if (state.approved[q.periodKey]) {
       const open = PERIODS.find(x => !state.approved[x.k]);
-      if (!open) throw new Error("Kỳ của dòng này đã duyệt và không còn kỳ nào đang mở để ghi khoản truy thu. Mở kỳ mới rồi khớp lại");
+      if (!open) throw new Error("Kỳ của dòng này đã xét duyệt và không còn kỳ nào đang mở để ghi khoản truy thu. Mở kỳ mới rồi khớp lại");
       p = open.idx; intoKey = open.k;
     }
     const key = trackIdx + ":" + p + ":" + q.feedId;
@@ -1347,7 +1347,7 @@ const queue = {
     const q = state.queue.find(x => x.id === qid);
     if (!q) return;
     q.status = "parked"; q.at = nowISO(); q.note = note || "";
-    audit.log("queue.park", q.id + " · để lại chờ đối tác xác nhận · " + (note || ""));
+    audit.log("queue.park", q.id + " · tạm hoãn, chờ đối tác xác nhận · " + (note || ""));
     store.save();
   },
   unpark(qid) {
@@ -1357,7 +1357,7 @@ const queue = {
       /* Gỡ đúng ở kỳ đã ghi vào — với khoản truy thu thì đó không phải kỳ
          gốc của dòng. Gỡ nhầm kỳ là để lại tiền ma trong sổ. */
       const landed = q.intoPeriod || q.periodKey;
-      if (state.approved[landed]) throw new Error("Khoản này đã ghi vào kỳ " + landed + " và kỳ đó đã duyệt. Huỷ duyệt kỳ đó trước");
+      if (state.approved[landed]) throw new Error("Khoản này đã ghi vào kỳ " + landed + " và kỳ đó đã xét duyệt. Huỷ xét duyệt kỳ đó trước");
       const p = pIndexOf(landed);
       const key = q.resolvedTo + ":" + p + ":" + q.feedId;
       state.match[key] = cents((state.match[key] || 0) - q.amount);
@@ -1365,7 +1365,7 @@ const queue = {
       rebuildMatchIndex();
     }
     q.status = "pending"; q.resolvedTo = null; q.at = null; q.intoPeriod = null;
-    audit.log("queue.unpark", q.id + " · trả lại hàng chờ");
+    audit.log("queue.unpark", q.id + " · trả lại danh sách chờ khớp");
     store.save();
   }
 };
@@ -1467,7 +1467,7 @@ const admin = {
     add(email, role, partyKey) {
       if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) throw new Error("Email không hợp lệ");
       if (state.accounts.some(a => a.email.toLowerCase() === email.toLowerCase())) throw new Error("Email này đã có tài khoản");
-      if (role !== "admin" && !partyKey) throw new Error("Tài khoản label hoặc nghệ sĩ phải gắn với một mã bên nhận");
+      if (role !== "admin" && !partyKey) throw new Error("Tài khoản label hoặc nghệ sĩ phải gắn với một mã bên thụ hưởng");
       state.accounts.push({ id: "U" + String(state.accounts.length + 1).padStart(4, "0"),
         email, role, partyKey: role === "admin" ? null : partyKey, status: "invited",
         createdAt: nowISO().slice(0, 10), lastSeen: null, mfa: role === "admin" });
@@ -1498,7 +1498,7 @@ const admin = {
     },
     receive(id, by, note) {
       const r = this.get(id); if (!r) throw new Error("Không tìm thấy hồ sơ " + id);
-      if (r.status !== "submitted") throw new Error("Hồ sơ này không ở bước đã gửi");
+      if (r.status !== "submitted") throw new Error("Hồ sơ này không ở trạng thái đã gửi");
       releaseStamp(r, "received", by || "ops@haustek-group.com", note);
       audit.log("release.receive", r.id + " · " + r.title + " · " + r.artistName, by); store.save(); return r;
     },
@@ -1520,7 +1520,7 @@ const admin = {
     },
     returnFix(id, by, note) {
       const r = this.get(id); if (!r) throw new Error("Không tìm thấy hồ sơ " + id);
-      if (!note) throw new Error("Phải ghi rõ cần bổ sung gì");
+      if (!note) throw new Error("Phải ghi rõ nội dung cần bổ sung");
       if (r.status === "released") throw new Error("Hồ sơ đã phát hành, không trả lại được");
       releaseStamp(r, "returned", by || "ops@haustek-group.com", note);
       audit.log("release.return", r.id + " · " + r.title + " · " + note.slice(0, 80), by); store.save(); return r;
@@ -1559,7 +1559,7 @@ function scrub(payload) {
 function assertParty(role, partyId) {
   if (role === "label") { if (!(partyId >= 0 && partyId < CFG.N_LABELS)) throw new Error("Không có quyền"); }
   else if (role === "artist") { if (!(partyId >= 0 && partyId < CFG.N_ARTISTS)) throw new Error("Không có quyền"); }
-  else throw new Error("Vai trò không hợp lệ ở cổng khách hàng");
+  else throw new Error("Vai trò không hợp lệ ở cổng đối tác");
 }
 function inScope(role, partyId, stream, i) {
   const sc = scopeOf(role, partyId, stream);
@@ -1609,7 +1609,7 @@ const api = {
       /* Tác quyền thuộc người sáng tác, không đi qua label — mục 2.3 */
       hasPublishing: !isLabel && pubCount > 0,
       trackCount: recCount, compositionCount: pubCount,
-      currency: "USD", fxNote: "Số liệu tính bằng USD · tỷ giá quy đổi chốt lúc duyệt kỳ",
+      currency: "USD", fxNote: "Số liệu tính bằng USD · tỷ giá quy đổi được chốt lúc xét duyệt kỳ",
       fxNoteEn: "Figures are in USD · the conversion rate is locked when the period is approved"
     });
   },
@@ -1642,29 +1642,29 @@ const api = {
     /* chuỗi "Tiền đi đâu" — máy chủ quyết định có những chặng nào */
     const chain = [];
     if (stream === "rec") {
-      chain.push({ key: "gross", label: role === "label" ? "Doanh thu gộp nghệ sĩ trong label" : "Doanh thu gộp bài của bạn",
+      chain.push({ key: "gross", label: role === "label" ? "Doanh thu gộp của nghệ sĩ trong label" : "Doanh thu gộp bài hát của bạn",
                    labelEn: role === "label" ? "Gross revenue, artists on your label" : "Gross revenue on your tracks",
-                   value: a.gross, note: "trước mọi khoản trừ", noteEn: "before any deduction", kind: "top" });
-      chain.push({ key: "fee", label: "Phí Haustek", labelEn: "Haustek fee", value: -a.fee,
+                   value: a.gross, note: "trước mọi khoản khấu trừ", noteEn: "before any deduction", kind: "top" });
+      chain.push({ key: "fee", label: "Phí dịch vụ Haustek", labelEn: "Haustek fee", value: -a.fee,
                    note: fmt.pct(CFG.HAUSTEK_FEE) + " doanh thu gộp · theo hợp đồng",
                    noteEn: fmt.pct(CFG.HAUSTEK_FEE) + " of gross · per your contract", kind: "out" });
       if (role === "label") {
-        chain.push({ key: "artist", label: "Trả cho nghệ sĩ", labelEn: "Paid to your artists",
+        chain.push({ key: "artist", label: "Thanh toán cho nghệ sĩ", labelEn: "Paid to your artists",
                      value: -cents(a.artist + a.producer),
-                     note: "theo tỷ lệ bạn đặt, lấy mức có hiệu lực trong kỳ",
+                     note: "theo tỷ lệ bạn đã đặt, áp dụng mức có hiệu lực trong kỳ",
                      noteEn: "at the rate you set, as it stood during the period", kind: "out" });
-        chain.push({ key: "final", label: "Label giữ lại", labelEn: "Your label keeps",
-                     value: a.labelCut, note: "phần của bạn kỳ này", noteEn: "your share this period", kind: "final" });
+        chain.push({ key: "final", label: "Phần label được hưởng", labelEn: "Your label keeps",
+                     value: a.labelCut, note: "phần của bạn trong kỳ này", noteEn: "your share this period", kind: "final" });
       } else {
         const me = ARTISTS[partyId];
-        chain.push({ key: "cut", label: me.labelId >= 0 ? "Phần label giữ" : "Phần Haustek giữ thêm",
+        chain.push({ key: "cut", label: me.labelId >= 0 ? "Phần label được hưởng" : "Phần Haustek theo hợp đồng độc lập",
                      labelEn: me.labelId >= 0 ? "Your label’s share" : "Haustek’s additional share",
                      value: -a.labelCut,
-                     note: me.labelId >= 0 ? LABELS[me.labelId].name : "theo hợp đồng độc lập",
+                     note: me.labelId >= 0 ? LABELS[me.labelId].name : "theo hợp đồng nghệ sĩ độc lập của bạn",
                      noteEn: me.labelId >= 0 ? LABELS[me.labelId].name : "per your independent agreement", kind: "out" });
         if (a.producer > 0.005)
           chain.push({ key: "producer", label: "Điểm producer", labelEn: "Producer points", value: -a.producer,
-                       note: "trừ vào phần của bạn, không cộng thêm bên trên",
+                       note: "khấu trừ vào phần của bạn, không cộng thêm lên doanh thu gộp",
                        noteEn: "taken off your share, not added on top", kind: "out" });
         if (advLeft > 0 || (payoutRow && payoutRow.recoup > 0)) {
           /* Thu hồi tạm ứng chạy ở cấp BÊN NHẬN — gộp cả doanh thu bản ghi
@@ -1680,19 +1680,19 @@ const api = {
           const rec = Math.min(cents(recAll * phan), a.artist);
           const conNo = payoutRow ? payoutRow.advanceLeft : Math.max(advLeft - recAll, 0);
           const camCaHai = payoutRow && payoutRow.earned > a.artist + 0.005;
-          chain.push({ key: "recoup", label: "Trừ vào khoản tạm ứng", labelEn: "Offset against your advance", value: -rec,
-                       note: "đã ứng " + fmt.usd0(advOpening) + " · còn phải trừ " + fmt.usd0(conNo)
-                           + (camCaHai ? " · tạm ứng trừ trên cả bản ghi lẫn tác quyền, đây là phần rơi vào dòng tiền này" : ""),
+          chain.push({ key: "recoup", label: "Khấu trừ tạm ứng", labelEn: "Offset against your advance", value: -rec,
+                       note: "số đã tạm ứng " + fmt.usd0(advOpening) + " · còn phải khấu trừ " + fmt.usd0(conNo)
+                           + (camCaHai ? " · tạm ứng được khấu trừ trên cả bản ghi lẫn tác quyền, đây là phần thuộc dòng tiền này" : ""),
                        noteEn: fmt.usd0(advOpening) + " advanced · " + fmt.usd0(conNo) + " still to recover"
                            + (camCaHai ? " · recoupment covers recording and publishing together; this is the part falling on this stream" : ""),
                        kind: "out" });
-          chain.push({ key: "final", label: "Thực nhận kỳ này", labelEn: "Yours this period", value: cents(a.artist - rec),
-                       note: conNo <= 0 ? "đã trừ hết khoản tạm ứng" : "đang trừ dần vào khoản tạm ứng",
+          chain.push({ key: "final", label: "Thu nhập kỳ này", labelEn: "Yours this period", value: cents(a.artist - rec),
+                       note: conNo <= 0 ? "đã khấu trừ hết khoản tạm ứng" : "đang khấu trừ dần khoản tạm ứng",
                        noteEn: conNo <= 0 ? "your advance is now fully recovered" : "still being offset against your advance",
                        kind: "final" });
         } else {
-          chain.push({ key: "final", label: "Về tay bạn", labelEn: "Yours", value: a.artist,
-                       note: "số tiền kỳ này", noteEn: "the amount for this period", kind: "final" });
+          chain.push({ key: "final", label: "Thu nhập của bạn", labelEn: "Yours", value: a.artist,
+                       note: "số tiền của kỳ này", noteEn: "the amount for this period", kind: "final" });
         }
       }
     } else {
@@ -1705,8 +1705,8 @@ const api = {
       if (net - a.total > 0.005)
         chain.push({ key: "co", label: "Phần đồng tác giả", labelEn: "Co-writers’ shares", value: -cents(net - a.total),
                      note: "theo phần sáng tác đã đăng ký", noteEn: "per the registered writer splits", kind: "out" });
-      chain.push({ key: "final", label: "Về tay bạn", labelEn: "Yours", value: a.total,
-                   note: "số tiền kỳ này", noteEn: "the amount for this period", kind: "final" });
+      chain.push({ key: "final", label: "Thu nhập của bạn", labelEn: "Yours", value: a.total,
+                   note: "số tiền của kỳ này", noteEn: "the amount for this period", kind: "final" });
     }
 
     /* Kỳ trống vì hai lý do rất khác nhau: chưa có báo cáo về (tác quyền
@@ -1716,17 +1716,17 @@ const api = {
     if (a.gross <= 0) {
       if (stream === "pub") {
         if (!pubLoaded(p)) {
-          emptyReason = "Tác quyền về theo quý, không phải hằng tháng. Kỳ này chưa có tổ chức nào báo cáo.";
+          emptyReason = "Tác quyền về theo quý, không phải hằng tháng. Kỳ này chưa có tổ chức quản lý tác quyền nào gửi báo cáo.";
           emptyReasonEn = "Publishing settles quarterly, not monthly — no society has reported for this period.";
           const withPub = PERIODS.filter(x => state.approved[x.k] && pubLoaded(x.idx));
           const before = withPub.filter(x => x.idx < p).pop() || withPub[withPub.length - 1];
           nextPub = before ? { k: before.k, label: before.label } : null;
         } else {
-          emptyReason = "Kỳ này có báo cáo tác quyền, nhưng chưa bài nào của bạn có tiền tác quyền.";
+          emptyReason = "Kỳ này có báo cáo tác quyền, nhưng chưa có bài hát nào của bạn phát sinh tiền tác quyền.";
           emptyReasonEn = "There is a publishing report for this period, but none of your works earned.";
         }
       } else {
-        emptyReason = "Kỳ này chưa bài nào của bạn có doanh thu.";
+        emptyReason = "Kỳ này chưa có bài hát nào của bạn phát sinh doanh thu.";
         emptyReasonEn = "None of your tracks earned anything this period.";
       }
     }
@@ -1759,8 +1759,8 @@ const api = {
         earnedAllStreams: payoutRow.earned, carryIn: payoutRow.carryIn,
         coversBothStreams: payoutRow.earned > a.artist + 0.005,
         threshold: CFG.PAYOUT_MIN,
-        note: payoutRow.payable > 0 ? "sẽ chi trong đợt chi trả tới"
-          : (payoutRow.carryOut > 0 ? "dưới ngưỡng chi trả " + fmt.usd0(CFG.PAYOUT_MIN) + ", dồn sang kỳ sau" : ""),
+        note: payoutRow.payable > 0 ? "sẽ thanh toán trong đợt thanh toán tới"
+          : (payoutRow.carryOut > 0 ? "dưới ngưỡng thanh toán tối thiểu " + fmt.usd0(CFG.PAYOUT_MIN) + ", chuyển sang kỳ sau" : ""),
         noteEn: payoutRow.payable > 0 ? "will be transferred in the next payout run"
           : (payoutRow.carryOut > 0 ? "below the " + fmt.usd0(CFG.PAYOUT_MIN) + " threshold — carried to the next period" : "") } : null,
       approvedAt: state.approved[periodKey].at
@@ -1976,18 +1976,18 @@ const api = {
       const s = splitRec(i, g, periodKey);
       out.steps = [
         { label: "Doanh thu gộp", labelEn: "Gross revenue", value: s.gross },
-        { label: "Phí Haustek", labelEn: "Haustek fee", value: -s.fee },
-        { label: tLabel[i] >= 0 ? "Label giữ" : "Haustek giữ thêm",
+        { label: "Phí dịch vụ Haustek", labelEn: "Haustek fee", value: -s.fee },
+        { label: tLabel[i] >= 0 ? "Phần label được hưởng" : "Phần Haustek theo hợp đồng độc lập",
           labelEn: tLabel[i] >= 0 ? "Label’s share" : "Haustek’s additional share", value: -s.labelCut }
       ];
       if (s.producer > 0.004) out.steps.push({ label: "Điểm producer", labelEn: "Producer points", value: -s.producer });
-      out.steps.push({ label: role === "label" ? "Về tay nghệ sĩ" : "Về tay bạn",
+      out.steps.push({ label: role === "label" ? "Thu nhập của nghệ sĩ" : "Thu nhập của bạn",
                        labelEn: role === "label" ? "To the artist" : "Yours", value: s.artist, strong: true });
       if (role === "label") out.steps = [
         { label: "Doanh thu gộp", labelEn: "Gross revenue", value: s.gross },
-        { label: "Phí Haustek", labelEn: "Haustek fee", value: -s.fee },
-        { label: "Trả cho nghệ sĩ", labelEn: "Paid to the artist", value: -cents(s.artist + s.producer) },
-        { label: "Label giữ", labelEn: "Label keeps", value: s.labelCut, strong: true }
+        { label: "Phí dịch vụ Haustek", labelEn: "Haustek fee", value: -s.fee },
+        { label: "Thanh toán cho nghệ sĩ", labelEn: "Paid to the artist", value: -cents(s.artist + s.producer) },
+        { label: "Phần label được hưởng", labelEn: "Label keeps", value: s.labelCut, strong: true }
       ];
     } else {
       const share = writerShare(i, partyId);
@@ -1995,7 +1995,7 @@ const api = {
         { label: "Tác quyền thu được", labelEn: "Publishing collected", value: cents(g) },
         { label: "Phí quản lý", labelEn: "Administration fee", value: -cents(g * CFG.PUB_FEE) },
         { label: "Phần sáng tác của bạn", labelEn: "Your writer share", value: null, text: fmt.pct(share) },
-        { label: "Về tay bạn", labelEn: "Yours", value: m, strong: true }
+        { label: "Thu nhập của bạn", labelEn: "Yours", value: m, strong: true }
       ];
     }
     return scrub(out);
@@ -2113,7 +2113,7 @@ if (FRESH) {
   for (let pi = 0; pi <= P - 3; pi++) {
     try {
       fx.lock(pi, 25800 + pi * 30);
-      approve(pi, "ops@haustek-group.com", "Đối soát xong, đã duyệt");
+      approve(pi, "ops@haustek-group.com", "Đối soát xong, đã xét duyệt");
       /* approve() đóng dấu thời điểm HIỆN TẠI — đúng cho lần duyệt thật,
          nhưng mười kỳ lịch sử duyệt lúc khởi tạo thì mang chung một dấu
          thời gian, và bảng kê của khách hiện mười kỳ cùng ngày chốt sổ.
@@ -2125,7 +2125,7 @@ if (FRESH) {
         + "-" + String(d.getDate()).padStart(2, "0") + " "
         + String(d.getHours()).padStart(2, "0") + ":" + String(d.getMinutes()).padStart(2, "0") + ":00";
       state.fx.locked[p.k].at = state.approved[p.k].at.slice(0, 10);
-    } catch (e) { console.warn("[haustek-core] không duyệt được kỳ " + PERIODS[pi].label + ": " + e.message); }
+    } catch (e) { console.warn("[haustek-core] không xét duyệt được kỳ " + PERIODS[pi].label + ": " + e.message); }
   }
   /* Những lần nạp trong lịch sử cũng phải để lại dấu vết, không thì mở
      nhật ký ra thấy trống trơn và tưởng hệ thống không ghi gì. */

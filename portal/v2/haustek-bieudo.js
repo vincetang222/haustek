@@ -462,7 +462,7 @@ function veThac(cfg, W) {
     var yt = y(mucTren[i]), yb = y(mucDuoi[i]);
     var mauC = st.kind === 'final' ? mOk : st.kind === 'top' ? mAcc : mTru;
     s += '<g class="hz" tabindex="0" data-tip="' + esc('<b>' + esc(st.l) + '</b>' +
-      dongTip(st.kind === 'out' ? T('Khoản trừ', 'Deducted') : T('Số tiền', 'Amount'), usd0(Math.abs(st.v)), mauC) +
+      dongTip(st.kind === 'out' ? T('Khoản khấu trừ', 'Deducted') : T('Số tiền', 'Amount'), usd0(Math.abs(st.v)), mauC) +
       (st.nt ? '<span class="d">' + esc(st.nt) + '</span>' : '')) + '">' +
       '<path class="b" d="' + cotBo(x, yt, wcot, Math.max(yb - yt, 1.5), st.kind === 'out' ? 0 : 4) + '" fill="' + mauC + '"/>' +
       '<rect class="hit" x="' + (LE_TR + i * bw).toFixed(1) + '" y="' + LE_T + '" width="' + bw.toFixed(1) +

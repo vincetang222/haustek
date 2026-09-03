@@ -83,7 +83,7 @@ function oChonCua(lang, phu) {
     '<button type="button" data-c2="noi-bo"' + (cua === 'noi-bo' ? ' class="on"' : '') + '>' +
       (lang === 'vi' ? 'Nội bộ' : 'Internal') + '</button>' +
     '<button type="button" data-c2="khach"' + (cua === 'khach' ? ' class="on"' : '') + '>' +
-      (lang === 'vi' ? 'Cổng khách hàng' : 'Client') + '</button></div>' +
+      (lang === 'vi' ? 'Cổng đối tác' : 'Client') + '</button></div>' +
     (phu || '') + '</div>';
 }
 
@@ -127,7 +127,7 @@ if (cua === 'khach') {
                                   : (c.lang === 'vi' ? 'Nghệ sĩ' : 'Artist'))) + '</span>' +
         '<select class="inline-sel" data-ai style="margin-top:9px;width:100%">' + opts + '</select>' +
         oChonCua(c.lang, '<p>' + HT.esc(c.lang === 'vi'
-          ? 'Bản mẫu: đổi tài khoản hoặc đổi cổng để xem góc nhìn khác. Hệ thống thật không có hai ô này.'
+          ? 'Bản mẫu: đổi tài khoản hoặc đổi cổng để xem theo góc nhìn khác. Hệ thống thật không có hai ô chọn này.'
           : 'Prototype: switch account or door to see another view. The real system has neither control.') + '</p>');
     }
   });
@@ -147,7 +147,7 @@ if (cua === 'khach') {
     code: 'DIST-1',
     name: 'Đối tác phân phối chính (tên thật điền khi triển khai)',
     grossRate: 0.86,
-    contact: 'nội bộ · không hiện cho khách hàng'
+    contact: 'nội bộ · không hiển thị cho đối tác'
   });
   HT.setFx(A.fx.get().rate);
 
@@ -159,8 +159,8 @@ if (cua === 'khach') {
            DIỆN và phải đổi theo ngôn ngữ. HT.lang là nguồn duy nhất. */
         var en = HT.lang === 'en';
         return { k: p.k, label: p.label, idx: p.idx,
-                 nhan: A.isApproved(p.k) ? (en ? 'approved' : 'đã duyệt')
-                                         : (en ? 'not approved' : 'chưa duyệt') };
+                 nhan: A.isApproved(p.k) ? (en ? 'approved' : 'đã xét duyệt')
+                                         : (en ? 'not approved' : 'chưa xét duyệt') };
       });
     },
     kyMacDinh: A.periods[A.periods.length - 1].k,
@@ -168,13 +168,13 @@ if (cua === 'khach') {
       var f = A.fx.get();
       var khoa = f.locked[c.kyKey];
       return '1 USD = ' + HT.fmt.n(khoa ? khoa.rate : f.rate) + ' ₫' +
-        (khoa ? '' : (c.lang === 'vi' ? ' · chưa chốt' : ' · not locked'));
+        (khoa ? '' : (c.lang === 'vi' ? ' · chưa chốt tỷ giá' : ' · not locked'));
     },
     chanTrai: function (c) {
       return '<b>ops@haustek-group.com</b><span>' +
         HT.esc(c.lang === 'vi' ? 'Tài khoản vận hành' : 'Operations account') + '</span>' +
         oChonCua(c.lang, '<p>' + HT.esc(c.lang === 'vi'
-          ? 'Duyệt một kỳ ở đây rồi đổi sang cổng khách hàng: kỳ đó sẽ hiện bên đó.'
+          ? 'Xét duyệt một kỳ ở đây rồi chuyển sang cổng đối tác: kỳ đó sẽ hiện ở bên đó.'
           : 'Approve a period here, then switch to the client portal: it appears there.') + '</p>');
     }
   });

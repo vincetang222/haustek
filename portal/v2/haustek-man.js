@@ -130,7 +130,7 @@ function csv(ten, cot, dong) {
     HT.thongBao(vi ? 'Đã xuất ' + ten + ' · ' + soDong + ' dòng' : 'Exported ' + ten + ' · ' + soDong + ' rows', 'ok');
   };
   var baoKhongTai = function () {
-    HT.thongBao(vi ? 'Trình xem này không cho lưu file. Mở bản mã nguồn để xuất ' + ten
+    HT.thongBao(vi ? 'Trình xem này không cho phép lưu file. Mở bản mã nguồn để xuất ' + ten
                    : 'This viewer does not allow saving files. Open the source build to export ' + ten, 'no');
   };
 
@@ -164,7 +164,7 @@ function csv(ten, cot, dong) {
       var ma = e && e.code;
       if (ma === 'declined') return;   /* người xem đã từ chối, không cần nói thêm */
       if (ma === 'rate_limited') {
-        HT.thongBao(vi ? 'Đang có một hộp lưu file chờ trả lời. Xong rồi hãy bấm lại.'
+        HT.thongBao(vi ? 'Một hộp thoại lưu file đang chờ trả lời. Trả lời xong rồi bấm lại.'
                        : 'A save prompt is still open. Answer it, then try again.', 'no');
         return;
       }
