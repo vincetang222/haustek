@@ -122,7 +122,7 @@ Trong bản mẫu, vòng này dựng:
   sĩ chính, ngày phát hành mong muốn, thể loại, ngôn ngữ, danh sách track với tên,
   nghệ sĩ, ISRC nếu có, producer, phần sáng tác và tỉ lệ). Hồ sơ lưu vào trạng thái
   bản mẫu cùng chỗ với mọi quyết định khác.
-* **Nội bộ · Phát hành**: hàng chờ hồ sơ mới; vận hành tiếp nhận, cấp ISRC/UPC,
+* **Nội bộ · Phát hành**: danh sách chờ hồ sơ mới; vận hành tiếp nhận, cấp ISRC/UPC,
   đánh dấu đã phát hành. Mỗi bước để lại một dòng nhật ký.
 * Bản phát hành đã có doanh thu được suy ra từ danh mục (bản ghi cùng nghệ sĩ,
   cùng kỳ phát hành, cùng UPC) để trang không trống ngay từ đầu.

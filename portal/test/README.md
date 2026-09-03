@@ -53,7 +53,7 @@ xuất hiện ở cổng khách:
 
 ```
 nạp luồng còn thiếu → khớp một dòng treo → ghi nhận chênh lệch
-  → chốt tỷ giá → duyệt kỳ → cổng khách thấy kỳ mới
+  → chốt tỷ giá → xét duyệt kỳ → cổng đối tác thấy kỳ mới
 ```
 
 `edge.js` — trường hợp biên khắc nghiệt nhất: thu hồi duyệt **sạch cả 12 kỳ**, rồi mở lại

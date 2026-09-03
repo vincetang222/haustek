@@ -28,7 +28,7 @@ portal/
 | Mặt tiền dữ liệu | `HAUSTEK.admin` — toàn quyền | `HAUSTEK.api` — đã lọc, đã tính sẵn |
 | Kỳ nhìn thấy | cả 12 kỳ, kể cả kỳ đang làm dở | chỉ kỳ **đã duyệt** |
 | Bí mật kinh doanh | tên đơn vị phân phối, tỷ lệ gốc, đưa vào lúc khởi động | không có trong bản lõi khách tải về |
-| Sửa được gì | nhập báo cáo, khớp, tỷ lệ, tạm ứng, duyệt kỳ | không sửa gì |
+| Sửa được gì | nhập báo cáo, khớp, tỷ lệ, tạm ứng, xét duyệt kỳ | không sửa gì |
 | Trang | 10 | 5 |
 
 Hai file HTML nạp **cùng một** `haustek-core.js`. Khác nhau ở dòng đầu: `khach.html`
@@ -45,26 +45,26 @@ gọi `HAUSTEK.lockdown()` **trước khi** chạy bất cứ trang nào, và kh
 | Trang | File | Trả lời câu gì |
 |---|---|---|
 | Tổng quan | `man/tong-quan.js` | Kỳ này đóng được chưa, tiền chia đi đâu, còn gì treo |
-| Nhập dữ liệu | `man/nap-du-lieu.js` | Kỳ nào thiếu nguồn nào: bảng 12 kỳ × 4 nguồn |
+| Nhập báo cáo | `man/nap-du-lieu.js` | Kỳ nào thiếu nguồn nào: bảng 12 kỳ × 4 nguồn |
 | Khớp ISRC | `man/khop-isrc.js` | Tiền chưa có chủ nằm ở đâu, khớp về ai |
 | Đối soát & xét duyệt kỳ | `man/doi-chieu.js` | Tổng hệ thống có khớp file gốc không, xét duyệt được chưa |
 | Phát hành | `man/phat-hanh.js` | Hồ sơ phát hành đối tác gửi lên: tiếp nhận → cấp ISRC/UPC → đã phát hành, hoặc trả lại bổ sung |
-| **Kế toán** | `man/ke-toan.js` | Bút toán kỳ, công nợ bên nhận, tạm ứng phải thu, ghi nhận 12 kỳ, thuế |
-| Chi trả | `man/chi-tra.js` | Ai nhận bao nhiêu, vì sao phần còn lại chưa về tay họ |
+| **Kế toán** | `man/ke-toan.js` | Bút toán kỳ, công nợ bên thụ hưởng, tạm ứng phải thu, ghi nhận 12 kỳ, thuế |
+| Thanh toán | `man/chi-tra.js` | Bên nào được thanh toán bao nhiêu, vì sao phần còn lại chưa thanh toán được |
 | Tạm ứng | `man/tam-ung.js` | Ai còn nợ, thu hồi tới đâu, còn mấy kỳ nữa |
 | Tỷ lệ chia | `man/ty-le.js` | Bảng tỷ lệ có ngày hiệu lực, đổi từ kỳ nào |
 | Danh mục | `man/danh-muc.js` | 50.000 bản ghi, tìm được, mở ra xem tiền từng bài |
 | Quản trị | `man/quan-tri.js` | Tài khoản, nhật ký, câu hỏi treo, dữ liệu, ranh giới |
 
-## Năm trang khách hàng
+## Bảy trang cổng đối tác
 
 | Trang | File | Trả lời câu gì |
 |---|---|---|
 | Tổng quan | `man/k-tong-quan.js` | Kỳ này tôi được bao nhiêu, vì sao, bao giờ tiền vào |
-| Bài của tôi | `man/k-ban-ghi.js` | Từng bài, phần về tay tôi trên mỗi bài |
+| Bài hát của tôi | `man/k-ban-ghi.js` | Từng bài hát, thu nhập của tôi trên mỗi bài |
 | Nghệ sĩ | `man/k-nghe-si.js` | Chỉ label: từng nghệ sĩ trong roster mang về bao nhiêu, phần nghệ sĩ, phần label |
 | Phát hành | `man/k-phat-hanh.js` | Bản phát hành trong danh mục, hồ sơ đang xử lý, gửi hồ sơ mới theo đúng trường của form metadata |
-| Bảng kê | `man/k-bang-ke.js` | Bản đối soát chính thức: in ra, tải về, gửi kế toán |
+| Bảng kê thanh toán | `man/k-bang-ke.js` | Bản đối soát chính thức: in ra, tải về, gửi kế toán |
 | Tạm ứng | `man/k-tam-ung.js` | Vì sao kỳ này có doanh thu mà không nhận được tiền |
 | Tài liệu | `man/k-tai-lieu.js` | Bảng kê các kỳ cũ, và câu trả lời cho những câu hay hỏi |
 
@@ -80,7 +80,7 @@ cụm USD/VND, sáng/tối và VI/EN chuyển vào ngăn. Con số trong ô số
 ## Văn phong tiếng Việt
 
 Mọi chữ tiếng Việt trên cổng theo `v2/VAN-PHONG.md`: một bảng thuật ngữ đã chốt (nguồn dữ
-liệu, nhập báo cáo, đối soát, huỷ duyệt, nền tảng, thị trường, được hưởng, khách hàng…) và
+liệu, nhập báo cáo, đối soát, xét duyệt, huỷ xét duyệt, thanh toán, nền tảng, thị trường, được hưởng, đối tác…) và
 mười hai quy tắc viết (không gạch ngang dài giữa câu, không mở câu bằng "nó", không viết
 hoa cả cụm, nhãn cột là danh từ ngắn, nút là động từ + tân ngữ). Viết chữ mới thì đọc file
 đó trước.
@@ -88,7 +88,7 @@ hoa cả cụm, nhãn cột là danh từ ngắn, nút là động từ + tân n
 ## Bản gói một trang
 
 `node portal/dung-goi.js` nối lõi, khung, hệ giao diện, bộ chữ nhúng và mười lăm trang
-thành `goi-mot-trang.html`. Bản gói có ô chọn cổng ở chân cột trái; cổng khách hàng vẫn
+thành `goi-mot-trang.html`. Bản gói có ô chọn cổng ở chân cột trái; cổng đối tác vẫn
 gọi `lockdown()` trước khi trang nào chạy. Sửa nguồn xong phải dựng lại rồi chạy
 `test/v2-nhu-artifact.js` và `test/v2-khong-mang.js`.
 
@@ -111,7 +111,7 @@ trang, nên chúng mang sẵn bản tiếng Anh bên cạnh (`name`/`nameEn`, `l
 
 Số và ngày **đi theo ngôn ngữ**: `$7.537,23` và `22.06.2026` ở VI, `$7,537.23` và
 `22 Jun 2026` ở EN. Lúc đầu tôi cố định kiểu Việt với lý do "công cụ nội bộ của công ty
-Việt Nam" — đúng với cổng nội bộ, sai hẳn với cổng khách hàng, vì người bật EN là đối tác nước
+Việt Nam" — đúng với cổng nội bộ, sai hẳn với cổng đối tác, vì người bật EN là đối tác nước
 ngoài và với họ `$7.537,23` đọc ra bảy nghìn hay bảy đô là chuyện hên xui.
 
 ## Chế độ sáng/tối
@@ -165,8 +165,8 @@ node test/v2-quet.js  v2/intranet.html 390,640,900      # điện thoại · má
 node test/v2-quet.js  v2/khach.html    390,640,900
 node test/v2-hep.js                                     # khung ở màn hẹp: ngăn điều hướng, thanh trên, không cuộn ngang
 node test/v2-bam.js                                     # bấm vào mọi dòng, mọi hộp thoại
-node test/v2-khach-tk.js                                # 11 tài khoản khách hàng, mỗi tài khoản một góc nhìn
-node test/v2-luong.js                                   # chuỗi vận hành: nhập → khớp → chốt → duyệt → khách hàng thấy
+node test/v2-khach-tk.js                                # 11 tài khoản đối tác, mỗi tài khoản một góc nhìn
+node test/v2-luong.js                                   # chuỗi vận hành: nhập → khớp → chốt → xét duyệt → đối tác thấy
 node test/v2-tuong-phan.js                              # tương phản WCAG AA đo trên trang đã render, hai chế độ
 node test/v2-tieng-anh.js                               # bật EN thì khung không còn tiếng Việt
 node test/api-guard.js                                  # ranh giới quyền và chuỗi tiền

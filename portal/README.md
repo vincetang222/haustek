@@ -169,10 +169,10 @@ dựng bằng `node portal/dung-goi.js` — dùng để xem online mà không ph
 
 Khác bản nhiều file ở đúng một chỗ: trang không tự đăng ký lúc tải file
 nữa mà nằm trong hàm, và bản gói chạy bộ nào tuỳ cổng đang mở. Nhờ vậy cổng
-khách hàng **vẫn gọi `lockdown()` trước khi bất cứ trang nào chạy** — ranh giới giữ
+đối tác **vẫn gọi `lockdown()` trước khi bất cứ trang nào chạy** — ranh giới giữ
 nguyên. Đổi cổng bằng ô ở chân cột trái; đổi xong trang tải lại, và vì trạng
 thái nằm chung trong `localStorage` nên duyệt một kỳ ở cổng nội bộ rồi sang
-cổng khách hàng là thấy kỳ đó hiện ra.
+cổng đối tác là thấy kỳ đó hiện ra.
 
 Một điểm khác duy nhất: trình xem online chạy trong khung cách ly và **chặn
 mọi lượt tải file thẳng**. Nút Xuất CSV vì thế đi đường khác khi có: gọi
