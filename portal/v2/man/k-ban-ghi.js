@@ -19,27 +19,27 @@ HT.dangKy({
 
   chu: {
     vi: {
-      navBai: 'Bài của tôi', h1: 'Bài của tôi',
-      moNs: 'Từng bài của bạn trong kỳ này, và phần về tay bạn trên mỗi bài.',
-      moLb: 'Từng bài của các nghệ sĩ thuộc label của bạn, và phần label giữ lại trên mỗi bài.',
+      navBai: 'Bài hát của tôi', h1: 'Bài hát của tôi',
+      moNs: 'Từng bài hát của bạn trong kỳ này, cùng thu nhập của bạn trên mỗi bài hát.',
+      moLb: 'Từng bài hát của các nghệ sĩ thuộc label của bạn, cùng phần label được hưởng trên mỗi bài hát.',
       banGhi: 'Doanh thu bản ghi', tacQuyen: 'Tác quyền',
-      tim: 'Tìm theo tên bài, mã ISRC, nghệ sĩ…',
-      cBai: 'Bài', cNs: 'Nghệ sĩ', cLoai: 'Loại', cLuot: 'Lượt nghe',
-      cGop: 'Doanh thu gộp', cToi: 'Về tay bạn', cLabel: 'Label giữ',
-      tongBai: 'Bài có doanh thu', tongGop: 'Tổng gộp', tongToi: 'Tổng về tay bạn',
-      khong: 'Không tìm thấy bài nào',
-      khongMo: 'Thử tìm bằng mã ISRC, hoặc xoá ô tìm kiếm.',
+      tim: 'Tìm theo tên bài hát, mã ISRC hoặc nghệ sĩ…',
+      cBai: 'Bài hát', cNs: 'Nghệ sĩ', cLoai: 'Loại', cLuot: 'Lượt nghe',
+      cGop: 'Doanh thu gộp', cToi: 'Thu nhập của bạn', cLabel: 'Phần label được hưởng',
+      tongBai: 'Bài hát có doanh thu', tongGop: 'Tổng doanh thu gộp', tongToi: 'Tổng thu nhập của bạn',
+      khong: 'Không tìm thấy bài hát nào',
+      khongMo: 'Bạn thử tìm bằng mã ISRC, hoặc xoá nội dung ô tìm kiếm.',
       chuaMo: 'Kỳ này chưa chốt sổ',
-      chuaMoMo: 'Số liệu chỉ hiện sau khi đối soát xong với tất cả các nền tảng.',
-      trong: 'Kỳ này chưa bài nào của bạn có doanh thu',
-      xuat: 'Tải danh sách (CSV)', hienThi: 'Đang hiện',
+      chuaMoMo: 'Số liệu chỉ hiển thị sau khi Haustek đối soát xong với tất cả các nền tảng.',
+      trong: 'Kỳ này chưa có bài hát nào của bạn có doanh thu',
+      xuat: 'Tải danh sách (CSV)', hienThi: 'Đang hiển thị',
       tqTrong: 'Kỳ này chưa có báo cáo tác quyền',
-      tqTrongMo: 'Tác quyền chốt theo quý, và các tổ chức quản lý tác quyền thường báo cáo trễ một tới hai quý. Phần lớn các kỳ không có báo cáo nào, đó là chuyện bình thường.',
-      tqCo: 'Kỳ đã có báo cáo tác quyền', soSangTac: 'Bài bạn có phần sáng tác',
-      tqGiaiThich: 'Tác quyền khác doanh thu bản ghi thế nào',
-      tqG1: 'Doanh thu bản ghi trả cho <b>bản thu</b>: ai làm ra bản thu đó thì nhận. Khoản này về hằng tháng qua các nền tảng.',
-      tqG2: 'Tác quyền trả cho <b>bài hát</b>: ai viết giai điệu và lời thì nhận, kể cả khi người khác hát. Khoản này về theo quý qua các tổ chức quản lý tác quyền.',
-      tqG3: 'Hai dòng tiền này tách rời nhau. Một bài có thể có tiền ở dòng này mà chưa có ở dòng kia, và ngược lại.'
+      tqTrongMo: 'Tác quyền được chốt theo quý, và các tổ chức quản lý tác quyền thường báo cáo trễ một đến hai quý. Phần lớn các kỳ không có báo cáo tác quyền, đây là điều bình thường.',
+      tqCo: 'Các kỳ đã có báo cáo tác quyền', soSangTac: 'Bài hát bạn có phần sáng tác',
+      tqGiaiThich: 'Tác quyền khác doanh thu bản ghi như thế nào',
+      tqG1: 'Doanh thu bản ghi được trả cho <b>bản thu</b>: người tạo ra bản thu đó được nhận. Khoản này được thanh toán hằng tháng qua các nền tảng.',
+      tqG2: 'Tác quyền được trả cho <b>bài hát</b>: người viết giai điệu và lời được nhận, kể cả khi người khác trình bày. Khoản này được thanh toán theo quý qua các tổ chức quản lý tác quyền.',
+      tqG3: 'Hai dòng tiền này độc lập với nhau. Một bài hát có thể có doanh thu ở dòng này mà chưa có ở dòng kia, và ngược lại.'
     },
     en: {
       navBai: 'My tracks', h1: 'My tracks',
@@ -164,7 +164,7 @@ HT.dangKy({
             moTa: LOC.tim ? t('khongMo')
               : LUONG === 'pub' ? t('tqTrongMo')
               : (c.lang === 'vi'
-                 ? 'Kỳ này chưa có nền tảng nào báo cáo doanh thu cho bài của bạn.'
+                 ? 'Kỳ này chưa có nền tảng nào báo cáo doanh thu cho bài hát của bạn.'
                  : 'No platform reported revenue for your tracks this period.') })
     });
 
@@ -189,7 +189,7 @@ HT.dangKy({
                     HM.esc(pp.label) + '</button>';
                 }).join('') + '</div>'
               : '<p class="hint" style="margin-top:12px">' + HM.esc(c.lang === 'vi'
-                  ? 'Chưa có báo cáo tác quyền nào được chốt sổ.'
+                  ? 'Chưa có kỳ nào có báo cáo tác quyền đã chốt sổ.'
                   : 'No period has a closed publishing report yet.') + '</p>')
         }) + '</div>';
     }
@@ -211,8 +211,8 @@ HT.dangKy({
     HM.bam(root, '[data-kyto]', function (el) { c.doiKy(el.getAttribute('data-kyto')); });
     HM.bam(root, '[data-xuat]', function () {
       HM.csv('bai-cua-toi-' + c.kyKey + '.csv',
-        ['ISRC', 'Tên bài', 'Loại', 'Nghệ sĩ', 'Lượt nghe', 'Doanh thu gộp USD',
-         (la ? 'Label giữ' : 'Về tay bạn') + ' USD'],
+        ['ISRC', 'Tên bài hát', 'Loại', 'Nghệ sĩ', 'Lượt nghe', 'Doanh thu gộp USD',
+         (la ? 'Phần label được hưởng' : 'Thu nhập của bạn') + ' USD'],
         kq.rows.map(function (r) {
           return [r.isrc, r.title, r.type, r.artist, r.streams == null ? '' : r.streams,
                   r.gross.toFixed(2), r.mine.toFixed(2)];
@@ -233,18 +233,18 @@ function moBai(c, id, luong, la) {
       { l: c.t('cGop'), v: HT.fmt.usd0(d.gross) },
       d.streams != null ? { l: c.t('cLuot'), v: HT.fmt.n(d.streams) } : null
     ].filter(Boolean)) +
-    '<h4 class="sec">' + (c.lang === 'vi' ? 'Tiền của bài này đi đâu' : 'Where this track’s money went') + '</h4>' +
+    '<h4 class="sec">' + (c.lang === 'vi' ? 'Chi tiết dòng tiền của bài hát này' : 'Where this track’s money went') + '</h4>' +
     '<div class="wf">' + d.steps.map(function (st) {
       return '<div class="st ' + (st.strong ? 'fin' : (st.value != null && st.value < 0 ? 'out' : '')) + '">' +
         '<div class="mk"></div><div><div class="lbl">' + HM.esc(c.song(st, 'label')) + '</div></div>' +
         '<div class="amt">' + HM.esc(st.value != null ? HT.fmt.usd(st.value) : st.text) + '</div></div>';
     }).join('') + '</div>' +
-    (d.byStore.length ? '<h4 class="sec">' + (c.lang === 'vi' ? 'Nghe trên nền tảng nào' : 'Where it was played') + '</h4>' +
+    (d.byStore.length ? '<h4 class="sec">' + (c.lang === 'vi' ? 'Thu nhập theo nền tảng' : 'Where it was played') + '</h4>' +
       HB.o({ loai: 'thanh', hang: d.byStore.map(function (x, i) { return { ten: x.name, gt: x.value, mau: P[i % 8] }; }) }) : '') +
-    (d.byTerritory.length ? '<h4 class="sec">' + (c.lang === 'vi' ? 'Nghe từ nước nào' : 'From where') + '</h4>' +
+    (d.byTerritory.length ? '<h4 class="sec">' + (c.lang === 'vi' ? 'Thu nhập theo thị trường' : 'From where') + '</h4>' +
       HB.o({ loai: 'thanh', hang: d.byTerritory.map(function (x, i) { return { ten: x.name, gt: x.value, mau: P[i % 8] }; }) }) : '') +
     '<div class="hint" style="margin-top:14px">' + HM.esc(c.lang === 'vi'
-      ? 'Số tách theo nền tảng và thị trường là phần của bạn trên bài này, không phải doanh thu gộp, nên cộng lại đúng bằng ô lớn ở trên.'
+      ? 'Số liệu tách theo nền tảng và thị trường là phần bạn được hưởng trên bài hát này, không phải doanh thu gộp, nên cộng lại đúng bằng con số lớn ở trên.'
       : 'The store and territory splits show YOUR share of this track, not gross — so they add back to the figure at the top.') + '</div>',
     { tieuDe: d.title, phu: d.isrc + ' · ' + d.type + (d.artist ? ' · ' + d.artist : ''),
       khiMo: function (dr) { HB.gan(dr); } });

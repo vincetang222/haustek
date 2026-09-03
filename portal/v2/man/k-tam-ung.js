@@ -19,23 +19,23 @@ HT.dangKy({
   chu: {
     vi: {
       navUng: 'Tạm ứng', h1: 'Khoản tạm ứng',
-      mo: 'Số tiền Haustek đã ứng trước cho bạn, và phần đã trừ dần qua từng kỳ.',
-      daUng: 'Đã ứng', daTru: 'Đã trừ', conLai: 'Còn phải trừ', conKy: 'Còn khoảng',
-      ky: 'kỳ nữa', truKy: 'Trừ kỳ này',
-      tienDo: 'Tiến độ', quaCacKy: 'Trừ qua từng kỳ',
-      quaCacKyMo: 'Mỗi kỳ bạn được hưởng bao nhiêu thì trừ bấy nhiêu, cho tới khi hết. Kỳ chưa chốt sổ để trống.',
-      giaiThich: 'Tạm ứng là gì và trừ thế nào',
-      gt1: 'Tạm ứng là tiền Haustek trả trước cho bạn, thường để làm sản phẩm hoặc chạy quảng bá. Đây không phải quà, cũng không phải khoản vay có lãi, mà là thu nhập tương lai của bạn nhận sớm.',
-      gt2: 'Từ lúc đó, mỗi kỳ bạn được hưởng bao nhiêu thì khoản ứng giảm bấy nhiêu. Trong những kỳ đó bạn <b>vẫn có thu nhập</b>, chỉ là thu nhập đó trừ vào phần đã nhận trước, nên chưa chuyển thêm.',
-      gt3: 'Khi khoản ứng về 0, từ kỳ tiếp theo tiền lại chuyển bình thường. Ngay trong kỳ trả hết, phần dư ra cũng được chuyển, không phải chờ.',
-      gt4: 'Khoản ứng trừ trên cả doanh thu bản ghi lẫn tác quyền cộng lại, không tách riêng từng dòng tiền.',
+      mo: 'Số tiền Haustek đã tạm ứng cho bạn, và phần đã khấu trừ qua từng kỳ.',
+      daUng: 'Số đã tạm ứng', daTru: 'Đã khấu trừ', conLai: 'Còn phải khấu trừ', conKy: 'Còn khoảng',
+      ky: 'kỳ nữa', truKy: 'Khấu trừ kỳ này',
+      tienDo: 'Tiến độ khấu trừ', quaCacKy: 'Khấu trừ qua từng kỳ',
+      quaCacKyMo: 'Mỗi kỳ bạn được hưởng bao nhiêu thì khấu trừ bấy nhiêu, cho đến khi hết. Kỳ chưa chốt sổ để trống.',
+      giaiThich: 'Tạm ứng là gì và được khấu trừ như thế nào',
+      gt1: 'Tạm ứng là khoản tiền Haustek thanh toán trước cho bạn, thường để sản xuất sản phẩm hoặc quảng bá. Đây không phải quà tặng, cũng không phải khoản vay có lãi, mà là thu nhập tương lai của bạn được nhận sớm.',
+      gt2: 'Từ thời điểm đó, mỗi kỳ bạn được hưởng bao nhiêu thì khoản tạm ứng giảm bấy nhiêu. Trong những kỳ đó bạn <b>vẫn có thu nhập</b>, nhưng thu nhập này được khấu trừ vào phần đã nhận trước, nên chưa có khoản thanh toán thêm.',
+      gt3: 'Khi khoản tạm ứng về 0, từ kỳ tiếp theo việc thanh toán trở lại bình thường. Ngay trong kỳ khấu trừ hết, phần vượt quá cũng được thanh toán, không phải chờ.',
+      gt4: 'Khoản tạm ứng được khấu trừ trên cả doanh thu bản ghi và tác quyền cộng lại, không tách riêng từng dòng tiền.',
       khongCo: 'Bạn không có khoản tạm ứng nào',
-      khongCoMo: 'Toàn bộ phần bạn được hưởng mỗi kỳ đi thẳng vào chi trả, không bị trừ gì.',
-      veTongQuan: 'Về trang tổng quan',
-      lichSu: 'Lịch sử trừ', cKy: 'Kỳ', cTru: 'Trừ trong kỳ', cCon: 'Còn lại sau kỳ',
-      chuaTru: 'Chưa trừ được kỳ nào',
-      chuaTruMo: 'Kể từ khi nhận khoản ứng, bạn chưa có doanh thu ở kỳ đã chốt sổ nào.',
-      xong: 'Đã trả xong', xongMo: 'Khoản tạm ứng của bạn đã trừ hết. Từ kỳ sau tiền chuyển bình thường.',
+      khongCoMo: 'Toàn bộ phần bạn được hưởng mỗi kỳ được đưa vào đợt thanh toán, không bị khấu trừ.',
+      veTongQuan: 'Quay về trang Tổng quan',
+      lichSu: 'Lịch sử khấu trừ', cKy: 'Kỳ', cTru: 'Khấu trừ trong kỳ', cCon: 'Còn phải khấu trừ sau kỳ',
+      chuaTru: 'Chưa khấu trừ được kỳ nào',
+      chuaTruMo: 'Kể từ khi nhận khoản tạm ứng, bạn chưa có doanh thu ở kỳ đã chốt sổ nào.',
+      xong: 'Đã khấu trừ xong', xongMo: 'Khoản tạm ứng của bạn đã được khấu trừ hết. Từ kỳ sau, việc thanh toán trở lại bình thường.',
       chuaMo: 'Kỳ này chưa chốt sổ'
     },
     en: {
@@ -76,7 +76,7 @@ HT.dangKy({
     catch (e) {
       root.innerHTML = HM.dau({ h1: HM.esc(t('h1')) }) +
         HM.the({ than: HM.trong({ icon: 'clock', tieuDe: t('chuaMo'),
-          moTa: c.lang === 'vi' ? 'Chọn một kỳ đã chốt sổ ở thanh trên.' : 'Pick a closed period in the top bar.' }) });
+          moTa: c.lang === 'vi' ? 'Bạn chọn một kỳ đã chốt sổ ở thanh phía trên.' : 'Pick a closed period in the top bar.' }) });
       return;
     }
 
@@ -136,9 +136,9 @@ HT.dangKy({
           tieuDeTip: function (i) { return (c.lang === 'vi' ? 'Kỳ ' : 'Period ') + c.kys[i].label; },
           ghiChuTip: function (i) {
             var x = lich.filter(function (y) { return y.k === c.kys[i].k; })[0];
-            return x ? (c.lang === 'vi' ? 'Còn lại sau kỳ: ' : 'Left after: ') + HT.fmt.usd(x.con) : '';
+            return x ? (c.lang === 'vi' ? 'Còn phải khấu trừ sau kỳ: ' : 'Left after: ') + HT.fmt.usd(x.con) : '';
           },
-          chuTrong: c.lang === 'vi' ? 'Kỳ này chưa trừ được đồng nào' : 'Nothing offset this period',
+          chuTrong: c.lang === 'vi' ? 'Kỳ này chưa khấu trừ được khoản nào' : 'Nothing offset this period',
           chuoi: [{ ten: t('daTru'), mau: P[6],
             gt: c.kys.map(function (p) {
               var x = lich.filter(function (y) { return y.k === p.k; })[0];

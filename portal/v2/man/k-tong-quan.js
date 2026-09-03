@@ -22,45 +22,45 @@ HT.dangKy({
     vi: {
       navTong: 'Tổng quan', h1: 'Tổng quan',
       banGhi: 'Doanh thu bản ghi', tacQuyen: 'Tác quyền',
-      veTay: 'Về tay bạn kỳ này', gop: 'Doanh thu gộp', luot: 'Lượt nghe', bai: 'Bài có doanh thu',
-      chuoi: 'Tiền đi đâu trên đường về tay bạn',
-      chuoiMo: 'Từng chặng một, theo đúng hợp đồng. Cộng lại đúng bằng con số ở trên.',
+      veTay: 'Thu nhập kỳ này', gop: 'Doanh thu gộp', luot: 'Lượt nghe', bai: 'Bài hát có doanh thu',
+      chuoi: 'Chi tiết dòng tiền',
+      chuoiMo: 'Từ doanh thu gộp đến thu nhập của bạn, theo đúng hợp đồng. Các khoản cộng lại đúng bằng con số ở trên.',
       dienBien: 'Diễn biến qua các kỳ',
-      dienBienMo: 'Chỉ hiện kỳ đã chốt sổ. Kỳ chưa chốt sổ để trống, không phải bằng 0.',
-      cuaHang: 'Nghe trên nền tảng nào', lanhTho: 'Nghe từ nước nào',
-      topBai: 'Bài có doanh thu cao nhất kỳ này', xemHet: 'Xem tất cả',
-      chiTra: 'Khi nào tiền vào tài khoản',
-      seChi: 'Sẽ chi kỳ tới', duoiNguong: 'Dưới ngưỡng chi trả',
-      duoiNguongMo: 'Khoản của bạn kỳ này dưới ngưỡng {n} nên dồn sang kỳ sau. Không mất đồng nào.',
+      dienBienMo: 'Biểu đồ chỉ hiển thị các kỳ đã chốt sổ. Kỳ chưa chốt sổ để trống, không phải bằng 0.',
+      cuaHang: 'Thu nhập theo nền tảng', lanhTho: 'Thu nhập theo thị trường',
+      topBai: 'Bài hát có doanh thu cao nhất kỳ này', xemHet: 'Xem tất cả',
+      chiTra: 'Khi nào bạn nhận được tiền',
+      seChi: 'Sẽ thanh toán trong đợt tới', duoiNguong: 'Dưới ngưỡng thanh toán tối thiểu',
+      duoiNguongMo: 'Thu nhập của bạn kỳ này dưới ngưỡng {n} nên được chuyển sang kỳ sau. Khoản này không bị mất.',
       tamUng: 'Khoản tạm ứng', xemUng: 'Xem chi tiết',
-      lichChi: 'Các kỳ gần đây', kyChi: 'Kỳ', soChi: 'Đã chi',
-      donTiep: 'dồn sang kỳ sau', truUng: 'trừ vào tạm ứng',
-      nguongLa: 'Ngưỡng chi trả là {n}',
-      nguongLaMo: 'Dưới ngưỡng thì khoản đó dồn sang kỳ sau, không mất. Có ngưỡng là vì phí chuyển khoản quốc tế rất nặng với khoản nhỏ: chuyển $12 thì phí nuốt gần hết $12.',
+      lichChi: 'Các kỳ gần đây', kyChi: 'Kỳ', soChi: 'Đã thanh toán',
+      donTiep: 'chuyển sang kỳ sau', truUng: 'khấu trừ tạm ứng',
+      nguongLa: 'Ngưỡng thanh toán tối thiểu là {n}',
+      nguongLaMo: 'Khoản dưới ngưỡng được chuyển sang kỳ sau, không bị mất. Ngưỡng này tồn tại vì phí chuyển khoản quốc tế chiếm phần rất lớn với khoản nhỏ: chuyển $12 thì phí chiếm gần hết $12.',
       xemBangKe: 'Mở bảng kê kỳ này',
       trongMo: 'Kỳ này chưa có số liệu',
-      chuaMo: 'Kỳ này chưa chốt sổ', chuaMoMo: 'Số liệu chỉ hiện sau khi đối soát xong với tất cả các nền tảng.',
-      tyGia: 'Tỷ giá kỳ này', chotLuc: 'chốt lúc', chuaChot: 'chưa chốt',
+      chuaMo: 'Kỳ này chưa chốt sổ', chuaMoMo: 'Số liệu chỉ hiển thị sau khi Haustek đối soát xong với tất cả các nền tảng.',
+      tyGia: 'Tỷ giá kỳ này', chotLuc: 'đã chốt ngày', chuaChot: 'chưa chốt',
       soVoi: 'so với kỳ', khac: 'nền tảng khác',
-      khongTq: 'Bạn chưa có bài nào đăng ký phần sáng tác',
-      kyCoTq: 'Những kỳ đã có báo cáo tác quyền',
-      kyCoTqMo: 'Bấm một kỳ để xem số liệu kỳ đó.',
-      soSangTac: 'Bài bạn có phần sáng tác',
-      nhipTq: 'Tác quyền về theo nhịp nào',
-      nhipTq1: 'Các tổ chức quản lý tác quyền (VCPMC ở Việt Nam, The MLC ở Mỹ, ASCAP, PRS, GEMA và những nơi khác) chốt sổ theo <b>quý</b>, không theo tháng.',
-      nhipTq2: 'Họ lại báo cáo <b>trễ một tới hai quý</b> so với lúc bài thật sự được phát. Nên tác quyền của một bài phát hôm nay thường nửa năm sau mới về.',
-      nhipTq3: 'Vì vậy phần lớn các kỳ <b>không có báo cáo nào</b>. Đó là chuyện bình thường, không phải bài của bạn không có doanh thu.',
-      tongTq: 'Tổng tác quyền các kỳ đã báo cáo',
-      khongTqMo: 'Tác quyền thuộc về người sáng tác. Nếu bạn có sáng tác mà chưa thấy ở đây thì phần sáng tác chưa được đăng ký. Liên hệ Haustek để bổ sung.',
-      hd: 'Hợp đồng & tỷ lệ', hdMo: 'Tỷ lệ đang áp cho kỳ này và căn cứ của tỷ lệ đó.',
+      khongTq: 'Bạn chưa có bài hát nào đăng ký phần sáng tác',
+      kyCoTq: 'Các kỳ đã có báo cáo tác quyền',
+      kyCoTqMo: 'Chọn một kỳ để xem số liệu của kỳ đó.',
+      soSangTac: 'Bài hát bạn có phần sáng tác',
+      nhipTq: 'Chu kỳ báo cáo tác quyền',
+      nhipTq1: 'Các tổ chức quản lý tác quyền (VCPMC ở Việt Nam, The MLC ở Mỹ, ASCAP, PRS, GEMA và các tổ chức khác) chốt sổ theo <b>quý</b>, không theo tháng.',
+      nhipTq2: 'Các tổ chức này báo cáo <b>trễ một đến hai quý</b> so với thời điểm bài hát thực tế được nghe. Vì vậy tác quyền của một bài hát được nghe hôm nay thường khoảng nửa năm sau mới có trong báo cáo.',
+      nhipTq3: 'Do đó phần lớn các kỳ <b>không có báo cáo tác quyền nào</b>. Đây là điều bình thường, không có nghĩa là bài hát của bạn không có doanh thu.',
+      tongTq: 'Tổng tác quyền của các kỳ đã có báo cáo',
+      khongTqMo: 'Tác quyền thuộc về người sáng tác. Nếu bạn có sáng tác mà chưa thấy ở đây, phần sáng tác của bạn chưa được đăng ký. Bạn vui lòng liên hệ Haustek để bổ sung.',
+      hd: 'Hợp đồng & tỷ lệ', hdMo: 'Tỷ lệ đang áp dụng cho kỳ này và căn cứ của tỷ lệ đó.',
       hdLabel: 'Thuộc label', hdDocLap: 'Loại hợp đồng', hdDocLapV: 'Độc lập, ký trực tiếp với Haustek', hdLabelV: 'Label, quản lý nghệ sĩ',
       hdPhi: 'Phí dịch vụ Haustek', hdPhiMo: 'trên doanh thu gộp',
-      hdTyLe: 'Tỷ lệ bạn được hưởng', hdTyLeLb: 'Tỷ lệ trả cho nghệ sĩ', hdTyLeMo: 'trên doanh thu sau phí dịch vụ',
+      hdTyLe: 'Tỷ lệ bạn được hưởng', hdTyLeLb: 'Tỷ lệ nghệ sĩ được hưởng', hdTyLeMo: 'trên doanh thu sau phí dịch vụ',
       hdPhanLabel: 'Phần label được hưởng', hdPhanHt: 'Phần Haustek theo hợp đồng độc lập', hdPhanLbCua: 'Phần label được hưởng',
       hdHieuLuc: 'Hiệu lực từ kỳ', hdCanCu: 'Căn cứ', hdCanCuKhong: 'Hợp đồng gốc',
-      hdThanhToan: 'Bên thanh toán', hdThanhToanV: 'Haustek thanh toán thẳng cho bạn theo tỷ lệ này',
-      hdNguong: 'Ngưỡng thanh toán tối thiểu', hdProducer: 'Bài có điểm producer', hdProducerMo: 'điểm producer trừ vào phần của bạn',
-      hdLichSu: 'Lịch sử tỷ lệ', hdKy: 'Từ kỳ', hdGiaDinh: 'Bản mẫu giả định Haustek thanh toán thẳng cho từng nghệ sĩ theo tỷ lệ label đặt. Nếu thực tế label tự chia cho nghệ sĩ thì trang này sẽ đổi (câu hỏi cần chốt số 8).',
+      hdThanhToan: 'Bên thanh toán', hdThanhToanV: 'Haustek thanh toán trực tiếp cho bạn theo tỷ lệ này',
+      hdNguong: 'Ngưỡng thanh toán tối thiểu', hdProducer: 'Bài hát có điểm producer', hdProducerMo: 'điểm producer được khấu trừ từ phần của bạn',
+      hdLichSu: 'Lịch sử tỷ lệ', hdKy: 'Từ kỳ', hdGiaDinh: 'Bản mẫu giả định Haustek thanh toán trực tiếp cho từng nghệ sĩ theo tỷ lệ do label đặt. Nếu thực tế label tự chia cho nghệ sĩ thì trang này sẽ thay đổi (câu hỏi cần chốt số 8).',
       hdTacQuyen: 'Phí quản lý tác quyền'
     },
     en: {
@@ -166,7 +166,7 @@ HT.dangKy({
       { l: t('veTay'), v: HT.fmt.usd(s.total), lon: true,
         s: s.prevTotal != null ? HM.lechHtml(s.total, s.prevTotal, s.prevLabel) : '', sHtml: true },
       { l: t('gop'), v: HT.fmt.usd0(s.gross),
-        s: c.lang === 'vi' ? 'trước mọi khoản trừ' : 'before deductions' },
+        s: c.lang === 'vi' ? 'trước các khoản khấu trừ' : 'before deductions' },
       s.streams != null ? { l: t('luot'), v: HT.fmt.n(s.streams),
         s: s.prevStreams != null ? HM.lechHtml(s.streams, s.prevStreams, s.prevLabel) : '', sHtml: true } : null,
       { l: t('tyGia'), v: HT.fmt.n(s.fx.rate) + ' ₫',
@@ -213,7 +213,7 @@ HT.dangKy({
       chan: (function () {
         var mo = xh.points.filter(function (x) { return x.open; });
         var tong = mo.reduce(function (a, x) { return a + x.value; }, 0);
-        return (c.lang === 'vi' ? 'Cộng ' + mo.length + ' kỳ đã chốt: ' : mo.length + ' closed periods total: ') +
+        return (c.lang === 'vi' ? 'Tổng ' + mo.length + ' kỳ đã chốt sổ: ' : mo.length + ' closed periods total: ') +
           '<b>' + HM.esc(HT.fmt.usd(tong)) + '</b>';
       })()
     });
@@ -225,13 +225,13 @@ HT.dangKy({
       HM.the({
         h2: HM.esc(t('cuaHang')),
         p: HM.esc(c.lang === 'vi'
-          ? 'Phần về tay bạn, tách theo từng nền tảng.'
+          ? 'Thu nhập của bạn, tách theo từng nền tảng.'
           : 'Your money, split by where the track was played.'),
         than: HB.o({ loai: 'thanh', hang: ch.rows.map(function (r, i) {
           return { ten: r.name, gt: r.value, mau: P[i % 8] };
         }).concat(ch.tail ? [{ ten: ch.tail.count + ' ' + t('khac'), gt: ch.tail.value, mau: HB.mau('neutral-bar') }] : []) }),
         chan: ch.tail
-          ? (c.lang === 'vi' ? 'Còn ' + ch.tail.count + ' nền tảng nữa gộp vào dòng cuối. Tổng vẫn đúng bằng ' : ch.tail.count + ' more, folded into the last row — the total is still ') +
+          ? (c.lang === 'vi' ? 'Còn ' + ch.tail.count + ' nền tảng khác được gộp vào dòng cuối. Tổng vẫn đúng bằng ' : ch.tail.count + ' more, folded into the last row — the total is still ') +
             '<b>' + HM.esc(HT.fmt.usd(s.total)) + '</b>'
           : ''
       }) +
@@ -246,11 +246,11 @@ HT.dangKy({
     var bg = api.tracks(me.role, me.partyId, c.kyKey, LUONG, { sort: 'mine', dir: -1 });
     html += HM.the({
       h2: HM.esc(t('topBai')),
-      p: HT.fmt.n(bg.total) + (c.lang === 'vi' ? ' bài có doanh thu trong kỳ' : ' tracks earned this period'),
+      p: HT.fmt.n(bg.total) + (c.lang === 'vi' ? ' bài hát có doanh thu trong kỳ' : ' tracks earned this period'),
       hanhDong: '<button type="button" class="btn sm" data-di="k-ban-ghi">' + HM.esc(t('xemHet')) + '</button>',
       thoBody: true,
       than: '<div class="tw"><table class="t"><thead><tr>' +
-        '<th>' + (c.lang === 'vi' ? 'Bài' : 'Track') + '</th>' +
+        '<th>' + (c.lang === 'vi' ? 'Bài hát' : 'Track') + '</th>' +
         (LUONG === 'rec' ? '<th class="num">' + HM.esc(t('luot')) + '</th>' : '') +
         '<th class="num">' + HM.esc(t('gop')) + '</th>' +
         '<th class="num band">' + HM.esc(t('veTay')) + '</th></tr></thead><tbody>' +
@@ -315,7 +315,7 @@ function veTacQuyenTrong(c) {
               HM.esc(p.label) + '</button>';
           }).join('') + '</div>'
         : '<p class="hint" style="margin-top:12px">' + HM.esc(c.lang === 'vi'
-            ? 'Chưa có báo cáo tác quyền nào được chốt sổ.'
+            ? 'Chưa có kỳ nào có báo cáo tác quyền đã chốt sổ.'
             : 'No period has a closed publishing report yet.') + '</p>')
     }) + '</div>';
 
@@ -375,12 +375,12 @@ function veKhiNao(c, s) {
 
   if (!p) {
     than = '<p class="say">' + HM.esc(c.lang === 'vi'
-      ? 'Kỳ này chưa có số liệu chi trả.'
+      ? 'Kỳ này chưa có số liệu thanh toán.'
       : 'No payout record for this period.') + '</p>';
   } else if (p.payable > 0) {
     than = HM.so([{ l: t('seChi'), v: HT.fmt.usd(p.payable), lon: true, mau: HB.mau('ok') }]) +
       '<p class="say" style="margin-top:12px">' + HM.esc(c.lang === 'vi'
-        ? 'Khoản này sẽ chuyển vào đợt chi trả tới.'
+        ? 'Khoản này sẽ được chuyển khoản trong đợt thanh toán tới.'
         : 'This will be transferred in the next payout run.') + '</p>';
   } else if (p.carryOut > 0) {
     than = HM.so([{ l: t('duoiNguong'), v: HT.fmt.usd(p.carryOut), lon: true, mau: HB.mau('warn') }]) +
@@ -391,18 +391,18 @@ function veKhiNao(c, s) {
       '<div class="hint">' + HM.esc(HT.fmt.usd(p.carryOut) + ' / ' + HT.fmt.usd0(p.threshold)) + '</div>';
   } else {
     than = '<p class="say">' + HM.esc(c.lang === 'vi'
-      ? 'Kỳ này toàn bộ phần bạn được hưởng đã trừ vào tạm ứng, nên chưa có khoản nào chuyển đi.'
+      ? 'Kỳ này toàn bộ phần bạn được hưởng đã được khấu trừ vào tạm ứng, nên không có khoản nào được thanh toán.'
       : 'Everything you earned this period went against your advance, so there is no transfer.') + '</p>';
   }
 
   if (p && p.coversBothStreams) {
     than += '<div class="hint" style="margin-top:10px">' + HM.esc(c.lang === 'vi'
-      ? 'Số chi trả này tính trên cả doanh thu bản ghi lẫn tác quyền cộng lại, không chỉ dòng tiền bạn đang xem. Tổng được hưởng cả hai dòng kỳ này: ' + HT.fmt.usd(p.earnedAllStreams) + '.'
+      ? 'Số thanh toán này tính trên cả doanh thu bản ghi và tác quyền cộng lại, không chỉ dòng tiền bạn đang xem. Tổng được hưởng của cả hai dòng tiền kỳ này: ' + HT.fmt.usd(p.earnedAllStreams) + '.'
       : 'This payout covers BOTH recording and publishing combined, not just the stream you are viewing. Total earned across both: ' + HT.fmt.usd(p.earnedAllStreams) + '.') + '</div>';
   }
   if (p && p.carryIn > 0) {
     than += '<div class="hint">' + HM.esc(c.lang === 'vi'
-      ? 'Đã cộng ' + HT.fmt.usd(p.carryIn) + ' dồn từ kỳ trước.'
+      ? 'Đã cộng ' + HT.fmt.usd(p.carryIn) + ' chuyển từ kỳ trước.'
       : HT.fmt.usd(p.carryIn) + ' carried in from the previous period is included.') + '</div>';
   }
 
@@ -439,9 +439,9 @@ function veKhiNao(c, s) {
   if (s.advance) {
     than += '<h4 class="sec">' + HM.esc(t('tamUng')) + '</h4>' +
       HM.kv([
-        { t: c.lang === 'vi' ? 'Đã ứng' : 'Advanced', v: HT.fmt.usd0(s.advance.opening) },
-        { t: c.lang === 'vi' ? 'Trừ kỳ này' : 'Recouped this period', v: HT.fmt.usd(s.advance.recoupedThisPeriod) },
-        { t: c.lang === 'vi' ? 'Còn lại' : 'Left', v: HT.fmt.usd(s.advance.left), manh: true }
+        { t: c.lang === 'vi' ? 'Số đã tạm ứng' : 'Advanced', v: HT.fmt.usd0(s.advance.opening) },
+        { t: c.lang === 'vi' ? 'Khấu trừ kỳ này' : 'Recouped this period', v: HT.fmt.usd(s.advance.recoupedThisPeriod) },
+        { t: c.lang === 'vi' ? 'Còn phải khấu trừ' : 'Left', v: HT.fmt.usd(s.advance.left), manh: true }
       ]) +
       '<div class="meter" style="margin-top:8px"><i style="width:' +
       Math.max(0, Math.min(100, (1 - s.advance.left / Math.max(s.advance.opening, 1)) * 100)).toFixed(1) +
@@ -464,18 +464,18 @@ function moBai(c, id, luong) {
 
   c.nganTruot(
     HM.so([
-      { l: c.lang === 'vi' ? 'Về tay bạn' : 'Yours', v: HT.fmt.usd(d.mine), lon: true },
+      { l: c.lang === 'vi' ? 'Thu nhập của bạn' : 'Yours', v: HT.fmt.usd(d.mine), lon: true },
       d.streams != null ? { l: c.lang === 'vi' ? 'Lượt nghe' : 'Streams', v: HT.fmt.n(d.streams) } : null
     ].filter(Boolean)) +
-    '<h4 class="sec">' + (c.lang === 'vi' ? 'Tiền của bài này đi đâu' : 'This track’s money') + '</h4>' +
+    '<h4 class="sec">' + (c.lang === 'vi' ? 'Chi tiết dòng tiền của bài hát này' : 'This track’s money') + '</h4>' +
     '<div class="wf">' + d.steps.map(function (st) {
       return '<div class="st ' + (st.strong ? 'fin' : (st.value != null && st.value < 0 ? 'out' : '')) + '">' +
         '<div class="mk"></div><div><div class="lbl">' + HM.esc(c.song(st, 'label')) + '</div></div>' +
         '<div class="amt">' + HM.esc(st.value != null ? HT.fmt.usd(st.value) : st.text) + '</div></div>';
     }).join('') + '</div>' +
-    (d.byStore.length ? '<h4 class="sec">' + (c.lang === 'vi' ? 'Nghe trên nền tảng nào' : 'Where it was played') + '</h4>' +
+    (d.byStore.length ? '<h4 class="sec">' + (c.lang === 'vi' ? 'Thu nhập theo nền tảng' : 'Where it was played') + '</h4>' +
       HB.o({ loai: 'thanh', hang: d.byStore.map(function (x, i) { return { ten: x.name, gt: x.value, mau: P[i % 8] }; }) }) : '') +
-    (d.byTerritory.length ? '<h4 class="sec">' + (c.lang === 'vi' ? 'Nghe từ nước nào' : 'From where') + '</h4>' +
+    (d.byTerritory.length ? '<h4 class="sec">' + (c.lang === 'vi' ? 'Thu nhập theo thị trường' : 'From where') + '</h4>' +
       HB.o({ loai: 'thanh', hang: d.byTerritory.map(function (x, i) { return { ten: x.name, gt: x.value, mau: P[i % 8] }; }) }) : ''),
     { tieuDe: d.title, phu: d.isrc + ' · ' + d.type,
       khiMo: function (dr) { HB.gan(dr); } });
