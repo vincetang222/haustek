@@ -113,7 +113,7 @@ function bocNhuTrinhXem(noiDung) {
     ['Xuất CSV đưa file qua downloads', !!co.luu && /\.csv$/.test(co.luu.filename), co.luu ? co.luu.filename : '(không gọi save)'],
     ['file có BOM, dòng đầu và dữ liệu', dong.length > 2 && dong[0].charCodeAt(0) === 0xFEFF && dong[0].includes(';'), dong.length + ' dòng'],
     ['báo đã xuất sau khi người xem đồng ý', /Đã xuất|Exported/.test(co.toast), co.toast.slice(0, 60) || '(không có toast)'],
-    ['không có downloads thì nói rõ, không im lặng', /không cho lưu file|does not allow saving/.test(khong.toast), khong.toast.slice(0, 60) || '(không có toast)']
+    ['không có downloads thì nói rõ, không im lặng', /không cho( phép)? lưu file|does not allow saving/.test(khong.toast), khong.toast.slice(0, 60) || '(không có toast)']
   ].forEach(([t, ok, ct]) => { console.log((ok ? '  ok   ' : '  HỎNG ') + t + ' · ' + ct); if (!ok) hong++; });
 
   await b.close();

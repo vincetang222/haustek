@@ -118,7 +118,7 @@ const B = 'http://127.0.0.1:8099/v2/';
   await p.waitForTimeout(900);
   const kt = await p.evaluate(() => {
     const t = document.querySelector('main').textContent;
-    return { canBang: /Tổng Nợ bằng tổng Có tới từng xu/.test(t), lech: /LỆCH/.test(t) };
+    return { canBang: /Tổng Nợ bằng tổng Có (tới|đến) từng xu/.test(t), lech: /LỆCH|Chênh lệch \$[\d.,]+\. Lỗi/.test(t) };
   });
   kiem('bút toán kỳ cân: tổng Nợ = tổng Có', kt.canBang && !kt.lech);
 

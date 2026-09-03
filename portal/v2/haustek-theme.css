@@ -574,7 +574,9 @@ h4.sec:first-child{margin-top:0}
   body.menu-mo{overflow:hidden}
   .page-kpis{margin-left:0;width:100%;gap:24px;flex-wrap:wrap}
 }
-@media(max-width:960px){
+/* Ghi chú tỷ giá ẩn từ mốc ngăn điều hướng (1080px): ở 1024px nó chen với
+   tên trang dài ("Đối soát & xét duyệt kỳ") và tên trang bị cắt. */
+@media(max-width:1080px){
   .top-note{display:none}
 }
 /* Điện thoại: thanh trên chỉ giữ tên màn, kỳ và tiền tệ; sáng/tối và
@@ -584,7 +586,7 @@ h4.sec:first-child{margin-top:0}
   .crumb b,.crumb i{display:none}
   .crumb span{color:var(--on-chrome)}
   .top .seg[data-theme-sw],.top .seg[data-lang],.top .seg[data-cur]{display:none}
-  .crumb{font-size:13.5px}
+  .crumb{font-size:13.5px;white-space:normal;line-height:1.2;text-overflow:clip;flex:1 1 auto}
   .side-ctl{display:flex}
   .top .inline-sel{max-width:44vw;text-overflow:ellipsis}
   main{padding:14px 12px 48px}
