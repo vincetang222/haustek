@@ -17,9 +17,9 @@ const fs = require('fs');
 const V = __dirname + '/v2/';
 const doc = p => fs.readFileSync(p, 'utf8');
 
-const NOIBO = ['tong-quan','nap-du-lieu','khop-isrc','doi-chieu','ke-toan',
+const NOIBO = ['tong-quan','nap-du-lieu','khop-isrc','doi-chieu','phat-hanh','ke-toan',
                'chi-tra','tam-ung','ty-le','danh-muc','quan-tri'];
-const KHACH = ['k-tong-quan','k-ban-ghi','k-bang-ke','k-tam-ung','k-tai-lieu'];
+const KHACH = ['k-tong-quan','k-nghe-si','k-ban-ghi','k-phat-hanh','k-bang-ke','k-tam-ung','k-tai-lieu'];
 const boc = ds => ds.map(n =>
   '/* ---- man/' + n + '.js ---- */\nfunction(){\n' + doc(V + 'man/' + n + '.js') + '\n}').join(',\n');
 

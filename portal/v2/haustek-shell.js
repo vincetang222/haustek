@@ -495,9 +495,17 @@ function chay(cauHinh) {
     return (CHU[lang] && CHU[lang][k]) || k;
   }
 
+  /* Một trang có thể chỉ dành cho một vai (danh sách nghệ sĩ chỉ có ở
+     label). Trang khai khaDung(c) trả về false thì không hiện ở cột trái
+     và gõ thẳng #hash cũng không mở được. */
+  function dungDuoc(m, c) {
+    if (!m.khaDung) return true;
+    try { return !!m.khaDung(c); } catch (e) { return false; }
+  }
   function veNav() {
     var c = ctx(), nhom = [];
     MAN.forEach(function (m) {
+      if (!dungDuoc(m, c)) return;
       var g = nhom.filter(function (x) { return x.ten === (m.nhom || ''); })[0];
       if (!g) { g = { ten: m.nhom || '', muc: [] }; nhom.push(g); }
       g.muc.push(m);
@@ -526,6 +534,8 @@ function chay(cauHinh) {
     var id = (location.hash || '').replace('#', '') || (MAN[0] && MAN[0].id);
     var man = MAN.filter(function (m) { return m.id === id; })[0] || MAN[0];
     if (!man) return;
+    var c0 = ctx();
+    if (!dungDuoc(man, c0)) man = MAN.filter(function (m) { return dungDuoc(m, c0); })[0] || man;
     manHienTai = man.id;
     var c = ctx();
 

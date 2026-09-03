@@ -1,107 +1,105 @@
 # Văn phong tiếng Việt của Haustek Portal
 
-Tài liệu này là chuẩn cho MỌI chữ tiếng Việt trong cổng (nội bộ lẫn khách
-hàng). Viết như một người Việt làm trong ngành phân phối nhạc nói với đồng
-nghiệp hoặc với nghệ sĩ: ngắn, thẳng, đúng từ trong ngành. Không dịch từ
-tiếng Anh sang.
+Chuẩn cho MỌI chữ tiếng Việt trên cổng (nội bộ lẫn cổng đối tác). Giọng là
+giọng của phần mềm nghiệp vụ Việt Nam viết cẩn thận: đúng thuật ngữ tài chính và
+ngành phân phối nhạc, câu đủ thành phần, không cộc, không sáng tạo từ mới, không
+dịch từng chữ từ tiếng Anh. Người đọc là kế toán, chủ label, nghệ sĩ; họ quen
+đọc hợp đồng, bảng kê, phần mềm kế toán.
 
-## 1. Thuật ngữ đã chốt (dùng đúng một từ, không đổi qua lại)
+## 1. Thuật ngữ đã chốt (một khái niệm, một từ)
 
 | Khái niệm | DÙNG | KHÔNG dùng |
 |---|---|---|
-| feed / nguồn báo cáo của một đối tác | **nguồn dữ liệu**, gọn: **nguồn** ("ba nguồn", "đủ 3 nguồn") | luồng, luồng dữ liệu |
-| stream (recording vs publishing) | **dòng tiền** ("hai dòng tiền tách rời") | luồng |
-| load / import a feed | **nhập** ("nhập báo cáo", "nhập nguồn", "đã nhập") | nạp |
-| unload | **gỡ** | — |
-| reconcile / reconciliation | **đối soát** ("đối soát & duyệt kỳ", "đối soát khớp tới từng xu") | đối chiếu (chỉ dùng khi nghĩa là "so với", ví dụ "đối chiếu với sao kê") |
-| approve period | **duyệt kỳ** | — |
-| revoke approval | **huỷ duyệt** | thu hồi duyệt |
-| recoup advance | **thu hồi tạm ứng** (nội bộ), **trừ vào tạm ứng** (khách hàng) | — |
-| carry forward / carried in | **dồn sang kỳ sau** / **dồn từ kỳ trước** | — |
-| held / on hold (unmatched money) | **treo**, **đang treo**, **tiền treo** | giữ |
-| held, no owner (producer points without an id) | **giữ lại, chưa rõ người nhận** | giữ lại chưa có chủ |
-| payee | **bên nhận** | người nhận (chỉ dùng khi chắc chắn là cá nhân) |
-| earned (payee's share) | **được hưởng** ("Tổng được hưởng kỳ này"), hoặc **thu nhập** ("Thu nhập 12 kỳ") | kiếm được |
-| earning tracks / top earning | **bài có doanh thu**, **bài có doanh thu cao nhất** | bài kiếm nhiều nhất |
-| store / DSP | **nền tảng** ("Spotify, Apple Music…") | cửa hàng |
-| territory | **thị trường** (nhãn cột, tiêu đề); trong câu văn có thể nói "nghe từ nước nào" | lãnh thổ |
-| clients (labels + artists) | **khách hàng**, hoặc nói thẳng **label và nghệ sĩ** | khách |
-| client portal | **cổng khách hàng** | cổng khách, cửa khách |
-| internal / intranet | **nội bộ** | intranet (trừ tên file) |
-| the two apps | **hai cổng** | hai cửa |
-| screen / page | **trang** ("mở trang đối soát") | màn, màn hình |
+| approve a period | **xét duyệt kỳ**; trạng thái **đã xét duyệt / chưa xét duyệt**; **người xét duyệt**; **hồ sơ xét duyệt**; **điều kiện xét duyệt** | duyệt kỳ, phê duyệt kỳ |
+| revoke approval | **huỷ xét duyệt** | thu hồi duyệt, huỷ duyệt |
+| approve with override | **xét duyệt kèm ghi nhận ngoại lệ** | duyệt dù chưa đủ điều kiện |
+| reconcile | **đối soát** (với đối tác, với file gốc); **đối chiếu** chỉ khi so hai sổ nội bộ (đối chiếu sao kê) | — |
+| payout / pay | **thanh toán**: trang **Thanh toán**, **sẽ thanh toán**, **đã thanh toán**, **đợt thanh toán**, **danh sách chuyển khoản** | chi trả, chi, sẽ chi |
+| payout threshold | **ngưỡng thanh toán tối thiểu**, gọn: **ngưỡng thanh toán** | ngưỡng chi trả |
+| statement | **bảng kê thanh toán**, gọn: **bảng kê** | — |
+| the client's share (final chain step) | **thu nhập của bạn** (KPI: **Thu nhập kỳ này**); với label: **phần label được hưởng** | về tay bạn, kiếm được |
+| earned (payee share, internal) | **được hưởng** ("Tổng được hưởng kỳ này") | kiếm được |
+| money chain | **chi tiết dòng tiền** ("Từ doanh thu gộp đến thu nhập của bạn") | tiền đi đâu trên đường về tay bạn |
+| Haustek fee | **phí dịch vụ Haustek** | phí Haustek |
+| label's cut | **phần label được hưởng** | label giữ lại, phần label giữ |
+| Haustek's extra share on independents | **phần Haustek theo hợp đồng độc lập** | Haustek giữ thêm |
+| producer points | **điểm producer** | — |
+| advance | **tạm ứng**; nội bộ: **thu hồi tạm ứng**; đối tác: **khấu trừ tạm ứng**; **số đã tạm ứng**, **còn phải thu hồi**, **đã thu hồi** | trừ vào tạm ứng, hoàn ứng |
+| carry forward | **chuyển sang kỳ sau** / **chuyển từ kỳ trước** | dồn |
+| unmatched revenue (money with no recording) | **chưa khớp ISRC**; số tiền: **tiền chưa khớp**; trạng thái dòng: **chờ khớp** | treo, tiền treo |
+| queue | **danh sách chờ khớp** | hàng chờ |
+| park a row | **tạm hoãn, chờ đối tác xác nhận**; nút **Tạm hoãn** | gác lại, để lại chờ |
+| held, no identifiable payee (producer) | **giữ lại, chưa xác định người thụ hưởng** | chưa có chủ |
+| payee | **bên thụ hưởng** | bên nhận |
+| feed (partner report source) | **nguồn báo cáo**, gọn **nguồn** | luồng, nguồn dữ liệu |
+| load / import a feed | **nhập báo cáo**, trạng thái **đã nhập / chưa nhập** | nạp |
+| unload | **gỡ báo cáo** | — |
+| stream (recording vs publishing) | **dòng tiền** | luồng |
+| store / DSP | **nền tảng** | cửa hàng |
+| territory | **thị trường** | lãnh thổ, nước |
+| track (partner portal) | **bài hát** ("Bài hát của tôi") | bài |
+| recording (catalogue, accounting) | **bản ghi** | — |
+| streams | **lượt nghe** | lượt phát |
+| publishing | **tác quyền** | — |
+| CMO | **tổ chức quản lý tác quyền** | — |
+| balanced / out | **cân đối** / **chênh lệch** | cân, lệch |
+| FX rate | **tỷ giá**, **chốt tỷ giá**, **tỷ giá đã chốt** | khoá tỷ giá |
+| clients (labels + artists) | **đối tác**; nói rõ khi cần: **label và nghệ sĩ** | khách, khách hàng |
+| client portal | **cổng đối tác** | cổng khách, cổng khách hàng |
+| internal | **nội bộ** | intranet |
+| screen / page | **trang** | màn, màn hình |
+| open questions | **câu hỏi cần chốt** | câu hỏi còn treo |
+| audit log | **nhật ký thao tác** | — |
 | prototype | **bản mẫu** | — |
 | real system | **hệ thống thật** | hệ thật |
-| pipeline | **quy trình** ("quy trình nhập 8 bước") | đường ống |
-| grid (period × feed) | **bảng kỳ × nguồn** | lưới |
-| period not open (client) | **chưa chốt sổ** ("Kỳ này chưa chốt sổ") | kỳ chưa mở |
-| closed at | **chốt sổ lúc** | — |
-| statement | **bảng kê** | — |
-| payout / payable | **chi trả** / **sẽ chi** | — |
-| threshold | **ngưỡng chi trả** | — |
-| queue | **hàng chờ** | — |
-| match | **khớp** | — |
-| audit log | **nhật ký** | — |
-| open questions | **câu hỏi còn treo** | — |
-| producer points | **điểm producer** | — |
-| streams | **lượt nghe** | — |
-| recording / track | **bản ghi** (danh mục, kế toán) / **bài** (nói với nghệ sĩ) | — |
-| publishing | **tác quyền** | — |
-| CMO / collecting society | **tổ chức quản lý tác quyền** | tổ chức quản lý quyền |
-| FX rate | **tỷ giá** ("chốt tỷ giá", "tỷ giá đã chốt") | khoá tỷ giá (chỉ dùng "khoá" cho tài khoản) |
-| gross | **doanh thu gộp** | — |
-| net to you | **về tay bạn** (giữ, đây là cách nói tự nhiên) | — |
-| ISRC, VCPMC, The MLC, USD, VND, CSV, JSON | giữ nguyên | — |
+| pipeline | **quy trình** | đường ống |
+| grid | **bảng** | lưới |
+| period not open | **kỳ chưa chốt sổ** | kỳ chưa mở |
+| release (album/single) | **bản phát hành**; hồ sơ gửi lên: **hồ sơ phát hành** | release |
+| metadata form | **hồ sơ metadata** | — |
+| boundary between the two apps | **phân quyền hai cổng** | ranh giới |
+| navigation groups (internal) | **Vận hành · Tài chính · Danh mục · Quản trị** | Tiền, Dữ liệu, Hệ thống |
+
+Giữ nguyên: ISRC, UPC, VCPMC, The MLC, USD, VND, CSV, JSON, tên nền tảng, tên
+riêng, email, mã.
 
 ## 2. Cách viết
 
-1. **Bỏ gạch ngang dài giữa câu.** " — " là thói quen tiếng Anh. Thay bằng
-   dấu phẩy, dấu chấm, hai chấm, hoặc tách thành hai câu. Chỉ giữ khi thật
-   sự là một chú thích chen ngang, và tối đa một lần trong một đoạn.
-   - Sai: "Chưa chốt — số quy đổi sang VND sẽ trôi theo tỷ giá hôm nay"
-   - Đúng: "Chưa chốt. Số quy đổi sang VND sẽ trôi theo tỷ giá hôm nay."
-2. **Không mở câu bằng "Nó"** cho một khoản tiền, một dòng, một kỳ. Lặp lại
-   danh từ hoặc bỏ chủ ngữ: "Khoản này không mất, nhưng cũng chưa về tay ai."
-3. **Câu ngắn, chủ động.** Một ý một câu. Tránh bị động kiểu Anh ("được ghi
-   bởi hệ thống" → "hệ thống ghi").
-4. **Nhãn cột và ô số là danh từ ngắn**, nhất quán trên mọi trang: "Đã chi",
-   "Còn lại", "Dồn sang kỳ sau", "Được hưởng".
-5. **Nút là động từ + tân ngữ**: "Duyệt kỳ", "Xuất CSV", "Nhập báo cáo",
-   "Huỷ duyệt".
-6. **Trạng thái**: "đã duyệt", "chưa chốt sổ", "đang treo", "sẵn sàng".
-7. **Không viết HOA cả cụm để nhấn mạnh** ("KHÔNG", "DỰ TÍNH", "SỐ THỰC
-   CHI"). Viết thường; nếu chuỗi cho phép HTML thì dùng `<b>`. Ngoại lệ:
-   tên tài khoản kế toán, mã.
-8. **Xưng hô**: cổng khách hàng gọi người đọc là "bạn"; nội bộ không xưng hô.
-9. **Câu hướng dẫn thao tác**: "bấm" và "chọn" đều được ("bấm một dòng",
-   "chọn kỳ ở thanh trên"). Không dùng "nhấp".
-10. **Số và đơn vị** giữ nguyên cách hiển thị đang có (dấu chấm ngăn nghìn,
-    "₫", "$"). Không đụng vào placeholder `{n}`, thẻ `<b>`, dấu "·", mã,
-    tên riêng, email.
-11. **Ngắn hơn bản cũ nếu được.** Bỏ những đoạn giải thích lặp lại điều
-    trang khác đã nói.
-12. **Giọng**: chắc chắn, không rào đón, không "có thể", "khá", "tương
-    đối" khi nói về con số. Khi cảnh báo, nói hậu quả cụ thể ("sai một ký
-    tự là trả tiền nhầm người").
+1. **Câu đủ thành phần, giọng trung tính.** "Kỳ này chưa xét duyệt nên chưa mở
+   cho đối tác." thay cho "Chưa xét duyệt, khách chưa thấy."
+2. **Nhãn là danh từ hoặc cụm danh từ đầy đủ.** "Sẽ thanh toán", "Đã thanh toán",
+   "Chuyển sang kỳ sau", "Số đã tạm ứng". Không cụt: không "Sẽ chi", "Đã chi",
+   "Dồn tiếp".
+3. **Nút là động từ + tân ngữ**: "Xét duyệt kỳ", "Xuất CSV", "Nhập báo cáo",
+   "Huỷ xét duyệt", "Gửi hồ sơ phát hành".
+4. **Không gạch ngang dài giữa câu.** Dùng dấu phẩy, dấu chấm, hai chấm, hoặc tách
+   câu. Nối nhãn với chi tiết bằng " · " hoặc hai chấm.
+5. **Không mở câu bằng "Nó"**; lặp lại danh từ ("khoản này", "kỳ này").
+6. **Không viết hoa cả cụm để nhấn mạnh.** Dùng `<b>` nếu chuỗi là HTML.
+7. **Không dùng khẩu ngữ và từ tự chế**: không "về tay", "kiếm được", "treo",
+   "gác lại", "dồn", "cân", "lệch", "nuốt", "ăn hết", "bấm nhầm", "nát", "xài".
+   Dùng "bấm" hoặc "chọn" cho thao tác là được.
+8. **Xưng hô**: cổng đối tác gọi người đọc là "bạn"; nội bộ không xưng hô.
+9. **Giải thích ngắn, một ý một câu**, ưu tiên hậu quả cụ thể khi cảnh báo.
+10. Không đụng placeholder `{n}`, thẻ `<b>`, dấu "·", số, mã, tên riêng, email.
+11. Nhãn cột và ô số ngắn nhưng đủ nghĩa; nếu quá dài cho ô thì rút bằng danh từ
+    chính ("Thanh toán", "Chuyển kỳ sau"), không viết tắt.
+12. Tiếng Anh giữ nguyên, không sửa.
 
 ## 3. Ví dụ trước / sau
 
 | Trước | Sau |
 |---|---|
-| Đã nạp đủ 3 luồng dữ liệu | Đủ ba nguồn dữ liệu |
-| Khách chưa nhìn thấy kỳ này. | Label và nghệ sĩ chưa xem được kỳ này. |
-| Tách theo luồng dữ liệu. Cột viền đứt là kỳ chưa duyệt — số còn chạy. | Tách theo nguồn. Cột nét đứt là kỳ chưa duyệt, số liệu còn thay đổi. |
-| Tiền kiếm được của kỳ đi đâu | Tiền của kỳ này đi đâu |
-| Kiếm được qua 12 kỳ | Thu nhập 12 kỳ |
-| Nó không mất, nhưng cũng chưa về tay ai. | Khoản này không mất, nhưng cũng chưa về tay ai. |
-| Thu hồi duyệt | Huỷ duyệt |
-| Đường ống 8 bước | Quy trình nhập 8 bước |
-| Theo cửa hàng / Theo lãnh thổ | Theo nền tảng / Theo thị trường |
-| Kỳ chưa mở | Kỳ này chưa chốt sổ |
-| Hệ thật ghi ở mức từng dòng | Hệ thống thật ghi từng dòng doanh thu |
-
-## 4. Tiếng Anh
-
-Không đụng vào chuỗi tiếng Anh (`en:` trong từ điển, nhánh sau dấu `:` của
-`c.lang === 'vi' ? … : …`, các trường `*En` trong lõi). Bản tiếng Anh đã viết
-tự nhiên từ đầu.
+| Duyệt kỳ · Đã duyệt · Thu hồi duyệt | Xét duyệt kỳ · Đã xét duyệt · Huỷ xét duyệt |
+| Về tay bạn kỳ này | Thu nhập kỳ này |
+| Tiền đi đâu trên đường về tay bạn | Chi tiết dòng tiền: từ doanh thu gộp đến thu nhập của bạn |
+| Sẽ chi · Đã chi · Dồn sang kỳ sau | Sẽ thanh toán · Đã thanh toán · Chuyển sang kỳ sau |
+| Ngưỡng chi trả | Ngưỡng thanh toán tối thiểu |
+| Tiền treo chưa khớp | Tiền chưa khớp ISRC |
+| Hàng chờ khớp ISRC · Gác lại | Danh sách chờ khớp ISRC · Tạm hoãn |
+| Label giữ lại · Phần Haustek giữ thêm | Phần label được hưởng · Phần Haustek theo hợp đồng độc lập |
+| Bên nhận | Bên thụ hưởng |
+| Cân / LỆCH | Cân đối / Chênh lệch |
+| Khách chưa nhìn thấy kỳ này | Kỳ này chưa mở cho đối tác |
+| Câu hỏi còn treo | Câu hỏi cần chốt |
+| Cổng khách hàng | Cổng đối tác |

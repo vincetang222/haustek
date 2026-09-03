@@ -335,6 +335,73 @@ check("Xem trước bảng chi trả không đụng vào sổ", () => {
   return "gọi 3 lần, " + Object.keys(truoc).length + " sổ tạm ứng không xê dịch";
 });
 
+/* ===================== 5b. HỢP ĐỒNG · ROSTER · PHÁT HÀNH ===================== */
+check("Nghệ sĩ không gọi được danh sách nghệ sĩ của label", () => {
+  const m = mustThrow(() => H.api.roster("artist", A1.id, approvedKey), "roster cho nghệ sĩ");
+  return "chặn: " + m;
+});
+
+check("Roster của label chỉ gồm nghệ sĩ thuộc label, và cộng đúng phần label được hưởng", () => {
+  const r = H.api.roster("label", L1.id, approvedKey);
+  r.rows.forEach(x => must(A.artists[x.artistId].labelId === L1.id, x.name + " không thuộc label " + L1.name));
+  const tong = r.rows.reduce((t, x) => t + x.labelCut, 0);
+  const s = H.api.summary("label", L1.id, approvedKey, "rec");
+  must(Math.abs(tong - s.total) < 0.02, "tổng phần label theo nghệ sĩ " + tong.toFixed(2) + " ≠ tổng kỳ " + s.total.toFixed(2));
+  must(!JSON.stringify(r).includes("advance"), "roster lộ tạm ứng cá nhân của nghệ sĩ");
+  return r.count + " nghệ sĩ · phần label " + tong.toFixed(2) + " = tổng kỳ";
+});
+
+check("Hợp đồng của nghệ sĩ thuộc label lấy đúng tỷ lệ của label đó", () => {
+  const nsLabel = A.artists.find(a => a.labelId >= 0);
+  const hd = H.api.contract("artist", nsLabel.id, approvedKey);
+  must(hd.kind === "artist-label", "sai loại: " + hd.kind);
+  must(hd.label && hd.label.name === A.labels[nsLabel.labelId].name, "tên label sai");
+  must(Math.abs(hd.artistShare - A.rates.rateFor("L:" + nsLabel.labelId, approvedKey)) < 1e-9, "tỷ lệ không khớp bảng tỷ lệ của label");
+  must(Math.abs(hd.artistShare + hd.counterpartShare - 1) < 1e-6, "hai phần không cộng thành 100%");
+  must(hd.assumptionQuestion === "q8", "thiếu dấu giả định (câu hỏi 8)");
+  const docLap = A.artists.find(a => a.labelId < 0);
+  const hd2 = H.api.contract("artist", docLap.id, approvedKey);
+  must(hd2.kind === "artist-indie" && hd2.label === null, "nghệ sĩ độc lập lại có label");
+  return "thuộc label " + hd.label.name + " · " + (hd.artistShare * 100).toFixed(0) + "% · độc lập không có label";
+});
+
+check("Hồ sơ phát hành của nghệ sĩ này không lọt sang nghệ sĩ khác", () => {
+  const kq = H.api.submitRelease("artist", A2.id, { title: "Kiểm ranh giới", type: "single", releaseDate: "2026-12-05",
+    tracks: [{ title: "Kiểm ranh giới", writers: [{ name: "X", role: "Composer", pct: 100 }] }] });
+  const cuaA2 = H.api.releases("artist", A2.id).submissions.map(r => r.id);
+  const cuaA1 = H.api.releases("artist", A1.id).submissions.map(r => r.id);
+  must(cuaA2.includes(kq.id), "A2 không thấy hồ sơ của chính mình");
+  must(!cuaA1.includes(kq.id), "A1 thấy hồ sơ của A2");
+  return kq.id + " chỉ hiện với A2";
+});
+
+check("Label không gửi được hồ sơ cho nghệ sĩ ngoài roster", () => {
+  const ngoai = A.artists.find(a => a.labelId !== L1.id);
+  const m = mustThrow(() => H.api.submitRelease("label", L1.id, { artistId: ngoai.id, title: "Lậu", type: "single", releaseDate: "2026-12-05",
+    tracks: [{ title: "Lậu" }] }), "gửi thay nghệ sĩ ngoài roster");
+  const trong = A.artists.find(a => a.labelId === L1.id);
+  const ok = H.api.submitRelease("label", L1.id, { artistId: trong.id, title: "Hợp lệ", type: "single", releaseDate: "2026-12-05",
+    tracks: [{ title: "Hợp lệ" }] });
+  must(H.api.releases("artist", trong.id).submissions.some(r => r.id === ok.id), "nghệ sĩ không thấy hồ sơ label gửi thay mình");
+  return "chặn ngoài roster · trong roster gửi được, nghệ sĩ thấy: " + ok.id;
+});
+
+check("Hồ sơ phát hành đi đúng thứ tự bốn bước, không nhảy bước, mỗi bước một dòng nhật ký", () => {
+  const kq = H.api.submitRelease("artist", A1.id, { title: "Bốn bước", type: "ep", releaseDate: "2026-12-12",
+    tracks: [{ title: "Một" }, { title: "Hai", isrc: "VNHTK2600999" }] });
+  mustThrow(() => A.releases.assignCodes(kq.id, "ops@"), "cấp mã khi chưa tiếp nhận");
+  mustThrow(() => A.releases.publish(kq.id, "ops@"), "phát hành khi chưa cấp mã");
+  A.releases.receive(kq.id, "ops@"); A.releases.assignCodes(kq.id, "ops@"); A.releases.publish(kq.id, "ops@", "2026-12-12");
+  const r = A.releases.get(kq.id);
+  must(r.status === "released", "trạng thái cuối: " + r.status);
+  must(r.tracks.every(t => /^[A-Z]{2}[A-Z0-9]{3}\d{7}$/.test(t.isrc)), "có track chưa có ISRC hợp lệ");
+  must(r.tracks[1].isrc === "VNHTK2600999", "ISRC đối tác khai bị ghi đè");
+  must(r.upc && r.upc.length === 12, "UPC không hợp lệ: " + r.upc);
+  const nk = A.audit.list(20).filter(x => x.action.startsWith("release.") && x.detail.startsWith(kq.id)).map(x => x.action);
+  ["release.submit", "release.receive", "release.code", "release.publish"].forEach(a => must(nk.includes(a), "thiếu nhật ký " + a));
+  return "submitted → received → coded → released · " + nk.length + " dòng nhật ký";
+});
+
 /* ===================== 6. KHOÁ CỬA ===================== */
 check("lockdown() gỡ hẳn mặt tiền admin khỏi trang", () => {
   must(!!H.admin, "chưa lockdown mà admin đã mất");

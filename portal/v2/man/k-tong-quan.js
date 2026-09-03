@@ -51,7 +51,17 @@ HT.dangKy({
       nhipTq2: 'Họ lại báo cáo <b>trễ một tới hai quý</b> so với lúc bài thật sự được phát. Nên tác quyền của một bài phát hôm nay thường nửa năm sau mới về.',
       nhipTq3: 'Vì vậy phần lớn các kỳ <b>không có báo cáo nào</b>. Đó là chuyện bình thường, không phải bài của bạn không có doanh thu.',
       tongTq: 'Tổng tác quyền các kỳ đã báo cáo',
-      khongTqMo: 'Tác quyền thuộc về người sáng tác. Nếu bạn có sáng tác mà chưa thấy ở đây thì phần sáng tác chưa được đăng ký. Liên hệ Haustek để bổ sung.'
+      khongTqMo: 'Tác quyền thuộc về người sáng tác. Nếu bạn có sáng tác mà chưa thấy ở đây thì phần sáng tác chưa được đăng ký. Liên hệ Haustek để bổ sung.',
+      hd: 'Hợp đồng & tỷ lệ', hdMo: 'Tỷ lệ đang áp cho kỳ này và căn cứ của tỷ lệ đó.',
+      hdLabel: 'Thuộc label', hdDocLap: 'Loại hợp đồng', hdDocLapV: 'Độc lập, ký trực tiếp với Haustek', hdLabelV: 'Label, quản lý nghệ sĩ',
+      hdPhi: 'Phí dịch vụ Haustek', hdPhiMo: 'trên doanh thu gộp',
+      hdTyLe: 'Tỷ lệ bạn được hưởng', hdTyLeLb: 'Tỷ lệ trả cho nghệ sĩ', hdTyLeMo: 'trên doanh thu sau phí dịch vụ',
+      hdPhanLabel: 'Phần label được hưởng', hdPhanHt: 'Phần Haustek theo hợp đồng độc lập', hdPhanLbCua: 'Phần label được hưởng',
+      hdHieuLuc: 'Hiệu lực từ kỳ', hdCanCu: 'Căn cứ', hdCanCuKhong: 'Hợp đồng gốc',
+      hdThanhToan: 'Bên thanh toán', hdThanhToanV: 'Haustek thanh toán thẳng cho bạn theo tỷ lệ này',
+      hdNguong: 'Ngưỡng thanh toán tối thiểu', hdProducer: 'Bài có điểm producer', hdProducerMo: 'điểm producer trừ vào phần của bạn',
+      hdLichSu: 'Lịch sử tỷ lệ', hdKy: 'Từ kỳ', hdGiaDinh: 'Bản mẫu giả định Haustek thanh toán thẳng cho từng nghệ sĩ theo tỷ lệ label đặt. Nếu thực tế label tự chia cho nghệ sĩ thì trang này sẽ đổi (câu hỏi cần chốt số 8).',
+      hdTacQuyen: 'Phí quản lý tác quyền'
     },
     en: {
       navTong: 'Overview', h1: 'Overview',
@@ -85,7 +95,17 @@ HT.dangKy({
       nhipTq2: 'And they report <b>one to two quarters late</b> relative to when the music actually played. So publishing on a track released today usually arrives about six months later.',
       nhipTq3: 'That is why most periods simply have <b>no report at all</b> — normal, and not a sign that your works earned nothing.',
       tongTq: 'Publishing across reported periods',
-      khongTqMo: 'Publishing belongs to the writers. If you write and see nothing here, your writer share has not been registered — contact Haustek.'
+      khongTqMo: 'Publishing belongs to the writers. If you write and see nothing here, your writer share has not been registered — contact Haustek.',
+      hd: 'Agreement & rate', hdMo: 'The rate applied this period and what it is based on.',
+      hdLabel: 'Under label', hdDocLap: 'Agreement type', hdDocLapV: 'Independent, signed directly with Haustek', hdLabelV: 'Label, managing artists',
+      hdPhi: 'Haustek service fee', hdPhiMo: 'of gross revenue',
+      hdTyLe: 'Your share', hdTyLeLb: 'Paid to artists', hdTyLeMo: 'of revenue after the service fee',
+      hdPhanLabel: 'Label’s share', hdPhanHt: 'Haustek’s share under the independent agreement', hdPhanLbCua: 'Label’s share',
+      hdHieuLuc: 'Effective from', hdCanCu: 'Basis', hdCanCuKhong: 'Original agreement',
+      hdThanhToan: 'Paid by', hdThanhToanV: 'Haustek pays you directly at this rate',
+      hdNguong: 'Minimum payout', hdProducer: 'Tracks with producer points', hdProducerMo: 'producer points come off your share',
+      hdLichSu: 'Rate history', hdKy: 'From', hdGiaDinh: 'The prototype assumes Haustek pays each artist directly at the rate the label set. If the label pays its artists itself, this page changes (open question 8).',
+      hdTacQuyen: 'Publishing administration fee'
     }
   },
 
@@ -106,13 +126,14 @@ HT.dangKy({
       return;
     }
 
+    /* Không lặp ô số ở đầu trang: dải ô số ngay dưới đã có đủ, kèm so
+       sánh với kỳ trước. Đầu trang chỉ mang tên và câu dẫn. */
     var html = HM.dau({
       h1: HM.esc(t('h1')) + ' <span>' + HM.esc(c.ky.label) + '</span>',
-      so: [
-        { l: t('veTay'), v: HT.fmt.usd(s.total) },
-        s.streams != null ? { l: t('luot'), v: HB.gonSo(s.streams) } : null,
-        { l: t('bai'), v: HT.fmt.n(s.tracks) }
-      ].filter(Boolean)
+      mo: HM.esc(c.song(me, 'belongsTo') ? (c.lang === 'vi'
+        ? (me.independent ? 'Hợp đồng độc lập với Haustek' : 'Nghệ sĩ thuộc ' + me.belongsTo)
+        : (me.independent ? 'Independent agreement with Haustek' : 'Artist under ' + me.belongsTo))
+        : (c.lang === 'vi' ? 'Label · ' + me.trackCount + ' bản ghi đang phân phối' : 'Label · ' + me.trackCount + ' recordings distributed'))
     });
 
     if (coPub) {
@@ -170,6 +191,9 @@ HT.dangKy({
           }) }) + '</div>'
       }) +
       veKhiNao(c, s) + '</div>';
+
+    /* ---- hợp đồng & tỷ lệ ---- */
+    html += veHopDong(c);
 
     /* ---- diễn biến ---- */
     var xh = api.trend(me.role, me.partyId, LUONG);
@@ -296,6 +320,49 @@ function veTacQuyenTrong(c) {
     }) + '</div>';
 
   return html;
+}
+
+/* =====================================================================
+   Thẻ "Hợp đồng & tỷ lệ": tỷ lệ đang áp, hiệu lực từ kỳ nào, căn cứ, ai
+   thanh toán. Trước đây ca sĩ thuộc label không có chỗ nào nói họ thuộc
+   label nào và tỷ lệ bao nhiêu; đây là chỗ đó.
+   ===================================================================== */
+function veHopDong(c) {
+  var t = c.t, me = c.phien.me, api = c.api;
+  var hd;
+  try { hd = api.contract(me.role, me.partyId, c.kyKey); } catch (e) { return ''; }
+  var la = hd.kind === 'label', thuocLabel = hd.kind === 'artist-label';
+  var rows = [
+    thuocLabel ? { t: t('hdLabel'), v: hd.label.name + ' · ' + hd.label.clientId, manh: true } : null,
+    !thuocLabel ? { t: t('hdDocLap'), v: la ? t('hdLabelV') : t('hdDocLapV') } : null,
+    { t: t('hdPhi'), v: HT.fmt.pct(hd.haustekFee) + ' ' + t('hdPhiMo') },
+    { t: la ? t('hdTyLeLb') : t('hdTyLe'), v: HT.fmt.pct(hd.artistShare) + ' ' + t('hdTyLeMo'), manh: !la },
+    { t: la ? t('hdPhanLbCua') : (thuocLabel ? t('hdPhanLabel') : t('hdPhanHt')), v: HT.fmt.pct(hd.counterpartShare) + ' ' + t('hdTyLeMo'), manh: la },
+    { t: t('hdHieuLuc'), v: hd.effectiveFrom || '—' },
+    { t: t('hdCanCu'), v: hd.basis || t('hdCanCuKhong') },
+    !la ? { t: t('hdThanhToan'), v: t('hdThanhToanV') } : null,
+    { t: t('hdNguong'), v: HT.fmt.usd0(hd.payoutThreshold) },
+    !la && hd.producerTracks ? { t: t('hdProducer'), v: HT.fmt.n(hd.producerTracks) + ' · ' + t('hdProducerMo') } : null,
+    me.hasPublishing ? { t: t('hdTacQuyen'), v: HT.fmt.pct(hd.pubFee) } : null
+  ];
+  var lichSu = hd.history.length > 1
+    ? '<h4 class="sec">' + HM.esc(t('hdLichSu')) + '</h4><div class="tw"><table class="t" style="min-width:0"><thead><tr><th>' +
+      HM.esc(t('hdKy')) + '</th><th class="num">' + HM.esc(la ? t('hdTyLeLb') : t('hdTyLe')) + '</th><th>' + HM.esc(t('hdCanCu')) + '</th></tr></thead><tbody>' +
+      hd.history.map(function (h) {
+        return '<tr><td class="mono">' + HM.esc(h.from) + '</td><td class="num">' + HM.esc(HT.fmt.pct(h.artistShare)) + '</td><td>' + HM.esc(h.note || t('hdCanCuKhong')) + '</td></tr>';
+      }).join('') + '</tbody></table></div>'
+    : '';
+  /* Có lịch sử tỷ lệ thì bảng lịch sử đứng cột phải; không có thì chia
+     đôi danh sách khoá–giá trị, đừng để trống nửa thẻ. */
+  var co = rows.filter(Boolean), nua = Math.ceil(co.length / 2);
+  var than = lichSu
+    ? '<div class="grid g2" style="margin-bottom:0"><div>' + HM.kv(co) + '</div><div>' + lichSu + '</div></div>'
+    : '<div class="grid g2" style="margin-bottom:0"><div>' + HM.kv(co.slice(0, nua)) + '</div><div>' + HM.kv(co.slice(nua)) + '</div></div>';
+  return HM.the({
+    h2: HM.esc(t('hd')), p: HM.esc(t('hdMo')),
+    than: than,
+    chan: thuocLabel ? HM.esc(t('hdGiaDinh')) : ''
+  });
 }
 
 /* =====================================================================

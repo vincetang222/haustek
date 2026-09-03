@@ -14,6 +14,7 @@ portal/
     khach.html             CỔNG KHÁCH HÀNG — gọi HAUSTEK.lockdown() rồi chỉ còn HAUSTEK.api
     fonts-nhung.css        bộ chữ nhúng sẵn (Be Vietnam Pro, IBM Plex Mono), không gọi ra Google Fonts
     VAN-PHONG.md           chuẩn thuật ngữ và văn phong tiếng Việt cho mọi chữ trên cổng
+    NGHIEN-CUU-NGUOI-DUNG.md  từng vai dùng cổng để làm gì, trang nào trả lời, chỗ nào còn thiếu
     man/                   mười lăm trang, mỗi trang một file
   dung-goi.js              dựng goi-mot-trang.html: cả hai cổng trong một file để dán lên trình xem
   goi-mot-trang.html       bản gói đã dựng
@@ -46,7 +47,8 @@ gọi `HAUSTEK.lockdown()` **trước khi** chạy bất cứ trang nào, và kh
 | Tổng quan | `man/tong-quan.js` | Kỳ này đóng được chưa, tiền chia đi đâu, còn gì treo |
 | Nhập dữ liệu | `man/nap-du-lieu.js` | Kỳ nào thiếu nguồn nào: bảng 12 kỳ × 4 nguồn |
 | Khớp ISRC | `man/khop-isrc.js` | Tiền chưa có chủ nằm ở đâu, khớp về ai |
-| Đối soát & duyệt kỳ | `man/doi-chieu.js` | Tổng hệ thống có khớp file gốc không, duyệt được chưa |
+| Đối soát & xét duyệt kỳ | `man/doi-chieu.js` | Tổng hệ thống có khớp file gốc không, xét duyệt được chưa |
+| Phát hành | `man/phat-hanh.js` | Hồ sơ phát hành đối tác gửi lên: tiếp nhận → cấp ISRC/UPC → đã phát hành, hoặc trả lại bổ sung |
 | **Kế toán** | `man/ke-toan.js` | Bút toán kỳ, công nợ bên nhận, tạm ứng phải thu, ghi nhận 12 kỳ, thuế |
 | Chi trả | `man/chi-tra.js` | Ai nhận bao nhiêu, vì sao phần còn lại chưa về tay họ |
 | Tạm ứng | `man/tam-ung.js` | Ai còn nợ, thu hồi tới đâu, còn mấy kỳ nữa |
@@ -60,6 +62,8 @@ gọi `HAUSTEK.lockdown()` **trước khi** chạy bất cứ trang nào, và kh
 |---|---|---|
 | Tổng quan | `man/k-tong-quan.js` | Kỳ này tôi được bao nhiêu, vì sao, bao giờ tiền vào |
 | Bài của tôi | `man/k-ban-ghi.js` | Từng bài, phần về tay tôi trên mỗi bài |
+| Nghệ sĩ | `man/k-nghe-si.js` | Chỉ label: từng nghệ sĩ trong roster mang về bao nhiêu, phần nghệ sĩ, phần label |
+| Phát hành | `man/k-phat-hanh.js` | Bản phát hành trong danh mục, hồ sơ đang xử lý, gửi hồ sơ mới theo đúng trường của form metadata |
 | Bảng kê | `man/k-bang-ke.js` | Bản đối soát chính thức: in ra, tải về, gửi kế toán |
 | Tạm ứng | `man/k-tam-ung.js` | Vì sao kỳ này có doanh thu mà không nhận được tiền |
 | Tài liệu | `man/k-tai-lieu.js` | Bảng kê các kỳ cũ, và câu trả lời cho những câu hay hỏi |
@@ -131,6 +135,7 @@ HT.dangKy({
   nav: 'khoaChu',            // khoá chữ cho nhãn ở cột trái
   nhom: 'khoaNhom',          // khoá chữ cho tên nhóm (không bắt buộc)
   icon: 'grid',              // tên icon trong HT.IC
+  khaDung: function (c) { return c.phien.me.role === 'label'; }, // không bắt buộc: trang chỉ dành cho một vai
   dem: function (c) { ... }, // con số nhỏ cạnh nhãn; '!' đứng đầu = màu cảnh báo
   chu: { vi: { khoaChu: 'Tên trang', ... }, en: { khoaChu: 'Screen', ... } },
   ve: function (root, c) { root.innerHTML = '…'; HB.gan(root); }

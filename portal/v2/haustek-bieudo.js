@@ -41,6 +41,9 @@ function esc(s) {
    là một ngày nào đó hai bên lệch nhau và trục tung viết một kiểu, ô số
    bên cạnh viết kiểu khác. */
 function en() { return typeof HT !== 'undefined' && HT.lang === 'en'; }
+/* Chữ hiện trong mách nước và chú thích của biểu đồ. Trước đây viết thẳng
+   tiếng Việt, nên bật EN thì biểu đồ vẫn nói tiếng Việt. */
+function T(vi, e) { return en() ? e : vi; }
 function loc() { return en() ? 'en-US' : 'vi-VN'; }
 function so(v) { return Math.round(v).toLocaleString(loc()); }
 function usd0(v) { return (v < 0 ? '−$' : '$') + Math.round(Math.abs(v)).toLocaleString(loc()); }
@@ -56,14 +59,14 @@ function gonTien(v) {
   var dau = (v < 0 ? '−' : '') + '$';
   if (a >= 1e9) return dau + thapPhan(a / 1e9, a >= 1e10 ? 0 : 1) + (E ? 'B' : ' tỷ');
   if (a >= 1e6) return dau + thapPhan(a / 1e6, a >= 1e7 ? 0 : 1) + (E ? 'M' : 'Tr');
-  if (a >= 1e3) return dau + Math.round(a / 1e3) + (E ? 'K' : 'N');
+  if (a >= 1e3) return dau + Math.round(a / 1e3) + 'K';
   return usd0(v);
 }
 function gonSo(v) {
   var a = Math.abs(v), E = en();
   if (a >= 1e9) return thapPhan(a / 1e9, 1) + (E ? 'B' : ' tỷ');
   if (a >= 1e6) return thapPhan(a / 1e6, a >= 1e7 ? 0 : 1) + (E ? 'M' : 'Tr');
-  if (a >= 1e3) return Math.round(a / 1e3) + (E ? 'K' : 'N');
+  if (a >= 1e3) return Math.round(a / 1e3) + 'K';
   return so(v);
 }
 
@@ -72,7 +75,7 @@ function gonSo(v) {
    --------------------------------------------------------------------- */
 function mocTruc(dinh, n) {
   n = n || 4;
-  if (!(dinh > 0)) return { moc: [0, 1], tran: 1 };
+  if (!(dinh > 0)) return { moc: [0], tran: 1 };
   var tho = dinh / n;
   var bac = Math.pow(10, Math.floor(Math.log(tho) / Math.LN10));
   var chuan = [1, 2, 2.5, 5, 10];
@@ -187,8 +190,9 @@ function dongTip(ten, gt, mau2) {
    cfg: {
      loai:'cot', truc:[nhãn…],
      chuoi:[{ten, gt:[…], mau}],           ← chồng lên nhau
-     duong:{ten, gt:[…], mau, phai:true},  ← đường, có thể dùng trục phải
      cao, dinhDang:'tien'|'so', hienGiaTri, dangDo:[idx…], mo:[idx…],
+   KHÔNG có đường phủ trục phải: hai thước đo khác đơn vị thì vẽ hai biểu đồ
+   nhỏ chung trục hoành, không chồng lên nhau bằng hai trục tung.
      chuThich:true
    }
    Ba trạng thái của một cột, đừng gộp làm hai:
@@ -196,11 +200,35 @@ function dongTip(ten, gt, mau2) {
      · dangDo có idx  → có số nhưng chưa chốt → cột viền đứt
      · còn lại        → đã chốt → cột đặc
    ===================================================================== */
+/* Cột bo đỉnh, vuông đáy: dữ liệu mọc từ một đường đáy chung, đỉnh mềm. */
+function cotBo(x, y, w, h, r) {
+  r = Math.min(r, w / 2, h);
+  if (r <= 0.5) return 'M' + x.toFixed(1) + ' ' + y.toFixed(1) + 'h' + w.toFixed(1) + 'v' + h.toFixed(1) + 'h' + (-w).toFixed(1) + 'z';
+  return 'M' + x.toFixed(1) + ' ' + (y + r).toFixed(1) +
+    'a' + r + ' ' + r + ' 0 0 1 ' + r + ' ' + (-r) +
+    'h' + (w - 2 * r).toFixed(1) +
+    'a' + r + ' ' + r + ' 0 0 1 ' + r + ' ' + r +
+    'v' + (h - r).toFixed(1) + 'h' + (-w).toFixed(1) + 'z';
+}
+/* Nhãn trục hoành dài thì xuống dòng ở khoảng trắng, không cắt cụt bằng "…". */
+function taiDong(chu, toiDa) {
+  chu = String(chu || '');
+  if (chu.length <= toiDa) return [chu];
+  var tu = chu.split(' '), d1 = '', d2 = '';
+  tu.forEach(function (w) {
+    if (!d2 && (d1 + ' ' + w).trim().length <= toiDa) d1 = (d1 + ' ' + w).trim();
+    else d2 = (d2 + ' ' + w).trim();
+  });
+  if (!d1) { d1 = chu.slice(0, toiDa); d2 = chu.slice(toiDa); }
+  if (d2.length > toiDa) d2 = d2.slice(0, Math.max(1, toiDa - 1)) + '…';
+  return d2 ? [d1, d2] : [d1];
+}
+
 function veCot(cfg, W) {
   var H = cfg.cao || 210;
   var P = dayMau();
-  var chuoi = (cfg.chuoi || []).map(function (s, i) {
-    return { ten: s.ten, gt: s.gt, mau: s.mau || P[i % 8] };
+  var chuoi = (cfg.chuoi || []).map(function (se, i) {
+    return { ten: se.ten, gt: se.gt, mau: se.mau || P[i % 8] };
   });
   var truc = cfg.truc || [];
   var n = truc.length;
@@ -212,18 +240,33 @@ function veCot(cfg, W) {
   var tong = [], coSo = [];
   for (var i = 0; i < n; i++) {
     var t = 0, co = false;
-    chuoi.forEach(function (s) { var v = s.gt[i]; if (v != null) { t += v; co = true; } });
+    chuoi.forEach(function (se) { var v = se.gt[i]; if (v != null) { t += v; co = true; } });
     tong.push(t); coSo.push(co);
   }
   var dinh = Math.max.apply(null, tong.concat([0]));
   var tr = mocTruc(dinh, 4);
-  var LE_T = 14, LE_D = 26, LE_P = 8;
+  var LE_T = 18, LE_D = 26, LE_P = 8;
   var LE_TR = cfg.anTruc ? 6 : 52;
   var cao = H - LE_T - LE_D;
   var rong = W - LE_TR - LE_P;
   var bcao = function (v) { return tr.tran > 0 ? v / tr.tran * cao : 0; };
   var bw = n ? rong / n : rong;
-  var wcot = Math.min(bw * 0.62, 46);
+  /* Cột mảnh, phần còn lại của ô là khoảng thở. Cột to hết ô nhìn nặng và
+     trẻ con ở cỡ lớn. */
+  var wcot = Math.min(bw * 0.6, 28);
+  var KHE = 2;   /* khe hở màu nền giữa hai đoạn chồng, thay cho viền */
+
+  /* Ghi số lên cột nào: cột đang xem và cột cao nhất. Ghi số lên mọi cột
+     là một rừng số không ai đọc; trục tung và mách nước lo phần còn lại.
+     hienGiaTri: 'het' giữ đường thoát cho biểu đồ ít cột. */
+  var nhan = {};
+  if (cfg.hienGiaTri) {
+    if (cfg.noiBat != null && cfg.noiBat >= 0) nhan[cfg.noiBat] = true;
+    var iMax = -1;
+    for (var m = 0; m < n; m++) if (coSo[m] && tong[m] > 0 && (iMax < 0 || tong[m] > tong[iMax])) iMax = m;
+    if (iMax >= 0) nhan[iMax] = true;
+    if (cfg.hienGiaTri === 'het' || n <= 6) for (var m2 = 0; m2 < n; m2++) if (coSo[m2] && tong[m2] > 0) nhan[m2] = true;
+  }
 
   var s = '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="' + esc(cfg.moTa || '') + '">';
 
@@ -245,38 +288,39 @@ function veCot(cfg, W) {
     var noiBat = cfg.noiBat === i2;
     var dong = [];
     if (!coSo[i2]) {
-      /* Vạch cụt "chưa có số". Dùng --bar-bg thì ở chế độ tối nó gần như
-         trùng nền thẻ, và người đọc thấy một khoảng trống — trống có nghĩa
-         là số 0, mà đây không phải số 0, đây là "chưa biết". Dùng đường
-         viền để nó nhìn thấy được ở cả hai chế độ. */
-      s += '<rect class="b" x="' + x.toFixed(1) + '" y="' + (duoi - 5) + '" width="' + wcot.toFixed(1) +
-        '" height="5" rx="1.5" fill="' + mau('neutral-bar') + '"/>';
+      /* Vạch cụt "chưa có số": nhìn thấy được ở cả hai chế độ, và khác hẳn
+         một cột bằng 0. */
+      s += '<rect class="b" x="' + x.toFixed(1) + '" y="' + (duoi - 4) + '" width="' + wcot.toFixed(1) +
+        '" height="4" rx="1.5" fill="' + mau('neutral-bar') + '"/>';
     } else {
-      var y0 = duoi;
+      var doan = [];
       chuoi.forEach(function (se) {
         var v = se.gt[i2] || 0;
-        if (v <= 0) return;
-        var h = bcao(v);
-        y0 -= h;
-        s += '<rect class="b" x="' + x.toFixed(1) + '" y="' + y0.toFixed(1) + '" width="' + wcot.toFixed(1) +
-          '" height="' + Math.max(h, 0.8).toFixed(1) + '" rx="' + (h > 5 ? 2 : 0) + '"' +
-          ' fill="' + se.mau + '"' + (moCot ? ' opacity=".42"' : '') +
-          (doTruc ? ' stroke="' + se.mau + '" stroke-width="1.2" stroke-dasharray="3 2" fill-opacity=".2"' : '') + '/>';
-        dong.push(dongTip(se.ten, dayDu(v), se.mau));
+        if (v > 0) doan.push({ v: v, mau: se.mau, ten: se.ten });
       });
-      if (cfg.hienGiaTri && tong[i2] > 0) {
+      var y0 = duoi;
+      doan.forEach(function (d, k) {
+        var h = bcao(d.v), tren = k === doan.length - 1;
+        var dinhDoan = y0 - h;
+        var hVe = Math.max(tren ? h : h - KHE, 0.8);
+        s += '<path class="b" d="' + cotBo(x, dinhDoan, wcot, hVe, tren && h > 5 ? 4 : 0) + '"' +
+          ' fill="' + d.mau + '"' + (moCot ? ' opacity=".42"' : '') +
+          (doTruc ? ' stroke="' + d.mau + '" stroke-width="1.2" stroke-dasharray="3 2" fill-opacity=".22"' : '') + '/>';
+        dong.push(dongTip(d.ten, dayDu(d.v), d.mau));
+        y0 = dinhDoan;
+      });
+      if (nhan[i2]) {
         s += '<text class="vl' + (noiBat ? ' big' : '') + '" x="' + (x + wcot / 2).toFixed(1) + '" y="' +
           (duoi - bcao(tong[i2]) - 6).toFixed(1) + '" text-anchor="middle">' + esc(dinhDang(tong[i2])) + '</text>';
       }
     }
-    /* vùng bắt chuột phủ hết chiều cao, không phải chỉ phần cột — cột thấp
-       thì không ai rê trúng được vài pixel */
+    /* vùng bắt chuột phủ hết chiều cao, không phải chỉ phần cột */
     var tip = '<b>' + esc(cfg.tieuDeTip ? cfg.tieuDeTip(i2) : truc[i2]) + '</b>' +
       (coSo[i2] ? dong.join('') +
         (chuoi.length > 1 ? '<span class="r" style="float:none;display:block;margin-top:5px;' +
           'border-top:1px solid rgba(255,255,255,.16);padding-top:5px">' + esc(dayDu(tong[i2])) + '</span>' : '')
-        : '<span class="d">' + esc(cfg.chuTrong || 'Chưa có số liệu') + '</span>') +
-      (doTruc ? '<span class="d">Chưa duyệt kỳ, số liệu còn thay đổi</span>' : '') +
+        : '<span class="d">' + esc(cfg.chuTrong || T('Chưa có số liệu', 'No data yet')) + '</span>') +
+      (doTruc ? '<span class="d">' + esc(T('Kỳ chưa xét duyệt, số liệu còn thay đổi', 'Period not approved, figures still moving')) + '</span>' : '') +
       (cfg.ghiChuTip ? '<span class="d">' + esc(cfg.ghiChuTip(i2)) + '</span>' : '');
     s += '<g class="hz"' + (cfg.chon ? ' style="cursor:pointer"' : '') +
       ' data-tip="' + esc(tip) + '" data-i="' + i2 + '" tabindex="0">' +
@@ -284,22 +328,7 @@ function veCot(cfg, W) {
       '" height="' + cao + '"/></g>';
   }
 
-  /* đường phủ lên trên (ví dụ: số lượt nghe so với tiền) */
-  if (cfg.duong && n) {
-    var d = cfg.duong, dinh2 = Math.max.apply(null, d.gt.map(function (v) { return v || 0; }).concat([0]));
-    var mauD = d.mau || mau('s4');
-    var pt = [], du = [];
-    for (var j = 0; j < n; j++) {
-      if (d.gt[j] == null) continue;
-      var xx = LE_TR + j * bw + bw / 2;
-      var yy = LE_T + cao - (dinh2 > 0 ? d.gt[j] / dinh2 * cao * 0.88 : 0);
-      pt.push(xx.toFixed(1) + ',' + yy.toFixed(1));
-      du.push('<circle class="dot2" cx="' + xx.toFixed(1) + '" cy="' + yy.toFixed(1) + '" r="3" fill="' + mauD + '"/>');
-    }
-    s += '<polyline class="ln" points="' + pt.join(' ') + '" stroke="' + mauD + '"/>' + du.join('');
-  }
-
-  /* nhãn trục hoành — nếu chật thì bỏ bớt, không xoay chữ */
+  /* nhãn trục hoành: nếu chật thì bỏ bớt, không xoay chữ */
   var buocNhan = Math.ceil(n / Math.max(1, Math.floor(rong / 46)));
   for (var i3 = 0; i3 < n; i3++) {
     if (i3 % buocNhan !== 0 && i3 !== n - 1 && cfg.noiBat !== i3) continue;
@@ -309,11 +338,10 @@ function veCot(cfg, W) {
   s += '<line class="ax" x1="' + LE_TR + '" y1="' + (LE_T + cao) + '" x2="' + (W - LE_P) + '" y2="' + (LE_T + cao) + '"/>';
   s += '</svg>';
 
-  if (cfg.chuThich !== false && (chuoi.length > 1 || cfg.duong)) {
+  if (cfg.chuThich !== false && chuoi.length > 1) {
     s += '<div class="leg">' + chuoi.map(function (se) {
       return '<span><i style="background:' + se.mau + '"></i>' + esc(se.ten) + '</span>';
-    }).join('') + (cfg.duong ? '<span><i style="background:' + (cfg.duong.mau || mau('s4')) +
-      ';border-radius:50%"></i>' + esc(cfg.duong.ten) + '</span>' : '') + '</div>';
+    }).join('') + '</div>';
   }
   return s;
 }
@@ -333,8 +361,8 @@ function veThanh(cfg, W) {
     var phanTram = tong > 0 ? (r.gt || 0) / tong : 0;
     return '<div class="row"' + (cfg.chon ? ' data-h="' + i + '" tabindex="0"' : '') +
       ' data-tip="' + esc('<b>' + esc(r.ten) + '</b>' +
-        dongTip(cfg.tenTong || 'Doanh thu', dayDu(r.gt || 0), r.mau || P[i % 8]) +
-        '<span class="d">' + thapPhan(phanTram * 100, 1) + '% của phần đang xem' +
+        dongTip(cfg.tenTong || T('Doanh thu', 'Revenue'), dayDu(r.gt || 0), r.mau || P[i % 8]) +
+        '<span class="d">' + thapPhan(phanTram * 100, 1) + T('% trong phần đang xem', '% of this view') +
         (r.phu ? ' · ' + esc(r.phu) : '') + '</span>') + '">' +
       '<div class="nm">' + esc(r.ten) + (r.phu ? '<em>' + esc(r.phu) + '</em>' : '') +
       '<div class="bar"><i style="width:' + (pc * 100).toFixed(2) + '%;background:' +
@@ -367,8 +395,8 @@ function veVong(cfg, W) {
     var x4 = cx + r0 * Math.cos(goc), y4 = cy + r0 * Math.sin(goc);
     var mauP = p.mau || P[i % 8];
     s += '<g class="hz" tabindex="0" data-tip="' + esc('<b>' + esc(p.ten) + '</b>' +
-      dongTip(cfg.tenTong || 'Số tiền', dayDu(p.gt), mauP) +
-      '<span class="d">' + thapPhan(p.gt / tong * 100, 1) + '% tổng</span>') + '">' +
+      dongTip(cfg.tenTong || T('Số tiền', 'Amount'), dayDu(p.gt), mauP) +
+      '<span class="d">' + thapPhan(p.gt / tong * 100, 1) + T('% tổng số', '% of total') + '</span>') + '">' +
       '<path class="b" fill="' + mauP + '" d="M' + x1.toFixed(1) + ' ' + y1.toFixed(1) +
       'A' + R + ' ' + R + ' 0 ' + lon + ' 1 ' + x2.toFixed(1) + ' ' + y2.toFixed(1) +
       'L' + x3.toFixed(1) + ' ' + y3.toFixed(1) +
@@ -404,9 +432,9 @@ function veThac(cfg, W) {
   var b = cfg.buoc || [];
   if (!b.length) return '';
   var H = cfg.cao || 210;
-  var LE_T = 20, LE_D = 34, LE_TR = 52, LE_P = 8;
+  var LE_T = 20, LE_D = 40, LE_TR = 52, LE_P = 8;
   var cao = H - LE_T - LE_D, rong = W - LE_TR - LE_P;
-  var n = b.length, bw = rong / n, wcot = Math.min(bw * 0.6, 56);
+  var n = b.length, bw = rong / n, wcot = Math.min(bw * 0.6, 40);
 
   /* mức tích luỹ */
   var mucTren = [], mucDuoi = [], chay = 0, dinh = 0;
@@ -418,9 +446,12 @@ function veThac(cfg, W) {
   });
   var tr = mocTruc(dinh, 4);
   var y = function (v) { return LE_T + cao - (tr.tran > 0 ? v / tr.tran * cao : 0); };
-  var mOk = mau('ok'), mAcc = mau('s1'), mTru = mau('neutral-bar');
+  /* Khoản trừ dùng màu xám đậm (--s8), không dùng --neutral-bar: ở chế độ
+     sáng, --neutral-bar gần trùng nền thẻ và các khối "Phí", "Phần label"
+     gần như không nhìn thấy. Đây đúng là chỗ người dùng báo biểu đồ lỗi. */
+  var mOk = mau('ok'), mAcc = mau('s1'), mTru = mau('s8');
 
-  var s = '<svg viewBox="0 0 ' + W + ' ' + H + '">';
+  var s = '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="' + esc(cfg.moTa || '') + '">';
   tr.moc.forEach(function (v) {
     s += '<line class="gl" x1="' + LE_TR + '" y1="' + y(v).toFixed(1) + '" x2="' + (W - LE_P) + '" y2="' + y(v).toFixed(1) + '"/>' +
       '<text class="vl" x="' + (LE_TR - 8) + '" y="' + (y(v) + 3.5).toFixed(1) + '" text-anchor="end">' +
@@ -431,10 +462,9 @@ function veThac(cfg, W) {
     var yt = y(mucTren[i]), yb = y(mucDuoi[i]);
     var mauC = st.kind === 'final' ? mOk : st.kind === 'top' ? mAcc : mTru;
     s += '<g class="hz" tabindex="0" data-tip="' + esc('<b>' + esc(st.l) + '</b>' +
-      dongTip(st.kind === 'out' ? 'Trừ đi' : 'Số tiền', usd0(Math.abs(st.v)), mauC) +
+      dongTip(st.kind === 'out' ? T('Khoản trừ', 'Deducted') : T('Số tiền', 'Amount'), usd0(Math.abs(st.v)), mauC) +
       (st.nt ? '<span class="d">' + esc(st.nt) + '</span>' : '')) + '">' +
-      '<rect class="b" x="' + x.toFixed(1) + '" y="' + yt.toFixed(1) + '" width="' + wcot.toFixed(1) +
-      '" height="' + Math.max(yb - yt, 1.5).toFixed(1) + '" rx="2" fill="' + mauC + '"/>' +
+      '<path class="b" d="' + cotBo(x, yt, wcot, Math.max(yb - yt, 1.5), st.kind === 'out' ? 0 : 4) + '" fill="' + mauC + '"/>' +
       '<rect class="hit" x="' + (LE_TR + i * bw).toFixed(1) + '" y="' + LE_T + '" width="' + bw.toFixed(1) +
       '" height="' + cao + '"/></g>';
     if (i > 0 && st.kind !== 'final') {
@@ -444,10 +474,12 @@ function veThac(cfg, W) {
     }
     s += '<text class="vl" x="' + (x + wcot / 2).toFixed(1) + '" y="' + (yt - 6).toFixed(1) + '" text-anchor="middle">' +
       esc((st.v < 0 ? '−' : '') + gonTien(Math.abs(st.v)).replace('−', '')) + '</text>';
-    var chu = String(st.l);
-    if (chu.length > Math.floor(bw / 6.4)) chu = chu.slice(0, Math.max(4, Math.floor(bw / 6.4) - 1)) + '…';
-    s += '<text class="lb' + (st.kind === 'final' ? ' on' : '') + '" x="' + (LE_TR + i * bw + bw / 2).toFixed(1) +
-      '" y="' + (H - 11) + '" text-anchor="middle">' + esc(chu) + '</text>';
+    var dongChu = taiDong(st.l, Math.max(6, Math.floor(bw / 6.2)));
+    var xChu = (LE_TR + i * bw + bw / 2).toFixed(1);
+    var yChu = dongChu.length > 1 ? H - 22 : H - 11;
+    s += '<text class="lb' + (st.kind === 'final' ? ' on' : '') + '" x="' + xChu + '" y="' + yChu + '" text-anchor="middle">' +
+      dongChu.map(function (d, k) { return '<tspan x="' + xChu + '" dy="' + (k ? 11 : 0) + '">' + esc(d) + '</tspan>'; }).join('') +
+      '</text>';
   });
   s += '<line class="ax" x1="' + LE_TR + '" y1="' + (LE_T + cao) + '" x2="' + (W - LE_P) + '" y2="' + (LE_T + cao) + '"/></svg>';
   return s;
@@ -490,8 +522,8 @@ function chia(phan, opt) {
     phan.map(function (p, i) {
       return '<i style="width:' + ((p.gt || 0) / tong * 100).toFixed(2) + '%;background:' +
         (p.mau || P[i % 8]) + '" data-tip="' + esc('<b>' + esc(p.ten) + '</b>' +
-        dongTip('Số tiền', dayDu(p.gt || 0), p.mau || P[i % 8]) +
-        '<span class="d">' + thapPhan((p.gt || 0) / tong * 100, 1) + '% tổng</span>') + '"></i>';
+        dongTip(T('Số tiền', 'Amount'), dayDu(p.gt || 0), p.mau || P[i % 8]) +
+        '<span class="d">' + thapPhan((p.gt || 0) / tong * 100, 1) + T('% tổng số', '% of total') + '</span>') + '"></i>';
     }).join('') + '</div>' +
     (opt.chuThich === false ? '' : '<div class="leg">' + phan.map(function (p, i) {
       return '<span><i style="background:' + (p.mau || P[i % 8]) + '"></i>' + esc(p.ten) +

@@ -6,7 +6,7 @@
 node portal/test/api-guard.js
 ```
 
-21 phép kiểm chạy thẳng trên lõi. Đây là thứ **phải chạy trong CI** — mốc số 2 trong tài
+27 phép kiểm chạy thẳng trên lõi. Đây là thứ **phải chạy trong CI** — mốc số 2 trong tài
 liệu bàn giao: chứng minh nghệ sĩ A không truy vấn được dữ liệu nghệ sĩ B.
 
 Kiểm những gì:
@@ -19,11 +19,16 @@ Kiểm những gì:
 - tổng khách nhìn thấy khớp tổng admin tính ra, tới từng xu
 - chuỗi chia tiền cân: phí + phần label giữ + điểm producer + phần nghệ sĩ = doanh thu gộp
 - điểm producer trừ vào phần nghệ sĩ, không cộng thêm bên trên
+- nghệ sĩ không gọi được danh sách nghệ sĩ của label; roster của label chỉ gồm nghệ sĩ
+  thuộc label, cộng đúng phần label được hưởng, và không lộ tạm ứng cá nhân của nghệ sĩ
+- hợp đồng của nghệ sĩ thuộc label lấy đúng tỷ lệ của label đó; nghệ sĩ độc lập không có label
+- hồ sơ phát hành của nghệ sĩ này không lọt sang nghệ sĩ khác; label không gửi được hồ sơ cho
+  nghệ sĩ ngoài roster; hồ sơ đi đúng bốn bước, không nhảy bước, mỗi bước một dòng nhật ký
 - `lockdown()` gỡ hẳn mặt tiền admin và mọi ranh giới vẫn giữ nguyên sau đó
 
 Một phép kiểm mang **nhãn cảnh báo có chủ ý**: bản mẫu chưa có phiên đăng nhập nên
 `partyId` đến từ tham số. Khi lên thật, `partyId` phải lấy từ phiên trên máy chủ —
-không thì sửa một con số trên URL là xem được người khác, và 20 phép kiểm còn lại
+không thì sửa một con số trên URL là xem được người khác, và 26 phép kiểm còn lại
 trở nên vô nghĩa.
 
 Khi lên Postgres, dịch từng phép kiểm ở đây thành một test SQL trên policy RLS.

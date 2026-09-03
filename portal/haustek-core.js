@@ -41,7 +41,7 @@ const T_BOOT = performance.now();
    1. THÔNG SỐ
    --------------------------------------------------------------------- */
 const CFG = {
-  VERSION:      "1.0.0",
+  VERSION:      "1.1.0",   /* 1.1.0: thêm hồ sơ phát hành (state.releases) */
   STORE_KEY:    "haustek.portal.v1",
   N_TRACKS:     50000,
   N_PERIODS:    12,
@@ -341,6 +341,7 @@ function defaultState() {
     accounts: [],
     audit: [],
     answers: {},      /* câu trả lời cho các câu hỏi còn treo (mục 3 tài liệu) */
+    releases: [],     /* hồ sơ phát hành do đối tác gửi lên: đã gửi → tiếp nhận → cấp mã → phát hành */
     publishedAt: null
   };
 
@@ -386,6 +387,110 @@ function fileNameFor(f, p) {
 }
 
 let state = null;
+
+/* ---------------------------------------------------------------------
+   8b. HỒ SƠ PHÁT HÀNH
+   Form metadata ở trang chủ (metadata.html) và bảng releases/tracks/
+   publishing_splits trong schema Supabase là hai đầu của cùng một luồng.
+   Ở bản mẫu, hồ sơ nằm trong state.releases và đi qua bốn bước:
+     submitted → received → coded → released   (returned: trả lại bổ sung)
+   Mỗi bước để lại một dòng lịch sử trên hồ sơ và một dòng nhật ký.
+   --------------------------------------------------------------------- */
+const RELEASE_TYPES = ["single", "ep", "album"];
+const RELEASE_STATUS = ["submitted", "received", "coded", "released", "returned"];
+let releaseSeq = 0;
+function releaseId() {
+  releaseSeq++;
+  const d = new Date();
+  return "HSTK-" + String(d.getFullYear()).slice(2) + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(releaseSeq).padStart(3, "0");
+}
+function genIsrc(seed) {
+  /* VN-HTK-26-NNNNN: mã quốc gia, mã đơn vị cấp, năm, số thứ tự */
+  return "VNHTK26" + String((seed * 7919 + 10007) % 90000 + 10000).padStart(5, "0");
+}
+function genUpc(seed) { return "88" + String(1000000000 + (seed * 104729 + 7) % 8999999999); }
+function releaseStamp(r, status, by, note) {
+  r.status = status;
+  r.updatedAt = nowISO();
+  r.history.push({ at: r.updatedAt, status, by, note: note || null });
+}
+function normaliseTrack(tr, pos, artistName) {
+  const writers = (tr.writers || []).filter(w => w && w.name).map(w => ({
+    name: String(w.name).trim(), role: w.role || "Composer",
+    pct: Math.max(0, Math.min(100, +w.pct || 0)) }));
+  return { pos, title: String(tr.title || "").trim(), version: tr.version ? String(tr.version).trim() : "",
+    artist: tr.artist ? String(tr.artist).trim() : artistName, feat: tr.feat ? String(tr.feat).trim() : "",
+    isrc: tr.isrc ? String(tr.isrc).replace(/[^A-Za-z0-9]/g, "").toUpperCase() : "",
+    producer: tr.producer ? String(tr.producer).trim() : "", publisher: tr.publisher ? String(tr.publisher).trim() : "",
+    writers };
+}
+function validateRelease(payload, artistName) {
+  if (!payload || !String(payload.title || "").trim()) throw new Error("Thiếu tên bản phát hành");
+  if (RELEASE_TYPES.indexOf(payload.type) < 0) throw new Error("Loại phát hành không hợp lệ");
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(payload.releaseDate || "")) throw new Error("Ngày phát hành phải theo dạng yyyy-mm-dd");
+  const tracks = (payload.tracks || []).map((t, i) => normaliseTrack(t, i + 1, artistName)).filter(t => t.title);
+  if (!tracks.length) throw new Error("Hồ sơ phải có ít nhất một track");
+  tracks.forEach(t => {
+    if (t.isrc && !/^[A-Z]{2}[A-Z0-9]{3}\d{7}$/.test(t.isrc)) throw new Error("Mã ISRC không đúng định dạng: " + t.isrc);
+    const tong = t.writers.reduce((a, w) => a + w.pct, 0);
+    if (tong > 100.001) throw new Error("Tổng tỉ lệ sáng tác của track \"" + t.title + "\" vượt 100%");
+  });
+  return tracks;
+}
+function buildRelease(payload, artistId, submittedBy, role) {
+  const a = ARTISTS[artistId];
+  const tracks = validateRelease(payload, a.name);
+  const now = nowISO();
+  const r = {
+    id: releaseId(), artistId, artistName: a.name, artistClientId: a.clientId,
+    labelId: a.labelId, submittedBy, submittedRole: role,
+    title: String(payload.title).trim(), version: payload.version ? String(payload.version).trim() : "",
+    type: payload.type, genre: payload.genre || "", lang: payload.lang || "vi",
+    releaseDate: payload.releaseDate, upc: payload.upc ? String(payload.upc).replace(/\D/g, "") : "",
+    artwork: payload.artwork || "", note: payload.note || "",
+    tracks, status: "submitted", history: [], createdAt: now, updatedAt: now, releasedAt: null
+  };
+  r.history.push({ at: now, status: "submitted", by: submittedBy, note: null });
+  return r;
+}
+/* Bản phát hành đã có trong danh mục, suy ra từ bản ghi: cùng nghệ sĩ,
+   cùng kỳ phát hành, cùng loại. Single thì mỗi bản ghi một bản phát hành. */
+function catalogueReleases(role, partyId, limit) {
+  const sc = scopeOf(role, partyId, "rec");
+  const n = sc ? sc.length : N;
+  const groups = new Map();
+  for (let k = 0; k < n; k++) {
+    const i = sc ? sc[k] : k;
+    const key = tType[i] === 0 ? "s:" + i : tArtist[i] + ":" + tRel[i] + ":" + tType[i];
+    let g = groups.get(key);
+    if (!g) {
+      g = { key, artistId: tArtist[i], rel: tRel[i], type: tType[i], tracks: [], earning: false };
+      groups.set(key, g);
+    }
+    g.tracks.push(i);
+  }
+  const arr = [...groups.values()];
+  /* Doanh thu gộp cộng dồn qua các kỳ đã xét duyệt: để bản có doanh thu
+     đứng trước, thay vì hai mươi bản mới nhất cùng một kỳ và cùng "chưa có". */
+  const daDuyet = [];
+  for (let p = 0; p < P; p++) if (state.approved[PERIODS[p].k]) daDuyet.push(p);
+  arr.forEach(g => { let s = 0; for (const i of g.tracks) for (const p of daDuyet) s += grossOf(i, p, "rec"); g.gross = cents(s); });
+  arr.sort((a, b) => b.gross - a.gross || b.rel - a.rel || a.artistId - b.artistId);
+  const total = arr.length;
+  const rows = arr.slice(0, limit || 40).map(g => {
+    const first = g.tracks[0];
+    return { id: "CAT-" + g.key.replace(/[^0-9a-z]/gi, "-"), title: tTitle[first], type: TYPES[g.type] || "Single",
+      artistId: g.artistId, artistName: ARTISTS[g.artistId].name,
+      releasePeriod: PERIODS[g.rel].label, tracks: g.tracks.length, earning: g.gross > 0, gross: g.gross,
+      isrc: g.tracks.length === 1 ? tIsrc[first] : null, status: "released" };
+  });
+  return { rows, total };
+}
+function releaseVisible(r, role, partyId) {
+  if (role === "admin") return true;
+  if (role === "label") return r.labelId === partyId;
+  return r.artistId === partyId;
+}
 
 /* ---------------------------------------------------------------------
    9. LƯU / NẠP / XUẤT
@@ -935,9 +1040,65 @@ function seedAccounts() {
 }
 seedAccounts();
 
+/* Vài hồ sơ phát hành mẫu cho các tài khoản mẫu, ở đủ các bước, để trang
+   Phát hành ở cả hai cổng không trống ngay lần mở đầu. */
+function seedReleases() {
+  if (!state.releases) state.releases = [];
+  if (state.releases.length) return;
+  const artists = state.accounts.filter(a => a.role === "artist" && a.status === "active")
+    .map(a => +a.partyKey.slice(2)).filter(id => ARTISTS[id]);
+  const labels = state.accounts.filter(a => a.role === "label" && a.status === "active")
+    .map(a => +a.partyKey.slice(2)).filter(id => LABELS[id]);
+  if (!artists.length) return;
+  /* Xen nghệ sĩ thuộc label có tài khoản mẫu, để cổng của label cũng có
+     hồ sơ để xem, không chỉ cổng của nghệ sĩ. */
+  const cuaLabel = [];
+  ARTISTS.forEach(a => { if (cuaLabel.length < 3 && labels.indexOf(a.labelId) >= 0 && artists.indexOf(a.id) < 0) cuaLabel.push(a.id); });
+  const xen = [];
+  for (let i = 0; i < 6; i++) xen.push(i % 2 === 0 ? artists[(i / 2) % artists.length] : (cuaLabel[(i - 1) / 2 % Math.max(1, cuaLabel.length)] ?? artists[i % artists.length]));
+  const pick = (arr, i) => xen[i % xen.length];
+  const mau = [
+    { artist: pick(artists, 0), title: "Đêm thứ hai", type: "ep", date: "2026-10-03", genre: "Alternative", status: "released",
+      tracks: [["Đêm thứ hai", "Lam Nguyên"], ["Vọng", "Lam Nguyên"], ["Trôi", ""]] },
+    { artist: pick(artists, 1), title: "Lặng", type: "single", date: "2026-09-26", genre: "Pop", status: "coded",
+      tracks: [["Lặng", "Thu Diệp"]] },
+    { artist: pick(artists, 2), title: "Tần số cuối", type: "single", date: "2026-10-17", genre: "Electronic", status: "received",
+      tracks: [["Tần số cuối", "ResQ"]] },
+    { artist: pick(artists, 3), title: "Mưa tháng sáu (Live)", type: "single", date: "2026-10-24", genre: "Indie", status: "submitted",
+      tracks: [["Mưa tháng sáu", ""]] },
+    { artist: pick(artists, 4), title: "Khói", type: "album", date: "2026-11-14", genre: "R&B", status: "submitted",
+      tracks: [["Khói", "Minh Hạo"], ["Xa", "Minh Hạo"], ["Bóng", ""], ["Chậm", "Khuê Trang"], ["Nghiêng", ""]] },
+    { artist: pick(artists, 5), title: "Vệt nắng", type: "single", date: "2026-09-19", genre: "Pop", status: "returned",
+      tracks: [["Vệt nắng", "Sơn Bảo"]], note: "Thiếu link file WAV của track 1 và tên thật của người viết lời. Bổ sung rồi gửi lại." }
+  ];
+  const ngay = ["2026-08-11 09:42:00", "2026-08-14 15:10:00", "2026-08-19 10:05:00", "2026-08-25 16:48:00", "2026-08-28 11:30:00", "2026-09-01 08:55:00"];
+  mau.forEach((m, k) => {
+    const a = ARTISTS[m.artist];
+    /* Hồ sơ của nghệ sĩ thuộc label: cứ hồ sơ thứ hai là do label gửi thay */
+    const byLabel = a.labelId >= 0 && k % 2 === 1 && labels.indexOf(a.labelId) >= 0;
+    const by = byLabel ? LABELS[a.labelId].clientId : a.clientId;
+    const r = buildRelease({ title: m.title, type: m.type, releaseDate: m.date, genre: m.genre, lang: "vi",
+      tracks: m.tracks.map(t => ({ title: t[0], producer: t[1], writers: t[1] ? [{ name: a.name, role: "Composer", pct: 60 }, { name: t[1], role: "Lyricist", pct: 40 }] : [{ name: a.name, role: "Composer", pct: 100 }] })) },
+      m.artist, by, byLabel ? "label" : "artist");
+    r.createdAt = r.updatedAt = r.history[0].at = ngay[k];
+    const buoc = { received: 1, coded: 2, released: 3, returned: 1 };
+    const cot = m.status === "returned" ? ["returned"] : ["received", "coded", "released"].slice(0, buoc[m.status] || 0);
+    cot.forEach((st, j) => {
+      const at = ngay[k].slice(0, 10) + " " + String(10 + j * 3).padStart(2, "0") + ":" + String(15 + j * 7).padStart(2, "0") + ":00";
+      if (st === "coded") { r.tracks.forEach((t, ti) => { if (!t.isrc) t.isrc = genIsrc(k * 10 + ti); }); if (!r.upc) r.upc = genUpc(k + 1); }
+      if (st === "released") r.releasedAt = m.date;
+      r.status = st; r.updatedAt = at;
+      r.history.push({ at, status: st, by: "ops@haustek-group.com", note: st === "returned" ? m.note : null });
+    });
+    state.releases.push(r);
+  });
+  state.releases.sort((x, y) => (x.updatedAt < y.updatedAt ? 1 : -1));
+}
+seedReleases();
+
 const audit = {
-  log(action, detail) {
-    state.audit.unshift({ at: nowISO(), action, detail, by: "mgmt@haustek-group.com" });
+  log(action, detail, by) {
+    state.audit.unshift({ at: nowISO(), action, detail, by: by || "mgmt@haustek-group.com" });
     if (state.audit.length > 400) state.audit.length = 400;
   },
   list(limit) { return state.audit.slice(0, limit || 100); }
@@ -999,7 +1160,17 @@ const QUESTIONS = [
          + "không phải sửa giao diện." ,
     tEn: "Is the revenue figure in the report file BEFORE or AFTER the distributor takes their share?",
     whyEn: "This is the most expensive question on the list, and the handoff document does not address it. If the figure in the file is already net of the partner's share and the system then charges the 15% Haustek fee on top of it, then what an artist reads as 'gross revenue' is not gross revenue — and every step after it is off by the same amount. Conversely, if it is a true gross figure and the system does not deduct the partner's share, Haustek is short. The gap between the two readings is over 10% on every line, every period, every person. It cannot be guessed — it needs a sample revenue report.",
-    guessEn: "The prototype treats the figure in the file as a true gross number and charges the 15% Haustek fee on it. The distributor's own share sits outside the model. If reality is the other way round, the money chain has to change — not the interface." }
+    guessEn: "The prototype treats the figure in the file as a true gross number and charges the 15% Haustek fee on it. The distributor's own share sits outside the model. If reality is the other way round, the money chain has to change — not the interface." },
+  { id: "q8", t: "Nghệ sĩ thuộc label nhận tiền từ Haustek hay từ label?",
+    why: "Quyết định toàn bộ trang của ca sĩ thuộc label. Nếu Haustek thanh toán thẳng cho nghệ sĩ theo tỷ lệ label khai, "
+       + "nghệ sĩ có bảng kê và số thanh toán riêng như bản mẫu đang vẽ. Nếu Haustek chuyển cả gói cho label rồi label tự chia, "
+       + "nghệ sĩ chỉ có 'phần được hưởng theo bảng chia của label' và không có khoản thanh toán nào từ Haustek; bảng kê, "
+       + "ngưỡng thanh toán, tạm ứng của họ đều là chuyện giữa họ với label.",
+    guess: "Bản mẫu giả định Haustek thanh toán thẳng cho từng nghệ sĩ theo tỷ lệ label đặt, và label nhận phần còn lại. "
+         + "Trang Hợp đồng & tỷ lệ của nghệ sĩ nói rõ giả định này." ,
+    tEn: "Are artists under a label paid by Haustek or by the label?",
+    whyEn: "This decides the whole label-artist experience. If Haustek pays artists directly at the rate the label declared, they have their own statement and payout as the prototype draws. If Haustek pays the label in full and the label splits it, the artist only has 'a share per the label's split table' and no payout from Haustek; their statement, threshold and advance are between them and the label.",
+    guessEn: "The prototype assumes Haustek pays each artist directly at the label's rate, with the label receiving the remainder. The artist's Agreement & rate card states this assumption." }
 ];
 const SAMPLES_NEEDED = [
   { id: "s1", t: "File mẫu master data 10–15 dòng",
@@ -1313,6 +1484,48 @@ const admin = {
       audit.log("account.remove", a.email); store.save();
     }
   },
+  releases: {
+    list(filter) {
+      let ds = state.releases.slice();
+      if (filter && filter.status) ds = ds.filter(r => r.status === filter.status);
+      return ds;
+    },
+    get(id) { return state.releases.find(r => r.id === id) || null; },
+    counts() {
+      const c = { submitted: 0, received: 0, coded: 0, released: 0, returned: 0 };
+      state.releases.forEach(r => { c[r.status] = (c[r.status] || 0) + 1; });
+      return c;
+    },
+    receive(id, by, note) {
+      const r = this.get(id); if (!r) throw new Error("Không tìm thấy hồ sơ " + id);
+      if (r.status !== "submitted") throw new Error("Hồ sơ này không ở bước đã gửi");
+      releaseStamp(r, "received", by || "ops@haustek-group.com", note);
+      audit.log("release.receive", r.id + " · " + r.title + " · " + r.artistName, by); store.save(); return r;
+    },
+    assignCodes(id, by) {
+      const r = this.get(id); if (!r) throw new Error("Không tìm thấy hồ sơ " + id);
+      if (r.status !== "received") throw new Error("Phải tiếp nhận hồ sơ trước khi cấp mã");
+      let n = 0, seed = state.releases.indexOf(r) * 10 + 1;
+      r.tracks.forEach((t, i) => { if (!t.isrc) { t.isrc = genIsrc(seed + i + (Date.now() % 977)); n++; } });
+      if (!r.upc) r.upc = genUpc(seed + (Date.now() % 4441));
+      releaseStamp(r, "coded", by || "ops@haustek-group.com", n + " ISRC mới");
+      audit.log("release.code", r.id + " · " + r.title + " · " + n + " ISRC mới · UPC " + r.upc, by); store.save(); return r;
+    },
+    publish(id, by, date) {
+      const r = this.get(id); if (!r) throw new Error("Không tìm thấy hồ sơ " + id);
+      if (r.status !== "coded") throw new Error("Phải cấp mã trước khi đánh dấu đã phát hành");
+      r.releasedAt = date || r.releaseDate;
+      releaseStamp(r, "released", by || "ops@haustek-group.com", null);
+      audit.log("release.publish", r.id + " · " + r.title + " · " + r.releasedAt, by); store.save(); return r;
+    },
+    returnFix(id, by, note) {
+      const r = this.get(id); if (!r) throw new Error("Không tìm thấy hồ sơ " + id);
+      if (!note) throw new Error("Phải ghi rõ cần bổ sung gì");
+      if (r.status === "released") throw new Error("Hồ sơ đã phát hành, không trả lại được");
+      releaseStamp(r, "returned", by || "ops@haustek-group.com", note);
+      audit.log("release.return", r.id + " · " + r.title + " · " + note.slice(0, 80), by); store.save(); return r;
+    }
+  },
   answers: {
     get(id) { return state.answers[id] || ""; },
     set(id, text) { state.answers[id] = text; audit.log("answer.set", id + " · " + (text ? text.slice(0, 60) : "(xoá)")); store.save(); },
@@ -1363,7 +1576,7 @@ function requireApproved(periodKey) {
 
 const api = {
   /* đọc lại quyết định mới nhất của admin (khi intranet vừa duyệt xong) */
-  refresh() { const s = store.load(); if (s) { state = s; invalidateRates(); rebuildMatchIndex(); } return !!s; },
+  refresh() { const s = store.load(); if (s) { state = s; if (!state.releases) state.releases = []; invalidateRates(); rebuildMatchIndex(); } return !!s; },
 
   /* Bản mẫu: liệt kê những tài khoản đã được cấp, để mô phỏng bước đăng
      nhập. Hệ thật KHÔNG có hàm này — trang đăng nhập không bao giờ nói cho
@@ -1552,6 +1765,96 @@ const api = {
           : (payoutRow.carryOut > 0 ? "below the " + fmt.usd0(CFG.PAYOUT_MIN) + " threshold — carried to the next period" : "") } : null,
       approvedAt: state.approved[periodKey].at
     });
+  },
+
+  /* Hợp đồng & tỷ lệ của chính người đang xem. Tỷ lệ là tỷ lệ áp cho họ,
+     lấy từ bảng có kỳ hiệu lực: nghệ sĩ thuộc label lấy dòng của label;
+     nghệ sĩ độc lập và label lấy dòng của chính mình. */
+  contract(role, partyId, periodKey) {
+    assertParty(role, partyId);
+    const pi = pIndexOf(periodKey);
+    const pk = pi >= 0 ? periodKey : PERIODS[P - 1].k;
+    const isLabel = role === "label";
+    const me = isLabel ? LABELS[partyId] : ARTISTS[partyId];
+    const rateKey = isLabel ? me.key : (me.labelId >= 0 ? LABELS[me.labelId].key : me.key);
+    const sched = rates.scheduleFor(rateKey).slice().sort((a, b) => pIndexOf(a.from) - pIndexOf(b.from));
+    const cur = rates.rateFor(rateKey, pk);
+    const row = sched.filter(r => pIndexOf(r.from) <= pIndexOf(pk)).pop() || null;
+    let producerTracks = 0;
+    if (!isLabel) idxOf(byArtist, partyId).forEach(i => { if (tProd[i] > 0) producerTracks++; });
+    const partyKey = isLabel ? "L:" + partyId : "A:" + partyId;
+    return scrub({
+      kind: isLabel ? "label" : (me.labelId >= 0 ? "artist-label" : "artist-indie"),
+      party: { name: me.name, clientId: me.clientId },
+      label: (!isLabel && me.labelId >= 0) ? { name: LABELS[me.labelId].name, clientId: LABELS[me.labelId].clientId } : null,
+      haustekFee: CFG.HAUSTEK_FEE, pubFee: CFG.PUB_FEE,
+      artistShare: cur, counterpartShare: cents(1 - cur),
+      effectiveFrom: row ? PERIODS[pIndexOf(row.from)].label : null,
+      basis: row ? (row.note || null) : null,
+      history: sched.map(r => ({ from: PERIODS[pIndexOf(r.from)].label, artistShare: r.rate, note: r.note || null })),
+      producerTracks,
+      hasAdvance: !!(state.advances[partyKey] && state.advances[partyKey].opening > 0),
+      payoutThreshold: CFG.PAYOUT_MIN,
+      /* Giả định của bản mẫu, ghi thẳng vào payload để giao diện nói ra */
+      paidBy: "Haustek",
+      assumptionQuestion: (!isLabel && me.labelId >= 0) ? "q8" : null
+    });
+  },
+
+  /* Danh sách nghệ sĩ trong roster của label, theo kỳ đã xét duyệt. Chỉ label
+     mới gọi được; nghệ sĩ không có roster. Tạm ứng cá nhân của nghệ sĩ là
+     chuyện giữa nghệ sĩ với Haustek, không đưa vào đây. */
+  roster(role, partyId, periodKey) {
+    assertParty(role, partyId);
+    if (role !== "label") throw new Error("Chỉ label mới có danh sách nghệ sĩ");
+    const p = requireApproved(periodKey);
+    const ids = idxOf(byLabel, partyId);
+    const per = new Map();
+    for (const i of ids) {
+      const g = grossOf(i, p, "rec");
+      if (g <= 0) continue;
+      const sp = splitRec(i, g, PERIODS[p].k);
+      const a = tArtist[i];
+      let o = per.get(a);
+      if (!o) { o = { artistId: a, name: ARTISTS[a].name, clientId: ARTISTS[a].clientId, tracks: 0, streams: 0, gross: 0, artist: 0, labelCut: 0, producer: 0 }; per.set(a, o); }
+      o.tracks++; o.streams += recStreams[i * P + p]; o.gross += g; o.artist += sp.artist; o.labelCut += sp.labelCut; o.producer += sp.producer;
+    }
+    const rows = [...per.values()].map(o => Object.assign(o, { gross: cents(o.gross), artist: cents(o.artist), labelCut: cents(o.labelCut), producer: cents(o.producer) }))
+      .sort((a, b) => b.gross - a.gross);
+    const idle = [];
+    ARTISTS.forEach(a => { if (a.labelId === partyId && !per.has(a.id)) idle.push({ artistId: a.id, name: a.name, clientId: a.clientId, tracks: idxOf(byArtist, a.id).length, streams: 0, gross: 0, artist: 0, labelCut: 0, producer: 0 }); });
+    const total = rows.reduce((t, r) => ({ gross: t.gross + r.gross, artist: t.artist + r.artist, labelCut: t.labelCut + r.labelCut, producer: t.producer + r.producer, streams: t.streams + r.streams }), { gross: 0, artist: 0, labelCut: 0, producer: 0, streams: 0 });
+    return scrub({ periodKey, rows: rows.concat(idle), earning: rows.length, count: rows.length + idle.length,
+      total: { gross: cents(total.gross), artist: cents(total.artist), labelCut: cents(total.labelCut), producer: cents(total.producer), streams: total.streams } });
+  },
+
+  /* Nghệ sĩ mà bên này được gửi hồ sơ thay: label thì cả roster, nghệ sĩ thì chính mình. */
+  rosterArtists(role, partyId) {
+    assertParty(role, partyId);
+    if (role === "label") return scrub({ rows: ARTISTS.filter(a => a.labelId === partyId).map(a => ({ artistId: a.id, name: a.name, clientId: a.clientId })) });
+    const a = ARTISTS[partyId];
+    return scrub({ rows: [{ artistId: a.id, name: a.name, clientId: a.clientId }] });
+  },
+
+  /* Bản phát hành: hồ sơ đã gửi (state.releases) và bản đã có trong danh mục. */
+  releases(role, partyId) {
+    assertParty(role, partyId);
+    const mine = state.releases.filter(r => releaseVisible(r, role, partyId));
+    const cat = catalogueReleases(role, partyId, 40);
+    return scrub({ submissions: mine, catalogue: cat.rows, catalogueTotal: cat.total,
+      statuses: RELEASE_STATUS.slice() });
+  },
+  submitRelease(role, partyId, payload) {
+    assertParty(role, partyId);
+    const artistId = role === "label" ? +(payload && payload.artistId) : partyId;
+    if (!ARTISTS[artistId]) throw new Error("Chưa chọn nghệ sĩ chính");
+    if (role === "label" && ARTISTS[artistId].labelId !== partyId) throw new Error("Nghệ sĩ này không thuộc label của bạn");
+    const who = role === "label" ? LABELS[partyId] : ARTISTS[partyId];
+    const r = buildRelease(payload, artistId, who.clientId, role);
+    state.releases.unshift(r);
+    audit.log("release.submit", r.id + " · " + r.title + " · " + r.artistName + " · " + r.tracks.length + " track", who.clientId);
+    store.save();
+    return scrub({ id: r.id, status: r.status, tracks: r.tracks.length });
   },
 
   trend(role, partyId, stream) {

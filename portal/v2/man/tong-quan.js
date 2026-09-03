@@ -140,8 +140,10 @@ HT.dangKy({
     html += HM.dau({
       h1: HM.esc(t('h1')) + ' <span>' + HM.esc(c.ky.label) + '</span>',
       mo: HM.esc(t('mo')),
+      /* Dải ô số ngay dưới đã có doanh thu gộp; đầu trang chỉ giữ hai
+         con số không nằm trong dải. Một con số hiện hai lần cách nhau
+         80px là một lần thừa. */
       so: [
-        { l: t('gop'), v: c.tien(nay.gross) },
         { l: t('luot'), v: HB.gonSo(nay.streams) },
         { l: t('bai'), v: HT.fmt.n(nay.tracks) }
       ]
@@ -188,13 +190,18 @@ HT.dangKy({
       than: HB.o({
         loai: 'cot', cao: 250, hienGiaTri: false,
         truc: A.periods.map(function (p) { return p.label.slice(0, 2); }),
-        tieuDeTip: function (i) { return 'Kỳ ' + A.periods[i].label; },
-        ghiChuTip: function (i) {
-          return HT.fmt.n(day.luot[i]) + ' ' + t('luotNghe') +
-            (A.isApproved(A.periods[i].k) ? '' : ' · chưa duyệt');
-        },
-        chuoi: day.chuoi, dangDo: chuaDuyetIdx, noiBat: pi,
-        duong: { ten: c.lang === 'vi' ? 'Lượt nghe' : 'Streams', gt: day.luot, mau: P[3] }
+        tieuDeTip: function (i) { return (c.lang === 'vi' ? 'Kỳ ' : 'Period ') + A.periods[i].label; },
+        chuoi: day.chuoi, dangDo: chuaDuyetIdx, noiBat: pi
+      }) +
+      /* Lượt nghe là thước đo khác đơn vị với tiền: vẽ riêng một biểu đồ nhỏ
+         chung trục hoành, không phủ một đường lên cột tiền bằng trục thứ hai
+         không ai đọc được. */
+      '<h4 class="sec" style="margin-top:14px">' + HM.esc(t('luot')) + '</h4>' +
+      HB.o({
+        loai: 'cot', cao: 120, dinhDang: 'so', chuThich: false,
+        truc: A.periods.map(function (p) { return p.label.slice(0, 2); }),
+        tieuDeTip: function (i) { return (c.lang === 'vi' ? 'Kỳ ' : 'Period ') + A.periods[i].label; },
+        chuoi: [{ ten: t('luot'), gt: day.luot, mau: P[3] }], dangDo: chuaDuyetIdx, noiBat: pi
       }),
       chan: (c.lang === 'vi'
         ? 'Tiền của một nguồn chỉ vào tổng khi nguồn đó đã nhập cho kỳ. Cột thấp bất thường thì xem trang Nhập dữ liệu trước khi nghi ngờ thị trường.'

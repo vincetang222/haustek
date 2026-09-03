@@ -172,9 +172,10 @@
      trái, ghi chú dưới bảng), và ở cỡ đó chuẩn WCAG AA đòi 4,5:1. Bộ màu
      ban đầu chỉ đạt 3,1:1 trên nền thẻ trắng — nhìn thì "nhã", đọc thì
      không ra, nhất là trên laptop nghiêng màn. */
-  --bg:      #F5F6F8;
+  --bg:      #F2F4F7;
   --card:    #FFFFFF;
   --raised:  #FFFFFF;
+  --card-line: #E1E6EC;   /* viền mảnh của thẻ, ngả lạnh theo màu nhấn */
   --ink:     #1A2129;
   --ink-2:   #5B6672;
   --faint:   #626B75;
@@ -210,8 +211,15 @@
      dung: #C8102E trên #0E1A24 chỉ đạt 3,0:1. */
   --danger-chrome: #FF8095;
 
-  --shadow:   0 1px 2px rgba(16,24,32,.06);
-  --shadow-2: 0 8px 28px rgba(16,24,32,.13);
+  /* Bóng hai lớp: một lớp tiếp xúc rất gần, một lớp toả rộng và mờ. Một
+     bóng phẳng 1px khiến mọi thẻ trông như dán lên nền; hai lớp thì thẻ
+     "đứng" lên khỏi nền mà vẫn nhẹ. */
+  --shadow:   0 1px 1px rgba(20,32,44,.04), 0 3px 8px -1px rgba(20,32,44,.06), 0 16px 40px -20px rgba(20,32,44,.22);
+  --shadow-2: 0 2px 6px rgba(20,32,44,.08), 0 18px 48px -12px rgba(20,32,44,.28);
+  --shadow-lift: 0 4px 14px -6px rgba(12,114,135,.45);
+  --hero-wash: linear-gradient(135deg, rgba(12,114,135,.10), rgba(12,114,135,0) 55%);
+  --accent-grad: linear-gradient(180deg, #11849B, #0C7287);
+  --chrome-grad: linear-gradient(180deg, #10202C 0%, #0C1720 100%);
 
   --f:    'Be Vietnam Pro', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace;
@@ -290,6 +298,7 @@
   --bg:      #0E1820;
   --card:    #15212B;
   --raised:  #1A2833;
+  --card-line: #24333F;
   --ink:     #E8EEF4;
   --ink-2:   #A9B7C4;
   --faint:   #909FAD;
@@ -318,8 +327,12 @@
   --on-danger: #350810;
   --danger-chrome: #FF8FA1;
 
-  --shadow:   0 1px 2px rgba(0,0,0,.32);
-  --shadow-2: 0 10px 30px rgba(0,0,0,.45);
+  --shadow:   0 1px 1px rgba(0,0,0,.25), 0 2px 8px rgba(0,0,0,.28), 0 14px 36px -18px rgba(0,0,0,.6);
+  --shadow-2: 0 2px 8px rgba(0,0,0,.35), 0 20px 50px -12px rgba(0,0,0,.7);
+  --shadow-lift: 0 4px 14px -6px rgba(76,184,206,.5);
+  --hero-wash: linear-gradient(135deg, rgba(76,184,206,.14), rgba(76,184,206,0) 55%);
+  --accent-grad: linear-gradient(180deg, #58C4D9, #3FAEC4);
+  --chrome-grad: linear-gradient(180deg, #0F1A23 0%, #0A131A 100%);
 
   color-scheme: dark;
 }
@@ -352,8 +365,8 @@ ul,ol{list-style:none}
    KHUNG ỨNG DỤNG
    ===================================================================== */
 .app{display:grid;grid-template-columns:var(--side-w) minmax(0,1fr);min-height:100vh}
-.side{background:var(--chrome);color:var(--on-chrome-2);display:flex;flex-direction:column;
-  position:sticky;top:0;height:100vh;overflow:auto}
+.side{background:var(--chrome-grad),var(--chrome);color:var(--on-chrome-2);display:flex;flex-direction:column;
+  position:sticky;top:0;height:100vh;overflow:auto;box-shadow:inset -1px 0 0 rgba(255,255,255,.04)}
 .side-top{display:flex;align-items:center;gap:9px;height:var(--top-h);padding:0 18px;flex:none;
   border-bottom:1px solid var(--chrome-line)}
 .brand{display:flex;align-items:center;gap:9px;font-weight:600;letter-spacing:.13em;
@@ -362,22 +375,25 @@ ul,ol{list-style:none}
 .brand em{font-style:normal;color:var(--on-chrome-3);font-weight:500;letter-spacing:.06em;font-size:11px}
 .nav{padding:10px 0 18px;flex:1}
 .nav-grp{font-size:10.5px;color:var(--on-chrome-3);padding:15px 20px 5px;letter-spacing:.04em}
-.nav a{display:flex;align-items:center;gap:11px;padding:8px 20px;font-size:13px;
-  color:var(--on-chrome-2);text-decoration:none;transition:background .12s}
-.nav a:hover{background:var(--chrome-2);color:var(--on-chrome);text-decoration:none}
-.nav a.on{background:var(--chrome-3);color:#fff;font-weight:500;box-shadow:inset 3px 0 0 var(--accent)}
+.nav a{display:flex;align-items:center;gap:11px;padding:8px 14px;margin:1px 8px;border-radius:7px;font-size:13px;
+  color:var(--on-chrome-2);text-decoration:none;transition:background .14s,color .14s}
+.nav a:hover{background:rgba(255,255,255,.05);color:var(--on-chrome);text-decoration:none}
+.nav a.on{background:rgba(76,184,206,.13);color:#fff;font-weight:500;
+  box-shadow:inset 3px 0 0 var(--accent-3),inset 0 0 0 1px rgba(76,184,206,.12)}
+.nav a.on svg{opacity:1;stroke:var(--accent-3)}
 .nav a svg{width:16px;height:16px;flex:none;stroke:currentColor;fill:none;stroke-width:1.5;
   stroke-linecap:round;stroke-linejoin:round;opacity:.85}
-.nav a .c{margin-left:auto;font-size:11.5px;color:var(--on-chrome-3);font-variant-numeric:tabular-nums}
+.nav a .c{margin-left:auto;font-size:11px;color:var(--on-chrome-3);font-variant-numeric:tabular-nums;
+  background:rgba(255,255,255,.06);padding:1px 7px;border-radius:9px;min-width:22px;text-align:center}
 .nav a.on .c{color:var(--on-chrome-2)}
-.nav a .c.alert{color:var(--danger-chrome)}
+.nav a .c.alert{color:var(--danger-chrome);background:rgba(255,128,149,.12)}
 .side-foot{flex:none;padding:12px 20px 16px;border-top:1px solid var(--chrome-line);font-size:12px}
 .side-foot b{display:block;color:var(--on-chrome);font-weight:500}
 .side-foot span{color:var(--on-chrome-3);font-size:11.5px}
 
 .top{display:flex;align-items:center;gap:12px;height:var(--top-h);padding:0 24px;
   background:var(--chrome);color:var(--on-chrome-2);position:sticky;top:0;z-index:30;
-  border-bottom:1px solid var(--chrome-line)}
+  border-bottom:1px solid var(--chrome-line);box-shadow:0 1px 0 rgba(255,255,255,.03),0 6px 18px -12px rgba(0,0,0,.5)}
 .crumb{font-size:12.5px;color:var(--on-chrome-3);white-space:nowrap;overflow:hidden;
   text-overflow:ellipsis;min-width:0}
 .crumb b{color:var(--on-chrome-2);font-weight:400}
@@ -409,13 +425,13 @@ main{padding:22px 24px 56px;min-width:0}
    ĐẦU TRANG
    ===================================================================== */
 .page{display:flex;align-items:flex-end;gap:22px;flex-wrap:wrap;margin-bottom:16px}
-.page h1{font-size:25px;font-weight:600;letter-spacing:-.015em;line-height:1.2}
-.page h1 span{color:var(--link);font-weight:500}
+.page h1{font-size:26px;font-weight:600;letter-spacing:-.02em;line-height:1.2;text-wrap:balance}
+.page h1 span{color:var(--accent);font-weight:500}
 .page p{font-size:13px;color:var(--ink-2);margin-top:4px;max-width:76ch}
 .page-kpis{margin-left:auto;display:flex;gap:32px}
 .page-kpi{text-align:right}
 .page-kpi .l{font-size:11.5px;color:var(--ink-2);margin-bottom:2px;white-space:nowrap}
-.page-kpi .v{font-size:19px;font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap}
+.page-kpi .v{font-size:19px;font-weight:600;letter-spacing:-.015em;white-space:nowrap}
 
 /* =====================================================================
    TAB · PILL · CHIP
@@ -427,7 +443,7 @@ main{padding:22px 24px 56px;min-width:0}
 .tabs button svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:1.5;
   stroke-linecap:round;stroke-linejoin:round}
 .tabs button:hover{color:var(--ink)}
-.tabs button.on{color:var(--ink);font-weight:600;border-bottom-color:var(--ink)}
+.tabs button.on{color:var(--ink);font-weight:600;border-bottom-color:var(--accent)}
 
 .bar{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-bottom:12px}
 .pill{display:flex;align-items:center;gap:7px;height:34px;padding:0 14px;border-radius:17px;
@@ -462,9 +478,9 @@ main{padding:22px 24px 56px;min-width:0}
    THẺ
    ===================================================================== */
 .card{background:var(--card);border-radius:var(--r);box-shadow:var(--shadow);overflow:hidden;
-  margin-bottom:14px}
+  margin-bottom:14px;border:1px solid var(--card-line)}
 .card-h{display:flex;align-items:flex-start;gap:14px;padding:16px 18px 0;flex-wrap:wrap}
-.card-h h2{font-size:15px;font-weight:600;letter-spacing:-.005em}
+.card-h h2{font-size:15px;font-weight:600;letter-spacing:-.008em;text-wrap:balance}
 .card-h p{font-size:12.5px;color:var(--faint);margin-top:2px}
 .card-h .sp{flex:1}
 .card-b{padding:16px 18px}
@@ -481,7 +497,7 @@ main{padding:22px 24px 56px;min-width:0}
 /* ---- dải ô số ---- */
 .kpis{display:grid;gap:0;grid-template-columns:repeat(auto-fit,minmax(min(100%,180px),1fr));
   background:var(--card);border-radius:var(--r);box-shadow:var(--shadow);margin-bottom:14px;
-  overflow:hidden}
+  overflow:hidden;border:1px solid var(--card-line)}
 /* Mỗi ô số là một "container" để cỡ chữ của con số co theo BỀ RỘNG Ô,
    không phải theo bề rộng cửa sổ. Cùng một dải ô có thể nằm trong main
    (5 ô, 196px ở 1280px) hoặc trong một thẻ (152px) — cỡ chữ theo vw
@@ -489,11 +505,15 @@ main{padding:22px 24px 56px;min-width:0}
    Con số 10 ký tự rộng ≈ 5,8 lần cỡ chữ, ô trừ lề 36px: cỡ = (ô − 36) / 5,8. */
 .kpi{padding:15px 18px;border-left:1px solid var(--line);container-type:inline-size;min-width:0}
 .kpi:first-child{border-left:0}
-.kpi .l{font-size:12px;color:var(--faint);margin-bottom:5px}
-.kpi .v{font-size:clamp(17px,calc(17cqi - 6px),22px);font-weight:600;font-variant-numeric:tabular-nums;
+.kpi .l{font-size:12px;color:var(--faint);margin-bottom:5px;letter-spacing:.01em}
+/* Số lớn đứng một mình dùng chữ số tỉ lệ (không tabular): tabular cho mỗi
+   chữ số bề rộng của số 0, nên "121" ở cỡ 30px nhìn rời rạc. Tabular chỉ
+   dành cho cột số phải thẳng hàng. */
+.kpi .v{font-size:clamp(17px,calc(17cqi - 6px),22px);font-weight:600;
   letter-spacing:-.015em;white-space:nowrap}
 .kpi .s{font-size:11.5px;color:var(--ink-2);margin-top:4px}
-.kpi.hero .v{font-size:clamp(20px,calc(17cqi - 6px),30px);letter-spacing:-.025em}
+.kpi.hero{background:var(--hero-wash),var(--card)}
+.kpi.hero .v{font-size:clamp(20px,calc(17cqi - 6px),30px);letter-spacing:-.025em;color:var(--accent)}
 
 /* =====================================================================
    NÚT
@@ -501,11 +521,14 @@ main{padding:22px 24px 56px;min-width:0}
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;height:34px;
   padding:0 15px;border-radius:var(--r-sm);font-size:13px;font-weight:500;white-space:nowrap;
   background:var(--card);color:var(--ink);border:1px solid var(--line-2);transition:.13s}
-.btn:hover{border-color:var(--ink-2)}
+.btn:hover{border-color:var(--ink-2);background:var(--zebra)}
+.btn:active{transform:translateY(1px)}
 .btn svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:1.7;
   stroke-linecap:round;stroke-linejoin:round}
-.btn.pri{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
-.btn.pri:hover{filter:brightness(1.08)}
+.btn.pri{background:var(--accent-grad),var(--accent);border-color:transparent;color:var(--on-accent);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.18)}
+.btn.pri:hover{filter:brightness(1.05);box-shadow:var(--shadow-lift),inset 0 1px 0 rgba(255,255,255,.18);
+  transform:translateY(-1px)}
 .btn.go{background:var(--ok);border-color:var(--ok);color:var(--on-ok)}
 .btn.dang{color:var(--danger);border-color:var(--danger)}
 .btn.dang:hover{background:var(--danger-lo)}
@@ -539,8 +562,8 @@ table.t{min-width:720px}
    trôi ra ngoài tầm nhìn và người dùng phải cuộn ngang để đọc số. */
 .two table.t,.g2 table.t,.g3 table.t,.drawer table.t{min-width:0}
 table.t th{background:var(--head);font-size:11.5px;font-weight:600;color:var(--ink-2);
-  text-align:left;padding:9px 14px;white-space:nowrap;border-bottom:1px solid var(--line);
-  position:relative}
+  text-align:left;padding:9px 14px;white-space:nowrap;border-bottom:1px solid var(--line-2);
+  position:relative;letter-spacing:.01em}
 table.t th.s{cursor:pointer;user-select:none}
 table.t th.s:hover{color:var(--ink)}
 table.t th.num,table.t td.num{text-align:right}
@@ -552,6 +575,7 @@ table.t tbody tr:last-child td{border-bottom:0}
 table.t tbody tr:nth-child(even) td{background:var(--zebra)}
 table.t tbody tr.pick{cursor:pointer}
 table.t tbody tr.pick:hover td{background:var(--sel)}
+table.t tbody tr.pick:hover td:first-child{box-shadow:inset 3px 0 0 var(--accent)}
 table.t td.num{font-variant-numeric:tabular-nums;white-space:nowrap}
 table.t td.band,table.t th.band{background:var(--band)}
 table.t tbody tr:nth-child(even) td.band{background:var(--fill)}
@@ -563,13 +587,13 @@ table.t tfoot td{border-top:1px solid var(--line-2);border-bottom:0;font-weight:
 /* =====================================================================
    NHÃN TRẠNG THÁI
    ===================================================================== */
-.tag{display:inline-block;padding:3px 9px;border-radius:5px;font-size:12px;white-space:nowrap;
-  background:var(--fill);color:var(--ink-2)}
-.tag.ok{background:var(--ok-lo);color:var(--ok)}
-.tag.no{background:var(--danger-lo);color:var(--danger)}
-.tag.warn{background:var(--warn-lo);color:var(--warn)}
-.tag.info{background:var(--accent-lo);color:var(--accent)}
-.tag.link{background:var(--sel);color:var(--link)}
+.tag{display:inline-block;padding:2px 9px;border-radius:999px;font-size:12px;white-space:nowrap;
+  background:var(--fill);color:var(--ink-2);border:1px solid transparent;font-weight:500}
+.tag.ok{background:var(--ok-lo);color:var(--ok);border-color:color-mix(in srgb,var(--ok) 22%,transparent)}
+.tag.no{background:var(--danger-lo);color:var(--danger);border-color:color-mix(in srgb,var(--danger) 22%,transparent)}
+.tag.warn{background:var(--warn-lo);color:var(--warn);border-color:color-mix(in srgb,var(--warn) 22%,transparent)}
+.tag.info{background:var(--accent-lo);color:var(--accent);border-color:color-mix(in srgb,var(--accent) 22%,transparent)}
+.tag.link{background:var(--sel);color:var(--link);border-color:color-mix(in srgb,var(--link) 22%,transparent)}
 .dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:6px;flex:none}
 .dot.ok{background:var(--ok)} .dot.no{background:var(--danger)}
 .dot.warn{background:var(--warn)} .dot.off{background:var(--neutral-bar)}
@@ -582,6 +606,7 @@ table.t tfoot td{border-top:1px solid var(--line-2);border-bottom:0;font-weight:
 .note b{display:block;font-size:13.5px;font-weight:600;margin-bottom:3px}
 .note p{font-size:12.5px;color:var(--ink-2);line-height:1.6}
 .note .sp{flex:1}
+.note.warn,.note.no,.note.ok,.note.info{border-left:3px solid currentColor}
 .note.warn{background:var(--warn-lo);color:var(--warn);box-shadow:none}
 .note.warn b,.note.warn p{color:var(--warn)}
 .note.no{background:var(--danger-lo);color:var(--danger);box-shadow:none}
@@ -592,7 +617,7 @@ table.t tfoot td{border-top:1px solid var(--line-2);border-bottom:0;font-weight:
 .note.info b,.note.info p{color:var(--accent)}
 
 /* ---- danh sách điều kiện ---- */
-.checks{display:grid;gap:1px;background:var(--line);border-radius:var(--r-sm);overflow:hidden}
+.checks{display:grid;gap:1px;background:var(--line);border-radius:var(--r-sm);overflow:hidden;border:1px solid var(--line)}
 .check{display:flex;gap:10px;align-items:flex-start;padding:11px 13px;background:var(--card)}
 .check svg{width:16px;height:16px;flex:none;margin-top:1px;stroke:currentColor;fill:none;
   stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
@@ -618,8 +643,9 @@ table.t tfoot td{border-top:1px solid var(--line-2);border-bottom:0;font-weight:
 .range{font-size:12.5px;color:var(--ink-2);font-variant-numeric:tabular-nums;padding:0 6px}
 
 .empty{padding:56px 20px;text-align:center}
-.empty svg{width:34px;height:34px;margin:0 auto 12px;stroke:var(--faint);fill:none;
-  stroke-width:1.3;stroke-linecap:round;stroke-linejoin:round;opacity:.7}
+.empty svg{width:22px;height:22px;margin:0 auto 14px;stroke:var(--accent);fill:none;
+  stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;box-sizing:content-box;padding:15px;
+  border-radius:50%;background:var(--accent-lo)}
 .empty b{display:block;font-size:14.5px;font-weight:600;margin-bottom:5px}
 .empty span{display:block;font-size:13px;color:var(--ink-2);max-width:46ch;margin:0 auto}
 .empty .btnrow{justify-content:center;margin-top:14px}
@@ -629,7 +655,7 @@ table.t tfoot td{border-top:1px solid var(--line-2);border-bottom:0;font-weight:
    ===================================================================== */
 .drawer{position:fixed;top:0;right:0;bottom:0;width:min(580px,94vw);z-index:60;
   background:var(--card);box-shadow:var(--shadow-2);transform:translateX(100%);
-  transition:transform .18s ease-out;overflow:auto}
+  transition:transform .2s cubic-bezier(.2,.7,.2,1);overflow:auto;border-left:1px solid var(--card-line)}
 .drawer.on{transform:none}
 .drawer-h{display:flex;align-items:flex-start;gap:14px;padding:20px 22px 16px;
   border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--card);z-index:2}
@@ -764,10 +790,10 @@ h4.sec:first-child{margin-top:0}
 .bd .vl{font-size:10.5px;fill:var(--ink-2);font-variant-numeric:tabular-nums}
 .bd .vl.big{font-size:12px;fill:var(--ink);font-weight:600}
 .bd rect.b{transition:opacity .12s}
-.bd .hz:hover rect.b{opacity:.55}
-.bd .hz rect.b.on{opacity:1}
+.bd .b{transition:opacity .12s,filter .12s}
+.bd .hz:hover .b{filter:brightness(1.12)}
 .bd .hit{fill:transparent;cursor:default}
-.bd .hz:hover .hit{fill:var(--ink);opacity:.035}
+.bd .hz:hover .hit{fill:var(--ink);opacity:.04}
 .bd .dash{stroke-dasharray:3 3}
 .bd .ln{fill:none;stroke-width:2;stroke-linejoin:round;stroke-linecap:round}
 .bd .dot2{stroke:var(--card);stroke-width:1.6}
@@ -793,8 +819,8 @@ h4.sec:first-child{margin-top:0}
 .bars .row:last-child{border-bottom:0}
 .bars .nm{min-width:0;font-size:13px}
 .bars .nm em{font-style:normal;display:block;font-size:11.5px;color:var(--faint);margin-top:1px}
-.bars .bar{height:5px;border-radius:3px;background:var(--bar-bg);margin-top:5px;overflow:hidden}
-.bars .bar i{display:block;height:100%;border-radius:3px;background:var(--s1)}
+.bars .bar{height:6px;border-radius:3px;background:var(--bar-bg);margin-top:5px;overflow:hidden}
+.bars .bar i{display:block;height:100%;border-radius:3px;background:var(--s1);transition:width .35s ease-out}
 .bars .vv{text-align:right;font-variant-numeric:tabular-nums;font-size:13px;white-space:nowrap}
 .bars .vv em{font-style:normal;display:block;font-size:11.5px;color:var(--faint)}
 .bars.pick .row{cursor:pointer}
@@ -826,7 +852,7 @@ h4.sec:first-child{margin-top:0}
   align-items:start;padding:11px 0;border-bottom:1px solid var(--line);position:relative}
 .wf .st:last-child{border-bottom:0}
 .wf .mk{width:11px;height:11px;border-radius:3px;margin-top:4px;background:var(--s1)}
-.wf .st.out .mk{background:var(--neutral-bar)}
+.wf .st.out .mk{background:var(--s8)}
 .wf .st.fin .mk{background:var(--ok)}
 .wf .lbl{font-size:13.5px;font-weight:500}
 .wf .nt{font-size:12px;color:var(--faint);margin-top:2px;line-height:1.55;max-width:62ch}
@@ -896,8 +922,9 @@ input.in:focus,select.in:focus,textarea.in:focus{border-color:var(--accent)}
 .say b{color:var(--ink);font-weight:600}
 .say code{font-family:var(--mono);font-size:12px;background:var(--fill);padding:1px 5px;border-radius:4px}
 
-h4.sec{font-size:12px;color:var(--faint);font-weight:600;margin:20px 0 9px;
-  padding-bottom:6px;border-bottom:1px solid var(--line)}
+h4.sec{font-size:12px;color:var(--faint);font-weight:600;margin:20px 0 9px;letter-spacing:.02em;
+  padding-bottom:6px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:8px}
+h4.sec::before{content:"";width:3px;height:11px;border-radius:2px;background:var(--accent);opacity:.75}
 h4.sec:first-child{margin-top:0}
 
 /* ---- ô chọn nhiều mục ---- */
@@ -944,6 +971,10 @@ h4.sec:first-child{margin-top:0}
   a{color:#000;text-decoration:none}
   .say,.hint{color:#333}
 }
+
+/* ---- hộp thoại rộng: biểu mẫu nhiều trường (hồ sơ phát hành) ---- */
+.modal.rong{max-width:820px;width:min(820px,96vw);max-height:92vh;overflow:auto}
+.modal.rong .fldrow{margin-top:4px}
 
 
 
@@ -999,7 +1030,7 @@ const T_BOOT = performance.now();
    1. THÔNG SỐ
    --------------------------------------------------------------------- */
 const CFG = {
-  VERSION:      "1.0.0",
+  VERSION:      "1.1.0",   /* 1.1.0: thêm hồ sơ phát hành (state.releases) */
   STORE_KEY:    "haustek.portal.v1",
   N_TRACKS:     50000,
   N_PERIODS:    12,
@@ -1299,6 +1330,7 @@ function defaultState() {
     accounts: [],
     audit: [],
     answers: {},      /* câu trả lời cho các câu hỏi còn treo (mục 3 tài liệu) */
+    releases: [],     /* hồ sơ phát hành do đối tác gửi lên: đã gửi → tiếp nhận → cấp mã → phát hành */
     publishedAt: null
   };
 
@@ -1344,6 +1376,110 @@ function fileNameFor(f, p) {
 }
 
 let state = null;
+
+/* ---------------------------------------------------------------------
+   8b. HỒ SƠ PHÁT HÀNH
+   Form metadata ở trang chủ (metadata.html) và bảng releases/tracks/
+   publishing_splits trong schema Supabase là hai đầu của cùng một luồng.
+   Ở bản mẫu, hồ sơ nằm trong state.releases và đi qua bốn bước:
+     submitted → received → coded → released   (returned: trả lại bổ sung)
+   Mỗi bước để lại một dòng lịch sử trên hồ sơ và một dòng nhật ký.
+   --------------------------------------------------------------------- */
+const RELEASE_TYPES = ["single", "ep", "album"];
+const RELEASE_STATUS = ["submitted", "received", "coded", "released", "returned"];
+let releaseSeq = 0;
+function releaseId() {
+  releaseSeq++;
+  const d = new Date();
+  return "HSTK-" + String(d.getFullYear()).slice(2) + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(releaseSeq).padStart(3, "0");
+}
+function genIsrc(seed) {
+  /* VN-HTK-26-NNNNN: mã quốc gia, mã đơn vị cấp, năm, số thứ tự */
+  return "VNHTK26" + String((seed * 7919 + 10007) % 90000 + 10000).padStart(5, "0");
+}
+function genUpc(seed) { return "88" + String(1000000000 + (seed * 104729 + 7) % 8999999999); }
+function releaseStamp(r, status, by, note) {
+  r.status = status;
+  r.updatedAt = nowISO();
+  r.history.push({ at: r.updatedAt, status, by, note: note || null });
+}
+function normaliseTrack(tr, pos, artistName) {
+  const writers = (tr.writers || []).filter(w => w && w.name).map(w => ({
+    name: String(w.name).trim(), role: w.role || "Composer",
+    pct: Math.max(0, Math.min(100, +w.pct || 0)) }));
+  return { pos, title: String(tr.title || "").trim(), version: tr.version ? String(tr.version).trim() : "",
+    artist: tr.artist ? String(tr.artist).trim() : artistName, feat: tr.feat ? String(tr.feat).trim() : "",
+    isrc: tr.isrc ? String(tr.isrc).replace(/[^A-Za-z0-9]/g, "").toUpperCase() : "",
+    producer: tr.producer ? String(tr.producer).trim() : "", publisher: tr.publisher ? String(tr.publisher).trim() : "",
+    writers };
+}
+function validateRelease(payload, artistName) {
+  if (!payload || !String(payload.title || "").trim()) throw new Error("Thiếu tên bản phát hành");
+  if (RELEASE_TYPES.indexOf(payload.type) < 0) throw new Error("Loại phát hành không hợp lệ");
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(payload.releaseDate || "")) throw new Error("Ngày phát hành phải theo dạng yyyy-mm-dd");
+  const tracks = (payload.tracks || []).map((t, i) => normaliseTrack(t, i + 1, artistName)).filter(t => t.title);
+  if (!tracks.length) throw new Error("Hồ sơ phải có ít nhất một track");
+  tracks.forEach(t => {
+    if (t.isrc && !/^[A-Z]{2}[A-Z0-9]{3}\d{7}$/.test(t.isrc)) throw new Error("Mã ISRC không đúng định dạng: " + t.isrc);
+    const tong = t.writers.reduce((a, w) => a + w.pct, 0);
+    if (tong > 100.001) throw new Error("Tổng tỉ lệ sáng tác của track \"" + t.title + "\" vượt 100%");
+  });
+  return tracks;
+}
+function buildRelease(payload, artistId, submittedBy, role) {
+  const a = ARTISTS[artistId];
+  const tracks = validateRelease(payload, a.name);
+  const now = nowISO();
+  const r = {
+    id: releaseId(), artistId, artistName: a.name, artistClientId: a.clientId,
+    labelId: a.labelId, submittedBy, submittedRole: role,
+    title: String(payload.title).trim(), version: payload.version ? String(payload.version).trim() : "",
+    type: payload.type, genre: payload.genre || "", lang: payload.lang || "vi",
+    releaseDate: payload.releaseDate, upc: payload.upc ? String(payload.upc).replace(/\D/g, "") : "",
+    artwork: payload.artwork || "", note: payload.note || "",
+    tracks, status: "submitted", history: [], createdAt: now, updatedAt: now, releasedAt: null
+  };
+  r.history.push({ at: now, status: "submitted", by: submittedBy, note: null });
+  return r;
+}
+/* Bản phát hành đã có trong danh mục, suy ra từ bản ghi: cùng nghệ sĩ,
+   cùng kỳ phát hành, cùng loại. Single thì mỗi bản ghi một bản phát hành. */
+function catalogueReleases(role, partyId, limit) {
+  const sc = scopeOf(role, partyId, "rec");
+  const n = sc ? sc.length : N;
+  const groups = new Map();
+  for (let k = 0; k < n; k++) {
+    const i = sc ? sc[k] : k;
+    const key = tType[i] === 0 ? "s:" + i : tArtist[i] + ":" + tRel[i] + ":" + tType[i];
+    let g = groups.get(key);
+    if (!g) {
+      g = { key, artistId: tArtist[i], rel: tRel[i], type: tType[i], tracks: [], earning: false };
+      groups.set(key, g);
+    }
+    g.tracks.push(i);
+  }
+  const arr = [...groups.values()];
+  /* Doanh thu gộp cộng dồn qua các kỳ đã xét duyệt: để bản có doanh thu
+     đứng trước, thay vì hai mươi bản mới nhất cùng một kỳ và cùng "chưa có". */
+  const daDuyet = [];
+  for (let p = 0; p < P; p++) if (state.approved[PERIODS[p].k]) daDuyet.push(p);
+  arr.forEach(g => { let s = 0; for (const i of g.tracks) for (const p of daDuyet) s += grossOf(i, p, "rec"); g.gross = cents(s); });
+  arr.sort((a, b) => b.gross - a.gross || b.rel - a.rel || a.artistId - b.artistId);
+  const total = arr.length;
+  const rows = arr.slice(0, limit || 40).map(g => {
+    const first = g.tracks[0];
+    return { id: "CAT-" + g.key.replace(/[^0-9a-z]/gi, "-"), title: tTitle[first], type: TYPES[g.type] || "Single",
+      artistId: g.artistId, artistName: ARTISTS[g.artistId].name,
+      releasePeriod: PERIODS[g.rel].label, tracks: g.tracks.length, earning: g.gross > 0, gross: g.gross,
+      isrc: g.tracks.length === 1 ? tIsrc[first] : null, status: "released" };
+  });
+  return { rows, total };
+}
+function releaseVisible(r, role, partyId) {
+  if (role === "admin") return true;
+  if (role === "label") return r.labelId === partyId;
+  return r.artistId === partyId;
+}
 
 /* ---------------------------------------------------------------------
    9. LƯU / NẠP / XUẤT
@@ -1893,9 +2029,65 @@ function seedAccounts() {
 }
 seedAccounts();
 
+/* Vài hồ sơ phát hành mẫu cho các tài khoản mẫu, ở đủ các bước, để trang
+   Phát hành ở cả hai cổng không trống ngay lần mở đầu. */
+function seedReleases() {
+  if (!state.releases) state.releases = [];
+  if (state.releases.length) return;
+  const artists = state.accounts.filter(a => a.role === "artist" && a.status === "active")
+    .map(a => +a.partyKey.slice(2)).filter(id => ARTISTS[id]);
+  const labels = state.accounts.filter(a => a.role === "label" && a.status === "active")
+    .map(a => +a.partyKey.slice(2)).filter(id => LABELS[id]);
+  if (!artists.length) return;
+  /* Xen nghệ sĩ thuộc label có tài khoản mẫu, để cổng của label cũng có
+     hồ sơ để xem, không chỉ cổng của nghệ sĩ. */
+  const cuaLabel = [];
+  ARTISTS.forEach(a => { if (cuaLabel.length < 3 && labels.indexOf(a.labelId) >= 0 && artists.indexOf(a.id) < 0) cuaLabel.push(a.id); });
+  const xen = [];
+  for (let i = 0; i < 6; i++) xen.push(i % 2 === 0 ? artists[(i / 2) % artists.length] : (cuaLabel[(i - 1) / 2 % Math.max(1, cuaLabel.length)] ?? artists[i % artists.length]));
+  const pick = (arr, i) => xen[i % xen.length];
+  const mau = [
+    { artist: pick(artists, 0), title: "Đêm thứ hai", type: "ep", date: "2026-10-03", genre: "Alternative", status: "released",
+      tracks: [["Đêm thứ hai", "Lam Nguyên"], ["Vọng", "Lam Nguyên"], ["Trôi", ""]] },
+    { artist: pick(artists, 1), title: "Lặng", type: "single", date: "2026-09-26", genre: "Pop", status: "coded",
+      tracks: [["Lặng", "Thu Diệp"]] },
+    { artist: pick(artists, 2), title: "Tần số cuối", type: "single", date: "2026-10-17", genre: "Electronic", status: "received",
+      tracks: [["Tần số cuối", "ResQ"]] },
+    { artist: pick(artists, 3), title: "Mưa tháng sáu (Live)", type: "single", date: "2026-10-24", genre: "Indie", status: "submitted",
+      tracks: [["Mưa tháng sáu", ""]] },
+    { artist: pick(artists, 4), title: "Khói", type: "album", date: "2026-11-14", genre: "R&B", status: "submitted",
+      tracks: [["Khói", "Minh Hạo"], ["Xa", "Minh Hạo"], ["Bóng", ""], ["Chậm", "Khuê Trang"], ["Nghiêng", ""]] },
+    { artist: pick(artists, 5), title: "Vệt nắng", type: "single", date: "2026-09-19", genre: "Pop", status: "returned",
+      tracks: [["Vệt nắng", "Sơn Bảo"]], note: "Thiếu link file WAV của track 1 và tên thật của người viết lời. Bổ sung rồi gửi lại." }
+  ];
+  const ngay = ["2026-08-11 09:42:00", "2026-08-14 15:10:00", "2026-08-19 10:05:00", "2026-08-25 16:48:00", "2026-08-28 11:30:00", "2026-09-01 08:55:00"];
+  mau.forEach((m, k) => {
+    const a = ARTISTS[m.artist];
+    /* Hồ sơ của nghệ sĩ thuộc label: cứ hồ sơ thứ hai là do label gửi thay */
+    const byLabel = a.labelId >= 0 && k % 2 === 1 && labels.indexOf(a.labelId) >= 0;
+    const by = byLabel ? LABELS[a.labelId].clientId : a.clientId;
+    const r = buildRelease({ title: m.title, type: m.type, releaseDate: m.date, genre: m.genre, lang: "vi",
+      tracks: m.tracks.map(t => ({ title: t[0], producer: t[1], writers: t[1] ? [{ name: a.name, role: "Composer", pct: 60 }, { name: t[1], role: "Lyricist", pct: 40 }] : [{ name: a.name, role: "Composer", pct: 100 }] })) },
+      m.artist, by, byLabel ? "label" : "artist");
+    r.createdAt = r.updatedAt = r.history[0].at = ngay[k];
+    const buoc = { received: 1, coded: 2, released: 3, returned: 1 };
+    const cot = m.status === "returned" ? ["returned"] : ["received", "coded", "released"].slice(0, buoc[m.status] || 0);
+    cot.forEach((st, j) => {
+      const at = ngay[k].slice(0, 10) + " " + String(10 + j * 3).padStart(2, "0") + ":" + String(15 + j * 7).padStart(2, "0") + ":00";
+      if (st === "coded") { r.tracks.forEach((t, ti) => { if (!t.isrc) t.isrc = genIsrc(k * 10 + ti); }); if (!r.upc) r.upc = genUpc(k + 1); }
+      if (st === "released") r.releasedAt = m.date;
+      r.status = st; r.updatedAt = at;
+      r.history.push({ at, status: st, by: "ops@haustek-group.com", note: st === "returned" ? m.note : null });
+    });
+    state.releases.push(r);
+  });
+  state.releases.sort((x, y) => (x.updatedAt < y.updatedAt ? 1 : -1));
+}
+seedReleases();
+
 const audit = {
-  log(action, detail) {
-    state.audit.unshift({ at: nowISO(), action, detail, by: "mgmt@haustek-group.com" });
+  log(action, detail, by) {
+    state.audit.unshift({ at: nowISO(), action, detail, by: by || "mgmt@haustek-group.com" });
     if (state.audit.length > 400) state.audit.length = 400;
   },
   list(limit) { return state.audit.slice(0, limit || 100); }
@@ -1957,7 +2149,17 @@ const QUESTIONS = [
          + "không phải sửa giao diện." ,
     tEn: "Is the revenue figure in the report file BEFORE or AFTER the distributor takes their share?",
     whyEn: "This is the most expensive question on the list, and the handoff document does not address it. If the figure in the file is already net of the partner's share and the system then charges the 15% Haustek fee on top of it, then what an artist reads as 'gross revenue' is not gross revenue — and every step after it is off by the same amount. Conversely, if it is a true gross figure and the system does not deduct the partner's share, Haustek is short. The gap between the two readings is over 10% on every line, every period, every person. It cannot be guessed — it needs a sample revenue report.",
-    guessEn: "The prototype treats the figure in the file as a true gross number and charges the 15% Haustek fee on it. The distributor's own share sits outside the model. If reality is the other way round, the money chain has to change — not the interface." }
+    guessEn: "The prototype treats the figure in the file as a true gross number and charges the 15% Haustek fee on it. The distributor's own share sits outside the model. If reality is the other way round, the money chain has to change — not the interface." },
+  { id: "q8", t: "Nghệ sĩ thuộc label nhận tiền từ Haustek hay từ label?",
+    why: "Quyết định toàn bộ trang của ca sĩ thuộc label. Nếu Haustek thanh toán thẳng cho nghệ sĩ theo tỷ lệ label khai, "
+       + "nghệ sĩ có bảng kê và số thanh toán riêng như bản mẫu đang vẽ. Nếu Haustek chuyển cả gói cho label rồi label tự chia, "
+       + "nghệ sĩ chỉ có 'phần được hưởng theo bảng chia của label' và không có khoản thanh toán nào từ Haustek; bảng kê, "
+       + "ngưỡng thanh toán, tạm ứng của họ đều là chuyện giữa họ với label.",
+    guess: "Bản mẫu giả định Haustek thanh toán thẳng cho từng nghệ sĩ theo tỷ lệ label đặt, và label nhận phần còn lại. "
+         + "Trang Hợp đồng & tỷ lệ của nghệ sĩ nói rõ giả định này." ,
+    tEn: "Are artists under a label paid by Haustek or by the label?",
+    whyEn: "This decides the whole label-artist experience. If Haustek pays artists directly at the rate the label declared, they have their own statement and payout as the prototype draws. If Haustek pays the label in full and the label splits it, the artist only has 'a share per the label's split table' and no payout from Haustek; their statement, threshold and advance are between them and the label.",
+    guessEn: "The prototype assumes Haustek pays each artist directly at the label's rate, with the label receiving the remainder. The artist's Agreement & rate card states this assumption." }
 ];
 const SAMPLES_NEEDED = [
   { id: "s1", t: "File mẫu master data 10–15 dòng",
@@ -2271,6 +2473,48 @@ const admin = {
       audit.log("account.remove", a.email); store.save();
     }
   },
+  releases: {
+    list(filter) {
+      let ds = state.releases.slice();
+      if (filter && filter.status) ds = ds.filter(r => r.status === filter.status);
+      return ds;
+    },
+    get(id) { return state.releases.find(r => r.id === id) || null; },
+    counts() {
+      const c = { submitted: 0, received: 0, coded: 0, released: 0, returned: 0 };
+      state.releases.forEach(r => { c[r.status] = (c[r.status] || 0) + 1; });
+      return c;
+    },
+    receive(id, by, note) {
+      const r = this.get(id); if (!r) throw new Error("Không tìm thấy hồ sơ " + id);
+      if (r.status !== "submitted") throw new Error("Hồ sơ này không ở bước đã gửi");
+      releaseStamp(r, "received", by || "ops@haustek-group.com", note);
+      audit.log("release.receive", r.id + " · " + r.title + " · " + r.artistName, by); store.save(); return r;
+    },
+    assignCodes(id, by) {
+      const r = this.get(id); if (!r) throw new Error("Không tìm thấy hồ sơ " + id);
+      if (r.status !== "received") throw new Error("Phải tiếp nhận hồ sơ trước khi cấp mã");
+      let n = 0, seed = state.releases.indexOf(r) * 10 + 1;
+      r.tracks.forEach((t, i) => { if (!t.isrc) { t.isrc = genIsrc(seed + i + (Date.now() % 977)); n++; } });
+      if (!r.upc) r.upc = genUpc(seed + (Date.now() % 4441));
+      releaseStamp(r, "coded", by || "ops@haustek-group.com", n + " ISRC mới");
+      audit.log("release.code", r.id + " · " + r.title + " · " + n + " ISRC mới · UPC " + r.upc, by); store.save(); return r;
+    },
+    publish(id, by, date) {
+      const r = this.get(id); if (!r) throw new Error("Không tìm thấy hồ sơ " + id);
+      if (r.status !== "coded") throw new Error("Phải cấp mã trước khi đánh dấu đã phát hành");
+      r.releasedAt = date || r.releaseDate;
+      releaseStamp(r, "released", by || "ops@haustek-group.com", null);
+      audit.log("release.publish", r.id + " · " + r.title + " · " + r.releasedAt, by); store.save(); return r;
+    },
+    returnFix(id, by, note) {
+      const r = this.get(id); if (!r) throw new Error("Không tìm thấy hồ sơ " + id);
+      if (!note) throw new Error("Phải ghi rõ cần bổ sung gì");
+      if (r.status === "released") throw new Error("Hồ sơ đã phát hành, không trả lại được");
+      releaseStamp(r, "returned", by || "ops@haustek-group.com", note);
+      audit.log("release.return", r.id + " · " + r.title + " · " + note.slice(0, 80), by); store.save(); return r;
+    }
+  },
   answers: {
     get(id) { return state.answers[id] || ""; },
     set(id, text) { state.answers[id] = text; audit.log("answer.set", id + " · " + (text ? text.slice(0, 60) : "(xoá)")); store.save(); },
@@ -2321,7 +2565,7 @@ function requireApproved(periodKey) {
 
 const api = {
   /* đọc lại quyết định mới nhất của admin (khi intranet vừa duyệt xong) */
-  refresh() { const s = store.load(); if (s) { state = s; invalidateRates(); rebuildMatchIndex(); } return !!s; },
+  refresh() { const s = store.load(); if (s) { state = s; if (!state.releases) state.releases = []; invalidateRates(); rebuildMatchIndex(); } return !!s; },
 
   /* Bản mẫu: liệt kê những tài khoản đã được cấp, để mô phỏng bước đăng
      nhập. Hệ thật KHÔNG có hàm này — trang đăng nhập không bao giờ nói cho
@@ -2510,6 +2754,96 @@ const api = {
           : (payoutRow.carryOut > 0 ? "below the " + fmt.usd0(CFG.PAYOUT_MIN) + " threshold — carried to the next period" : "") } : null,
       approvedAt: state.approved[periodKey].at
     });
+  },
+
+  /* Hợp đồng & tỷ lệ của chính người đang xem. Tỷ lệ là tỷ lệ áp cho họ,
+     lấy từ bảng có kỳ hiệu lực: nghệ sĩ thuộc label lấy dòng của label;
+     nghệ sĩ độc lập và label lấy dòng của chính mình. */
+  contract(role, partyId, periodKey) {
+    assertParty(role, partyId);
+    const pi = pIndexOf(periodKey);
+    const pk = pi >= 0 ? periodKey : PERIODS[P - 1].k;
+    const isLabel = role === "label";
+    const me = isLabel ? LABELS[partyId] : ARTISTS[partyId];
+    const rateKey = isLabel ? me.key : (me.labelId >= 0 ? LABELS[me.labelId].key : me.key);
+    const sched = rates.scheduleFor(rateKey).slice().sort((a, b) => pIndexOf(a.from) - pIndexOf(b.from));
+    const cur = rates.rateFor(rateKey, pk);
+    const row = sched.filter(r => pIndexOf(r.from) <= pIndexOf(pk)).pop() || null;
+    let producerTracks = 0;
+    if (!isLabel) idxOf(byArtist, partyId).forEach(i => { if (tProd[i] > 0) producerTracks++; });
+    const partyKey = isLabel ? "L:" + partyId : "A:" + partyId;
+    return scrub({
+      kind: isLabel ? "label" : (me.labelId >= 0 ? "artist-label" : "artist-indie"),
+      party: { name: me.name, clientId: me.clientId },
+      label: (!isLabel && me.labelId >= 0) ? { name: LABELS[me.labelId].name, clientId: LABELS[me.labelId].clientId } : null,
+      haustekFee: CFG.HAUSTEK_FEE, pubFee: CFG.PUB_FEE,
+      artistShare: cur, counterpartShare: cents(1 - cur),
+      effectiveFrom: row ? PERIODS[pIndexOf(row.from)].label : null,
+      basis: row ? (row.note || null) : null,
+      history: sched.map(r => ({ from: PERIODS[pIndexOf(r.from)].label, artistShare: r.rate, note: r.note || null })),
+      producerTracks,
+      hasAdvance: !!(state.advances[partyKey] && state.advances[partyKey].opening > 0),
+      payoutThreshold: CFG.PAYOUT_MIN,
+      /* Giả định của bản mẫu, ghi thẳng vào payload để giao diện nói ra */
+      paidBy: "Haustek",
+      assumptionQuestion: (!isLabel && me.labelId >= 0) ? "q8" : null
+    });
+  },
+
+  /* Danh sách nghệ sĩ trong roster của label, theo kỳ đã xét duyệt. Chỉ label
+     mới gọi được; nghệ sĩ không có roster. Tạm ứng cá nhân của nghệ sĩ là
+     chuyện giữa nghệ sĩ với Haustek, không đưa vào đây. */
+  roster(role, partyId, periodKey) {
+    assertParty(role, partyId);
+    if (role !== "label") throw new Error("Chỉ label mới có danh sách nghệ sĩ");
+    const p = requireApproved(periodKey);
+    const ids = idxOf(byLabel, partyId);
+    const per = new Map();
+    for (const i of ids) {
+      const g = grossOf(i, p, "rec");
+      if (g <= 0) continue;
+      const sp = splitRec(i, g, PERIODS[p].k);
+      const a = tArtist[i];
+      let o = per.get(a);
+      if (!o) { o = { artistId: a, name: ARTISTS[a].name, clientId: ARTISTS[a].clientId, tracks: 0, streams: 0, gross: 0, artist: 0, labelCut: 0, producer: 0 }; per.set(a, o); }
+      o.tracks++; o.streams += recStreams[i * P + p]; o.gross += g; o.artist += sp.artist; o.labelCut += sp.labelCut; o.producer += sp.producer;
+    }
+    const rows = [...per.values()].map(o => Object.assign(o, { gross: cents(o.gross), artist: cents(o.artist), labelCut: cents(o.labelCut), producer: cents(o.producer) }))
+      .sort((a, b) => b.gross - a.gross);
+    const idle = [];
+    ARTISTS.forEach(a => { if (a.labelId === partyId && !per.has(a.id)) idle.push({ artistId: a.id, name: a.name, clientId: a.clientId, tracks: idxOf(byArtist, a.id).length, streams: 0, gross: 0, artist: 0, labelCut: 0, producer: 0 }); });
+    const total = rows.reduce((t, r) => ({ gross: t.gross + r.gross, artist: t.artist + r.artist, labelCut: t.labelCut + r.labelCut, producer: t.producer + r.producer, streams: t.streams + r.streams }), { gross: 0, artist: 0, labelCut: 0, producer: 0, streams: 0 });
+    return scrub({ periodKey, rows: rows.concat(idle), earning: rows.length, count: rows.length + idle.length,
+      total: { gross: cents(total.gross), artist: cents(total.artist), labelCut: cents(total.labelCut), producer: cents(total.producer), streams: total.streams } });
+  },
+
+  /* Nghệ sĩ mà bên này được gửi hồ sơ thay: label thì cả roster, nghệ sĩ thì chính mình. */
+  rosterArtists(role, partyId) {
+    assertParty(role, partyId);
+    if (role === "label") return scrub({ rows: ARTISTS.filter(a => a.labelId === partyId).map(a => ({ artistId: a.id, name: a.name, clientId: a.clientId })) });
+    const a = ARTISTS[partyId];
+    return scrub({ rows: [{ artistId: a.id, name: a.name, clientId: a.clientId }] });
+  },
+
+  /* Bản phát hành: hồ sơ đã gửi (state.releases) và bản đã có trong danh mục. */
+  releases(role, partyId) {
+    assertParty(role, partyId);
+    const mine = state.releases.filter(r => releaseVisible(r, role, partyId));
+    const cat = catalogueReleases(role, partyId, 40);
+    return scrub({ submissions: mine, catalogue: cat.rows, catalogueTotal: cat.total,
+      statuses: RELEASE_STATUS.slice() });
+  },
+  submitRelease(role, partyId, payload) {
+    assertParty(role, partyId);
+    const artistId = role === "label" ? +(payload && payload.artistId) : partyId;
+    if (!ARTISTS[artistId]) throw new Error("Chưa chọn nghệ sĩ chính");
+    if (role === "label" && ARTISTS[artistId].labelId !== partyId) throw new Error("Nghệ sĩ này không thuộc label của bạn");
+    const who = role === "label" ? LABELS[partyId] : ARTISTS[partyId];
+    const r = buildRelease(payload, artistId, who.clientId, role);
+    state.releases.unshift(r);
+    audit.log("release.submit", r.id + " · " + r.title + " · " + r.artistName + " · " + r.tracks.length + " track", who.clientId);
+    store.save();
+    return scrub({ id: r.id, status: r.status, tracks: r.tracks.length });
   },
 
   trend(role, partyId, stream) {
@@ -3338,9 +3672,17 @@ function chay(cauHinh) {
     return (CHU[lang] && CHU[lang][k]) || k;
   }
 
+  /* Một trang có thể chỉ dành cho một vai (danh sách nghệ sĩ chỉ có ở
+     label). Trang khai khaDung(c) trả về false thì không hiện ở cột trái
+     và gõ thẳng #hash cũng không mở được. */
+  function dungDuoc(m, c) {
+    if (!m.khaDung) return true;
+    try { return !!m.khaDung(c); } catch (e) { return false; }
+  }
   function veNav() {
     var c = ctx(), nhom = [];
     MAN.forEach(function (m) {
+      if (!dungDuoc(m, c)) return;
       var g = nhom.filter(function (x) { return x.ten === (m.nhom || ''); })[0];
       if (!g) { g = { ten: m.nhom || '', muc: [] }; nhom.push(g); }
       g.muc.push(m);
@@ -3369,6 +3711,8 @@ function chay(cauHinh) {
     var id = (location.hash || '').replace('#', '') || (MAN[0] && MAN[0].id);
     var man = MAN.filter(function (m) { return m.id === id; })[0] || MAN[0];
     if (!man) return;
+    var c0 = ctx();
+    if (!dungDuoc(man, c0)) man = MAN.filter(function (m) { return dungDuoc(m, c0); })[0] || man;
     manHienTai = man.id;
     var c = ctx();
 
@@ -3504,6 +3848,9 @@ function esc(s) {
    là một ngày nào đó hai bên lệch nhau và trục tung viết một kiểu, ô số
    bên cạnh viết kiểu khác. */
 function en() { return typeof HT !== 'undefined' && HT.lang === 'en'; }
+/* Chữ hiện trong mách nước và chú thích của biểu đồ. Trước đây viết thẳng
+   tiếng Việt, nên bật EN thì biểu đồ vẫn nói tiếng Việt. */
+function T(vi, e) { return en() ? e : vi; }
 function loc() { return en() ? 'en-US' : 'vi-VN'; }
 function so(v) { return Math.round(v).toLocaleString(loc()); }
 function usd0(v) { return (v < 0 ? '−$' : '$') + Math.round(Math.abs(v)).toLocaleString(loc()); }
@@ -3519,14 +3866,14 @@ function gonTien(v) {
   var dau = (v < 0 ? '−' : '') + '$';
   if (a >= 1e9) return dau + thapPhan(a / 1e9, a >= 1e10 ? 0 : 1) + (E ? 'B' : ' tỷ');
   if (a >= 1e6) return dau + thapPhan(a / 1e6, a >= 1e7 ? 0 : 1) + (E ? 'M' : 'Tr');
-  if (a >= 1e3) return dau + Math.round(a / 1e3) + (E ? 'K' : 'N');
+  if (a >= 1e3) return dau + Math.round(a / 1e3) + 'K';
   return usd0(v);
 }
 function gonSo(v) {
   var a = Math.abs(v), E = en();
   if (a >= 1e9) return thapPhan(a / 1e9, 1) + (E ? 'B' : ' tỷ');
   if (a >= 1e6) return thapPhan(a / 1e6, a >= 1e7 ? 0 : 1) + (E ? 'M' : 'Tr');
-  if (a >= 1e3) return Math.round(a / 1e3) + (E ? 'K' : 'N');
+  if (a >= 1e3) return Math.round(a / 1e3) + 'K';
   return so(v);
 }
 
@@ -3535,7 +3882,7 @@ function gonSo(v) {
    --------------------------------------------------------------------- */
 function mocTruc(dinh, n) {
   n = n || 4;
-  if (!(dinh > 0)) return { moc: [0, 1], tran: 1 };
+  if (!(dinh > 0)) return { moc: [0], tran: 1 };
   var tho = dinh / n;
   var bac = Math.pow(10, Math.floor(Math.log(tho) / Math.LN10));
   var chuan = [1, 2, 2.5, 5, 10];
@@ -3650,8 +3997,9 @@ function dongTip(ten, gt, mau2) {
    cfg: {
      loai:'cot', truc:[nhãn…],
      chuoi:[{ten, gt:[…], mau}],           ← chồng lên nhau
-     duong:{ten, gt:[…], mau, phai:true},  ← đường, có thể dùng trục phải
      cao, dinhDang:'tien'|'so', hienGiaTri, dangDo:[idx…], mo:[idx…],
+   KHÔNG có đường phủ trục phải: hai thước đo khác đơn vị thì vẽ hai biểu đồ
+   nhỏ chung trục hoành, không chồng lên nhau bằng hai trục tung.
      chuThich:true
    }
    Ba trạng thái của một cột, đừng gộp làm hai:
@@ -3659,11 +4007,35 @@ function dongTip(ten, gt, mau2) {
      · dangDo có idx  → có số nhưng chưa chốt → cột viền đứt
      · còn lại        → đã chốt → cột đặc
    ===================================================================== */
+/* Cột bo đỉnh, vuông đáy: dữ liệu mọc từ một đường đáy chung, đỉnh mềm. */
+function cotBo(x, y, w, h, r) {
+  r = Math.min(r, w / 2, h);
+  if (r <= 0.5) return 'M' + x.toFixed(1) + ' ' + y.toFixed(1) + 'h' + w.toFixed(1) + 'v' + h.toFixed(1) + 'h' + (-w).toFixed(1) + 'z';
+  return 'M' + x.toFixed(1) + ' ' + (y + r).toFixed(1) +
+    'a' + r + ' ' + r + ' 0 0 1 ' + r + ' ' + (-r) +
+    'h' + (w - 2 * r).toFixed(1) +
+    'a' + r + ' ' + r + ' 0 0 1 ' + r + ' ' + r +
+    'v' + (h - r).toFixed(1) + 'h' + (-w).toFixed(1) + 'z';
+}
+/* Nhãn trục hoành dài thì xuống dòng ở khoảng trắng, không cắt cụt bằng "…". */
+function taiDong(chu, toiDa) {
+  chu = String(chu || '');
+  if (chu.length <= toiDa) return [chu];
+  var tu = chu.split(' '), d1 = '', d2 = '';
+  tu.forEach(function (w) {
+    if (!d2 && (d1 + ' ' + w).trim().length <= toiDa) d1 = (d1 + ' ' + w).trim();
+    else d2 = (d2 + ' ' + w).trim();
+  });
+  if (!d1) { d1 = chu.slice(0, toiDa); d2 = chu.slice(toiDa); }
+  if (d2.length > toiDa) d2 = d2.slice(0, Math.max(1, toiDa - 1)) + '…';
+  return d2 ? [d1, d2] : [d1];
+}
+
 function veCot(cfg, W) {
   var H = cfg.cao || 210;
   var P = dayMau();
-  var chuoi = (cfg.chuoi || []).map(function (s, i) {
-    return { ten: s.ten, gt: s.gt, mau: s.mau || P[i % 8] };
+  var chuoi = (cfg.chuoi || []).map(function (se, i) {
+    return { ten: se.ten, gt: se.gt, mau: se.mau || P[i % 8] };
   });
   var truc = cfg.truc || [];
   var n = truc.length;
@@ -3675,18 +4047,33 @@ function veCot(cfg, W) {
   var tong = [], coSo = [];
   for (var i = 0; i < n; i++) {
     var t = 0, co = false;
-    chuoi.forEach(function (s) { var v = s.gt[i]; if (v != null) { t += v; co = true; } });
+    chuoi.forEach(function (se) { var v = se.gt[i]; if (v != null) { t += v; co = true; } });
     tong.push(t); coSo.push(co);
   }
   var dinh = Math.max.apply(null, tong.concat([0]));
   var tr = mocTruc(dinh, 4);
-  var LE_T = 14, LE_D = 26, LE_P = 8;
+  var LE_T = 18, LE_D = 26, LE_P = 8;
   var LE_TR = cfg.anTruc ? 6 : 52;
   var cao = H - LE_T - LE_D;
   var rong = W - LE_TR - LE_P;
   var bcao = function (v) { return tr.tran > 0 ? v / tr.tran * cao : 0; };
   var bw = n ? rong / n : rong;
-  var wcot = Math.min(bw * 0.62, 46);
+  /* Cột mảnh, phần còn lại của ô là khoảng thở. Cột to hết ô nhìn nặng và
+     trẻ con ở cỡ lớn. */
+  var wcot = Math.min(bw * 0.6, 28);
+  var KHE = 2;   /* khe hở màu nền giữa hai đoạn chồng, thay cho viền */
+
+  /* Ghi số lên cột nào: cột đang xem và cột cao nhất. Ghi số lên mọi cột
+     là một rừng số không ai đọc; trục tung và mách nước lo phần còn lại.
+     hienGiaTri: 'het' giữ đường thoát cho biểu đồ ít cột. */
+  var nhan = {};
+  if (cfg.hienGiaTri) {
+    if (cfg.noiBat != null && cfg.noiBat >= 0) nhan[cfg.noiBat] = true;
+    var iMax = -1;
+    for (var m = 0; m < n; m++) if (coSo[m] && tong[m] > 0 && (iMax < 0 || tong[m] > tong[iMax])) iMax = m;
+    if (iMax >= 0) nhan[iMax] = true;
+    if (cfg.hienGiaTri === 'het' || n <= 6) for (var m2 = 0; m2 < n; m2++) if (coSo[m2] && tong[m2] > 0) nhan[m2] = true;
+  }
 
   var s = '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="' + esc(cfg.moTa || '') + '">';
 
@@ -3708,38 +4095,39 @@ function veCot(cfg, W) {
     var noiBat = cfg.noiBat === i2;
     var dong = [];
     if (!coSo[i2]) {
-      /* Vạch cụt "chưa có số". Dùng --bar-bg thì ở chế độ tối nó gần như
-         trùng nền thẻ, và người đọc thấy một khoảng trống — trống có nghĩa
-         là số 0, mà đây không phải số 0, đây là "chưa biết". Dùng đường
-         viền để nó nhìn thấy được ở cả hai chế độ. */
-      s += '<rect class="b" x="' + x.toFixed(1) + '" y="' + (duoi - 5) + '" width="' + wcot.toFixed(1) +
-        '" height="5" rx="1.5" fill="' + mau('neutral-bar') + '"/>';
+      /* Vạch cụt "chưa có số": nhìn thấy được ở cả hai chế độ, và khác hẳn
+         một cột bằng 0. */
+      s += '<rect class="b" x="' + x.toFixed(1) + '" y="' + (duoi - 4) + '" width="' + wcot.toFixed(1) +
+        '" height="4" rx="1.5" fill="' + mau('neutral-bar') + '"/>';
     } else {
-      var y0 = duoi;
+      var doan = [];
       chuoi.forEach(function (se) {
         var v = se.gt[i2] || 0;
-        if (v <= 0) return;
-        var h = bcao(v);
-        y0 -= h;
-        s += '<rect class="b" x="' + x.toFixed(1) + '" y="' + y0.toFixed(1) + '" width="' + wcot.toFixed(1) +
-          '" height="' + Math.max(h, 0.8).toFixed(1) + '" rx="' + (h > 5 ? 2 : 0) + '"' +
-          ' fill="' + se.mau + '"' + (moCot ? ' opacity=".42"' : '') +
-          (doTruc ? ' stroke="' + se.mau + '" stroke-width="1.2" stroke-dasharray="3 2" fill-opacity=".2"' : '') + '/>';
-        dong.push(dongTip(se.ten, dayDu(v), se.mau));
+        if (v > 0) doan.push({ v: v, mau: se.mau, ten: se.ten });
       });
-      if (cfg.hienGiaTri && tong[i2] > 0) {
+      var y0 = duoi;
+      doan.forEach(function (d, k) {
+        var h = bcao(d.v), tren = k === doan.length - 1;
+        var dinhDoan = y0 - h;
+        var hVe = Math.max(tren ? h : h - KHE, 0.8);
+        s += '<path class="b" d="' + cotBo(x, dinhDoan, wcot, hVe, tren && h > 5 ? 4 : 0) + '"' +
+          ' fill="' + d.mau + '"' + (moCot ? ' opacity=".42"' : '') +
+          (doTruc ? ' stroke="' + d.mau + '" stroke-width="1.2" stroke-dasharray="3 2" fill-opacity=".22"' : '') + '/>';
+        dong.push(dongTip(d.ten, dayDu(d.v), d.mau));
+        y0 = dinhDoan;
+      });
+      if (nhan[i2]) {
         s += '<text class="vl' + (noiBat ? ' big' : '') + '" x="' + (x + wcot / 2).toFixed(1) + '" y="' +
           (duoi - bcao(tong[i2]) - 6).toFixed(1) + '" text-anchor="middle">' + esc(dinhDang(tong[i2])) + '</text>';
       }
     }
-    /* vùng bắt chuột phủ hết chiều cao, không phải chỉ phần cột — cột thấp
-       thì không ai rê trúng được vài pixel */
+    /* vùng bắt chuột phủ hết chiều cao, không phải chỉ phần cột */
     var tip = '<b>' + esc(cfg.tieuDeTip ? cfg.tieuDeTip(i2) : truc[i2]) + '</b>' +
       (coSo[i2] ? dong.join('') +
         (chuoi.length > 1 ? '<span class="r" style="float:none;display:block;margin-top:5px;' +
           'border-top:1px solid rgba(255,255,255,.16);padding-top:5px">' + esc(dayDu(tong[i2])) + '</span>' : '')
-        : '<span class="d">' + esc(cfg.chuTrong || 'Chưa có số liệu') + '</span>') +
-      (doTruc ? '<span class="d">Chưa duyệt kỳ, số liệu còn thay đổi</span>' : '') +
+        : '<span class="d">' + esc(cfg.chuTrong || T('Chưa có số liệu', 'No data yet')) + '</span>') +
+      (doTruc ? '<span class="d">' + esc(T('Kỳ chưa xét duyệt, số liệu còn thay đổi', 'Period not approved, figures still moving')) + '</span>' : '') +
       (cfg.ghiChuTip ? '<span class="d">' + esc(cfg.ghiChuTip(i2)) + '</span>' : '');
     s += '<g class="hz"' + (cfg.chon ? ' style="cursor:pointer"' : '') +
       ' data-tip="' + esc(tip) + '" data-i="' + i2 + '" tabindex="0">' +
@@ -3747,22 +4135,7 @@ function veCot(cfg, W) {
       '" height="' + cao + '"/></g>';
   }
 
-  /* đường phủ lên trên (ví dụ: số lượt nghe so với tiền) */
-  if (cfg.duong && n) {
-    var d = cfg.duong, dinh2 = Math.max.apply(null, d.gt.map(function (v) { return v || 0; }).concat([0]));
-    var mauD = d.mau || mau('s4');
-    var pt = [], du = [];
-    for (var j = 0; j < n; j++) {
-      if (d.gt[j] == null) continue;
-      var xx = LE_TR + j * bw + bw / 2;
-      var yy = LE_T + cao - (dinh2 > 0 ? d.gt[j] / dinh2 * cao * 0.88 : 0);
-      pt.push(xx.toFixed(1) + ',' + yy.toFixed(1));
-      du.push('<circle class="dot2" cx="' + xx.toFixed(1) + '" cy="' + yy.toFixed(1) + '" r="3" fill="' + mauD + '"/>');
-    }
-    s += '<polyline class="ln" points="' + pt.join(' ') + '" stroke="' + mauD + '"/>' + du.join('');
-  }
-
-  /* nhãn trục hoành — nếu chật thì bỏ bớt, không xoay chữ */
+  /* nhãn trục hoành: nếu chật thì bỏ bớt, không xoay chữ */
   var buocNhan = Math.ceil(n / Math.max(1, Math.floor(rong / 46)));
   for (var i3 = 0; i3 < n; i3++) {
     if (i3 % buocNhan !== 0 && i3 !== n - 1 && cfg.noiBat !== i3) continue;
@@ -3772,11 +4145,10 @@ function veCot(cfg, W) {
   s += '<line class="ax" x1="' + LE_TR + '" y1="' + (LE_T + cao) + '" x2="' + (W - LE_P) + '" y2="' + (LE_T + cao) + '"/>';
   s += '</svg>';
 
-  if (cfg.chuThich !== false && (chuoi.length > 1 || cfg.duong)) {
+  if (cfg.chuThich !== false && chuoi.length > 1) {
     s += '<div class="leg">' + chuoi.map(function (se) {
       return '<span><i style="background:' + se.mau + '"></i>' + esc(se.ten) + '</span>';
-    }).join('') + (cfg.duong ? '<span><i style="background:' + (cfg.duong.mau || mau('s4')) +
-      ';border-radius:50%"></i>' + esc(cfg.duong.ten) + '</span>' : '') + '</div>';
+    }).join('') + '</div>';
   }
   return s;
 }
@@ -3796,8 +4168,8 @@ function veThanh(cfg, W) {
     var phanTram = tong > 0 ? (r.gt || 0) / tong : 0;
     return '<div class="row"' + (cfg.chon ? ' data-h="' + i + '" tabindex="0"' : '') +
       ' data-tip="' + esc('<b>' + esc(r.ten) + '</b>' +
-        dongTip(cfg.tenTong || 'Doanh thu', dayDu(r.gt || 0), r.mau || P[i % 8]) +
-        '<span class="d">' + thapPhan(phanTram * 100, 1) + '% của phần đang xem' +
+        dongTip(cfg.tenTong || T('Doanh thu', 'Revenue'), dayDu(r.gt || 0), r.mau || P[i % 8]) +
+        '<span class="d">' + thapPhan(phanTram * 100, 1) + T('% trong phần đang xem', '% of this view') +
         (r.phu ? ' · ' + esc(r.phu) : '') + '</span>') + '">' +
       '<div class="nm">' + esc(r.ten) + (r.phu ? '<em>' + esc(r.phu) + '</em>' : '') +
       '<div class="bar"><i style="width:' + (pc * 100).toFixed(2) + '%;background:' +
@@ -3830,8 +4202,8 @@ function veVong(cfg, W) {
     var x4 = cx + r0 * Math.cos(goc), y4 = cy + r0 * Math.sin(goc);
     var mauP = p.mau || P[i % 8];
     s += '<g class="hz" tabindex="0" data-tip="' + esc('<b>' + esc(p.ten) + '</b>' +
-      dongTip(cfg.tenTong || 'Số tiền', dayDu(p.gt), mauP) +
-      '<span class="d">' + thapPhan(p.gt / tong * 100, 1) + '% tổng</span>') + '">' +
+      dongTip(cfg.tenTong || T('Số tiền', 'Amount'), dayDu(p.gt), mauP) +
+      '<span class="d">' + thapPhan(p.gt / tong * 100, 1) + T('% tổng số', '% of total') + '</span>') + '">' +
       '<path class="b" fill="' + mauP + '" d="M' + x1.toFixed(1) + ' ' + y1.toFixed(1) +
       'A' + R + ' ' + R + ' 0 ' + lon + ' 1 ' + x2.toFixed(1) + ' ' + y2.toFixed(1) +
       'L' + x3.toFixed(1) + ' ' + y3.toFixed(1) +
@@ -3867,9 +4239,9 @@ function veThac(cfg, W) {
   var b = cfg.buoc || [];
   if (!b.length) return '';
   var H = cfg.cao || 210;
-  var LE_T = 20, LE_D = 34, LE_TR = 52, LE_P = 8;
+  var LE_T = 20, LE_D = 40, LE_TR = 52, LE_P = 8;
   var cao = H - LE_T - LE_D, rong = W - LE_TR - LE_P;
-  var n = b.length, bw = rong / n, wcot = Math.min(bw * 0.6, 56);
+  var n = b.length, bw = rong / n, wcot = Math.min(bw * 0.6, 40);
 
   /* mức tích luỹ */
   var mucTren = [], mucDuoi = [], chay = 0, dinh = 0;
@@ -3881,9 +4253,12 @@ function veThac(cfg, W) {
   });
   var tr = mocTruc(dinh, 4);
   var y = function (v) { return LE_T + cao - (tr.tran > 0 ? v / tr.tran * cao : 0); };
-  var mOk = mau('ok'), mAcc = mau('s1'), mTru = mau('neutral-bar');
+  /* Khoản trừ dùng màu xám đậm (--s8), không dùng --neutral-bar: ở chế độ
+     sáng, --neutral-bar gần trùng nền thẻ và các khối "Phí", "Phần label"
+     gần như không nhìn thấy. Đây đúng là chỗ người dùng báo biểu đồ lỗi. */
+  var mOk = mau('ok'), mAcc = mau('s1'), mTru = mau('s8');
 
-  var s = '<svg viewBox="0 0 ' + W + ' ' + H + '">';
+  var s = '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="' + esc(cfg.moTa || '') + '">';
   tr.moc.forEach(function (v) {
     s += '<line class="gl" x1="' + LE_TR + '" y1="' + y(v).toFixed(1) + '" x2="' + (W - LE_P) + '" y2="' + y(v).toFixed(1) + '"/>' +
       '<text class="vl" x="' + (LE_TR - 8) + '" y="' + (y(v) + 3.5).toFixed(1) + '" text-anchor="end">' +
@@ -3894,10 +4269,9 @@ function veThac(cfg, W) {
     var yt = y(mucTren[i]), yb = y(mucDuoi[i]);
     var mauC = st.kind === 'final' ? mOk : st.kind === 'top' ? mAcc : mTru;
     s += '<g class="hz" tabindex="0" data-tip="' + esc('<b>' + esc(st.l) + '</b>' +
-      dongTip(st.kind === 'out' ? 'Trừ đi' : 'Số tiền', usd0(Math.abs(st.v)), mauC) +
+      dongTip(st.kind === 'out' ? T('Khoản trừ', 'Deducted') : T('Số tiền', 'Amount'), usd0(Math.abs(st.v)), mauC) +
       (st.nt ? '<span class="d">' + esc(st.nt) + '</span>' : '')) + '">' +
-      '<rect class="b" x="' + x.toFixed(1) + '" y="' + yt.toFixed(1) + '" width="' + wcot.toFixed(1) +
-      '" height="' + Math.max(yb - yt, 1.5).toFixed(1) + '" rx="2" fill="' + mauC + '"/>' +
+      '<path class="b" d="' + cotBo(x, yt, wcot, Math.max(yb - yt, 1.5), st.kind === 'out' ? 0 : 4) + '" fill="' + mauC + '"/>' +
       '<rect class="hit" x="' + (LE_TR + i * bw).toFixed(1) + '" y="' + LE_T + '" width="' + bw.toFixed(1) +
       '" height="' + cao + '"/></g>';
     if (i > 0 && st.kind !== 'final') {
@@ -3907,10 +4281,12 @@ function veThac(cfg, W) {
     }
     s += '<text class="vl" x="' + (x + wcot / 2).toFixed(1) + '" y="' + (yt - 6).toFixed(1) + '" text-anchor="middle">' +
       esc((st.v < 0 ? '−' : '') + gonTien(Math.abs(st.v)).replace('−', '')) + '</text>';
-    var chu = String(st.l);
-    if (chu.length > Math.floor(bw / 6.4)) chu = chu.slice(0, Math.max(4, Math.floor(bw / 6.4) - 1)) + '…';
-    s += '<text class="lb' + (st.kind === 'final' ? ' on' : '') + '" x="' + (LE_TR + i * bw + bw / 2).toFixed(1) +
-      '" y="' + (H - 11) + '" text-anchor="middle">' + esc(chu) + '</text>';
+    var dongChu = taiDong(st.l, Math.max(6, Math.floor(bw / 6.2)));
+    var xChu = (LE_TR + i * bw + bw / 2).toFixed(1);
+    var yChu = dongChu.length > 1 ? H - 22 : H - 11;
+    s += '<text class="lb' + (st.kind === 'final' ? ' on' : '') + '" x="' + xChu + '" y="' + yChu + '" text-anchor="middle">' +
+      dongChu.map(function (d, k) { return '<tspan x="' + xChu + '" dy="' + (k ? 11 : 0) + '">' + esc(d) + '</tspan>'; }).join('') +
+      '</text>';
   });
   s += '<line class="ax" x1="' + LE_TR + '" y1="' + (LE_T + cao) + '" x2="' + (W - LE_P) + '" y2="' + (LE_T + cao) + '"/></svg>';
   return s;
@@ -3953,8 +4329,8 @@ function chia(phan, opt) {
     phan.map(function (p, i) {
       return '<i style="width:' + ((p.gt || 0) / tong * 100).toFixed(2) + '%;background:' +
         (p.mau || P[i % 8]) + '" data-tip="' + esc('<b>' + esc(p.ten) + '</b>' +
-        dongTip('Số tiền', dayDu(p.gt || 0), p.mau || P[i % 8]) +
-        '<span class="d">' + thapPhan((p.gt || 0) / tong * 100, 1) + '% tổng</span>') + '"></i>';
+        dongTip(T('Số tiền', 'Amount'), dayDu(p.gt || 0), p.mau || P[i % 8]) +
+        '<span class="d">' + thapPhan((p.gt || 0) / tong * 100, 1) + T('% tổng số', '% of total') + '</span>') + '"></i>';
     }).join('') + '</div>' +
     (opt.chuThich === false ? '' : '<div class="leg">' + phan.map(function (p, i) {
       return '<span><i style="background:' + (p.mau || P[i % 8]) + '"></i>' + esc(p.ten) +
@@ -4357,8 +4733,10 @@ HT.dangKy({
     html += HM.dau({
       h1: HM.esc(t('h1')) + ' <span>' + HM.esc(c.ky.label) + '</span>',
       mo: HM.esc(t('mo')),
+      /* Dải ô số ngay dưới đã có doanh thu gộp; đầu trang chỉ giữ hai
+         con số không nằm trong dải. Một con số hiện hai lần cách nhau
+         80px là một lần thừa. */
       so: [
-        { l: t('gop'), v: c.tien(nay.gross) },
         { l: t('luot'), v: HB.gonSo(nay.streams) },
         { l: t('bai'), v: HT.fmt.n(nay.tracks) }
       ]
@@ -4405,13 +4783,18 @@ HT.dangKy({
       than: HB.o({
         loai: 'cot', cao: 250, hienGiaTri: false,
         truc: A.periods.map(function (p) { return p.label.slice(0, 2); }),
-        tieuDeTip: function (i) { return 'Kỳ ' + A.periods[i].label; },
-        ghiChuTip: function (i) {
-          return HT.fmt.n(day.luot[i]) + ' ' + t('luotNghe') +
-            (A.isApproved(A.periods[i].k) ? '' : ' · chưa duyệt');
-        },
-        chuoi: day.chuoi, dangDo: chuaDuyetIdx, noiBat: pi,
-        duong: { ten: c.lang === 'vi' ? 'Lượt nghe' : 'Streams', gt: day.luot, mau: P[3] }
+        tieuDeTip: function (i) { return (c.lang === 'vi' ? 'Kỳ ' : 'Period ') + A.periods[i].label; },
+        chuoi: day.chuoi, dangDo: chuaDuyetIdx, noiBat: pi
+      }) +
+      /* Lượt nghe là thước đo khác đơn vị với tiền: vẽ riêng một biểu đồ nhỏ
+         chung trục hoành, không phủ một đường lên cột tiền bằng trục thứ hai
+         không ai đọc được. */
+      '<h4 class="sec" style="margin-top:14px">' + HM.esc(t('luot')) + '</h4>' +
+      HB.o({
+        loai: 'cot', cao: 120, dinhDang: 'so', chuThich: false,
+        truc: A.periods.map(function (p) { return p.label.slice(0, 2); }),
+        tieuDeTip: function (i) { return (c.lang === 'vi' ? 'Kỳ ' : 'Period ') + A.periods[i].label; },
+        chuoi: [{ ten: t('luot'), gt: day.luot, mau: P[3] }], dangDo: chuaDuyetIdx, noiBat: pi
       }),
       chan: (c.lang === 'vi'
         ? 'Tiền của một nguồn chỉ vào tổng khi nguồn đó đã nhập cho kỳ. Cột thấp bất thường thì xem trang Nhập dữ liệu trước khi nghi ngờ thị trường.'
@@ -5940,6 +6323,226 @@ function chotTyGia(c) {
       HM.quenHet(); c.veLai();
     } catch (e) { c.thongBao(e.message, 'no'); }
   });
+}
+
+})();
+
+},
+/* ---- man/phat-hanh.js ---- */
+function(){
+/* =====================================================================
+   NỘI BỘ · PHÁT HÀNH
+   ---------------------------------------------------------------------
+   Hàng chờ hồ sơ phát hành do đối tác gửi lên (từ form metadata ở trang
+   chủ, hoặc từ trang Phát hành của cổng đối tác). Vận hành đi qua bốn
+   bước: tiếp nhận → cấp mã ISRC/UPC → đánh dấu đã phát hành; hoặc trả
+   lại để bổ sung. Mỗi bước để lại một dòng lịch sử trên hồ sơ và một dòng
+   nhật ký thao tác.
+   ===================================================================== */
+"use strict";
+(function () {
+
+var LOC = { loc: 'dang', tim: '' };
+var NHAN = {
+  vi: { submitted: 'Đã gửi', received: 'Đã tiếp nhận', coded: 'Đã cấp mã', released: 'Đã phát hành', returned: 'Trả lại bổ sung' },
+  en: { submitted: 'Submitted', received: 'Received', coded: 'Codes assigned', released: 'Released', returned: 'Returned' }
+};
+var KIEU = { submitted: 'info', received: 'link', coded: 'warn', released: 'ok', returned: 'no' };
+var LOAI = { vi: { single: 'Single', ep: 'EP', album: 'Album' }, en: { single: 'Single', ep: 'EP', album: 'Album' } };
+
+HT.dangKy({
+  id: 'phat-hanh', nav: 'navPhatHanh', nhom: 'nhomVanHanh', icon: 'file',
+
+  chu: {
+    vi: {
+      navPhatHanh: 'Phát hành', h1: 'Hồ sơ phát hành',
+      mo: 'Hồ sơ đối tác gửi lên để phát hành bản ghi mới: tiếp nhận, cấp mã ISRC/UPC, đẩy lên nền tảng. Bản ghi chỉ khớp được doanh thu khi đã có ISRC trong danh mục.',
+      choTiep: 'Chờ tiếp nhận', choMa: 'Chờ cấp mã', choPh: 'Chờ phát hành', daPh: 'Đã phát hành', traLai: 'Trả lại bổ sung',
+      locDang: 'Đang xử lý', locHet: 'Tất cả',
+      tim: 'Tìm mã hồ sơ, tên bản phát hành, nghệ sĩ…',
+      cMa: 'Mã hồ sơ', cTen: 'Bản phát hành', cLoai: 'Loại', cNgay: 'Ngày mong muốn', cGui: 'Gửi bởi', cTt: 'Trạng thái', cCapNhat: 'Cập nhật',
+      khong: 'Không có hồ sơ nào', khongMo: 'Đổi bộ lọc, hoặc chờ đối tác gửi hồ sơ mới.',
+      tiepNhan: 'Tiếp nhận', capMa: 'Cấp mã ISRC/UPC', danhDau: 'Đánh dấu đã phát hành', traLaiNut: 'Trả lại để bổ sung',
+      hoiTra: 'Cần đối tác bổ sung gì?', hoiTraMo: 'Ghi rõ từng thứ còn thiếu. Đối tác nhìn thấy nguyên văn ghi chú này trên cổng của họ.',
+      hoiPh: 'Ngày phát hành thực tế', hoiPhMo: 'Ngày bản ghi lên các nền tảng. Mặc định là ngày đối tác mong muốn.',
+      hoiMa: 'Cấp mã cho hồ sơ này?', hoiMaMo: 'Track chưa có ISRC sẽ được cấp mã VN-HTK; bản phát hành chưa có UPC sẽ được cấp UPC. Mã đã cấp không đổi được.',
+      hoiTiep: 'Tiếp nhận hồ sơ này?', hoiTiepMo: 'Tiếp nhận nghĩa là đã kiểm tra hồ sơ đủ thông tin để đi tiếp. Đối tác sẽ thấy trạng thái đổi ngay.',
+      lichSu: 'Lịch sử hồ sơ', track: 'Danh sách track', sangTac: 'Sáng tác', producer: 'Producer',
+      chuaCoMa: 'chưa có mã', quyTrinh: 'Sau khi phát hành',
+      quyTrinhMo: 'Bản ghi có ISRC nằm trong danh mục thì báo cáo doanh thu về sẽ tự khớp theo mã. Bản ghi phát hành mà không có mã trong danh mục là bản ghi chắc chắn rơi vào danh sách chờ khớp ISRC.',
+      guiBoi: 'Gửi bởi', ngayGui: 'Gửi lúc', ngayMong: 'Ngày phát hành mong muốn', ngayThuc: 'Ngày phát hành thực tế',
+      theLoai: 'Thể loại', ngonNgu: 'Ngôn ngữ lời', anhBia: 'Ảnh bìa', ghiChu: 'Ghi chú của đối tác',
+      daTiepNhan: 'Đã tiếp nhận hồ sơ', daCapMa: 'Đã cấp mã', daPhatHanh: 'Đã đánh dấu phát hành', daTraLai: 'Đã trả lại hồ sơ',
+      xuat: 'Xuất CSV'
+    },
+    en: {
+      navPhatHanh: 'Releases', h1: 'Release submissions',
+      mo: 'Submissions from partners for new releases: receive, assign ISRC/UPC, deliver to platforms. A recording only matches revenue once its ISRC is in the catalogue.',
+      choTiep: 'Awaiting receipt', choMa: 'Awaiting codes', choPh: 'Awaiting release', daPh: 'Released', traLai: 'Returned',
+      locDang: 'In progress', locHet: 'All',
+      tim: 'Search submission ID, title, artist…',
+      cMa: 'Submission', cTen: 'Release', cLoai: 'Type', cNgay: 'Requested date', cGui: 'Submitted by', cTt: 'Status', cCapNhat: 'Updated',
+      khong: 'No submissions', khongMo: 'Change the filter, or wait for partners to submit.',
+      tiepNhan: 'Receive', capMa: 'Assign ISRC/UPC', danhDau: 'Mark as released', traLaiNut: 'Return for fixes',
+      hoiTra: 'What does the partner need to add?', hoiTraMo: 'List each missing item. The partner sees this note verbatim on their portal.',
+      hoiPh: 'Actual release date', hoiPhMo: 'The date the recording went live on platforms. Defaults to the requested date.',
+      hoiMa: 'Assign codes to this submission?', hoiMaMo: 'Tracks without an ISRC receive a VN-HTK code; a release without a UPC receives one. Assigned codes cannot change.',
+      hoiTiep: 'Receive this submission?', hoiTiepMo: 'Receiving means the submission has been checked and is complete enough to proceed. The partner sees the status change immediately.',
+      lichSu: 'Submission history', track: 'Tracks', sangTac: 'Writers', producer: 'Producer',
+      chuaCoMa: 'no code yet', quyTrinh: 'After release',
+      quyTrinhMo: 'A recording whose ISRC is in the catalogue matches incoming revenue automatically. A release without a code in the catalogue is guaranteed to land in the ISRC matching queue.',
+      guiBoi: 'Submitted by', ngayGui: 'Submitted at', ngayMong: 'Requested release date', ngayThuc: 'Actual release date',
+      theLoai: 'Genre', ngonNgu: 'Lyric language', anhBia: 'Artwork', ghiChu: 'Partner’s note',
+      daTiepNhan: 'Submission received', daCapMa: 'Codes assigned', daPhatHanh: 'Marked as released', daTraLai: 'Submission returned',
+      xuat: 'Export CSV'
+    }
+  },
+
+  dem: function (c) {
+    var n = c.A.releases.counts().submitted;
+    return n ? '!' + n : '';
+  },
+
+  ve: function (root, c) {
+    var A = c.A, t = c.t;
+    var dem = A.releases.counts();
+    var tatCa = A.releases.list();
+    var q = LOC.tim.trim().toLowerCase();
+    var rows = tatCa.filter(function (r) {
+      if (LOC.loc === 'dang' && (r.status === 'released' || r.status === 'returned')) return false;
+      if (LOC.loc !== 'dang' && LOC.loc !== 'het' && r.status !== LOC.loc) return false;
+      if (q && (r.id + ' ' + r.title + ' ' + r.artistName).toLowerCase().indexOf(q) < 0) return false;
+      return true;
+    });
+
+    var html = HM.dau({ h1: HM.esc(t('h1')), mo: HM.esc(t('mo')) });
+    html += HM.so([
+      { l: t('choTiep'), v: HT.fmt.n(dem.submitted), lon: true, mau: dem.submitted ? HB.mau('warn') : '' },
+      { l: t('choMa'), v: HT.fmt.n(dem.received) },
+      { l: t('choPh'), v: HT.fmt.n(dem.coded) },
+      { l: t('daPh'), v: HT.fmt.n(dem.released) },
+      { l: t('traLai'), v: HT.fmt.n(dem.returned), mau: dem.returned ? HB.mau('danger') : '' }
+    ]);
+
+    var boLoc = [['dang', t('locDang'), tatCa.filter(function (r) { return r.status !== 'released' && r.status !== 'returned'; }).length]]
+      .concat(['submitted', 'received', 'coded', 'released', 'returned'].map(function (k) { return [k, NHAN[c.lang][k], dem[k]]; }))
+      .concat([['het', t('locHet'), tatCa.length]]);
+    html += '<div class="bar">' +
+      '<div class="srch">' + HM.icon('tim') + '<input type="search" data-tim value="' + HM.esc(LOC.tim) + '" placeholder="' + HM.esc(t('tim')) + '"></div>' +
+      boLoc.map(function (b) {
+        return '<button type="button" class="pill' + (LOC.loc === b[0] ? ' on' : '') + '" data-loc="' + b[0] + '">' + HM.esc(b[1]) + ' <span class="muted">' + b[2] + '</span></button>';
+      }).join('') +
+      '<div class="sp"></div><button type="button" class="btn sm" data-xuat>' + HM.icon('down2') + HM.esc(t('xuat')) + '</button></div>';
+
+    html += HM.the({
+      thoBody: true,
+      than: rows.length ? '<div class="tw"><table class="t"><thead><tr>' +
+        '<th>' + HM.esc(t('cMa')) + '</th><th>' + HM.esc(t('cTen')) + '</th><th>' + HM.esc(t('cLoai')) + '</th>' +
+        '<th>' + HM.esc(t('cNgay')) + '</th><th>' + HM.esc(t('cGui')) + '</th><th>' + HM.esc(t('cTt')) + '</th><th>' + HM.esc(t('cCapNhat')) + '</th>' +
+        '</tr></thead><tbody>' + rows.map(function (r) {
+          return '<tr class="pick" data-hs="' + HM.esc(r.id) + '">' +
+            '<td class="mono">' + HM.esc(r.id) + '</td>' +
+            '<td><div class="t-ttl">' + HM.esc(r.title) + (r.version ? ' <span class="muted">(' + HM.esc(r.version) + ')</span>' : '') + '</div>' +
+            '<div class="t-sub">' + HM.esc(r.artistName) + (r.labelId >= 0 ? ' · ' + HM.esc(A.partyName('L:' + r.labelId)) : '') + '</div></td>' +
+            '<td>' + HM.esc(LOAI[c.lang][r.type] || r.type) + ' <span class="muted">· ' + r.tracks.length + ' track</span></td>' +
+            '<td class="mono">' + HM.esc(HT.fmt.ngay(r.releaseDate)) + '</td>' +
+            '<td class="mono">' + HM.esc(r.submittedBy) + '</td>' +
+            '<td>' + HM.tag(NHAN[c.lang][r.status], KIEU[r.status]) + '</td>' +
+            '<td class="mono muted">' + HM.esc(HT.fmt.luc(r.updatedAt)) + '</td></tr>';
+        }).join('') + '</tbody></table></div>'
+        : HM.trong({ icon: 'file', tieuDe: t('khong'), moTa: t('khongMo') })
+    });
+
+    html += HM.the({ h2: HM.esc(t('quyTrinh')), than: '<p class="say">' + HM.esc(t('quyTrinhMo')) + '</p>' });
+
+    root.innerHTML = html;
+    HM.nhap(root, '[data-tim]', function (el) { LOC.tim = el.value; c.veLai(); });
+    HM.bam(root, '[data-loc]', function (el) { LOC.loc = el.getAttribute('data-loc'); c.veLai(); });
+    HM.bam(root, '[data-hs]', function (el) { moHoSo(c, el.getAttribute('data-hs')); });
+    HM.bam(root, '[data-xuat]', function () {
+      HM.csv('ho-so-phat-hanh.csv', [t('cMa'), t('cTen'), c.lang === 'vi' ? 'Nghệ sĩ' : 'Artist', t('cLoai'), 'Track', t('cNgay'), t('cGui'), t('cTt'), t('cCapNhat')],
+        rows.map(function (r) { return [r.id, r.title, r.artistName, r.type, r.tracks.length, r.releaseDate, r.submittedBy, NHAN[c.lang][r.status], r.updatedAt]; }));
+    });
+  }
+});
+
+function moHoSo(c, id) {
+  var A = c.A, t = c.t, r = A.releases.get(id);
+  if (!r) return;
+  var nut = '';
+  if (r.status === 'submitted') nut = '<button type="button" class="btn pri" data-tiep>' + HM.esc(t('tiepNhan')) + '</button>' +
+    '<button type="button" class="btn dang" data-tra>' + HM.esc(t('traLaiNut')) + '</button>';
+  else if (r.status === 'received') nut = '<button type="button" class="btn pri" data-ma>' + HM.esc(t('capMa')) + '</button>' +
+    '<button type="button" class="btn dang" data-tra>' + HM.esc(t('traLaiNut')) + '</button>';
+  else if (r.status === 'coded') nut = '<button type="button" class="btn go" data-ph>' + HM.esc(t('danhDau')) + '</button>';
+
+  c.nganTruot(
+    '<div class="btnrow" style="margin-bottom:14px">' + HM.tag(NHAN[c.lang][r.status], KIEU[r.status]) + nut + '</div>' +
+    HM.kv([
+      { t: t('guiBoi'), v: r.submittedBy + (r.submittedRole === 'label' ? (c.lang === 'vi' ? ' (label gửi thay nghệ sĩ)' : ' (label on behalf of the artist)') : '') },
+      { t: t('ngayGui'), v: HT.fmt.luc(r.createdAt) },
+      { t: t('ngayMong'), v: HT.fmt.ngay(r.releaseDate) },
+      r.releasedAt ? { t: t('ngayThuc'), v: HT.fmt.ngay(r.releasedAt), manh: true } : null,
+      { t: 'UPC', v: r.upc || t('chuaCoMa') },
+      { t: t('theLoai'), v: r.genre || '—' },
+      { t: t('ngonNgu'), v: r.lang || '—' },
+      r.artwork ? { t: t('anhBia'), v: r.artwork } : null,
+      r.note ? { t: t('ghiChu'), v: r.note } : null
+    ]) +
+    '<h4 class="sec">' + HM.esc(t('track')) + ' (' + r.tracks.length + ')</h4>' +
+    '<div class="tw"><table class="t" style="min-width:0"><thead><tr><th>#</th><th>Track</th><th>ISRC</th><th>' + HM.esc(t('producer')) + '</th><th>' + HM.esc(t('sangTac')) + '</th></tr></thead><tbody>' +
+    r.tracks.map(function (tr) {
+      return '<tr><td class="mono">' + tr.pos + '</td>' +
+        '<td><div class="t-ttl">' + HM.esc(tr.title) + (tr.version ? ' (' + HM.esc(tr.version) + ')' : '') + '</div>' +
+        '<div class="t-sub">' + HM.esc(tr.artist) + (tr.feat ? ' feat. ' + HM.esc(tr.feat) : '') + '</div></td>' +
+        '<td class="mono">' + (tr.isrc ? HM.esc(tr.isrc) : '<span class="nil">' + HM.esc(t('chuaCoMa')) + '</span>') + '</td>' +
+        '<td>' + (tr.producer ? HM.esc(tr.producer) : '<span class="nil">—</span>') + '</td>' +
+        '<td style="font-size:12px">' + (tr.writers.length ? tr.writers.map(function (w) { return HM.esc(w.name) + ' <span class="muted">' + HM.esc(w.role) + ' · ' + w.pct + '%</span>'; }).join('<br>') : '<span class="nil">—</span>') + '</td></tr>';
+    }).join('') + '</tbody></table></div>' +
+    '<h4 class="sec">' + HM.esc(t('lichSu')) + '</h4>' +
+    '<div class="steps">' + r.history.map(function (h, i) {
+      var cuoi = i === r.history.length - 1;
+      return '<div class="s ' + (h.status === 'returned' ? 'no' : cuoi ? 'now' : 'ok') + '"><b>' + HM.esc(NHAN[c.lang][h.status]) + '</b>' +
+        (h.note ? '<span>' + HM.esc(h.note) + '</span>' : '') + '<div class="tm">' + HM.esc(HT.fmt.luc(h.at) + ' · ' + h.by) + '</div></div>';
+    }).join('') + '</div>',
+    { tieuDe: r.title, phu: r.id + ' · ' + r.artistName, khiMo: function (dr) {
+      HM.bam(dr, '[data-tiep]', function () {
+        c.xacNhan(t('hoiTiep'), HM.esc(t('hoiTiepMo')), t('tiepNhan')).then(function (ok) {
+          if (!ok) return;
+          try { A.releases.receive(r.id, 'ops@haustek-group.com'); c.thongBao(t('daTiepNhan') + ' · ' + r.id, 'ok'); c.dongNgan(); c.veLai(); }
+          catch (e) { c.thongBao(e.message, 'no'); }
+        });
+      });
+      HM.bam(dr, '[data-ma]', function () {
+        c.xacNhan(t('hoiMa'), HM.esc(t('hoiMaMo')), t('capMa')).then(function (ok) {
+          if (!ok) return;
+          try { A.releases.assignCodes(r.id, 'ops@haustek-group.com'); c.thongBao(t('daCapMa') + ' · ' + r.id, 'ok'); c.dongNgan(); c.veLai(); }
+          catch (e) { c.thongBao(e.message, 'no'); }
+        });
+      });
+      HM.bam(dr, '[data-ph]', function () {
+        c.hoiThoai({
+          tieuDe: t('danhDau'), moTa: HM.esc(t('hoiPhMo')),
+          than: '<label class="fld">' + HM.esc(t('hoiPh')) + '</label><input class="in" data-o="ngay" type="date" value="' + HM.esc(r.releaseDate) + '">',
+          dong: t('danhDau')
+        }).then(function (f) {
+          if (!f) return;
+          try { A.releases.publish(r.id, 'ops@haustek-group.com', f.ngay || r.releaseDate); c.thongBao(t('daPhatHanh') + ' · ' + r.id, 'ok'); c.dongNgan(); c.veLai(); }
+          catch (e) { c.thongBao(e.message, 'no'); }
+        });
+      });
+      HM.bam(dr, '[data-tra]', function () {
+        c.hoiThoai({
+          tieuDe: t('traLaiNut'), moTa: HM.esc(t('hoiTraMo')),
+          than: '<label class="fld">' + HM.esc(t('hoiTra')) + '</label><textarea class="in" data-o="ghi" rows="3"></textarea>',
+          dong: t('traLaiNut'), nguyHiem: true
+        }).then(function (f) {
+          if (!f) return;
+          try { A.releases.returnFix(r.id, 'ops@haustek-group.com', (f.ghi || '').trim()); c.thongBao(t('daTraLai') + ' · ' + r.id, 'ok'); c.dongNgan(); c.veLai(); }
+          catch (e) { c.thongBao(e.message, 'no'); }
+        });
+      });
+    } });
 }
 
 })();
@@ -8717,7 +9320,17 @@ HT.dangKy({
       nhipTq2: 'Họ lại báo cáo <b>trễ một tới hai quý</b> so với lúc bài thật sự được phát. Nên tác quyền của một bài phát hôm nay thường nửa năm sau mới về.',
       nhipTq3: 'Vì vậy phần lớn các kỳ <b>không có báo cáo nào</b>. Đó là chuyện bình thường, không phải bài của bạn không có doanh thu.',
       tongTq: 'Tổng tác quyền các kỳ đã báo cáo',
-      khongTqMo: 'Tác quyền thuộc về người sáng tác. Nếu bạn có sáng tác mà chưa thấy ở đây thì phần sáng tác chưa được đăng ký. Liên hệ Haustek để bổ sung.'
+      khongTqMo: 'Tác quyền thuộc về người sáng tác. Nếu bạn có sáng tác mà chưa thấy ở đây thì phần sáng tác chưa được đăng ký. Liên hệ Haustek để bổ sung.',
+      hd: 'Hợp đồng & tỷ lệ', hdMo: 'Tỷ lệ đang áp cho kỳ này và căn cứ của tỷ lệ đó.',
+      hdLabel: 'Thuộc label', hdDocLap: 'Loại hợp đồng', hdDocLapV: 'Độc lập, ký trực tiếp với Haustek', hdLabelV: 'Label, quản lý nghệ sĩ',
+      hdPhi: 'Phí dịch vụ Haustek', hdPhiMo: 'trên doanh thu gộp',
+      hdTyLe: 'Tỷ lệ bạn được hưởng', hdTyLeLb: 'Tỷ lệ trả cho nghệ sĩ', hdTyLeMo: 'trên doanh thu sau phí dịch vụ',
+      hdPhanLabel: 'Phần label được hưởng', hdPhanHt: 'Phần Haustek theo hợp đồng độc lập', hdPhanLbCua: 'Phần label được hưởng',
+      hdHieuLuc: 'Hiệu lực từ kỳ', hdCanCu: 'Căn cứ', hdCanCuKhong: 'Hợp đồng gốc',
+      hdThanhToan: 'Bên thanh toán', hdThanhToanV: 'Haustek thanh toán thẳng cho bạn theo tỷ lệ này',
+      hdNguong: 'Ngưỡng thanh toán tối thiểu', hdProducer: 'Bài có điểm producer', hdProducerMo: 'điểm producer trừ vào phần của bạn',
+      hdLichSu: 'Lịch sử tỷ lệ', hdKy: 'Từ kỳ', hdGiaDinh: 'Bản mẫu giả định Haustek thanh toán thẳng cho từng nghệ sĩ theo tỷ lệ label đặt. Nếu thực tế label tự chia cho nghệ sĩ thì trang này sẽ đổi (câu hỏi cần chốt số 8).',
+      hdTacQuyen: 'Phí quản lý tác quyền'
     },
     en: {
       navTong: 'Overview', h1: 'Overview',
@@ -8751,7 +9364,17 @@ HT.dangKy({
       nhipTq2: 'And they report <b>one to two quarters late</b> relative to when the music actually played. So publishing on a track released today usually arrives about six months later.',
       nhipTq3: 'That is why most periods simply have <b>no report at all</b> — normal, and not a sign that your works earned nothing.',
       tongTq: 'Publishing across reported periods',
-      khongTqMo: 'Publishing belongs to the writers. If you write and see nothing here, your writer share has not been registered — contact Haustek.'
+      khongTqMo: 'Publishing belongs to the writers. If you write and see nothing here, your writer share has not been registered — contact Haustek.',
+      hd: 'Agreement & rate', hdMo: 'The rate applied this period and what it is based on.',
+      hdLabel: 'Under label', hdDocLap: 'Agreement type', hdDocLapV: 'Independent, signed directly with Haustek', hdLabelV: 'Label, managing artists',
+      hdPhi: 'Haustek service fee', hdPhiMo: 'of gross revenue',
+      hdTyLe: 'Your share', hdTyLeLb: 'Paid to artists', hdTyLeMo: 'of revenue after the service fee',
+      hdPhanLabel: 'Label’s share', hdPhanHt: 'Haustek’s share under the independent agreement', hdPhanLbCua: 'Label’s share',
+      hdHieuLuc: 'Effective from', hdCanCu: 'Basis', hdCanCuKhong: 'Original agreement',
+      hdThanhToan: 'Paid by', hdThanhToanV: 'Haustek pays you directly at this rate',
+      hdNguong: 'Minimum payout', hdProducer: 'Tracks with producer points', hdProducerMo: 'producer points come off your share',
+      hdLichSu: 'Rate history', hdKy: 'From', hdGiaDinh: 'The prototype assumes Haustek pays each artist directly at the rate the label set. If the label pays its artists itself, this page changes (open question 8).',
+      hdTacQuyen: 'Publishing administration fee'
     }
   },
 
@@ -8772,13 +9395,14 @@ HT.dangKy({
       return;
     }
 
+    /* Không lặp ô số ở đầu trang: dải ô số ngay dưới đã có đủ, kèm so
+       sánh với kỳ trước. Đầu trang chỉ mang tên và câu dẫn. */
     var html = HM.dau({
       h1: HM.esc(t('h1')) + ' <span>' + HM.esc(c.ky.label) + '</span>',
-      so: [
-        { l: t('veTay'), v: HT.fmt.usd(s.total) },
-        s.streams != null ? { l: t('luot'), v: HB.gonSo(s.streams) } : null,
-        { l: t('bai'), v: HT.fmt.n(s.tracks) }
-      ].filter(Boolean)
+      mo: HM.esc(c.song(me, 'belongsTo') ? (c.lang === 'vi'
+        ? (me.independent ? 'Hợp đồng độc lập với Haustek' : 'Nghệ sĩ thuộc ' + me.belongsTo)
+        : (me.independent ? 'Independent agreement with Haustek' : 'Artist under ' + me.belongsTo))
+        : (c.lang === 'vi' ? 'Label · ' + me.trackCount + ' bản ghi đang phân phối' : 'Label · ' + me.trackCount + ' recordings distributed'))
     });
 
     if (coPub) {
@@ -8836,6 +9460,9 @@ HT.dangKy({
           }) }) + '</div>'
       }) +
       veKhiNao(c, s) + '</div>';
+
+    /* ---- hợp đồng & tỷ lệ ---- */
+    html += veHopDong(c);
 
     /* ---- diễn biến ---- */
     var xh = api.trend(me.role, me.partyId, LUONG);
@@ -8965,6 +9592,49 @@ function veTacQuyenTrong(c) {
 }
 
 /* =====================================================================
+   Thẻ "Hợp đồng & tỷ lệ": tỷ lệ đang áp, hiệu lực từ kỳ nào, căn cứ, ai
+   thanh toán. Trước đây ca sĩ thuộc label không có chỗ nào nói họ thuộc
+   label nào và tỷ lệ bao nhiêu; đây là chỗ đó.
+   ===================================================================== */
+function veHopDong(c) {
+  var t = c.t, me = c.phien.me, api = c.api;
+  var hd;
+  try { hd = api.contract(me.role, me.partyId, c.kyKey); } catch (e) { return ''; }
+  var la = hd.kind === 'label', thuocLabel = hd.kind === 'artist-label';
+  var rows = [
+    thuocLabel ? { t: t('hdLabel'), v: hd.label.name + ' · ' + hd.label.clientId, manh: true } : null,
+    !thuocLabel ? { t: t('hdDocLap'), v: la ? t('hdLabelV') : t('hdDocLapV') } : null,
+    { t: t('hdPhi'), v: HT.fmt.pct(hd.haustekFee) + ' ' + t('hdPhiMo') },
+    { t: la ? t('hdTyLeLb') : t('hdTyLe'), v: HT.fmt.pct(hd.artistShare) + ' ' + t('hdTyLeMo'), manh: !la },
+    { t: la ? t('hdPhanLbCua') : (thuocLabel ? t('hdPhanLabel') : t('hdPhanHt')), v: HT.fmt.pct(hd.counterpartShare) + ' ' + t('hdTyLeMo'), manh: la },
+    { t: t('hdHieuLuc'), v: hd.effectiveFrom || '—' },
+    { t: t('hdCanCu'), v: hd.basis || t('hdCanCuKhong') },
+    !la ? { t: t('hdThanhToan'), v: t('hdThanhToanV') } : null,
+    { t: t('hdNguong'), v: HT.fmt.usd0(hd.payoutThreshold) },
+    !la && hd.producerTracks ? { t: t('hdProducer'), v: HT.fmt.n(hd.producerTracks) + ' · ' + t('hdProducerMo') } : null,
+    me.hasPublishing ? { t: t('hdTacQuyen'), v: HT.fmt.pct(hd.pubFee) } : null
+  ];
+  var lichSu = hd.history.length > 1
+    ? '<h4 class="sec">' + HM.esc(t('hdLichSu')) + '</h4><div class="tw"><table class="t" style="min-width:0"><thead><tr><th>' +
+      HM.esc(t('hdKy')) + '</th><th class="num">' + HM.esc(la ? t('hdTyLeLb') : t('hdTyLe')) + '</th><th>' + HM.esc(t('hdCanCu')) + '</th></tr></thead><tbody>' +
+      hd.history.map(function (h) {
+        return '<tr><td class="mono">' + HM.esc(h.from) + '</td><td class="num">' + HM.esc(HT.fmt.pct(h.artistShare)) + '</td><td>' + HM.esc(h.note || t('hdCanCuKhong')) + '</td></tr>';
+      }).join('') + '</tbody></table></div>'
+    : '';
+  /* Có lịch sử tỷ lệ thì bảng lịch sử đứng cột phải; không có thì chia
+     đôi danh sách khoá–giá trị, đừng để trống nửa thẻ. */
+  var co = rows.filter(Boolean), nua = Math.ceil(co.length / 2);
+  var than = lichSu
+    ? '<div class="grid g2" style="margin-bottom:0"><div>' + HM.kv(co) + '</div><div>' + lichSu + '</div></div>'
+    : '<div class="grid g2" style="margin-bottom:0"><div>' + HM.kv(co.slice(0, nua)) + '</div><div>' + HM.kv(co.slice(nua)) + '</div></div>';
+  return HM.the({
+    h2: HM.esc(t('hd')), p: HM.esc(t('hdMo')),
+    than: than,
+    chan: thuocLabel ? HM.esc(t('hdGiaDinh')) : ''
+  });
+}
+
+/* =====================================================================
    Thẻ "khi nào tiền vào tài khoản"
    ===================================================================== */
 function veKhiNao(c, s) {
@@ -9078,6 +9748,184 @@ function moBai(c, id, luong) {
       HB.o({ loai: 'thanh', hang: d.byTerritory.map(function (x, i) { return { ten: x.name, gt: x.value, mau: P[i % 8] }; }) }) : ''),
     { tieuDe: d.title, phu: d.isrc + ' · ' + d.type,
       khiMo: function (dr) { HB.gan(dr); } });
+}
+
+})();
+
+},
+/* ---- man/k-nghe-si.js ---- */
+function(){
+/* =====================================================================
+   CỔNG ĐỐI TÁC · NGHỆ SĨ CỦA LABEL
+   ---------------------------------------------------------------------
+   Chỉ label mới có trang này. Câu hỏi của chủ label mỗi tháng: từng
+   nghệ sĩ trong roster mang về bao nhiêu, Haustek thanh toán cho nghệ sĩ
+   bao nhiêu, và label được hưởng bao nhiêu trên từng người.
+
+   Tạm ứng cá nhân của nghệ sĩ KHÔNG có ở đây: đó là chuyện giữa nghệ sĩ
+   với Haustek (giả định của bản mẫu, câu hỏi cần chốt số 8).
+   ===================================================================== */
+"use strict";
+(function () {
+
+var LOC = { tim: '', sap: 'gross', huong: -1 };
+
+HT.dangKy({
+  id: 'k-nghe-si', nav: 'navNs', icon: 'user',
+  khaDung: function (c) { return c.phien && c.phien.me && c.phien.me.role === 'label'; },
+
+  chu: {
+    vi: {
+      navNs: 'Nghệ sĩ', h1: 'Nghệ sĩ của label',
+      mo: 'Từng nghệ sĩ trong roster mang về bao nhiêu trong kỳ, phần Haustek thanh toán cho nghệ sĩ và phần label được hưởng.',
+      soNs: 'Nghệ sĩ trong roster', coDt: 'Có doanh thu kỳ này', gop: 'Doanh thu gộp roster',
+      traNs: 'Thanh toán cho nghệ sĩ', labelHuong: 'Phần label được hưởng',
+      tim: 'Tìm tên hoặc mã nghệ sĩ…',
+      cNs: 'Nghệ sĩ', cBai: 'Bài có doanh thu', cLuot: 'Lượt nghe', cGop: 'Doanh thu gộp',
+      cNsHuong: 'Phần nghệ sĩ', cLabel: 'Phần label', cTyLe: 'Tỷ lệ',
+      topNs: 'Nghệ sĩ mang về nhiều nhất kỳ này', topNsMo: 'Theo doanh thu gộp. Bấm một dòng trong bảng để xem chi tiết.',
+      khongCo: 'Chưa có nghệ sĩ nào khớp', khongCoMo: 'Thử tìm bằng mã khách hàng của nghệ sĩ.',
+      chuaMo: 'Kỳ này chưa chốt sổ', chuaMoMo: 'Số liệu theo nghệ sĩ chỉ hiện sau khi kỳ được xét duyệt.',
+      ghiChu: 'Phần nghệ sĩ là số Haustek thanh toán thẳng cho nghệ sĩ theo tỷ lệ label đã đặt; phần label là phần còn lại sau phí dịch vụ Haustek. Cộng phần nghệ sĩ, phần label và điểm producer thì bằng doanh thu gộp trừ phí dịch vụ.',
+      xuat: 'Xuất CSV', hienThi: 'Hiển thị',
+      chiTiet: 'Bài của nghệ sĩ này trong kỳ', khongBai: 'Kỳ này nghệ sĩ chưa có bài nào phát sinh doanh thu.',
+      diemProducer: 'Điểm producer'
+    },
+    en: {
+      navNs: 'Artists', h1: 'Artists on your label',
+      mo: 'What each artist on the roster brought in this period, what Haustek pays the artist, and what the label keeps.',
+      soNs: 'Artists on the roster', coDt: 'Earning this period', gop: 'Roster gross revenue',
+      traNs: 'Paid to artists', labelHuong: 'Label’s share',
+      tim: 'Search artist name or code…',
+      cNs: 'Artist', cBai: 'Earning tracks', cLuot: 'Streams', cGop: 'Gross',
+      cNsHuong: 'Artist share', cLabel: 'Label share', cTyLe: 'Rate',
+      topNs: 'Top artists this period', topNsMo: 'By gross revenue. Open a row in the table for details.',
+      khongCo: 'No artist matches', khongCoMo: 'Try the artist’s client ID.',
+      chuaMo: 'Period not closed', chuaMoMo: 'Per-artist figures appear once the period is approved.',
+      ghiChu: 'The artist share is what Haustek pays the artist directly at the rate the label set; the label share is the remainder after the Haustek service fee. Artist share, label share and producer points add back to gross less the fee.',
+      xuat: 'Export CSV', hienThi: 'Showing',
+      chiTiet: 'This artist’s tracks this period', khongBai: 'No track by this artist earned this period.',
+      diemProducer: 'Producer points'
+    }
+  },
+
+  dem: function (c) {
+    try { return HT.fmt.n(c.api.rosterArtists(c.phien.me.role, c.phien.me.partyId).rows.length); } catch (e) { return ''; }
+  },
+
+  ve: function (root, c) {
+    var api = c.api, me = c.phien.me, t = c.t, P = HB.dayMau();
+    var r;
+    try { r = api.roster(me.role, me.partyId, c.kyKey); }
+    catch (e) {
+      root.innerHTML = HM.dau({ h1: HM.esc(t('h1')) }) +
+        HM.the({ than: HM.trong({ icon: 'clock', tieuDe: t('chuaMo'), moTa: t('chuaMoMo') }) });
+      return;
+    }
+    var hd;
+    try { hd = api.contract(me.role, me.partyId, c.kyKey); } catch (e) { hd = null; }
+
+    var q = LOC.tim.trim().toLowerCase();
+    var rows = r.rows.filter(function (x) {
+      return !q || x.name.toLowerCase().indexOf(q) >= 0 || x.clientId.toLowerCase().indexOf(q) >= 0;
+    });
+    rows.sort(function (a, b) {
+      var k = LOC.sap, va = a[k], vb = b[k];
+      if (typeof va === 'string') return va.localeCompare(vb, 'vi') * LOC.huong;
+      return (va - vb) * LOC.huong;
+    });
+
+    var html = HM.dau({ h1: HM.esc(t('h1')) + ' <span>' + HM.esc(c.ky.label) + '</span>', mo: HM.esc(t('mo')) });
+    html += HM.so([
+      { l: t('gop'), v: HT.fmt.usd0(r.total.gross), lon: true },
+      { l: t('traNs'), v: HT.fmt.usd0(r.total.artist), s: hd ? HT.fmt.pct(hd.artistShare) + (c.lang === 'vi' ? ' sau phí dịch vụ' : ' after the fee') : '' },
+      { l: t('labelHuong'), v: HT.fmt.usd0(r.total.labelCut), s: hd ? HT.fmt.pct(hd.counterpartShare) + (c.lang === 'vi' ? ' sau phí dịch vụ' : ' after the fee') : '', mau: HB.mau('ok') },
+      { l: t('soNs'), v: HT.fmt.n(r.count), s: HT.fmt.n(r.earning) + ' ' + (c.lang === 'vi' ? 'có doanh thu' : 'earning') }
+    ]);
+
+    var top = r.rows.filter(function (x) { return x.gross > 0; }).slice(0, 8);
+    if (top.length) {
+      html += HM.the({
+        h2: HM.esc(t('topNs')), p: HM.esc(t('topNsMo')),
+        than: HB.o({ loai: 'thanh', tenTong: t('cGop'), hang: top.map(function (x, i) {
+          return { ten: x.name, gt: x.gross, phu: x.clientId, mau: P[i % 8] };
+        }) })
+      });
+    }
+
+    html += HM.the({
+      h2: HM.esc(t('cNs')) + ' <span class="muted">(' + HM.esc(HT.fmt.n(rows.length)) + ')</span>',
+      hanhDong: '<div class="srch">' + HM.icon('tim') + '<input type="search" data-tim value="' + HM.esc(LOC.tim) +
+        '" placeholder="' + HM.esc(t('tim')) + '"></div>' +
+        '<button type="button" class="btn sm" data-xuat>' + HM.icon('down2') + HM.esc(t('xuat')) + '</button>',
+      thoBody: true,
+      than: rows.length ? '<div class="tw"><table class="t"><thead><tr>' +
+        cot('name', t('cNs'), false) + cot('tracks', t('cBai'), true) + cot('streams', t('cLuot'), true) +
+        cot('gross', t('cGop'), true) + cot('artist', t('cNsHuong'), true) + cot('labelCut', t('cLabel'), true) +
+        '</tr></thead><tbody>' + rows.map(function (x) {
+          return '<tr class="pick" data-ns="' + x.artistId + '">' +
+            '<td><div class="t-ttl">' + HM.esc(x.name) + '</div><div class="t-sub">' + HM.esc(x.clientId) + '</div></td>' +
+            '<td class="num">' + (x.tracks ? HM.esc(HT.fmt.n(x.tracks)) : '<span class="nil">—</span>') + '</td>' +
+            '<td class="num">' + (x.streams ? HM.esc(HT.fmt.n(x.streams)) : '<span class="nil">—</span>') + '</td>' +
+            '<td class="num">' + (x.gross ? HM.esc(HT.fmt.usd(x.gross)) : '<span class="nil">—</span>') + '</td>' +
+            '<td class="num">' + (x.artist ? HM.esc(HT.fmt.usd(x.artist)) : '<span class="nil">—</span>') + '</td>' +
+            '<td class="num band">' + (x.labelCut ? HM.esc(HT.fmt.usd(x.labelCut)) : '<span class="nil">—</span>') + '</td></tr>';
+        }).join('') + '</tbody><tfoot><tr><td>' + HM.esc(c.lang === 'vi' ? 'Tổng cộng' : 'Total') + '</td>' +
+        '<td class="num">' + HM.esc(HT.fmt.n(rows.reduce(function (s, x) { return s + x.tracks; }, 0))) + '</td>' +
+        '<td class="num">' + HM.esc(HT.fmt.n(rows.reduce(function (s, x) { return s + x.streams; }, 0))) + '</td>' +
+        '<td class="num">' + HM.esc(HT.fmt.usd(rows.reduce(function (s, x) { return s + x.gross; }, 0))) + '</td>' +
+        '<td class="num">' + HM.esc(HT.fmt.usd(rows.reduce(function (s, x) { return s + x.artist; }, 0))) + '</td>' +
+        '<td class="num band">' + HM.esc(HT.fmt.usd(rows.reduce(function (s, x) { return s + x.labelCut; }, 0))) + '</td></tr></tfoot></table></div>'
+        : HM.trong({ icon: 'user', tieuDe: t('khongCo'), moTa: t('khongCoMo') }),
+      chan: HM.esc(t('ghiChu'))
+    });
+
+    root.innerHTML = html;
+    HB.gan(root);
+
+    function cot(k, nhan, so) {
+      return '<th class="s' + (so ? ' num' : '') + (LOC.sap === k ? ' sorted' : '') + '" data-sx="' + k + '">' + HM.esc(nhan) +
+        (LOC.sap === k ? '<span class="ar">' + (LOC.huong > 0 ? '↑' : '↓') + '</span>' : '') + '</th>';
+    }
+    HM.nhap(root, '[data-tim]', function (el) { LOC.tim = el.value; c.veLai(); });
+    HM.bam(root, '[data-sx]', function (el) {
+      var k = el.getAttribute('data-sx');
+      if (LOC.sap === k) LOC.huong = -LOC.huong; else { LOC.sap = k; LOC.huong = k === 'name' ? 1 : -1; }
+      c.veLai();
+    });
+    HM.bam(root, '[data-xuat]', function () {
+      HM.csv('nghe-si-' + me.clientId + '-' + c.kyKey + '.csv',
+        [c.lang === 'vi' ? 'Mã nghệ sĩ' : 'Artist ID', c.lang === 'vi' ? 'Tên' : 'Name', t('cBai'), t('cLuot'), t('cGop'), t('cNsHuong'), t('cLabel'), t('diemProducer')],
+        rows.map(function (x) { return [x.clientId, x.name, x.tracks, x.streams, x.gross.toFixed(2), x.artist.toFixed(2), x.labelCut.toFixed(2), x.producer.toFixed(2)]; }));
+    });
+    HM.bam(root, '[data-ns]', function (el) { moNgheSi(c, r.rows.filter(function (x) { return x.artistId === +el.getAttribute('data-ns'); })[0]); });
+  }
+});
+
+function moNgheSi(c, x) {
+  if (!x) return;
+  var api = c.api, me = c.phien.me, t = c.t, P = HB.dayMau();
+  var bg;
+  try { bg = api.tracks(me.role, me.partyId, c.kyKey, 'rec', { q: x.name, sort: 'gross', dir: -1 }); }
+  catch (e) { bg = { rows: [], total: 0 }; }
+  var rows = bg.rows.filter(function (r) { return r.artist === x.name; }).slice(0, 12);
+  c.nganTruot(
+    HM.so([
+      { l: t('cGop'), v: HT.fmt.usd(x.gross), lon: true },
+      { l: t('cNsHuong'), v: HT.fmt.usd(x.artist) },
+      { l: t('cLabel'), v: HT.fmt.usd(x.labelCut), mau: HB.mau('ok') }
+    ]) +
+    (x.producer > 0 ? '<p class="hint" style="margin-top:8px">' + HM.esc(t('diemProducer') + ': ' + HT.fmt.usd(x.producer)) + '</p>' : '') +
+    '<h4 class="sec">' + HM.esc(t('chiTiet')) + '</h4>' +
+    (rows.length ? '<div class="tw"><table class="t" style="min-width:0"><thead><tr><th>' + HM.esc(c.lang === 'vi' ? 'Bài hát' : 'Track') + '</th>' +
+      '<th class="num">' + HM.esc(t('cLuot')) + '</th><th class="num">' + HM.esc(t('cGop')) + '</th><th class="num band">' + HM.esc(t('cLabel')) + '</th></tr></thead><tbody>' +
+      rows.map(function (r) {
+        return '<tr><td><div class="t-ttl">' + HM.esc(HM.dai(r.title, 34)) + '</div><div class="t-sub">' + HM.esc(r.isrc) + '</div></td>' +
+          '<td class="num">' + HM.esc(HT.fmt.n(r.streams)) + '</td><td class="num">' + HM.esc(HT.fmt.usd0(r.gross)) + '</td>' +
+          '<td class="num band">' + HM.esc(HT.fmt.usd(r.mine)) + '</td></tr>';
+      }).join('') + '</tbody></table></div>'
+      : '<p class="say">' + HM.esc(t('khongBai')) + '</p>'),
+    { tieuDe: x.name, phu: x.clientId + ' · ' + c.ky.label, khiMo: function (dr) { HB.gan(dr); } });
 }
 
 })();
@@ -9335,6 +10183,288 @@ function moBai(c, id, luong, la) {
       : 'The store and territory splits show YOUR share of this track, not gross — so they add back to the figure at the top.') + '</div>',
     { tieuDe: d.title, phu: d.isrc + ' · ' + d.type + (d.artist ? ' · ' + d.artist : ''),
       khiMo: function (dr) { HB.gan(dr); } });
+}
+
+})();
+
+},
+/* ---- man/k-phat-hanh.js ---- */
+function(){
+/* =====================================================================
+   CỔNG ĐỐI TÁC · PHÁT HÀNH
+   ---------------------------------------------------------------------
+   Nối cổng với luồng metadata ở trang chủ: đối tác thấy bản phát hành đã
+   có trong danh mục, hồ sơ đã gửi đang ở bước nào, và gửi hồ sơ mới ngay
+   trong cổng bằng đúng các trường bắt buộc của biểu mẫu metadata.
+   Label gửi thay được cho nghệ sĩ trong roster; nghệ sĩ chỉ gửi cho mình.
+   ===================================================================== */
+"use strict";
+(function () {
+
+var NHAN = {
+  vi: { submitted: 'Đã gửi', received: 'Đã tiếp nhận', coded: 'Đã cấp mã', released: 'Đã phát hành', returned: 'Cần bổ sung' },
+  en: { submitted: 'Submitted', received: 'Received', coded: 'Codes assigned', released: 'Released', returned: 'Needs fixes' }
+};
+var KIEU = { submitted: 'info', received: 'link', coded: 'warn', released: 'ok', returned: 'no' };
+var THE_LOAI = ['Pop', 'Indie', 'R&B', 'Hip-hop', 'Electronic', 'Alternative', 'Ballad', 'Rock', 'Lo-fi', 'Folk', 'Khác'];
+var VAI = { vi: { Composer: 'Sáng tác', Lyricist: 'Viết lời', 'Composer/Lyricist': 'Sáng tác & viết lời', Arranger: 'Phối khí' },
+            en: { Composer: 'Composer', Lyricist: 'Lyricist', 'Composer/Lyricist': 'Composer & lyricist', Arranger: 'Arranger' } };
+
+HT.dangKy({
+  id: 'k-phat-hanh', nav: 'navPh', icon: 'file',
+
+  chu: {
+    vi: {
+      navPh: 'Phát hành', h1: 'Phát hành',
+      mo: 'Bản phát hành đã có trong danh mục, hồ sơ đang xử lý, và gửi hồ sơ phát hành mới.',
+      dangXuLy: 'Hồ sơ đang xử lý', canBoSung: 'Cần bổ sung', daPh: 'Đã phát hành', trongDm: 'Trong danh mục',
+      gui: 'Gửi hồ sơ phát hành', hoSo: 'Hồ sơ đã gửi', hoSoMo: 'Bấm một hồ sơ để xem chi tiết và lịch sử xử lý.',
+      danhMuc: 'Bản phát hành trong danh mục', danhMucMo: 'Suy ra từ bản ghi đang phân phối. Bản có doanh thu ở kỳ đã xét duyệt được đánh dấu.',
+      cMa: 'Mã hồ sơ', cTen: 'Bản phát hành', cLoai: 'Loại', cNgay: 'Ngày mong muốn', cTt: 'Trạng thái', cCapNhat: 'Cập nhật',
+      cKy: 'Kỳ phát hành', cTrack: 'Track', cDt: 'Doanh thu gộp các kỳ đã xét duyệt', coDt: 'đã có', chuaDt: 'chưa có',
+      khongHs: 'Chưa gửi hồ sơ nào', khongHsMo: 'Hồ sơ gửi từ biểu mẫu metadata ở trang chủ hoặc từ nút phía trên sẽ hiện ở đây.',
+      quyTrinh: 'Hồ sơ đi qua những bước nào',
+      b1: 'Đã gửi', b1m: 'Hồ sơ vào hàng chờ của Haustek. Chưa cần làm gì thêm.',
+      b2: 'Đã tiếp nhận', b2m: 'Haustek đã kiểm tra đủ thông tin. Nếu thiếu, hồ sơ được trả lại kèm ghi chú cần bổ sung.',
+      b3: 'Đã cấp mã', b3m: 'Track được cấp ISRC, bản phát hành được cấp UPC. Đây là mã dùng để khớp doanh thu về sau.',
+      b4: 'Đã phát hành', b4m: 'Bản ghi đã lên nền tảng. Doanh thu về từ kỳ sau đó và hiện trong Bài hát của bạn.',
+      lichSu: 'Lịch sử xử lý', track: 'Danh sách track', chuaCoMa: 'chưa có mã',
+      ghiChuTra: 'Haustek cần bạn bổ sung',
+      formNs: 'Nghệ sĩ chính', formLoai: 'Loại phát hành', formTen: 'Tên bản phát hành', formPb: 'Phiên bản',
+      formTl: 'Thể loại chính', formNn: 'Ngôn ngữ lời', formNgay: 'Ngày phát hành mong muốn', formUpc: 'UPC (nếu đã có)',
+      formBia: 'Link ảnh bìa', formGhi: 'Ghi chú cho đội phát hành', formTracks: 'Danh sách track',
+      themTrack: 'Thêm track', xoaTrack: 'Bỏ track', trTen: 'Tên track', trFeat: 'Khách mời (feat.)', trIsrc: 'ISRC (nếu đã có)',
+      trProducer: 'Producer', trSangTac: 'Sáng tác và tỉ lệ', themNguoi: 'Thêm người', tenThat: 'Họ tên thật', vaiTro: 'Vai trò', tiLe: 'Tỉ lệ %',
+      formMo: 'Đây là bản rút gọn của biểu mẫu metadata trên trang chủ, đúng các trường bắt buộc. Hồ sơ gửi xong không sửa được; cần sửa thì Haustek trả lại để bạn gửi lại.',
+      daGui: 'Đã gửi hồ sơ', formDay: 'Biểu mẫu đầy đủ trên trang chủ',
+      tongTiLe: 'Tổng tỉ lệ sáng tác phải bằng 100%'
+    },
+    en: {
+      navPh: 'Releases', h1: 'Releases',
+      mo: 'Releases already in the catalogue, submissions in progress, and submitting a new release.',
+      dangXuLy: 'In progress', canBoSung: 'Needs fixes', daPh: 'Released', trongDm: 'In the catalogue',
+      gui: 'Submit a release', hoSo: 'Submissions', hoSoMo: 'Open a submission for details and its history.',
+      danhMuc: 'Releases in the catalogue', danhMucMo: 'Derived from the recordings being distributed. Releases earning in an approved period are marked.',
+      cMa: 'Submission', cTen: 'Release', cLoai: 'Type', cNgay: 'Requested date', cTt: 'Status', cCapNhat: 'Updated',
+      cKy: 'Release period', cTrack: 'Tracks', cDt: 'Gross across approved periods', coDt: 'earning', chuaDt: 'none yet',
+      khongHs: 'No submissions yet', khongHsMo: 'Submissions from the homepage metadata form or the button above appear here.',
+      quyTrinh: 'The steps a submission goes through',
+      b1: 'Submitted', b1m: 'The submission is in Haustek’s queue. Nothing else is needed from you.',
+      b2: 'Received', b2m: 'Haustek has checked the submission. If something is missing it is returned with a note.',
+      b3: 'Codes assigned', b3m: 'Tracks receive ISRCs and the release a UPC. These codes match revenue later.',
+      b4: 'Released', b4m: 'The recording is live on platforms. Revenue arrives from the following period and appears under My tracks.',
+      lichSu: 'History', track: 'Tracks', chuaCoMa: 'no code yet',
+      ghiChuTra: 'Haustek needs you to add',
+      formNs: 'Main artist', formLoai: 'Release type', formTen: 'Release title', formPb: 'Version',
+      formTl: 'Main genre', formNn: 'Lyric language', formNgay: 'Requested release date', formUpc: 'UPC (if you have one)',
+      formBia: 'Artwork link', formGhi: 'Note for the release team', formTracks: 'Tracks',
+      themTrack: 'Add track', xoaTrack: 'Remove', trTen: 'Track title', trFeat: 'Featuring', trIsrc: 'ISRC (if you have one)',
+      trProducer: 'Producer', trSangTac: 'Writers and splits', themNguoi: 'Add writer', tenThat: 'Legal name', vaiTro: 'Role', tiLe: 'Share %',
+      formMo: 'A short form of the homepage metadata form, with the required fields only. A submission cannot be edited after sending; Haustek returns it if changes are needed.',
+      daGui: 'Submission sent', formDay: 'Full form on the homepage',
+      tongTiLe: 'Writer shares must add up to 100%'
+    }
+  },
+
+  dem: function (c) {
+    try {
+      var r = c.api.releases(c.phien.me.role, c.phien.me.partyId);
+      var tra = r.submissions.filter(function (x) { return x.status === 'returned'; }).length;
+      return tra ? '!' + tra : '';
+    } catch (e) { return ''; }
+  },
+
+  ve: function (root, c) {
+    var api = c.api, me = c.phien.me, t = c.t;
+    var r = api.releases(me.role, me.partyId);
+    var hs = r.submissions;
+    var dang = hs.filter(function (x) { return x.status !== 'released' && x.status !== 'returned'; }).length;
+    var tra = hs.filter(function (x) { return x.status === 'returned'; }).length;
+    var daPh = hs.filter(function (x) { return x.status === 'released'; }).length;
+
+    var html = HM.dau({ h1: HM.esc(t('h1')), mo: HM.esc(t('mo')) });
+    html += HM.so([
+      { l: t('dangXuLy'), v: HT.fmt.n(dang), lon: true },
+      { l: t('canBoSung'), v: HT.fmt.n(tra), mau: tra ? HB.mau('danger') : '' },
+      { l: t('daPh'), v: HT.fmt.n(daPh) },
+      { l: t('trongDm'), v: HT.fmt.n(r.catalogueTotal) }
+    ]);
+
+    html += HM.the({
+      h2: HM.esc(t('hoSo')) + ' <span class="muted">(' + hs.length + ')</span>', p: HM.esc(t('hoSoMo')),
+      hanhDong: '<button type="button" class="btn pri" data-gui>' + HM.icon('up') + HM.esc(t('gui')) + '</button>',
+      thoBody: true,
+      than: hs.length ? '<div class="tw"><table class="t"><thead><tr>' +
+        '<th>' + HM.esc(t('cMa')) + '</th><th>' + HM.esc(t('cTen')) + '</th><th>' + HM.esc(t('cLoai')) + '</th>' +
+        '<th>' + HM.esc(t('cNgay')) + '</th><th>' + HM.esc(t('cTt')) + '</th><th>' + HM.esc(t('cCapNhat')) + '</th></tr></thead><tbody>' +
+        hs.map(function (x) {
+          return '<tr class="pick" data-hs="' + HM.esc(x.id) + '">' +
+            '<td class="mono">' + HM.esc(x.id) + '</td>' +
+            '<td><div class="t-ttl">' + HM.esc(x.title) + '</div><div class="t-sub">' + HM.esc(x.artistName) + ' · ' + x.tracks.length + ' track</div></td>' +
+            '<td>' + HM.esc(x.type === 'single' ? 'Single' : x.type === 'ep' ? 'EP' : 'Album') + '</td>' +
+            '<td class="mono">' + HM.esc(HT.fmt.ngay(x.releaseDate)) + '</td>' +
+            '<td>' + HM.tag(NHAN[c.lang][x.status], KIEU[x.status]) + '</td>' +
+            '<td class="mono muted">' + HM.esc(HT.fmt.luc(x.updatedAt)) + '</td></tr>';
+        }).join('') + '</tbody></table></div>'
+        : HM.trong({ icon: 'file', tieuDe: t('khongHs'), moTa: t('khongHsMo') })
+    });
+
+    html += '<div class="grid g3">' +
+      HM.the({
+        h2: HM.esc(t('danhMuc')) + ' <span class="muted">(' + HM.esc(HT.fmt.n(r.catalogueTotal)) + ')</span>', p: HM.esc(t('danhMucMo')),
+        thoBody: true,
+        than: '<div class="tw"><table class="t" style="min-width:0"><thead><tr><th>' + HM.esc(t('cTen')) + '</th><th>' + HM.esc(t('cLoai')) + '</th>' +
+          '<th>' + HM.esc(t('cKy')) + '</th><th class="num">' + HM.esc(t('cTrack')) + '</th><th class="num">' + HM.esc(t('cDt')) + '</th></tr></thead><tbody>' +
+          r.catalogue.slice(0, 20).map(function (x) {
+            return '<tr><td><div class="t-ttl">' + HM.esc(HM.dai(x.title, 32)) + '</div><div class="t-sub">' + HM.esc(me.role === 'label' ? x.artistName : (x.isrc || '')) + '</div></td>' +
+              '<td>' + HM.esc(x.type) + '</td><td class="mono">' + HM.esc(x.releasePeriod) + '</td>' +
+              '<td class="num">' + x.tracks + '</td><td class="num">' + (x.earning ? HM.esc(HT.fmt.usd0(x.gross)) : '<span class="nil">' + HM.esc(t('chuaDt')) + '</span>') + '</td></tr>';
+          }).join('') + '</tbody></table></div>'
+      }) +
+      HM.the({
+        h2: HM.esc(t('quyTrinh')),
+        than: '<div class="steps">' + [['b1', 'ok'], ['b2', 'ok'], ['b3', 'ok'], ['b4', 'ok']].map(function (b) {
+          return '<div class="s ' + b[1] + '"><b>' + HM.esc(t(b[0])) + '</b><span>' + HM.esc(t(b[0] + 'm')) + '</span></div>';
+        }).join('') + '</div>' +
+        '<div class="btnrow" style="margin-top:14px"><a class="btn sm" href="https://haustek-group.com/metadata" target="_blank" rel="noopener">' +
+        HM.icon('out') + HM.esc(t('formDay')) + '</a></div>'
+      }) + '</div>';
+
+    root.innerHTML = html;
+    HM.bam(root, '[data-hs]', function (el) { moHoSo(c, hs.filter(function (x) { return x.id === el.getAttribute('data-hs'); })[0]); });
+    HM.bam(root, '[data-gui]', function () { guiHoSo(c); });
+  }
+});
+
+function moHoSo(c, r) {
+  if (!r) return;
+  var t = c.t;
+  var tra = r.status === 'returned' ? r.history.slice().reverse().filter(function (h) { return h.status === 'returned'; })[0] : null;
+  c.nganTruot(
+    '<div class="btnrow" style="margin-bottom:14px">' + HM.tag(NHAN[c.lang][r.status], KIEU[r.status]) + '</div>' +
+    (tra && tra.note ? HM.ghi({ kieu: 'no', tieuDe: HM.esc(t('ghiChuTra')), than: HM.esc(tra.note) }) : '') +
+    HM.kv([
+      { t: t('cLoai'), v: r.type === 'single' ? 'Single' : r.type === 'ep' ? 'EP' : 'Album' },
+      { t: t('formNs'), v: r.artistName },
+      { t: t('cNgay'), v: HT.fmt.ngay(r.releaseDate) },
+      r.releasedAt ? { t: t('b4'), v: HT.fmt.ngay(r.releasedAt), manh: true } : null,
+      { t: 'UPC', v: r.upc || t('chuaCoMa') },
+      r.genre ? { t: t('formTl'), v: r.genre } : null
+    ]) +
+    '<h4 class="sec">' + HM.esc(t('track')) + ' (' + r.tracks.length + ')</h4>' +
+    '<div class="tw"><table class="t" style="min-width:0"><thead><tr><th>#</th><th>Track</th><th>ISRC</th><th>' + HM.esc(t('trSangTac')) + '</th></tr></thead><tbody>' +
+    r.tracks.map(function (tr) {
+      return '<tr><td class="mono">' + tr.pos + '</td><td><div class="t-ttl">' + HM.esc(tr.title) + '</div>' +
+        '<div class="t-sub">' + HM.esc(tr.artist) + (tr.feat ? ' feat. ' + HM.esc(tr.feat) : '') + (tr.producer ? ' · ' + HM.esc(tr.producer) : '') + '</div></td>' +
+        '<td class="mono">' + (tr.isrc ? HM.esc(tr.isrc) : '<span class="nil">' + HM.esc(t('chuaCoMa')) + '</span>') + '</td>' +
+        '<td style="font-size:12px">' + tr.writers.map(function (w) { return HM.esc(w.name) + ' <span class="muted">' + HM.esc(VAI[c.lang][w.role] || w.role) + ' · ' + w.pct + '%</span>'; }).join('<br>') + '</td></tr>';
+    }).join('') + '</tbody></table></div>' +
+    '<h4 class="sec">' + HM.esc(t('lichSu')) + '</h4>' +
+    '<div class="steps">' + r.history.map(function (h, i) {
+      var cuoi = i === r.history.length - 1;
+      return '<div class="s ' + (h.status === 'returned' ? 'no' : cuoi ? 'now' : 'ok') + '"><b>' + HM.esc(NHAN[c.lang][h.status]) + '</b>' +
+        (h.note ? '<span>' + HM.esc(h.note) + '</span>' : '') + '<div class="tm">' + HM.esc(HT.fmt.luc(h.at)) + '</div></div>';
+    }).join('') + '</div>',
+    { tieuDe: r.title, phu: r.id });
+}
+
+/* ---- gửi hồ sơ mới ---- */
+function guiHoSo(c) {
+  var api = c.api, me = c.phien.me, t = c.t;
+  var ns = api.rosterArtists(me.role, me.partyId).rows;
+  var tracks = [{ title: '', feat: '', isrc: '', producer: '', writers: [{ name: ns[0] ? ns[0].name : '', role: 'Composer', pct: 100 }] }];
+
+  function veTrack(tr, i) {
+    return '<div class="card" style="margin:10px 0 0;box-shadow:none" data-tr="' + i + '"><div class="card-b" style="padding:12px 14px">' +
+      '<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><b style="font-size:13px">Track ' + (i + 1) + '</b><span class="sp"></span>' +
+      (tracks.length > 1 ? '<button type="button" class="btn sm ghost" data-xoa="' + i + '">' + HM.esc(t('xoaTrack')) + '</button>' : '') + '</div>' +
+      '<div class="fldrow two-up">' +
+      '<div><label class="fld">' + HM.esc(t('trTen')) + ' *</label><input class="in" data-k="title" data-i="' + i + '" value="' + HM.esc(tr.title) + '"></div>' +
+      '<div><label class="fld">' + HM.esc(t('trFeat')) + '</label><input class="in" data-k="feat" data-i="' + i + '" value="' + HM.esc(tr.feat) + '"></div>' +
+      '<div><label class="fld">' + HM.esc(t('trIsrc')) + '</label><input class="in" data-k="isrc" data-i="' + i + '" value="' + HM.esc(tr.isrc) + '" placeholder="VNHTK2600001"></div>' +
+      '<div><label class="fld">' + HM.esc(t('trProducer')) + '</label><input class="in" data-k="producer" data-i="' + i + '" value="' + HM.esc(tr.producer) + '"></div></div>' +
+      '<label class="fld" style="margin-top:10px">' + HM.esc(t('trSangTac')) + '</label>' +
+      tr.writers.map(function (w, j) {
+        return '<div style="display:grid;grid-template-columns:minmax(0,3fr) minmax(0,2fr) 70px 28px;gap:6px;margin-bottom:6px" data-w="' + j + '">' +
+          '<input class="in" data-wk="name" data-i="' + i + '" data-j="' + j + '" value="' + HM.esc(w.name) + '" placeholder="' + HM.esc(t('tenThat')) + '">' +
+          '<select class="in" data-wk="role" data-i="' + i + '" data-j="' + j + '">' + Object.keys(VAI.vi).map(function (k) {
+            return '<option value="' + k + '"' + (w.role === k ? ' selected' : '') + '>' + HM.esc(VAI[c.lang][k]) + '</option>';
+          }).join('') + '</select>' +
+          '<input class="in" type="number" min="0" max="100" step="0.01" data-wk="pct" data-i="' + i + '" data-j="' + j + '" value="' + w.pct + '">' +
+          '<button type="button" class="x" data-xoaw="' + i + ':' + j + '" title="' + HM.esc(t('xoaTrack')) + '">' + HM.icon('x') + '</button></div>';
+      }).join('') +
+      '<button type="button" class="btn sm ghost" data-themw="' + i + '">' + HM.esc(t('themNguoi')) + '</button>' +
+      '</div></div>';
+  }
+  function veTatCa(bg) {
+    bg.querySelector('[data-tracks]').innerHTML = tracks.map(veTrack).join('');
+  }
+
+  c.hoiThoai({
+    tieuDe: t('gui'), moTa: HM.esc(t('formMo')),
+    than: '<div class="fldrow two-up">' +
+      '<div><label class="fld">' + HM.esc(t('formNs')) + ' *</label><select class="in" data-o="artistId">' +
+        ns.map(function (a) { return '<option value="' + a.artistId + '">' + HM.esc(a.name + ' · ' + a.clientId) + '</option>'; }).join('') + '</select></div>' +
+      '<div><label class="fld">' + HM.esc(t('formLoai')) + ' *</label><select class="in" data-o="type">' +
+        '<option value="single">Single</option><option value="ep">EP</option><option value="album">Album</option></select></div>' +
+      '<div><label class="fld">' + HM.esc(t('formTen')) + ' *</label><input class="in" data-o="title"></div>' +
+      '<div><label class="fld">' + HM.esc(t('formPb')) + '</label><input class="in" data-o="version" placeholder="Deluxe / Live / Remastered"></div>' +
+      '<div><label class="fld">' + HM.esc(t('formTl')) + ' *</label><select class="in" data-o="genre">' +
+        THE_LOAI.map(function (g) { return '<option>' + HM.esc(g) + '</option>'; }).join('') + '</select></div>' +
+      '<div><label class="fld">' + HM.esc(t('formNn')) + ' *</label><select class="in" data-o="lang"><option value="vi">Tiếng Việt</option><option value="en">English</option><option value="instrumental">Instrumental</option><option value="other">Khác</option></select></div>' +
+      '<div><label class="fld">' + HM.esc(t('formNgay')) + ' *</label><input class="in" data-o="releaseDate" type="date"></div>' +
+      '<div><label class="fld">' + HM.esc(t('formUpc')) + '</label><input class="in" data-o="upc" inputmode="numeric"></div>' +
+      '<div><label class="fld">' + HM.esc(t('formBia')) + '</label><input class="in" data-o="artwork" type="url" placeholder="https://drive.google.com/…"></div>' +
+      '<div><label class="fld">' + HM.esc(t('formGhi')) + '</label><input class="in" data-o="note"></div></div>' +
+      '<h4 class="sec">' + HM.esc(t('formTracks')) + '</h4>' +
+      '<div data-tracks></div>' +
+      '<div class="btnrow" style="margin-top:10px"><button type="button" class="btn sm" data-them>' + HM.icon('up') + HM.esc(t('themTrack')) + '</button></div>' +
+      '<input type="hidden" data-o="tracks" value="">',
+    dong: t('gui'),
+    khiMo: function (bg) {
+      bg.querySelector('.modal').classList.add('rong');
+      veTatCa(bg);
+      bg.addEventListener('input', function (e) {
+        var el = e.target;
+        if (el.dataset.k) tracks[+el.dataset.i][el.dataset.k] = el.value;
+        if (el.dataset.wk) tracks[+el.dataset.i].writers[+el.dataset.j][el.dataset.wk] = el.dataset.wk === 'pct' ? +el.value : el.value;
+        bg.querySelector('[data-o=tracks]').value = JSON.stringify(tracks);
+      });
+      bg.addEventListener('change', function (e) {
+        var el = e.target;
+        if (el.dataset.wk === 'role') tracks[+el.dataset.i].writers[+el.dataset.j].role = el.value;
+        bg.querySelector('[data-o=tracks]').value = JSON.stringify(tracks);
+      });
+      bg.addEventListener('click', function (e) {
+        var b = e.target.closest('[data-them],[data-xoa],[data-themw],[data-xoaw]');
+        if (!b) return;
+        e.preventDefault();
+        if (b.hasAttribute('data-them')) tracks.push({ title: '', feat: '', isrc: '', producer: '', writers: [{ name: '', role: 'Composer', pct: 100 }] });
+        if (b.hasAttribute('data-xoa')) tracks.splice(+b.getAttribute('data-xoa'), 1);
+        if (b.hasAttribute('data-themw')) tracks[+b.getAttribute('data-themw')].writers.push({ name: '', role: 'Composer', pct: 0 });
+        if (b.hasAttribute('data-xoaw')) { var p = b.getAttribute('data-xoaw').split(':'); tracks[+p[0]].writers.splice(+p[1], 1); }
+        veTatCa(bg);
+        bg.querySelector('[data-o=tracks]').value = JSON.stringify(tracks);
+      });
+      bg.querySelector('[data-o=tracks]').value = JSON.stringify(tracks);
+    }
+  }).then(function (f) {
+    if (!f) return;
+    var ds;
+    try { ds = JSON.parse(f.tracks || '[]'); } catch (e) { ds = tracks; }
+    for (var i = 0; i < ds.length; i++) {
+      var tong = (ds[i].writers || []).reduce(function (s, w) { return s + (+w.pct || 0); }, 0);
+      if (ds[i].title && Math.abs(tong - 100) > 0.01) { c.thongBao(t('tongTiLe') + ' · Track ' + (i + 1), 'no'); return; }
+    }
+    try {
+      var kq = api.submitRelease(me.role, me.partyId, {
+        artistId: f.artistId, type: f.type, title: f.title, version: f.version, genre: f.genre, lang: f.lang,
+        releaseDate: f.releaseDate, upc: f.upc, artwork: f.artwork, note: f.note, tracks: ds
+      });
+      c.thongBao(t('daGui') + ' · ' + kq.id, 'ok');
+      c.veLai();
+    } catch (e) { c.thongBao(e.message, 'no'); }
+  });
 }
 
 })();
