@@ -21,23 +21,23 @@ HT.dangKy({
 
   chu: {
     vi: {
-      nhomHeThong: 'Hệ thống', navQuanTri: 'Quản trị', h1: 'Quản trị',
-      tTk: 'Tài khoản', tNk: 'Nhật ký', tCh: 'Câu hỏi còn treo', tDl: 'Dữ liệu bản mẫu', tBm: 'Ranh giới hai cổng',
-      soTk: 'Tài khoản', soHd: 'Đang hoạt động', soMoi: 'Đã mời, chưa vào',
-      themTk: 'Cấp tài khoản', tim: 'Tìm email hoặc bên nhận…', moiVt: 'Mọi vai trò',
-      cEmail: 'Email', cVt: 'Vai trò', cBen: 'Gắn với bên nhận', cTt: 'Trạng thái', cNgay: 'Ngày cấp', cMfa: 'Xác thực 2 lớp',
+      nhomHeThong: 'Quản trị', navQuanTri: 'Quản trị', h1: 'Quản trị',
+      tTk: 'Tài khoản', tNk: 'Nhật ký thao tác', tCh: 'Câu hỏi cần chốt', tDl: 'Dữ liệu bản mẫu', tBm: 'Phân quyền hai cổng',
+      soTk: 'Tài khoản', soHd: 'Đang hoạt động', soMoi: 'Đã mời, chưa đăng nhập',
+      themTk: 'Cấp tài khoản', tim: 'Tìm theo email hoặc bên thụ hưởng…', moiVt: 'Tất cả vai trò',
+      cEmail: 'Email', cVt: 'Vai trò', cBen: 'Gắn với bên thụ hưởng', cTt: 'Trạng thái', cNgay: 'Ngày cấp', cMfa: 'Xác thực 2 lớp',
       hd: 'đang hoạt động', moi: 'đã mời', khoa: 'đã khoá',
-      khoaLai: 'Khoá', moLai: 'Mở lại', xoaTk: 'Xoá tài khoản',
-      hoiEmail: 'Email', hoiVt: 'Vai trò', hoiBen: 'Gắn với bên nhận',
-      canhQuyen: 'Quyền truy cập gắn với mã số, không bao giờ gắn với tên hiển thị. "nae & de\'lay", "ling:chi", "HƯƠNGMYBÔNG": sai một ký tự là nghệ sĩ mất tiền hoặc xem được dữ liệu của người khác.',
+      khoaLai: 'Khoá tài khoản', moLai: 'Mở lại tài khoản', xoaTk: 'Xoá tài khoản',
+      hoiEmail: 'Email', hoiVt: 'Vai trò', hoiBen: 'Gắn với bên thụ hưởng',
+      canhQuyen: 'Quyền truy cập gắn với mã số, không bao giờ gắn với tên hiển thị. Với những tên như "nae & de\'lay", "ling:chi", "HƯƠNGMYBÔNG", sai một ký tự là nghệ sĩ mất tiền hoặc xem được dữ liệu của người khác.',
       nkTim: 'Lọc theo thao tác…', nkHet: 'Tất cả',
-      chTraLoi: 'Câu trả lời', chDoan: 'Bản mẫu đang đoán', chViSao: 'Vì sao câu này quan trọng',
+      chTraLoi: 'Câu trả lời', chDoan: 'Giả định hiện tại của bản mẫu', chViSao: 'Vì sao câu này quan trọng',
       chLuu: 'Lưu câu trả lời', chXuat: 'Xuất toàn bộ câu trả lời',
-      chMau: 'File mẫu còn thiếu',
-      dlXuat: 'Xuất trạng thái ra JSON', dlNhap: 'Nhập từ file JSON',
-      dlXoa: 'Xoá hết và dựng lại từ đầu',
-      dlCanh: 'Xoá hết là mất mọi quyết định đã làm trong bản mẫu: kỳ đã duyệt, dòng đã khớp, tỷ lệ, tạm ứng, tài khoản. Danh mục và doanh thu sẽ sinh lại y hệt nhờ seed cố định.',
-      bmChay: 'Chạy phép thử ranh giới'
+      chMau: 'File mẫu cần cung cấp',
+      dlXuat: 'Xuất trạng thái ra JSON', dlNhap: 'Nhập trạng thái từ file JSON',
+      dlXoa: 'Xoá toàn bộ và dựng lại từ đầu',
+      dlCanh: 'Xoá toàn bộ sẽ mất mọi quyết định đã thực hiện trong bản mẫu: kỳ đã xét duyệt, dòng đã khớp, tỷ lệ, tạm ứng, tài khoản. Danh mục và doanh thu sẽ được sinh lại y hệt nhờ giá trị gốc cố định.',
+      bmChay: 'Chạy phép thử phân quyền'
     },
     en: {
       nhomHeThong: 'System', navQuanTri: 'Administration', h1: 'Administration',
@@ -106,7 +106,7 @@ HT.dangKy({
       var a = tk.filter(function (x) { return x.id === id; })[0];
       c.xacNhan(t('xoaTk') + ' · ' + a.email,
         HM.esc(c.lang === 'vi'
-          ? 'Người này mất quyền vào cổng ngay lập tức. Dữ liệu của bên nhận không bị ảnh hưởng: tài khoản và bên nhận là hai thứ khác nhau.'
+          ? 'Người này mất quyền truy cập cổng ngay lập tức. Dữ liệu của bên thụ hưởng không bị ảnh hưởng: tài khoản và bên thụ hưởng là hai đối tượng khác nhau.'
           : 'They lose portal access immediately. The payee’s data is untouched — an account and a payee are two different things.'),
         t('xoaTk'), true).then(function (ok) {
           if (!ok) return;
@@ -122,8 +122,8 @@ HT.dangKy({
     });
     HM.bam(root, '[data-xuatch]', function () {
       var all = A.answers.all();
-      HM.csv('cau-hoi-con-treo.csv',
-        ['Mã', 'Câu hỏi', 'Vì sao quan trọng', 'Bản mẫu đang đoán', 'Câu trả lời'],
+      HM.csv('cau-hoi-can-chot.csv',
+        ['Mã', 'Câu hỏi', 'Vì sao quan trọng', 'Giả định của bản mẫu', 'Câu trả lời'],
         A.questions.map(function (q) { return [q.id, q.t, q.why, q.guess, all[q.id] || '']; }));
     });
     HM.bam(root, '[data-xuatjson]', function () { xuatJson(c); });
@@ -153,7 +153,7 @@ function veTaiKhoan(c, tk) {
   });
 
   return HM.ghi({ kieu: 'info',
-    tieuDe: HM.esc(c.lang === 'vi' ? 'Quyền gắn với mã số' : 'Access binds to IDs'),
+    tieuDe: HM.esc(c.lang === 'vi' ? 'Quyền truy cập gắn với mã số' : 'Access binds to IDs'),
     than: HM.esc(t('canhQuyen')) }) +
   HM.the({
     h2: HM.esc(t('tTk')),
@@ -192,7 +192,7 @@ function veTaiKhoan(c, tk) {
           '</div></td></tr>';
       }).join('') + '</tbody></table></div>',
     chan: c.lang === 'vi'
-      ? 'Bản mẫu <b>không</b> có đăng nhập thật. Cổng khách hàng mô phỏng bằng ô chọn tài khoản ở cột trái. Trên hệ thống thật, phiên đăng nhập ở máy chủ quyết định partyId, còn Row Level Security quyết định dòng nào đọc được.'
+      ? 'Bản mẫu <b>không</b> có đăng nhập thật. Cổng đối tác mô phỏng đăng nhập bằng ô chọn tài khoản ở cột trái. Trên hệ thống thật, phiên đăng nhập ở máy chủ quyết định partyId, còn Row Level Security quyết định dòng nào được đọc.'
       : 'The prototype has NO real login. The client portal simulates one with the account picker in its sidebar. A real system: a server session decides the partyId, and row-level security decides which rows can be read.'
   });
 }
@@ -210,7 +210,7 @@ function veNhatKy(c) {
   return HM.the({
     h2: c.lang === 'vi' ? 'Nhật ký thao tác' : 'Audit log',
     p: c.lang === 'vi'
-      ? 'Mọi quyết định ảnh hưởng đến tiền đều để lại một dòng ở đây: nhập, gỡ, khớp, đặt tỷ lệ, đặt tạm ứng, chốt tỷ giá, duyệt kỳ, huỷ duyệt. Không dòng nào xoá được.'
+      ? 'Mọi quyết định ảnh hưởng đến dòng tiền đều để lại một dòng ở đây: nhập báo cáo, gỡ báo cáo, khớp ISRC, đặt tỷ lệ, đặt tạm ứng, chốt tỷ giá, xét duyệt kỳ, huỷ xét duyệt. Không dòng nào có thể xoá.'
       : 'Every decision that moves money leaves a line here: load, unload, match, set rate, set advance, lock FX, approve, revoke. No line can be deleted.',
     thoBody: true,
     than: '<div class="card-h" style="padding-bottom:12px;gap:7px;flex-wrap:wrap">' +
@@ -234,7 +234,7 @@ function veNhatKy(c) {
           '<td>' + HM.esc(a.detail) + '</td>' +
           '<td class="mono">' + HM.esc(a.by) + '</td></tr>';
       }).join('') + '</tbody></table></div>',
-    chan: HT.fmt.n(ds.length) + (c.lang === 'vi' ? ' dòng · hiện 150 dòng gần nhất' : ' entries · latest 150 shown')
+    chan: HT.fmt.n(ds.length) + (c.lang === 'vi' ? ' dòng · đang hiển thị 150 dòng gần nhất' : ' entries · latest 150 shown')
   });
 }
 
@@ -251,14 +251,14 @@ function veCauHoi(c) {
       ? 'Đã trả lời ' + daTL + '/' + A.questions.length + ' câu'
       : daTL + ' of ' + A.questions.length + ' answered'),
     than: HM.esc(c.lang === 'vi'
-      ? 'Mỗi câu chưa trả lời là một chỗ bản mẫu phải đoán. Đoán sai thì không chỉ sửa giao diện, mà phải làm lại từ schema. Có câu trả lời thì ghi vào đây, rồi xuất ra cho người viết schema.'
+      ? 'Mỗi câu chưa trả lời là một điểm bản mẫu phải tự giả định. Giả định sai thì không chỉ sửa giao diện, mà phải làm lại từ schema. Khi có câu trả lời, ghi vào đây rồi xuất ra cho người viết schema.'
       : 'Every unanswered question is a place the prototype had to GUESS. A wrong guess is not an interface fix — it is a rebuild from the schema up. Record answers here, then export them for whoever writes the schema.'),
     nut: '<button type="button" class="btn sm" data-xuatch>' + HM.icon('down2') + HM.esc(t('chXuat')) + '</button>' }) +
   A.questions.map(function (q, i) {
     var da = tl[q.id];
     return HM.the({
       dai: da ? { kieu: 'ok', icon: 'check', chu: HM.esc(c.lang === 'vi' ? 'Đã trả lời' : 'Answered') }
-              : { kieu: 'warn', icon: 'ask', chu: HM.esc(c.lang === 'vi' ? 'Chưa trả lời, bản mẫu đang đoán' : 'Unanswered — the prototype is guessing') },
+              : { kieu: 'warn', icon: 'ask', chu: HM.esc(c.lang === 'vi' ? 'Chưa trả lời, bản mẫu đang giả định' : 'Unanswered — the prototype is guessing') },
       h2: (i + 1) + '. ' + HM.esc(c.song(q, 't')),
       than: '<h4 class="sec">' + HM.esc(t('chViSao')) + '</h4>' +
         '<p class="say">' + HM.esc(c.song(q, 'why')) + '</p>' +
@@ -266,7 +266,7 @@ function veCauHoi(c) {
         '<p class="say">' + HM.esc(c.song(q, 'guess')) + '</p>' +
         '<h4 class="sec">' + HM.esc(t('chTraLoi')) + '</h4>' +
         '<textarea class="in" data-ch="' + q.id + '" rows="3" placeholder="' +
-        HM.esc(c.lang === 'vi' ? 'Viết câu trả lời ở đây…' : 'Write the answer here…') + '">' +
+        HM.esc(c.lang === 'vi' ? 'Nhập câu trả lời tại đây…' : 'Write the answer here…') + '">' +
         HM.esc(da || '') + '</textarea>' +
         '<div class="btnrow" style="margin-top:10px">' +
         '<button type="button" class="btn sm pri" data-luuch="' + q.id + '">' + HM.esc(t('chLuu')) + '</button></div>'
@@ -275,7 +275,7 @@ function veCauHoi(c) {
   HM.the({
     h2: HM.esc(t('chMau')),
     p: c.lang === 'vi'
-      ? 'Hai file này quyết định toàn bộ thiết kế quy trình nhập: phần khó nhất, và cũng là phần không đoán được.'
+      ? 'Hai file này quyết định toàn bộ thiết kế quy trình nhập báo cáo: phần khó nhất, và cũng là phần không thể giả định.'
       : 'These two files determine the whole ingest design — the hardest part, and the part that cannot be guessed.',
     than: A.samplesNeeded.map(function (s) {
       return '<div class="stat" style="align-items:flex-start"><b style="max-width:none">' + HM.esc(c.song(s, 't')) +
@@ -294,18 +294,18 @@ function veDuLieu(c) {
   try { kich = JSON.stringify(st).length; } catch (e) {}
 
   return HM.the({
-    h2: c.lang === 'vi' ? 'Dữ liệu bản mẫu nằm ở đâu' : 'Where the prototype’s data lives',
+    h2: c.lang === 'vi' ? 'Nơi lưu dữ liệu bản mẫu' : 'Where the prototype’s data lives',
     p: c.lang === 'vi'
-      ? 'Danh mục và doanh thu <b>không</b> được lưu: mỗi lần mở đều sinh lại y hệt nhờ seed cố định. Thứ được lưu là <b>quyết định</b> của người vận hành, và đó cũng chính là thứ chảy sang cổng khách hàng.'
+      ? 'Danh mục và doanh thu <b>không</b> được lưu: mỗi lần mở đều được sinh lại y hệt nhờ giá trị gốc cố định. Phần được lưu là <b>quyết định</b> của người vận hành, và đó cũng chính là dữ liệu được chuyển sang cổng đối tác.'
       : 'Catalogue and revenue are NOT stored — they regenerate identically from a fixed seed. What is stored are the operator’s DECISIONS, and that is exactly what flows to the client portal.',
     than: HM.kv([
-      { t: c.lang === 'vi' ? 'Nơi lưu' : 'Storage', v: co ? 'localStorage · ' + 'haustek.portal.v1' : (c.lang === 'vi' ? 'trình duyệt chặn, chỉ giữ trong bộ nhớ' : 'blocked — memory only') },
+      { t: c.lang === 'vi' ? 'Nơi lưu' : 'Storage', v: co ? 'localStorage · ' + 'haustek.portal.v1' : (c.lang === 'vi' ? 'trình duyệt đang chặn, chỉ giữ trong bộ nhớ phiên' : 'blocked — memory only') },
       { t: c.lang === 'vi' ? 'Kích thước' : 'Size', v: HT.fmt.n(Math.round(kich / 1024)) + ' KB' },
-      { t: c.lang === 'vi' ? 'Kỳ đã duyệt' : 'Approved periods', v: Object.keys(st.approved).length + '/' + A.periods.length },
-      { t: c.lang === 'vi' ? 'Dòng khớp tay' : 'Hand-matched rows', v: HT.fmt.n(Object.keys(st.match).length) },
+      { t: c.lang === 'vi' ? 'Kỳ đã xét duyệt' : 'Approved periods', v: Object.keys(st.approved).length + '/' + A.periods.length },
+      { t: c.lang === 'vi' ? 'Dòng khớp thủ công' : 'Hand-matched rows', v: HT.fmt.n(Object.keys(st.match).length) },
       { t: c.lang === 'vi' ? 'Dòng tỷ lệ' : 'Rate rows', v: HT.fmt.n(st.rates.length) },
       { t: c.lang === 'vi' ? 'Khoản tạm ứng' : 'Advances', v: HT.fmt.n(Object.keys(st.advances).length) },
-      { t: c.lang === 'vi' ? 'Dòng nhật ký' : 'Audit entries', v: HT.fmt.n(st.audit.length) },
+      { t: c.lang === 'vi' ? 'Dòng nhật ký thao tác' : 'Audit entries', v: HT.fmt.n(st.audit.length) },
       { t: c.lang === 'vi' ? 'Bản ghi đã sinh' : 'Generated recordings', v: HT.fmt.n(A.trackCount) },
       { t: c.lang === 'vi' ? 'Ô doanh thu theo nguồn' : 'Revenue cells by feed', v: HT.fmt.n(A.trackCount * A.periods.length * 3) }
     ]),
@@ -318,7 +318,7 @@ function veDuLieu(c) {
   (co ? '' : HM.ghi({ kieu: 'warn',
     tieuDe: HM.esc(c.lang === 'vi' ? 'Trình duyệt đang chặn localStorage' : 'The browser is blocking localStorage'),
     than: HM.esc(c.lang === 'vi'
-      ? 'Mở bằng file:// trên Safari thường gặp lỗi này. Mọi thay đổi vẫn có hiệu lực trong phiên, nhưng đóng tab là mất. Dùng nút xuất JSON để giữ lại.'
+      ? 'Mở bằng file:// trên Safari thường gặp tình trạng này. Mọi thay đổi vẫn có hiệu lực trong phiên, nhưng sẽ mất khi đóng tab. Dùng nút xuất trạng thái ra JSON để giữ lại.'
       : 'Opening via file:// in Safari does this. Changes still work in the session but vanish when the tab closes. Use the JSON export to keep them.') }));
 }
 
@@ -330,28 +330,28 @@ function veBienMoi(c) {
   var t = c.t;
   return HM.ghi({ kieu: 'no',
     tieuDe: HM.esc(c.lang === 'vi'
-      ? 'Đây là hình dạng của ranh giới, chưa phải ranh giới đang được thực thi'
+      ? 'Đây là thiết kế của phân quyền hai cổng, chưa phải phân quyền đang được thực thi'
       : 'This is the SHAPE of the boundary, not an enforced boundary'),
     than: HM.esc(c.lang === 'vi'
-      ? 'Hai cổng chạy trong cùng một trình duyệt, cùng một gốc. Tải lại file lõi trong một iframe cùng gốc là có lại HAUSTEK.admin. localStorage giữ toàn bộ quyết định của admin, nên trang nào cùng gốc cũng đọc được. Bản mẫu không bịt được những đường đó, và không nên giả vờ là bịt được.'
+      ? 'Hai cổng chạy trong cùng một trình duyệt, cùng một gốc. Tải lại file lõi trong một iframe cùng gốc là khôi phục được HAUSTEK.admin. localStorage giữ toàn bộ quyết định của admin, nên trang nào cùng gốc cũng đọc được. Bản mẫu không chặn được những đường đó, và không nên giả định là chặn được.'
       : 'Both pages run in one browser, same origin. Reloading the core in a same-origin iframe brings HAUSTEK.admin back; localStorage holds every admin decision and any same-origin page can read it. The prototype cannot close those routes and should not pretend otherwise.') }) +
   HM.the({
     h2: c.lang === 'vi' ? 'Những gì bản mẫu thật sự làm được' : 'What the prototype genuinely does',
     than: '<div class="checks">' + [
       [true, c.lang === 'vi' ? 'Tên đơn vị phân phối và tỷ lệ gốc không nằm trong file lõi' : 'Distributor name and gross rate are not in the core file',
-       c.lang === 'vi' ? 'Cổng khách hàng tải đúng file lõi đó. Bất cứ gì nằm trong file đều về tới máy khách hàng: mở dev tools hay chỉ cần curl file .js là đọc được, không cần chạy một dòng JavaScript. Nên intranet.html tự chèn hai giá trị đó lúc khởi động; bản lõi mà khách hàng tải về không mang theo gì cả.'
+       c.lang === 'vi' ? 'Cổng đối tác tải đúng file lõi đó. Bất cứ gì nằm trong file đều về tới máy của đối tác: mở dev tools hay chỉ cần curl file .js là đọc được, không cần chạy một dòng JavaScript. Vì vậy intranet.html tự chèn hai giá trị đó lúc khởi động; bản lõi mà đối tác tải về không mang theo giá trị nào.'
                        : 'The client portal loads that same core file. Anything inside it reaches the client — devtools, or just curl on the .js, no JavaScript needed. So intranet.html injects those two values at boot; the copy the client downloads carries nothing.'],
       [true, c.lang === 'vi' ? 'Tầng API kiểm tra lại phạm vi ở từng lời gọi' : 'The API layer re-checks scope on EVERY call',
-       c.lang === 'vi' ? 'Kể cả khi giao diện đã lọc đúng. Tin vào bộ lọc của giao diện là cách lộ dữ liệu phổ biến nhất.'
+       c.lang === 'vi' ? 'Kể cả khi giao diện đã lọc đúng. Tin vào bộ lọc của giao diện là nguyên nhân lộ dữ liệu phổ biến nhất.'
                        : 'Even when the interface already filtered correctly. Trusting the interface’s filter is the most common way data leaks.'],
       [true, c.lang === 'vi' ? 'Chặn label xem tác quyền ở đúng một chỗ' : 'Publishing is blocked for labels in exactly one place',
-       c.lang === 'vi' ? 'scopeOf() trả về mảng rỗng cho label + tác quyền, và chanTacQuyenChoLabel() ném lỗi ở cả năm điểm vào. Chặn rải rác theo từng lời gọi thì chỉ cần quên một lời gọi là mở toang cả một dòng tiền.'
+       c.lang === 'vi' ? 'scopeOf() trả về mảng rỗng cho label + tác quyền, và chanTacQuyenChoLabel() ném lỗi ở cả năm điểm vào. Chặn rải rác theo từng lời gọi thì chỉ cần bỏ sót một lời gọi là để lộ cả một dòng tiền.'
                        : 'scopeOf() returns an empty array for label + publishing, and one guard throws at all five entry points. Guarding call by call means one forgotten call opens a whole money stream.'],
-      [true, c.lang === 'vi' ? 'Mọi gói dữ liệu gửi cho khách hàng đều được soát chuỗi cấm' : 'Every client payload is scanned for forbidden strings',
-       c.lang === 'vi' ? 'scrub() ném lỗi nếu thấy tên đơn vị phân phối, tỷ lệ gốc hay các chuỗi liên quan trong payload. Thà hỏng trang còn hơn lộ bí mật.'
+      [true, c.lang === 'vi' ? 'Mọi gói dữ liệu gửi cho đối tác đều được soát chuỗi cấm' : 'Every client payload is scanned for forbidden strings',
+       c.lang === 'vi' ? 'scrub() ném lỗi nếu phát hiện tên đơn vị phân phối, tỷ lệ gốc hay các chuỗi liên quan trong payload. Trang bị lỗi vẫn tốt hơn lộ thông tin mật.'
                        : 'scrub() throws if the distributor name, gross rate, or related strings appear in a payload — better a broken screen than a leak.'],
       [false, c.lang === 'vi' ? 'Không chặn được iframe cùng gốc' : 'Does NOT stop a same-origin iframe',
-       c.lang === 'vi' ? 'Tải lại haustek-core.js trong iframe cùng gốc là có lại toàn bộ HAUSTEK.admin.'
+       c.lang === 'vi' ? 'Tải lại haustek-core.js trong iframe cùng gốc là khôi phục được toàn bộ HAUSTEK.admin.'
                        : 'Reloading haustek-core.js in a same-origin iframe restores the whole admin surface.'],
       [false, c.lang === 'vi' ? 'Không chặn được việc đọc localStorage' : 'Does NOT stop reading localStorage',
        c.lang === 'vi' ? 'Toàn bộ quyết định của admin nằm ở đó dưới dạng JSON, trang nào cùng gốc cũng đọc được.'
@@ -361,17 +361,17 @@ function veBienMoi(c) {
         '<div style="min-width:0"><b>' + HM.esc(x[1]) + '</b><span>' + HM.esc(x[2]) + '</span></div></div>';
     }).join('') + '</div>',
     chan: c.lang === 'vi'
-      ? 'Cách ly thật sự nằm ở mục 5.1 tài liệu bàn giao: dữ liệu thô nằm trong database, lọc và tổng hợp chạy ở máy chủ, Row Level Security quyết định ai đọc được dòng nào. Phần ở đây chỉ chốt <b>hình dạng</b> tầng API phải có để RLS bên dưới có ý nghĩa.'
+      ? 'Cách ly thật sự nằm ở mục 5.1 của tài liệu bàn giao: dữ liệu thô nằm trong database, lọc và tổng hợp chạy ở máy chủ, Row Level Security quyết định ai đọc được dòng nào. Phần ở đây chỉ chốt <b>thiết kế</b> mà tầng API phải có để RLS bên dưới có ý nghĩa.'
       : 'Real isolation is section 5.1 of the handoff: raw data in the database, filtering and aggregation on the server, row-level security deciding who reads which row. This only fixes the SHAPE the API layer must have for that to mean anything.'
   }) +
   HM.the({
     h2: HM.esc(t('bmChay')),
     p: c.lang === 'vi'
-      ? 'Thử thật, ngay trong trang này: gọi API cổng khách hàng bằng những tham số mà một người tò mò sẽ thử.'
+      ? 'Chạy thử ngay trong trang này: gọi API cổng đối tác bằng những tham số mà một người tò mò sẽ thử.'
       : 'Actually run them, here in this page: call the client API with the parameters a curious person would try.',
     hanhDong: '<button type="button" class="btn sm pri" data-probe>' + HM.icon('check') + HM.esc(t('bmChay')) + '</button>',
     than: '<div data-kqprobe><p class="hint">' + HM.esc(c.lang === 'vi'
-      ? 'Chưa chạy. Bấm nút để thử.' : 'Not run yet.') + '</p></div>'
+      ? 'Chưa chạy. Bấm nút để chạy phép thử.' : 'Not run yet.') + '</p></div>'
   });
 }
 
@@ -395,7 +395,7 @@ function chayProbe(c, root) {
       function () { return api.trend('label', 0, 'pub'); }),
     thu(c.lang === 'vi' ? 'Label tách tác quyền theo tổ chức quản lý tác quyền' : 'A label breaks publishing down by CMO', true,
       function () { return api.breakdown('label', 0, pk, 'pub', 'src'); }),
-    thu(c.lang === 'vi' ? 'Khách hàng đọc kỳ chưa duyệt' : 'A client reads an unapproved period', true,
+    thu(c.lang === 'vi' ? 'Đối tác đọc kỳ chưa xét duyệt' : 'A client reads an unapproved period', true,
       function () { return api.summary('artist', 0, chuaDuyet ? chuaDuyet.k : pk, 'rec'); }),
     thu(c.lang === 'vi' ? 'Nghệ sĩ mở bản ghi của người khác' : 'An artist opens a recording that is not theirs', true,
       function () {
@@ -407,7 +407,7 @@ function chayProbe(c, root) {
       }),
     thu(c.lang === 'vi' ? 'Gọi API với vai trò "admin"' : 'Calling the API with role "admin"', true,
       function () { return api.summary('admin', 0, pk, 'rec'); }),
-    thu(c.lang === 'vi' ? 'Gọi với mã bên nhận ngoài phạm vi' : 'Calling with an out-of-range payee id', true,
+    thu(c.lang === 'vi' ? 'Gọi API với mã bên thụ hưởng ngoài phạm vi' : 'Calling with an out-of-range payee id', true,
       function () { return api.summary('artist', 99999, pk, 'rec'); }),
     thu(c.lang === 'vi' ? 'Nghệ sĩ đọc dữ liệu của chính mình' : 'An artist reads their own data', false,
       function () { return api.summary('artist', 0, pk, 'rec'); })
@@ -419,7 +419,7 @@ function chayProbe(c, root) {
     return '<div class="check ' + (x.dat ? 'ok' : 'no') + '">' + HM.icon(x.dat ? 'check' : 'alert') +
       '<div style="min-width:0"><b>' + HM.esc(x.ten) + '</b>' +
       '<span>' + HM.esc((x.mongChan ? (c.lang === 'vi' ? 'phải bị chặn: ' : 'must be blocked — ')
-                                     : (c.lang === 'vi' ? 'phải cho qua: ' : 'must pass — ')) + x.mo) + '</span></div></div>';
+                                     : (c.lang === 'vi' ? 'phải được cho qua: ' : 'must pass — ')) + x.mo) + '</span></div></div>';
   }).join('') + '</div>' +
     '<p class="hint" style="margin-top:10px">' +
     (dat === ds.length
@@ -428,7 +428,7 @@ function chayProbe(c, root) {
       : '<span class="neg">' + HM.esc(c.lang === 'vi' ? 'Đạt ' + dat + '/' + ds.length + '. Có phép thử không cho kết quả như mong đợi.'
                                                       : dat + '/' + ds.length + ' — a probe did not behave as expected.') + '</span>') +
     '</p>';
-  c.thongBao(c.lang === 'vi' ? 'Chạy xong ' + ds.length + ' phép thử' : 'Ran ' + ds.length + ' probes',
+  c.thongBao(c.lang === 'vi' ? 'Đã chạy xong ' + ds.length + ' phép thử' : 'Ran ' + ds.length + ' probes',
     dat === ds.length ? 'ok' : 'no');
 }
 
@@ -447,11 +447,11 @@ function hoiTaiKhoan(c) {
       '<option value="label">label</option><option value="admin">admin</option></select>' +
       '<label class="fld" style="margin-top:12px">' + HM.esc(c.t('hoiBen')) + '</label>' +
       '<input class="in" data-timben placeholder="' +
-      HM.esc(c.lang === 'vi' ? 'Gõ tên hoặc mã bên nhận' : 'Type a payee name or code') + '">' +
+      HM.esc(c.lang === 'vi' ? 'Nhập tên hoặc mã bên thụ hưởng' : 'Type a payee name or code') + '">' +
       '<input type="hidden" data-o="key" value="">' +
       '<div data-kq style="margin-top:8px;max-height:180px;overflow:auto"></div>' +
       '<div class="hint">' + HM.esc(c.lang === 'vi'
-        ? 'Vai trò admin không gắn với bên nhận nào và thấy toàn hệ thống.'
+        ? 'Vai trò admin không gắn với bên thụ hưởng nào và xem được toàn hệ thống.'
         : 'An admin account binds to no payee — they see the whole system.') + '</div>',
     dong: c.t('themTk'),
     khiMo: function (bg) {
@@ -463,7 +463,7 @@ function hoiTaiKhoan(c) {
         if (s.length < 2) { kq.innerHTML = ''; return; }
         var hit = [], la = vt.value === 'label';
         if (vt.value === 'admin') { kq.innerHTML = '<p class="hint">' +
-          HM.esc(c.lang === 'vi' ? 'Vai trò admin không gắn với bên nhận.' : 'Admin binds to no payee.') + '</p>'; return; }
+          HM.esc(c.lang === 'vi' ? 'Vai trò admin không gắn với bên thụ hưởng.' : 'Admin binds to no payee.') + '</p>'; return; }
         (la ? A.labels : A.artists).forEach(function (x) {
           if (hit.length < 24 && (x.name.toLowerCase().indexOf(s) >= 0 || x.clientId.toLowerCase().indexOf(s) >= 0))
             hit.push(x);
@@ -474,7 +474,7 @@ function hoiTaiKhoan(c) {
                 '<div class="nm"><b>' + HM.esc(HM.dai(h.name, 32)) + '</b><em>' + HM.esc(h.clientId) + '</em></div>' +
                 '<div class="vv" style="font-size:12px">' + HM.esc(h.key) + '</div></div>';
             }).join('') + '</div>'
-          : '<p class="hint">' + HM.esc(c.lang === 'vi' ? 'Không tìm thấy' : 'Not found') + '</p>';
+          : '<p class="hint">' + HM.esc(c.lang === 'vi' ? 'Không tìm thấy kết quả' : 'Not found') + '</p>';
       };
       o.addEventListener('input', function () { clearTimeout(hen); hen = setTimeout(lam, 200); });
       vt.addEventListener('change', lam);
