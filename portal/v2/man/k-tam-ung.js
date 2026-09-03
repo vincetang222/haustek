@@ -19,24 +19,24 @@ HT.dangKy({
   chu: {
     vi: {
       navUng: 'Tạm ứng', h1: 'Khoản tạm ứng',
-      mo: 'Số Haustek đã ứng trước cho bạn, và phần đã được trừ dần qua từng kỳ.',
+      mo: 'Số tiền Haustek đã ứng trước cho bạn, và phần đã trừ dần qua từng kỳ.',
       daUng: 'Đã ứng', daTru: 'Đã trừ', conLai: 'Còn phải trừ', conKy: 'Còn khoảng',
       ky: 'kỳ nữa', truKy: 'Trừ kỳ này',
       tienDo: 'Tiến độ', quaCacKy: 'Trừ qua từng kỳ',
-      quaCacKyMo: 'Mỗi kỳ bạn kiếm được bao nhiêu thì trừ bấy nhiêu, cho tới khi hết. Kỳ chưa chốt sổ không có vạch.',
-      giaiThich: 'Tạm ứng hoạt động thế nào',
-      gt1: 'Tạm ứng là tiền Haustek trả trước cho bạn, thường để làm sản phẩm hoặc chạy quảng bá. Nó không phải quà và cũng không phải khoản vay có lãi — nó là phần thu nhập tương lai của bạn, nhận sớm.',
-      gt2: 'Từ lúc đó, mỗi kỳ bạn kiếm được bao nhiêu thì khoản ứng ngắn lại bấy nhiêu. Trong những kỳ đó bạn <b>vẫn đang kiếm được tiền</b> — chỉ là tiền đó đi trả cho phần đã nhận trước, chưa chuyển thêm lần nữa.',
-      gt3: 'Khi khoản ứng về 0, kỳ tiếp theo tiền lại chuyển bình thường. Phần vượt quá trong chính kỳ trả hết cũng được chuyển, không phải chờ.',
-      gt4: 'Khoản ứng tính trên cả doanh thu bản ghi lẫn tác quyền cộng lại, không phải riêng từng dòng.',
+      quaCacKyMo: 'Mỗi kỳ bạn được hưởng bao nhiêu thì trừ bấy nhiêu, cho tới khi hết. Kỳ chưa chốt sổ để trống.',
+      giaiThich: 'Tạm ứng là gì và trừ thế nào',
+      gt1: 'Tạm ứng là tiền Haustek trả trước cho bạn, thường để làm sản phẩm hoặc chạy quảng bá. Đây không phải quà, cũng không phải khoản vay có lãi, mà là thu nhập tương lai của bạn nhận sớm.',
+      gt2: 'Từ lúc đó, mỗi kỳ bạn được hưởng bao nhiêu thì khoản ứng giảm bấy nhiêu. Trong những kỳ đó bạn <b>vẫn có thu nhập</b>, chỉ là thu nhập đó trừ vào phần đã nhận trước, nên chưa chuyển thêm.',
+      gt3: 'Khi khoản ứng về 0, từ kỳ tiếp theo tiền lại chuyển bình thường. Ngay trong kỳ trả hết, phần dư ra cũng được chuyển, không phải chờ.',
+      gt4: 'Khoản ứng trừ trên cả doanh thu bản ghi lẫn tác quyền cộng lại, không tách riêng từng dòng tiền.',
       khongCo: 'Bạn không có khoản tạm ứng nào',
-      khongCoMo: 'Toàn bộ phần bạn kiếm được ở mỗi kỳ đi thẳng vào bảng chi trả, không bị trừ gì.',
+      khongCoMo: 'Toàn bộ phần bạn được hưởng mỗi kỳ đi thẳng vào chi trả, không bị trừ gì.',
       veTongQuan: 'Về trang tổng quan',
       lichSu: 'Lịch sử trừ', cKy: 'Kỳ', cTru: 'Trừ trong kỳ', cCon: 'Còn lại sau kỳ',
-      chuaTru: 'Chưa có kỳ nào trừ được',
-      chuaTruMo: 'Bạn chưa phát sinh doanh thu trong kỳ đã chốt nào kể từ khi nhận khoản ứng.',
-      xong: 'Đã trả xong', xongMo: 'Khoản tạm ứng của bạn đã được trừ hết. Từ kỳ sau tiền chuyển bình thường.',
-      chuaMo: 'Kỳ chưa mở'
+      chuaTru: 'Chưa trừ được kỳ nào',
+      chuaTruMo: 'Kể từ khi nhận khoản ứng, bạn chưa có doanh thu ở kỳ đã chốt sổ nào.',
+      xong: 'Đã trả xong', xongMo: 'Khoản tạm ứng của bạn đã trừ hết. Từ kỳ sau tiền chuyển bình thường.',
+      chuaMo: 'Kỳ này chưa chốt sổ'
     },
     en: {
       navUng: 'Advance', h1: 'Your advance',
@@ -124,7 +124,7 @@ HT.dangKy({
       { l: t('conLai'), v: HT.fmt.usd(a.left), mau: a.left > 0 ? HB.mau('warn') : HB.mau('ok') },
       { l: t('truKy') + ' · ' + c.ky.label, v: HT.fmt.usd(a.recoupedThisPeriod) },
       a.left > 0 && a.periodsLeft ? { l: t('conKy'), v: a.periodsLeft + ' ' + t('ky'),
-        s: c.lang === 'vi' ? 'theo nhịp kiếm tiền kỳ này' : 'at this period’s rate' } : null
+        s: c.lang === 'vi' ? 'theo mức thu nhập kỳ này' : 'at this period’s rate' } : null
     ].filter(Boolean));
 
     html += '<div class="grid g3">' +

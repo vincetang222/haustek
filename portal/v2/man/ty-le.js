@@ -20,20 +20,20 @@ HT.dangKy({
   chu: {
     vi: {
       navTyLe: 'Tỷ lệ chia', h1: 'Tỷ lệ chia',
-      mo: 'Bảng có ngày hiệu lực. Đổi tỷ lệ hôm nay không được làm đổi báo cáo các kỳ đã chốt.',
+      mo: 'Bảng có kỳ hiệu lực. Đổi tỷ lệ hôm nay không làm đổi bảng kê của các kỳ đã chốt sổ.',
       soDong: 'Dòng tỷ lệ', soBen: 'Bên nhận có tỷ lệ riêng', daDoi: 'Bên đã đổi tỷ lệ',
       them: 'Thêm dòng tỷ lệ', xoaDong: 'Xoá dòng này',
       cBen: 'Bên nhận', cLoai: 'Loại', cTyLe: 'Tỷ lệ bên nhận', cTu: 'Hiệu lực từ kỳ',
       cNguoi: 'Người đặt', cGhi: 'Ghi chú', cDang: 'Đang áp cho kỳ',
       tim: 'Tìm tên hoặc mã…', tatCa: 'Mọi loại', chiDoi: 'Chỉ bên đã đổi tỷ lệ',
       hoiTyLe: 'Tỷ lệ bên nhận giữ (%)', hoiTu: 'Hiệu lực từ kỳ', hoiGhi: 'Ghi chú (số phụ lục hợp đồng, ngày ký)',
-      chiKyMo: 'Chỉ đặt được vào kỳ chưa duyệt. Kỳ đã duyệt là kỳ đã chi tiền — đặt tỷ lệ hiệu lực lùi vào đó là sửa lại số đã chuyển đi.',
+      chiKyMo: 'Chỉ đặt được vào kỳ chưa duyệt. Kỳ đã duyệt là kỳ đã chi tiền; đặt tỷ lệ lùi vào đó là sửa lại số đã chuyển đi.',
       anhHuong: 'Nếu áp từ kỳ đang xem',
       anhHuongMo: 'Ước tính trên số liệu kỳ đang xem. Không ghi gì cả, chỉ để thấy độ lớn.',
       truoc: 'Theo tỷ lệ hiện tại', sau: 'Theo tỷ lệ mới', chenh: 'Chênh lệch',
-      khong: 'Chưa có dòng tỷ lệ nào khớp bộ lọc',
+      khong: 'Không có dòng tỷ lệ nào khớp bộ lọc',
       lichSu: 'Lịch sử tỷ lệ của bên này',
-      macDinh: 'Nghệ sĩ thuộc label không có dòng riêng — tỷ lệ nằm ở dòng của label quản lý họ.',
+      macDinh: 'Nghệ sĩ thuộc label không có dòng riêng. Tỷ lệ nằm ở dòng của label quản lý họ.',
       xuat: 'Xuất CSV'
     },
     en: {
@@ -100,7 +100,7 @@ HT.dangKy({
     html += HM.ghi({ kieu: 'info',
       tieuDe: HM.esc(c.lang === 'vi' ? 'Vì sao tỷ lệ là bảng, không phải cột' : 'Why the rate is a table, not a column'),
       than: HM.esc(c.lang === 'vi'
-        ? 'Một cột trên bảng nghệ sĩ chỉ giữ được giá trị hôm nay. Mở lại báo cáo kỳ 01/2026 sau khi label đổi tỷ lệ vào tháng 4, con số sẽ đổi theo — và không ai biết nó từng là số khác. Bảng có cột "hiệu lực từ" giữ được cả hai: tỷ lệ cũ cho kỳ cũ, tỷ lệ mới cho kỳ mới.'
+        ? 'Một cột trên bảng nghệ sĩ chỉ giữ được giá trị hôm nay. Mở lại bảng kê kỳ 01/2026 sau khi label đổi tỷ lệ vào tháng 4, con số sẽ đổi theo, và không ai biết trước đó là số khác. Bảng có cột "hiệu lực từ" giữ được cả hai: tỷ lệ cũ cho kỳ cũ, tỷ lệ mới cho kỳ mới.'
         : 'A column on the artist table can only hold today’s value. Reopen the January statement after the label changed its rate in April and the figure changes with it — with no trace that it was ever different. A table with an effective-from column keeps both: the old rate for old periods, the new one for new.') });
 
     html += '<div class="bar">' +
@@ -123,7 +123,7 @@ HT.dangKy({
     html += HM.the({
       h2: c.lang === 'vi' ? 'Nghệ sĩ thuộc label' : 'Artists under a label',
       than: '<p class="say">' + HM.esc(t('macDinh')) + ' ' + HM.esc(c.lang === 'vi'
-        ? 'Chuỗi chia tiền của họ là: doanh thu gộp → trừ phí Haustek → phần còn lại chia theo tỷ lệ của label → trừ điểm producer trên bản ghi đó. Muốn một nghệ sĩ trong label có tỷ lệ riêng thì phải thêm dòng cho chính nghệ sĩ đó, và bảng chia phần phải nói rõ dòng nào thắng — đây là câu hỏi số 3 còn treo.'
+        ? 'Tiền của họ chia theo thứ tự: doanh thu gộp → trừ phí Haustek → phần còn lại chia theo tỷ lệ của label → trừ điểm producer trên bản ghi đó. Muốn một nghệ sĩ trong label có tỷ lệ riêng thì phải thêm dòng cho chính nghệ sĩ đó, và bảng chia phải nói rõ dòng nào được ưu tiên. Đây là câu hỏi còn treo số 3.'
         : 'Their chain is: gross → less the Haustek fee → the remainder split at the label’s rate → less producer points on that recording. Giving one artist inside a label their own rate needs a row for that artist, and the split table must say which row wins — this is open question 3.') + '</p>'
     });
 
@@ -211,7 +211,7 @@ function moLichSu(c, r) {
     '<div class="tw"><table class="t" style="min-width:0"><thead><tr>' +
       '<th>' + (c.lang === 'vi' ? 'Kỳ' : 'Period') + '</th>' +
       '<th class="num">' + (c.lang === 'vi' ? 'Tỷ lệ' : 'Rate') + '</th>' +
-      '<th class="num">' + (c.lang === 'vi' ? 'Bên này nhận' : 'This party earned') + '</th>' +
+      '<th class="num">' + (c.lang === 'vi' ? 'Được hưởng' : 'This party earned') + '</th>' +
       '<th>' + (c.lang === 'vi' ? 'Sổ' : 'Books') + '</th></tr></thead><tbody>' +
       A.periods.slice().reverse().map(function (p) {
         var g = A.agg(la ? 'label' : 'artist', id, p.idx, 'rec');
@@ -221,8 +221,8 @@ function moLichSu(c, r) {
           '<td class="num">' + HM.esc(HT.fmt.pct(theoKy[p.idx])) +
             (doi ? ' <span class="tag warn">' + HM.esc(c.lang === 'vi' ? 'đổi' : 'change') + '</span>' : '') + '</td>' +
           '<td class="num">' + HM.esc(c.tien(g.total)) + '</td>' +
-          '<td>' + (A.isApproved(p.k) ? HM.tag(c.lang === 'vi' ? 'đã khoá' : 'closed', 'ok')
-            : HM.tag(c.lang === 'vi' ? 'đang mở' : 'open', 'warn')) + '</td></tr>';
+          '<td>' + (A.isApproved(p.k) ? HM.tag(c.lang === 'vi' ? 'đã chốt' : 'closed', 'ok')
+            : HM.tag(c.lang === 'vi' ? 'chưa chốt' : 'open', 'warn')) + '</td></tr>';
       }).join('') + '</tbody></table></div>' +
     '<div class="btnrow" style="margin-top:18px">' +
       '<button type="button" class="btn pri" data-them2="' + HM.esc(r.key) + '">' + HM.esc(c.t('them')) + '</button>' +
@@ -253,7 +253,7 @@ function hoiTyLe(c, key) {
   var A = c.A;
   var kyMo = A.periods.filter(function (p) { return !A.isApproved(p.k); });
   if (!kyMo.length) {
-    c.thongBao(c.lang === 'vi' ? 'Mọi kỳ đều đã duyệt — không đặt được tỷ lệ hiệu lực vào kỳ nào' : 'Every period is approved', 'no');
+    c.thongBao(c.lang === 'vi' ? 'Mọi kỳ đều đã duyệt, không còn kỳ nào để đặt tỷ lệ' : 'Every period is approved', 'no');
     return;
   }
   var hienTai = key ? A.rates.rateFor(key, kyMo[0].k) : 0.8;
@@ -277,7 +277,7 @@ function hoiTyLe(c, key) {
           return '<option value="' + p.k + '"' + (p.k === c.kyKey ? ' selected' : '') + '>' + HM.esc(p.label) + '</option>';
         }).join('') + '</select></div></div>' +
       '<div class="hint">' + HM.esc(c.lang === 'vi'
-        ? 'Con số này là phần BÊN NHẬN giữ, tính trên doanh thu sau khi trừ phí Haustek ' + HT.fmt.pct(A.cfg.HAUSTEK_FEE) + '. Phần còn lại là của label, hoặc của Haustek nếu nghệ sĩ độc lập.'
+        ? 'Con số này là phần bên nhận giữ, tính trên doanh thu sau khi trừ phí Haustek ' + HT.fmt.pct(A.cfg.HAUSTEK_FEE) + '. Phần còn lại thuộc về label, hoặc về Haustek nếu là nghệ sĩ độc lập.'
         : 'This is the share the PAYEE keeps, of revenue after the ' + HT.fmt.pct(A.cfg.HAUSTEK_FEE) + ' Haustek fee. The rest goes to the label, or to Haustek for an independent artist.') + '</div>' +
       '<label class="fld" style="margin-top:12px">' + HM.esc(c.t('hoiGhi')) + '</label>' +
       '<input class="in" data-o="note" placeholder="' +
@@ -310,7 +310,7 @@ function hoiTyLe(c, key) {
                   '<div class="vv" style="font-size:12px">' + HM.esc(h.loai) + '</div></div>';
               }).join('') + '</div>'
             : '<p class="hint">' + HM.esc(c.lang === 'vi'
-                ? 'Không tìm thấy. Nghệ sĩ thuộc label không có dòng riêng — tìm label của họ.'
+                ? 'Không tìm thấy. Nghệ sĩ thuộc label không có dòng riêng, hãy tìm label của họ.'
                 : 'Not found. Artists under a label have no own row — search for their label.') + '</p>';
         }, 200);
       });
@@ -324,7 +324,7 @@ function hoiTyLe(c, key) {
     }
   }).then(function (r) {
     if (!r) return;
-    if (!r.key) { c.thongBao(c.lang === 'vi' ? 'Phải chọn một bên nhận' : 'Pick a payee', 'no'); return; }
+    if (!r.key) { c.thongBao(c.lang === 'vi' ? 'Chưa chọn bên nhận' : 'Pick a payee', 'no'); return; }
     var v = parseFloat(r.rate) / 100;
     try {
       A.rates.add(r.key, v, r.from, 'ops@haustek-group.com', r.note);

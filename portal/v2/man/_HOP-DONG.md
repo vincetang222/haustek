@@ -1,7 +1,7 @@
-# Hợp đồng giữa khung và màn hình
+# Hợp đồng giữa khung và trang
 
-Khung (`haustek-shell.js`) lo phần chung; màn hình chỉ lo nội dung của nó.
-Mọi thứ dưới đây là những gì khung **hứa** cung cấp, và những gì màn hình
+Khung (`haustek-shell.js`) lo phần chung; trang chỉ lo nội dung của nó.
+Mọi thứ dưới đây là những gì khung **hứa** cung cấp, và những gì trang
 **phải** giữ.
 
 ## Đăng ký
@@ -15,7 +15,7 @@ HT.dangKy({ id, nav, nhom, icon, dem, chu, ve });
 | `id` | có | Mã màn, dùng làm `#hash`. Chữ thường, gạch nối. |
 | `ve(root, c)` | có | Dựng nội dung vào `root`. Được gọi lại mỗi lần đổi kỳ / ngôn ngữ / chế độ. |
 | `nav` | nên | Khoá chữ cho nhãn ở cột trái. Thiếu thì lấy `id`. |
-| `nhom` | không | Khoá chữ cho tên nhóm. Cùng nhóm thì xếp cạnh nhau theo thứ tự nạp file. |
+| `nhom` | không | Khoá chữ cho tên nhóm. Cùng nhóm thì xếp cạnh nhau theo thứ tự tải file. |
 | `icon` | không | Tên trong `HT.IC`. Mặc định `grid`. |
 | `dem(c)` | không | Chuỗi nhỏ cạnh nhãn. Bắt đầu bằng `!` thì hiện màu cảnh báo. Ném lỗi thì bỏ qua, không làm hỏng cột trái. |
 | `chu` | nên | `{ vi:{}, en:{} }`. Tra bằng `c.t('khoa')`. Thiếu khoá thì rơi về từ điển khung, rồi về chính chuỗi khoá. |
@@ -34,18 +34,18 @@ xacNhan(tieuDe, moTa, nhan, nguyHiem)     → Promise<boolean>
 nganTruot(html, {tieuDe, phu, khiMo})     ngăn trượt bên phải
 dongNgan()                                đóng ngăn
 bang(o)                                   bảng có sắp xếp + phân trang
-A                                         HAUSTEK.admin — CHỈ có ở cửa nội bộ
-api phien                                 HAUSTEK.api và phiên khách — CHỈ có ở cổng khách
+A                                         HAUSTEK.admin — CHỈ có ở cổng nội bộ
+api phien                                 HAUSTEK.api và phiên khách — CHỈ có ở cổng khách hàng
 ```
 
-Màn hình của cửa nội bộ dùng `c.A`; màn hình của cổng khách dùng `c.api` + `c.phien`.
+Trang của cổng nội bộ dùng `c.A`; trang của cổng khách hàng dùng `c.api` + `c.phien`.
 **Không màn nào được dùng cả hai** — dùng cả hai nghĩa là màn đó chạy được ở cả hai
 cửa, và đó là con đường ngắn nhất để một ngày nào đó nó chạy nhầm cửa.
 
 ## Chuỗi hai thứ tiếng đến từ tầng dữ liệu
 
-`c.t('khoa')` chỉ tra được từ điển của chính màn hình. Nhưng một phần chữ trên màn
-hình **sinh ra ở lõi**, không ở màn hình: tên luồng dữ liệu, điều kiện duyệt kỳ, từng
+`c.t('khoa')` chỉ tra được từ điển của chính trang. Nhưng một phần chữ trên màn
+hình **sinh ra ở lõi**, không ở trang: tên nguồn dữ liệu, điều kiện duyệt kỳ, từng
 chặng trong chuỗi tiền của khách, lý do một kỳ trống. Những chuỗi đó mang sẵn bản
 tiếng Anh bên cạnh (`name` / `nameEn`, `label` / `labelEn`, `note` / `noteEn`), và màn
 hình lấy bằng:
@@ -56,10 +56,10 @@ c.song(doiTuong, 'label')   // → labelEn khi đang EN và có bản EN, còn l
 
 Đọc thẳng `x.label` là bật EN xong vẫn ra tiếng Việt, và bản dịch trông như làm dở.
 
-Ngược lại, **tên nghệ sĩ, tên bài, tên label, tên cửa hàng là dữ liệu** — chúng giữ
+Ngược lại, **tên nghệ sĩ, tên bài, tên label, tên nền tảng là dữ liệu** — chúng giữ
 nguyên tiếng Việt ở cả hai chế độ, và không được dịch.
 
-## Bốn luật màn hình phải giữ
+## Bốn luật trang phải giữ
 
 1. **Mọi chuỗi từ dữ liệu đi qua `HM.esc()` trước khi ghép vào HTML.**
    Tên nghệ sĩ ở đây có `&`, `'`, `:`, dấu tiếng Việt: `nae & de'lay`, `ling:chi`,
@@ -76,7 +76,7 @@ nguyên tiếng Việt ở cả hai chế độ, và không được dịch.
 
 4. **Việc nặng đi qua `HM.nho(A, khoa, fn)`.**
    Tổng hợp một kỳ là quét 50.000 bản ghi. Bấm đổi sáng/tối một cái là vẽ lại cả màn.
-   `HM.nho` nhớ theo **dấu mốc trạng thái**: admin duyệt kỳ hay nạp thêm luồng thì dấu
+   `HM.nho` nhớ theo **dấu mốc trạng thái**: admin duyệt kỳ hay nhập thêm nguồn thì dấu
    mốc đổi và bộ nhớ tạm tự bỏ đi. Sau mỗi hành động đổi sổ, gọi `HM.quenHet()`.
 
 ## Khuôn dùng chung (`HM`)
@@ -116,13 +116,13 @@ Ba trạng thái của một cột, **đừng gộp làm hai**:
 * `dangDo` chứa `i` → có số nhưng chưa chốt → cột viền đứt, vẫn đúng độ cao
 * còn lại → đã chốt → cột đặc
 
-Vẽ kỳ chưa chốt thành vạch cụt ở cửa nội bộ là giấu mất thứ người vận hành cần nhìn
+Vẽ kỳ chưa chốt thành vạch cụt ở cổng nội bộ là giấu mất thứ người vận hành cần nhìn
 nhất: kỳ đang làm dở to cỡ nào.
 
 ## Đặt tên
 
 Mã trong dự án này viết bằng tiếng Việt không dấu (`veDong`, `hangCho`, `dangDo`).
-Không phải để cho lạ — mà vì mọi thuật ngữ nghiệp vụ ở đây (kỳ, luồng, khớp, treo,
+Không phải để cho lạ — mà vì mọi thuật ngữ nghiệp vụ ở đây (kỳ, nguồn, khớp, treo,
 dồn, thu hồi, bên nhận) đều là tiếng Việt trong đầu người vận hành, và dịch chúng
 sang tiếng Anh làm mã xa khỏi thứ mà người đọc mã đang nói. Chỉ những gì thuộc về web
 mới giữ tên tiếng Anh (`root`, `html`, `id`, `hash`).

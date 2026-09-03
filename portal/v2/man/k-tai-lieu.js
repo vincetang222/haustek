@@ -22,31 +22,31 @@ HT.dangKy({
   chu: {
     vi: {
       navTl: 'Tài liệu', h1: 'Tài liệu',
-      mo: 'Bảng kê các kỳ, và giải thích cách con số được tính ra.',
+      mo: 'Bảng kê các kỳ, và cách tính ra từng con số.',
       tBk: 'Bảng kê các kỳ', tHd: 'Hợp đồng & chứng từ', tCh: 'Câu hỏi thường gặp',
       cKy: 'Kỳ', cChot: 'Chốt sổ', cVe: 'Về tay bạn', cChi: 'Đã chi', cTai: '',
-      xem: 'Mở', tai: 'Tải CSV', taiHet: 'Tải cả năm (CSV)',
-      chuaCo: 'Chưa có kỳ nào được chốt sổ',
-      chuaCoMo: 'Bảng kê xuất hiện ở đây ngay khi một kỳ được chốt. Kỳ chỉ chốt sau khi đối chiếu xong với tất cả các nền tảng.',
-      choKy: 'Đang chờ chốt sổ', choKyMo: 'Những kỳ này đã có dữ liệu về nhưng chưa đối chiếu xong, nên chưa mở.',
+      xem: 'Mở', tai: 'Tải CSV', taiHet: 'Tải tất cả kỳ (CSV)',
+      chuaCo: 'Chưa có kỳ nào chốt sổ',
+      chuaCoMo: 'Bảng kê xuất hiện ở đây ngay khi một kỳ chốt sổ. Kỳ chỉ chốt sổ sau khi đối soát xong với tất cả các nền tảng.',
+      choKy: 'Đang chờ chốt sổ', choKyMo: 'Những kỳ này đã có dữ liệu về nhưng chưa đối soát xong, nên chưa chốt sổ.',
       hdTrong: 'Chưa có chứng từ nào ở đây',
-      hdTrongMo: 'Hợp đồng, phụ lục và chứng từ chuyển tiền chưa được đưa lên cổng. Hiện chúng vẫn gửi qua email. Nếu bạn cần một bản, gửi mã khách hàng của bạn về ops@haustek-group.com.',
-      hoi1: 'Vì sao kỳ này tôi được ít hơn kỳ trước?',
-      dap1: 'Ba lý do hay gặp nhất, theo thứ tự. Một: bài mới hết đà — doanh thu một bài thường cao nhất 1–2 kỳ đầu rồi giảm dần. Hai: kỳ này có nền tảng báo cáo trễ, phần đó sẽ về ở kỳ sau chứ không mất. Ba: bạn đang trong giai đoạn trừ tạm ứng, nên phần kiếm được vẫn có nhưng phần chuyển đi thì chưa.',
-      hoi2: 'Tôi thấy hàng triệu lượt nghe, sao tiền chỉ có vậy?',
-      dap2: 'Mỗi lượt nghe trả rất ít, và mức trả khác nhau nhiều giữa các nền tảng và các nước. Một lượt nghe ở Mỹ trả gấp nhiều lần một lượt ở Việt Nam. Mở một bài ra, phần "nghe từ nước nào" cho thấy chênh lệch đó bằng con số thật của chính bài đó.',
-      hoi3: 'Bao giờ tôi thấy tiền tác quyền?',
-      dap3: 'Tác quyền chốt theo quý, không phải hằng tháng, và các tổ chức quản lý thường báo cáo trễ một tới hai quý. Nên kỳ nào trống ở tab Tác quyền là bình thường — nó không có nghĩa là bài của bạn không phát sinh. Kỳ nào có báo cáo thì cổng ghi rõ.',
-      hoi4: 'Vì sao có kỳ tôi không nhận được chuyển khoản?',
-      dap4: 'Hai khả năng. Hoặc số của kỳ đó dưới ngưỡng chi trả tối thiểu, và nó được cộng dồn sang kỳ sau — không mất. Hoặc bạn đang trừ tạm ứng. Trang Tạm ứng nói rõ bạn ở trường hợp nào.',
-      hoi5: 'Số trong bảng kê là số tôi nhận vào tài khoản?',
-      dap5: 'Chưa. Đó là số trước thuế và trước phí chuyển khoản. Phần chênh ghi trên chứng từ chuyển tiền của từng lần chi.',
-      hoi6: 'Tôi thấy một bài không phải của tôi, hoặc thiếu một bài của tôi?',
-      dap6: 'Gửi mã ISRC của bài đó cùng mã khách hàng của bạn về ops@haustek-group.com. Đây là lỗi khớp danh mục, và sửa được — nhưng phải có mã ISRC, vì tên bài trùng nhau rất nhiều.',
-      hoi7: 'Vì sao kỳ gần nhất chưa mở?',
-      dap7: 'Một kỳ chỉ mở khi cả ba nguồn dữ liệu doanh thu đã về đủ và tổng hệ thống khớp tổng trên file gốc tới từng xu. Mở sớm một kỳ còn thiếu một nguồn là đưa cho bạn một con số thiếu mà trông vẫn như số đủ.',
+      hdTrongMo: 'Hợp đồng, phụ lục và chứng từ chuyển tiền chưa đưa lên cổng, hiện vẫn gửi qua email. Cần bản nào, bạn gửi mã khách hàng về ops@haustek-group.com.',
+      hoi1: 'Sao kỳ này tôi được ít hơn kỳ trước?',
+      dap1: 'Ba lý do hay gặp nhất, theo thứ tự. Một: bài mới hết đà, doanh thu một bài thường cao nhất 1–2 kỳ đầu rồi giảm dần. Hai: có nền tảng báo cáo trễ, phần đó về ở kỳ sau chứ không mất. Ba: bạn đang trừ tạm ứng, nên vẫn có thu nhập nhưng chưa có tiền chuyển đi.',
+      hoi2: 'Bài tôi có cả triệu lượt nghe, sao tiền ít vậy?',
+      dap2: 'Mỗi lượt nghe trả rất ít, và mức trả chênh nhau nhiều giữa các nền tảng và các nước. Một lượt nghe ở Mỹ trả gấp nhiều lần một lượt ở Việt Nam. Mở một bài ra, phần "Nghe từ nước nào" cho thấy chênh lệch đó bằng số thật của chính bài đó.',
+      hoi3: 'Bao giờ tôi có tiền tác quyền?',
+      dap3: 'Tác quyền chốt theo quý, không theo tháng, và các tổ chức quản lý tác quyền thường báo cáo trễ một tới hai quý. Nên tab Tác quyền trống ở nhiều kỳ là bình thường, không có nghĩa là bài của bạn không có doanh thu. Kỳ nào có báo cáo, cổng ghi rõ.',
+      hoi4: 'Sao có kỳ tôi không nhận được tiền?',
+      dap4: 'Hai khả năng. Một là khoản kỳ đó dưới ngưỡng chi trả nên dồn sang kỳ sau, không mất. Hai là bạn đang trừ tạm ứng. Trang Tạm ứng cho biết bạn thuộc trường hợp nào.',
+      hoi5: 'Số trên bảng kê có phải là số vào tài khoản tôi không?',
+      dap5: 'Không hẳn. Đó là số trước thuế và trước phí chuyển khoản. Phần chênh ghi trên chứng từ của từng lần chuyển tiền.',
+      hoi6: 'Danh sách có bài không phải của tôi, hoặc thiếu bài của tôi thì sao?',
+      dap6: 'Gửi mã ISRC của bài đó cùng mã khách hàng của bạn về ops@haustek-group.com. Đây là lỗi khớp danh mục và sửa được, nhưng bắt buộc phải có mã ISRC vì tên bài trùng nhau rất nhiều.',
+      hoi7: 'Sao kỳ gần nhất vẫn chưa chốt sổ?',
+      dap7: 'Một kỳ chỉ chốt sổ khi đủ ba nguồn dữ liệu doanh thu và tổng trên hệ thống khớp tổng trên file gốc tới từng xu. Chốt sớm khi còn thiếu một nguồn là đưa cho bạn một con số thiếu mà trông vẫn như đủ.',
       lienHe: 'Cần hỗ trợ',
-      lienHeMo: 'Khi viết thư, kèm ba thứ này thì tra ra được đúng dòng trong vài phút: mã khách hàng của bạn, kỳ báo cáo, và mã ISRC của bài đang thắc mắc.'
+      lienHeMo: 'Khi gửi email, kèm đủ ba thứ này thì tra đúng dòng trong vài phút: mã khách hàng, kỳ báo cáo và mã ISRC của bài cần kiểm tra.'
     },
     en: {
       navTl: 'Documents', h1: 'Documents',
@@ -136,7 +136,7 @@ function veBangKe(c) {
   return HM.the({
     h2: HM.esc(t('tBk')),
     p: c.lang === 'vi'
-      ? 'Mỗi kỳ đã chốt sổ có một bảng kê. Con số trong đó là con số đã dùng để chuyển tiền, không tính lại theo tỷ giá hôm nay.'
+      ? 'Mỗi kỳ đã chốt sổ có một bảng kê. Số trong đó là số đã dùng để chuyển tiền, không tính lại theo tỷ giá hôm nay.'
       : 'Every closed period has a statement. Its figures are the ones money moved on, not recomputed at today’s rate.',
     hanhDong: '<button type="button" class="btn sm pri" data-taihet>' + HM.icon('down2') + HM.esc(t('taiHet')) + '</button>',
     thoBody: true,
@@ -153,7 +153,7 @@ function veBangKe(c) {
           '<td class="num">' + (r.tong != null ? HM.esc(HT.fmt.usd(r.tong)) : '<span class="nil">—</span>') + '</td>' +
           '<td class="num">' + (r.chi != null && r.chi > 0
             ? HM.esc(HT.fmt.usd(r.chi))
-            : '<span class="muted">' + HM.esc(c.lang === 'vi' ? 'dồn tiếp' : 'carried') + '</span>') + '</td>' +
+            : '<span class="muted">' + HM.esc(c.lang === 'vi' ? 'dồn sang kỳ sau' : 'carried') + '</span>') + '</td>' +
           '<td><div class="btnrow">' +
             '<button type="button" class="btn sm" data-mo="' + HM.esc(r.k) + '">' + HM.esc(t('xem')) + '</button>' +
             '<button type="button" class="btn sm ghost" data-tai="' + HM.esc(r.k) + '">' + HM.icon('down2') + '</button>' +
@@ -173,7 +173,7 @@ function veCho(c) {
       return '<span class="chip q">' + HM.esc(p.label) + '</span>';
     }).join('') + '</div>' +
       '<p class="hint" style="margin-top:12px">' + HM.esc(c.lang === 'vi'
-        ? 'Một kỳ chỉ mở khi cả ba nguồn dữ liệu doanh thu đã về đủ và tổng hệ thống khớp tổng trên file gốc tới từng xu.'
+        ? 'Một kỳ chỉ chốt sổ khi đủ ba nguồn dữ liệu doanh thu và tổng trên hệ thống khớp tổng trên file gốc tới từng xu.'
         : 'A period opens only when all three revenue sources have arrived and the system total matches the source files to the cent.') + '</p>'
   });
 }
@@ -189,7 +189,7 @@ function veHopDong(c) {
   HM.the({
     h2: c.lang === 'vi' ? 'Những gì sẽ có ở đây' : 'What will live here',
     p: c.lang === 'vi'
-      ? 'Danh sách này viết ra để bạn biết cổng còn thiếu gì, chứ không phải để hứa.'
+      ? 'Danh sách này để bạn biết cổng còn thiếu gì, không phải lời hứa.'
       : 'This list is here so you know what the portal is still missing — not as a promise.',
     than: [
       [c.lang === 'vi' ? 'Hợp đồng phân phối và các phụ lục' : 'The distribution agreement and its annexes',
@@ -199,7 +199,7 @@ function veHopDong(c) {
        c.lang === 'vi' ? 'Số tiền trước thuế, phần khấu trừ, phí chuyển khoản, và số thực nhận.'
                        : 'Amount before tax, withholding, transfer fee, and what actually landed.'],
       [c.lang === 'vi' ? 'Chứng từ khấu trừ thuế' : 'Tax withholding certificates',
-       c.lang === 'vi' ? 'Thứ bạn cần khi quyết toán thuế thu nhập cá nhân.'
+       c.lang === 'vi' ? 'Cần khi bạn quyết toán thuế thu nhập cá nhân.'
                        : 'What you need when filing personal income tax.'],
       [c.lang === 'vi' ? 'Giấy xác nhận khoản tạm ứng' : 'Advance acknowledgements',
        c.lang === 'vi' ? 'Số đã ứng, ngày ứng, và tiến độ trừ.' : 'Amount advanced, date, and recoupment progress.']
@@ -209,7 +209,7 @@ function veHopDong(c) {
         '<span class="v"><span class="tag warn">' + HM.esc(c.lang === 'vi' ? 'chưa có' : 'not yet') + '</span></span></div>';
     }).join(''),
     chan: HM.esc(c.lang === 'vi'
-      ? 'Cần một bản ngay bây giờ: gửi mã khách hàng ' + me.clientId + ' về ops@haustek-group.com.'
+      ? 'Cần bản nào ngay: gửi mã khách hàng ' + me.clientId + ' về ops@haustek-group.com.'
       : 'Need a copy now: send client ID ' + me.clientId + ' to ops@haustek-group.com.')
   });
 }
@@ -231,7 +231,7 @@ function veCauHoi(c) {
           HM.esc(c.lang === 'vi' ? 'Mở một bài xem chi tiết' : 'Open a track') + '</button></div>' : '') +
         (i === 3 ? '<div class="btnrow" style="margin-top:12px">' +
           '<button type="button" class="btn sm" data-di="k-tam-ung">' +
-          HM.esc(c.lang === 'vi' ? 'Xem trang tạm ứng' : 'Open the advance page') + '</button></div>' : '')
+          HM.esc(c.lang === 'vi' ? 'Mở trang Tạm ứng' : 'Open the advance page') + '</button></div>' : '')
     });
   }).join('') +
   HM.the({

@@ -22,18 +22,18 @@ HT.dangKy({
     vi: {
       navChiTra: 'Chi trả', h1: 'Chi trả',
       mo: 'Ai được nhận bao nhiêu trong kỳ này, và vì sao phần còn lại chưa về tay họ.',
-      xemTruoc: 'Xem trước — kỳ chưa duyệt nên chưa có bảng nào được ghi vào sổ.',
+      xemTruoc: 'Xem trước: kỳ chưa duyệt, chưa có bảng nào ghi vào sổ.',
       daGhi: 'Bảng chi trả đã ghi vào sổ lúc duyệt kỳ.',
       seChi: 'Sẽ chi kỳ này', soBen: 'Bên nhận được chi',
-      thuUng: 'Trừ vào tạm ứng', donSang: 'Dồn sang kỳ sau', giuLai: 'Giữ lại chưa có chủ',
-      nhomChi: 'Được chi', nhomDon: 'Dưới ngưỡng', nhomUng: 'Đang trừ tạm ứng', nhomHet: 'Tất cả',
+      thuUng: 'Thu hồi tạm ứng', donSang: 'Dồn sang kỳ sau', giuLai: 'Giữ lại, chưa rõ người nhận',
+      nhomChi: 'Được chi', nhomDon: 'Dưới ngưỡng', nhomUng: 'Đang thu hồi tạm ứng', nhomHet: 'Tất cả',
       tim: 'Tìm tên hoặc mã bên nhận…', tatCaLoai: 'Mọi loại',
-      cBen: 'Bên nhận', cLoai: 'Loại', cKiem: 'Kiếm được', cDon: 'Dồn từ kỳ trước',
-      cThu: 'Trừ tạm ứng', cChi: 'Sẽ chi', cCon: 'Dồn tiếp', cUng: 'Dư nợ tạm ứng',
+      cBen: 'Bên nhận', cLoai: 'Loại', cKiem: 'Được hưởng', cDon: 'Dồn từ kỳ trước',
+      cThu: 'Thu hồi tạm ứng', cChi: 'Sẽ chi', cCon: 'Dồn sang kỳ sau', cUng: 'Dư nợ tạm ứng',
       xuat: 'Xuất bảng chuyển tiền', tong: 'Tổng cộng',
-      nguong: 'Ngưỡng chi trả', nguongMo: 'Dưới ngưỡng thì tiền KHÔNG mất — nó dồn sang kỳ sau và được cộng vào. Ngưỡng tồn tại vì phí chuyển khoản quốc tế ăn hết một khoản nhỏ.',
+      nguong: 'Ngưỡng chi trả', nguongMo: 'Dưới ngưỡng thì tiền không mất, mà dồn sang kỳ sau và cộng vào kỳ đó. Có ngưỡng là vì phí chuyển khoản quốc tế nuốt trọn một khoản nhỏ.',
       khongAi: 'Không có bên nhận nào khớp bộ lọc',
-      chiTiet: 'Chuỗi tiền của bên nhận'
+      chiTiet: 'Từ doanh thu tới số chuyển đi'
     },
     en: {
       navChiTra: 'Payouts', h1: 'Payouts',
@@ -99,14 +99,14 @@ HT.dangKy({
     html += HM.ghi({ kieu: duyet ? 'ok' : 'info',
       tieuDe: HM.esc(duyet ? t('daGhi') : t('xemTruoc')),
       than: HM.esc(duyet
-        ? (c.lang === 'vi' ? 'Duyệt lúc ' + HT.fmt.luc(A.approvalOf(c.kyKey).at) + ' bởi ' + A.approvalOf(c.kyKey).by +
-            '. Con số dưới đây là con số đã chuyển đi — không tính lại.'
+        ? (c.lang === 'vi' ? 'Duyệt lúc ' + HT.fmt.luc(A.approvalOf(c.kyKey).at) + ', người duyệt: ' + A.approvalOf(c.kyKey).by +
+            '. Số dưới đây là số đã chuyển đi, không tính lại.'
           : 'Approved ' + HT.fmt.luc(A.approvalOf(c.kyKey).at) + ' by ' + A.approvalOf(c.kyKey).by +
             '. These are the figures money moved on — not recomputed.')
-        : (c.lang === 'vi' ? 'Bảng tính lại từ dữ liệu hiện có mỗi lần mở màn này. Nạp thêm luồng hay khớp thêm dòng là số đổi.'
+        : (c.lang === 'vi' ? 'Bảng tính lại từ dữ liệu hiện có mỗi lần mở trang này. Nhập thêm nguồn hay khớp thêm dòng là số đổi.'
           : 'Recomputed from current data each time this screen opens. Loading a feed or matching a row changes it.')),
       nut: '<button type="button" class="btn sm" data-di="doi-chieu">' +
-        HM.esc(c.lang === 'vi' ? 'Màn duyệt kỳ' : 'Approval screen') + '</button>' });
+        HM.esc(c.lang === 'vi' ? 'Mở trang duyệt kỳ' : 'Approval screen') + '</button>' });
 
     html += HM.so([
       { l: t('seChi'), v: c.tien(tong.payable), lon: true },
@@ -119,20 +119,20 @@ HT.dangKy({
 
     html += '<div class="grid g3">' +
       HM.the({
-        h2: c.lang === 'vi' ? 'Tiền kiếm được của kỳ đi đâu' : 'Where the period’s earnings went',
+        h2: c.lang === 'vi' ? 'Tiền của kỳ này đi đâu' : 'Where the period’s earnings went',
         than: HB.o({ loai: 'thac', cao: 210, buoc: [
-          { l: c.lang === 'vi' ? 'Kiếm được' : 'Earned', v: tong.earned + tong.giu, kind: 'top',
-            nt: c.lang === 'vi' ? 'toàn bộ phần thuộc về các bên nhận' : 'everything owed to payees' },
+          { l: c.lang === 'vi' ? 'Được hưởng' : 'Earned', v: tong.earned + tong.giu, kind: 'top',
+            nt: c.lang === 'vi' ? 'toàn bộ phần các bên nhận được hưởng' : 'everything owed to payees' },
           { l: c.lang === 'vi' ? 'Producer' : 'Producers', v: -tong.giu, kind: 'out',
-            nt: c.lang === 'vi' ? 'chưa gắn được danh tính' : 'no identity to pay' },
+            nt: c.lang === 'vi' ? 'chưa rõ người nhận' : 'no identity to pay' },
           { l: c.lang === 'vi' ? 'Tạm ứng' : 'Advances', v: -tong.recoup, kind: 'out',
-            nt: c.lang === 'vi' ? 'trừ vào khoản đã ứng trước' : 'offset against money already advanced' },
+            nt: c.lang === 'vi' ? 'thu hồi khoản đã ứng trước' : 'offset against money already advanced' },
           { l: c.lang === 'vi' ? 'Dồn tiếp' : 'Carried', v: -tong.carryOut, kind: 'out',
             nt: c.lang === 'vi' ? 'dưới ngưỡng ' + HT.fmt.usd0(A.cfg.PAYOUT_MIN) : 'below ' + HT.fmt.usd0(A.cfg.PAYOUT_MIN) },
           { l: c.lang === 'vi' ? 'Chi ra' : 'Paid', v: tong.payable, kind: 'final' }
         ] }),
         chan: c.lang === 'vi'
-          ? 'Cột đầu chưa gồm phần dồn từ kỳ trước (' + HM.esc(c.tien2(tong.carryIn)) + ') — phần đó cũng nằm trong số chi ra.'
+          ? 'Cột đầu chưa gồm phần dồn từ kỳ trước (' + HM.esc(c.tien2(tong.carryIn)) + '). Phần đó cũng nằm trong số chi ra.'
           : 'The first column excludes the carry-in (' + HM.esc(c.tien2(tong.carryIn)) + '), which is also inside the paid figure.'
       }) +
       HM.the({
@@ -143,7 +143,7 @@ HT.dangKy({
             phan: [
               { ten: t('nhomChi'), gt: demChi, mau: P[0] },
               { ten: t('nhomDon'), gt: ds.filter(function (r) { return r.carryOut > 0; }).length, mau: P[7] },
-              { ten: c.lang === 'vi' ? 'Hết sạch vì tạm ứng' : 'Fully recouped',
+              { ten: c.lang === 'vi' ? 'Trừ hết vào tạm ứng' : 'Fully recouped',
                 gt: ds.filter(function (r) { return r.payable <= 0 && r.carryOut <= 0 && r.recoup > 0; }).length, mau: P[4] }
             ], dinhDang: 'so', tenTong: c.lang === 'vi' ? 'Số bên nhận' : 'Payees' }) + '</div>'
       }) + '</div>';
@@ -218,8 +218,8 @@ HT.dangKy({
     HM.bam(root, '[data-di]', function (el) { c.di(el.getAttribute('data-di')); });
     HM.bam(root, '[data-xuat]', function () {
       HM.csv('chi-tra-' + c.kyKey + '.csv',
-        ['Mã bên nhận', 'Tên', 'Loại', 'Kiếm được USD', 'Dồn từ kỳ trước', 'Trừ tạm ứng', 'Sẽ chi USD',
-         'Quy VND (' + HT.fmt.n(A.fx.rateFor(c.kyKey)) + ')', 'Dồn tiếp', 'Dư nợ tạm ứng'],
+        ['Mã bên nhận', 'Tên', 'Loại', 'Được hưởng USD', 'Dồn từ kỳ trước', 'Thu hồi tạm ứng', 'Sẽ chi USD',
+         'Quy VND (' + HT.fmt.n(A.fx.rateFor(c.kyKey)) + ')', 'Dồn sang kỳ sau', 'Dư nợ tạm ứng'],
         loc.filter(function (r) { return LOC.nhom !== 'chi' || r.payable > 0; }).map(function (r) {
           return [r.ma, r.ten, r.loai, r.earned.toFixed(2), r.carryIn.toFixed(2), r.recoup.toFixed(2),
                   r.payable.toFixed(2), Math.round(r.payable * A.fx.rateFor(c.kyKey)),
@@ -236,7 +236,7 @@ function moChuoi(c, r, duyet) {
   var lyDo = r.payable > 0
     ? (c.lang === 'vi' ? 'Được chi kỳ này.' : 'Paid this period.')
     : r.recoup > 0 && r.carryOut <= 0
-      ? (c.lang === 'vi' ? 'Toàn bộ phần kiếm được kỳ này đi trừ vào khoản tạm ứng — chưa còn gì để chuyển.'
+      ? (c.lang === 'vi' ? 'Toàn bộ phần được hưởng kỳ này đã thu hồi vào tạm ứng, chưa còn gì để chuyển.'
                          : 'Everything earned went against the advance — nothing left to transfer.')
       : (c.lang === 'vi' ? 'Số còn lại dưới ngưỡng ' + HT.fmt.usd0(A.cfg.PAYOUT_MIN) + ' nên dồn sang kỳ sau, không mất.'
                          : 'What remains is below the ' + HT.fmt.usd0(A.cfg.PAYOUT_MIN) + ' threshold, so it carries forward. Nothing is lost.');
@@ -245,15 +245,15 @@ function moChuoi(c, r, duyet) {
     HM.ghi({ kieu: r.payable > 0 ? 'ok' : 'warn', tieuDe: HM.esc(lyDo), than: '' }) +
     '<h4 class="sec">' + (c.lang === 'vi' ? 'Từ doanh thu tới số chuyển đi' : 'From revenue to transfer') + '</h4>' +
     HM.kv([
-      { t: c.lang === 'vi' ? 'Doanh thu gộp các bài liên quan' : 'Gross on related recordings', v: c.tien2(a.gross) },
-      { t: c.lang === 'vi' ? 'Phần thuộc bên này (bản ghi)' : 'This party’s share (recording)', v: c.tien2(la ? a.labelCut : a.artist) },
+      { t: c.lang === 'vi' ? 'Doanh thu gộp các bản ghi liên quan' : 'Gross on related recordings', v: c.tien2(a.gross) },
+      { t: c.lang === 'vi' ? 'Phần bên này được hưởng (bản ghi)' : 'This party’s share (recording)', v: c.tien2(la ? a.labelCut : a.artist) },
       !la && pub && pub.total > 0.004 ? { t: c.lang === 'vi' ? 'Tác quyền' : 'Publishing', v: c.tien2(pub.total) } : null,
-      { t: c.lang === 'vi' ? 'Tổng kiếm được kỳ này' : 'Total earned', v: c.tien2(r.earned), manh: true },
+      { t: c.lang === 'vi' ? 'Tổng được hưởng kỳ này' : 'Total earned', v: c.tien2(r.earned), manh: true },
       { t: c.lang === 'vi' ? 'Cộng phần dồn từ kỳ trước' : 'Plus carried in', v: c.tien2(r.carryIn) },
       { t: c.lang === 'vi' ? 'Trừ thu hồi tạm ứng' : 'Less advance recouped', v: r.recoup > 0.004 ? '−' + c.tien2(r.recoup) : '—', mau: 'neg' },
       { t: c.lang === 'vi' ? 'Còn lại' : 'Remaining', v: c.tien2(r.earned + r.carryIn - r.recoup) },
       { t: c.lang === 'vi' ? 'Ngưỡng chi trả' : 'Threshold', v: HT.fmt.usd0(A.cfg.PAYOUT_MIN) },
-      { t: c.lang === 'vi' ? 'SỐ CHUYỂN ĐI' : 'TRANSFER', v: c.tien2(r.payable), manh: true },
+      { t: c.lang === 'vi' ? 'Số chuyển đi' : 'TRANSFER', v: c.tien2(r.payable), manh: true },
       r.carryOut > 0.004 ? { t: c.lang === 'vi' ? 'Dồn sang kỳ sau' : 'Carried out', v: c.tien2(r.carryOut) } : null,
       { t: c.lang === 'vi' ? 'Quy đổi VND (tỷ giá kỳ)' : 'In VND (period rate)',
         v: HT.fmt.n(r.payable * A.fx.rateFor(c.kyKey)) + ' ₫' }
@@ -262,16 +262,16 @@ function moChuoi(c, r, duyet) {
       ? '<h4 class="sec">' + (c.lang === 'vi' ? 'Tạm ứng còn lại' : 'Advance outstanding') + '</h4>' +
         '<div class="meter"><i style="width:' + Math.min(100, (1 - r.ung / Math.max(r.ung + r.recoup, 1)) * 100).toFixed(1) + '%"></i></div>' +
         '<div class="hint">' + HM.esc(c.lang === 'vi'
-          ? 'Còn ' + c.tien2(r.ung) + ' phải thu hồi. Với nhịp kiếm tiền như kỳ này thì còn khoảng ' +
+          ? 'Còn ' + c.tien2(r.ung) + ' phải thu hồi. Với mức thu nhập như kỳ này thì còn khoảng ' +
             (r.recoup > 0 ? Math.ceil(r.ung / r.recoup) : '—') + ' kỳ nữa.'
           : c.tien2(r.ung) + ' still to recover — roughly ' +
             (r.recoup > 0 ? Math.ceil(r.ung / r.recoup) : '—') + ' more periods at this rate.') + '</div>'
       : '') +
-    '<h4 class="sec">' + (c.lang === 'vi' ? 'Kiếm được qua 12 kỳ' : 'Earned across 12 periods') + '</h4>' +
+    '<h4 class="sec">' + (c.lang === 'vi' ? 'Thu nhập 12 kỳ' : 'Earned across 12 periods') + '</h4>' +
     HB.o({ loai: 'cot', cao: 150, anTruc: true, chuThich: false,
       truc: A.periods.map(function (p) { return p.label.slice(0, 2); }),
       tieuDeTip: function (i) { return 'Kỳ ' + A.periods[i].label; },
-      chuoi: [{ ten: c.lang === 'vi' ? 'Kiếm được' : 'Earned',
+      chuoi: [{ ten: c.lang === 'vi' ? 'Được hưởng' : 'Earned',
         gt: A.periods.map(function (p, i) { return A.agg(la ? 'label' : 'artist', id, i, 'rec').total; }) }],
       noiBat: c.ky.idx }),
     { tieuDe: r.ten, phu: r.ma + ' · ' + (duyet ? (c.lang === 'vi' ? 'đã ghi sổ' : 'posted')

@@ -17,23 +17,23 @@ HT.dangKy({
     vi: {
       nhomVanHanh: 'Vận hành', navTongQuan: 'Tổng quan',
       h1: 'Tổng quan vận hành',
-      mo: 'Trạng thái kỳ đang xem, dòng tiền của kỳ, và những việc còn treo.',
+      mo: 'Trạng thái kỳ đang xem, tiền của kỳ chia đi đâu, và những việc còn treo.',
       gop: 'Doanh thu gộp', phi: 'Phí Haustek', nghesi: 'Về tay nghệ sĩ',
       label: 'Label giữ lại', producer: 'Điểm producer', treo: 'Tiền treo chưa khớp',
       luot: 'Lượt nghe', bai: 'Bản ghi có doanh thu',
-      dienBien: 'Diễn biến 12 kỳ', dienBienMo: 'Tách theo luồng dữ liệu. Cột viền đứt là kỳ chưa duyệt — số còn chạy.',
+      dienBien: 'Diễn biến 12 kỳ', dienBienMo: 'Tách theo nguồn. Cột nét đứt là kỳ chưa duyệt, số liệu còn thay đổi.',
       chiaTien: 'Tiền kỳ này chia đi đâu',
-      cuaHang: 'Cửa hàng', lanhTho: 'Lãnh thổ',
-      benNhan: 'Bên nhận nhiều nhất kỳ này',
-      dieuKien: 'Điều kiện duyệt kỳ', xemDoiChieu: 'Mở màn đối chiếu',
+      cuaHang: 'Nền tảng', lanhTho: 'Thị trường',
+      benNhan: 'Bên nhận nhiều tiền nhất kỳ này',
+      dieuKien: 'Điều kiện duyệt kỳ', xemDoiChieu: 'Mở trang đối soát',
       hangCho: 'Hàng chờ khớp ISRC', moHangCho: 'Mở hàng chờ',
-      nhatKy: 'Việc vừa làm', xemHet: 'Xem tất cả',
+      nhatKy: 'Nhật ký gần đây', xemHet: 'Xem tất cả',
       duyet: 'Kỳ đã duyệt', chuaDuyet: 'Kỳ chưa duyệt',
-      dangMo: 'Khách chưa nhìn thấy kỳ này. Số liệu chỉ mở cho label và nghệ sĩ sau khi kỳ được duyệt.',
-      daMo: 'Khách đã nhìn thấy kỳ này.',
-      conThieu: 'Còn thiếu', xong: 'Đủ điều kiện — có thể duyệt kỳ',
+      dangMo: 'Label và nghệ sĩ chưa xem được kỳ này. Số liệu chỉ mở ra sau khi duyệt kỳ.',
+      daMo: 'Label và nghệ sĩ đã xem được kỳ này. Duyệt lúc',
+      conThieu: 'Còn thiếu', xong: 'Đủ điều kiện duyệt kỳ',
       dong: 'dòng', tien: 'Số tiền', khong: 'Không có dòng nào đang treo',
-      soVoi: 'so với', khac: 'cửa hàng khác', luotNghe: 'lượt nghe'
+      soVoi: 'so với', khac: 'nền tảng khác', luotNghe: 'lượt nghe'
     },
     en: {
       nhomVanHanh: 'Operations', navTongQuan: 'Overview',
@@ -197,7 +197,7 @@ HT.dangKy({
         duong: { ten: c.lang === 'vi' ? 'Lượt nghe' : 'Streams', gt: day.luot, mau: P[3] }
       }),
       chan: (c.lang === 'vi'
-        ? 'Tiền của một luồng chỉ có mặt trong tổng khi luồng đó đã nạp cho kỳ. Cột thấp bất thường thì nhìn màn Nạp dữ liệu trước khi nghi ngờ thị trường.'
+        ? 'Tiền của một nguồn chỉ vào tổng khi nguồn đó đã nhập cho kỳ. Cột thấp bất thường thì xem trang Nhập dữ liệu trước khi nghi ngờ thị trường.'
         : 'A feed’s money only enters the total once that feed is loaded for the period. Check Data loading before blaming the market.')
     });
 
@@ -211,9 +211,9 @@ HT.dangKy({
             { l: t('gop'), v: nay.gross, kind: 'top', nt: c.lang === 'vi' ? 'trước mọi khoản trừ' : 'before deductions' },
             { l: t('phi'), v: -nay.fee, kind: 'out', nt: HT.fmt.pct(A.cfg.HAUSTEK_FEE) },
             { l: t('label'), v: -nay.labelCut, kind: 'out',
-              nt: c.lang === 'vi' ? 'gồm cả phần Haustek giữ thêm với nghệ sĩ độc lập' : 'includes the extra Haustek share on independent artists' },
+              nt: c.lang === 'vi' ? 'gồm cả phần Haustek giữ thêm từ nghệ sĩ độc lập' : 'includes the extra Haustek share on independent artists' },
             { l: t('producer'), v: -nay.producer, kind: 'out',
-              nt: c.lang === 'vi' ? 'trừ vào phần nghệ sĩ, không cộng thêm bên trên' : 'deducted from the artist share, not added on top' },
+              nt: c.lang === 'vi' ? 'trích từ phần nghệ sĩ, không phải khoản trừ thêm' : 'deducted from the artist share, not added on top' },
             { l: t('nghesi'), v: nay.artist, kind: 'final' }
           ]
         }) +
@@ -228,7 +228,7 @@ HT.dangKy({
       }) +
       HM.the({
         h2: HM.esc(t('cuaHang')),
-        p: HM.esc(A.stores.length + (c.lang === 'vi' ? ' cửa hàng · hiện 8 lớn nhất' : ' stores · top 8 shown')),
+        p: HM.esc(A.stores.length + (c.lang === 'vi' ? ' nền tảng · hiện 8 lớn nhất' : ' stores · top 8 shown')),
         than: HB.o({ loai: 'thanh', hang: ch8.concat(chDuoiTong > 0
           ? [{ ten: chDuoi.length + ' ' + t('khac'), gt: chDuoiTong, mau: HB.mau('neutral-bar') }] : []) })
       }) + '</div>';
@@ -246,7 +246,7 @@ HT.dangKy({
         thoBody: true,
         than: '<div class="tw"><table class="t" style="min-width:0"><thead><tr>' +
           '<th>' + (c.lang === 'vi' ? 'Bên nhận' : 'Payee') + '</th>' +
-          '<th class="num">' + (c.lang === 'vi' ? 'Kiếm được' : 'Earned') + '</th>' +
+          '<th class="num">' + (c.lang === 'vi' ? 'Được hưởng' : 'Earned') + '</th>' +
           '<th class="num">' + (c.lang === 'vi' ? 'Tạm ứng' : 'Advance') + '</th></tr></thead><tbody>' +
           benNhan.map(function (r) {
             return '<tr class="pick" data-ben="' + HM.esc(r.key) + '">' +
@@ -275,7 +275,7 @@ HT.dangKy({
         hanhDong: '<button type="button" class="btn sm" data-di="khop-isrc">' + HM.esc(t('moHangCho')) + '</button>',
         than: qCho.length
           ? HM.kv([
-              { t: c.lang === 'vi' ? 'Đang treo toàn hệ thống' : 'On hold, all periods',
+              { t: c.lang === 'vi' ? 'Đang treo, mọi kỳ' : 'On hold, all periods',
                 v: HT.fmt.n(qCho.length) + ' ' + t('dong') + ' · ' + c.tien(A.queue.pendingTotal()), manh: true },
               { t: c.lang === 'vi' ? 'Thuộc kỳ ' + c.ky.label : 'In period ' + c.ky.label,
                 v: HT.fmt.n(qKy.length) + ' ' + t('dong') + ' · ' + c.tien(A.queue.pendingTotal(pk)) },
@@ -299,7 +299,7 @@ HT.dangKy({
                 });
               })() }) + '</div>'
           : HM.trong({ tieuDe: t('khong'),
-              moTa: c.lang === 'vi' ? 'Mọi dòng doanh thu đều đã khớp về một bản ghi trong danh mục.'
+              moTa: c.lang === 'vi' ? 'Mọi dòng doanh thu đều đã khớp với bản ghi trong danh mục.'
                                     : 'Every revenue line has been matched to a catalogue recording.' })
       }) + '</div>';
 
@@ -336,21 +336,21 @@ function moChiTietBen(c, key, pi) {
   var ung = A.advanceBalance(key);
   var P = HB.dayMau();
 
-  var buoc = [{ l: 'Gộp', v: a.gross, kind: 'top', nt: 'doanh thu gộp các bài liên quan' },
+  var buoc = [{ l: 'Gộp', v: a.gross, kind: 'top', nt: 'doanh thu gộp các bản ghi liên quan' },
               { l: 'Phí', v: -a.fee, kind: 'out', nt: HT.fmt.pct(A.cfg.HAUSTEK_FEE) + ' phí Haustek' }];
   if (la) {
     buoc.push({ l: 'Nghệ sĩ', v: -(a.artist + a.producer), kind: 'out', nt: 'phần trả cho nghệ sĩ và điểm producer' });
     buoc.push({ l: 'Label giữ', v: a.labelCut, kind: 'final' });
   } else {
-    buoc.push({ l: 'Bên quản lý', v: -a.labelCut, kind: 'out', nt: 'label giữ, hoặc Haustek giữ thêm nếu độc lập' });
-    if (a.producer > 0.004) buoc.push({ l: 'Producer', v: -a.producer, kind: 'out', nt: 'trừ vào phần nghệ sĩ' });
+    buoc.push({ l: 'Bên quản lý', v: -a.labelCut, kind: 'out', nt: 'label giữ; nghệ sĩ độc lập thì Haustek giữ thêm' });
+    if (a.producer > 0.004) buoc.push({ l: 'Producer', v: -a.producer, kind: 'out', nt: 'trích từ phần nghệ sĩ' });
     buoc.push({ l: 'Nghệ sĩ', v: a.artist, kind: 'final' });
   }
 
   c.nganTruot(
     HM.so([
-      { l: c.lang === 'vi' ? 'Kiếm được kỳ này' : 'Earned this period', v: c.tien(dong ? dong.earned : a.total), lon: true },
-      { l: c.lang === 'vi' ? 'Số bản ghi có tiền' : 'Earning recordings', v: HT.fmt.n(a.tracks) }
+      { l: c.lang === 'vi' ? 'Được hưởng kỳ này' : 'Earned this period', v: c.tien(dong ? dong.earned : a.total), lon: true },
+      { l: c.lang === 'vi' ? 'Bản ghi có doanh thu' : 'Earning recordings', v: HT.fmt.n(a.tracks) }
     ]) +
     '<h4 class="sec">' + (c.lang === 'vi' ? 'Chuỗi chia tiền kỳ ' + c.ky.label : 'Money chain, ' + c.ky.label) + '</h4>' +
     HB.o({ loai: 'thac', cao: 190, buoc: buoc }) +
@@ -360,17 +360,17 @@ function moChiTietBen(c, key, pi) {
       !la && pub ? { t: c.lang === 'vi' ? 'Tác quyền' : 'Publishing',
         v: pub.total > 0 ? c.tien2(pub.total) : (c.lang === 'vi' ? 'kỳ này chưa có báo cáo' : 'no report this period') } : null,
       dong ? { t: c.lang === 'vi' ? 'Dồn từ kỳ trước' : 'Carried in', v: c.tien2(dong.carryIn) } : null,
-      dong ? { t: c.lang === 'vi' ? 'Trừ vào tạm ứng' : 'Advance recouped', v: '−' + c.tien2(dong.recoup), mau: dong.recoup > 0 ? 'neg' : '' } : null,
-      dong ? { t: c.lang === 'vi' ? 'Sẽ chi kỳ tới' : 'Payable', v: c.tien2(dong.payable), manh: true } : null,
+      dong ? { t: c.lang === 'vi' ? 'Thu hồi tạm ứng' : 'Advance recouped', v: '−' + c.tien2(dong.recoup), mau: dong.recoup > 0 ? 'neg' : '' } : null,
+      dong ? { t: c.lang === 'vi' ? 'Sẽ chi' : 'Payable', v: c.tien2(dong.payable), manh: true } : null,
       dong && dong.carryOut > 0 ? { t: c.lang === 'vi' ? 'Dồn sang kỳ sau (dưới ngưỡng ' + HT.fmt.usd0(A.cfg.PAYOUT_MIN) + ')' : 'Carried out',
         v: c.tien2(dong.carryOut) } : null,
-      { t: c.lang === 'vi' ? 'Dư nợ tạm ứng còn lại' : 'Advance balance', v: ung > 0 ? c.tien2(ung) : '—' }
+      { t: c.lang === 'vi' ? 'Tạm ứng còn lại' : 'Advance balance', v: ung > 0 ? c.tien2(ung) : '—' }
     ]) +
-    '<h4 class="sec">' + (c.lang === 'vi' ? 'Tỷ lệ chia đang áp' : 'Applied rate') + '</h4>' +
+    '<h4 class="sec">' + (c.lang === 'vi' ? 'Tỷ lệ chia đang áp dụng' : 'Applied rate') + '</h4>' +
     '<div class="say">' + (function () {
       var lich = A.rates.scheduleFor(key);
       if (!lich.length) return c.lang === 'vi'
-        ? 'Bên này không có dòng tỷ lệ riêng — nghệ sĩ thuộc label thì tỷ lệ nằm ở dòng của label.'
+        ? 'Bên này không có dòng tỷ lệ riêng. Nghệ sĩ thuộc label thì dùng tỷ lệ của label.'
         : 'No rate row for this party — an artist under a label inherits the label’s rate.';
       return lich.map(function (r) {
         return '<div class="stat"><b>' + HM.esc(HT.fmt.pct(r.rate)) + ' ' +

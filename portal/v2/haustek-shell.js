@@ -40,17 +40,17 @@ apTheme();
    --------------------------------------------------------------------- */
 var CHU = {
   vi: {
-    internal: 'Nội bộ', portal: 'Cổng khách',
+    internal: 'Nội bộ', portal: 'Cổng khách hàng',
     themeAuto: 'Theo máy', themeLight: 'Sáng', themeDark: 'Tối',
     period: 'Kỳ', currency: 'Tiền tệ', search: 'Tìm',
     cancel: 'Huỷ', confirm: 'Xác nhận', close: 'Đóng', save: 'Lưu',
     approved: 'đã duyệt', notApproved: 'chưa duyệt',
     loading: 'Đang dựng số liệu…',
-    noScreen: 'Màn hình này chưa dựng xong.',
-    errScreen: 'Màn hình này lỗi',
+    noScreen: 'Trang này chưa dựng xong.',
+    errScreen: 'Trang này lỗi',
     of: 'trong', rows: 'dòng mỗi trang', showing: 'Hiện',
     all: 'Tất cả', none: '—',
-    menu: 'Mở bảng điều hướng', closeMenu: 'Đóng bảng điều hướng',
+    menu: 'Mở menu', closeMenu: 'Đóng menu',
     display: 'Hiển thị'
   },
   en: {
@@ -178,7 +178,7 @@ function esc(s) {
 var MAN = [];
 function dangKy(def) {
   if (!def || !def.id || typeof def.ve !== 'function')
-    throw new Error('Màn hình phải có id và hàm ve(root, ctx)');
+    throw new Error('Trang phải có id và hàm ve(root, ctx)');
   MAN.push(def);
 }
 

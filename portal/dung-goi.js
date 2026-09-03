@@ -83,7 +83,7 @@ function oChonCua(lang, phu) {
     '<button type="button" data-c2="noi-bo"' + (cua === 'noi-bo' ? ' class="on"' : '') + '>' +
       (lang === 'vi' ? 'Nội bộ' : 'Internal') + '</button>' +
     '<button type="button" data-c2="khach"' + (cua === 'khach' ? ' class="on"' : '') + '>' +
-      (lang === 'vi' ? 'Cổng khách' : 'Client') + '</button></div>' +
+      (lang === 'vi' ? 'Cổng khách hàng' : 'Client') + '</button></div>' +
     (phu || '') + '</div>';
 }
 
@@ -127,7 +127,7 @@ if (cua === 'khach') {
                                   : (c.lang === 'vi' ? 'Nghệ sĩ' : 'Artist'))) + '</span>' +
         '<select class="inline-sel" data-ai style="margin-top:9px;width:100%">' + opts + '</select>' +
         oChonCua(c.lang, '<p>' + HT.esc(c.lang === 'vi'
-          ? 'Bản mẫu: đổi tài khoản hoặc đổi cửa để xem góc nhìn khác. Hệ thật không có hai ô này.'
+          ? 'Bản mẫu: đổi tài khoản hoặc đổi cổng để xem góc nhìn khác. Hệ thống thật không có hai ô này.'
           : 'Prototype: switch account or door to see another view. The real system has neither control.') + '</p>');
     }
   });
@@ -147,7 +147,7 @@ if (cua === 'khach') {
     code: 'DIST-1',
     name: 'Đối tác phân phối chính (tên thật điền khi triển khai)',
     grossRate: 0.86,
-    contact: 'nội bộ · không hiển thị cho khách'
+    contact: 'nội bộ · không hiện cho khách hàng'
   });
   HT.setFx(A.fx.get().rate);
 
@@ -174,7 +174,7 @@ if (cua === 'khach') {
       return '<b>ops@haustek-group.com</b><span>' +
         HT.esc(c.lang === 'vi' ? 'Tài khoản vận hành' : 'Operations account') + '</span>' +
         oChonCua(c.lang, '<p>' + HT.esc(c.lang === 'vi'
-          ? 'Duyệt một kỳ ở đây rồi đổi sang cổng khách: kỳ đó hiện ra bên ấy.'
+          ? 'Duyệt một kỳ ở đây rồi đổi sang cổng khách hàng: kỳ đó sẽ hiện bên đó.'
           : 'Approve a period here, then switch to the client portal: it appears there.') + '</p>');
     }
   });

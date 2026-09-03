@@ -135,7 +135,7 @@ function csv(ten, cot, dong) {
        tải file — không báo lỗi, chỉ đơn giản không có gì xảy ra. Nói ra
        còn hơn để người dùng bấm ba lần rồi tưởng nút hỏng. */
     if (global.HAUSTEK_XEM_ONLINE) {
-      HT.thongBao('Bản xem online không tải file được — mở bản mã nguồn để xuất ' + ten, 'no');
+      HT.thongBao('Bản xem online không tải file được. Mở bản mã nguồn để xuất ' + ten, 'no');
     } else {
       HT.thongBao('Đã xuất ' + ten + ' · ' + dong.length.toLocaleString('vi-VN') + ' dòng', 'ok');
     }

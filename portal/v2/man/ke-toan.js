@@ -42,29 +42,29 @@ HT.dangKy({
   chu: {
     vi: {
       nhomTien: 'Tiền', navKeToan: 'Kế toán', h1: 'Kế toán',
-      mo: 'Doanh thu của kỳ được ghi nhận thành những khoản gì, ai đang nợ ai, và phần nào chưa có chủ.',
+      mo: 'Doanh thu kỳ này ghi vào những khoản nào, ai đang nợ ai, và phần nào chưa rõ chủ.',
       tBut: 'Bút toán kỳ', tCn: 'Công nợ bên nhận', tUng: 'Tạm ứng phải thu',
       tGhi: 'Ghi nhận 12 kỳ', tThue: 'Thuế & khấu trừ',
       no: 'Nợ', co: 'Có', tk: 'TK', dienGiai: 'Diễn giải', soTien: 'Số tiền',
-      canDoi: 'Nợ − Có', canBang: 'Cân', lech: 'LỆCH',
-      but1: 'Ghi nhận doanh thu bản ghi kỳ',
-      but2: 'Ghi nhận tác quyền quý',
-      but3: 'Tiền về chưa xác định được chủ',
-      but4: 'Thu hồi tạm ứng khỏi khoản phải trả',
-      but5: 'Chi trả bên nhận trong kỳ',
-      chuaDuyet: 'Kỳ chưa duyệt — bút toán bên dưới là DỰ TÍNH, chưa ghi sổ.',
-      daDuyet: 'Kỳ đã duyệt — bút toán đã ghi sổ.',
+      canDoi: 'Nợ − Có', canBang: 'Cân', lech: 'Lệch',
+      but1: 'Ghi nhận doanh thu bản ghi của kỳ',
+      but2: 'Ghi nhận tác quyền theo quý',
+      but3: 'Tiền về chưa rõ chủ',
+      but4: 'Thu hồi tạm ứng từ khoản phải trả',
+      but5: 'Chi trả cho bên nhận trong kỳ',
+      chuaDuyet: 'Kỳ chưa duyệt. Bút toán bên dưới là số dự tính, chưa ghi sổ.',
+      daDuyet: 'Kỳ đã duyệt. Bút toán đã ghi sổ.',
       tongNo: 'Tổng Nợ', tongCo: 'Tổng Có',
-      duDau: 'Dư đầu kỳ', psTang: 'Phát sinh trong kỳ', thuHoi: 'Thu hồi tạm ứng',
+      duDau: 'Dư đầu kỳ', psTang: 'Phát sinh', thuHoi: 'Thu hồi tạm ứng',
       daChi: 'Đã chi', duCuoi: 'Dư cuối kỳ',
       benNhan: 'Bên nhận', loai: 'Loại', tim: 'Tìm tên hoặc mã bên nhận…',
-      tatCa: 'Tất cả', coChi: 'Có chi kỳ này', duoiNguong: 'Dưới ngưỡng, dồn tiếp', dangTru: 'Đang trừ tạm ứng',
+      tatCa: 'Tất cả', coChi: 'Có chi kỳ này', duoiNguong: 'Dưới ngưỡng, dồn kỳ sau', dangTru: 'Đang trừ tạm ứng',
       xuat: 'Xuất CSV', tongCong: 'Tổng cộng',
-      ungGoc: 'Đã ứng', ungDaThu: 'Đã thu hồi', ungConLai: 'Còn phải thu', ungKy: 'Số kỳ nữa',
-      giaiThichUng: 'Tạm ứng là khoản Haustek đã trả trước. Nó là tài sản (phải thu), không phải chi phí — và nó chỉ hết khi bên nhận kiếm đủ để trừ.',
+      ungGoc: 'Đã ứng', ungDaThu: 'Đã thu hồi', ungConLai: 'Còn phải thu', ungKy: 'Còn mấy kỳ',
+      giaiThichUng: 'Tạm ứng là khoản Haustek đã trả trước. Đây là tài sản (phải thu), không phải chi phí, và chỉ hết khi bên nhận có đủ doanh thu để trừ.',
       chuaLam: 'Bản mẫu chưa mô hình hoá',
       dtGop: 'Doanh thu gộp', dtPhi: 'Doanh thu phí Haustek', dtPhaiTra: 'Phải trả các bên',
-      bienPhi: 'Tỷ lệ phí trên gộp'
+      bienPhi: 'Phí trên doanh thu gộp'
     },
     en: {
       nhomTien: 'Money', navKeToan: 'Accounting', h1: 'Accounting',
@@ -192,35 +192,35 @@ function veButToan(c, s) {
 
   bt.push(butToan(t('but1'),
     c.lang === 'vi'
-      ? 'Doanh thu về theo file của ba luồng, đã khớp về bản ghi. Phí Haustek là doanh thu của công ty; ba khoản còn lại là nợ phải trả, chưa phải chi phí đã chi.'
+      ? 'Doanh thu từ ba nguồn dữ liệu, đã khớp tới từng bản ghi. Phí Haustek là doanh thu của công ty; ba khoản còn lại là nợ phải trả, chưa phải khoản đã chi.'
       : 'Revenue from the three feeds, matched to recordings. The Haustek fee is company revenue; the other three are liabilities, not costs already paid.',
     [
       { no: true, tk: '131', mo: c.lang === 'vi' ? 'Phải thu doanh thu kỳ ' + c.ky.label : 'Receivable, ' + c.ky.label, gt: s.gross },
       { no: false, tk: '511', mo: c.lang === 'vi' ? 'Phí Haustek ' + HT.fmt.pct(A.cfg.HAUSTEK_FEE) : 'Haustek fee ' + HT.fmt.pct(A.cfg.HAUSTEK_FEE), gt: s.fee },
-      { no: false, tk: '3311', mo: c.lang === 'vi' ? 'Phần label giữ, và phần Haustek giữ thêm với nghệ sĩ độc lập' : 'Label share, plus extra Haustek share on independents', gt: s.labelCut },
-      { no: false, tk: '3313', mo: c.lang === 'vi' ? 'Điểm producer — trừ vào phần nghệ sĩ' : 'Producer points — deducted from the artist share', gt: s.producer },
-      { no: false, tk: '3312', mo: c.lang === 'vi' ? 'Phần nghệ sĩ, sau điểm producer' : 'Artist share, after producer points', gt: s.artist }
+      { no: false, tk: '3311', mo: c.lang === 'vi' ? 'Phần của label, cộng phần Haustek giữ thêm với nghệ sĩ độc lập' : 'Label share, plus extra Haustek share on independents', gt: s.labelCut },
+      { no: false, tk: '3313', mo: c.lang === 'vi' ? 'Điểm producer, trừ vào phần nghệ sĩ' : 'Producer points — deducted from the artist share', gt: s.producer },
+      { no: false, tk: '3312', mo: c.lang === 'vi' ? 'Phần nghệ sĩ, sau khi trừ điểm producer' : 'Artist share, after producer points', gt: s.artist }
     ]));
 
   if (s.pubCo && s.pubGross > 0.004) {
     bt.push(butToan(t('but2'),
       c.lang === 'vi'
-        ? 'Tác quyền là dòng tiền tách rời và thuộc người sáng tác. Không đi qua label, và không nằm trong bút toán bên trên.'
+        ? 'Tác quyền là dòng tiền tách rời, thuộc về tác giả. Không đi qua label, không nằm trong bút toán bên trên.'
         : 'Publishing is a separate stream and belongs to the writers. It never passes through a label, and is not part of the entry above.',
       [
         { no: true, tk: '131', mo: c.lang === 'vi' ? 'Tác quyền quý ' + A.periods[s.pi].quarter + '/' + A.periods[s.pi].year : 'Publishing Q' + A.periods[s.pi].quarter, gt: s.pubGross },
         { no: false, tk: '511', mo: c.lang === 'vi' ? 'Phí quản lý ' + HT.fmt.pct(A.cfg.PUB_FEE) : 'Admin fee ' + HT.fmt.pct(A.cfg.PUB_FEE), gt: s.pubFee },
-        { no: false, tk: '3314', mo: c.lang === 'vi' ? 'Phần tác giả, chia theo bảng phần sáng tác' : 'Writer share, per the split table', gt: s.pubWriter }
+        { no: false, tk: '3314', mo: c.lang === 'vi' ? 'Phần tác giả, chia theo bảng tỷ lệ sáng tác' : 'Writer share, per the split table', gt: s.pubWriter }
       ]));
   }
 
   if (s.treo > 0.004) {
     bt.push(butToan(t('but3'),
       c.lang === 'vi'
-        ? 'Tiền đã về tài khoản nhưng chưa khớp được bản ghi nào. Ghi vào phải trả khác — nó KHÔNG phải doanh thu của Haustek, dù đang nằm trong tài khoản Haustek.'
+        ? 'Tiền đã về tài khoản nhưng chưa khớp được bản ghi nào. Ghi vào phải trả khác: đây không phải doanh thu của Haustek, dù đang nằm trong tài khoản Haustek.'
         : 'Cash has arrived but matches no recording. Booked to other payables — it is NOT Haustek revenue, even though it sits in Haustek’s account.',
       [
-        { no: true, tk: '131', mo: c.lang === 'vi' ? 'Tiền về từ file, chưa khớp' : 'Cash from file, unmatched', gt: s.treo },
+        { no: true, tk: '131', mo: c.lang === 'vi' ? 'Tiền về theo báo cáo, chưa khớp' : 'Cash from file, unmatched', gt: s.treo },
         { no: false, tk: '338', mo: c.lang === 'vi' ? A.queue.list({ periodKey: s.pk, status: 'pending' }).length + ' dòng đang treo ở hàng chờ khớp ISRC' : 'Rows held in the ISRC queue', gt: s.treo }
       ]));
   }
@@ -228,7 +228,7 @@ function veButToan(c, s) {
   if (s.tong.recoup > 0.004) {
     bt.push(butToan(t('but4'),
       c.lang === 'vi'
-        ? 'Bên nhận kiếm được tiền, nhưng đang nợ Haustek khoản tạm ứng. Khoản phải trả giảm, khoản phải thu tạm ứng giảm theo. Không có tiền mặt nào di chuyển.'
+        ? 'Bên nhận có doanh thu nhưng còn nợ Haustek tạm ứng. Khoản phải trả giảm, khoản phải thu tạm ứng giảm theo. Không phát sinh chuyển tiền.'
         : 'A payee earned money but owes Haustek an advance. The payable falls and the advance receivable falls with it. No cash moves.',
       [
         { no: true, tk: '3312', mo: c.lang === 'vi' ? 'Giảm phải trả bên nhận' : 'Reduce payee payable', gt: s.tong.recoup },
@@ -239,11 +239,11 @@ function veButToan(c, s) {
   if (s.tong.payable > 0.004) {
     bt.push(butToan(t('but5'),
       c.lang === 'vi'
-        ? 'Phần vượt ngưỡng ' + HT.fmt.usd0(A.cfg.PAYOUT_MIN) + ' được chi. Phần dưới ngưỡng — ' + HT.fmt.usd(s.tong.carryOut) + ' — KHÔNG có bút toán: nó vẫn nằm nguyên ở tài khoản phải trả và dồn sang kỳ sau.'
+        ? 'Phần vượt ngưỡng ' + HT.fmt.usd0(A.cfg.PAYOUT_MIN) + ' được chi. Phần dưới ngưỡng (' + HT.fmt.usd(s.tong.carryOut) + ') không có bút toán: vẫn nằm nguyên ở tài khoản phải trả và dồn sang kỳ sau.'
         : 'Amounts above the ' + HT.fmt.usd0(A.cfg.PAYOUT_MIN) + ' threshold are paid. Amounts below — ' + HT.fmt.usd(s.tong.carryOut) + ' — have NO entry: they stay in payables and carry forward.',
       [
         { no: true, tk: '3311', mo: c.lang === 'vi' ? 'Chi trả label và nghệ sĩ kỳ ' + c.ky.label : 'Pay labels and artists, ' + c.ky.label, gt: s.tong.payable },
-        { no: false, tk: '131', mo: c.lang === 'vi' ? 'Chuyển khoản đi (bản mẫu gộp một dòng — hệ thật đối chiếu với sao kê ngân hàng)' : 'Bank transfer out (one line here — the real system reconciles to the bank statement)', gt: s.tong.payable }
+        { no: false, tk: '131', mo: c.lang === 'vi' ? 'Chuyển khoản đi (bản mẫu gộp một dòng; hệ thống thật đối chiếu với sao kê ngân hàng)' : 'Bank transfer out (one line here — the real system reconciles to the bank statement)', gt: s.tong.payable }
       ]));
   }
 
@@ -257,13 +257,13 @@ function veButToan(c, s) {
     tieuDe: HM.esc(s.duyet ? t('daDuyet') : t('chuaDuyet')),
     than: HM.esc(s.duyet
       ? (c.lang === 'vi'
-         ? 'Bảng chi trả của kỳ này đã ghi vào sổ lúc ' + HT.fmt.luc(A.approvalOf(s.pk).at) + '. Con số dưới đây là con số đã dùng để chuyển tiền.'
+         ? 'Bảng chi trả kỳ này đã ghi sổ lúc ' + HT.fmt.luc(A.approvalOf(s.pk).at) + '. Số dưới đây là số đã dùng để chuyển tiền.'
          : 'The payout table was written at ' + HT.fmt.luc(A.approvalOf(s.pk).at) + '. The figures below are the ones money moved on.')
       : (c.lang === 'vi'
-         ? 'Chưa duyệt kỳ thì chưa có bảng chi trả nào được ghi. Bút toán dưới đây tính lại từ dữ liệu hiện có và sẽ đổi nếu còn nạp thêm luồng hay khớp thêm dòng.'
+         ? 'Chưa duyệt kỳ thì chưa ghi bảng chi trả nào. Bút toán dưới đây tính từ dữ liệu hiện có và sẽ đổi nếu nhập thêm nguồn hay khớp thêm dòng.'
          : 'Until the period is approved no payout table exists. The entries below are recomputed from current data and will change if another feed is loaded or another row matched.')),
     nut: '<button type="button" class="btn sm" data-di="doi-chieu">' +
-      HM.esc(c.lang === 'vi' ? 'Mở màn duyệt kỳ' : 'Open approval') + '</button>'
+      HM.esc(c.lang === 'vi' ? 'Mở trang duyệt kỳ' : 'Open approval') + '</button>'
   });
 
   html += bt.map(function (b, i) {
@@ -295,10 +295,10 @@ function veButToan(c, s) {
   html += HM.the({
     dai: Math.abs(lechTong) < 0.005
       ? { kieu: 'ok', icon: 'check', chu: HM.esc(c.lang === 'vi'
-          ? 'Tổng Nợ bằng tổng Có tới từng xu — ' + c.tien2(tongNo)
+          ? 'Tổng Nợ bằng tổng Có tới từng xu: ' + c.tien2(tongNo)
           : 'Total debits equal total credits to the cent — ' + c.tien2(tongNo)) }
       : { kieu: 'no', icon: 'alert', chu: HM.esc(c.lang === 'vi'
-          ? 'LỆCH ' + HT.fmt.usd(lechTong) + ' — có lỗi ở tầng tính, không phải ở màn hình này'
+          ? 'Lệch ' + HT.fmt.usd(lechTong) + '. Lỗi nằm ở tầng tính, không phải ở trang này'
           : 'OUT BY ' + HT.fmt.usd(lechTong) + ' — the fault is in the calculation layer, not this screen') },
     h2: c.lang === 'vi' ? 'Cân đối cả kỳ' : 'Period balance',
     hanhDong: '<button type="button" class="btn sm" data-xuatbut>' + HM.icon('down2') + HM.esc(t('xuat')) + '</button>',
@@ -331,7 +331,7 @@ function veButToan(c, s) {
         }).join('') + '</tbody></table></div>';
     })(),
     chan: c.lang === 'vi'
-      ? 'Bản mẫu ghi bút toán ở mức TỔNG KỲ. Hệ thật ghi ở mức từng dòng doanh thu, và chính vì vậy mà bảng đối chiếu với sao kê ngân hàng mới lần ra được từng khoản.'
+      ? 'Bản mẫu ghi bút toán ở mức tổng cả kỳ. Hệ thống thật ghi từng dòng doanh thu, nhờ vậy bảng đối chiếu với sao kê ngân hàng mới lần ra được từng khoản.'
       : 'The prototype posts at period level. A real system posts per revenue line — which is exactly what lets a bank reconciliation trace an individual amount.'
   });
 
@@ -373,7 +373,7 @@ function veCongNo(c, s) {
   var html = HM.the({
     h2: HM.esc(t('tCn')) + ' · ' + HM.esc(c.ky.label),
     p: c.lang === 'vi'
-      ? 'Phép tính của mỗi dòng: <b>dư đầu kỳ + phát sinh − thu hồi tạm ứng = đã chi + dư cuối kỳ</b>. Dòng nào không đúng phép tính đó là dòng có tiền đi lạc.'
+      ? 'Mỗi dòng phải thoả: <b>dư đầu kỳ + phát sinh − thu hồi tạm ứng = đã chi + dư cuối kỳ</b>. Dòng nào không thoả là dòng có tiền đi lạc.'
       : 'Each row satisfies: <b>opening + arising − recouped = paid + closing</b>. Any row that does not is a row where money went astray.',
     hanhDong: '<button type="button" class="btn sm" data-xuatcn>' + HM.icon('down2') + HM.esc(t('xuat')) + '</button>',
     than: '<div class="bar">' +
@@ -402,13 +402,13 @@ function veCongNo(c, s) {
   if (giu) {
     html += HM.ghi({ kieu: 'warn',
       tieuDe: HM.esc(c.lang === 'vi'
-        ? 'Giữ lại ' + c.tien2(giu.earned) + ' — điểm producer chưa gắn được danh tính'
+        ? 'Giữ lại ' + c.tien2(giu.earned) + ': điểm producer chưa rõ người nhận'
         : 'Holding ' + c.tien2(giu.earned) + ' — producer points with no identity'),
       than: HM.esc(c.lang === 'vi'
-        ? 'Danh mục hiện chỉ có cột Producer ghi TÊN, không có mã. Không có mã thì không biết trả cho ai, nên khoản này nằm lại một dòng riêng và nhìn thấy được — chứ không lặng lẽ biến mất khỏi bảng chi trả. Đây là câu hỏi số 3 còn treo.'
+        ? 'Cột Producer trong danh mục hiện chỉ ghi tên, không có mã. Không có mã thì không biết trả cho ai, nên khoản này nằm ở một dòng riêng, nhìn thấy được, chứ không lặng lẽ biến mất khỏi bảng chi trả. Đây là câu hỏi còn treo số 3.'
         : 'The catalogue’s Producer column holds a NAME, not an id. Without an id there is nobody to pay, so the amount sits on its own visible row rather than quietly vanishing. This is open question 3.'),
       nut: '<button type="button" class="btn sm" data-di="quan-tri">' +
-        HM.esc(c.lang === 'vi' ? 'Xem câu hỏi treo' : 'Open questions') + '</button>' });
+        HM.esc(c.lang === 'vi' ? 'Xem câu hỏi còn treo' : 'Open questions') + '</button>' });
   }
 
   /* Bảng chỉ dựng được sau khi HTML đã nằm trong DOM — hàm bang() cần
@@ -456,10 +456,10 @@ function veCongNo(c, s) {
         var phai = Math.round((g.chi + g.duCuoi) * 100) / 100;
         return (Math.abs(trai - phai) < 0.005
           ? '<span class="pos">' + HM.esc(c.lang === 'vi' ? 'Cân: dư đầu + phát sinh − thu hồi = đã chi + dư cuối = ' : 'Balanced: ') + HM.esc(c.tien2(trai)) + '</span>'
-          : '<span class="neg">' + HM.esc(c.lang === 'vi' ? 'LỆCH ' : 'OUT BY ') + HM.esc(HT.fmt.usd(trai - phai)) + '</span>');
+          : '<span class="neg">' + HM.esc(c.lang === 'vi' ? 'Lệch ' : 'OUT BY ') + HM.esc(HT.fmt.usd(trai - phai)) + '</span>');
       },
       rongTieuDe: c.lang === 'vi' ? 'Không có bên nhận nào' : 'No payee',
-      rongMoTa: c.lang === 'vi' ? 'Bộ lọc đang đặt không khớp bên nhận nào của kỳ này.' : 'No payee in this period matches the filters.'
+      rongMoTa: c.lang === 'vi' ? 'Không có bên nhận nào trong kỳ khớp bộ lọc hiện tại.' : 'No payee in this period matches the filters.'
     });
     b.ve();
   });
@@ -515,7 +515,7 @@ function veTamUng(c) {
   html += '<div class="grid g2">' +
     HM.the({
       h2: c.lang === 'vi' ? 'Thu hồi qua từng kỳ' : 'Recoupment period by period',
-      p: c.lang === 'vi' ? 'Chỉ kỳ đã duyệt mới ghi được lượt thu hồi — kỳ chưa duyệt là cột trống, không phải cột 0.'
+      p: c.lang === 'vi' ? 'Chỉ kỳ đã duyệt mới ghi lượt thu hồi. Kỳ chưa duyệt là cột trống, không phải bằng 0.'
                          : 'Only approved periods record a recoupment — an unapproved period is an empty column, not a zero.',
       than: HB.o({ loai: 'cot', cao: 180, hienGiaTri: true, chuThich: false,
         truc: A.periods.map(function (p) { return p.label.slice(0, 2); }),
@@ -595,14 +595,14 @@ function veGhiNhan(c) {
   var html = HM.the({
     h2: HM.esc(t('tGhi')),
     p: c.lang === 'vi'
-      ? 'Doanh thu Haustek thật sự ghi nhận là <b>phí</b>, không phải doanh thu gộp. Gộp chỉ chảy qua tài khoản — phần lớn nó là tiền của người khác.'
+      ? 'Doanh thu Haustek thật sự ghi nhận là <b>phí</b>, không phải doanh thu gộp. Doanh thu gộp chỉ chảy qua tài khoản, phần lớn là tiền của người khác.'
       : 'Haustek’s recognised revenue is the <b>fee</b>, not gross. Gross merely flows through the account — most of it is other people’s money.',
     than: HM.so([
       { l: c.lang === 'vi' ? 'Gộp 12 kỳ' : 'Gross, 12 periods', v: c.tien(tg.gross + tg.pubGross) },
       { l: c.lang === 'vi' ? 'Doanh thu Haustek' : 'Haustek revenue', v: c.tien(tg.fee + tg.pubFee), lon: true,
         mau: HB.mau('ok') },
       { l: t('bienPhi'), v: HT.fmt.pct((tg.fee + tg.pubFee) / (tg.gross + tg.pubGross || 1)) },
-      { l: c.lang === 'vi' ? 'Còn treo chưa có chủ' : 'Still ownerless', v: c.tien(tg.treo), mau: HB.mau('warn') }
+      { l: c.lang === 'vi' ? 'Còn treo, chưa rõ chủ' : 'Still ownerless', v: c.tien(tg.treo), mau: HB.mau('warn') }
     ]) +
     '<div style="margin-top:14px">' + HB.o({
       loai: 'cot', cao: 240,
@@ -644,8 +644,8 @@ function veGhiNhan(c) {
           '<td class="num">' + HM.esc(c.tien(r.artist)) + '</td>' +
           '<td class="num">' + (r.pubGross > 0 ? HM.esc(c.tien(r.pubGross - r.pubFee)) : '<span class="nil">—</span>') + '</td>' +
           '<td class="num">' + (r.treo > 0.004 ? '<span class="tag warn">' + HM.esc(c.tien(r.treo)) + '</span>' : '<span class="nil">—</span>') + '</td>' +
-          '<td>' + (r.duyet ? HM.tag(c.lang === 'vi' ? 'đã khoá' : 'closed', 'ok')
-            : HM.tag(c.lang === 'vi' ? 'đang mở' : 'open', 'warn')) + '</td></tr>';
+          '<td>' + (r.duyet ? HM.tag(c.lang === 'vi' ? 'đã chốt' : 'closed', 'ok')
+            : HM.tag(c.lang === 'vi' ? 'chưa chốt' : 'open', 'warn')) + '</td></tr>';
       }).join('') + '</tbody><tfoot><tr><td>' + HM.esc(t('tongCong')) + '</td>' +
       '<td class="num">' + HM.esc(c.tien(tg.gross + tg.pubGross)) + '</td>' +
       '<td class="num band">' + HM.esc(c.tien(tg.fee + tg.pubFee)) + '</td>' +
@@ -668,31 +668,31 @@ function veThue(c, s) {
   var muc = [
     { t: c.lang === 'vi' ? 'Thuế thu nhập cá nhân khấu trừ tại nguồn' : 'Personal income tax withheld at source',
       d: c.lang === 'vi'
-        ? 'Với cá nhân cư trú không ký hợp đồng lao động, mức khấu trừ thông thường là 10% trên khoản chi từ 2 triệu đồng trở lên. Ai được miễn, ai làm cam kết, ai đã có mã số thuế — hệ thống phải biết từng người, không thể áp một tỷ lệ cho tất cả.'
+        ? 'Với cá nhân cư trú không ký hợp đồng lao động, mức khấu trừ thông thường là 10% trên khoản chi từ 2 triệu đồng trở lên. Ai được miễn, ai đã làm cam kết, ai có mã số thuế: hệ thống phải biết từng người, không thể áp một tỷ lệ cho tất cả.'
         : 'For resident individuals without an employment contract, 10% is normally withheld on payments of VND 2m or more. Who is exempt, who filed a commitment, who has a tax code — the system must know per person, not apply one rate to all.',
       c: c.lang === 'vi' ? 'Cần: mã số thuế, tình trạng cư trú, và bảng tỷ lệ theo loại bên nhận'
                          : 'Needs: tax code, residency status, and a rate table per payee type' },
     { t: c.lang === 'vi' ? 'Thuế nhà thầu nước ngoài' : 'Foreign contractor tax',
       d: c.lang === 'vi'
-        ? 'Nghệ sĩ hoặc label ở nước ngoài nhận tiền từ Việt Nam rơi vào cơ chế khác hẳn, và còn phụ thuộc hiệp định tránh đánh thuế hai lần với từng nước.'
+        ? 'Nghệ sĩ hoặc label ở nước ngoài nhận tiền từ Việt Nam chịu cơ chế thuế khác hẳn, còn tuỳ hiệp định tránh đánh thuế hai lần với từng nước.'
         : 'Artists or labels abroad receiving money from Vietnam fall under a different regime, further shaped by the double-tax treaty with each country.',
       c: c.lang === 'vi' ? 'Cần: quốc gia cư trú của từng bên nhận' : 'Needs: residency country per payee' },
     { t: c.lang === 'vi' ? 'Thuế giá trị gia tăng trên phí dịch vụ' : 'VAT on the service fee',
       d: c.lang === 'vi'
-        ? 'Phần Haustek ghi nhận là doanh thu dịch vụ, và phần đó chịu VAT. Phần chảy qua để trả cho nghệ sĩ thì không phải doanh thu của Haustek — ghi nhầm chỗ này là khai vống doanh thu lên gần bảy lần.'
+        ? 'Phần Haustek ghi nhận là doanh thu dịch vụ và chịu VAT. Phần chảy qua để trả cho nghệ sĩ không phải doanh thu của Haustek. Ghi nhầm chỗ này là khai vống doanh thu lên gần bảy lần.'
         : 'What Haustek recognises is service revenue and carries VAT. The part flowing through to artists is not Haustek revenue — booking it wrongly overstates revenue nearly sevenfold.',
       c: c.lang === 'vi' ? 'Đã tách đúng trong bút toán: TK 511 chỉ nhận phần phí' : 'Already separated: account 511 receives only the fee' },
     { t: c.lang === 'vi' ? 'Hoá đơn và chứng từ chi' : 'Invoices and payment vouchers',
       d: c.lang === 'vi'
-        ? 'Mỗi lần chi phải có chứng từ gắn với đúng bên nhận và đúng kỳ. Bảng chi trả ở đây là nguồn để lập chứng từ, nhưng bản mẫu chưa sinh chứng từ.'
+        ? 'Mỗi khoản chi phải có chứng từ gắn đúng bên nhận và đúng kỳ. Bảng chi trả ở đây là căn cứ lập chứng từ, nhưng bản mẫu chưa sinh chứng từ.'
         : 'Every payment needs a voucher tied to the right payee and period. The payout table here is the source for those vouchers, but the prototype does not generate them.',
       c: c.lang === 'vi' ? 'Cần: đánh số chứng từ, trạng thái chuyển tiền, đối chiếu sao kê'
                          : 'Needs: voucher numbering, transfer status, bank reconciliation' },
     { t: c.lang === 'vi' ? 'Chênh lệch tỷ giá' : 'FX differences',
       d: c.lang === 'vi'
-        ? 'Tiền về bằng USD, chi ra bằng VND, và hai thời điểm cách nhau vài tuần. Chênh lệch đó là lãi hoặc lỗ tỷ giá và phải ghi nhận riêng — hiện bản mẫu khoá một tỷ giá cho cả kỳ và bỏ qua phần chênh.'
+        ? 'Tiền về bằng USD, chi ra bằng VND, hai thời điểm cách nhau vài tuần. Chênh lệch đó là lãi hoặc lỗ tỷ giá, phải ghi nhận riêng. Bản mẫu hiện chốt một tỷ giá cho cả kỳ và bỏ qua phần chênh.'
         : 'Money arrives in USD and leaves in VND, weeks apart. That gap is an FX gain or loss and must be recognised separately — the prototype locks one rate per period and ignores the difference.',
-      c: c.lang === 'vi' ? 'Liên quan câu hỏi treo số 4 về chính sách tỷ giá' : 'Tied to open question 4 on FX policy' }
+      c: c.lang === 'vi' ? 'Liên quan câu hỏi còn treo số 4 về chính sách tỷ giá' : 'Tied to open question 4 on FX policy' }
   ];
 
   return HM.ghi({ kieu: 'warn',
@@ -700,7 +700,7 @@ function veThue(c, s) {
       ? 'Bản mẫu chưa mô hình hoá thuế và khấu trừ'
       : 'The prototype does not model tax or withholding'),
     than: HM.esc(c.lang === 'vi'
-      ? 'Con số "sẽ chi" ở mọi màn hình khác là số TRƯỚC thuế. Trong hệ thật, số thật sự chuyển vào tài khoản người nhận nhỏ hơn — và người nhận sẽ hỏi tại sao. Danh sách dưới đây là những gì phải bổ sung, viết ra để không ai tưởng phần này đã xong.'
+      ? 'Con số "sẽ chi" ở mọi trang khác là số trước thuế. Trong hệ thống thật, số thật sự chuyển vào tài khoản bên nhận nhỏ hơn, và bên nhận sẽ hỏi tại sao. Danh sách dưới đây là những gì phải bổ sung, viết ra để không ai tưởng phần này đã xong.'
       : 'The “payable” figure on every other screen is BEFORE tax. In a real system the amount that reaches the payee’s account is smaller — and they will ask why. The list below is what must be added, written down so nobody assumes it is done.')
   }) +
   HM.the({
@@ -715,7 +715,7 @@ function veThue(c, s) {
   HM.the({
     h2: c.lang === 'vi' ? 'Ước tính nếu áp khấu trừ 10% cho cá nhân cư trú' : 'If 10% withholding applied to resident individuals',
     p: c.lang === 'vi'
-      ? 'Chỉ là phép nhân để thấy độ lớn của phần còn thiếu. KHÔNG dùng con số này cho bất cứ việc gì thật — tỷ lệ thật phụ thuộc từng người.'
+      ? 'Chỉ là phép nhân để thấy độ lớn của phần còn thiếu. <b>Không</b> dùng con số này cho việc thật: tỷ lệ thật tuỳ từng người.'
       : 'A multiplication to show the size of what is missing. Do NOT use these figures for anything real — the actual rate depends on each individual.',
     than: (function () {
       var choNs = s.chi.filter(function (r) { return !r.held && r.kind === 'artist' && r.payable > 0; });
@@ -755,8 +755,8 @@ function moChiTiet(c, key, s) {
     '<h4 class="sec">' + (c.lang === 'vi' ? 'Công nợ kỳ ' + c.ky.label : 'Ledger, ' + c.ky.label) + '</h4>' +
     HM.kv([
       { t: c.lang === 'vi' ? 'Dư đầu kỳ (dồn từ kỳ trước)' : 'Opening (carried in)', v: c.tien2(r.carryIn) },
-      { t: c.lang === 'vi' ? 'Phát sinh — doanh thu bản ghi' : 'Arising — recording', v: c.tien2(la ? a.labelCut : a.artist) },
-      !la && pub && pub.total > 0.004 ? { t: c.lang === 'vi' ? 'Phát sinh — tác quyền' : 'Arising — publishing', v: c.tien2(pub.total) } : null,
+      { t: c.lang === 'vi' ? 'Phát sinh: doanh thu bản ghi' : 'Arising — recording', v: c.tien2(la ? a.labelCut : a.artist) },
+      !la && pub && pub.total > 0.004 ? { t: c.lang === 'vi' ? 'Phát sinh: tác quyền' : 'Arising — publishing', v: c.tien2(pub.total) } : null,
       { t: c.lang === 'vi' ? 'Tổng phát sinh' : 'Total arising', v: c.tien2(r.earned), manh: true },
       { t: c.lang === 'vi' ? 'Thu hồi tạm ứng' : 'Advance recouped', v: r.recoup > 0.004 ? '−' + c.tien2(r.recoup) : '—', mau: r.recoup > 0.004 ? 'neg' : '' },
       { t: c.lang === 'vi' ? 'Đã chi' : 'Paid', v: c.tien2(r.payable), manh: true },
@@ -768,7 +768,7 @@ function moChiTiet(c, key, s) {
       return Math.abs(trai - phai) < 0.005
         ? '<span class="pos">' + HM.esc(c.tien2(r.carryIn) + ' + ' + c.tien2(r.earned) + ' − ' + c.tien2(r.recoup) +
           ' = ' + c.tien2(r.payable) + ' + ' + c.tien2(r.carryOut)) + '</span>'
-        : '<span class="neg">' + HM.esc('LỆCH ' + HT.fmt.usd(trai - phai)) + '</span>';
+        : '<span class="neg">' + HM.esc('Lệch ' + HT.fmt.usd(trai - phai)) + '</span>';
     })() + '</div>' +
     (ung ? '<h4 class="sec">' + (c.lang === 'vi' ? 'Tạm ứng' : 'Advance') + '</h4>' +
       HM.kv([
@@ -777,11 +777,11 @@ function moChiTiet(c, key, s) {
         { t: c.lang === 'vi' ? 'Còn phải thu' : 'Outstanding', v: c.tien2(ung.balance), manh: true },
         { t: c.lang === 'vi' ? 'Ghi chú' : 'Note', v: ung.note || '—' }
       ]) : '') +
-    '<h4 class="sec">' + (c.lang === 'vi' ? 'Kiếm được qua 12 kỳ' : 'Earned across 12 periods') + '</h4>' +
+    '<h4 class="sec">' + (c.lang === 'vi' ? 'Thu nhập 12 kỳ' : 'Earned across 12 periods') + '</h4>' +
     HB.o({ loai: 'cot', cao: 150, anTruc: true, chuThich: false,
       truc: A.periods.map(function (p) { return p.label.slice(0, 2); }),
       tieuDeTip: function (i) { return 'Kỳ ' + A.periods[i].label; },
-      chuoi: [{ ten: c.lang === 'vi' ? 'Kiếm được' : 'Earned',
+      chuoi: [{ ten: c.lang === 'vi' ? 'Được hưởng' : 'Earned',
         gt: A.periods.map(function (p, i) {
           var g = A.agg(la ? 'label' : 'artist', +key.slice(2), i, 'rec');
           return g.total;

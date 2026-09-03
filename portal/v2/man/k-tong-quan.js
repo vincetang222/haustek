@@ -26,32 +26,32 @@ HT.dangKy({
       chuoi: 'Tiền đi đâu trên đường về tay bạn',
       chuoiMo: 'Từng chặng một, theo đúng hợp đồng. Cộng lại đúng bằng con số ở trên.',
       dienBien: 'Diễn biến qua các kỳ',
-      dienBienMo: 'Chỉ hiện kỳ đã chốt sổ. Kỳ chưa chốt không có vạch — không phải bằng 0.',
-      cuaHang: 'Nghe ở đâu', lanhTho: 'Nghe từ nước nào',
-      topBai: 'Bài kiếm nhiều nhất kỳ này', xemHet: 'Xem tất cả',
+      dienBienMo: 'Chỉ hiện kỳ đã chốt sổ. Kỳ chưa chốt sổ để trống, không phải bằng 0.',
+      cuaHang: 'Nghe trên nền tảng nào', lanhTho: 'Nghe từ nước nào',
+      topBai: 'Bài có doanh thu cao nhất kỳ này', xemHet: 'Xem tất cả',
       chiTra: 'Khi nào tiền vào tài khoản',
       seChi: 'Sẽ chi kỳ tới', duoiNguong: 'Dưới ngưỡng chi trả',
-      duoiNguongMo: 'Số của bạn kỳ này dưới ngưỡng {n} nên được cộng dồn sang kỳ sau. Tiền không mất đi đâu cả.',
+      duoiNguongMo: 'Khoản của bạn kỳ này dưới ngưỡng {n} nên dồn sang kỳ sau. Không mất đồng nào.',
       tamUng: 'Khoản tạm ứng', xemUng: 'Xem chi tiết',
-      lichChi: 'Các kỳ gần đây', kyChi: 'Kỳ', soChi: 'Đã chuyển',
-      donTiep: 'dồn tiếp', truUng: 'trừ tạm ứng',
+      lichChi: 'Các kỳ gần đây', kyChi: 'Kỳ', soChi: 'Đã chi',
+      donTiep: 'dồn sang kỳ sau', truUng: 'trừ vào tạm ứng',
       nguongLa: 'Ngưỡng chi trả là {n}',
-      nguongLaMo: 'Dưới ngưỡng thì khoản đó dồn sang kỳ sau chứ không mất. Ngưỡng tồn tại vì phí chuyển khoản quốc tế ăn hết một khoản nhỏ — chuyển $12 thì phí nuốt gần hết $12.',
+      nguongLaMo: 'Dưới ngưỡng thì khoản đó dồn sang kỳ sau, không mất. Có ngưỡng là vì phí chuyển khoản quốc tế rất nặng với khoản nhỏ: chuyển $12 thì phí nuốt gần hết $12.',
       xemBangKe: 'Mở bảng kê kỳ này',
-      trongMo: 'Kỳ này chưa có gì',
-      chuaMo: 'Kỳ chưa mở', chuaMoMo: 'Kỳ này chưa được chốt sổ. Số liệu chỉ mở sau khi đối chiếu xong với tất cả các nền tảng.',
+      trongMo: 'Kỳ này chưa có số liệu',
+      chuaMo: 'Kỳ này chưa chốt sổ', chuaMoMo: 'Số liệu chỉ hiện sau khi đối soát xong với tất cả các nền tảng.',
       tyGia: 'Tỷ giá kỳ này', chotLuc: 'chốt lúc', chuaChot: 'chưa chốt',
-      soVoi: 'so với kỳ', khac: 'nơi khác',
+      soVoi: 'so với kỳ', khac: 'nền tảng khác',
       khongTq: 'Bạn chưa có bài nào đăng ký phần sáng tác',
       kyCoTq: 'Những kỳ đã có báo cáo tác quyền',
-      kyCoTqMo: 'Bấm vào một kỳ để xem số của kỳ đó.',
+      kyCoTqMo: 'Bấm một kỳ để xem số liệu kỳ đó.',
       soSangTac: 'Bài bạn có phần sáng tác',
       nhipTq: 'Tác quyền về theo nhịp nào',
-      nhipTq1: 'Các tổ chức quản lý quyền — VCPMC ở Việt Nam, The MLC ở Mỹ, ASCAP, PRS, GEMA và những nơi khác — chốt sổ theo <b>quý</b>, không phải theo tháng.',
-      nhipTq2: 'Rồi họ báo cáo về <b>trễ một tới hai quý</b> so với lúc bài thật sự được phát. Nên tiền tác quyền của một bài phát hôm nay thường về sau nửa năm.',
-      nhipTq3: 'Vì vậy phần lớn các kỳ đơn giản là <b>không có báo cáo nào</b> — và đó là chuyện bình thường, không phải bài của bạn không phát sinh.',
-      tongTq: 'Tổng tác quyền các kỳ đã có',
-      khongTqMo: 'Tác quyền thuộc về người sáng tác. Nếu bạn có sáng tác mà chưa thấy ở đây thì phần sáng tác chưa được đăng ký — liên hệ Haustek để bổ sung.'
+      nhipTq1: 'Các tổ chức quản lý tác quyền (VCPMC ở Việt Nam, The MLC ở Mỹ, ASCAP, PRS, GEMA và những nơi khác) chốt sổ theo <b>quý</b>, không theo tháng.',
+      nhipTq2: 'Họ lại báo cáo <b>trễ một tới hai quý</b> so với lúc bài thật sự được phát. Nên tác quyền của một bài phát hôm nay thường nửa năm sau mới về.',
+      nhipTq3: 'Vì vậy phần lớn các kỳ <b>không có báo cáo nào</b>. Đó là chuyện bình thường, không phải bài của bạn không có doanh thu.',
+      tongTq: 'Tổng tác quyền các kỳ đã báo cáo',
+      khongTqMo: 'Tác quyền thuộc về người sáng tác. Nếu bạn có sáng tác mà chưa thấy ở đây thì phần sáng tác chưa được đăng ký. Liên hệ Haustek để bổ sung.'
     },
     en: {
       navTong: 'Overview', h1: 'Overview',
@@ -201,13 +201,13 @@ HT.dangKy({
       HM.the({
         h2: HM.esc(t('cuaHang')),
         p: HM.esc(c.lang === 'vi'
-          ? 'Số tiền của bạn, bóc theo nơi bài được nghe.'
+          ? 'Phần về tay bạn, tách theo từng nền tảng.'
           : 'Your money, split by where the track was played.'),
         than: HB.o({ loai: 'thanh', hang: ch.rows.map(function (r, i) {
           return { ten: r.name, gt: r.value, mau: P[i % 8] };
         }).concat(ch.tail ? [{ ten: ch.tail.count + ' ' + t('khac'), gt: ch.tail.value, mau: HB.mau('neutral-bar') }] : []) }),
         chan: ch.tail
-          ? (c.lang === 'vi' ? 'Còn ' + ch.tail.count + ' nơi nữa, gộp vào dòng cuối — tổng vẫn đúng bằng ' : ch.tail.count + ' more, folded into the last row — the total is still ') +
+          ? (c.lang === 'vi' ? 'Còn ' + ch.tail.count + ' nền tảng nữa gộp vào dòng cuối. Tổng vẫn đúng bằng ' : ch.tail.count + ' more, folded into the last row — the total is still ') +
             '<b>' + HM.esc(HT.fmt.usd(s.total)) + '</b>'
           : ''
       }) +
@@ -291,7 +291,7 @@ function veTacQuyenTrong(c) {
               HM.esc(p.label) + '</button>';
           }).join('') + '</div>'
         : '<p class="hint" style="margin-top:12px">' + HM.esc(c.lang === 'vi'
-            ? 'Chưa kỳ nào có báo cáo tác quyền được chốt sổ.'
+            ? 'Chưa có báo cáo tác quyền nào được chốt sổ.'
             : 'No period has a closed publishing report yet.') + '</p>')
     }) + '</div>';
 
@@ -308,12 +308,12 @@ function veKhiNao(c, s) {
 
   if (!p) {
     than = '<p class="say">' + HM.esc(c.lang === 'vi'
-      ? 'Kỳ này chưa có bảng chi trả.'
+      ? 'Kỳ này chưa có số liệu chi trả.'
       : 'No payout record for this period.') + '</p>';
   } else if (p.payable > 0) {
     than = HM.so([{ l: t('seChi'), v: HT.fmt.usd(p.payable), lon: true, mau: HB.mau('ok') }]) +
       '<p class="say" style="margin-top:12px">' + HM.esc(c.lang === 'vi'
-        ? 'Khoản này sẽ được chuyển trong kỳ chi trả tới.'
+        ? 'Khoản này sẽ chuyển vào đợt chi trả tới.'
         : 'This will be transferred in the next payout run.') + '</p>';
   } else if (p.carryOut > 0) {
     than = HM.so([{ l: t('duoiNguong'), v: HT.fmt.usd(p.carryOut), lon: true, mau: HB.mau('warn') }]) +
@@ -324,13 +324,13 @@ function veKhiNao(c, s) {
       '<div class="hint">' + HM.esc(HT.fmt.usd(p.carryOut) + ' / ' + HT.fmt.usd0(p.threshold)) + '</div>';
   } else {
     than = '<p class="say">' + HM.esc(c.lang === 'vi'
-      ? 'Kỳ này toàn bộ phần bạn kiếm được đi trừ vào khoản tạm ứng, nên chưa có khoản chuyển đi.'
+      ? 'Kỳ này toàn bộ phần bạn được hưởng đã trừ vào tạm ứng, nên chưa có khoản nào chuyển đi.'
       : 'Everything you earned this period went against your advance, so there is no transfer.') + '</p>';
   }
 
   if (p && p.coversBothStreams) {
     than += '<div class="hint" style="margin-top:10px">' + HM.esc(c.lang === 'vi'
-      ? 'Con số chi trả này tính trên CẢ doanh thu bản ghi lẫn tác quyền cộng lại — không chỉ dòng tiền bạn đang xem. Tổng kiếm được cả hai dòng kỳ này: ' + HT.fmt.usd(p.earnedAllStreams) + '.'
+      ? 'Số chi trả này tính trên cả doanh thu bản ghi lẫn tác quyền cộng lại, không chỉ dòng tiền bạn đang xem. Tổng được hưởng cả hai dòng kỳ này: ' + HT.fmt.usd(p.earnedAllStreams) + '.'
       : 'This payout covers BOTH recording and publishing combined, not just the stream you are viewing. Total earned across both: ' + HT.fmt.usd(p.earnedAllStreams) + '.') + '</div>';
   }
   if (p && p.carryIn > 0) {
@@ -400,15 +400,15 @@ function moBai(c, id, luong) {
       { l: c.lang === 'vi' ? 'Về tay bạn' : 'Yours', v: HT.fmt.usd(d.mine), lon: true },
       d.streams != null ? { l: c.lang === 'vi' ? 'Lượt nghe' : 'Streams', v: HT.fmt.n(d.streams) } : null
     ].filter(Boolean)) +
-    '<h4 class="sec">' + (c.lang === 'vi' ? 'Tiền của bài này' : 'This track’s money') + '</h4>' +
+    '<h4 class="sec">' + (c.lang === 'vi' ? 'Tiền của bài này đi đâu' : 'This track’s money') + '</h4>' +
     '<div class="wf">' + d.steps.map(function (st) {
       return '<div class="st ' + (st.strong ? 'fin' : (st.value != null && st.value < 0 ? 'out' : '')) + '">' +
         '<div class="mk"></div><div><div class="lbl">' + HM.esc(c.song(st, 'label')) + '</div></div>' +
         '<div class="amt">' + HM.esc(st.value != null ? HT.fmt.usd(st.value) : st.text) + '</div></div>';
     }).join('') + '</div>' +
-    (d.byStore.length ? '<h4 class="sec">' + (c.lang === 'vi' ? 'Nghe ở đâu' : 'Where it was played') + '</h4>' +
+    (d.byStore.length ? '<h4 class="sec">' + (c.lang === 'vi' ? 'Nghe trên nền tảng nào' : 'Where it was played') + '</h4>' +
       HB.o({ loai: 'thanh', hang: d.byStore.map(function (x, i) { return { ten: x.name, gt: x.value, mau: P[i % 8] }; }) }) : '') +
-    (d.byTerritory.length ? '<h4 class="sec">' + (c.lang === 'vi' ? 'Từ nước nào' : 'From where') + '</h4>' +
+    (d.byTerritory.length ? '<h4 class="sec">' + (c.lang === 'vi' ? 'Nghe từ nước nào' : 'From where') + '</h4>' +
       HB.o({ loai: 'thanh', hang: d.byTerritory.map(function (x, i) { return { ten: x.name, gt: x.value, mau: P[i % 8] }; }) }) : ''),
     { tieuDe: d.title, phu: d.isrc + ' · ' + d.type,
       khiMo: function (dr) { HB.gan(dr); } });

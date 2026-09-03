@@ -77,7 +77,7 @@ const RONG = (process.argv[3] || '1500').split(',').map(Number);
                 if (er.width > 0 && (er.right > pr.right + 1.5 || er.left < pr.left - 1.5))
                   out.tran.push(t.slice(0, 34));
               });
-              if (main.textContent.includes('Màn hình này lỗi') || main.textContent.includes('This screen failed'))
+              if (main.textContent.includes('Trang này lỗi') || main.textContent.includes('Màn hình này lỗi') || main.textContent.includes('This screen failed'))
                 out.trong = true;
               /* Đè kiểu do trùng độ ưu tiên: hai bộ chọn cùng (0,1,1) thì
                  cái viết sau thắng, và thành phần mất kiểu riêng của nó mà

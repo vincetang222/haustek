@@ -39,7 +39,7 @@ const dungFontThat = require('./font-that.js');
           const main = document.querySelector('main');
           const txt = main ? main.textContent : '';
           return { dai: txt.length,
-                   loi: txt.includes('Màn hình này lỗi') || txt.includes('This screen failed'),
+                   loi: txt.includes('Trang này lỗi') || txt.includes('Màn hình này lỗi') || txt.includes('This screen failed'),
                    nan: /NaN|undefined|\{\w+\}/.test(txt),
                    maunan: (txt.match(/NaN|undefined/g) || []).slice(0, 2).join(',') };
         });

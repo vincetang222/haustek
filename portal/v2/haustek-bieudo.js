@@ -276,7 +276,7 @@ function veCot(cfg, W) {
         (chuoi.length > 1 ? '<span class="r" style="float:none;display:block;margin-top:5px;' +
           'border-top:1px solid rgba(255,255,255,.16);padding-top:5px">' + esc(dayDu(tong[i2])) + '</span>' : '')
         : '<span class="d">' + esc(cfg.chuTrong || 'Chưa có số liệu') + '</span>') +
-      (doTruc ? '<span class="d">Chưa duyệt kỳ — số còn chạy</span>' : '') +
+      (doTruc ? '<span class="d">Chưa duyệt kỳ, số liệu còn thay đổi</span>' : '') +
       (cfg.ghiChuTip ? '<span class="d">' + esc(cfg.ghiChuTip(i2)) + '</span>' : '');
     s += '<g class="hz"' + (cfg.chon ? ' style="cursor:pointer"' : '') +
       ' data-tip="' + esc(tip) + '" data-i="' + i2 + '" tabindex="0">' +

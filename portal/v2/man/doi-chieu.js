@@ -20,20 +20,20 @@ HT.dangKy({
 
   chu: {
     vi: {
-      navDoi: 'Đối chiếu & duyệt kỳ', h1: 'Đối chiếu & duyệt kỳ',
-      mo: 'Tổng trên file gốc phải bằng phần đã khớp cộng phần treo — tới từng xu. Kỳ chưa duyệt thì khách chưa thấy con số nào.',
-      tDoi: 'Đối chiếu theo luồng', tDk: 'Điều kiện duyệt', tTg: 'Tỷ giá', tXem: 'Xem trước chi trả', tLs: 'Các kỳ',
-      luong: 'Luồng', ttFile: 'Tổng trên file gốc', daKhop: 'Đã khớp về bản ghi',
+      navDoi: 'Đối soát & duyệt kỳ', h1: 'Đối soát & duyệt kỳ',
+      mo: 'Tổng trên file gốc phải bằng phần đã khớp cộng phần treo, khớp tới từng xu. Kỳ chưa duyệt thì label và nghệ sĩ chưa xem được con số nào.',
+      tDoi: 'Đối soát theo nguồn', tDk: 'Điều kiện duyệt', tTg: 'Tỷ giá', tXem: 'Xem trước chi trả', tLs: 'Các kỳ',
+      luong: 'Nguồn', ttFile: 'Tổng trên file gốc', daKhop: 'Đã khớp bản ghi',
       treo: 'Đang treo', lech: 'Chênh lệch', truyThu: 'Truy thu kỳ khác',
       ghiNhan: 'Ghi nhận chênh lệch', daGhiNhan: 'Đã ghi nhận',
-      khop: 'khớp', chuaNap: 'chưa nạp',
-      duyetKy: 'Duyệt kỳ', thuHoi: 'Thu hồi duyệt', daDuyet: 'Kỳ đã duyệt',
+      khop: 'khớp', chuaNap: 'chưa nhập',
+      duyetKy: 'Duyệt kỳ', thuHoi: 'Huỷ duyệt', daDuyet: 'Kỳ đã duyệt',
       chotTg: 'Chốt tỷ giá kỳ', doiTg: 'Đổi tỷ giá hiện hành',
-      tgKhoa: 'Đã khoá', tgChua: 'Chưa chốt',
+      tgKhoa: 'Đã chốt', tgChua: 'Chưa chốt',
       xemTruoc: 'Bảng chi trả nếu duyệt bây giờ',
-      seChi: 'Sẽ chi', donSang: 'Dồn sang kỳ sau', thuTamUng: 'Trừ vào tạm ứng', giuLai: 'Giữ lại (producer)',
-      benNhan: 'bên nhận', boQua: 'Duyệt mà bỏ qua điều kiện chưa đạt',
-      canhBoQua: 'Bỏ qua một điều kiện là ghi lại vĩnh viễn trong hồ sơ duyệt kỳ, kèm tên người bỏ qua. Chỉ làm khi đã biết chắc lý do và chấp nhận trách nhiệm.',
+      seChi: 'Sẽ chi', donSang: 'Dồn sang kỳ sau', thuTamUng: 'Thu hồi tạm ứng', giuLai: 'Giữ lại (producer)',
+      benNhan: 'bên nhận', boQua: 'Duyệt dù chưa đủ điều kiện',
+      canhBoQua: 'Bỏ qua điều kiện sẽ ghi vĩnh viễn vào hồ sơ duyệt kỳ, kèm tên người bỏ qua. Chỉ làm khi biết chắc lý do và chấp nhận trách nhiệm.',
       lyDo: 'Lý do', nguoiDuyet: 'Người duyệt'
     },
     en: {
@@ -75,7 +75,7 @@ HT.dangKy({
         { l: t('ttFile'), v: c.tien(r.control) },
         { l: t('lech'), v: c.tien2(r.diff),
           mau: Math.abs(r.diff) > 0.005 ? HB.mau('danger') : HB.mau('ok') },
-        { l: c.lang === 'vi' ? 'Trạng thái' : 'Status', v: duyet ? t('daDuyet') : (hong.length ? String(hong.length) + (c.lang === 'vi' ? ' vướng' : ' blocked') : (c.lang === 'vi' ? 'sẵn sàng' : 'ready')),
+        { l: c.lang === 'vi' ? 'Trạng thái' : 'Status', v: duyet ? t('daDuyet') : (hong.length ? String(hong.length) + (c.lang === 'vi' ? ' chưa đạt' : ' blocked') : (c.lang === 'vi' ? 'sẵn sàng' : 'ready')),
           mau: duyet ? HB.mau('ok') : hong.length ? HB.mau('warn') : HB.mau('accent') }
       ]
     });
@@ -93,9 +93,9 @@ HT.dangKy({
         nut: '<button type="button" class="btn sm dang" data-thuhoi>' + HM.esc(t('thuHoi')) + '</button>' });
     } else if (!hong.length) {
       html += HM.ghi({ kieu: 'ok',
-        tieuDe: HM.esc(c.lang === 'vi' ? 'Đủ bốn điều kiện — kỳ ' + c.ky.label + ' duyệt được' : 'All four conditions met — ' + c.ky.label + ' can be approved'),
+        tieuDe: HM.esc(c.lang === 'vi' ? 'Đủ bốn điều kiện, kỳ ' + c.ky.label + ' duyệt được' : 'All four conditions met — ' + c.ky.label + ' can be approved'),
         than: HM.esc(c.lang === 'vi'
-          ? 'Duyệt xong thì bảng chi trả được ghi vào sổ, tạm ứng bị trừ, phần dưới ngưỡng dồn sang kỳ sau, và label với nghệ sĩ nhìn thấy kỳ này.'
+          ? 'Duyệt xong, hệ thống ghi bảng chi trả vào sổ, thu hồi tạm ứng, dồn phần dưới ngưỡng sang kỳ sau, và label với nghệ sĩ xem được kỳ này.'
           : 'On approval the payout table is written, advances are recouped, sub-threshold amounts carry forward, and labels and artists can see the period.'),
         nut: '<button type="button" class="btn go" data-duyet>' + HM.icon('check') + HM.esc(t('duyetKy')) + '</button>' });
     } else {
@@ -132,7 +132,7 @@ HT.dangKy({
     HM.bam(root, '[data-kyto]', function (el) { c.doiKy(el.getAttribute('data-kyto')); });
     HM.bam(root, '[data-xuat]', function () {
       HM.csv('doi-chieu-' + c.kyKey + '.csv',
-        ['Luồng', 'Trạng thái', 'Tổng trên file', 'Đã khớp', 'Truy thu kỳ khác', 'Từ file kỳ này', 'Đang treo', 'Chênh lệch', 'Đã ghi nhận'],
+        ['Nguồn', 'Trạng thái', 'Tổng trên file', 'Đã khớp', 'Truy thu kỳ khác', 'Từ file kỳ này', 'Đang treo', 'Chênh lệch', 'Đã ghi nhận'],
         A.recon(c.ky.idx).rows.map(function (x) {
           return [c.song(x.feed, 'name'), x.status, x.control.toFixed(2), x.attributed.toFixed(2),
                   x.adjustments.toFixed(2), x.fromFile.toFixed(2), x.pending.toFixed(2),
@@ -187,7 +187,7 @@ function veDoi(c, r) {
   var html = HM.the({
     h2: HM.esc(t('tDoi')),
     p: c.lang === 'vi'
-      ? 'Phép tính là: <b>tổng trên file gốc − phần từ file đã khớp − phần treo = 0</b>. Cột "truy thu kỳ khác" bị trừ ra khỏi phần đã khớp, vì khoản đó không nằm trong file của kỳ này.'
+      ? 'Công thức: <b>tổng trên file gốc − phần đã khớp từ file này − phần treo = 0</b>. Cột "truy thu kỳ khác" được trừ khỏi phần đã khớp, vì khoản đó không nằm trong file của kỳ này.'
       : 'The identity is: <b>source total − matched from this file − held = 0</b>. Back-claims are subtracted from the matched figure, because they were never in this period’s file.',
     hanhDong: '<button type="button" class="btn sm" data-xuat>' + HM.icon('down2') +
       (c.lang === 'vi' ? 'Xuất CSV' : 'Export CSV') + '</button>',
@@ -199,7 +199,7 @@ function veDoi(c, r) {
   if (daGhi.length) {
     html += HM.the({
       h2: c.lang === 'vi' ? 'Chênh lệch đã ghi nhận' : 'Accepted variances',
-      p: c.lang === 'vi' ? 'Ghi nhận không làm chênh lệch biến mất. Nó nói: chúng tôi biết, đây là lý do, và đây là người chịu trách nhiệm.'
+      p: c.lang === 'vi' ? 'Ghi nhận không làm chênh lệch biến mất. Ghi nhận chỉ xác nhận: đã biết, lý do là gì, và ai chịu trách nhiệm.'
                          : 'Accepting does not make a variance disappear. It records: we know, this is why, and this is who is accountable.',
       than: daGhi.map(function (x) {
         return '<div class="stat"><b>' + HM.esc(c.song(x.feed, 'name')) + '<p>' + HM.esc(x.accepted.note || (c.lang === 'vi' ? '(không ghi chú)' : '(no note)')) + '</p></b>' +
@@ -211,27 +211,27 @@ function veDoi(c, r) {
   /* biểu đồ ba luồng của kỳ */
   html += '<div class="grid g2">' +
     HM.the({
-      h2: c.lang === 'vi' ? 'Ba luồng của kỳ ' + c.ky.label : 'The three feeds, ' + c.ky.label,
+      h2: c.lang === 'vi' ? 'Ba nguồn của kỳ ' + c.ky.label : 'The three feeds, ' + c.ky.label,
       than: HB.o({ loai: 'thanh', hang: r.rows.map(function (x, i) {
         return { ten: c.song(x.feed, 'short'), gt: x.attributed, mau: P[i],
                  phu: x.status === 'loaded' ? x.file : t('chuaNap') };
       }) })
     }) +
     HM.the({
-      h2: c.lang === 'vi' ? 'Đường đi của tiền trong kỳ' : 'Where the period’s money sits',
+      h2: c.lang === 'vi' ? 'Tiền của kỳ này đang nằm ở đâu' : 'Where the period’s money sits',
       than: HM.kv([
         { t: t('ttFile'), v: c.tien2(r.control), manh: true },
         { t: t('daKhop'), v: c.tien2(r.attributed) },
         { t: t('truyThu'), v: r.adjustments > 0.004 ? '−' + c.tien2(r.adjustments) : '—' },
-        { t: c.lang === 'vi' ? 'Từ file kỳ này, đã khớp' : 'From this file, matched', v: c.tien2(r.fromFile) },
+        { t: c.lang === 'vi' ? 'Đã khớp từ file kỳ này' : 'From this file, matched', v: c.tien2(r.fromFile) },
         { t: t('treo'), v: c.tien2(r.pending), mau: r.pending > 0.004 ? 'neg' : '' },
         { t: t('lech'), v: c.tien2(r.diff), manh: true, mau: Math.abs(r.diff) > 0.005 ? 'neg' : 'pos' }
       ]) +
       (r.pending > 0.004
         ? '<div style="margin-top:14px">' + HM.ghi({ kieu: 'warn',
-            tieuDe: HM.esc(c.lang === 'vi' ? 'Phần treo vẫn là tiền của người khác' : 'Held money still belongs to someone'),
+            tieuDe: HM.esc(c.lang === 'vi' ? 'Tiền treo vẫn là tiền của người khác' : 'Held money still belongs to someone'),
             than: HM.esc(c.lang === 'vi'
-              ? 'Nó không mất, nhưng cũng chưa về tay ai. Mỗi kỳ đóng lại mà phần này còn nguyên là thêm một lớp tiền không chủ.'
+              ? 'Khoản này không mất, nhưng cũng chưa về tay ai. Mỗi kỳ duyệt xong mà phần này còn nguyên là thêm một lớp tiền chưa rõ chủ.'
               : 'It is not lost, but nobody has received it. Every period closed with this untouched adds another layer of ownerless money.'),
             nut: '<button type="button" class="btn sm" data-di="khop-isrc">' + HM.esc(c.lang === 'vi' ? 'Mở hàng chờ' : 'Open queue') + '</button>' }) + '</div>'
         : '')
@@ -247,16 +247,16 @@ function veDk(c, dk, nay) {
   var A = c.A, t = c.t;
   var giaiThich = {
     feeds: c.lang === 'vi'
-      ? 'Thiếu một luồng thì tiền của luồng đó không có trong tổng. Kỳ vẫn ra một con số — con số đúng của phần đã có, và sai hoàn toàn nếu ai đó đọc nó như doanh thu cả kỳ.'
+      ? 'Thiếu một nguồn thì tiền của nguồn đó không có trong tổng. Kỳ vẫn ra một con số: đúng với phần đã nhập, nhưng sai hoàn toàn nếu đọc như doanh thu cả kỳ.'
       : 'A missing feed means its money is not in the total. The period still produces a figure — correct for what is loaded, and completely wrong if anyone reads it as the period’s revenue.',
     recon: c.lang === 'vi'
-      ? 'Lệch một xu là parser sai hoặc file thiếu dòng. Cả hai đều lớn hơn một xu ở lần chạy sau.'
+      ? 'Lệch một xu là do parser sai hoặc file thiếu dòng. Lỗi nào cũng sẽ lớn hơn một xu ở lần nhập sau.'
       : 'A one-cent variance is either a parser bug or a missing row in the file. Both are bigger than one cent next run.',
     queue: c.lang === 'vi'
-      ? 'Tiền treo quá ' + HT.fmt.pct(A.cfg.BLACKBOX_CAP, 1) + ' doanh thu kỳ thì đóng sổ là hợp thức hoá một khoản tiền không chủ.'
+      ? 'Tiền treo vượt ' + HT.fmt.pct(A.cfg.BLACKBOX_CAP, 1) + ' doanh thu kỳ mà vẫn duyệt là hợp thức hoá một khoản tiền chưa rõ chủ.'
       : 'Above ' + HT.fmt.pct(A.cfg.BLACKBOX_CAP, 1) + ' of period revenue, closing the books legitimises money with no owner.',
     fx: c.lang === 'vi'
-      ? 'Không chốt tỷ giá thì con số quy đổi sang VND trôi theo tỷ giá hôm nay — mở lại báo cáo cũ sau nửa năm ra một số khác.'
+      ? 'Không chốt tỷ giá thì số quy đổi sang VND trôi theo tỷ giá hôm nay. Mở lại bảng kê cũ sau nửa năm sẽ ra một số khác.'
       : 'Without a locked rate the VND figures drift with today’s rate — reopening an old statement six months later gives a different number.'
   };
   var noiToi = { feeds: 'nap-du-lieu', recon: null, queue: 'khop-isrc', fx: null };
@@ -264,7 +264,7 @@ function veDk(c, dk, nay) {
   return HM.the({
     h2: HM.esc(t('tDk')),
     p: c.lang === 'vi'
-      ? 'Bốn điều kiện. Ba cái đầu là chặn cứng vì sai thì mất tiền của người khác; cái thứ tư là chặn cứng vì sai thì không ai đối chiếu lại được.'
+      ? 'Bốn điều kiện. Ba điều kiện đầu chặn cứng vì sai là mất tiền của người khác; điều kiện thứ tư chặn cứng vì sai thì sau này không ai kiểm tra lại được.'
       : 'Four conditions. The first three are hard blocks because getting them wrong loses other people’s money; the fourth because getting it wrong makes the report impossible to audit.',
     than: '<div class="checks">' + dk.map(function (x) {
       return '<div class="check ' + (x.ok ? 'ok' : 'no') + '">' + HM.icon(x.ok ? 'check' : 'alert') +
@@ -275,7 +275,7 @@ function veDk(c, dk, nay) {
           HM.esc(c.lang === 'vi' ? 'Xử lý' : 'Fix') + '</button></div>' : '') + '</div>';
     }).join('') + '</div>',
     chan: c.lang === 'vi'
-      ? 'Duyệt kỳ là hành động một chiều về mặt niềm tin: sau đó khách đã đọc con số. Thu hồi được, nhưng thu hồi rồi thì có hai người cùng nhớ hai con số khác nhau.'
+      ? 'Duyệt kỳ là chuyện một chiều về niềm tin: duyệt xong là khách hàng đã đọc con số. Huỷ duyệt được, nhưng khi đó hai bên sẽ nhớ hai con số khác nhau.'
       : 'Approving is one-way in terms of trust: after it, a client has read the figure. It can be revoked, but then two people remember two different numbers.'
   });
 }
@@ -294,33 +294,33 @@ function veTg(c) {
                 : { kieu: 'warn', icon: 'alert', chu: HM.esc(t('tgChua') + ' · ' + c.ky.label) },
       h2: HM.esc(t('chotTg')) + ' ' + HM.esc(c.ky.label),
       p: c.lang === 'vi'
-        ? 'Chuẩn ngành là giữ tiền tệ gốc của từng nền tảng rồi quy đổi sang tiền chi trả. Bản mẫu tính bằng USD và chốt một tỷ giá cho mỗi kỳ tại thời điểm duyệt — đây là câu hỏi số 4 còn treo.'
+        ? 'Chuẩn ngành là giữ nguyên tiền tệ gốc của từng nền tảng, đến lúc chi trả mới quy đổi. Bản mẫu tính bằng USD và chốt một tỷ giá cho mỗi kỳ lúc duyệt. Đây là câu hỏi còn treo số 4.'
         : 'Industry practice is to keep each platform’s source currency and convert at payout. The prototype computes in USD and locks one rate per period at approval — this is open question 4.',
       hanhDong: duyet ? '' : '<button type="button" class="btn sm pri" data-chottg>' +
         HM.esc(khoa ? (c.lang === 'vi' ? 'Đổi tỷ giá đã chốt' : 'Change locked rate') : t('chotTg')) + '</button>',
       than: HM.kv([
         { t: c.lang === 'vi' ? 'Tỷ giá hiện hành' : 'Working rate', v: HT.fmt.n(f.rate) + ' ₫ / USD' },
         { t: c.lang === 'vi' ? 'Chính sách' : 'Policy', v: f.policy },
-        { t: c.lang === 'vi' ? 'Tỷ giá đã khoá cho kỳ này' : 'Locked for this period',
+        { t: c.lang === 'vi' ? 'Tỷ giá đã chốt cho kỳ này' : 'Locked for this period',
           v: khoa ? HT.fmt.n(khoa.rate) + ' ₫ · ' + HT.fmt.ngay(khoa.at) : t('tgChua'), manh: true },
-        { t: c.lang === 'vi' ? 'Doanh thu gộp kỳ, quy VND' : 'Period gross in VND',
+        { t: c.lang === 'vi' ? 'Doanh thu gộp kỳ, quy ra VND' : 'Period gross in VND',
           v: HT.fmt.n(A.agg('admin', 0, c.ky.idx, 'rec').gross * (khoa ? khoa.rate : f.rate)) + ' ₫' }
       ])
     }) +
     HM.the({
-      h2: c.lang === 'vi' ? 'Tỷ giá đã khoá của 12 kỳ' : 'Locked rates across 12 periods',
+      h2: c.lang === 'vi' ? 'Tỷ giá đã chốt của 12 kỳ' : 'Locked rates across 12 periods',
       thoBody: true,
       than: '<div class="tw"><table class="t"><thead><tr><th>' + (c.lang === 'vi' ? 'Kỳ' : 'Period') + '</th>' +
         '<th class="num">' + (c.lang === 'vi' ? 'Tỷ giá' : 'Rate') + '</th>' +
         '<th>' + (c.lang === 'vi' ? 'Chốt ngày' : 'Locked on') + '</th>' +
-        '<th>' + (c.lang === 'vi' ? 'Kỳ' : 'Period status') + '</th></tr></thead><tbody>' +
+        '<th>' + (c.lang === 'vi' ? 'Trạng thái' : 'Period status') + '</th></tr></thead><tbody>' +
         A.periods.slice().reverse().map(function (p) {
           var k = f.locked[p.k];
           return '<tr class="pick" data-kyto="' + p.k + '"><td class="mono">' + HM.esc(p.label) + '</td>' +
             '<td class="num">' + (k ? HM.esc(HT.fmt.n(k.rate)) + ' ₫' : '<span class="nil">—</span>') + '</td>' +
             '<td class="mono">' + (k ? HM.esc(HT.fmt.ngay(k.at)) : '—') + '</td>' +
             '<td>' + (A.isApproved(p.k) ? HM.tag(c.lang === 'vi' ? 'đã duyệt' : 'approved', 'ok')
-              : HM.tag(c.lang === 'vi' ? 'đang mở' : 'open', 'warn')) + '</td></tr>';
+              : HM.tag(c.lang === 'vi' ? 'chưa duyệt' : 'open', 'warn')) + '</td></tr>';
         }).join('') + '</tbody></table></div>'
     }) + '</div>';
 }
@@ -341,20 +341,20 @@ function veXem(c) {
   var coChi = rows.filter(function (r) { return r.payable > 0; }).length;
 
   return HM.the({
-    dai: duyet ? { kieu: 'ok', icon: 'check', chu: HM.esc(c.lang === 'vi' ? 'Đây là bảng chi trả ĐÃ GHI khi duyệt kỳ' : 'This is the payout table recorded at approval') }
+    dai: duyet ? { kieu: 'ok', icon: 'check', chu: HM.esc(c.lang === 'vi' ? 'Bảng chi trả đã ghi sổ lúc duyệt kỳ' : 'This is the payout table recorded at approval') }
                : { kieu: 'info', icon: 'info', chu: HM.esc(c.lang === 'vi'
-                   ? 'Xem trước — chưa ghi vào sổ. Bảng thật chỉ được ghi đúng một lần, lúc duyệt kỳ.'
+                   ? 'Xem trước, chưa ghi vào sổ. Bảng thật chỉ ghi đúng một lần, lúc duyệt kỳ.'
                    : 'Preview only — nothing is written. The real table is written exactly once, at approval.') },
     h2: HM.esc(t('xemTruoc')),
     hanhDong: '<button type="button" class="btn sm" data-di="chi-tra">' + HM.icon('out') +
-      (c.lang === 'vi' ? 'Mở màn chi trả' : 'Open payouts') + '</button>',
+      (c.lang === 'vi' ? 'Mở trang chi trả' : 'Open payouts') + '</button>',
     than: HM.so([
       { l: t('seChi'), v: c.tien(tong.payable), lon: true, s: HT.fmt.n(coChi) + ' ' + t('benNhan') },
       { l: t('thuTamUng'), v: c.tien(tong.recoup) },
       { l: t('donSang'), v: c.tien(tong.carryOut),
         s: c.lang === 'vi' ? 'dưới ngưỡng ' + HT.fmt.usd0(A.cfg.PAYOUT_MIN) : 'below ' + HT.fmt.usd0(A.cfg.PAYOUT_MIN) },
       { l: t('giuLai'), v: c.tien(tong.giu),
-        s: c.lang === 'vi' ? 'chưa gắn được danh tính' : 'no identity to pay' }
+        s: c.lang === 'vi' ? 'chưa rõ người nhận' : 'no identity to pay' }
     ]) +
     '<div style="margin-top:6px">' + HB.chia([
       { ten: t('seChi'), gt: tong.payable, mau: P[0] },
@@ -363,7 +363,7 @@ function veXem(c) {
       { ten: t('giuLai'), gt: tong.giu, mau: P[3] }
     ]) + '</div>',
     chan: c.lang === 'vi'
-      ? 'Tổng kiếm được của kỳ là ' + HM.esc(c.tien2(tong.earned + tong.giu)) + ' — bằng đúng phần “về tay nghệ sĩ” cộng “label giữ” cộng “điểm producer” ở màn tổng quan.'
+      ? 'Tổng được hưởng của kỳ là ' + HM.esc(c.tien2(tong.earned + tong.giu)) + ', bằng đúng “về tay nghệ sĩ” cộng “label giữ lại” cộng “điểm producer” ở trang tổng quan.'
       : 'Total earned this period is ' + HM.esc(c.tien2(tong.earned + tong.giu)) + ' — exactly artists plus labels plus producer points from the overview.'
   });
 }
@@ -376,12 +376,12 @@ function veLs(c) {
   return HM.the({
     h2: c.lang === 'vi' ? 'Mười hai kỳ' : 'Twelve periods',
     p: c.lang === 'vi'
-      ? 'Kỳ phải đóng theo thứ tự. Tiền dưới ngưỡng dồn từ kỳ này sang kỳ sau và tạm ứng thu hồi dần qua từng kỳ — duyệt nhảy cóc là làm đứt hai chuỗi đó, và không có cách nào phát hiện ra sau khi đã chi tiền.'
+      ? 'Kỳ phải duyệt theo thứ tự. Tiền dưới ngưỡng dồn từ kỳ này sang kỳ sau, tạm ứng thu hồi dần qua từng kỳ. Duyệt nhảy cóc là đứt cả hai chuỗi, và không có cách nào phát hiện sau khi đã chi tiền.'
       : 'Periods must close in order. Sub-threshold money carries forward and advances recoup period by period — approving out of order breaks both chains, undetectably, after the money has moved.',
     thoBody: true,
     than: '<div class="tw"><table class="t"><thead><tr>' +
       '<th>' + (c.lang === 'vi' ? 'Kỳ' : 'Period') + '</th>' +
-      '<th>' + (c.lang === 'vi' ? 'Luồng' : 'Feeds') + '</th>' +
+      '<th>' + (c.lang === 'vi' ? 'Nguồn' : 'Feeds') + '</th>' +
       '<th class="num">' + (c.lang === 'vi' ? 'Doanh thu gộp' : 'Gross') + '</th>' +
       '<th class="num">' + (c.lang === 'vi' ? 'Treo' : 'Held') + '</th>' +
       '<th class="num">' + (c.lang === 'vi' ? 'Tỷ giá' : 'FX') + '</th>' +
@@ -394,7 +394,7 @@ function veLs(c) {
           '<td class="mono">' + HM.esc(p.label) + '</td>' +
           '<td>' + A.feeds.map(function (fd) {
             return '<span class="dot ' + (A.feedLoaded(i, fd.id) ? 'ok' : 'no') + '" data-tip="' +
-              HM.esc(c.song(fd, 'name') + ' — ' + (A.feedLoaded(i, fd.id) ? 'đã nạp' : 'chưa nạp')) + '"></span>';
+              HM.esc(c.song(fd, 'name') + ': ' + (A.feedLoaded(i, fd.id) ? 'đã nhập' : 'chưa nhập')) + '"></span>';
           }).join('') + (thieu.length ? '<span class="faint" style="font-size:11.5px">' +
             HM.esc(thieu.map(function (x) { return c.song(x, 'short'); }).join(', ')) + '</span>' : '') + '</td>' +
           '<td class="num">' + HM.esc(c.tien(A.agg('admin', 0, i, 'rec').gross)) + '</td>' +
@@ -421,7 +421,7 @@ function duyetKy(c, boQua) {
   c.hoiThoai({
     tieuDe: (c.lang === 'vi' ? 'Duyệt kỳ ' : 'Approve ') + c.ky.label,
     moTa: HM.esc(c.lang === 'vi'
-      ? 'Sau khi duyệt: bảng chi trả được ghi vào sổ, tạm ứng bị trừ, phần dưới ngưỡng dồn sang kỳ sau, tỷ giá khoá lại, và label với nghệ sĩ nhìn thấy kỳ này trên cổng của họ.'
+      ? 'Sau khi duyệt: hệ thống ghi bảng chi trả vào sổ, thu hồi tạm ứng, dồn phần dưới ngưỡng sang kỳ sau, chốt tỷ giá, và label với nghệ sĩ xem được kỳ này trên cổng khách hàng.'
       : 'On approval: the payout table is written, advances are recouped, sub-threshold money carries forward, the FX rate locks, and labels and artists see this period on their portal.') +
       (boQua && hong.length ? '<br><br><span class="neg"><b>' + HM.esc(c.t('canhBoQua')) + '</b></span>' : ''),
     than: HM.kv([
@@ -434,15 +434,15 @@ function duyetKy(c, boQua) {
     '<input class="in" data-o="by" value="ops@haustek-group.com">' +
     '<label class="fld" style="margin-top:12px">' + (c.lang === 'vi' ? 'Ghi chú vào hồ sơ duyệt' : 'Note on the approval record') + '</label>' +
     '<textarea class="in" data-o="note" rows="2">' +
-      HM.esc(hong.length ? '' : (c.lang === 'vi' ? 'Đối chiếu xong, đã duyệt' : 'Reconciled and approved')) + '</textarea>',
-    dong: boQua ? (c.lang === 'vi' ? 'Duyệt và ghi lại phần bỏ qua' : 'Approve with override') : c.t('duyetKy'),
+      HM.esc(hong.length ? '' : (c.lang === 'vi' ? 'Đối soát xong, đã duyệt' : 'Reconciled and approved')) + '</textarea>',
+    dong: boQua ? (c.lang === 'vi' ? 'Duyệt dù chưa đủ điều kiện' : 'Approve with override') : c.t('duyetKy'),
     nguyHiem: !!boQua
   }).then(function (r) {
     if (!r) return;
     try {
       A.approve(c.ky.idx, r.by, r.note, !!boQua);
       c.thongBao((c.lang === 'vi' ? 'Đã duyệt kỳ ' : 'Approved ') + c.ky.label + ' — ' +
-        (c.lang === 'vi' ? 'khách đã thấy số liệu' : 'clients can now see it'), 'ok');
+        (c.lang === 'vi' ? 'khách hàng đã xem được số liệu' : 'clients can now see it'), 'ok');
       HM.quenHet(); c.veLai();
     } catch (e) { c.thongBao(e.message, 'no'); }
   });
@@ -451,20 +451,20 @@ function duyetKy(c, boQua) {
 function thuHoi(c) {
   var A = c.A;
   c.hoiThoai({
-    tieuDe: (c.lang === 'vi' ? 'Thu hồi duyệt kỳ ' : 'Revoke ') + c.ky.label,
+    tieuDe: (c.lang === 'vi' ? 'Huỷ duyệt kỳ ' : 'Revoke ') + c.ky.label,
     moTa: '<span class="neg">' + HM.esc(c.lang === 'vi'
-      ? 'Khách đã đọc con số của kỳ này. Thu hồi thì họ mất quyền xem và số có thể đổi — nếu tiền đã chuyển đi rồi thì đây là chuyện phải giải thích bằng lời, không phải bằng hệ thống.'
+      ? 'Khách hàng đã đọc con số của kỳ này. Huỷ duyệt thì họ mất quyền xem và số có thể đổi. Nếu tiền đã chuyển đi rồi, chuyện này phải giải thích bằng lời, không phải bằng hệ thống.'
       : 'Clients have already read this period’s figures. Revoking removes their access and the numbers may change — if money has already moved, this needs explaining in words, not by the system.') + '</span><br><br>' +
       HM.esc(c.lang === 'vi'
-        ? 'Hệ thống sẽ hoàn lại phần đã thu hồi tạm ứng và trả phần dồn về đúng số dồn VÀO kỳ này — không xoá trắng.'
+        ? 'Hệ thống hoàn lại phần tạm ứng đã thu hồi và đưa phần dồn về đúng số dồn vào kỳ này, không xoá trắng.'
         : 'The system restores the advance recoupment and the carry-in as it was — it does not zero them.'),
     than: '<label class="fld">' + HM.esc(c.t('lyDo')) + '</label>' +
       '<textarea class="in" data-o="why" rows="3" placeholder="' +
-      HM.esc(c.lang === 'vi' ? 'VD: đối tác TikTok gửi lại file kỳ 06/2026, thiếu 3 lãnh thổ' : '') + '"></textarea>',
+      HM.esc(c.lang === 'vi' ? 'VD: đối tác TikTok gửi lại file kỳ 06/2026, thiếu 3 thị trường' : '') + '"></textarea>',
     dong: c.t('thuHoi'), nguyHiem: true
   }).then(function (r) {
     if (!r) return;
-    try { A.revoke(c.ky.idx, r.why); c.thongBao(c.lang === 'vi' ? 'Đã thu hồi duyệt' : 'Approval revoked'); HM.quenHet(); c.veLai(); }
+    try { A.revoke(c.ky.idx, r.why); c.thongBao(c.lang === 'vi' ? 'Đã huỷ duyệt' : 'Approval revoked'); HM.quenHet(); c.veLai(); }
     catch (e) { c.thongBao(e.message, 'no'); }
   });
 }
@@ -474,15 +474,15 @@ function ghiNhanLech(c, fid) {
   c.hoiThoai({
     tieuDe: c.t('ghiNhan') + ' · ' + c.song(A.feeds[fid], 'name'),
     moTa: HM.esc(c.lang === 'vi'
-      ? 'Ghi nhận không làm chênh lệch biến mất và không sửa số. Nó nói: chúng tôi đã nhìn, đây là lý do, và đây là người chịu trách nhiệm. Sau khi ghi nhận, kỳ mới duyệt được.'
+      ? 'Ghi nhận không làm chênh lệch biến mất, cũng không sửa số. Ghi nhận chỉ xác nhận: đã xem, lý do là gì, và ai chịu trách nhiệm. Ghi nhận xong, kỳ mới duyệt được.'
       : 'Accepting does not make the variance vanish and does not change any figure. It records that a person looked, why, and who is accountable. Only then can the period be approved.'),
     than: HM.kv([
       { t: c.lang === 'vi' ? 'Chênh lệch' : 'Variance', v: HT.fmt.usd(tt.diff), manh: true },
-      { t: c.lang === 'vi' ? 'Trên tổng luồng' : 'As share of the feed', v: HT.fmt.pct(tt.control ? Math.abs(tt.diff) / tt.control : 0, 4) }
+      { t: c.lang === 'vi' ? 'So với tổng nguồn' : 'As share of the feed', v: HT.fmt.pct(tt.control ? Math.abs(tt.diff) / tt.control : 0, 4) }
     ]) +
     '<label class="fld" style="margin-top:14px">' + HM.esc(c.t('lyDo')) + '</label>' +
     '<textarea class="in" data-o="note" rows="3" placeholder="' +
-    HM.esc(c.lang === 'vi' ? 'VD: đối tác xác nhận qua mail 22.08 rằng bản gửi lần đầu thiếu 3 dòng lãnh thổ nhỏ, sẽ bù vào kỳ sau' : '') + '"></textarea>',
+    HM.esc(c.lang === 'vi' ? 'VD: đối tác xác nhận qua mail 22.08 là bản gửi lần đầu thiếu 3 dòng thị trường nhỏ, sẽ bù vào kỳ sau' : '') + '"></textarea>',
     dong: c.t('ghiNhan')
   }).then(function (r) {
     if (!r) return;
@@ -498,14 +498,14 @@ function chotTyGia(c) {
   c.hoiThoai({
     tieuDe: c.t('chotTg') + ' ' + c.ky.label,
     moTa: HM.esc(c.lang === 'vi'
-      ? 'Tỷ giá khoá cho kỳ là tỷ giá dùng để quy đổi mọi con số VND của kỳ, mãi mãi. Đọc lại báo cáo cũ sau nửa năm vẫn phải ra đúng con số đã chuyển đi.'
+      ? 'Tỷ giá đã chốt dùng để quy đổi mọi con số VND của kỳ này, vĩnh viễn. Mở lại bảng kê cũ sau nửa năm vẫn phải ra đúng số tiền đã chuyển đi.'
       : 'The locked rate converts every VND figure for this period, permanently. Reopening the statement six months later must still produce the amount that was actually transferred.'),
     than: '<div class="fldrow two-up">' +
       '<div><label class="fld">' + (c.lang === 'vi' ? 'Tỷ giá (₫ / USD)' : 'Rate (₫ / USD)') + '</label>' +
       '<input class="in" data-o="rate" type="number" step="1" value="' + (khoa ? khoa.rate : f.rate) + '"></div>' +
       '<div><label class="fld">' + (c.lang === 'vi' ? 'Tỷ giá hiện hành' : 'Working rate') + '</label>' +
       '<input class="in" value="' + HM.esc(HT.fmt.n(f.rate)) + '" disabled></div></div>' +
-      '<div class="hint">' + HM.esc(c.lang === 'vi' ? 'Chính sách đang đặt: ' + f.policy : 'Policy: ' + f.policy) + '</div>',
+      '<div class="hint">' + HM.esc(c.lang === 'vi' ? 'Chính sách hiện tại: ' + f.policy : 'Policy: ' + f.policy) + '</div>',
     dong: c.t('chotTg')
   }).then(function (r) {
     if (!r) return;

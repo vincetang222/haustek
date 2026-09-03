@@ -22,16 +22,16 @@ HT.dangKy({
       navUng: 'Tạm ứng', h1: 'Tạm ứng',
       mo: 'Khoản Haustek đã trả trước, và tiến độ thu hồi qua từng kỳ.',
       tongUng: 'Tổng đã ứng', daThu: 'Đã thu hồi', conLai: 'Còn phải thu', soBen: 'Bên còn nợ',
-      themUng: 'Thêm khoản tạm ứng', sua: 'Sửa', xoa: 'Xoá khoản ứng',
+      themUng: 'Thêm khoản tạm ứng', sua: 'Sửa', xoa: 'Xoá tạm ứng',
       nhomNo: 'Còn nợ', nhomXong: 'Đã trả xong', nhomHet: 'Tất cả',
       tim: 'Tìm tên hoặc mã…',
       cBen: 'Bên nhận', cUng: 'Đã ứng', cThu: 'Đã thu hồi', cCon: 'Còn phải thu',
-      cTd: 'Tiến độ', cKy: 'Kỳ nữa là hết', cGhi: 'Ghi chú',
+      cTd: 'Tiến độ', cKy: 'Còn mấy kỳ', cGhi: 'Ghi chú',
       khong: 'Chưa có khoản tạm ứng nào',
-      khongMo: 'Thêm một khoản để thấy nó được trừ dần qua từng kỳ chi trả như thế nào.',
+      khongMo: 'Thêm một khoản để xem tạm ứng được trừ dần qua từng kỳ chi trả ra sao.',
       hoiTen: 'Bên nhận', hoiSo: 'Số tiền đã ứng (USD)', hoiGhi: 'Ghi chú',
-      canhSua: 'Đổi số tiền đã ứng KHÔNG sửa lại các kỳ đã duyệt. Phần đã thu hồi ở những kỳ đó giữ nguyên; chỉ số còn phải thu đổi theo.',
-      canhXoa: 'Xoá khoản ứng là coi như bên này chưa từng nhận tiền trước. Phần đã thu hồi ở các kỳ đã duyệt vẫn nằm trong sổ chi trả của những kỳ đó — không hoàn lại.',
+      canhSua: 'Đổi số tiền đã ứng không tính lại các kỳ đã duyệt. Phần đã thu hồi ở những kỳ đó giữ nguyên, chỉ số còn phải thu đổi theo.',
+      canhXoa: 'Xoá tạm ứng là coi như bên này chưa từng nhận tiền trước. Phần đã thu hồi ở các kỳ đã duyệt vẫn nằm trong sổ chi trả của những kỳ đó, không hoàn lại.',
       chonBen: 'Chọn bên nhận', goTen: 'Gõ tên hoặc mã để tìm',
       xuat: 'Xuất CSV', khongTim: 'Không tìm thấy bên nhận nào'
     },
@@ -119,7 +119,7 @@ HT.dangKy({
       HM.the({
         h2: c.lang === 'vi' ? 'Thu hồi qua 12 kỳ' : 'Recovery across 12 periods',
         p: c.lang === 'vi'
-          ? 'Chỉ kỳ đã duyệt mới ghi lượt thu hồi. Kỳ chưa duyệt là cột trống — chưa xảy ra, không phải bằng 0.'
+          ? 'Chỉ kỳ đã duyệt mới ghi lượt thu hồi. Kỳ chưa duyệt là cột trống: chưa xảy ra, không phải bằng 0.'
           : 'Only approved periods record a recoupment. An unapproved period is an empty column — not yet happened, not zero.',
         than: HB.o({ loai: 'cot', cao: 200, hienGiaTri: true, chuThich: false,
           truc: A.periods.map(function (p) { return p.label; }),
@@ -137,7 +137,7 @@ HT.dangKy({
             { ten: t('conLai'), gt: A.advances.total(), mau: P[4] }
           ] }) +
           '<div class="hint" style="margin-top:12px">' + HM.esc(c.lang === 'vi'
-            ? 'Khoản tạm ứng không sinh lãi và không có hạn trả trong mô hình này. Nếu hợp đồng thật có hạn hoặc có lãi thì đây là chỗ phải bổ sung.'
+            ? 'Trong mô hình này, tạm ứng không tính lãi và không có hạn trả. Nếu hợp đồng thật có lãi hoặc có hạn thì phải bổ sung ở đây.'
             : 'Advances bear no interest and have no due date in this model. If the real contracts have either, this is where it must be added.') + '</div>'
       }) + '</div>';
 
@@ -183,7 +183,7 @@ HT.dangKy({
             '%;background:' + (r.balance > 0 ? HB.dayMau()[4] : HB.mau('ok')) + '"></i></div>' +
             '<div class="t-sub">' + HT.fmt.pct(r.pc) + '</div></td>' +
           '<td class="num">' + (r.balance <= 0 ? '—' : r.soKy == null
-            ? '<span class="nil">' + HM.esc(c.lang === 'vi' ? 'chưa có' : 'n/a') + '</span>'
+            ? '<span class="nil">' + HM.esc(c.lang === 'vi' ? 'chưa phát sinh' : 'n/a') + '</span>'
             : HM.esc(String(r.soKy))) + '</td>' +
           '<td><div class="btnrow"><button type="button" class="btn sm ghost" data-sua="' + HM.esc(r.key) + '">' +
             HM.esc(t('sua')) + '</button></div></td>';
@@ -209,7 +209,7 @@ HT.dangKy({
     HM.bam(root, '[data-sua]', function (el) { hoiUng(c, el.getAttribute('data-sua')); });
     HM.bam(root, '[data-xuat]', function () {
       HM.csv('tam-ung.csv',
-        ['Mã bên nhận', 'Tên', 'Loại', 'Đã ứng USD', 'Đã thu hồi', 'Còn phải thu', 'Ghi chú'],
+        ['Mã bên nhận', 'Tên', 'Loại', 'Đã ứng (USD)', 'Đã thu hồi', 'Còn phải thu', 'Ghi chú'],
         loc.map(function (r) {
           return [r.ma, r.ten, r.loai, r.opening.toFixed(2), r.recouped.toFixed(2), r.balance.toFixed(2), r.note];
         }));
@@ -238,7 +238,7 @@ function moChiTiet(c, r) {
       chuoi: [{ ten: c.t('daThu'),
         gt: A.periods.map(function (p) { return A.isApproved(p.k) ? (theo[p.k] || 0) : null; }),
         mau: HB.dayMau()[6] }] }) +
-    '<h4 class="sec">' + (c.lang === 'vi' ? 'Từng lượt' : 'Each recoupment') + '</h4>' +
+    '<h4 class="sec">' + (c.lang === 'vi' ? 'Từng lượt thu hồi' : 'Each recoupment') + '</h4>' +
     (Object.keys(theo).length
       ? '<div class="tw"><table class="t" style="min-width:0"><thead><tr>' +
         '<th>' + (c.lang === 'vi' ? 'Kỳ' : 'Period') + '</th>' +
@@ -257,7 +257,7 @@ function moChiTiet(c, r) {
           return out;
         })() + '</tbody></table></div>'
       : '<p class="hint">' + HM.esc(c.lang === 'vi'
-          ? 'Chưa có kỳ nào thu hồi được đồng nào — bên này chưa phát sinh doanh thu trong kỳ đã duyệt nào.'
+          ? 'Chưa thu hồi được đồng nào: bên này chưa có doanh thu trong kỳ đã duyệt nào.'
           : 'Nothing recovered yet — this payee has earned nothing in any approved period.') + '</p>') +
     '<h4 class="sec">' + (c.lang === 'vi' ? 'Ghi chú' : 'Note') + '</h4>' +
     '<p class="say">' + HM.esc(r.note || (c.lang === 'vi' ? '(không có)' : '(none)')) + '</p>' +
@@ -285,7 +285,7 @@ function hoiUng(c, key) {
     tieuDe: cu ? c.t('sua') + ' · ' + cu.name : c.t('themUng'),
     moTa: cu ? HM.esc(c.t('canhSua'))
              : HM.esc(c.lang === 'vi'
-               ? 'Khoản tạm ứng sẽ được trừ dần vào phần bên nhận kiếm được ở MỌI kỳ duyệt sau đó, cho tới khi hết. Kỳ đã duyệt không tính lại.'
+               ? 'Tạm ứng sẽ trừ dần vào phần bên nhận được hưởng ở mọi kỳ duyệt sau này, cho tới khi hết. Kỳ đã duyệt không tính lại.'
                : 'The advance is offset against everything the payee earns in EVERY period approved after this, until it clears. Already-approved periods are not recomputed.'),
     than: (cu
       ? '<label class="fld">' + HM.esc(c.t('hoiTen')) + '</label>' +
@@ -343,12 +343,12 @@ function hoiUng(c, key) {
     }
   }).then(function (r) {
     if (!r) return;
-    if (!r.key) { c.thongBao(c.lang === 'vi' ? 'Phải chọn một bên nhận' : 'Pick a payee', 'no'); return; }
+    if (!r.key) { c.thongBao(c.lang === 'vi' ? 'Chưa chọn bên nhận' : 'Pick a payee', 'no'); return; }
     var so = parseFloat(r.so);
     if (!(so >= 0)) { c.thongBao(c.lang === 'vi' ? 'Số tiền không hợp lệ' : 'Invalid amount', 'no'); return; }
     try {
       A.advances.set(r.key, so, r.ghi);
-      c.thongBao(c.lang === 'vi' ? 'Đã lưu khoản tạm ứng cho ' + A.partyName(r.key) : 'Advance saved', 'ok');
+      c.thongBao(c.lang === 'vi' ? 'Đã lưu tạm ứng cho ' + A.partyName(r.key) : 'Advance saved', 'ok');
       HM.quenHet(); c.veLai();
     } catch (e) { c.thongBao(e.message, 'no'); }
   });
@@ -359,7 +359,7 @@ function xoaUng(c, key, r) {
     if (!ok) return;
     c.A.advances.remove(key);
     c.dongNgan();
-    c.thongBao(c.lang === 'vi' ? 'Đã xoá khoản tạm ứng' : 'Advance deleted');
+    c.thongBao(c.lang === 'vi' ? 'Đã xoá tạm ứng' : 'Advance deleted');
     HM.quenHet(); c.veLai();
   });
 }

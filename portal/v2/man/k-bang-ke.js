@@ -21,25 +21,25 @@ HT.dangKy({
   chu: {
     vi: {
       navBangKe: 'Bảng kê', h1: 'Bảng kê kỳ',
-      mo: 'Bản đối chiếu chính thức của kỳ. In ra hoặc tải về đều được.',
+      mo: 'Chứng từ chính thức của kỳ. In ra hoặc tải về đều được.',
       banGhi: 'Doanh thu bản ghi', tacQuyen: 'Tác quyền', caHai: 'Cả hai dòng tiền',
       benNhan: 'Bên nhận', maKh: 'Mã khách hàng', ky: 'Kỳ báo cáo',
-      chotSo: 'Chốt sổ lúc', tyGia: 'Tỷ giá áp dụng', tyGiaKhoa: 'đã khoá cho kỳ này',
-      loaiHd: 'Loại quan hệ', thuoc: 'Thuộc',
+      chotSo: 'Chốt sổ lúc', tyGia: 'Tỷ giá áp dụng', tyGiaKhoa: 'đã chốt cho kỳ này',
+      loaiHd: 'Loại hợp đồng', thuoc: 'Thuộc label',
       muc: 'Khoản mục', soTien: 'Số tiền (USD)', quyVnd: 'Quy đổi (VND)', ghiChu: 'Ghi chú',
       dtBg: 'Doanh thu bản ghi', dtTq: 'Tác quyền',
       cong: 'Cộng phát sinh trong kỳ',
-      donTruoc: 'Cộng phần dồn từ kỳ trước', truUng: 'Trừ thu hồi tạm ứng',
-      thucChi: 'SỐ THỰC CHI KỲ NÀY', thucChiNgan: 'Thực chi kỳ này', donSau: 'Dồn sang kỳ sau',
-      soBai: 'Số bài phát sinh', soLuot: 'Tổng lượt nghe',
+      donTruoc: 'Cộng phần dồn từ kỳ trước', truUng: 'Trừ vào tạm ứng',
+      thucChi: 'Số thực chi kỳ này', thucChiNgan: 'Thực chi kỳ này', donSau: 'Dồn sang kỳ sau',
+      soBai: 'Số bài có doanh thu', soLuot: 'Tổng lượt nghe',
       inRa: 'In bảng kê', taiVe: 'Tải CSV',
-      chuaMo: 'Kỳ chưa mở',
-      chuaMoMo: 'Bảng kê chỉ có sau khi kỳ được chốt sổ. Chốt sổ nghĩa là đã nhận đủ báo cáo từ mọi nền tảng và đối chiếu khớp tới từng xu.',
-      dieuKhoan: 'Cơ sở tính',
+      chuaMo: 'Kỳ này chưa chốt sổ',
+      chuaMoMo: 'Bảng kê chỉ có sau khi kỳ chốt sổ. Chốt sổ nghĩa là đã nhận đủ báo cáo của mọi nền tảng và đối soát khớp tới từng xu.',
+      dieuKhoan: 'Căn cứ tính',
       luuY: 'Lưu ý',
-      luuYNoiDung: 'Số trong bảng này là số TRƯỚC thuế và trước phí chuyển khoản. Khoản thực nhận vào tài khoản của bạn có thể nhỏ hơn; phần chênh sẽ ghi rõ trên chứng từ chuyển tiền.',
+      luuYNoiDung: 'Số trong bảng này là số trước thuế và trước phí chuyển khoản. Khoản thực nhận vào tài khoản của bạn sẽ nhỏ hơn nếu có thuế hoặc phí; phần chênh ghi rõ trên chứng từ chuyển tiền.',
       khongTq: 'Kỳ này không có báo cáo tác quyền',
-      cacKy: 'Các kỳ đã chốt', xemKy: 'Xem'
+      cacKy: 'Các kỳ đã chốt sổ', xemKy: 'Xem'
     },
     en: {
       navBangKe: 'Statement', h1: 'Period statement',
@@ -107,7 +107,7 @@ HT.dangKy({
           { t: t('maKh'), v: me.clientId },
           { t: t('loaiHd'), v: la ? 'Label' : (me.independent ? (c.lang === 'vi' ? 'Nghệ sĩ độc lập' : 'Independent artist')
                                                               : (c.lang === 'vi' ? 'Nghệ sĩ thuộc label' : 'Artist under a label')) },
-          !la && me.belongsTo ? { t: t('thuoc'), v: c.song(me, 'belongsTo') } : null
+          !la && me.belongsTo && !me.independent ? { t: t('thuoc'), v: c.song(me, 'belongsTo') } : null
         ]) + '</div>' +
         '<div>' + HM.kv([
           { t: t('ky'), v: c.ky.label, manh: true },
@@ -145,7 +145,7 @@ HT.dangKy({
       if (chi.carryOut > 0.004)
         them(t('donSau'), chi.carryOut,
           (c.lang === 'vi' ? 'dưới ngưỡng ' : 'below the ') + HT.fmt.usd0(chi.threshold) +
-          (c.lang === 'vi' ? ' — sẽ cộng vào kỳ sau' : ' threshold — added to next period'), 'dau');
+          (c.lang === 'vi' ? ', cộng vào kỳ sau' : ' threshold — added to next period'), 'dau');
     }
 
     html += HM.the({
@@ -167,7 +167,7 @@ HT.dangKy({
             '<td class="num muted">' + HM.esc(HT.fmt.n(d.gt * tg)) + ' ₫</td></tr>';
         }).join('') + '</tbody></table></div>',
       chan: HM.esc(c.lang === 'vi'
-        ? 'Quy đổi theo tỷ giá đã khoá cho kỳ: 1 USD = ' + HT.fmt.n(tg) + ' ₫. Tỷ giá này không đổi khi bạn mở lại bảng kê sau này.'
+        ? 'Quy đổi theo tỷ giá đã chốt cho kỳ: 1 USD = ' + HT.fmt.n(tg) + ' ₫. Tỷ giá này giữ nguyên khi bạn mở lại bảng kê sau này.'
         : 'Converted at the rate locked for this period: 1 USD = ' + HT.fmt.n(tg) + ' ₫. This rate does not change when you reopen the statement later.')
     });
 
@@ -176,13 +176,13 @@ HT.dangKy({
       HM.the({
         h2: HM.esc(t('dieuKhoan')),
         than: '<p class="say">' + HM.esc(c.lang === 'vi'
-          ? 'Doanh thu gộp là toàn bộ số tiền các nền tảng báo cáo cho những bài liên quan trong kỳ, trước mọi khoản trừ. Từ đó trừ phí Haustek theo hợp đồng, rồi tới phần bên quản lý giữ, rồi tới điểm producer nếu bài đó có.'
+          ? 'Doanh thu gộp là toàn bộ số tiền các nền tảng báo cáo cho các bài liên quan trong kỳ, trước mọi khoản trừ. Từ đó trừ phí Haustek theo hợp đồng, rồi phần label quản lý giữ lại (nếu có), rồi điểm producer (nếu bài có).'
           : 'Gross is everything the platforms reported for the related tracks in the period, before any deduction. From it comes the contractual Haustek fee, then the managing party’s share, then producer points where the track carries them.') + '</p>' +
           '<p class="say">' + HM.esc(c.lang === 'vi'
-          ? 'Điểm producer trừ vào phần nghệ sĩ chứ không cộng thêm bên trên — làm ngược lại thì tổng các phần vượt quá 100%.'
+          ? 'Điểm producer trừ vào phần của nghệ sĩ, không cộng thêm bên trên. Làm ngược lại thì tổng các phần vượt quá 100%.'
           : 'Producer points come off the artist share rather than being added on top — the other way round, the parts would exceed 100%.') + '</p>' +
           (rec.advance ? '<p class="say">' + HM.esc(c.lang === 'vi'
-          ? 'Khoản tạm ứng được trừ dần vào phần bạn kiếm được ở mỗi kỳ, cho tới khi hết. Nó tính trên cả doanh thu bản ghi lẫn tác quyền cộng lại.'
+          ? 'Khoản tạm ứng trừ dần vào phần bạn được hưởng mỗi kỳ, cho tới khi hết. Khoản này tính trên cả doanh thu bản ghi lẫn tác quyền cộng lại.'
           : 'The advance is offset against what you earn each period until it clears. It applies to recording and publishing combined.') + '</p>' : '') +
           (me.hasPublishing ? '<p class="say">' + HM.esc(c.lang === 'vi'
           ? 'Tác quyền là dòng tiền riêng, thuộc về người sáng tác, về theo quý và thường trễ một tới hai quý so với doanh thu bản ghi.'
@@ -194,7 +194,7 @@ HT.dangKy({
         than: '<p class="say">' + HM.esc(t('luuYNoiDung')) + '</p>' +
           '<h4 class="sec">' + (c.lang === 'vi' ? 'Thấy số không đúng?' : 'A figure looks wrong?') + '</h4>' +
           '<p class="say">' + HM.esc(c.lang === 'vi'
-          ? 'Gửi mã khách hàng ' + me.clientId + ', kỳ ' + c.ky.label + ', và mã ISRC của bài đang thắc mắc về ops@haustek-group.com. Có ba thứ đó thì tra ra được đúng dòng trong vài phút; thiếu một thứ thì phải rà cả kỳ.'
+          ? 'Gửi mã khách hàng ' + me.clientId + ', kỳ ' + c.ky.label + ' và mã ISRC của bài cần kiểm tra về ops@haustek-group.com. Đủ ba thứ đó thì tra đúng dòng trong vài phút; thiếu một thứ thì phải rà cả kỳ.'
           : 'Send client ID ' + me.clientId + ', period ' + c.ky.label + ', and the ISRC of the track in question to ops@haustek-group.com. With those three, the exact row is found in minutes; missing one means combing the whole period.') + '</p>'
       }) + '</div>';
 
@@ -222,7 +222,7 @@ function veCacKy(c) {
   return HM.the({
     h2: HM.esc(t('cacKy')),
     p: c.lang === 'vi'
-      ? 'Mỗi kỳ một bảng kê riêng. Kỳ chưa chốt không có trong danh sách này.'
+      ? 'Mỗi kỳ một bảng kê. Kỳ chưa chốt sổ không có trong danh sách này.'
       : 'One statement per period. Unclosed periods are not listed.',
     than: '<div class="btnrow">' + c.kys.slice().reverse().map(function (p) {
       return '<button type="button" class="pill' + (p.k === c.kyKey ? ' on' : '') + '" data-kyto="' + HM.esc(p.k) + '">' +

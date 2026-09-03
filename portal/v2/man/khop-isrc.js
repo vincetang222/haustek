@@ -23,25 +23,25 @@ HT.dangKy({
     vi: {
       navKhop: 'Khớp ISRC', h1: 'Hàng chờ khớp ISRC',
       mo: 'Những dòng doanh thu về mà không tìm được bản ghi. Chưa khớp thì tiền chưa thuộc về ai.',
-      treo: 'Đang treo', tienTreo: 'Tiền treo', daKhop: 'Đã khớp', deLai: 'Để lại chờ',
-      tatCaKy: 'Mọi kỳ', kyNay: 'Kỳ đang xem', moiLuong: 'Mọi luồng',
+      treo: 'Đang treo', tienTreo: 'Tiền treo', daKhop: 'Đã khớp', deLai: 'Tạm gác',
+      tatCaKy: 'Mọi kỳ', kyNay: 'Kỳ đang xem', moiLuong: 'Mọi nguồn',
       tim: 'Tìm mã, tên bài, nghệ sĩ…',
-      cot_ma: 'Mã trong file', cot_bai: 'Tên bài trong file', cot_luong: 'Luồng',
+      cot_ma: 'Mã trong file', cot_bai: 'Tên bài trong file', cot_luong: 'Nguồn',
       cot_ky: 'Kỳ', cot_tien: 'Số tiền', cot_lydo: 'Lý do không khớp', cot_tt: 'Trạng thái',
       goiY: 'Bản ghi gợi ý', diem: 'điểm', khop: 'Khớp vào đây',
-      deLaiNut: 'Để lại chờ đối tác', traLai: 'Trả lại hàng chờ',
+      deLaiNut: 'Gác lại, chờ đối tác', traLai: 'Trả về hàng chờ',
       chonDong: 'Chọn một dòng bên trái',
-      chonDongMo: 'Mỗi dòng là một khoản tiền đang không có chủ. Bấm vào để xem hệ thống gợi ý bản ghi nào và vì sao.',
+      chonDongMo: 'Mỗi dòng là một khoản tiền chưa có chủ. Bấm vào để xem hệ thống gợi ý bản ghi nào và vì sao.',
       truyThu: 'Khoản truy thu',
-      truyThuMo: 'Kỳ của dòng này đã duyệt và đã chi tiền. Khớp bây giờ thì tiền KHÔNG sửa lại kỳ cũ — nó vào kỳ đang mở, ghi rõ là truy thu của kỳ nào.',
+      truyThuMo: 'Kỳ của dòng này đã duyệt và đã chi tiền. Khớp bây giờ không sửa lại kỳ cũ: tiền vào kỳ đang mở, ghi rõ là truy thu của kỳ nào.',
       vaoKy: 'Sẽ ghi vào kỳ',
       khongCon: 'Không còn kỳ nào đang mở để ghi khoản truy thu.',
       xacKhop: 'Khớp dòng này vào bản ghi',
       timTay: 'Không có gợi ý nào đúng? Tìm tay trong danh mục',
-      timTayMo: 'Gõ mã ISRC hoặc tên bài. Hệ thống chỉ hiện, không tự chọn.',
-      khongCoDong: 'Không còn dòng nào', khongCoDongMo: 'Với bộ lọc đang đặt thì hàng chờ trống.',
+      timTayMo: 'Gõ mã ISRC hoặc tên bài. Hệ thống chỉ hiện kết quả, không tự chọn.',
+      khongCoDong: 'Không còn dòng nào', khongCoDongMo: 'Với bộ lọc hiện tại, hàng chờ trống.',
       xuat: 'Xuất CSV',
-      pct: 'trên doanh thu kỳ', nguong: 'ngưỡng chặn duyệt'
+      pct: 'tỷ lệ treo trên doanh thu', nguong: 'ngưỡng chặn duyệt'
     },
     en: {
       navKhop: 'ISRC matching', h1: 'ISRC matching queue',
@@ -100,7 +100,7 @@ HT.dangKy({
           ? 'Tiền treo của kỳ ' + c.ky.label + ' vượt ngưỡng ' + HT.fmt.pct(A.cfg.BLACKBOX_CAP, 1)
           : 'Held money in ' + c.ky.label + ' exceeds the ' + HT.fmt.pct(A.cfg.BLACKBOX_CAP, 1) + ' threshold'),
         than: HM.esc(c.lang === 'vi'
-          ? 'Kỳ này không duyệt được cho tới khi phần treo giảm xuống dưới ngưỡng. Đây là chặn cứng, không phải lời nhắc.'
+          ? 'Kỳ này không duyệt được cho tới khi tiền treo xuống dưới ngưỡng. Đây là chặn cứng, không phải nhắc nhở.'
           : 'The period cannot be approved until the held amount drops below the threshold. This is a hard block, not a reminder.') });
     }
 
@@ -180,7 +180,7 @@ HT.dangKy({
     HM.nhap(root, '[data-q]', function (el) { LOC.q = el.value; DANG_CHON = null; c.veLai(); });
     HM.bam(root, '[data-xuat]', function () {
       HM.csv('hang-cho-khop-isrc.csv',
-        ['ID', 'Kỳ', 'Luồng', 'Mã trong file', 'Tên bài', 'Nghệ sĩ', 'Cửa hàng', 'Lãnh thổ', 'Lượt', 'Số tiền USD', 'Lý do', 'Trạng thái'],
+        ['ID', 'Kỳ', 'Nguồn', 'Mã trong file', 'Tên bài', 'Nghệ sĩ', 'Nền tảng', 'Thị trường', 'Lượt nghe', 'Số tiền USD', 'Lý do', 'Trạng thái'],
         ds.map(function (q) {
           return [q.id, A.periods[A.pIndexOf(q.periodKey)].label, c.song(A.feeds[q.feedId], 'short'), q.isrc,
                   q.title, q.artist, q.store, q.territory, q.streams,
@@ -233,9 +233,9 @@ function veChiTiet(root, c) {
     h2: HM.esc(q.title || (c.lang === 'vi' ? '(file không ghi tên bài)' : '(no title in file)')),
     p: HM.esc(q.id + ' · ' + c.song(A.feeds[q.feedId], 'name')),
     than: HM.kv([
-      { t: t('cot_ma'), v: q.isrc || (c.lang === 'vi' ? 'thiếu hẳn' : 'missing'), vHtml: false },
+      { t: t('cot_ma'), v: q.isrc || (c.lang === 'vi' ? 'không có' : 'missing'), vHtml: false },
       { t: c.lang === 'vi' ? 'Nghệ sĩ trong file' : 'Artist in file', v: q.artist },
-      { t: c.lang === 'vi' ? 'Cửa hàng · lãnh thổ' : 'Store · territory', v: q.store + ' · ' + q.territory },
+      { t: c.lang === 'vi' ? 'Nền tảng · thị trường' : 'Store · territory', v: q.store + ' · ' + q.territory },
       { t: c.lang === 'vi' ? 'Lượt nghe' : 'Streams', v: HT.fmt.n(q.streams) },
       { t: t('cot_tien'), v: c.tien2(q.amount), manh: true },
       { t: t('cot_ky'), v: A.periods[A.pIndexOf(q.periodKey)].label +
@@ -256,7 +256,7 @@ function veChiTiet(root, c) {
     html += HM.the({
       h2: HM.esc(t('goiY')),
       p: c.lang === 'vi'
-        ? 'Hệ thống chấm điểm và xếp hạng, rồi dừng. Quyết định cuối là của người — tự khớp là cách nhanh nhất để trả tiền cho nhầm người.'
+        ? 'Hệ thống chấm điểm, xếp hạng, rồi dừng. Người quyết định bước cuối: để máy tự khớp là cách nhanh nhất để trả tiền nhầm người.'
         : 'The system scores and ranks, then stops. A person decides — auto-matching is the fastest way to pay the wrong person.',
       than: goiY.length ? '<div class="bars pick">' + goiY.map(function (g) {
         var tr = A.track(g.i);
@@ -271,7 +271,7 @@ function veChiTiet(root, c) {
           '</div>';
       }).join('') + '</div>'
         : HM.trong({ tieuDe: c.lang === 'vi' ? 'Không có gợi ý nào' : 'No suggestion',
-            moTa: c.lang === 'vi' ? 'Mã trong file không giống mã nào trong danh mục, và tên bài cũng không khớp. Tìm tay bên dưới, hoặc để lại chờ đối tác xác nhận.'
+            moTa: c.lang === 'vi' ? 'Mã trong file không giống mã nào trong danh mục, tên bài cũng không khớp. Tìm tay bên dưới, hoặc gác lại chờ đối tác xác nhận.'
                                   : 'The code in the file matches nothing in the catalogue, and the title does not match either. Search by hand below, or park it pending the partner.' }),
       chan: '<button type="button" class="btn sm" data-park>' + HM.icon('clock') + HM.esc(t('deLaiNut')) + '</button>'
     });
@@ -304,14 +304,14 @@ function veChiTiet(root, c) {
   HM.bam(host, '[data-xem]', function (el) { xemBanGhi(c, +el.getAttribute('data-xem')); });
   HM.bam(host, '[data-park]', function () {
     c.hoiThoai({ tieuDe: t('deLaiNut'), moTa: HM.esc(c.lang === 'vi'
-      ? 'Dòng ra khỏi hàng chờ nhưng tiền vẫn treo — nó vẫn được đếm vào phần treo của kỳ và vẫn chặn duyệt nếu vượt ngưỡng. Để lại chờ không phải là xoá.'
+      ? 'Dòng rời hàng chờ nhưng tiền vẫn treo: vẫn tính vào phần treo của kỳ và vẫn chặn duyệt nếu vượt ngưỡng. Gác lại không phải là xoá.'
       : 'The row leaves the working queue but the money stays held — it still counts towards the period’s held total and still blocks approval above the threshold. Parking is not deleting.'),
       than: '<label class="fld">' + (c.lang === 'vi' ? 'Ghi chú (đang chờ ai, chờ gì)' : 'Note (waiting on whom, for what)') + '</label>' +
         '<textarea class="in" data-o="note" rows="3" placeholder="' +
         HM.esc(c.lang === 'vi' ? 'VD: đã gửi mail cho đối tác YouTube ngày 20.08, chờ họ xác nhận mã' : '') + '"></textarea>',
-      dong: c.lang === 'vi' ? 'Để lại chờ' : 'Park' }).then(function (r) {
+      dong: c.lang === 'vi' ? 'Gác lại' : 'Park' }).then(function (r) {
         if (!r) return;
-        A.queue.park(q.id, r.note); c.thongBao(c.lang === 'vi' ? 'Đã để lại chờ ' + q.id : 'Parked ' + q.id);
+        A.queue.park(q.id, r.note); c.thongBao(c.lang === 'vi' ? 'Đã gác lại ' + q.id : 'Parked ' + q.id);
         HM.quenHet(); c.veLai();
       });
   });
@@ -371,7 +371,7 @@ function xacNhanKhop(c, q, i) {
   var dat = A.queue.landingPeriod(q.id);
   c.hoiThoai({
     tieuDe: c.t('xacKhop'),
-    moTa: '<b>' + HM.esc(q.amount.toFixed(2)) + ' USD</b> ' + HM.esc(c.lang === 'vi' ? 'sẽ được ghi về bản ghi ' : 'will be booked to ') +
+    moTa: '<b>' + HM.esc(q.amount.toFixed(2)) + ' USD</b> ' + HM.esc(c.lang === 'vi' ? 'sẽ ghi vào bản ghi ' : 'will be booked to ') +
       '<b>' + HM.esc(tr.title) + '</b> (' + HM.esc(tr.isrc) + ') — ' + HM.esc(tr.artist) + '.' +
       (dat && dat.adjustment
         ? '<br><br><span class="neg">' + HM.esc(c.t('truyThuMo')) + '</span>'
@@ -380,7 +380,7 @@ function xacNhanKhop(c, q, i) {
       { t: c.lang === 'vi' ? 'Dòng trong file' : 'Row in file', v: (q.isrc || '—') + ' · ' + q.title },
       { t: c.lang === 'vi' ? 'Kỳ của dòng' : 'Row’s period', v: A.periods[A.pIndexOf(q.periodKey)].label },
       { t: c.t('vaoKy'), v: dat ? dat.label + (dat.adjustment ? ' · ' + c.t('truyThu') : '') : '—', manh: true },
-      { t: c.lang === 'vi' ? 'Bên nhận tiền này' : 'Payee', v: A.partyName(tr.partyKey) + ' · ' + A.partyClientId(tr.partyKey) }
+      { t: c.lang === 'vi' ? 'Bên nhận' : 'Payee', v: A.partyName(tr.partyKey) + ' · ' + A.partyClientId(tr.partyKey) }
     ]),
     dong: c.t('khop')
   }).then(function (r) {
