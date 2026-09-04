@@ -59,6 +59,15 @@ dịch từng chữ từ tiếng Anh. Người đọc là kế toán, chủ labe
 | metadata form | **hồ sơ metadata** | — |
 | boundary between the two apps | **phân quyền hai cổng** | ranh giới |
 | navigation groups (internal) | **Vận hành · Tài chính · Danh mục · Quản trị** | Tiền, Dữ liệu, Hệ thống |
+| parent label / sub-label | **label mẹ** / **label con**; trang **Hệ thống label**; **xem với tư cách label con** | label lớn / label nhỏ, sublabel |
+| delegation (parent sees child) | **uỷ quyền xem** | — |
+| release pipeline (per track) | **quy trình phát hành**; các bước: hồ sơ phát hành · tiếp nhận và kiểm tra · cấp mã ISRC và UPC · kiểm tra nội dung và quyền · gửi tới các nền tảng · có mặt trên nền tảng · báo cáo doanh thu | pipeline, đường ống |
+| delivery status per platform | **đã lên** / **đang xử lý** / **chưa xác nhận** / **bị từ chối** / **đã gỡ**; tổng quát: **đã lên đủ nền tảng** / **đang xử lý** / **có vấn đề** | live, pending, takedown |
+| missing items | **còn thiếu**; mức: **chặn** / **cần bổ sung** / **gợi ý** | thiếu sót, lỗi |
+| platform link | **đường dẫn** (nút **Mở**) | link |
+| per-platform monthly report | **báo cáo theo nền tảng**; bảng **theo tháng** (mỗi cột một kỳ) | store report |
+| "other platforms" bucket | **Nền tảng khác** | cửa hàng khác, đuôi |
+| catalogue screen (partner) | **Danh mục bài hát** | tài sản, asset |
 
 Giữ nguyên: ISRC, UPC, VCPMC, The MLC, USD, VND, CSV, JSON, tên nền tảng, tên
 riêng, email, mã.

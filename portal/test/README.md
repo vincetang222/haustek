@@ -6,7 +6,7 @@
 node portal/test/api-guard.js
 ```
 
-27 phép kiểm chạy thẳng trên lõi. Đây là thứ **phải chạy trong CI** — mốc số 2 trong tài
+33 phép kiểm chạy thẳng trên lõi (sáu phép mới: hồ sơ bài hát, danh mục phát hành, ma trận nền tảng × kỳ, báo cáo nền tảng, cây label mẹ / label con, tiền không đổi chủ theo cây). Đây là thứ **phải chạy trong CI** — mốc số 2 trong tài
 liệu bàn giao: chứng minh nghệ sĩ A không truy vấn được dữ liệu nghệ sĩ B.
 
 Kiểm những gì:

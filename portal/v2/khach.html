@@ -23,10 +23,14 @@ HAUSTEK.lockdown();
 <script src="haustek-shell.js"></script>
 <script src="haustek-bieudo.js"></script>
 <script src="haustek-man.js"></script>
+<script src="haustek-taisan.js"></script>
 
 <script src="man/k-tong-quan.js"></script>
 <script src="man/k-nghe-si.js"></script>
+<script src="man/k-he-thong.js"></script>
 <script src="man/k-ban-ghi.js"></script>
+<script src="man/k-danh-muc.js"></script>
+<script src="man/k-nen-tang.js"></script>
 <script src="man/k-phat-hanh.js"></script>
 <script src="man/k-bang-ke.js"></script>
 <script src="man/k-tam-ung.js"></script>
@@ -45,15 +49,33 @@ var TK = api.demoLogins().accounts.filter(function (a) { return a.status === 'ac
 /* Giữ lựa chọn qua lần nạp lại. Không giữ thì bấm đổi tài khoản xong
    trang nạp lại và quay về tài khoản đầu — trông như nút hỏng. */
 var CHON = 'haustek.demo.tk';
+/* Xem với tư cách label con: label mẹ chọn một label con thì phiên chuyển
+   sang label con đó, còn tài khoản đăng nhập vẫn là label mẹ. Khoá này
+   chỉ là ý muốn của người dùng; quyền thật kiểm bằng api.delegations. */
+var XEM = 'haustek.demo.xemThay';
 function nhoLai() {
   try { var v = +sessionStorage.getItem(CHON); return (v >= 0 && v < TK.length) ? v : 0; }
   catch (e) { return 0; }
 }
+function xoaXem() { try { sessionStorage.removeItem(XEM); } catch (e) {} }
 var toi = TK[nhoLai()];
+var thay = null;                                        /* {labelId, name, clientId} khi đang xem thay */
+var phienCua = { role: toi.role, partyId: toi.partyId }; /* phiên thật sự dùng để gọi api */
+(function () {
+  var id = null;
+  try { id = sessionStorage.getItem(XEM); } catch (e) {}
+  if (id == null || id === '' || toi.role !== 'label') { xoaXem(); return; }
+  var uy = null;
+  try { uy = api.delegations(toi.role, toi.partyId); } catch (e) { uy = null; }
+  var lc = uy ? uy.viewAs.filter(function (x) { return String(x.labelId) === String(id); })[0] : null;
+  if (!lc) { xoaXem(); return; }
+  thay = { labelId: lc.labelId, name: lc.name, clientId: lc.clientId };
+  phienCua = { role: 'label', partyId: lc.labelId };
+})();
 
 function nạpPhien() {
-  var s = api.session(toi.role, toi.partyId);
-  var p = api.periods(toi.role, toi.partyId);
+  var s = api.session(phienCua.role, phienCua.partyId);
+  var p = api.periods(phienCua.role, phienCua.partyId);
   return { me: s, kys: p.open, cho: p.waiting, kyTacQuyen: p.pubOpen, moiNhat: p.latest };
 }
 var PHIEN = nạpPhien();
@@ -68,19 +90,33 @@ HT.chay({
   },
   kyMacDinh: PHIEN.moiNhat,
   ghiChu: function () { return PHIEN.me.clientId; },
+  /* Biểu ngữ ngay trên nội dung trang khi đang xem thay một label con. */
+  bieuNgu: function (c) {
+    if (!thay) return '';
+    var vi = c.lang === 'vi';
+    return '<div class="viewas">' + HT.icon('layers') + '<span>' +
+      (vi ? 'Đang xem với tư cách label con <b>' + HT.esc(thay.name) + '</b> (' + HT.esc(thay.clientId) + '). Số liệu và bảng kê là của label con này.'
+          : 'Viewing as sub-label <b>' + HT.esc(thay.name) + '</b> (' + HT.esc(thay.clientId) + '). Figures and statements belong to this sub-label.') +
+      '</span><span class="sp"></span><button type="button" class="btn sm" data-thoi-xem>' +
+      HT.esc(vi ? 'Trở về ' + toi.name : 'Back to ' + toi.name) + '</button></div>';
+  },
   chanTrai: function (c) {
+    var vi = c.lang === 'vi', me = PHIEN.me;
     var opts = TK.map(function (a, i) {
       return '<option value="' + i + '"' + (a === toi ? ' selected' : '') + '>' +
         HT.esc(a.name) + '</option>';
     }).join('');
-    return '<b>' + HT.esc(PHIEN.me.name) + '</b>' +
-      '<span>' + HT.esc(toi.role === 'label'
-        ? (c.lang === 'vi' ? 'Label' : 'Label')
-        : (PHIEN.me.independent ? (c.lang === 'vi' ? 'Nghệ sĩ độc lập' : 'Independent artist')
-                                : (c.lang === 'vi' ? 'Nghệ sĩ' : 'Artist'))) + '</span>' +
+    var vai = toi.role !== 'label'
+      ? (me.independent ? (vi ? 'Nghệ sĩ độc lập' : 'Independent artist') : (vi ? 'Nghệ sĩ' : 'Artist'))
+      : me.parentLabel ? (vi ? 'Label con của ' + me.parentLabel.name : 'Sub-label of ' + me.parentLabel.name)
+      : me.childLabels > 0 ? (vi ? 'Label mẹ · ' + me.childLabels + ' label con' : 'Parent label · ' + me.childLabels + ' sub-labels')
+      : 'Label';
+    return '<b>' + HT.esc(me.name) + '</b>' +
+      '<span>' + HT.esc(vai) + '</span>' +
+      (thay ? '<span style="display:block;margin-top:3px">' + HT.esc(vi ? 'đăng nhập: ' + toi.name : 'signed in as ' + toi.name) + '</span>' : '') +
       '<select class="inline-sel" data-ai style="margin-top:9px;width:100%">' + opts + '</select>' +
       '<span style="display:block;margin-top:7px;line-height:1.5">' +
-      HT.esc(c.lang === 'vi'
+      HT.esc(vi
         ? 'Bản mẫu: đổi tài khoản để xem theo góc nhìn khác. Hệ thống thật không có ô chọn này.'
         : 'Prototype only: switch accounts to see another view. The real system has no such control.') +
       '</span>';
@@ -91,8 +127,32 @@ document.addEventListener('change', function (e) {
   var s = e.target.closest('[data-ai]');
   if (!s) return;
   try { sessionStorage.setItem(CHON, s.value); } catch (err) {}
+  xoaXem();
   location.hash = '#k-tong-quan';
   location.reload();
+});
+
+/* Bấm "Xem cổng của label này" ở bất kỳ đâu (cây label, ngăn trượt) và
+   "Trở về" trên biểu ngữ. Quyền kiểm ở api.canViewAs trước khi đổi phiên. */
+document.addEventListener('click', function (e) {
+  var x = e.target.closest('[data-xem-thay]');
+  if (x) {
+    var id = x.getAttribute('data-xem-thay'), ok = false;
+    try { ok = !!api.canViewAs(toi.role, toi.partyId, id); } catch (err) { ok = false; }
+    if (!ok) {
+      HT.thongBao(HT.lang === 'vi' ? 'Bạn không được uỷ quyền xem label này.' : 'You are not authorised to view this label.', 'no');
+      return;
+    }
+    try { sessionStorage.setItem(XEM, String(id)); } catch (err) {}
+    location.hash = '#k-tong-quan';
+    location.reload();
+    return;
+  }
+  if (e.target.closest('[data-thoi-xem]')) {
+    xoaXem();
+    location.hash = '#k-he-thong';
+    location.reload();
+  }
 });
 </script>
 </body>

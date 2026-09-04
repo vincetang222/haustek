@@ -34,6 +34,8 @@ Hai giả định lớn của bản mẫu, chưa được xác nhận (xem tab C
 | Nghệ sĩ độc lập | ký trực tiếp với Haustek | Như trên nhưng không có label; phần Haustek theo hợp đồng độc lập hiện rõ | hằng tháng |
 | Tác giả / nhạc sĩ | nghệ sĩ có đăng ký phần sáng tác | Tác quyền về chưa, quý nào có báo cáo, chia với đồng tác giả thế nào | hằng quý |
 | Producer | có tên trong danh mục, chưa có mã | Chưa có tài khoản. Điểm producer đang giữ lại vì chưa rõ người nhận (câu hỏi cần chốt số 3) | — |
+| **Label mẹ** (công ty có nhiều label con) | chủ tập đoàn / giám đốc nội dung | Theo dõi từng label con và nghệ sĩ bên dưới: doanh thu, phần label, roster; mở cổng của label con để xem như chính họ | hằng tháng, sau xét duyệt |
+| **Label con** | label ký riêng, nằm dưới một label mẹ | Như label; biết mình thuộc label mẹ nào; không thấy label mẹ hay label con khác | hằng tháng |
 | Người khai metadata | nghệ sĩ hoặc quản lý | Gửi hồ sơ phát hành mới (form metadata ở trang chủ), theo dõi trạng thái: đã gửi → đã tiếp nhận → đã cấp ISRC → đã phát hành → đã có doanh thu | theo từng lần phát hành |
 
 ## 3. Câu hỏi từng vai cần trả lời, và trang trả lời
@@ -65,7 +67,30 @@ Hai giả định lớn của bản mẫu, chưa được xác nhận (xem tab C
 | Bài nào của roster ra tiền? | Bài hát | có |
 | Bảng kê để gửi kế toán? | Bảng kê thanh toán | có |
 | Tỷ lệ đang áp theo phụ lục nào, đổi từ kỳ nào? | **Hợp đồng & tỷ lệ** (thẻ mới ở Tổng quan) | thêm trong vòng này |
-| Bản phát hành nào của roster đang chờ, đã lên? | **Phát hành** (mới) | thêm trong vòng này |
+| Bản phát hành nào của roster đang chờ, đã lên? | Phát hành | có |
+| **Từng bài hát** của roster đã đi tới bước nào, đã có mặt trên nền tảng nào (đường dẫn), nền tảng nào còn kẹt, Haustek còn thiếu gì từ label? | **Danh mục bài hát** (mới) · ngăn hồ sơ bài hát (tab Quy trình, Nền tảng) | thêm trong vòng này |
+| Từng nền tảng mang về bao nhiêu lượt nghe, bao nhiêu tiền **mỗi tháng**, cho cả roster và cho từng bài? | **Nền tảng** (mới) · ngăn hồ sơ bài hát, tab Theo tháng | thêm trong vòng này |
+| Bài nào chưa ra tiền dù đã phát hành lâu? | Danh mục bài hát (lọc Có vấn đề / Còn thiếu; bước Báo cáo doanh thu) | thêm trong vòng này |
+
+### Label mẹ
+
+Một công ty có nhiều label con (mỗi label con là một tài khoản riêng, ký riêng,
+tỷ lệ riêng). Chủ công ty muốn nhìn cả cây: label con nào mang về bao nhiêu, nghệ
+sĩ nào của label con nào, và khi cần thì mở cổng của label con để xem đúng những
+gì label con thấy. Tiền **không** đi qua label mẹ (giả định; câu hỏi cần chốt số 9).
+
+| Câu hỏi | Trang | Trạng thái |
+|---|---|---|
+| Toàn hệ thống kỳ này gộp bao nhiêu, phần label bao nhiêu, bao nhiêu nghệ sĩ? | **Hệ thống label** (mới) | thêm trong vòng này |
+| Từng label con: roster, doanh thu gộp, phần nghệ sĩ, phần label, tỷ lệ? | Hệ thống label · bảng Label con · ngăn từng label con | thêm trong vòng này |
+| Nghệ sĩ nào thuộc label con nào, ai đang mang về nhiều nhất? | Hệ thống label · Cấu trúc (cây label mẹ → label con → nghệ sĩ) | thêm trong vòng này |
+| Xem cổng của một label con như chính họ? | nút **Xem cổng của label này** → biểu ngữ "Đang xem với tư cách label con" | thêm trong vòng này |
+| Label mẹ có được hưởng phần nào trên doanh thu label con không? | chưa: câu hỏi cần chốt số 9, bản mẫu giả định không | mở |
+
+### Label con
+
+Như label, thêm dòng **Label mẹ** trên thẻ Hợp đồng & tỷ lệ và trong cột trái.
+Không thấy label mẹ, không thấy label con khác (kiểm bằng api-guard).
 
 ### Ca sĩ thuộc label
 
@@ -82,7 +107,9 @@ nhiêu, ai trả tiền cho họ.
 | Bao giờ tiền vào tài khoản, có bị khấu trừ tạm ứng không? | Tổng quan · Khi nào nhận tiền · Tạm ứng | có |
 | Bài nào của tôi ra tiền, nghe ở đâu? | Bài hát | có |
 | Tác quyền của tôi (nếu có sáng tác)? | Tổng quan · tab Tác quyền | có |
-| Bản phát hành tôi đã gửi đang ở bước nào? | **Phát hành** (mới) | thêm trong vòng này |
+| Bản phát hành tôi đã gửi đang ở bước nào? | Phát hành | có |
+| **Bài hát của tôi** đã đi tới bước nào, đã lên Spotify / Apple Music / YouTube Music / TikTok / Zing chưa, đường dẫn đâu, còn thiếu gì? | **Danh mục bài hát** (mới) · ngăn hồ sơ bài hát | thêm trong vòng này |
+| Nền tảng nào mang về nhiều nhất, mỗi tháng bao nhiêu lượt nghe, bao nhiêu tiền? | **Nền tảng** (mới) · ngăn hồ sơ bài hát, tab Theo tháng | thêm trong vòng này |
 
 ### Nghệ sĩ độc lập
 
@@ -137,4 +164,32 @@ Khi lên hệ thống thật: form trang chủ ghi thẳng vào `releases`/`trac
 * Thuế và khấu trừ chỉ là ước tính (trang Kế toán nói rõ).
 * Chưa có đăng nhập thật; ô chọn tài khoản chỉ để xem thử.
 * Label có kiêm publisher không (câu hỏi 6) quyết định label có thấy tác quyền.
-* Ai thanh toán cho ca sĩ thuộc label (câu hỏi 8, thêm trong vòng này).
+* Ai thanh toán cho ca sĩ thuộc label (câu hỏi 8).
+* Label mẹ có được hưởng phần nào trên doanh thu label con không (câu hỏi 9, thêm
+  trong vòng này). Bản mẫu coi cây label là **uỷ quyền xem**, không phải dòng tiền.
+* Trạng thái từng nền tảng (đã lên, đang xử lý, bị từ chối, đã gỡ) và đường dẫn ở
+  bản mẫu là sinh xác định từ mã bản ghi. Hệ thống thật lấy từ phản hồi giao nhận
+  (DDEX) của từng nền tảng; đường dẫn Spotify / Apple / YouTube Music về theo mã
+  của nền tảng sau khi bản ghi lên.
+* Mục "còn thiếu" (lời bài hát, ngôn ngữ, nhà xuất bản, mã producer, đồng sáng tác
+  chưa xác nhận) là những kiểm tra hồ sơ hệ thống thật nên làm ngay lúc nhận
+  metadata; bản mẫu chỉ hiện chúng trên bài đã phát hành để thấy hình dạng.
+
+## 6. Tính năng tham khảo từ các nền tảng cùng ngành (OneSystem, ONErpm Artist Oracle)
+
+Ảnh tham khảo của người đặt hàng cho thấy những gì một công ty phân phối chuyên
+nghiệp cho A&R và quản lý tài khoản nhìn mỗi ngày. Vòng này lấy những thứ trực
+tiếp phục vụ vận hành và kế toán Haustek; phần còn lại ghi để làm sau.
+
+| Tính năng tham khảo | Ở Haustek | Trạng thái |
+|---|---|---|
+| Monthly Sales (doanh thu theo tháng) | Nội bộ · Tổng quan · Diễn biến 12 kỳ | có |
+| Top accounted sales: gross / avg royalty rate / net theo tài khoản | Nội bộ · Tổng quan · **Đối tác dẫn đầu kỳ này** | thêm trong vòng này |
+| Negative balances, months to recoup | Nội bộ · Tổng quan · **Tạm ứng còn phải thu hồi** (số kỳ dự kiến) | thêm trong vòng này |
+| Next releases: ngày, tài khoản, chiến dịch | Nội bộ · Tổng quan · **Phát hành sắp tới** (chưa có chiến dịch marketing) | thêm một phần |
+| Total streams per account | Nội bộ · Tổng quan · **Lượt nghe theo đối tác** | thêm trong vòng này |
+| Sales per store / per month (báo cáo theo nền tảng theo tháng) | Nội bộ · **Nền tảng**; cổng đối tác · **Nền tảng** | thêm trong vòng này |
+| Track discovery strategies (Artist Oracle: bài đang lên ở đâu, đề xuất playlist) | chưa; cần dữ liệu playlist / xu hướng từ nền tảng | làm sau |
+| My Key Releases: lọc theo trạng thái, ngày, tài khoản | Nội bộ · Phát hành (lọc trạng thái) + Danh mục (lọc Có vấn đề / Còn thiếu) | có một phần |
+| Releases to manage: to approve / to validate / in progress / issues | Nội bộ · Phát hành: Chờ tiếp nhận / Chờ cấp mã / Chờ phát hành / Trả lại bổ sung | có (tên bước theo quy trình Haustek) |
+| My accounts: Managed / Signed / Inactive / Incomplete / Never logged in / Delegation received–given, cột hợp đồng (rate, turnover, ngày ký, ngày hết hạn, account manager) | Nội bộ · Quản trị · Tài khoản (trạng thái, bên thụ hưởng, label mẹ / label con); **uỷ quyền xem** = label mẹ → label con | có một phần; cột hợp đồng (ngày ký, ngày hết hạn, người phụ trách, phân loại đối tác) làm sau khi có master data |

@@ -815,6 +815,104 @@ h4.sec:first-child{margin-top:0}
    phần điều hướng, ép về nền trắng chữ đen (máy in phun nền tối tốn
    mực và chữ nhoè), và bỏ nút bấm — trên giấy nút bấm là rác.
    ===================================================================== */
+
+/* =====================================================================
+   HỒ SƠ BÀI HÁT — quy trình phát hành, nền tảng, ma trận nền tảng × kỳ
+   ===================================================================== */
+.asset-h{display:flex;align-items:center;gap:8px;margin-bottom:12px}
+.tabs.sm{gap:18px;margin:16px 0 14px}
+.tabs.sm button{font-size:13px;padding-bottom:8px}
+.qt{list-style:none;margin:0;padding:0;position:relative}
+.qt li{display:grid;grid-template-columns:22px minmax(0,1fr);gap:12px;padding:0 0 16px;position:relative}
+.qt li::before{content:"";position:absolute;left:10px;top:24px;bottom:-2px;width:2px;background:var(--line-2)}
+.qt li:last-child::before{display:none}
+.qt li.done::before{background:color-mix(in srgb,var(--ok) 55%,var(--line-2))}
+.qt .mk{width:22px;height:22px;border-radius:50%;display:grid;place-items:center;border:2px solid var(--line-2);
+  background:var(--card);position:relative;z-index:1;color:#fff}
+.qt .mk svg{width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2.2}
+.qt li.done .mk{background:var(--ok);border-color:var(--ok)}
+.qt li.doing .mk{border-color:var(--accent);color:var(--accent);box-shadow:0 0 0 4px var(--accent-lo)}
+.qt li.issue .mk{background:var(--danger);border-color:var(--danger)}
+.qt li.todo .mk{border-style:dashed}
+.qt .bd{min-width:0;padding-top:2px}
+.qt .l{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.qt .l b{font-size:13.5px;font-weight:600}
+.qt .l .d{font-size:11.5px;color:var(--faint)}
+.qt .n{font-size:12.5px;color:var(--ink-2);margin-top:3px;line-height:1.55}
+.qt li.todo .l b{color:var(--faint);font-weight:500}
+.miss{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.miss li{display:grid;grid-template-columns:auto minmax(0,1fr);gap:10px;align-items:start;padding:10px 12px;
+  border:1px solid var(--card-line);border-radius:var(--r-sm);background:var(--band)}
+.miss li.chan{border-color:color-mix(in srgb,var(--danger) 35%,var(--card-line))}
+.miss li.canh{border-color:color-mix(in srgb,var(--warn) 35%,var(--card-line))}
+.miss li b{display:block;font-size:13px;font-weight:600}
+.miss li span{display:block;font-size:12.5px;color:var(--ink-2);margin-top:2px;line-height:1.55}
+.miss .tag{margin-top:1px}
+.plat{display:flex;flex-direction:column;border:1px solid var(--card-line);border-radius:var(--r);overflow:hidden}
+.plat-row{display:grid;grid-template-columns:minmax(0,1.5fr) auto minmax(0,1fr) auto;gap:10px;align-items:center;
+  padding:9px 12px;border-top:1px solid var(--line);font-size:13px}
+.plat-row:first-child{border-top:0}
+.plat-row.other{background:var(--band)}
+.plat-row .pn{display:flex;align-items:center;gap:8px;min-width:0}
+.plat-row .pn>div{min-width:0}
+.plat-row .pn b{display:block;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.plat-row .pn span{display:block;font-size:11.5px;color:var(--faint);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.plat-row .pv{text-align:right;font-variant-numeric:tabular-nums}
+.plat-row .pv b{display:block;font-weight:600}
+.plat-row .pv span{display:block;font-size:11.5px;color:var(--faint)}
+.plat-row .pl{min-width:56px;display:flex;justify-content:flex-end}
+.plat-row .pl .btn svg{width:13px;height:13px}
+.pdots{display:inline-flex;gap:2px;vertical-align:middle;margin-right:6px}
+.pdots i{width:6px;height:10px;border-radius:2px;background:var(--neutral-bar)}
+.pdots i.ok{background:var(--ok)} .pdots i.no{background:var(--danger)} .pdots i.off{background:var(--neutral-bar)}
+.seg.mx-seg{border-color:var(--line-2)}
+.seg.mx-seg button{color:var(--ink-2)}
+.seg.mx-seg button:hover{color:var(--ink)}
+.seg.mx-seg button.on{background:var(--sel);color:var(--link)}
+.mx-w{max-width:100%}
+table.mx th:first-child,table.mx td:first-child{position:sticky;left:0;background:var(--card);z-index:1;min-width:128px}
+table.mx thead th:first-child{background:var(--head)}
+table.mx tfoot td:first-child{background:var(--band)}
+table.mx td.num{position:relative;font-variant-numeric:tabular-nums;white-space:nowrap}
+table.mx tbody td.num::before{content:"";position:absolute;left:6px;bottom:3px;height:3px;border-radius:2px;
+  background:var(--accent-3);opacity:.75;width:calc(var(--w,0%) - 12px);max-width:calc(100% - 12px)}
+table.mx tbody td.nil::before{display:none}
+table.mx th.dim{color:var(--faint);font-style:italic}
+/* biểu ngữ "đang xem với tư cách label con" */
+.banner:empty{display:none}
+.viewas{display:flex;align-items:center;gap:12px;padding:10px 24px;background:var(--warn-lo);color:var(--warn);
+  font-size:13px;border-bottom:1px solid color-mix(in srgb,var(--warn) 25%,transparent)}
+.viewas svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.6;flex:none}
+.viewas b{font-weight:600}
+.viewas .sp{flex:1}
+.viewas .btn{height:28px;font-size:12px}
+/* cây label mẹ → label con → nghệ sĩ */
+.tree{list-style:none;margin:0;padding:0}
+.tree .nd{display:grid;grid-template-columns:24px minmax(0,1fr) auto;gap:10px;align-items:center;padding:10px 12px;
+  border:1px solid var(--card-line);border-radius:var(--r-sm);background:var(--card);margin-bottom:8px}
+.tree .nd.me{background:var(--band);border-color:color-mix(in srgb,var(--accent) 35%,var(--card-line))}
+.tree .nd.pick{cursor:pointer}
+.tree .nd.pick:hover{border-color:var(--accent-2);box-shadow:var(--shadow)}
+.tree .nd .ic{width:24px;height:24px;border-radius:6px;display:grid;place-items:center;background:var(--accent-lo);color:var(--accent)}
+.tree .nd .ic svg{width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:1.7}
+.tree .nd .ic.ns{background:var(--fill);color:var(--ink-2)}
+.tree .nd b{display:block;font-size:13.5px;font-weight:600;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tree .nd span{display:block;font-size:12px;color:var(--faint)}
+.tree .nd .v{text-align:right;font-variant-numeric:tabular-nums;font-weight:600;white-space:nowrap}
+.tree .nd .v span{font-weight:400}
+.tree ul{list-style:none;margin:0 0 6px 32px;padding:0 0 0 14px;border-left:2px solid var(--line-2)}
+.tree ul li{position:relative}
+.tree ul li::before{content:"";position:absolute;left:-14px;top:22px;width:12px;height:2px;background:var(--line-2)}
+.tree ul .nd{padding:8px 12px}
+.tree .more{font-size:12.5px;color:var(--link);padding:2px 0 8px 12px;cursor:pointer}
+@media(max-width:640px){
+  .plat-row{grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"pn ps" "pv pl"}
+  .plat-row .pn{grid-area:pn} .plat-row .ps{grid-area:ps} .plat-row .pv{grid-area:pv;text-align:left} .plat-row .pl{grid-area:pl}
+  .viewas{padding:9px 14px;flex-wrap:wrap}
+  .tree ul{margin-left:14px;padding-left:10px}
+}
+@media print{ .banner{display:none} }
+
 @media print {
   :root{ --bg:#fff; --card:#fff; --raised:#fff; --ink:#000; --ink-2:#333;
     --faint:#555; --line:#ccc; --line-2:#999; --head:#f0f0f0; --zebra:#fff;

@@ -183,10 +183,16 @@ check("Không payload nào chứa tên đơn vị phân phối hoặc tỷ lệ 
     H.api.trackDetail("artist", A1.id, approvedKey, "rec", trackOfA1),
     H.api.trend("artist", A1.id, "rec"),
     H.api.summary("label", L1.id, approvedKey, "rec"),
-    H.api.tracks("label", L1.id, approvedKey, "rec", {})
+    H.api.tracks("label", L1.id, approvedKey, "rec", {}),
+    /* các gói mới: hồ sơ bài hát, danh mục, báo cáo nền tảng, cây label */
+    H.api.trackAsset("artist", A1.id, trackOfA1),
+    H.api.catalogue("label", L1.id, { limit: 50 }),
+    H.api.platformReport("label", L1.id),
+    H.api.labelTree("label", 0, approvedKey),
+    H.api.delegations("label", 0)
   ];
   const txt = JSON.stringify(goi).toLowerCase();
-  [A.distributor.name, A.distributor.code, "grossrate", "distribution", "nhà phân phối"]
+  [A.distributor.name, A.distributor.code, "grossrate", "distribution", "nhà phân phối", "phân phối", "ký trực tiếp"]
     .forEach(bad => must(!txt.includes(String(bad).toLowerCase()), 'payload có chứa "' + bad + '"'));
   return goi.length + " lời gọi · " + Math.round(txt.length / 1024) + " KB, sạch";
 });
@@ -400,6 +406,129 @@ check("Hồ sơ phát hành đi đúng thứ tự bốn bước, không nhảy b
   const nk = A.audit.list(20).filter(x => x.action.startsWith("release.") && x.detail.startsWith(kq.id)).map(x => x.action);
   ["release.submit", "release.receive", "release.code", "release.publish"].forEach(a => must(nk.includes(a), "thiếu nhật ký " + a));
   return "submitted → received → coded → released · " + nk.length + " dòng nhật ký";
+});
+
+/* ===================== 5c. HỒ SƠ BÀI HÁT · NỀN TẢNG · LABEL MẸ / LABEL CON ===================== */
+check("Nghệ sĩ A không đọc được hồ sơ phát hành (nền tảng, đường dẫn) của bài nghệ sĩ B", () => {
+  const m = mustThrow(() => H.api.trackAsset("artist", A1.id, trackOfA2), "trackAsset sang bài người khác");
+  const d = H.api.trackAsset("artist", A1.id, trackOfA1);
+  must(d.steps.length === 7 && d.platforms.length === 12, "hồ sơ thiếu bước hoặc thiếu nền tảng");
+  must(d.platforms.every(p => p.status !== "live" || p.name === "Facebook" || p.name === "Instagram" || /^https:\/\//.test(p.url)),
+       "nền tảng đã lên mà không có đường dẫn");
+  return m + " · bài của chính mình: " + d.steps.length + " bước, " + d.platforms.length + " nền tảng, " + d.missing.length + " mục còn thiếu";
+});
+
+check("Danh mục phát hành của label chỉ gồm bản ghi của label, kể cả bản chưa có doanh thu", () => {
+  const mine = new Set(Array.from(A.idxOf(A.byLabel, L1.id)));
+  let lac = 0, tong = 0, offset = 0, dem = { live: 0, processing: 0, issue: 0 };
+  for (;;) {
+    const c = H.api.catalogue("label", L1.id, { offset, limit: 200 });
+    if (!tong) tong = c.total;
+    c.rows.forEach(r => { if (!mine.has(r.id)) lac++; dem[r.stage]++; });
+    offset += c.rows.length;
+    if (offset >= c.total || !c.rows.length) break;
+  }
+  must(lac === 0, lac + " bản ghi của label khác lọt vào danh mục");
+  must(tong === mine.size, "danh mục có " + tong + " bản ghi, label có " + mine.size);
+  const c0 = H.api.catalogue("label", L1.id, { limit: 1 });
+  must(dem.live === c0.counts.live && dem.processing === c0.counts.processing && dem.issue === c0.counts.issue,
+       "số đếm theo giai đoạn không khớp với danh sách");
+  return tong + " bản ghi, đủ và đúng chủ · " + JSON.stringify(c0.counts);
+});
+
+check("Ma trận nền tảng × kỳ của một bài cộng dọc đúng bằng doanh thu và lượt nghe của bài trong kỳ", () => {
+  const ids = Array.from(A.idxOf(A.byLabel, L1.id)).slice(0, 60);
+  let kiem = 0, loi = [];
+  ids.forEach(i => {
+    const d = H.api.trackAsset("label", L1.id, i);
+    d.monthly.periods.forEach((p, k) => {
+      const pi = A.pIndexOf(p.k);
+      const g = d.monthly.rows.reduce((s, r) => s + r.gross[k], 0);
+      const st = d.monthly.rows.reduce((s, r) => s + r.streams[k], 0);
+      const m = d.monthly.rows.reduce((s, r) => s + r.mine[k], 0);
+      const tt = H.api.trackDetail("label", L1.id, p.k, "rec", i);
+      if (Math.abs(g - tt.gross) > 0.005) loi.push("gộp bài " + i + " kỳ " + p.k);
+      if (st !== A.streamsOf(i, pi)) loi.push("lượt nghe bài " + i + " kỳ " + p.k);
+      if (Math.abs(m - tt.mine) > 0.005) loi.push("phần label bài " + i + " kỳ " + p.k);
+      /* và từng ô nền tảng của kỳ khớp với "Thu nhập theo nền tảng" của cùng bài */
+      tt.byStore.forEach(x => {
+        const r = d.monthly.rows.find(rr => rr.name === x.name);
+        if (!r || Math.abs(r.mine[k] - x.value) > 0.005) loi.push("nền tảng " + x.name + " bài " + i);
+      });
+      kiem++;
+    });
+  });
+  must(loi.length === 0, loi.length + " sai lệch: " + loi.slice(0, 4).join(" · "));
+  return ids.length + " bài × " + (kiem / Math.max(ids.length, 1)) + " kỳ, cột nào cũng cộng đúng";
+});
+
+check("Báo cáo nền tảng của tài khoản cộng dọc đúng bằng tổng kỳ ở Tổng quan", () => {
+  const ai = [["artist", A1.id], ["label", L1.id], ["label", 3]];
+  const loi = [];
+  ai.forEach(([vai, id]) => {
+    const r = H.api.platformReport(vai, id);
+    r.periods.forEach((p, k) => {
+      const s = H.api.summary(vai, id, p.k, "rec");
+      const g = r.rows.reduce((x, row) => x + row.gross[k], 0);
+      const m = r.rows.reduce((x, row) => x + row.mine[k], 0);
+      const st = r.rows.reduce((x, row) => x + row.streams[k], 0);
+      if (Math.abs(g - s.gross) > 0.005) loi.push(vai + " " + id + " gộp kỳ " + p.k);
+      if (Math.abs(m - s.total) > 0.005) loi.push(vai + " " + id + " phần mình kỳ " + p.k);
+      if (st !== s.streams) loi.push(vai + " " + id + " lượt nghe kỳ " + p.k);
+      /* và bảng bóc theo nền tảng của kỳ (thu gọn) phải ra cùng con số từng nền tảng */
+      const b = H.api.breakdown(vai, id, p.k, "rec", "src");
+      b.rows.forEach(x => {
+        const row = r.rows.find(rr => rr.name === x.name);
+        if (!row || Math.abs(row.mine[k] - x.value) > 0.05) loi.push(vai + " " + id + " " + x.name + " kỳ " + p.k + " lệch");
+      });
+    });
+    must(r.periods.every(p => A.isApproved(p.k)), "báo cáo nền tảng chứa kỳ chưa xét duyệt");
+  });
+  must(loi.length === 0, loi.length + " sai lệch: " + loi.slice(0, 4).join(" · "));
+  return ai.length + " tài khoản, mọi kỳ đã xét duyệt cộng đúng, khớp cả bảng bóc theo nền tảng";
+});
+
+check("Label mẹ thấy label con và nghệ sĩ bên dưới; label con và nghệ sĩ không thấy ngược lên", () => {
+  const me = 0, con = A.labelChildren(me).map(l => l.id);
+  must(con.length >= 2, "label mẫu số 0 phải có ít nhất hai label con");
+  const t = H.api.labelTree("label", me, approvedKey);
+  must(t.children.length === con.length && t.children.every(c => con.includes(c.labelId)), "cây label mẹ liệt kê sai label con");
+  t.children.forEach(c => {
+    const ns = new Set(A.artists.filter(a => a.labelId === c.labelId).map(a => a.id));
+    must(c.artists.length === ns.size && c.artists.every(a => ns.has(a.artistId)), "nghệ sĩ dưới label con " + c.name + " không đúng");
+    const s = H.api.summary("label", c.labelId, approvedKey, "rec");
+    must(Math.abs(c.gross - s.gross) < 0.005 && Math.abs(c.labelCut - s.total) < 0.005, "số của label con " + c.name + " khác số label con tự thấy");
+  });
+  const tong = t.own.gross + t.children.reduce((s, c) => s + c.gross, 0);
+  must(Math.abs(tong - t.total.gross) < 0.01, "tổng cây không bằng mẹ cộng các con");
+  /* ngược lên: label con không có label con, chỉ biết tên mẹ; không xem thay được mẹ */
+  const tc = H.api.labelTree("label", con[0], approvedKey);
+  must(tc.children.length === 0 && tc.parent && tc.parent.labelId === me, "label con nhìn thấy cây không đúng");
+  const uq = H.api.delegations("label", con[0]);
+  must(uq.viewAs.length === 0 && uq.parent.labelId === me, "label con được uỷ quyền xem ai đó");
+  must(H.api.canViewAs("label", me, con[0]) === true, "label mẹ không xem được label con");
+  must(H.api.canViewAs("label", con[0], me) === false, "label con xem được label mẹ");
+  must(H.api.canViewAs("label", con[0], con[1]) === false, "label con xem được label con khác");
+  must(H.api.canViewAs("label", 1, con[0]) === false, "label khác xem được label con của người khác");
+  mustThrow(() => H.api.labelTree("artist", A1.id, approvedKey), "nghệ sĩ gọi cây label");
+  must(H.api.delegations("artist", A1.id).viewAs.length === 0, "nghệ sĩ được uỷ quyền xem");
+  must(H.api.session("label", con[0]).parentLabel.labelId === me && H.api.session("label", me).childLabels === con.length, "session không mang cây label");
+  return con.length + " label con · " + t.total.artists + " nghệ sĩ toàn hệ thống · số label con khớp số label con tự thấy · không xem ngược lên";
+});
+
+check("Tiền không đổi chủ theo cây label: bảng thanh toán không có dòng nào cho label mẹ ngoài phần của chính mình", () => {
+  const pi = A.pIndexOf(approvedKey);
+  const rows = A.previewPayout(pi);
+  const me = rows.find(r => r.partyKey === "L:0");
+  const earned = A.earnedByParty(pi).get("L:0") || 0;
+  must(!me || Math.abs(me.earned - earned) < 0.005, "label mẹ được ghi nhận hơn phần của chính mình");
+  const con = A.labelChildren(0);
+  con.forEach(l => {
+    const r = rows.find(x => x.partyKey === l.key);
+    const e = A.earnedByParty(pi).get(l.key) || 0;
+    must(!r || Math.abs(r.earned - e) < 0.005, "label con " + l.name + " bị trừ phần cho label mẹ");
+  });
+  return "label mẹ nhận đúng phần của mình · " + con.length + " label con nhận trọn phần label của mình (câu hỏi cần chốt số 9)";
 });
 
 /* ===================== 6. KHOÁ CỬA ===================== */

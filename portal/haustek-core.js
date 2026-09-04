@@ -41,7 +41,7 @@ const T_BOOT = performance.now();
    1. THÔNG SỐ
    --------------------------------------------------------------------- */
 const CFG = {
-  VERSION:      "1.1.0",   /* 1.1.0: thêm hồ sơ phát hành (state.releases) */
+  VERSION:      "1.2.0",   /* 1.2.0: label mẹ / label con, trạng thái phát hành theo nền tảng */
   STORE_KEY:    "haustek.portal.v1",
   N_TRACKS:     50000,
   N_PERIODS:    12,
@@ -205,6 +205,15 @@ for (let i = 0; i < CFG.N_LABELS; i++) {
     isPublisher: false
   });
 }
+/* Label mẹ / label con. Label lớn có thể có các label con ký riêng, mỗi
+   label con là một tài khoản riêng với roster riêng; label mẹ theo dõi
+   được toàn bộ cây bên dưới. Ở bản mẫu: mười label đầu mỗi label có một
+   label con (10–19), bốn label đầu có thêm label con thứ hai (20–23).
+   Tên label con mang cùng tiền tố với label mẹ. */
+LABELS.forEach(l => { l.parentId = -1; });
+for (let i = 10; i < 20; i++) LABELS[i].parentId = i - 10;
+for (let i = 20; i < 24; i++) LABELS[i].parentId = i - 20;
+
 const ARTISTS = [];
 for (let i = 0; i < CFG.N_ARTISTS; i++) {
   const name = i < REAL.length ? REAL[i]
@@ -732,11 +741,13 @@ function grossPub(i, p) { return pubLoaded(p) ? pubGross[i * P + p] : 0; }
 function grossOf(i, p, stream) { return stream === "pub" ? grossPub(i, p) : grossRec(i, p); }
 
 /* bóc một số tiền theo cửa hàng / lãnh thổ — tính từ mã bài, không lưu sẵn */
-function splitDim(trackIdx, total, weights) {
+function splitDim(trackIdx, total, weights, p) {
   const out = new Float64Array(weights.length);
   let sum = 0;
+  /* có kỳ thì mỗi kỳ một khẩu vị riêng, không kỳ thì cố định theo bài */
+  const seed = p ? trackIdx + p * 1000003 : trackIdx;
   for (let j = 0; j < weights.length; j++) {
-    const jitter = 0.55 + hash(trackIdx, j) * 0.9;
+    const jitter = 0.55 + hash(seed, j) * 0.9;
     out[j] = weights[j] * jitter; sum += out[j];
   }
   for (let j = 0; j < weights.length; j++) out[j] = out[j] / sum * total;
@@ -803,6 +814,434 @@ function agg(role, partyId, p, stream) {
   }
   return { total: cents(total), gross: cents(gross), fee: cents(fee), labelCut: cents(labelCut),
            producer: cents(prod), artist: cents(artist), streams, tracks };
+}
+
+/* =====================================================================
+   14b. NỀN TẢNG — chia doanh thu và lượt nghe theo nền tảng, nhất quán
+   ---------------------------------------------------------------------
+   Tám nền tảng lớn được tách riêng, hơn hai trăm nền tảng còn lại gộp
+   thành một dòng "Nền tảng khác". Cùng MỘT phép chia dùng cho mọi chỗ:
+   thu nhập theo nền tảng của một kỳ, ma trận nền tảng × kỳ của một bản
+   ghi, và báo cáo nền tảng của cả tài khoản. Nhờ vậy ba bảng đó cộng
+   lại luôn ra cùng một con số, và người đọc đối chiếu tay được.
+
+   Tiền của mỗi nền tảng bám theo NGUỒN BÁO CÁO: YouTube Music là toàn bộ
+   tiền nguồn 1, TikTok là toàn bộ tiền nguồn 2; sáu nền tảng lớn còn lại
+   và phần đuôi chia nhau tiền nguồn 0 theo trọng số. Kỳ nào chưa nhập
+   TikTok thì cột TikTok bằng 0, đúng như tổng của kỳ đó không có TikTok.
+   ===================================================================== */
+const PLAT_NAMES    = STORES.slice(0, N_TOP).concat(["Nền tảng khác"]);
+const PLAT_NAMES_EN = STORES.slice(0, N_TOP).concat(["Other platforms"]);
+const N_PLAT = PLAT_NAMES.length;
+const TAIL_NAMES = STORES.slice(N_TOP);
+const TAIL_W = STORE_W.slice(N_TOP);
+const TAIL_SUM = TAIL_W.reduce((a, b) => a + b, 0);
+/* trọng số của các ô thuộc nguồn 0 (mọi nền tảng trừ YouTube Music và TikTok) */
+const PLAT_W0 = STORE_W.slice(0, N_TOP).map((w, j) => STORE_FEED[j] === 0 ? w : 0).concat([TAIL_SUM]);
+const PLAT_FEED = STORE_FEED.slice(0, N_TOP).concat([0]);
+/* lượt nghe trên mỗi đô la, so với Spotify = 1. TikTok và mạng xã hội trả
+   rất ít cho mỗi lượt, Apple Music trả nhiều hơn. */
+const PLAT_SPM = [1, 1.7, 4.4, 0.72, 2.3, 2.5, 3.2, 3.4, 1.35];
+
+function splitStores(i, p, out) {
+  out = out || new Float64Array(N_PLAT);
+  const g0 = grossRecByFeed(i, p, 0), g1 = grossRecByFeed(i, p, 1), g2 = grossRecByFeed(i, p, 2);
+  let sum = 0;
+  const jit = new Float64Array(N_PLAT);
+  for (let j = 0; j < N_PLAT; j++) {
+    if (PLAT_W0[j] > 0) { jit[j] = PLAT_W0[j] * (0.55 + hash(i * 7 + p, 300 + j) * 0.9); sum += jit[j]; }
+  }
+  for (let j = 0; j < N_PLAT; j++) {
+    out[j] = PLAT_FEED[j] === 1 ? g1 : PLAT_FEED[j] === 2 ? g2 : (sum > 0 ? g0 * jit[j] / sum : 0);
+  }
+  return out;
+}
+function splitStreams(i, p, rev, out) {
+  out = out || new Float64Array(N_PLAT);
+  const st = recStreams[i * P + p];
+  let sum = 0;
+  for (let j = 0; j < N_PLAT; j++) { out[j] = rev[j] * PLAT_SPM[j]; sum += out[j]; }
+  for (let j = 0; j < N_PLAT; j++) out[j] = sum > 0 ? st * out[j] / sum : 0;
+  return out;
+}
+/* Làm tròn từng ô tới xu rồi dồn phần dư vào ô lớn nhất, để cột cộng lại
+   đúng bằng con số tổng đã công bố ở chỗ khác. */
+function khopTong(arr, target, tron) {
+  let sum = 0, big = 0;
+  for (let j = 0; j < arr.length; j++) { arr[j] = tron(arr[j]); sum += arr[j]; if (arr[j] > arr[big]) big = j; }
+  const du = tron(target - sum);
+  if (Math.abs(du) > 0.0001) arr[big] = tron(arr[big] + du);
+  return arr;
+}
+
+/* Ma trận nền tảng × kỳ của MỘT bản ghi. mineFactor(p, g) trả về tỷ lệ
+   phần của người xem trên doanh thu gộp; null thì cột "mine" bằng gộp. */
+function trackMatrix(i, pList, mineFactor) {
+  const rows = PLAT_NAMES.map((n, j) => ({ name: n, nameEn: PLAT_NAMES_EN[j], gross: [], streams: [], mine: [] }));
+  const totals = { gross: [], streams: [], mine: [] };
+  const rev = new Float64Array(N_PLAT), st = new Float64Array(N_PLAT);
+  pList.forEach(p => {
+    splitStores(i, p, rev); splitStreams(i, p, rev, st);
+    const g = grossRec(i, p);
+    const f = mineFactor ? mineFactor(p, g) : 1;
+    const m = mineFactor ? cents(g * f) : cents(g);
+    const gv = khopTong(Array.from(rev), cents(g), cents);
+    const sv = khopTong(Array.from(st), recStreams[i * P + p], Math.round);
+    const mv = khopTong(Array.from(rev, v => v * f), m, cents);
+    for (let j = 0; j < N_PLAT; j++) { rows[j].gross.push(gv[j]); rows[j].streams.push(sv[j]); rows[j].mine.push(mv[j]); }
+    totals.gross.push(cents(g)); totals.streams.push(recStreams[i * P + p]); totals.mine.push(m);
+  });
+  return { rows, totals };
+}
+
+/* Báo cáo nền tảng × kỳ của cả một phạm vi (tài khoản đối tác, hoặc toàn
+   danh mục cho nội bộ). Lấy mẫu như breakdown() rồi chuẩn hoá về đúng
+   tổng của kỳ, nên cột nào cộng lại cũng bằng con số ở trang Tổng quan. */
+function platformReport(role, partyId, pList) {
+  const sc = scopeOf(role, partyId, "rec"), n = sc ? sc.length : N;
+  const cap = Math.max(1, Math.min(n, 9000)), step = Math.max(1, Math.floor(n / cap));
+  const rows = PLAT_NAMES.map((nm, j) => ({ name: nm, nameEn: PLAT_NAMES_EN[j], gross: [], streams: [], mine: [] }));
+  const totals = { gross: [], streams: [], mine: [] };
+  const rev = new Float64Array(N_PLAT), st = new Float64Array(N_PLAT);
+  pList.forEach(p => {
+    const accG = new Float64Array(N_PLAT), accS = new Float64Array(N_PLAT), accM = new Float64Array(N_PLAT);
+    let sg = 0, ss = 0, sm = 0;
+    for (let k = 0; k < n; k += step) {
+      const i = sc ? sc[k] : k;
+      const g = grossRec(i, p);
+      if (g <= 0) continue;
+      const m = mineOf(i, p, role, partyId, "rec"), f = m / g;
+      splitStores(i, p, rev); splitStreams(i, p, rev, st);
+      for (let j = 0; j < N_PLAT; j++) { accG[j] += rev[j]; accS[j] += st[j]; accM[j] += rev[j] * f; }
+      sg += g; ss += recStreams[i * P + p]; sm += m;
+    }
+    const a = agg(role, partyId, p, "rec");
+    const nG = sg > 0 ? a.gross / sg : 0, nS = ss > 0 ? a.streams / ss : 0, nM = sm > 0 ? a.total / sm : 0;
+    const gv = khopTong(Array.from(accG, v => v * nG), a.gross, cents);
+    const sv = khopTong(Array.from(accS, v => v * nS), a.streams, Math.round);
+    const mv = khopTong(Array.from(accM, v => v * nM), a.total, cents);
+    for (let j = 0; j < N_PLAT; j++) { rows[j].gross.push(gv[j]); rows[j].streams.push(sv[j]); rows[j].mine.push(mv[j]); }
+    totals.gross.push(a.gross); totals.streams.push(a.streams); totals.mine.push(a.total);
+  });
+  return {
+    periods: pList.map(p => ({ k: PERIODS[p].k, label: PERIODS[p].label, open: !!state.approved[PERIODS[p].k] })),
+    rows, totals
+  };
+}
+
+/* =====================================================================
+   14c. TRẠNG THÁI PHÁT HÀNH — từng bước, từng nền tảng, còn thiếu gì
+   ---------------------------------------------------------------------
+   Câu hỏi của chủ label và nghệ sĩ về một bài hát không chỉ là "được bao
+   nhiêu tiền" mà còn là: bài đã đi tới bước nào, đã có mặt ở nền tảng
+   nào (đường dẫn đâu), nền tảng nào còn kẹt, và Haustek còn thiếu gì
+   từ phía họ. Trong hệ thống thật, trạng thái từng nền tảng về từ phản
+   hồi giao nhận (DDEX) của nền tảng đó; bản mẫu sinh xác định từ mã bản
+   ghi để hai cổng luôn thấy cùng một trạng thái.
+   ===================================================================== */
+const DELIV_N = N_TOP + 4;                        /* 8 nền tảng lớn + Amazon Music, Deezer, Tidal, Pandora liệt kê riêng */
+const DELIV_NAMES = STORES.slice(0, DELIV_N);
+const OTHERS_N = STORES.length - DELIV_N;         /* phần còn lại gộp thành một dòng */
+const B62 = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+function slug(s) {
+  return String(s || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "")
+    .replace(/đ/g, "d").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+}
+function maNgauNhien(i, salt, len, bang) {
+  let s = "";
+  for (let k = 0; k < len; k++) s += bang[(hash(i * 31 + k, salt) * bang.length) | 0];
+  return s;
+}
+const chuSo = (i, salt, len) => maNgauNhien(i, salt, len, "0123456789");
+/* Đường dẫn công khai của bản ghi trên từng nền tảng. Facebook và
+   Instagram chỉ có thư viện nhạc trong ứng dụng, không có trang riêng. */
+function platformUrl(name, i) {
+  const t = slug(tTitle[i]) || "track", a = slug(ARTISTS[tArtist[i]].name) || "artist";
+  switch (name) {
+    case "Spotify":       return "https://open.spotify.com/track/" + maNgauNhien(i, 11, 22, B62);
+    case "Apple Music":   return "https://music.apple.com/vn/album/" + t + "/" + chuSo(i, 12, 10) + "?i=" + chuSo(i, 13, 10);
+    case "YouTube Music": return "https://music.youtube.com/watch?v=" + maNgauNhien(i, 14, 11, B62 + "-_");
+    case "TikTok":        return "https://www.tiktok.com/music/" + t + "-" + chuSo(i, 15, 19);
+    case "Zing MP3":      return "https://zingmp3.vn/bai-hat/" + t + "-" + a + "/" + maNgauNhien(i, 16, 8, B62) + ".html";
+    case "NhacCuaTui":    return "https://www.nhaccuatui.com/bai-hat/" + t + "-" + a + "." + maNgauNhien(i, 17, 7, B62) + ".html";
+    case "Amazon Music":  return "https://music.amazon.com/tracks/B0" + maNgauNhien(i, 18, 8, "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ");
+    case "Deezer":        return "https://www.deezer.com/track/" + chuSo(i, 19, 9);
+    case "Tidal":         return "https://tidal.com/browse/track/" + chuSo(i, 20, 9);
+    case "Pandora":       return "https://www.pandora.com/artist/" + a + "/" + t + "/TR" + maNgauNhien(i, 21, 10, B62);
+  }
+  return null;
+}
+function isoDate(d) {
+  return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+}
+function addDays(iso, n) {
+  const d = new Date(+iso.slice(0, 4), +iso.slice(5, 7) - 1, +iso.slice(8, 10));
+  d.setDate(d.getDate() + n);
+  return isoDate(d);
+}
+function releaseDateOf(i) {
+  const pr = PERIODS[tRel[i]];
+  return isoDate(new Date(pr.year, pr.month - 1, 1 + ((hash(i, 41) * 27) | 0)));
+}
+const LY_DO = {
+  rejected: [
+    ["Ảnh bìa dưới 3000 × 3000 điểm ảnh", "Artwork below 3000 × 3000 pixels"],
+    ["Tên bài hát trên ảnh bìa không khớp metadata", "Title on the artwork does not match the metadata"],
+    ["File âm thanh không đạt chuẩn WAV 16-bit / 44,1 kHz", "Audio file is not 16-bit / 44.1 kHz WAV"]
+  ],
+  pending: [["Nền tảng chưa xác nhận đã nhận bản gửi lại", "The platform has not acknowledged the redelivery yet"]],
+  processing: [["Nền tảng đang xử lý, thường mất 1 đến 5 ngày làm việc", "Being processed by the platform, usually 1 to 5 working days"]],
+  takedown: [
+    ["Gỡ theo yêu cầu của chủ sở hữu", "Taken down at the owner’s request"],
+    ["Gỡ do khiếu nại bản quyền, đang xử lý", "Taken down after a rights claim, under review"]
+  ]
+};
+/* nhe = true: chỉ cần trạng thái, bỏ qua đường dẫn và ngày (quét danh mục lớn) */
+function deliveryOf(i, nhe) {
+  const age = (P - 1) - tRel[i];
+  const trouble = hash(i, 42) < 0.18;               /* 18% bản ghi có ít nhất một nền tảng chưa ổn */
+  const rel = releaseDateOf(i);
+  const rows = DELIV_NAMES.map((name, j) => {
+    const h = hash(i, 100 + j);
+    let status = "live";
+    if (age === 0 && h < 0.35) status = "processing";
+    else if (trouble && h < 0.28) status = h < 0.10 ? "rejected" : h < 0.19 ? "pending" : (age >= 3 && h < 0.23 ? "takedown" : "processing");
+    if (status === "processing" && age >= 2) status = "pending";
+    const r = { name, status };
+    if (!nhe) {
+      const off = j < N_TOP ? ((hash(i, 200 + j) * 4) | 0) : 2 + ((hash(i, 200 + j) * 9) | 0);
+      r.liveAt = status === "live" ? addDays(rel, off) : null;
+      r.url = status === "live" ? platformUrl(name, i) : null;
+      const ly = LY_DO[status];
+      if (ly) { const x = ly[(hash(i, 400 + j) * ly.length) | 0]; r.reason = x[0]; r.reasonEn = x[1]; }
+    }
+    return r;
+  });
+  const othersLive = trouble ? OTHERS_N - (3 + ((hash(i, 43) * 14) | 0))
+                   : (age === 0 ? OTHERS_N - ((hash(i, 43) * 40) | 0) : OTHERS_N);
+  return { releaseDate: rel, rows, others: { count: OTHERS_N, live: othersLive, pending: OTHERS_N - othersLive } };
+}
+function stepsOf(i, d) {
+  const rel = d.releaseDate, age = (P - 1) - tRel[i];
+  const liveAt = d.rows.filter(r => r.liveAt).map(r => r.liveAt).sort();
+  const live = d.rows.filter(r => r.status === "live").length;
+  const anyIssue = d.rows.some(r => r.status === "rejected" || r.status === "takedown");
+  const allLive = live === d.rows.length && d.others.pending === 0;
+  let firstRep = -1;
+  for (let p = tRel[i]; p < P; p++) if (state.approved[PERIODS[p].k] && grossRec(i, p) > 0) { firstRep = p; break; }
+  const tongNT = DELIV_N + OTHERS_N;
+  return [
+    { key: "hoso", label: "Hồ sơ phát hành", labelEn: "Release submission", status: "done", at: addDays(rel, -21),
+      note: "Đã nhận đủ metadata, file âm thanh và ảnh bìa", noteEn: "Metadata, audio and artwork received" },
+    { key: "tiepnhan", label: "Tiếp nhận và kiểm tra hồ sơ", labelEn: "Received and checked", status: "done", at: addDays(rel, -19),
+      note: "Hồ sơ đủ thông tin để xử lý", noteEn: "Submission complete enough to proceed" },
+    { key: "ma", label: "Cấp mã ISRC và UPC", labelEn: "ISRC and UPC assigned", status: "done", at: addDays(rel, -17),
+      note: "ISRC " + tIsrc[i] + " · UPC " + tUpc[i], noteEn: "ISRC " + tIsrc[i] + " · UPC " + tUpc[i] },
+    { key: "noidung", label: "Kiểm tra nội dung và quyền", labelEn: "Content and rights check", status: "done", at: addDays(rel, -14),
+      note: "Không phát hiện trùng bản ghi hay tranh chấp quyền", noteEn: "No duplicate recording or rights conflict found" },
+    { key: "gui", label: "Gửi tới các nền tảng", labelEn: "Delivered to platforms", status: "done", at: addDays(rel, -10),
+      note: "Đã gửi tới " + tongNT + " nền tảng, ngày phát hành " + fmt.date(rel),
+      noteEn: "Delivered to " + tongNT + " platforms, release date " + fmt.date(rel) },
+    { key: "len", label: "Có mặt trên nền tảng", labelEn: "Live on platforms",
+      status: anyIssue ? "issue" : (allLive ? "done" : "doing"), at: liveAt.length ? liveAt[0] : null,
+      note: live + "/" + d.rows.length + " nền tảng lớn đã lên · " + d.others.live + "/" + d.others.count + " nền tảng khác",
+      noteEn: live + "/" + d.rows.length + " major platforms live · " + d.others.live + "/" + d.others.count + " others" },
+    { key: "baocao", label: "Báo cáo doanh thu", labelEn: "Revenue reporting",
+      status: firstRep >= 0 ? "done" : (age <= 2 ? "doing" : "todo"),
+      at: null,   /* bước này tính theo kỳ, không theo ngày: ghi trong note */
+      note: firstRep >= 0 ? "Có báo cáo từ kỳ " + PERIODS[firstRep].label
+          : (age <= 2 ? "Nền tảng báo cáo doanh thu sau 1 đến 2 tháng kể từ ngày phát hành" : "Chưa có nền tảng nào báo cáo doanh thu cho bản ghi này"),
+      noteEn: firstRep >= 0 ? "Reported from " + PERIODS[firstRep].label
+          : (age <= 2 ? "Platforms report revenue 1 to 2 months after release" : "No platform has reported revenue for this recording yet") }
+  ];
+}
+function missingOf(i, d) {
+  const out = [];
+  const add = (key, muc, label, labelEn, viec, viecEn) => out.push({ key, muc, label, labelEn, viec, viecEn });
+  d.rows.forEach(r => {
+    const ly = r.reason || (LY_DO[r.status] ? LY_DO[r.status][0][0] : ""), lyEn = r.reasonEn || (LY_DO[r.status] ? LY_DO[r.status][0][1] : "");
+    if (r.status === "rejected")
+      add("tuchoi:" + r.name, "chan", r.name + " từ chối bản ghi: " + ly, r.name + " rejected the recording: " + lyEn,
+        "Sửa theo lý do bên cạnh rồi gửi lại; Haustek gửi lại nền tảng trong đợt tiếp theo", "Fix the reason shown and resubmit; Haustek redelivers in the next batch");
+    else if (r.status === "pending")
+      add("chogui:" + r.name, "canh", r.name + " chưa xác nhận đã nhận bản ghi", r.name + " has not acknowledged the delivery",
+        "Haustek theo dõi và gửi lại nếu quá 10 ngày chưa có xác nhận", "Haustek follows up and redelivers after 10 days without acknowledgement");
+    else if (r.status === "takedown")
+      add("go:" + r.name, "canh", r.name + " đã gỡ bản ghi: " + ly, r.name + " took the recording down: " + lyEn,
+        "Liên hệ Haustek nếu cần khôi phục", "Contact Haustek to restore it");
+  });
+  if (d.others.pending > 0)
+    add("khac", "goiY", d.others.pending + " nền tảng nhỏ chưa xác nhận đã nhận bản ghi", d.others.pending + " smaller platforms have not acknowledged yet",
+      "Không ảnh hưởng đáng kể tới doanh thu; trạng thái tự cập nhật", "Negligible revenue impact; the status updates itself");
+  if (tIsrcAlt[i])
+    add("isrc2", "canh", "Bản ghi mang hai mã ISRC: " + tIsrc[i] + " và " + tIsrcAlt[i], "Two ISRCs on this recording: " + tIsrc[i] + " and " + tIsrcAlt[i],
+      "Haustek gộp báo cáo của hai mã; xác nhận với Haustek nếu một mã không còn dùng", "Haustek merges reports for both codes; tell Haustek if one code is retired");
+  if (tProd[i] > 0 && hash(i, 44) < 0.4)
+    add("producer", "canh", "Producer chưa có mã đối tác để nhận điểm producer", "The producer has no client ID to receive producer points",
+      "Cung cấp mã đối tác của producer để Haustek thanh toán " + fmt.pct(tProd[i]) + " điểm producer đang giữ lại", "Provide the producer’s client ID so Haustek can pay the " + fmt.pct(tProd[i]) + " producer points on hold");
+  if (hash(i, 45) < 0.08)
+    add("loi", "goiY", "Chưa có lời bài hát", "Lyrics not supplied",
+      "Thêm lời để Spotify và Apple Music hiển thị lời và gợi ý bài hát tốt hơn", "Add lyrics so Spotify and Apple Music can show them and recommend the track");
+  if (hash(i, 46) < 0.04)
+    add("ngonngu", "canh", "Chưa khai ngôn ngữ của lời", "Lyric language not declared",
+      "Khai ngôn ngữ để nền tảng xếp bài hát đúng thị trường", "Declare the language so platforms place the track in the right market");
+  if (tW2[i] >= 0 && hash(i, 47) < 0.15)
+    add("dongsangtac", "goiY", "Người đồng sáng tác " + ARTISTS[tW2[i]].name + " chưa xác nhận tỷ lệ chia tác quyền", "Co-writer " + ARTISTS[tW2[i]].name + " has not confirmed the writer split",
+      "Tác quyền của bài hát này được giữ lại cho tới khi hai bên xác nhận", "Publishing for this track is held until both writers confirm");
+  if (hash(i, 48) < 0.06)
+    add("nxb", "goiY", "Chưa khai nhà xuất bản tác quyền", "Publisher not declared",
+      "Khai nhà xuất bản để tác quyền quốc tế về đúng địa chỉ", "Declare the publisher so international publishing reaches the right party");
+  return out;
+}
+function assetSummary(i) {
+  const d = deliveryOf(i, true);
+  const miss = missingOf(i, d);
+  const live = d.rows.filter(r => r.status === "live").length;
+  const issue = d.rows.some(r => r.status === "rejected" || r.status === "takedown") || miss.some(m => m.muc === "chan");
+  const wait = d.rows.some(r => r.status === "processing" || r.status === "pending");
+  /* "còn thiếu" là việc phải làm (chặn hoặc cảnh báo); gợi ý đếm riêng */
+  const missing = miss.filter(m => m.muc !== "goiY").length;
+  return { stage: issue ? "issue" : wait ? "processing" : "live", live, total: DELIV_N, missing, hints: miss.length - missing, releaseDate: d.releaseDate };
+}
+/* Hồ sơ đầy đủ của một bản ghi cho người xem: bước, nền tảng, còn thiếu,
+   ma trận nền tảng × kỳ. Nội bộ thấy mọi kỳ; đối tác chỉ thấy kỳ đã duyệt. */
+function assetOf(i, role, partyId) {
+  const d = deliveryOf(i, false);
+  const steps = stepsOf(i, d), missing = missingOf(i, d);
+  const isAdmin = role === "admin";
+  const pList = [];
+  for (let p = 0; p < P; p++) if (isAdmin || state.approved[PERIODS[p].k]) pList.push(p);
+  const mineFactor = isAdmin ? null : (p, g) => (g > 0 ? mineOf(i, p, role, partyId, "rec") / g : 0);
+  const mx = trackMatrix(i, pList, mineFactor);
+  /* con số cạnh từng nền tảng: kỳ gần nhất có trong danh sách */
+  const lastP = pList.length ? pList[pList.length - 1] : -1;
+  let gv = null, sv = null, mv = null;
+  if (lastP >= 0) {
+    const col = pList.length - 1;
+    gv = mx.rows.map(r => r.gross[col]); sv = mx.rows.map(r => r.streams[col]); mv = mx.rows.map(r => r.mine[col]);
+  }
+  /* con số cạnh nền tảng chỉ hiện khi nền tảng đang lên; nền tảng bị từ
+     chối, đã gỡ hay chưa xác nhận không có số của kỳ gần nhất (ma trận theo
+     tháng vẫn giữ số các kỳ trước, vì đó là lịch sử) */
+  const platforms = d.rows.map((r, j) => Object.assign({}, r, (j < N_TOP && gv && r.status === "live")
+    ? { streams: sv[j], gross: gv[j], mine: mv[j] } : { streams: null, gross: null, mine: null }));
+  const life = { gross: 0, mine: 0, streams: 0 };
+  mx.totals.gross.forEach((v, k) => { life.gross += v; life.mine += mx.totals.mine[k]; life.streams += mx.totals.streams[k]; });
+  const live = d.rows.filter(r => r.status === "live").length;
+  const issue = d.rows.some(r => r.status === "rejected" || r.status === "takedown") || missing.some(m => m.muc === "chan");
+  const wait = d.rows.some(r => r.status === "processing" || r.status === "pending");
+  const writers = [ARTISTS[tW1[i]].name];
+  if (tW2[i] >= 0) writers.push(ARTISTS[tW2[i]].name);
+  return {
+    id: i, title: tTitle[i], isrc: tIsrc[i], isrcAlt: tIsrcAlt[i] || null, upc: tUpc[i], type: TYPES[tType[i]],
+    artist: ARTISTS[tArtist[i]].name, artistClientId: ARTISTS[tArtist[i]].clientId,
+    label: tLabel[i] >= 0 ? LABELS[tLabel[i]].name : null, labelClientId: tLabel[i] >= 0 ? LABELS[tLabel[i]].clientId : null,
+    releaseDate: d.releaseDate, releasePeriod: PERIODS[tRel[i]].label,
+    credits: { writers, producerPts: tProd[i] > 0 ? Math.round(tProd[i] * 1000) / 1000 : 0 },
+    summary: { stage: issue ? "issue" : wait ? "processing" : "live", live, total: DELIV_N,
+               missing: missing.filter(m => m.muc !== "goiY").length, hints: missing.filter(m => m.muc === "goiY").length },
+    steps, missing, platforms, others: d.others,
+    monthly: { periods: pList.map(p => ({ k: PERIODS[p].k, label: PERIODS[p].label, open: !!state.approved[PERIODS[p].k] })), rows: mx.rows, totals: mx.totals },
+    lifetime: { gross: cents(life.gross), mine: cents(life.mine), streams: life.streams },
+    lastPeriod: lastP >= 0 ? PERIODS[lastP].label : null
+  };
+}
+/* Danh mục theo góc nhìn phát hành: mọi bản ghi trong phạm vi, kể cả bản
+   chưa có doanh thu, kèm trạng thái quy trình và doanh thu tích luỹ của các
+   kỳ đã xét duyệt. Lọc, sắp xếp và phân trang ngay tại đây để gói dữ liệu
+   gửi xuống trình duyệt nhỏ. */
+function catalogueOf(role, partyId, opts) {
+  opts = opts || {};
+  const sc = scopeOf(role, partyId, "rec"), n = sc ? sc.length : N;
+  const q = (opts.q || "").trim().toLowerCase();
+  const daDuyet = [];
+  for (let p = 0; p < P; p++) if (state.approved[PERIODS[p].k]) daDuyet.push(p);
+  const rows = [], counts = { all: n, live: 0, processing: 0, issue: 0, missing: 0 };
+  for (let k = 0; k < n; k++) {
+    const i = sc ? sc[k] : k;
+    const s = assetSummary(i);
+    counts[s.stage]++;
+    if (s.missing) counts.missing++;
+    if (opts.stage === "missing" ? !s.missing : (opts.stage && s.stage !== opts.stage)) continue;
+    if (q && !(tTitle[i].toLowerCase().includes(q) || tIsrc[i].toLowerCase().includes(q)
+               || ARTISTS[tArtist[i]].name.toLowerCase().includes(q))) continue;
+    let g = 0, st = 0;
+    for (const p of daDuyet) { g += grossRec(i, p); st += recStreams[i * P + p]; }
+    rows.push({ id: i, title: tTitle[i], isrc: tIsrc[i], type: TYPES[tType[i]], artist: ARTISTS[tArtist[i]].name,
+      label: tLabel[i] >= 0 ? LABELS[tLabel[i]].name : null,
+      releaseDate: s.releaseDate, releasePeriod: PERIODS[tRel[i]].label,
+      stage: s.stage, live: s.live, total: s.total, missing: s.missing, hints: s.hints, gross: cents(g), streams: st });
+  }
+  const key = opts.sort || "releaseDate", dir = opts.dir === 1 ? 1 : -1;
+  rows.sort((a, b) => {
+    const A = a[key], B = b[key];
+    return typeof A === "string" ? A.localeCompare(B, "vi") * dir : ((A || 0) - (B || 0)) * dir;
+  });
+  const offset = Math.max(0, opts.offset | 0), limit = Math.min(200, Math.max(1, opts.limit || 25));
+  return { total: rows.length, counts, offset, limit, rows: rows.slice(offset, offset + limit) };
+}
+
+/* =====================================================================
+   14d. LABEL MẸ / LABEL CON
+   ---------------------------------------------------------------------
+   Label lớn có thể có các label con, mỗi label con là một tài khoản riêng
+   với roster riêng và tỷ lệ riêng. Label mẹ theo dõi được toàn bộ cây bên
+   dưới: từng label con, từng nghệ sĩ của label con, và xem được cổng của
+   label con với tư cách người được uỷ quyền.
+
+   Tiền KHÔNG đổi chủ theo cây này: phần label được hưởng của một bản ghi
+   thuộc về label trực tiếp quản lý bản ghi đó. Label mẹ có được hưởng
+   phần nào trên doanh thu của label con hay không là câu hỏi cần chốt
+   số 9; bản mẫu giả định không.
+   ===================================================================== */
+function labelChildren(labelId) { return LABELS.filter(l => l.parentId === labelId); }
+function canViewAs(role, partyId, labelId) {
+  return role === "label" && LABELS[labelId] && (labelId === partyId || LABELS[labelId].parentId === partyId);
+}
+function labelSlice(lid, p) {
+  const pk = PERIODS[p].k, l = LABELS[lid];
+  const ids = idxOf(byLabel, lid);
+  const per = new Map();
+  let earning = 0, streams = 0, gross = 0, artist = 0, labelCut = 0, producer = 0;
+  for (const i of ids) {
+    const g = grossRec(i, p);
+    if (g <= 0) continue;
+    const sp = splitRec(i, g, pk), a = tArtist[i];
+    let o = per.get(a);
+    if (!o) { o = { artistId: a, name: ARTISTS[a].name, clientId: ARTISTS[a].clientId, catalogue: idxOf(byArtist, a).length, tracks: 0, streams: 0, gross: 0, artist: 0, labelCut: 0 }; per.set(a, o); }
+    o.tracks++; o.streams += recStreams[i * P + p]; o.gross += g; o.artist += sp.artist; o.labelCut += sp.labelCut;
+    earning++; streams += recStreams[i * P + p]; gross += g; artist += sp.artist; labelCut += sp.labelCut; producer += sp.producer;
+  }
+  const artists = [];
+  ARTISTS.forEach(a => {
+    if (a.labelId !== lid) return;
+    const o = per.get(a.id) || { artistId: a.id, name: a.name, clientId: a.clientId, catalogue: idxOf(byArtist, a.id).length, tracks: 0, streams: 0, gross: 0, artist: 0, labelCut: 0 };
+    o.gross = cents(o.gross); o.artist = cents(o.artist); o.labelCut = cents(o.labelCut);
+    artists.push(o);
+  });
+  artists.sort((x, y) => y.gross - x.gross || x.name.localeCompare(y.name, "vi"));
+  return { labelId: lid, name: l.name, clientId: l.clientId, parentId: l.parentId,
+    rate: rates.rateFor(l.key, pk), artistsCount: artists.length, tracks: ids.length, earning,
+    earningArtists: per.size, streams, gross: cents(gross), artist: cents(artist), labelCut: cents(labelCut), producer: cents(producer),
+    artists };
+}
+function labelTreeOf(labelId, p) {
+  const me = labelSlice(labelId, p);
+  const children = labelChildren(labelId).map(l => labelSlice(l.id, p));
+  const total = { artists: me.artistsCount, tracks: me.tracks, earning: me.earning, streams: me.streams, gross: me.gross, artist: me.artist, labelCut: me.labelCut };
+  children.forEach(ch => { total.artists += ch.artistsCount; total.tracks += ch.tracks; total.earning += ch.earning; total.streams += ch.streams;
+    total.gross = cents(total.gross + ch.gross); total.artist = cents(total.artist + ch.artist); total.labelCut = cents(total.labelCut + ch.labelCut); });
+  /* doanh thu gộp qua các kỳ đã xét duyệt, tách label mẹ và từng label con */
+  const history = [];
+  for (let q = 0; q < P; q++) {
+    if (!state.approved[PERIODS[q].k]) continue;
+    const sum = lid => { let s = 0; for (const i of idxOf(byLabel, lid)) s += grossRec(i, q); return cents(s); };
+    history.push({ k: PERIODS[q].k, label: PERIODS[q].label, own: sum(labelId), children: children.map(ch => sum(ch.labelId)) });
+  }
+  const parent = LABELS[labelId].parentId >= 0 ? LABELS[LABELS[labelId].parentId] : null;
+  return { me: { labelId, name: me.name, clientId: me.clientId, rate: me.rate },
+    parent: parent ? { labelId: parent.id, name: parent.name, clientId: parent.clientId } : null,
+    own: me, children, total, history };
 }
 
 /* =====================================================================
@@ -1036,6 +1475,10 @@ function seedAccounts() {
   want(a => a.labelId >= 0 && !a.writer, 1);
   wanted.forEach((i, n) => state.accounts.push(mk("nghesi" + (n + 1) + "@vidu.vn", "artist", ARTISTS[i].key)));
   state.accounts.push(mk("cho-moi@vidu.vn", "artist", ARTISTS[5].key, "invited"));
+  /* Hai label con của label mẫu đầu tiên, để thấy cả góc nhìn label mẹ
+     (cây label, xem thay) lẫn góc nhìn label con (tên label mẹ trên hợp đồng). */
+  state.accounts.push(mk("labelcon1@vidu.vn", "label", LABELS[10].key));
+  state.accounts.push(mk("labelcon2@vidu.vn", "label", LABELS[20].key));
   store.save();
 }
 seedAccounts();
@@ -1170,7 +1613,14 @@ const QUESTIONS = [
          + "Trang Hợp đồng & tỷ lệ của nghệ sĩ nói rõ giả định này." ,
     tEn: "Are artists under a label paid by Haustek or by the label?",
     whyEn: "This decides the whole label-artist experience. If Haustek pays artists directly at the rate the label declared, they have their own statement and payout as the prototype draws. If Haustek pays the label in full and the label splits it, the artist only has 'a share per the label's split table' and no payout from Haustek; their statement, threshold and advance are between them and the label.",
-    guessEn: "The prototype assumes Haustek pays each artist directly at the label's rate, with the label receiving the remainder. The artist's Agreement & rate card states this assumption." }
+    guessEn: "The prototype assumes Haustek pays each artist directly at the label's rate, with the label receiving the remainder. The artist's Agreement & rate card states this assumption." },
+  { id: "q9", t: "Label mẹ có được hưởng phần nào trên doanh thu của label con không?",
+    why: "Quyết định label mẹ chỉ THEO DÕI label con hay còn có DÒNG TIỀN từ label con. Nếu có, cần thêm một tỷ lệ nữa trong bảng tỷ lệ (phần label mẹ trên phần label con được hưởng), "
+       + "bảng kê của label con phải hiện khoản khấu trừ đó, và bảng thanh toán của Haustek có thêm một dòng cho label mẹ. Nếu không, cây label chỉ là uỷ quyền xem.",
+    guess: "Bản mẫu giả định KHÔNG: phần label được hưởng của một bản ghi thuộc về label trực tiếp quản lý bản ghi đó. Label mẹ xem được toàn bộ số liệu của label con và nghệ sĩ bên dưới, nhưng không có dòng tiền nào đi qua label mẹ.",
+    tEn: "Does a parent label take a share of its sub-labels’ revenue?",
+    whyEn: "This decides whether the parent label only MONITORS sub-labels or also has a MONEY FLOW from them. If it does, the rate table needs one more rate (the parent’s share of the sub-label’s cut), the sub-label’s statement must show that deduction, and Haustek’s payout run gains a row for the parent. If not, the label tree is a viewing delegation only.",
+    guessEn: "The prototype assumes NO: the label share on a recording belongs to the label that directly manages it. The parent sees every figure of its sub-labels and their artists, but no money passes through the parent." }
 ];
 const SAMPLES_NEEDED = [
   { id: "s1", t: "File mẫu master data 10–15 dòng",
@@ -1430,6 +1880,13 @@ const admin = {
   artistOf: i => ARTISTS[tArtist[i]], labelOf: i => (tLabel[i] >= 0 ? LABELS[tLabel[i]] : null),
   streamsOf: (i, p) => recStreams[i * P + p],
   grossRec, grossPub, grossRecByFeed, grossOf, splitRec, splitDim, mineOf, agg, scopeOf,
+  /* nền tảng, quy trình phát hành, cây label */
+  platformNames: PLAT_NAMES, platformNamesEn: PLAT_NAMES_EN, platformSpm: PLAT_SPM,
+  splitStores, splitStreams, trackMatrix,
+  platformReport: pList => platformReport("admin", 0, pList || PERIODS.map(p => p.idx)),
+  asset: i => assetOf(i, "admin", 0), assetSummary, deliveryOf, releaseDateOf, deliveryNames: DELIV_NAMES, othersCount: OTHERS_N,
+  catalogue: opts => catalogueOf("admin", 0, opts),
+  labelChildren, labelTree: (labelId, pIdx) => labelTreeOf(labelId, pIdx), labelSlice,
   idxOf, byArtist, byLabel, byWriter,
   feedLoaded, loadedFeedIds, missingFeeds, pubLoaded,
   recon, feedTotals, approvalChecks, canApprove, approve, revoke,
@@ -1590,7 +2047,7 @@ const api = {
         if (!who) return null;
         return { email: a.email, role: a.role, partyId: id, name: who.name,
                  clientId: who.clientId, status: a.status,
-                 kind: isL ? "label" : (who.labelId >= 0 ? "artist-label" : "artist-indie") };
+                 kind: isL ? (who.parentId >= 0 ? "sublabel" : "label") : (who.labelId >= 0 ? "artist-label" : "artist-indie") };
       }).filter(Boolean) });
   },
 
@@ -1605,6 +2062,9 @@ const api = {
       belongsTo: isLabel ? null : (me.labelId >= 0 ? LABELS[me.labelId].name : "Độc lập"),
       belongsToEn: isLabel ? null : (me.labelId >= 0 ? LABELS[me.labelId].name : "Independent"),
       independent: isLabel ? false : me.labelId < 0,
+      /* cây label: label con biết label mẹ; label mẹ biết mình có bao nhiêu label con */
+      parentLabel: (isLabel && me.parentId >= 0) ? { labelId: me.parentId, name: LABELS[me.parentId].name, clientId: LABELS[me.parentId].clientId } : null,
+      childLabels: isLabel ? labelChildren(partyId).length : 0,
       hasRecording: recCount > 0,
       /* Tác quyền thuộc người sáng tác, không đi qua label — mục 2.3 */
       hasPublishing: !isLabel && pubCount > 0,
@@ -1787,6 +2247,8 @@ const api = {
       kind: isLabel ? "label" : (me.labelId >= 0 ? "artist-label" : "artist-indie"),
       party: { name: me.name, clientId: me.clientId },
       label: (!isLabel && me.labelId >= 0) ? { name: LABELS[me.labelId].name, clientId: LABELS[me.labelId].clientId } : null,
+      parentLabel: (isLabel && me.parentId >= 0) ? { name: LABELS[me.parentId].name, clientId: LABELS[me.parentId].clientId } : null,
+      childLabels: isLabel ? labelChildren(partyId).length : 0,
       haustekFee: CFG.HAUSTEK_FEE, pubFee: CFG.PUB_FEE,
       artistShare: cur, counterpartShare: cents(1 - cur),
       effectiveFrom: row ? PERIODS[pIndexOf(row.from)].label : null,
@@ -1857,6 +2319,57 @@ const api = {
     return scrub({ id: r.id, status: r.status, tracks: r.tracks.length });
   },
 
+  /* Hồ sơ phát hành của MỘT bản ghi trong danh mục: bước nào đã xong, nền
+     tảng nào đã lên (kèm đường dẫn), còn thiếu gì, và lượt nghe, doanh thu
+     theo từng nền tảng qua từng kỳ đã xét duyệt. Không cần kỳ: trạng thái
+     phát hành là của bản ghi, không phải của kỳ. */
+  trackAsset(role, partyId, trackId) {
+    assertParty(role, partyId);
+    const i = +trackId;
+    if (!inScope(role, partyId, "rec", i)) throw new Error("Bản ghi này không thuộc phạm vi của bạn");
+    return scrub(assetOf(i, role, partyId));
+  },
+  /* Danh mục theo góc nhìn phát hành: mọi bản ghi trong phạm vi, kể cả
+     bản chưa có doanh thu. opts: q, stage (live|processing|issue|missing),
+     sort, dir, offset, limit. */
+  catalogue(role, partyId, opts) {
+    assertParty(role, partyId);
+    return scrub(catalogueOf(role, partyId, opts));
+  },
+  /* Lượt nghe và doanh thu theo từng nền tảng, từng kỳ đã xét duyệt, cho cả
+     tài khoản. Cột nào cộng lại cũng bằng con số ở trang Tổng quan. */
+  platformReport(role, partyId) {
+    assertParty(role, partyId);
+    const pList = [];
+    for (let p = 0; p < P; p++) if (state.approved[PERIODS[p].k]) pList.push(p);
+    return scrub(platformReport(role, partyId, pList));
+  },
+  /* Cây label: label mẹ thấy chính mình, từng label con và nghệ sĩ bên
+     dưới mỗi label con. Nghệ sĩ không có cây; label con chỉ thấy cây của
+     chính mình (không có label con) và tên label mẹ. */
+  labelTree(role, partyId, periodKey) {
+    assertParty(role, partyId);
+    if (role !== "label") throw new Error("Chỉ label mới có cây label");
+    const p = requireApproved(periodKey);
+    return scrub(Object.assign({ periodKey }, labelTreeOf(partyId, p)));
+  },
+  /* Những tài khoản mà người này được xem thay: label mẹ xem được từng
+     label con. Hệ thống thật kiểm tra uỷ quyền này ở máy chủ theo phiên
+     đăng nhập; bản mẫu kiểm ở đây và cổng đối tác gọi trước khi đổi phiên. */
+  delegations(role, partyId) {
+    assertParty(role, partyId);
+    if (role !== "label") return scrub({ viewAs: [], parent: null });
+    const parent = LABELS[partyId].parentId >= 0 ? LABELS[LABELS[partyId].parentId] : null;
+    return scrub({
+      viewAs: labelChildren(partyId).map(l => ({ labelId: l.id, name: l.name, clientId: l.clientId })),
+      parent: parent ? { labelId: parent.id, name: parent.name, clientId: parent.clientId } : null
+    });
+  },
+  canViewAs(role, partyId, labelId) {
+    assertParty(role, partyId);
+    return !!canViewAs(role, partyId, +labelId);
+  },
+
   trend(role, partyId, stream) {
     assertParty(role, partyId);
     stream = stream === "pub" ? "pub" : "rec";
@@ -1872,52 +2385,80 @@ const api = {
     stream = stream === "pub" ? "pub" : "rec";
     chanTacQuyenChoLabel(role, stream);
     const isTerr = dim === "terr";
-    /* Khách chỉ thấy tên CỬA HÀNG — thứ họ vốn đã biết. Không có tên đơn
-       vị phân phối, không có "luồng dữ liệu" nào ở đây: đó là chuyện vận
+    const isStore = !isTerr && stream === "rec";
+    const expanded = !!(opts && opts.all);
+    /* Khách chỉ thấy tên NỀN TẢNG — thứ họ vốn đã biết. Không có tên đơn
+       vị nào khác, không có "nguồn báo cáo" nào ở đây: đó là chuyện vận
        hành nội bộ của Haustek. */
-    const names = isTerr ? TERR : (stream === "rec" ? STORES : PUBSRC);
-    const wts   = isTerr ? TERR_W : (stream === "rec" ? STORE_W : PUBSRC_W);
+    const names = isTerr ? TERR : (isStore ? PLAT_NAMES : PUBSRC);
+    const wts   = isTerr ? TERR_W : (isStore ? null : PUBSRC_W);
     const acc = new Float64Array(names.length);
+    const accTail = (isStore && expanded) ? new Float64Array(TAIL_W.length) : null;
     const sc = scopeOf(role, partyId, stream), n = sc ? sc.length : 0;
-    const cap = Math.min(n, 9000), step = Math.max(1, Math.floor(n / cap));
+    const cap = Math.max(1, Math.min(n, 9000)), step = Math.max(1, Math.floor(n / cap));
+    const rev = new Float64Array(N_PLAT);
     let scale = 0;
     for (let k = 0; k < n; k += step) {
       const i = sc[k];
       const m = mineOf(i, p, role, partyId, stream);
       if (m <= 0) continue;
       scale += m;
-      const parts = splitDim(i, m, wts);
-      for (let j = 0; j < names.length; j++) acc[j] += parts[j];
+      if (isStore) {
+        /* cùng phép chia với ma trận nền tảng × kỳ của từng bản ghi */
+        const g = grossOf(i, p, stream), f = m / g;
+        splitStores(i, p, rev);
+        for (let j = 0; j < N_PLAT; j++) acc[j] += rev[j] * f;
+        if (accTail) {
+          const parts = splitDim(i, rev[N_PLAT - 1] * f, TAIL_W, p);
+          for (let j = 0; j < TAIL_W.length; j++) accTail[j] += parts[j];
+        }
+      } else {
+        const parts = splitDim(i, m, wts, p);
+        for (let j = 0; j < names.length; j++) acc[j] += parts[j];
+      }
     }
     const total = agg(role, partyId, p, stream).total;
     const norm = scale > 0 ? total / scale : 0;
-    let list = names.map((s, j) => ({ name: s, value: cents(acc[j] * norm) })).filter(x => x.value > 0.004);
-    list.sort((a, b) => b.value - a.value);
-    const topN = (!isTerr && stream === "rec") ? N_TOP : list.length;
-    /* Mở rộng thì hiện nhiều dòng hơn, nhưng KHÔNG được cắt mất tiền: phần
-       đuôi bị cắt vẫn phải nằm lại một dòng. Cắt trắng là khách bấm "xem tất
-       cả" rồi thấy tổng hụt gần 10% so với lúc thu gọn — không có cách nào
-       giải thích được chuyện đó. */
-    const N_HIEN = (opts && opts.all) ? 40 : topN;
-    const hien = list.slice(0, N_HIEN);
-    const duoi = list.slice(N_HIEN);
-    let tail = duoi.length
-      ? { count: duoi.length, value: cents(duoi.reduce((s, x) => s + x.value, 0)) }
-      : null;
-    /* Bóc 218 cửa hàng rồi làm tròn từng dòng tới xu thì tổng lệch vài xu
-       so với con số ở ô lớn — nhỏ, nhưng đây là báo cáo tiền, và người đọc
-       cộng tay được. Dồn phần dư vào dòng "còn lại" (hoặc dòng lớn nhất nếu
-       không có dòng nào bị gộp) để bảng luôn cộng đúng tuyệt đối. */
+    let hien, tail, totalStores;
+    if (isStore) {
+      /* 8 nền tảng lớn đứng riêng; phần còn lại là MỘT dòng, hoặc bóc ra
+         theo từng nền tảng nhỏ khi mở rộng. Không bao giờ cắt mất tiền:
+         phần đuôi bị cắt vẫn nằm lại một dòng. */
+      const top = PLAT_NAMES.slice(0, N_TOP).map((s, j) => ({ name: s, value: cents(acc[j] * norm) })).filter(x => x.value > 0.004);
+      top.sort((a, b) => b.value - a.value);
+      const tailTotal = cents(acc[N_PLAT - 1] * norm);
+      if (!expanded) {
+        hien = top;
+        tail = tailTotal > 0.004 ? { count: TAIL_W.length, value: tailTotal, name: PLAT_NAMES[N_PLAT - 1], nameEn: PLAT_NAMES_EN[N_PLAT - 1] } : null;
+        totalStores = top.length + (tail ? tail.count : 0);
+      } else {
+        const list = TAIL_NAMES.map((s, j) => ({ name: s, value: cents(accTail[j] * norm) })).filter(x => x.value > 0.004);
+        list.sort((a, b) => b.value - a.value);
+        const N_HIEN = Math.max(0, 40 - top.length);
+        hien = top.concat(list.slice(0, N_HIEN));
+        const duoi = list.slice(N_HIEN);
+        tail = duoi.length ? { count: duoi.length, value: cents(duoi.reduce((s, x) => s + x.value, 0)), name: PLAT_NAMES[N_PLAT - 1], nameEn: PLAT_NAMES_EN[N_PLAT - 1] } : null;
+        totalStores = top.length + list.length;
+      }
+    } else {
+      let list = names.map((s, j) => ({ name: s, value: cents(acc[j] * norm) })).filter(x => x.value > 0.004);
+      list.sort((a, b) => b.value - a.value);
+      const N_HIEN = expanded ? 40 : list.length;
+      hien = list.slice(0, N_HIEN);
+      const duoi = list.slice(N_HIEN);
+      tail = duoi.length ? { count: duoi.length, value: cents(duoi.reduce((s, x) => s + x.value, 0)) } : null;
+      totalStores = list.length;
+    }
+    /* Làm tròn từng dòng tới xu thì tổng lệch vài xu so với ô lớn — nhỏ,
+       nhưng đây là báo cáo tiền, và người đọc cộng tay được. Dồn phần dư
+       vào dòng "còn lại" (hoặc dòng lớn nhất) để bảng luôn cộng đúng. */
     const dangCo = cents(hien.reduce((x, r) => x + r.value, 0) + (tail ? tail.value : 0));
     const du = cents(total - dangCo);
     if (Math.abs(du) > 0.004) {
       if (tail) tail.value = cents(tail.value + du);
       else if (hien.length) hien[0].value = cents(hien[0].value + du);
     }
-    return scrub({
-      dim, rows: hien, tail,
-      shown: hien.length, totalStores: list.length, expanded: !!(opts && opts.all)
-    });
+    return scrub({ dim, rows: hien, tail, shown: hien.length, totalStores, expanded });
   },
 
   tracks(role, partyId, periodKey, stream, opts) {
@@ -1961,16 +2502,22 @@ const api = {
     if (!inScope(role, partyId, stream, i)) throw new Error("Bản ghi này không thuộc phạm vi của bạn");
     const g = grossOf(i, p, stream);
     const m = mineOf(i, p, role, partyId, stream);
-    const names = stream === "rec" ? STORES : PUBSRC, wts = stream === "rec" ? STORE_W : PUBSRC_W;
-    const bySrc = splitDim(i, m, wts), byTerr = splitDim(i, m, TERR_W);
-    const mk = (ns, vs) => ns.map((nm, j) => ({ name: nm, value: cents(vs[j]) }))
-      .sort((a, b) => b.value - a.value).slice(0, 8).filter(x => x.value > 0.004);
+    const byTerr = splitDim(i, m, TERR_W, p);
+    const mk = (ns, vs, nsEn) => ns.map((nm, j) => ({ name: nm, nameEn: nsEn ? nsEn[j] : nm, value: cents(vs[j]) }))
+      .sort((a, b) => b.value - a.value).slice(0, 9).filter(x => x.value > 0.004);
+    let byStore;
+    if (stream === "rec") {
+      /* cùng phép chia với ma trận nền tảng × kỳ, nên hai chỗ khớp nhau */
+      const rev = splitStores(i, p), f = g > 0 ? m / g : 0;
+      /* làm tròn y như ma trận nền tảng × kỳ, để hai bảng khớp nhau tới xu */
+      byStore = mk(PLAT_NAMES, khopTong(Array.from(rev, v => v * f), m, cents), PLAT_NAMES_EN);
+    } else byStore = mk(PUBSRC, splitDim(i, m, PUBSRC_W, p));
     const out = {
       id: i, title: tTitle[i], isrc: tIsrc[i], type: TYPES[tType[i]],
       artist: ARTISTS[tArtist[i]].name,
       streams: stream === "rec" ? recStreams[i * P + p] : null,
       gross: cents(g), mine: m,
-      byStore: mk(names, bySrc), byTerritory: mk(TERR, byTerr), steps: []
+      byStore, byTerritory: mk(TERR, byTerr), steps: []
     };
     if (stream === "rec") {
       const s = splitRec(i, g, periodKey);

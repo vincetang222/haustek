@@ -98,6 +98,9 @@ var IC = {
   moon:  '<path d="M13.4 9.6A5.8 5.8 0 0 1 6.4 2.6a5.9 5.9 0 1 0 7 7z"/>',
   auto:  '<circle cx="8" cy="8" r="6.2"/><path d="M8 1.8v12.4" /><path d="M8 1.8a6.2 6.2 0 0 1 0 12.4z" fill="currentColor" stroke="none"/>',
   list:  '<path d="M2.5 4h11M2.5 8h11M2.5 12h7"/>',
+  link:  '<path d="M6.8 9.2a2.6 2.6 0 0 0 3.7 0l2.3-2.3a2.6 2.6 0 0 0-3.7-3.7L7.9 4.4"/><path d="M9.2 6.8a2.6 2.6 0 0 0-3.7 0L3.2 9.1a2.6 2.6 0 0 0 3.7 3.7l1.2-1.2"/>',
+  tree:  '<rect x="5.5" y="1.5" width="5" height="3.4" rx="1"/><rect x="1.5" y="11" width="5" height="3.4" rx="1"/><rect x="9.5" y="11" width="5" height="3.4" rx="1"/><path d="M8 4.9v3M4 11V7.9h8V11"/>',
+  layers:'<path d="M8 2 14 5.2 8 8.4 2 5.2z"/><path d="M2 8.2 8 11.4l6-3.2M2 11.2 8 14.4l6-3.2"/>',
   chart: '<path d="M2 13.5V8M6 13.5V4M10 13.5v-7M14 13.5V2.5"/>',
   ask:   '<circle cx="8" cy="8" r="6.4"/><path d="M6.2 6.2a1.9 1.9 0 1 1 2.6 1.8c-.5.2-.8.6-.8 1.1v.3M8 11.9v.1"/>',
   /* Kính lúp. Trước đây ô tìm mượn tạm icon dấu hỏi — trông như nút trợ
@@ -150,6 +153,9 @@ var fmt = {
     if (b == null || !b) return null;
     return (a - b) / b;
   },
+  /* ngày yyyy-mm-dd → dd.mm.yyyy; giờ thì thêm hh:mm */
+  date: function (s) { return s ? String(s).slice(0, 10).split('-').reverse().join('.') : '—'; },
+  when: function (s) { return s ? String(s).slice(8, 10) + '.' + String(s).slice(5, 7) + '.' + String(s).slice(0, 4) + ' ' + String(s).slice(11, 16) : '—'; },
   luc: function (s) {
     if (!s) return '—';
     s = String(s);
@@ -463,6 +469,7 @@ function chay(cauHinh) {
           '<select class="inline-sel" data-ky aria-label="Kỳ"></select>' +
           oCaiDat() +
         '</header>' +
+        '<div class="banner" data-banner></div>' +
         '<main data-main></main>' +
       '</div>';
 
@@ -548,6 +555,7 @@ function chay(cauHinh) {
     $('[data-ctl-l]').textContent = c.t('display');
     $('[data-note]').textContent = cauHinh.ghiChu ? cauHinh.ghiChu(c) : '';
     $('[data-chan]').innerHTML = cauHinh.chanTrai ? cauHinh.chanTrai(c) : '';
+    $('[data-banner]').innerHTML = cauHinh.bieuNgu ? (cauHinh.bieuNgu(c) || '') : '';
 
     var sel = $('[data-ky]');
     sel.innerHTML = kys.map(function (p) {

@@ -61,7 +61,9 @@ HT.dangKy({
       hdThanhToan: 'Bên thanh toán', hdThanhToanV: 'Haustek thanh toán trực tiếp cho bạn theo tỷ lệ này',
       hdNguong: 'Ngưỡng thanh toán tối thiểu', hdProducer: 'Bài hát có điểm producer', hdProducerMo: 'điểm producer được khấu trừ từ phần của bạn',
       hdLichSu: 'Lịch sử tỷ lệ', hdKy: 'Từ kỳ', hdGiaDinh: 'Bản mẫu giả định Haustek thanh toán trực tiếp cho từng nghệ sĩ theo tỷ lệ do label đặt. Nếu thực tế label tự chia cho nghệ sĩ thì trang này sẽ thay đổi (câu hỏi cần chốt số 8).',
-      hdTacQuyen: 'Phí quản lý tác quyền'
+      hdTacQuyen: 'Phí quản lý tác quyền',
+      hdLabelMe: 'Label mẹ', hdLabelCon: 'Label con', hdLabelConV: '{n} label con, xem trang Hệ thống label',
+      moLabel: 'Label · {n} bài hát đã gửi tới nền tảng', moLabelCon: 'Label con của {p} · {n} bài hát đã gửi tới nền tảng'
     },
     en: {
       navTong: 'Overview', h1: 'Overview',
@@ -105,7 +107,9 @@ HT.dangKy({
       hdThanhToan: 'Paid by', hdThanhToanV: 'Haustek pays you directly at this rate',
       hdNguong: 'Minimum payout', hdProducer: 'Tracks with producer points', hdProducerMo: 'producer points come off your share',
       hdLichSu: 'Rate history', hdKy: 'From', hdGiaDinh: 'The prototype assumes Haustek pays each artist directly at the rate the label set. If the label pays its artists itself, this page changes (open question 8).',
-      hdTacQuyen: 'Publishing administration fee'
+      hdTacQuyen: 'Publishing administration fee',
+      hdLabelMe: 'Parent label', hdLabelCon: 'Sub-labels', hdLabelConV: '{n} sub-labels, see the Label network page',
+      moLabel: 'Label · {n} tracks delivered to platforms', moLabelCon: 'Sub-label of {p} · {n} tracks delivered to platforms'
     }
   },
 
@@ -133,7 +137,7 @@ HT.dangKy({
       mo: HM.esc(c.song(me, 'belongsTo') ? (c.lang === 'vi'
         ? (me.independent ? 'Hợp đồng độc lập với Haustek' : 'Nghệ sĩ thuộc ' + me.belongsTo)
         : (me.independent ? 'Independent agreement with Haustek' : 'Artist under ' + me.belongsTo))
-        : (c.lang === 'vi' ? 'Label · ' + me.trackCount + ' bản ghi đang phân phối' : 'Label · ' + me.trackCount + ' recordings distributed'))
+        : (me.parentLabel ? t('moLabelCon').replace('{p}', me.parentLabel.name) : t('moLabel')).replace('{n}', HT.fmt.n(me.trackCount)))
     });
 
     if (coPub) {
@@ -227,9 +231,13 @@ HT.dangKy({
         p: HM.esc(c.lang === 'vi'
           ? 'Thu nhập của bạn, tách theo từng nền tảng.'
           : 'Your money, split by where the track was played.'),
+        /* Dòng đuôi gộp các nền tảng nhỏ: giá trị của nó vẫn nằm trong
+           tổng, chỉ đổi cách gọi tên (tên hai thứ tiếng từ tầng dữ liệu
+           nếu có, không thì "n nền tảng khác" như trước). */
         than: HB.o({ loai: 'thanh', hang: ch.rows.map(function (r, i) {
-          return { ten: r.name, gt: r.value, mau: P[i % 8] };
-        }).concat(ch.tail ? [{ ten: ch.tail.count + ' ' + t('khac'), gt: ch.tail.value, mau: HB.mau('neutral-bar') }] : []) }),
+          return { ten: c.song(r, 'name'), gt: r.value, mau: P[i % 8] };
+        }).concat(ch.tail ? [{ ten: ch.tail.name ? c.song(ch.tail, 'name') + ' (' + HT.fmt.n(ch.tail.count) + ')' : ch.tail.count + ' ' + t('khac'),
+                              gt: ch.tail.value, mau: HB.mau('neutral-bar') }] : []) }),
         chan: ch.tail
           ? (c.lang === 'vi' ? 'Còn ' + ch.tail.count + ' nền tảng khác được gộp vào dòng cuối. Tổng vẫn đúng bằng ' : ch.tail.count + ' more, folded into the last row — the total is still ') +
             '<b>' + HM.esc(HT.fmt.usd(s.total)) + '</b>'
@@ -333,8 +341,15 @@ function veHopDong(c) {
   try { hd = api.contract(me.role, me.partyId, c.kyKey); } catch (e) { return ''; }
   var la = hd.kind === 'label', thuocLabel = hd.kind === 'artist-label';
   var rows = [
+    /* Label con nói rõ mình thuộc label mẹ nào; label mẹ nói mình có bao
+       nhiêu label con và chỉ sang trang Hệ thống label. */
+    hd.parentLabel ? { t: t('hdLabelMe'), v: hd.parentLabel.name + ' · ' + hd.parentLabel.clientId, manh: true } : null,
     thuocLabel ? { t: t('hdLabel'), v: hd.label.name + ' · ' + hd.label.clientId, manh: true } : null,
     !thuocLabel ? { t: t('hdDocLap'), v: la ? t('hdLabelV') : t('hdDocLapV') } : null,
+    hd.childLabels > 0 ? { t: t('hdLabelCon'), vHtml: true,
+      v: HM.esc(t('hdLabelConV').replace('{n}', HT.fmt.n(hd.childLabels))).replace(
+        HM.esc(c.lang === 'vi' ? 'xem trang Hệ thống label' : 'see the Label network page'),
+        '<a href="#k-he-thong">' + HM.esc(c.lang === 'vi' ? 'xem trang Hệ thống label' : 'see the Label network page') + '</a>') } : null,
     { t: t('hdPhi'), v: HT.fmt.pct(hd.haustekFee) + ' ' + t('hdPhiMo') },
     { t: la ? t('hdTyLeLb') : t('hdTyLe'), v: HT.fmt.pct(hd.artistShare) + ' ' + t('hdTyLeMo'), manh: !la },
     { t: la ? t('hdPhanLbCua') : (thuocLabel ? t('hdPhanLabel') : t('hdPhanHt')), v: HT.fmt.pct(hd.counterpartShare) + ' ' + t('hdTyLeMo'), manh: la },
@@ -474,7 +489,7 @@ function moBai(c, id, luong) {
         '<div class="amt">' + HM.esc(st.value != null ? HT.fmt.usd(st.value) : st.text) + '</div></div>';
     }).join('') + '</div>' +
     (d.byStore.length ? '<h4 class="sec">' + (c.lang === 'vi' ? 'Thu nhập theo nền tảng' : 'Where it was played') + '</h4>' +
-      HB.o({ loai: 'thanh', hang: d.byStore.map(function (x, i) { return { ten: x.name, gt: x.value, mau: P[i % 8] }; }) }) : '') +
+      HB.o({ loai: 'thanh', hang: d.byStore.map(function (x, i) { return { ten: c.song(x, 'name'), gt: x.value, mau: P[i % 8] }; }) }) : '') +
     (d.byTerritory.length ? '<h4 class="sec">' + (c.lang === 'vi' ? 'Thu nhập theo thị trường' : 'From where') + '</h4>' +
       HB.o({ loai: 'thanh', hang: d.byTerritory.map(function (x, i) { return { ten: x.name, gt: x.value, mau: P[i % 8] }; }) }) : ''),
     { tieuDe: d.title, phu: d.isrc + ' · ' + d.type,

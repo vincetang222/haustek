@@ -29,7 +29,7 @@ portal/
 | Kỳ nhìn thấy | cả 12 kỳ, kể cả kỳ đang làm dở | chỉ kỳ **đã duyệt** |
 | Bí mật kinh doanh | tên đơn vị phân phối, tỷ lệ gốc, đưa vào lúc khởi động | không có trong bản lõi khách tải về |
 | Sửa được gì | nhập báo cáo, khớp, tỷ lệ, tạm ứng, xét duyệt kỳ | không sửa gì |
-| Trang | 10 | 5 |
+| Trang | 11 | 10 |
 
 Hai file HTML nạp **cùng một** `haustek-core.js`. Khác nhau ở dòng đầu: `khach.html`
 gọi `HAUSTEK.lockdown()` **trước khi** chạy bất cứ trang nào, và không bao giờ gọi
@@ -53,20 +53,43 @@ gọi `HAUSTEK.lockdown()` **trước khi** chạy bất cứ trang nào, và kh
 | Thanh toán | `man/chi-tra.js` | Bên nào được thanh toán bao nhiêu, vì sao phần còn lại chưa thanh toán được |
 | Tạm ứng | `man/tam-ung.js` | Ai còn nợ, thu hồi tới đâu, còn mấy kỳ nữa |
 | Tỷ lệ chia | `man/ty-le.js` | Bảng tỷ lệ có ngày hiệu lực, đổi từ kỳ nào |
-| Danh mục | `man/danh-muc.js` | 50.000 bản ghi, tìm được, mở ra xem tiền từng bài |
+| Danh mục | `man/danh-muc.js` | 50.000 bản ghi, tìm được, lọc bản có vấn đề; mở ra xem dòng tiền, quy trình phát hành, trạng thái từng nền tảng, lượt nghe và doanh thu theo nền tảng theo tháng |
+| Nền tảng | `man/nen-tang.js` | Toàn danh mục: từng nền tảng mang về bao nhiêu lượt nghe, bao nhiêu tiền mỗi kỳ; kỳ thiếu nguồn nào thì cột đó bằng 0 |
 | Quản trị | `man/quan-tri.js` | Tài khoản, nhật ký, câu hỏi treo, dữ liệu, ranh giới |
 
-## Bảy trang cổng đối tác
+## Mười trang cổng đối tác
 
 | Trang | File | Trả lời câu gì |
 |---|---|---|
 | Tổng quan | `man/k-tong-quan.js` | Kỳ này tôi được bao nhiêu, vì sao, bao giờ tiền vào |
 | Bài hát của tôi | `man/k-ban-ghi.js` | Từng bài hát, thu nhập của tôi trên mỗi bài |
 | Nghệ sĩ | `man/k-nghe-si.js` | Chỉ label: từng nghệ sĩ trong roster mang về bao nhiêu, phần nghệ sĩ, phần label |
+| Hệ thống label | `man/k-he-thong.js` | Chỉ label mẹ: từng label con và nghệ sĩ bên dưới, cây label, xem cổng của label con với tư cách người được uỷ quyền |
+| Danh mục bài hát | `man/k-danh-muc.js` | Mọi bài hát kể cả bài chưa ra tiền: bước nào của quy trình phát hành, đã lên nền tảng nào (đường dẫn), còn thiếu gì |
+| Nền tảng | `man/k-nen-tang.js` | Từng nền tảng mang về bao nhiêu lượt nghe, bao nhiêu tiền mỗi tháng, cho cả tài khoản |
 | Phát hành | `man/k-phat-hanh.js` | Bản phát hành trong danh mục, hồ sơ đang xử lý, gửi hồ sơ mới theo đúng trường của form metadata |
 | Bảng kê thanh toán | `man/k-bang-ke.js` | Bản đối soát chính thức: in ra, tải về, gửi kế toán |
 | Tạm ứng | `man/k-tam-ung.js` | Vì sao kỳ này có doanh thu mà không nhận được tiền |
 | Tài liệu | `man/k-tai-lieu.js` | Bảng kê các kỳ cũ, và câu trả lời cho những câu hay hỏi |
+
+## Hồ sơ một bài hát dùng chung hai cổng
+
+`haustek-taisan.js` (`HTS`) dựng ngăn trượt cho một bài hát từ gói
+`api.trackAsset` (cổng đối tác) hoặc `A.asset` (nội bộ): tab **Quy trình** (bảy
+bước, còn thiếu gì), **Nền tảng** (12 nền tảng lớn với trạng thái và đường dẫn,
+206 nền tảng khác gộp một dòng), **Theo tháng** (ma trận nền tảng × kỳ, đổi được
+lượt nghe / doanh thu gộp / phần được hưởng, xuất CSV). Nội bộ đưa thêm tab Dòng
+tiền của mình vào qua `them`. Cùng một phép chia theo nền tảng dùng cho ma trận
+từng bài, thu nhập theo nền tảng của kỳ và báo cáo nền tảng của cả tài khoản, nên
+ba bảng đó cộng lại luôn ra cùng con số (api-guard kiểm điều này).
+
+## Label mẹ, label con, xem thay
+
+`LABELS[i].parentId` dựng cây; `api.labelTree` trả về cây với số liệu kỳ,
+`api.delegations` cho biết tài khoản này được xem thay ai. Cổng đối tác ghi
+`haustek.demo.xemThay` (sessionStorage; bản gói dùng localStorage) rồi nạp lại với
+phiên của label con, và khung vẽ biểu ngữ `.viewas` qua `cauHinh.bieuNgu(c)`. Tiền
+không đi qua label mẹ (câu hỏi cần chốt số 9).
 
 ## Màn hẹp: bảng bên, máy tính bảng, điện thoại
 
