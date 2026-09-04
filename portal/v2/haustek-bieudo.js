@@ -46,7 +46,8 @@ function en() { return typeof HT !== 'undefined' && HT.lang === 'en'; }
 function T(vi, e) { return en() ? e : vi; }
 function loc() { return en() ? 'en-US' : 'vi-VN'; }
 function so(v) { return Math.round(v).toLocaleString(loc()); }
-function usd0(v) { return (v < 0 ? '−$' : '$') + Math.round(Math.abs(v)).toLocaleString(loc()); }
+/* USD luôn theo chuẩn quốc tế, giống HT.fmt.usd0 */
+function usd0(v) { return (v < 0 ? '−$' : '$') + Math.round(Math.abs(v)).toLocaleString('en-US'); }
 /* Trục tung của báo cáo tiền: rút gọn tới mức đọc lướt được, nhưng không
    rút tới mức mất nghĩa. $1,2Tr thay cho $1.234.567 là được; $1Tr thì
    không, vì $1.4Tr cũng ra $1Tr. */
@@ -389,7 +390,7 @@ function veVong(cfg, W) {
   var R = Math.min(H, W) / 2 - 6, r0 = R * 0.62;
   var cx = R + 6, cy = H / 2;
   var dayDu = cfg.dinhDang === 'so' ? so : usd0;
-  var goc = -Math.PI / 2, s = '<svg viewBox="0 0 ' + W + ' ' + H + '">';
+  var goc = -Math.PI / 2, s = '<svg viewBox="0 0 ' + W + ' ' + H + '" class="vong">';
   phan.forEach(function (p, i) {
     var sw = tong > 0 ? p.gt / tong * Math.PI * 2 : 0;
     var g2 = goc + sw;
@@ -402,7 +403,7 @@ function veVong(cfg, W) {
     s += '<g class="hz" tabindex="0" data-tip="' + esc('<b>' + esc(p.ten) + '</b>' +
       dongTip(cfg.tenTong || T('Số tiền', 'Amount'), dayDu(p.gt), mauP) +
       '<span class="d">' + thapPhan(p.gt / tong * 100, 1) + T('% tổng số', '% of total') + '</span>') + '">' +
-      '<path class="b" fill="' + mauP + '" d="M' + x1.toFixed(1) + ' ' + y1.toFixed(1) +
+      '<path class="b ph" fill="' + mauP + '" d="M' + x1.toFixed(1) + ' ' + y1.toFixed(1) +
       'A' + R + ' ' + R + ' 0 ' + lon + ' 1 ' + x2.toFixed(1) + ' ' + y2.toFixed(1) +
       'L' + x3.toFixed(1) + ' ' + y3.toFixed(1) +
       'A' + r0 + ' ' + r0 + ' 0 ' + lon + ' 0 ' + x4.toFixed(1) + ' ' + y4.toFixed(1) + 'Z"/></g>';
@@ -508,10 +509,13 @@ function tia(gt, opt) {
     cuoi = { x: i * b, y: yy };
   });
   var m = opt.mau || mau('s1');
-  return '<svg width="' + W + '" height="' + H + '" style="display:inline-block;vertical-align:middle;overflow:visible">' +
-    '<polyline points="' + pt.join(' ') + '" fill="none" stroke="' + m + '" stroke-width="1.5" ' +
-    'stroke-linejoin="round" stroke-linecap="round" opacity=".85"/>' +
-    (cuoi ? '<circle cx="' + cuoi.x.toFixed(1) + '" cy="' + cuoi.y.toFixed(1) + '" r="2.2" fill="' + m + '"/>' : '') +
+  var id = 'tg' + (++SO);
+  return '<svg width="' + W + '" height="' + H + '" viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="none" style="display:inline-block;vertical-align:middle;overflow:visible">' +
+    (opt.vung ? '<defs><linearGradient id="' + id + '" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="' + m + '" stop-opacity=".35"/><stop offset="1" stop-color="' + m + '" stop-opacity="0"/></linearGradient></defs>' +
+      '<polygon points="' + pt[0].split(',')[0] + ',' + H + ' ' + pt.join(' ') + ' ' + pt[pt.length - 1].split(',')[0] + ',' + H + '" fill="url(#' + id + ')"/>' : '') +
+    '<polyline points="' + pt.join(' ') + '" fill="none" stroke="' + m + '" stroke-width="1.6" vector-effect="non-scaling-stroke" ' +
+    'stroke-linejoin="round" stroke-linecap="round" opacity=".9"/>' +
+    (cuoi ? '<circle cx="' + cuoi.x.toFixed(1) + '" cy="' + cuoi.y.toFixed(1) + '" r="2.4" fill="' + m + '"/>' : '') +
     '</svg>';
 }
 
@@ -536,11 +540,103 @@ function chia(phan, opt) {
     }).join('') + '</div>');
 }
 
-var LOAI = { cot: veCot, thanh: veThanh, vong: veVong, thac: veThac };
+/* =====================================================================
+   7. ĐƯỜNG / VÙNG THEO THỜI GIAN — diễn biến, dự báo
+   cfg: { loai:'duong', truc:[nhãn…], chuoi:[{ten, gt:[…], mau, dubao:idx}],
+          cao, dinhDang:'so'|'tien', vung:true, noiBat:idx, chuThich, tieuDeTip(i), ghiChuTip(i) }
+   Đường 2px, đỉnh mềm (bezier monotone), vùng tô chuyển sắc mờ dần xuống
+   trục. Mách nước theo CỘT: rê chuột tới đâu thấy mọi chuỗi ở đó, có
+   vạch dọc đi theo. Từ chỉ số dubao trở đi đường vẽ nét đứt: đó là số
+   ước tính, không phải số đã báo cáo.
+   ===================================================================== */
+function duongMem(pts) {
+  if (pts.length < 3) return 'M' + pts.map(function (p) { return p[0].toFixed(1) + ' ' + p[1].toFixed(1); }).join('L');
+  var d = 'M' + pts[0][0].toFixed(1) + ' ' + pts[0][1].toFixed(1);
+  for (var i = 0; i < pts.length - 1; i++) {
+    var p0 = pts[Math.max(i - 1, 0)], p1 = pts[i], p2 = pts[i + 1], p3 = pts[Math.min(i + 2, pts.length - 1)];
+    var c1x = p1[0] + (p2[0] - p0[0]) / 6, c1y = p1[1] + (p2[1] - p0[1]) / 6;
+    var c2x = p2[0] - (p3[0] - p1[0]) / 6, c2y = p2[1] - (p3[1] - p1[1]) / 6;
+    /* không cho đường vượt quá dải giữa hai điểm (tránh "bụng" giả) */
+    var lo = Math.min(p1[1], p2[1]), hi = Math.max(p1[1], p2[1]);
+    c1y = Math.max(lo, Math.min(hi, c1y)); c2y = Math.max(lo, Math.min(hi, c2y));
+    d += 'C' + c1x.toFixed(1) + ' ' + c1y.toFixed(1) + ',' + c2x.toFixed(1) + ' ' + c2y.toFixed(1) + ',' + p2[0].toFixed(1) + ' ' + p2[1].toFixed(1);
+  }
+  return d;
+}
+function veDuong(cfg, W) {
+  var H = cfg.cao || 220;
+  var P = dayMau();
+  var chuoi = (cfg.chuoi || []).map(function (se, i) { return { ten: se.ten, gt: se.gt, mau: se.mau || P[i % 8], dubao: se.dubao }; });
+  var truc = cfg.truc || [], n = truc.length;
+  var dinhDang = cfg.dinhDang === 'so' ? gonSo : gonTien;
+  var dayDu = cfg.dinhDang === 'so' ? so : usd0;
+  var dinh = 0;
+  chuoi.forEach(function (se) { se.gt.forEach(function (v) { if (v != null && v > dinh) dinh = v; }); });
+  var tr = mocTruc(dinh, 4);
+  var LE_T = 14, LE_D = 26, LE_P = 10, LE_TR = cfg.anTruc ? 6 : 52;
+  var cao = H - LE_T - LE_D, rong = W - LE_TR - LE_P;
+  var xo = function (i) { return LE_TR + (n > 1 ? i / (n - 1) * rong : rong / 2); };
+  var yo = function (v) { return LE_T + cao - (tr.tran > 0 ? v / tr.tran * cao : 0); };
+  var s = '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="' + esc(cfg.moTa || '') + '"><defs>';
+  chuoi.forEach(function (se, k) {
+    s += '<linearGradient id="gd' + SO + '_' + k + '" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="' + se.mau + '" stop-opacity=".28"/><stop offset="1" stop-color="' + se.mau + '" stop-opacity="0"/></linearGradient>';
+  });
+  s += '</defs>';
+  tr.moc.forEach(function (v) {
+    s += '<line class="gl" x1="' + LE_TR + '" y1="' + yo(v).toFixed(1) + '" x2="' + (W - LE_P) + '" y2="' + yo(v).toFixed(1) + '"/>' +
+      (cfg.anTruc ? '' : '<text class="vl" x="' + (LE_TR - 8) + '" y="' + (yo(v) + 3.5).toFixed(1) + '" text-anchor="end">' + esc(v === 0 ? '0' : dinhDang(v)) + '</text>');
+  });
+  /* vùng dự báo: nền nhạt phía sau */
+  var db = null;
+  chuoi.forEach(function (se) { if (se.dubao != null && (db == null || se.dubao < db)) db = se.dubao; });
+  if (db != null && db > 0 && db < n) {
+    s += '<rect x="' + xo(db - 1).toFixed(1) + '" y="' + LE_T + '" width="' + (xo(n - 1) - xo(db - 1)).toFixed(1) + '" height="' + cao + '" fill="' + mau('ink') + '" opacity=".035"/>';
+  }
+  chuoi.forEach(function (se, k) {
+    var pts = [], ptsThat = [], ptsDb = [];
+    se.gt.forEach(function (v, i) { if (v == null) return; var p = [xo(i), yo(v)]; pts.push(p); if (se.dubao == null || i <= se.dubao - 1) ptsThat.push(p); if (se.dubao != null && i >= se.dubao - 1) ptsDb.push(p); });
+    if (!pts.length) return;
+    if (cfg.vung !== false) {
+      s += '<path class="ar" fill="url(#gd' + SO + '_' + k + ')" d="' + duongMem(pts) + 'L' + pts[pts.length - 1][0].toFixed(1) + ' ' + (LE_T + cao) + 'L' + pts[0][0].toFixed(1) + ' ' + (LE_T + cao) + 'Z"/>';
+    }
+    if (ptsThat.length > 1) s += '<path class="ln" stroke="' + se.mau + '" d="' + duongMem(ptsThat) + '"/>';
+    if (ptsDb.length > 1) s += '<path class="ln dubao" stroke="' + se.mau + '" d="' + duongMem(ptsDb) + '"/>';
+  });
+  /* cột mách nước + vạch dọc + chấm */
+  var bw = n > 1 ? rong / (n - 1) : rong;
+  for (var i = 0; i < n; i++) {
+    var tip = '<b>' + esc(cfg.tieuDeTip ? cfg.tieuDeTip(i) : truc[i]) + '</b>';
+    var cham = '';
+    chuoi.forEach(function (se) {
+      var v = se.gt[i]; if (v == null) return;
+      tip += dongTip(se.ten + (se.dubao != null && i >= se.dubao ? T(' (dự báo)', ' (forecast)') : ''), dayDu(v), se.mau);
+      cham += '<circle class="dt' + (cfg.noiBat === i ? ' on' : '') + '" cx="' + xo(i).toFixed(1) + '" cy="' + yo(v).toFixed(1) + '" r="4" fill="' + se.mau + '" stroke="' + mau('card') + '" stroke-width="2"/>';
+    });
+    if (cfg.ghiChuTip) tip += '<span class="d">' + esc(cfg.ghiChuTip(i)) + '</span>';
+    s += '<g class="col" tabindex="0" data-tip="' + esc(tip) + '">' +
+      '<rect class="hit" x="' + (xo(i) - bw / 2).toFixed(1) + '" y="' + LE_T + '" width="' + bw.toFixed(1) + '" height="' + cao + '"/>' +
+      '<line class="ch" x1="' + xo(i).toFixed(1) + '" y1="' + LE_T + '" x2="' + xo(i).toFixed(1) + '" y2="' + (LE_T + cao) + '"/>' + cham + '</g>';
+  }
+  /* nhãn trục hoành, bỏ bớt khi chật */
+  var buoc = Math.ceil(n / Math.max(1, Math.floor(rong / 52)));
+  var ep = [n - 1]; if (cfg.noiBat != null && cfg.noiBat >= 0) ep.push(cfg.noiBat);
+  var gan = function (i) { for (var k = 0; k < ep.length; k++) if (i !== ep[k] && Math.abs(i - ep[k]) < buoc) return true; return false; };
+  for (var i3 = 0; i3 < n; i3++) {
+    if (i3 !== n - 1 && cfg.noiBat !== i3 && (i3 % buoc !== 0 || (buoc > 1 && gan(i3)))) continue;
+    s += '<text class="lb' + (cfg.noiBat === i3 ? ' on' : '') + '" x="' + xo(i3).toFixed(1) + '" y="' + (H - 9) + '" text-anchor="' + (i3 === 0 ? 'start' : i3 === n - 1 ? 'end' : 'middle') + '">' + esc(truc[i3]) + '</text>';
+  }
+  s += '<line class="ax" x1="' + LE_TR + '" y1="' + (LE_T + cao) + '" x2="' + (W - LE_P) + '" y2="' + (LE_T + cao) + '"/></svg>';
+  if (cfg.chuThich !== false && chuoi.length > 1) {
+    s += '<div class="leg">' + chuoi.map(function (se) { return '<span><i style="background:' + se.mau + '"></i>' + esc(se.ten) + '</span>'; }).join('') + '</div>';
+  }
+  return s;
+}
+
+var LOAI = { cot: veCot, thanh: veThanh, vong: veVong, thac: veThac, duong: veDuong };
 
 global.HB = {
   o: o, gan: gan, veLaiTatCa: veLaiTatCa,
-  tia: tia, chia: chia, mau: mau, dayMau: dayMau,
+  tia: tia, chia: chia, mau: mau, dayMau: dayMau, mauKhac: function () { return mau('s-khac'); },
   gonTien: gonTien, gonSo: gonSo, mocTruc: mocTruc,
   dongTip: dongTip, anTip: anTip
 };

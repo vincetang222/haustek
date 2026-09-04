@@ -17,9 +17,9 @@ const fs = require('fs');
 const V = __dirname + '/v2/';
 const doc = p => fs.readFileSync(p, 'utf8');
 
-const NOIBO = ['tong-quan','nap-du-lieu','khop-isrc','doi-chieu','phat-hanh','ke-toan',
-               'chi-tra','tam-ung','ty-le','danh-muc','nen-tang','quan-tri'];
-const KHACH = ['k-tong-quan','k-ban-ghi','k-danh-muc','k-nen-tang','k-phat-hanh','k-nghe-si','k-he-thong','k-bang-ke','k-tam-ung','k-tai-lieu'];
+const NOIBO = ['ban-lam-viec','tong-quan','nap-du-lieu','khop-isrc','doi-chieu','phat-hanh','giao-nhan','sua-hang-loat','ke-toan',
+               'chi-tra','tam-ung','ty-le','danh-muc','nen-tang','doi-tac','ho-tro','quyen','quan-tri'];
+const KHACH = ['k-tong-quan','k-ban-ghi','k-danh-muc','k-nen-tang','k-du-bao','k-phat-hanh','k-nghe-si','k-he-thong','k-vi','k-bang-ke','k-tam-ung','k-ho-tro','k-tai-lieu'];
 const boc = ds => ds.map(n =>
   '/* ---- man/' + n + '.js ---- */\nfunction(){\n' + doc(V + 'man/' + n + '.js') + '\n}').join(',\n');
 
@@ -201,6 +201,7 @@ if (cua === 'khach') {
 } else {
   MAN_NOIBO.forEach(function (f) { f(); });
   var A = HAUSTEK.admin;
+  try { var NV = localStorage.getItem('haustek.demo.nv'); if (NV) A.staff.setMe(NV); } catch (e) {}
   A.provideSecrets({
     code: 'DIST-1',
     name: 'Đối tác phân phối chính (tên thật điền khi triển khai)',
@@ -229,12 +230,22 @@ if (cua === 'khach') {
         (khoa ? '' : (c.lang === 'vi' ? ' · chưa chốt tỷ giá' : ' · not locked'));
     },
     chanTrai: function (c) {
-      return '<b>ops@haustek-group.com</b><span>' +
-        HT.esc(c.lang === 'vi' ? 'Tài khoản vận hành' : 'Operations account') + '</span>' +
+      var me = A.staff.me;
+      return '<b>' + HT.esc(me.email) + '</b><span>' + HT.esc(c.lang === 'vi' ? me.title : me.titleEn) + '</span>' +
+        '<select class="inline-sel" data-nv style="margin-top:9px;width:100%">' + A.staff.list().map(function (s) {
+          return '<option value="' + s.id + '"' + (s.id === me.id ? ' selected' : '') + '>' + HT.esc(s.name + ' · ' + (c.lang === 'vi' ? s.title : s.titleEn)) + '</option>';
+        }).join('') + '</select>' +
         oChonCua(c.lang, '<p>' + HT.esc(c.lang === 'vi'
-          ? 'Xét duyệt một kỳ ở đây rồi chuyển sang cổng đối tác: kỳ đó sẽ hiện ở bên đó.'
-          : 'Approve a period here, then switch to the client portal: it appears there.') + '</p>');
+          ? 'Bản mẫu: đổi nhân viên để xem bàn làm việc theo vai; xét duyệt một kỳ ở đây rồi chuyển sang cổng đối tác.'
+          : 'Prototype: switch staff to see each role’s desk; approve a period here, then switch to the client portal.') + '</p>');
     }
+  });
+  document.addEventListener('change', function (e) {
+    var s = e.target.closest('[data-nv]');
+    if (!s) return;
+    dat('haustek.demo.nv', s.value);
+    location.hash = '#ban-lam-viec';
+    location.reload();
   });
 }
 

@@ -133,12 +133,16 @@ var THANG_EN = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', '
 var fmt = {
   n:  function (v) { return Math.round(v).toLocaleString(loc()); },
   n1: function (v) { return v.toLocaleString(loc(), { minimumFractionDigits: 1, maximumFractionDigits: 1 }); },
+  /* USD luôn viết theo chuẩn quốc tế ($1,023.45), kể cả ở giao diện tiếng
+     Việt: "$1.023" theo kiểu Việt đọc thành một đô lẻ ở người quen đọc số
+     quốc tế, và bảng kê USD của ngân hàng cũng in kiểu này. Đồng Việt Nam
+     thì ngược lại, luôn kiểu Việt. */
   usd: function (v) {
-    return (v < 0 ? '−$' : '$') + Math.abs(v).toLocaleString(loc(),
+    return (v < 0 ? '−$' : '$') + Math.abs(v).toLocaleString('en-US',
       { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   },
   usd0: function (v) {
-    return (v < 0 ? '−$' : '$') + Math.round(Math.abs(v)).toLocaleString(loc());
+    return (v < 0 ? '−$' : '$') + Math.round(Math.abs(v)).toLocaleString('en-US');
   },
   /* Đồng Việt Nam thì luôn viết kiểu Việt, kể cả ở giao diện EN — đó là
      cách con số ấy in ra trên uỷ nhiệm chi. */
@@ -506,6 +510,9 @@ function chay(cauHinh) {
      label). Trang khai khaDung(c) trả về false thì không hiện ở cột trái
      và gõ thẳng #hash cũng không mở được. */
   function dungDuoc(m, c) {
+    /* màn nội bộ khai vai: [ 'ops', 'sales', 'support', 'accounting', 'mgmt' ];
+       không khai thì ai cũng thấy. mgmt thấy hết. */
+    if (m.vai && c.A && c.A.staff && c.A.staff.me && c.A.staff.me.role !== 'mgmt' && m.vai.indexOf(c.A.staff.me.role) < 0) return false;
     if (!m.khaDung) return true;
     try { return !!m.khaDung(c); } catch (e) { return false; }
   }

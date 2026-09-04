@@ -15,7 +15,7 @@
 "use strict";
 (function () {
 
-var LOC = { metric: 'gross' };
+var LOC = { metric: 'revenue' };
 
 HT.dangKy({
   id: 'nen-tang', nav: 'navNenTang', nhom: 'nhomDuLieu', icon: 'shop',
@@ -71,13 +71,13 @@ HT.dangKy({
     /* data.periods cùng thứ tự với A.periods, nên c.ky.idx là chỉ số cột */
     var col = pi, nR = data.rows.length;
     var rows = data.rows.map(function (r, j) {
-      return { j: j, ten: c.song(r, 'name'), gross: r.gross[col] || 0, streams: r.streams[col] || 0, khac: j === nR - 1 };
+      return { j: j, ten: c.song(r, 'name'), revenue: r.revenue[col] || 0, streams: r.streams[col] || 0, khac: j === nR - 1 };
     });
-    var tongG = data.totals.gross[col] || 0, tongS = data.totals.streams[col] || 0;
+    var tongG = data.totals.revenue[col] || 0, tongS = data.totals.streams[col] || 0;
     var tongM = metric === 'streams' ? tongS : tongG;
     var xep = rows.slice().sort(function (a, b) { return b[metric] - a[metric]; });
     var dau = xep[0];
-    var coDt = rows.filter(function (x) { return x.gross > 0; }).length;
+    var coDt = rows.filter(function (x) { return x.revenue > 0; }).length;
     var chuaDuyetIdx = A.periods.filter(function (p) { return !A.isApproved(p.k); }).map(function (p) { return p.idx; });
     var thieu = A.missingFeeds(pi);
     var mauCua = function (x) { return x.khac ? HB.mau('neutral-bar') : P[x.j % 8]; };
@@ -132,12 +132,12 @@ HT.dangKy({
       hang: xep.map(function (x) {
         return { ten: x.ten, gt: x[metric], mau: mauCua(x),
                  phu: chuaNhapCua(x) ? t('chuaNhap')
-                    : metric === 'streams' ? c.tien(x.gross) : HT.fmt.n(x.streams) + ' ' + t('luotNghe') };
+                    : metric === 'streams' ? c.tien(x.revenue) : HT.fmt.n(x.streams) + ' ' + t('luotNghe') };
       }) });
 
     var moi = rows.map(function (x) {
       return { ten: x.ten, j: x.j, khac: x.khac, streams: x.streams, chua: chuaNhapCua(x),
-               v: x.streams > 0 ? x.gross / x.streams * 1000 : null };
+               v: x.streams > 0 ? x.revenue / x.streams * 1000 : null };
     }).sort(function (a, b) { return (b.v || 0) - (a.v || 0); });
     var maxV = Math.max.apply(null, moi.map(function (x) { return x.v || 0; }).concat([0.0001]));
     var bqV = tongS > 0 ? tongG / tongS * 1000 : 0;

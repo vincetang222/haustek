@@ -134,7 +134,7 @@ check("Label không mở được tác quyền ở BẤT KỲ cửa nào", () =>
      hỏi lại từng id ở luồng tác quyền */
   const ids = H.api.tracks("label", L1.id, approvedKey, "rec", {}).rows.slice(0, 50).map(r => r.id);
   let lot = 0;
-  ids.forEach(i => { try { if (H.api.trackDetail("label", L1.id, pubKey, "pub", i).gross > 0) lot++; } catch (e) {} });
+  ids.forEach(i => { try { if (H.api.trackDetail("label", L1.id, pubKey, "pub", i).revenue > 0) lot++; } catch (e) {} });
   must(lot === 0, lot + " bài lọt qua đường lấy id từ luồng bản ghi rồi hỏi lại ở luồng tác quyền");
   return "chặn cả " + cua.length + " cửa · 50 bài thử đường vòng, không bài nào lọt";
 });
@@ -289,6 +289,11 @@ check("Chuỗi Tiền đi đâu cộng lại đúng bằng dòng cuối", () => 
       let s;
       try { s = H.api.summary("artist", id, pk, "rec"); } catch (e) { continue; }
       if (!s.chain.length) continue;
+      /* Chuỗi của đối tác giờ bắt đầu từ số của họ: nếu chỉ có một dòng
+         cuối (không khấu trừ gì) thì không có gì để cộng; có dòng đầu thì
+         các chặng phải cộng đúng dòng cuối, và KHÔNG chặng nào là phí. */
+      must(!s.chain.some(x => x.key === "fee" || x.key === "gross"), "chuỗi của nghệ sĩ " + id + " vẫn có chặng phí hoặc gộp");
+      if (!s.chain.some(x => x.kind === "top")) { kiem++; continue; }
       let cong = 0;
       s.chain.forEach(x => { if (x.kind !== "final") cong += x.value; });
       const cuoi = s.chain[s.chain.length - 1].value;
@@ -298,6 +303,8 @@ check("Chuỗi Tiền đi đâu cộng lại đúng bằng dòng cuối", () => 
     for (let L = 0; L < A.labels.length; L++) {
       const s = H.api.summary("label", L, pk, "rec");
       if (!s.chain.length) continue;
+      must(!s.chain.some(x => x.key === "fee" || x.key === "gross"), "chuỗi của label " + L + " vẫn có chặng phí hoặc gộp");
+      must(Math.abs(s.chain[0].value - s.revenue) < 0.005, "dòng đầu chuỗi của label không bằng doanh thu (sau phí)");
       let cong = 0;
       s.chain.forEach(x => { if (x.kind !== "final") cong += x.value; });
       kiem++;
@@ -363,11 +370,13 @@ check("Hợp đồng của nghệ sĩ thuộc label lấy đúng tỷ lệ của
   must(hd.kind === "artist-label", "sai loại: " + hd.kind);
   must(hd.label && hd.label.name === A.labels[nsLabel.labelId].name, "tên label sai");
   must(Math.abs(hd.artistShare - A.rates.rateFor("L:" + nsLabel.labelId, approvedKey)) < 1e-9, "tỷ lệ không khớp bảng tỷ lệ của label");
-  must(Math.abs(hd.artistShare + hd.counterpartShare - 1) < 1e-6, "hai phần không cộng thành 100%");
+  must(Math.abs(hd.artistShare + hd.labelShare - 1) < 1e-6, "hai phần không cộng thành 100%");
+  must(!("haustekFee" in hd) && !("pubFee" in hd), "hợp đồng vẫn mang phí");
   must(hd.assumptionQuestion === "q8", "thiếu dấu giả định (câu hỏi 8)");
   const docLap = A.artists.find(a => a.labelId < 0);
   const hd2 = H.api.contract("artist", docLap.id, approvedKey);
   must(hd2.kind === "artist-indie" && hd2.label === null, "nghệ sĩ độc lập lại có label");
+  must(hd2.artistShare === null && hd2.labelShare === null && hd2.history.length === 0, "nghệ sĩ độc lập nhìn thấy tỷ lệ chia, tức là nhìn thấy phần Haustek giữ");
   return "thuộc label " + hd.label.name + " · " + (hd.artistShare * 100).toFixed(0) + "% · độc lập không có label";
 });
 
@@ -412,7 +421,8 @@ check("Hồ sơ phát hành đi đúng thứ tự bốn bước, không nhảy b
 check("Nghệ sĩ A không đọc được hồ sơ phát hành (nền tảng, đường dẫn) của bài nghệ sĩ B", () => {
   const m = mustThrow(() => H.api.trackAsset("artist", A1.id, trackOfA2), "trackAsset sang bài người khác");
   const d = H.api.trackAsset("artist", A1.id, trackOfA1);
-  must(d.steps.length === 7 && d.platforms.length === 12, "hồ sơ thiếu bước hoặc thiếu nền tảng");
+  must(d.steps.length === 11 && d.platforms.length === 12, "hồ sơ thiếu bước hoặc thiếu nền tảng");
+  must(d.steps.some(st => st.key === "marketing") && d.steps.some(st => st.key === "pitch"), "quy trình thiếu bước marketing");
   must(d.platforms.every(p => p.status !== "live" || p.name === "Facebook" || p.name === "Instagram" || /^https:\/\//.test(p.url)),
        "nền tảng đã lên mà không có đường dẫn");
   return m + " · bài của chính mình: " + d.steps.length + " bước, " + d.platforms.length + " nền tảng, " + d.missing.length + " mục còn thiếu";
@@ -443,11 +453,11 @@ check("Ma trận nền tảng × kỳ của một bài cộng dọc đúng bằn
     const d = H.api.trackAsset("label", L1.id, i);
     d.monthly.periods.forEach((p, k) => {
       const pi = A.pIndexOf(p.k);
-      const g = d.monthly.rows.reduce((s, r) => s + r.gross[k], 0);
+      const g = d.monthly.rows.reduce((s, r) => s + r.revenue[k], 0);
       const st = d.monthly.rows.reduce((s, r) => s + r.streams[k], 0);
       const m = d.monthly.rows.reduce((s, r) => s + r.mine[k], 0);
       const tt = H.api.trackDetail("label", L1.id, p.k, "rec", i);
-      if (Math.abs(g - tt.gross) > 0.005) loi.push("gộp bài " + i + " kỳ " + p.k);
+      if (Math.abs(g - tt.revenue) > 0.005) loi.push("doanh thu bài " + i + " kỳ " + p.k);
       if (st !== A.streamsOf(i, pi)) loi.push("lượt nghe bài " + i + " kỳ " + p.k);
       if (Math.abs(m - tt.mine) > 0.005) loi.push("phần label bài " + i + " kỳ " + p.k);
       /* và từng ô nền tảng của kỳ khớp với "Thu nhập theo nền tảng" của cùng bài */
@@ -469,10 +479,10 @@ check("Báo cáo nền tảng của tài khoản cộng dọc đúng bằng tổ
     const r = H.api.platformReport(vai, id);
     r.periods.forEach((p, k) => {
       const s = H.api.summary(vai, id, p.k, "rec");
-      const g = r.rows.reduce((x, row) => x + row.gross[k], 0);
+      const g = r.rows.reduce((x, row) => x + row.revenue[k], 0);
       const m = r.rows.reduce((x, row) => x + row.mine[k], 0);
       const st = r.rows.reduce((x, row) => x + row.streams[k], 0);
-      if (Math.abs(g - s.gross) > 0.005) loi.push(vai + " " + id + " gộp kỳ " + p.k);
+      if (Math.abs(g - s.revenue) > 0.005) loi.push(vai + " " + id + " doanh thu kỳ " + p.k);
       if (Math.abs(m - s.total) > 0.005) loi.push(vai + " " + id + " phần mình kỳ " + p.k);
       if (st !== s.streams) loi.push(vai + " " + id + " lượt nghe kỳ " + p.k);
       /* và bảng bóc theo nền tảng của kỳ (thu gọn) phải ra cùng con số từng nền tảng */
@@ -497,10 +507,10 @@ check("Label mẹ thấy label con và nghệ sĩ bên dưới; label con và ng
     const ns = new Set(A.artists.filter(a => a.labelId === c.labelId).map(a => a.id));
     must(c.artists.length === ns.size && c.artists.every(a => ns.has(a.artistId)), "nghệ sĩ dưới label con " + c.name + " không đúng");
     const s = H.api.summary("label", c.labelId, approvedKey, "rec");
-    must(Math.abs(c.gross - s.gross) < 0.005 && Math.abs(c.labelCut - s.total) < 0.005, "số của label con " + c.name + " khác số label con tự thấy");
+    must(Math.abs(c.revenue - s.revenue) < 0.005 && Math.abs(c.labelCut - s.total) < 0.005, "số của label con " + c.name + " khác số label con tự thấy");
   });
-  const tong = t.own.gross + t.children.reduce((s, c) => s + c.gross, 0);
-  must(Math.abs(tong - t.total.gross) < 0.01, "tổng cây không bằng mẹ cộng các con");
+  const tong = t.own.revenue + t.children.reduce((s, c) => s + c.revenue, 0);
+  must(Math.abs(tong - t.total.revenue) < 0.01, "tổng cây không bằng mẹ cộng các con");
   /* ngược lên: label con không có label con, chỉ biết tên mẹ; không xem thay được mẹ */
   const tc = H.api.labelTree("label", con[0], approvedKey);
   must(tc.children.length === 0 && tc.parent && tc.parent.labelId === me, "label con nhìn thấy cây không đúng");
@@ -529,6 +539,27 @@ check("Tiền không đổi chủ theo cây label: bảng thanh toán không có
     must(!r || Math.abs(r.earned - e) < 0.005, "label con " + l.name + " bị trừ phần cho label mẹ");
   });
   return "label mẹ nhận đúng phần của mình · " + con.length + " label con nhận trọn phần label của mình (câu hỏi cần chốt số 9)";
+});
+
+/* ===================== 5d. ĐỐI TÁC CHỈ THẤY SỐ NET ===================== */
+check("Không gói nào của đối tác mang doanh thu gộp, phí dịch vụ hay phần Haustek giữ", () => {
+  const goi = {
+    sL: H.api.summary("label", L1.id, approvedKey, "rec"), sA: H.api.summary("artist", A1.id, approvedKey, "rec"),
+    tL: H.api.tracks("label", L1.id, approvedKey, "rec", {}), dA: H.api.trackDetail("artist", A1.id, approvedKey, "rec", trackOfA1),
+    cL: H.api.contract("label", L1.id, approvedKey), cA: H.api.contract("artist", A1.id, approvedKey),
+    r: H.api.roster("label", L1.id, approvedKey), lt: H.api.labelTree("label", 0, approvedKey),
+    cat: H.api.catalogue("label", L1.id, { limit: 20 }), as: H.api.trackAsset("artist", A1.id, trackOfA1),
+    pr: H.api.platformReport("label", L1.id), rel: H.api.releases("label", L1.id), st: H.api.statements ? H.api.statements("artist", A1.id) : null
+  };
+  const txt = JSON.stringify(goi).toLowerCase();
+  ["gross", "\"fee\"", "haustekfee", "phí dịch vụ", "doanh thu gộp", "counterpartshare", "phần haustek"].forEach(b =>
+    must(!txt.includes(b), "gói đối tác vẫn chứa \"" + b + "\""));
+  /* và con số: doanh thu label = phần trả nghệ sĩ + phần label, đúng bằng gộp trừ phí ở phía nội bộ */
+  const a = A.agg("label", L1.id, A.pIndexOf(approvedKey), "rec");
+  must(Math.abs(goi.sL.revenue - (a.gross - a.fee)) < 0.005, "doanh thu label không bằng gộp trừ phí");
+  must(Math.abs(goi.sL.revenue - goi.sL.paidToArtists - goi.sL.total) < 0.005, "doanh thu − trả nghệ sĩ ≠ phần label");
+  must(Math.abs(goi.sA.revenue - goi.sA.total) < 0.005 || goi.sA.chain.some(x => x.key === "recoup"), "nghệ sĩ thấy con số khác phần của mình");
+  return "13 gói · không chữ nào lọt · label: " + H.fmt.usd(goi.sL.revenue) + " = " + H.fmt.usd(goi.sL.paidToArtists) + " + " + H.fmt.usd(goi.sL.total);
 });
 
 /* ===================== 6. KHOÁ CỬA ===================== */

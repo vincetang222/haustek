@@ -19,14 +19,19 @@ var CHU = {
   vi: {
     tabQt: 'Quy trình', tabNt: 'Nền tảng', tabThang: 'Theo tháng',
     stLive: 'Đã lên', stProcessing: 'Đang xử lý', stPending: 'Chưa xác nhận', stRejected: 'Bị từ chối', stTakedown: 'Đã gỡ',
-    bDone: 'Đã xong', bDoing: 'Đang thực hiện', bTodo: 'Chưa tới', bIssue: 'Có vấn đề',
+    bDone: 'Đã xong', bDoing: 'Đang thực hiện', bTodo: 'Chưa tới', bIssue: 'Có vấn đề', bSkip: 'Không đăng ký',
+    tabKn: 'Khiếu nại', ycMkt: 'Yêu cầu hỗ trợ marketing', ycHt: 'Gửi yêu cầu hỗ trợ về bài hát này',
+    knTrong: 'Không có khiếu nại hay xung đột quyền nào trên bài hát này.', knMo: 'Haustek theo dõi Content ID và khiếu nại trên các nền tảng; mỗi dòng dưới đây là một việc Haustek đang xử lý thay bạn.',
+    cNenTang: 'Nền tảng', cLoaiKn: 'Loại', cBenKia: 'Bên liên quan', cLuotNgay: 'Lượt xem / ngày', cTrangThaiKn: 'Trạng thái', cCapNhat: 'Cập nhật',
+    knOpen: 'Mới ghi nhận', knDisputed: 'Đang tranh chấp', knEscalated: 'Đã chuyển lên nền tảng', knResolved: 'Đã giải quyết', knReleased: 'Đã nhả claim',
+    doanhThu: 'Doanh thu',
     gdLive: 'Đã lên đủ nền tảng', gdProcessing: 'Đang xử lý', gdIssue: 'Có vấn đề',
     mChan: 'Chặn', mCanh: 'Cần bổ sung', mGoiY: 'Gợi ý',
     conThieu: 'Còn thiếu và cần xử lý', duCa: 'Hồ sơ đầy đủ, không còn mục nào cần bổ sung.',
     goiY: 'Gợi ý để bài hát hoạt động tốt hơn',
     nenTangLon: 'Nền tảng lớn', nenTangKhac: 'Nền tảng khác', daLen: 'đã lên', chuaXn: 'chưa xác nhận',
     mo: 'Mở', khongLink: 'Không có trang công khai', lenNgay: 'lên ngày',
-    luot: 'Lượt nghe', gop: 'Doanh thu gộp', toi: 'Thu nhập của bạn', label: 'Phần label được hưởng',
+    luot: 'Lượt nghe', gop: 'Doanh thu', toi: 'Thu nhập của bạn', label: 'Phần label được hưởng',
     kyGan: 'Số liệu cạnh mỗi nền tảng là của kỳ {k}.',
     kyChua: 'Chưa có kỳ nào đã xét duyệt cho bài hát này, nên chưa có số liệu theo nền tảng.',
     tong: 'Tổng', tongKy: 'Tổng kỳ', xuat: 'Xuất CSV',
@@ -40,14 +45,19 @@ var CHU = {
   en: {
     tabQt: 'Pipeline', tabNt: 'Platforms', tabThang: 'By month',
     stLive: 'Live', stProcessing: 'Processing', stPending: 'Unconfirmed', stRejected: 'Rejected', stTakedown: 'Taken down',
-    bDone: 'Done', bDoing: 'In progress', bTodo: 'Not yet', bIssue: 'Issue',
+    bDone: 'Done', bDoing: 'In progress', bTodo: 'Not yet', bIssue: 'Issue', bSkip: 'Not requested',
+    tabKn: 'Claims', ycMkt: 'Request marketing support', ycHt: 'Open a support request about this track',
+    knTrong: 'No claim or rights conflict on this track.', knMo: 'Haustek watches Content ID and claims on the platforms; each row is something Haustek is handling for you.',
+    cNenTang: 'Platform', cLoaiKn: 'Type', cBenKia: 'Other party', cLuotNgay: 'Views / day', cTrangThaiKn: 'Status', cCapNhat: 'Updated',
+    knOpen: 'Logged', knDisputed: 'Disputed', knEscalated: 'Escalated to the platform', knResolved: 'Resolved', knReleased: 'Claim released',
+    doanhThu: 'Revenue',
     gdLive: 'Live everywhere', gdProcessing: 'Processing', gdIssue: 'Needs attention',
     mChan: 'Blocking', mCanh: 'Action needed', mGoiY: 'Suggestion',
     conThieu: 'Missing and to do', duCa: 'Nothing missing on this record.',
     goiY: 'Suggestions to help the track perform',
     nenTangLon: 'Major platforms', nenTangKhac: 'Other platforms', daLen: 'live', chuaXn: 'unconfirmed',
     mo: 'Open', khongLink: 'No public page', lenNgay: 'live on',
-    luot: 'Streams', gop: 'Gross revenue', toi: 'Yours', label: 'Label keeps',
+    luot: 'Streams', gop: 'Revenue', toi: 'Yours', label: 'Label keeps',
     kyGan: 'Figures next to each platform are for {k}.',
     kyChua: 'No approved period yet for this track, so no per-platform figures.',
     tong: 'Total', tongKy: 'Period total', xuat: 'Export CSV',
@@ -85,12 +95,12 @@ function chamNenTang(live, total, stage) {
 
 /* ---- quy trình: danh sách dọc, mỗi bước một dấu ---- */
 function quyTrinh(steps) {
-  var CH = { done: 'check', doing: 'clock', todo: '', issue: 'alert' };
+  var CH = { done: 'check', doing: 'clock', todo: '', issue: 'alert', skip: 'x' };
   return '<ol class="qt">' + steps.map(function (s) {
     return '<li class="' + esc(s.status) + '"><span class="mk">' + (CH[s.status] ? icon(CH[s.status]) : '') + '</span>' +
       '<div class="bd"><div class="l"><b>' + esc(song(s, 'label')) + '</b>' +
       '<span class="tag ' + (s.status === 'done' ? 'ok' : s.status === 'doing' ? 'info' : s.status === 'issue' ? 'no' : '') + '">' +
-      esc(t({ done: 'bDone', doing: 'bDoing', todo: 'bTodo', issue: 'bIssue' }[s.status] || s.status)) + '</span>' +
+      esc(t({ done: 'bDone', doing: 'bDoing', todo: 'bTodo', issue: 'bIssue', skip: 'bSkip' }[s.status] || s.status)) + '</span>' +
       (s.at ? '<span class="d mono">' + esc(HT.fmt.date(s.at)) + '</span>' : '') + '</div>' +
       (song(s, 'note') ? '<div class="n">' + esc(song(s, 'note')) + '</div>' : '') + '</div></li>';
   }).join('') + '</ol>';
@@ -123,7 +133,7 @@ function nenTang(d, opts) {
         '<div><b>' + esc(p.name) + '</b>' + (phu ? '<span>' + esc(phu) + '</span>' : '') + '</div></div>' +
       '<div class="ps">' + tagNenTang(p.status) + '</div>' +
       '<div class="pv">' + (coSo && p.streams != null
-        ? '<b>' + esc(tien(opts.mine ? p.mine : p.gross)) + '</b><span>' + esc(HT.fmt.n(p.streams)) + ' ' + esc(t('luot').toLowerCase()) + '</span>'
+        ? '<b>' + esc(tien(opts.mine ? p.mine : p.revenue)) + '</b><span>' + esc(HT.fmt.n(p.streams)) + ' ' + esc(t('luot').toLowerCase()) + '</span>'
         : '<span class="nil">—</span>') + '</div>' +
       '<div class="pl">' + (p.url
         ? '<a class="btn sm" href="' + esc(p.url) + '" target="_blank" rel="noopener noreferrer" title="' + esc(p.url) + '">' + icon('link') + esc(t('mo')) + '</a>'
@@ -138,13 +148,26 @@ function nenTang(d, opts) {
   return html;
 }
 
+/* ---- khiếu nại / xung đột quyền trên bài ---- */
+var KIEU_KN = { open: 'info', disputed: 'warn', escalated: 'warn', resolved: 'ok', released: '' };
+function khieuNai(rows, opts) {
+  if (!rows.length) return '<div class="note ok">' + icon('check') + '<div><b>' + esc(t('knTrong')) + '</b></div></div>';
+  return '<p class="say" style="margin-bottom:10px">' + esc(t('knMo')) + '</p><div class="tw"><table class="t" style="min-width:0"><thead><tr><th>' +
+    esc(t('cNenTang')) + '</th><th>' + esc(t('cLoaiKn')) + '</th><th>' + esc(t('cBenKia')) + '</th><th class="num">' + esc(t('cLuotNgay')) + '</th><th>' + esc(t('cTrangThaiKn')) + '</th></tr></thead><tbody>' +
+    rows.map(function (c) {
+      return '<tr><td><b>' + esc(c.store) + '</b><div class="t-sub">' + esc(c.country || '') + '</div></td><td>' + esc(song(c, 'categoryLabel')) + '</td><td>' + esc(c.otherParty || '—') + '</td>' +
+        '<td class="num">' + esc(HT.fmt.n(c.dailyViews || 0)) + '</td><td><span class="tag ' + (KIEU_KN[c.status] || '') + '">' + esc(t({ open: 'knOpen', disputed: 'knDisputed', escalated: 'knEscalated', resolved: 'knResolved', released: 'knReleased' }[c.status] || c.status)) + '</span>' +
+        '<div class="t-sub">' + esc(t('cCapNhat') + ' ' + HT.fmt.date(c.updatedAt)) + (c.lastNote ? ' · ' + esc(c.lastNote) : '') + '</div></td></tr>';
+    }).join('') + '</tbody></table></div>';
+}
+
 /* ---- ma trận nền tảng × kỳ ----
    Ba thước đo, một bảng; đổi thước đo là vẽ lại phần thân bảng, không mở
    lại ngăn. Ô có vạch nền theo tỷ lệ so với ô lớn nhất của cùng thước đo,
    để mắt nhìn ra nền tảng nào gánh phần lớn mà không cần đọc từng số. */
 function maTran(monthly, opts) {
   opts = opts || {};
-  var metric = opts.metric || 'gross';
+  var metric = opts.metric || 'revenue';
   var tien = opts.tien || HT.fmt.usd0, tien2 = opts.tien2 || HT.fmt.usd;
   var per = monthly.periods, rows = monthly.rows, tot = monthly.totals;
   if (!per.length) return '<p class="say">' + esc(t('khongThang')) + '</p>';
@@ -170,8 +193,10 @@ function maTran(monthly, opts) {
 }
 function chonThuocDo(cur, opts) {
   opts = opts || {};
-  var ds = [{ k: 'streams', l: t('luot') }, { k: 'gross', l: t('gop') }];
-  if (opts.mineLabel) ds.push({ k: 'mine', l: opts.mineLabel });
+  /* Thước đo doanh thu: nội bộ là doanh thu gộp, label là doanh thu sau phí,
+     nghệ sĩ là thu nhập của mình (khi đó cột "mine" trùng, không hiện). */
+  var ds = [{ k: 'streams', l: t('luot') }, { k: 'revenue', l: opts.revenueLabel || t('gop') }];
+  if (opts.mineLabel && !opts.anMine) ds.push({ k: 'mine', l: opts.mineLabel });
   return '<div class="seg mx-seg" data-mx-seg>' + ds.map(function (x) {
     return '<button type="button" data-mx="' + x.k + '"' + (x.k === cur ? ' class="on"' : '') + '>' + esc(x.l) + '</button>';
   }).join('') + '</div>';
@@ -193,14 +218,15 @@ function moNgan(c, d, opts) {
   opts = opts || {};
   var mineLabel = opts.mineLabel || null;
   var tien = opts.tien || HT.fmt.usd, tien0 = opts.tien0 || HT.fmt.usd0;
-  var st = { tab: opts.tabDau || 'qt', metric: opts.metric || 'gross' };
+  var st = { tab: opts.tabDau || 'qt', metric: opts.metric || 'revenue' };
   var tabs = (opts.them || []).map(function (x) { return { k: x.k, l: x.l }; })
-    .concat([{ k: 'qt', l: t('tabQt') }, { k: 'nt', l: t('tabNt') }, { k: 'thang', l: t('tabThang') }]);
+    .concat([{ k: 'qt', l: t('tabQt') }, { k: 'nt', l: t('tabNt') }, { k: 'thang', l: t('tabThang') }])
+    .concat(opts.claims ? [{ k: 'kn', l: t('tabKn') + (opts.claims.length ? ' (' + opts.claims.length + ')' : '') }] : []);
   if (!tabs.some(function (x) { return x.k === st.tab; })) st.tab = tabs[0].k;
 
   var dau = HM.so([
-    { l: t('tichLuy'), v: mineLabel ? tien(d.lifetime.mine) : tien(d.lifetime.gross), lon: true,
-      s: mineLabel ? (mineLabel + ' · ' + t('gop').toLowerCase() + ' ' + tien0(d.lifetime.gross)) : (HT.fmt.n(d.lifetime.streams) + ' ' + t('luot').toLowerCase()) },
+    { l: t('tichLuy'), v: mineLabel ? tien(d.lifetime.mine) : tien(d.lifetime.revenue), lon: true,
+      s: mineLabel ? (mineLabel + (opts.anMine ? '' : ' · ' + (opts.revenueLabel || t('gop')).toLowerCase() + ' ' + tien0(d.lifetime.revenue))) : (HT.fmt.n(d.lifetime.streams) + ' ' + t('luot').toLowerCase()) },
     { l: t('phatHanh'), v: HT.fmt.date(d.releaseDate), s: d.type + ' · ' + d.releasePeriod },
     { l: t('nenTang'), html: chamNenTang(d.summary.live, d.summary.total, d.summary.stage) + ' <b>' + esc(d.summary.live + '/' + d.summary.total) + '</b>', s: '' },
     { l: t('thieu'), v: d.summary.missing ? String(d.summary.missing) : '0', mau: d.summary.missing ? HB.mau(d.summary.stage === 'issue' ? 'no' : 'warn') : HB.mau('ok'),
@@ -216,8 +242,9 @@ function moNgan(c, d, opts) {
   (opts.them || []).forEach(function (x) { panels[x.k] = x.html; });
   panels.qt = quyTrinh(d.steps) + conThieu(d.missing);
   panels.nt = nenTang(d, { tien: tien, mine: !!mineLabel });
+  if (opts.claims) panels.kn = khieuNai(opts.claims, opts);
   panels.thang = '<p class="say" style="margin-bottom:10px">' + esc(opts.noiBo ? t('thangMoNb') : t('thangMo')) + '</p>' +
-    '<div class="bar" style="margin-bottom:10px">' + chonThuocDo(st.metric, { mineLabel: mineLabel }) + '<div class="sp"></div>' +
+    '<div class="bar" style="margin-bottom:10px">' + chonThuocDo(st.metric, { mineLabel: mineLabel, revenueLabel: opts.revenueLabel, anMine: opts.anMine }) + '<div class="sp"></div>' +
     '<button type="button" class="btn sm" data-mx-csv>' + icon('down2') + esc(t('xuat')) + '</button></div>' +
     '<div data-mx-body>' + maTran(d.monthly, { metric: st.metric, tien: tien0, tien2: tien }) + '</div>';
 
@@ -228,7 +255,9 @@ function moNgan(c, d, opts) {
     Object.keys(panels).map(function (k) {
       return '<div data-apanel="' + esc(k) + '"' + (k === st.tab ? '' : ' hidden') + '>' + panels[k] + '</div>';
     }).join('') +
-    '<h4 class="sec">' + esc(HT.lang === 'en' ? 'Record details' : 'Thông tin bản ghi') + '</h4>' + chiTiet;
+    '<h4 class="sec">' + esc(HT.lang === 'en' ? 'Record details' : 'Thông tin bản ghi') + '</h4>' + chiTiet +
+    (opts.hoTro ? '<div class="btnrow" style="margin-top:14px"><button type="button" class="btn sm pri" data-yc-mkt="' + d.id + '">' + icon('up') + esc(t('ycMkt')) + '</button>' +
+      '<button type="button" class="btn sm" data-yc-ht="' + d.id + '">' + esc(t('ycHt')) + '</button></div>' : '');
 
   c.nganTruot(html, {
     tieuDe: d.title, phu: d.isrc + ' · ' + d.artist + (d.label ? ' · ' + d.label : ''),
@@ -257,7 +286,7 @@ function moNgan(c, d, opts) {
 global.HTS = {
   t: t, song: song,
   tagNenTang: tagNenTang, tagGiaiDoan: tagGiaiDoan, tagMuc: tagMuc, chamNenTang: chamNenTang,
-  quyTrinh: quyTrinh, conThieu: conThieu, nenTang: nenTang, maTran: maTran, chonThuocDo: chonThuocDo, csvMaTran: csvMaTran,
+  quyTrinh: quyTrinh, conThieu: conThieu, nenTang: nenTang, maTran: maTran, chonThuocDo: chonThuocDo, csvMaTran: csvMaTran, khieuNai: khieuNai,
   moNgan: moNgan
 };
 

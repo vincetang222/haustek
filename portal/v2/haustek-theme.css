@@ -371,8 +371,17 @@ main{padding:22px 24px 56px;min-width:0}
 .kpi .v{font-size:clamp(17px,calc(17cqi - 6px),22px);font-weight:600;
   letter-spacing:-.015em;white-space:nowrap}
 .kpi .s{font-size:11.5px;color:var(--ink-2);margin-top:4px}
-.kpi.hero{background:var(--hero-wash),var(--card)}
-.kpi.hero .v{font-size:clamp(20px,calc(17cqi - 6px),30px);letter-spacing:-.025em;color:var(--accent)}
+.kpi.hero{background:linear-gradient(135deg,var(--accent) 0%,color-mix(in srgb,var(--accent) 70%,#05202A) 100%);color:#fff;position:relative;overflow:hidden}
+.kpi.hero::after{content:"";position:absolute;right:-30px;top:-30px;width:120px;height:120px;border-radius:50%;background:rgba(255,255,255,.08)}
+.kpi.hero .l{color:rgba(255,255,255,.78)}
+.kpi.hero .v{font-size:clamp(20px,calc(17cqi - 6px),30px);letter-spacing:-.025em;color:#fff}
+.kpi.hero .s{color:rgba(255,255,255,.82)}
+.kpi.hero .pos,.kpi.hero .neg{color:#fff;background:rgba(255,255,255,.16)}
+.kpi .tia{margin-top:6px;line-height:0}
+.kpi .tia svg{width:100%;height:26px}
+.kpi.hero .tia{opacity:.9}
+.kpi .d{display:inline-block;margin-top:5px;font-size:11.5px;font-weight:600;padding:1px 7px;border-radius:999px}
+.kpi .d.pos{background:var(--ok-lo);color:var(--ok)} .kpi .d.neg{background:var(--danger-lo);color:var(--danger)}
 
 /* =====================================================================
    NÚT
@@ -612,28 +621,34 @@ h4.sec:first-child{margin-top:0}
 /* =====================================================================
    MÀU CHUỖI DỮ LIỆU
    ---------------------------------------------------------------------
-   Bảy màu, xếp theo thứ tự dùng. Chọn sao cho phân biệt được cả khi in
-   đen trắng (độ sáng cách nhau), và không dùng cặp đỏ–xanh lá cạnh nhau
-   làm thông tin duy nhất — khoảng 8% đàn ông Việt Nam không phân biệt
-   được cặp đó.
+   Tám màu, xếp theo thứ tự dùng CỐ ĐỊNH (không xoay vòng). Bảng này đã
+   qua bộ kiểm màu: độ sáng trong dải đọc được, đủ đậm để không thành xám,
+   hai màu kề nhau phân biệt được với người mù màu đỏ–lục (ΔE ≥ 8 theo
+   mô phỏng Machado 2009) và với người nhìn bình thường (ΔE ≥ 15). Bộ tối
+   là cùng tám sắc, bước lại cho nền tối, cũng đã kiểm riêng.
+   --s-khac là xám dành riêng cho ô "khác / còn lại", không nằm trong
+   tám màu định danh.
    ===================================================================== */
 :root{
-  --s1:#0C7287; --s2:#3F6FB4; --s3:#7A5AA6; --s4:#B0517A;
-  --s5:#C2703A; --s6:#8A8F3C; --s7:#3E8F72; --s8:#6C7A87;
+  --s1:#0E8FA8; --s2:#EB6834; --s3:#4A3AA7; --s4:#EDA100;
+  --s5:#E87BA4; --s6:#008300; --s7:#2A78D6; --s8:#E34948;
+  --s-khac:#7A8794;
   --grid:#E9ECEF; --axis:#C3C9D0;
   --bar-bg:#EAEDF0;
 }
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
-    --s1:#4CB8CE; --s2:#7CA7E8; --s3:#B396DE; --s4:#EE8DAF;
-    --s5:#EDA46A; --s6:#C3CC72; --s7:#6FD3AC; --s8:#9AA9B6;
+    --s1:#1E9DB8; --s2:#D95926; --s3:#9085E9; --s4:#C98500;
+    --s5:#D55181; --s6:#008300; --s7:#3987E5; --s8:#E66767;
+    --s-khac:#8A98A6;
     --grid:#20303C; --axis:#334756;
     --bar-bg:#1E2C38;
   }
 }
 :root[data-theme="dark"]{
-  --s1:#4CB8CE; --s2:#7CA7E8; --s3:#B396DE; --s4:#EE8DAF;
-  --s5:#EDA46A; --s6:#C3CC72; --s7:#6FD3AC; --s8:#9AA9B6;
+  --s1:#1E9DB8; --s2:#D95926; --s3:#9085E9; --s4:#C98500;
+  --s5:#D55181; --s6:#008300; --s7:#3987E5; --s8:#E66767;
+  --s-khac:#8A98A6;
   --grid:#20303C; --axis:#334756;
   --bar-bg:#1E2C38;
 }
@@ -657,6 +672,15 @@ h4.sec:first-child{margin-top:0}
 .bd .hz:hover .hit{fill:var(--ink);opacity:.04}
 .bd .dash{stroke-dasharray:3 3}
 .bd .ln{fill:none;stroke-width:2;stroke-linejoin:round;stroke-linecap:round}
+.bd .ln.dubao{stroke-dasharray:4 4}
+.bd .ar{opacity:.85}
+.bd .ch{stroke:var(--ink);stroke-width:1;opacity:0;stroke-dasharray:3 3}
+.bd .col:hover .ch,.bd .col:focus .ch{opacity:.45}
+.bd .col:hover .dt,.bd .col:focus .dt{opacity:1}
+.bd .dt{opacity:0;transition:opacity .12s}
+.bd .dt.on{opacity:1}
+.bd .vong .ph{stroke:var(--card);stroke-width:2;transition:opacity .12s}
+.bd .vong .hz:hover .ph{opacity:.82}
 .bd .dot2{stroke:var(--card);stroke-width:1.6}
 
 .tip{position:fixed;z-index:95;pointer-events:none;background:var(--chrome);
@@ -834,6 +858,9 @@ h4.sec:first-child{margin-top:0}
 .qt li.doing .mk{border-color:var(--accent);color:var(--accent);box-shadow:0 0 0 4px var(--accent-lo)}
 .qt li.issue .mk{background:var(--danger);border-color:var(--danger)}
 .qt li.todo .mk{border-style:dashed}
+.qt li.skip .mk{border-style:dashed;color:var(--faint);background:var(--band)}
+.qt li.skip .l b{color:var(--ink-2);font-weight:500}
+.qt li.skip::before{background:var(--line)}
 .qt .bd{min-width:0;padding-top:2px}
 .qt .l{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .qt .l b{font-size:13.5px;font-weight:600}

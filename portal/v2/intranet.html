@@ -20,17 +20,23 @@
 <script src="haustek-man.js"></script>
 <script src="haustek-taisan.js"></script>
 
+<script src="man/ban-lam-viec.js"></script>
 <script src="man/tong-quan.js"></script>
 <script src="man/nap-du-lieu.js"></script>
 <script src="man/khop-isrc.js"></script>
 <script src="man/doi-chieu.js"></script>
 <script src="man/phat-hanh.js"></script>
+<script src="man/giao-nhan.js"></script>
+<script src="man/sua-hang-loat.js"></script>
 <script src="man/ke-toan.js"></script>
 <script src="man/chi-tra.js"></script>
 <script src="man/tam-ung.js"></script>
 <script src="man/ty-le.js"></script>
 <script src="man/danh-muc.js"></script>
 <script src="man/nen-tang.js"></script>
+<script src="man/doi-tac.js"></script>
+<script src="man/ho-tro.js"></script>
+<script src="man/quyen.js"></script>
 <script src="man/quan-tri.js"></script>
 
 <script>
@@ -41,6 +47,7 @@
    khách cũng tải về.
    ===================================================================== */
 var A = HAUSTEK.admin;
+try { var NV = sessionStorage.getItem('haustek.demo.nv'); if (NV) A.staff.setMe(NV); } catch (e) {}
 A.provideSecrets({
   code: 'DIST-1',
   name: 'Đối tác phân phối chính (tên thật điền khi triển khai)',
@@ -70,9 +77,25 @@ HT.chay({
       + (khoa ? '' : (c.lang === 'vi' ? ' · chưa chốt tỷ giá' : ' · not locked'));
   },
   chanTrai: function (c) {
-    return '<b>' + HT.esc('ops@haustek-group.com') + '</b><span>' +
-      HT.esc(c.lang === 'vi' ? 'Tài khoản vận hành' : 'Operations account') + '</span>';
+    var me = A.staff.me;
+    return '<b>' + HT.esc(me.email) + '</b><span>' + HT.esc(c.lang === 'vi' ? me.title : me.titleEn) + '</span>' +
+      '<select class="inline-sel" data-nv style="margin-top:9px;width:100%">' + A.staff.list().map(function (s) {
+        return '<option value="' + s.id + '"' + (s.id === me.id ? ' selected' : '') + '>' + HT.esc(s.name + ' · ' + (c.lang === 'vi' ? s.title : s.titleEn)) + '</option>';
+      }).join('') + '</select>' +
+      '<span style="display:block;margin-top:7px;line-height:1.5">' + HT.esc(c.lang === 'vi'
+        ? 'Bản mẫu: đổi nhân viên để xem bàn làm việc theo vai. Hệ thống thật lấy vai từ tài khoản đăng nhập.'
+        : 'Prototype: switch staff to see each role’s desk. The real system takes the role from the login.') + '</span>';
   }
+});
+/* Nhân vật nhân viên: giữ qua lần nạp lại. Đặt TRƯỚC khi vẽ (HT.chay đã vẽ
+   một lần; đổi xong thì nạp lại trang cho gọn, y như đổi tài khoản ở cổng
+   đối tác). */
+document.addEventListener('change', function (e) {
+  var s = e.target.closest('[data-nv]');
+  if (!s) return;
+  try { sessionStorage.setItem('haustek.demo.nv', s.value); } catch (err) {}
+  location.hash = '#ban-lam-viec';
+  location.reload();
 });
 </script>
 </body>
