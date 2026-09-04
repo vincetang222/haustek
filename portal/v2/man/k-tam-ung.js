@@ -14,7 +14,7 @@
 "use strict";
 
 HT.dangKy({
-  id: 'k-tam-ung', nav: 'navUng', icon: 'up',
+  id: 'k-tam-ung', nav: 'navUng', nhom: 'nhomTaiChinh', icon: 'up',
 
   chu: {
     vi: {

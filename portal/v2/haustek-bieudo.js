@@ -330,8 +330,13 @@ function veCot(cfg, W) {
 
   /* nhãn trục hoành: nếu chật thì bỏ bớt, không xoay chữ */
   var buocNhan = Math.ceil(n / Math.max(1, Math.floor(rong / 46)));
+  /* nhãn cuối và nhãn kỳ nổi bật luôn hiện; nhãn thường đứng sát chúng
+     (chưa đủ một bước) thì nhường chỗ, không thì hai nhãn đè lên nhau
+     ở màn hẹp */
+  var ep = [n - 1]; if (cfg.noiBat != null && cfg.noiBat >= 0) ep.push(cfg.noiBat);
+  var gan = function (i) { for (var k = 0; k < ep.length; k++) if (i !== ep[k] && Math.abs(i - ep[k]) < buocNhan) return true; return false; };
   for (var i3 = 0; i3 < n; i3++) {
-    if (i3 % buocNhan !== 0 && i3 !== n - 1 && cfg.noiBat !== i3) continue;
+    if (i3 !== n - 1 && cfg.noiBat !== i3 && (i3 % buocNhan !== 0 || (buocNhan > 1 && gan(i3)))) continue;
     s += '<text class="lb' + (cfg.noiBat === i3 ? ' on' : '') + '" x="' + (LE_TR + i3 * bw + bw / 2).toFixed(1) +
       '" y="' + (H - 9) + '" text-anchor="middle">' + esc(truc[i3]) + '</text>';
   }

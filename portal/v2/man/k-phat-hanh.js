@@ -19,7 +19,7 @@ var VAI = { vi: { Composer: 'Sáng tác', Lyricist: 'Viết lời', 'Composer/Ly
             en: { Composer: 'Composer', Lyricist: 'Lyricist', 'Composer/Lyricist': 'Composer & lyricist', Arranger: 'Arranger' } };
 
 HT.dangKy({
-  id: 'k-phat-hanh', nav: 'navPh', icon: 'file',
+  id: 'k-phat-hanh', nav: 'navPh', nhom: 'nhomBai', icon: 'file',
 
   chu: {
     vi: {

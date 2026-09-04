@@ -20,6 +20,7 @@ HT.dangKy({
 
   chu: {
     vi: {
+      nhomBai: 'Bài hát', nhomLabel: 'Label', nhomTaiChinh: 'Tài chính', nhomHoTro: 'Hỗ trợ',
       navTong: 'Tổng quan', h1: 'Tổng quan',
       banGhi: 'Doanh thu bản ghi', tacQuyen: 'Tác quyền',
       veTay: 'Thu nhập kỳ này', gop: 'Doanh thu gộp', luot: 'Lượt nghe', bai: 'Bài hát có doanh thu',
@@ -66,6 +67,7 @@ HT.dangKy({
       moLabel: 'Label · {n} bài hát đã gửi tới nền tảng', moLabelCon: 'Label con của {p} · {n} bài hát đã gửi tới nền tảng'
     },
     en: {
+      nhomBai: 'Tracks', nhomLabel: 'Label', nhomTaiChinh: 'Finance', nhomHoTro: 'Help',
       navTong: 'Overview', h1: 'Overview',
       banGhi: 'Recording revenue', tacQuyen: 'Publishing',
       veTay: 'Yours this period', gop: 'Gross revenue', luot: 'Streams', bai: 'Earning tracks',

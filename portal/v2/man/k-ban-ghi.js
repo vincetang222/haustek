@@ -15,7 +15,7 @@ var LUONG = 'rec';
 var LOC = { tim: '', sap: 'mine', huong: -1, trang: 0, co: 25 };
 
 HT.dangKy({
-  id: 'k-ban-ghi', nav: 'navBai', icon: 'disc',
+  id: 'k-ban-ghi', nav: 'navBai', nhom: 'nhomBai', icon: 'disc',
 
   chu: {
     vi: {

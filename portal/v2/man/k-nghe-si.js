@@ -14,7 +14,7 @@
 var LOC = { tim: '', sap: 'gross', huong: -1 };
 
 HT.dangKy({
-  id: 'k-nghe-si', nav: 'navNs', icon: 'user',
+  id: 'k-nghe-si', nav: 'navNs', nhom: 'nhomLabel', icon: 'user',
   khaDung: function (c) { return c.phien && c.phien.me && c.phien.me.role === 'label'; },
 
   chu: {

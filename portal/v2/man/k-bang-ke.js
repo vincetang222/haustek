@@ -16,7 +16,7 @@
 var LUONG = 'rec';
 
 HT.dangKy({
-  id: 'k-bang-ke', nav: 'navBangKe', icon: 'file',
+  id: 'k-bang-ke', nav: 'navBangKe', nhom: 'nhomTaiChinh', icon: 'file',
 
   chu: {
     vi: {

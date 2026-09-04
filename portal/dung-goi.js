@@ -19,7 +19,7 @@ const doc = p => fs.readFileSync(p, 'utf8');
 
 const NOIBO = ['tong-quan','nap-du-lieu','khop-isrc','doi-chieu','phat-hanh','ke-toan',
                'chi-tra','tam-ung','ty-le','danh-muc','nen-tang','quan-tri'];
-const KHACH = ['k-tong-quan','k-nghe-si','k-he-thong','k-ban-ghi','k-danh-muc','k-nen-tang','k-phat-hanh','k-bang-ke','k-tam-ung','k-tai-lieu'];
+const KHACH = ['k-tong-quan','k-ban-ghi','k-danh-muc','k-nen-tang','k-phat-hanh','k-nghe-si','k-he-thong','k-bang-ke','k-tam-ung','k-tai-lieu'];
 const boc = ds => ds.map(n =>
   '/* ---- man/' + n + '.js ---- */\nfunction(){\n' + doc(V + 'man/' + n + '.js') + '\n}').join(',\n');
 

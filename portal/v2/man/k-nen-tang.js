@@ -17,7 +17,7 @@
 var LOC = { metric: 'gross' };
 
 HT.dangKy({
-  id: 'k-nen-tang', nav: 'navNenTang', icon: 'shop',
+  id: 'k-nen-tang', nav: 'navNenTang', nhom: 'nhomBai', icon: 'shop',
 
   chu: {
     vi: {

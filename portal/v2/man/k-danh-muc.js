@@ -29,7 +29,7 @@ var CHU_GD = { live: 'gdLive', processing: 'gdProcessing', issue: 'gdIssue' };
 var XUAT_TOI_DA = 1000;
 
 HT.dangKy({
-  id: 'k-danh-muc', nav: 'navDanhMuc', icon: 'layers',
+  id: 'k-danh-muc', nav: 'navDanhMuc', nhom: 'nhomBai', icon: 'layers',
 
   chu: {
     vi: {

@@ -18,7 +18,7 @@ var TOP_NS = 5;   /* số nghệ sĩ hiện sẵn dưới mỗi label trong cây
 var LOC = { sap: 'gross', huong: -1, moRong: {} };
 
 HT.dangKy({
-  id: 'k-he-thong', nav: 'navHeThong', icon: 'tree',
+  id: 'k-he-thong', nav: 'navHeThong', nhom: 'nhomLabel', icon: 'tree',
   khaDung: function (c) {
     var me = c.phien && c.phien.me;
     return !!(me && me.role === 'label' && me.childLabels > 0);

@@ -17,7 +17,7 @@
 var TAB = 'bangke';
 
 HT.dangKy({
-  id: 'k-tai-lieu', nav: 'navTl', icon: 'file',
+  id: 'k-tai-lieu', nav: 'navTl', nhom: 'nhomHoTro', icon: 'file',
 
   chu: {
     vi: {
