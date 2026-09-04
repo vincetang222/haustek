@@ -12,7 +12,8 @@
 "use strict";
 (function () {
 
-var LOC = { nhom: 'chi', tim: '', loai: '' };
+var LOC = { tab: 'ky', nhom: 'chi', tim: '', loai: '', rutTt: '', rutTim: '', bkTim: '' };
+var KIEU_RUT = { requested: 'info', processing: 'warn', paid: 'ok', rejected: 'no', cancelled: '' };
 var SAU = [];
 
 HT.dangKy({
@@ -33,7 +34,29 @@ HT.dangKy({
       xuat: 'Xuất danh sách chuyển khoản', tong: 'Tổng cộng',
       nguong: 'Ngưỡng thanh toán tối thiểu', nguongMo: 'Khoản dưới ngưỡng không mất đi, mà được chuyển sang kỳ sau và cộng vào số thanh toán của kỳ đó. Ngưỡng tồn tại vì phí chuyển khoản quốc tế có thể bằng hoặc vượt cả một khoản nhỏ.',
       khongAi: 'Không có bên thụ hưởng nào khớp bộ lọc',
-      chiTiet: 'Chi tiết dòng tiền: từ doanh thu đến số thanh toán'
+      chiTiet: 'Chi tiết dòng tiền: từ doanh thu đến số thanh toán',
+      tabKy: 'Thanh toán theo kỳ', tabRut: 'Yêu cầu rút tiền', tabBk: 'Bảng kê PDF',
+      rTong: 'Đang chờ chuyển khoản', rTongS: 'yêu cầu chờ xử lý', rXuLy: 'Đang chuyển khoản', rDaChuyen: 'Đã chuyển khoản', rTuChoi: 'Từ chối hoặc huỷ',
+      rMo: 'Đối tác gửi yêu cầu rút tiền từ ví trên cổng của họ. Kế toán tiếp nhận, chuyển khoản rồi ghi số tham chiếu; đối tác thấy trạng thái ngay trên cổng.',
+      rTim: 'Tìm mã yêu cầu, tên hoặc mã đối tác…', rTatCa: 'Tất cả',
+      requested: 'Chờ xử lý', processing: 'Đang chuyển', paid: 'Đã chuyển', rejected: 'Từ chối', cancelled: 'Đã huỷ',
+      rcDoiTac: 'Đối tác', rcSoTien: 'Số tiền', rcNgay: 'Ngày yêu cầu', rcNh: 'Tài khoản nhận', rcTt: 'Trạng thái', rcThaoTac: 'Thao tác',
+      tiepNhan: 'Tiếp nhận', daChuyen: 'Đã chuyển khoản', tuChoi: 'Từ chối', taoHo: 'Tạo yêu cầu hộ đối tác',
+      hoiChuyen: 'Xác nhận đã chuyển khoản', hoiChuyenMo: 'Ghi số tham chiếu lệnh chuyển khoản. Đối tác thấy số này trên cổng của họ.', hThamChieu: 'Số tham chiếu lệnh chuyển khoản',
+      hoiTuChoi: 'Từ chối yêu cầu rút tiền', hoiTuChoiMo: 'Số tiền quay lại số dư khả dụng của đối tác. Lý do hiện trên cổng đối tác.', hLyDo: 'Lý do từ chối',
+      hoiTaoHo: 'Tạo yêu cầu rút tiền hộ đối tác', hoiTaoHoMo: 'Dùng khi đối tác gọi điện hoặc gửi email. Số tiền phải từ ngưỡng tối thiểu tới số dư khả dụng và đối tác đã khai tài khoản ngân hàng.',
+      hDoiTac: 'Mã đối tác', hSoTien: 'Số tiền (USD)', hGhi: 'Ghi chú',
+      daTiepNhan: 'Đã tiếp nhận yêu cầu', daGhiChuyen: 'Đã ghi chuyển khoản', daTuChoi: 'Đã từ chối yêu cầu', daTaoHo: 'Đã tạo yêu cầu',
+      khongRut: 'Không có yêu cầu nào', khongRutMo: 'Đổi bộ lọc phía trên, hoặc tạo yêu cầu hộ đối tác.',
+      lichSu: 'Lịch sử', viDoiTac: 'Ví của đối tác', viKhaDung: 'Khả dụng', viCho: 'Đang xử lý', viDaRut: 'Đã rút',
+      thamChieu: 'Số tham chiếu', lyDo: 'Lý do', ghiChu: 'Ghi chú', khongGhi: 'không có', chuyenLuc: 'Chuyển khoản lúc', nguoiTao: 'Người tạo',
+      bkMo: 'Mỗi bên thụ hưởng của kỳ đã xét duyệt nhận một bảng kê PDF do Haustek lập, ghi đầy đủ căn cứ tính và các khoản khấu trừ. Đối tác tải ở trang Bảng kê trên cổng của họ.',
+      bkDaDinh: 'Đã đính kèm', bkThieu: 'Còn thiếu', bkTong: 'Bên thụ hưởng', bkDinhHet: 'Đính kèm tất cả (bản mẫu)', bkDinh: 'Đính kèm', bkGo: 'Gỡ', bkTim: 'Tìm bên thụ hưởng…',
+      cGhiVi: 'Ghi vào ví', cPdf: 'Bảng kê PDF',
+      hoiDinh: 'Đính kèm bảng kê PDF', hoiDinhMo: 'Bản mẫu chỉ ghi tên tệp; hệ thống thật tải tệp lên kho tài liệu và đối tác nhận thông báo.', hTep: 'Tên tệp PDF',
+      daDinh: 'Đã đính kèm bảng kê', daGo: 'Đã gỡ bảng kê', daDinhHet: 'Đã đính kèm bảng kê cho mọi bên thụ hưởng của kỳ',
+      bkChuaDuyet: 'Kỳ chưa xét duyệt', bkChuaDuyetMo: 'Bảng kê chỉ lập được sau khi kỳ được xét duyệt. Chọn một kỳ đã xét duyệt ở thanh trên hoặc ở danh sách dưới.',
+      bkTheoKy: 'Bảng kê theo kỳ', bkTheoKyMo: 'Số bảng kê đã đính kèm trên tổng số bên thụ hưởng của từng kỳ đã xét duyệt. Bấm để chuyển kỳ.'
     },
     en: {
       navChiTra: 'Payouts', h1: 'Payouts',
@@ -49,7 +72,29 @@ HT.dangKy({
       xuat: 'Export transfer list', tong: 'Total',
       nguong: 'Payout threshold', nguongMo: 'Below the threshold nothing is lost — it carries forward and is added to the next period. The threshold exists because international transfer fees eat a small amount whole.',
       khongAi: 'No payee matches the filters',
-      chiTiet: 'Payee money chain'
+      chiTiet: 'Payee money chain',
+      tabKy: 'Payouts by period', tabRut: 'Withdrawal requests', tabBk: 'PDF statements',
+      rTong: 'Waiting to be transferred', rTongS: 'requests waiting', rXuLy: 'Being transferred', rDaChuyen: 'Transferred', rTuChoi: 'Rejected or cancelled',
+      rMo: 'Partners request withdrawals from their wallet on the portal. Accounting accepts, transfers and records the reference; the partner sees the status on the portal at once.',
+      rTim: 'Search request ID, partner name or client ID…', rTatCa: 'All',
+      requested: 'Requested', processing: 'Processing', paid: 'Paid', rejected: 'Rejected', cancelled: 'Cancelled',
+      rcDoiTac: 'Partner', rcSoTien: 'Amount', rcNgay: 'Requested', rcNh: 'Payout account', rcTt: 'Status', rcThaoTac: 'Actions',
+      tiepNhan: 'Accept', daChuyen: 'Mark transferred', tuChoi: 'Reject', taoHo: 'Log a request for a partner',
+      hoiChuyen: 'Confirm the transfer', hoiChuyenMo: 'Record the bank transfer reference. The partner sees it on their portal.', hThamChieu: 'Transfer reference',
+      hoiTuChoi: 'Reject the withdrawal', hoiTuChoiMo: 'The amount returns to the partner’s available balance. The reason is shown on their portal.', hLyDo: 'Reason',
+      hoiTaoHo: 'Log a withdrawal for a partner', hoiTaoHoMo: 'For partners who phone or email. The amount must be between the minimum and the available balance, and the partner needs a bank account on file.',
+      hDoiTac: 'Client ID', hSoTien: 'Amount (USD)', hGhi: 'Note',
+      daTiepNhan: 'Request accepted', daGhiChuyen: 'Transfer recorded', daTuChoi: 'Request rejected', daTaoHo: 'Request logged',
+      khongRut: 'No requests', khongRutMo: 'Change the filters above, or log one for a partner.',
+      lichSu: 'History', viDoiTac: 'Partner wallet', viKhaDung: 'Available', viCho: 'In progress', viDaRut: 'Withdrawn',
+      thamChieu: 'Reference', lyDo: 'Reason', ghiChu: 'Note', khongGhi: 'none', chuyenLuc: 'Transferred at', nguoiTao: 'Created by',
+      bkMo: 'Every payee of an approved period gets a PDF statement prepared by Haustek with the full basis of calculation and every deduction. Partners download it on their Statement page.',
+      bkDaDinh: 'Attached', bkThieu: 'Missing', bkTong: 'Payees', bkDinhHet: 'Attach all (prototype)', bkDinh: 'Attach', bkGo: 'Remove', bkTim: 'Search payee…',
+      cGhiVi: 'Credited', cPdf: 'PDF statement',
+      hoiDinh: 'Attach a PDF statement', hoiDinhMo: 'The prototype records the file name; the real system uploads the file and notifies the partner.', hTep: 'PDF file name',
+      daDinh: 'Statement attached', daGo: 'Statement removed', daDinhHet: 'Statements attached for every payee of the period',
+      bkChuaDuyet: 'Period not approved', bkChuaDuyetMo: 'Statements exist only after the period is approved. Pick an approved period in the top bar or in the list below.',
+      bkTheoKy: 'Statements by period', bkTheoKyMo: 'Attached statements over the number of payees for each approved period. Click to switch period.'
     }
   },
 
@@ -95,6 +140,20 @@ HT.dangKy({
         { l: t('nguong'), v: HT.fmt.usd0(A.cfg.PAYOUT_MIN) }
       ]
     });
+    var wc = A.withdrawals.counts();
+    html += HM.tabs([
+      { k: 'ky', l: t('tabKy'), icon: 'cash' },
+      { k: 'rut', l: t('tabRut'), icon: 'swap', dem: wc.requested + wc.processing ? String(wc.requested + wc.processing) : undefined },
+      { k: 'bk', l: t('tabBk'), icon: 'file' }
+    ], LOC.tab);
+    if (LOC.tab === 'rut' || LOC.tab === 'bk') {
+      html += LOC.tab === 'rut' ? veRut(c) : veBangKe(c);
+      root.innerHTML = html;
+      if (LOC.tab === 'bk') dungBangBk(root, c);
+      HB.gan(root);
+      ganTab(root, c);
+      return;
+    }
 
     html += HM.ghi({ kieu: duyet ? 'ok' : 'info',
       tieuDe: HM.esc(duyet ? t('daGhi') : t('xemTruoc')),
@@ -212,6 +271,7 @@ HT.dangKy({
     b.ve();
     HB.gan(root);
 
+    ganTab(root, c);
     HM.bam(root, '[data-nhom]', function (el) { LOC.nhom = el.getAttribute('data-nhom'); c.veLai(); });
     HM.doi(root, '[data-loai]', function (el) { LOC.loai = el.value; c.veLai(); });
     HM.nhap(root, '[data-tim]', function (el) { LOC.tim = el.value; c.veLai(); });
@@ -228,6 +288,209 @@ HT.dangKy({
     });
   }
 });
+
+function ganTab(root, c) {
+  var A = c.A, t = c.t, me = A.staff.me;
+  HM.bam(root, '[data-tab]', function (el) { LOC.tab = el.getAttribute('data-tab'); c.veLai(); });
+  HM.bam(root, '[data-rut-tt]', function (el) { LOC.rutTt = el.getAttribute('data-rut-tt'); c.veLai(); });
+  HM.nhap(root, '[data-rut-tim]', function (el) { LOC.rutTim = el.value; c.veLai(); });
+  HM.nhap(root, '[data-bk-tim]', function (el) { LOC.bkTim = el.value; var h = root.querySelector('[data-bang-bk]'); if (h) dungBangBk(root, c); });
+  HM.bam(root, '[data-xl]', function (el, e) { e.stopPropagation(); xuLyRut(c, el.getAttribute('data-id'), el.getAttribute('data-xl')); });
+  HM.bam(root, '[data-rut]', function (el, e) { if (e.target.closest('button')) return; moRut(c, el.getAttribute('data-rut')); });
+  HM.bam(root, '[data-tao-ho]', function () { taoHo(c); });
+  HM.bam(root, '[data-kyto]', function (el) { c.doiKy(el.getAttribute('data-kyto')); });
+  HM.bam(root, '[data-dinh-het]', function () {
+    try { A.statements.attachAll(c.kyKey, me.email); c.thongBao(t('daDinhHet'), 'ok'); c.veLai(); } catch (err) { c.thongBao(err.message, 'no'); }
+  });
+  HM.bam(root, '[data-dinh]', function (el, e) {
+    e.stopPropagation();
+    var pk = el.getAttribute('data-dinh');
+    c.hoiThoai({ tieuDe: t('hoiDinh'), moTa: HM.esc(t('hoiDinhMo')),
+      than: '<label class="fld">' + HM.esc(t('hTep')) + '</label><input class="in" data-o="file" value="bang-ke-' + HM.esc(c.kyKey) + '-' + HM.esc(A.partyClientId(pk)) + '.pdf">',
+      dong: t('bkDinh') }).then(function (f) {
+      if (!f) return;
+      try { A.statements.attach(c.kyKey, pk, f.file, me.email); c.thongBao(t('daDinh'), 'ok'); c.veLai(); } catch (err) { c.thongBao(err.message, 'no'); }
+    });
+  });
+  HM.bam(root, '[data-go]', function (el, e) {
+    e.stopPropagation();
+    try { A.statements.remove(c.kyKey, el.getAttribute('data-go'), me.email); c.thongBao(t('daGo'), 'ok'); c.veLai(); } catch (err) { c.thongBao(err.message, 'no'); }
+  });
+}
+
+/* =====================================================================
+   Tab yêu cầu rút tiền: đối tác gửi từ ví, kế toán tiếp nhận, chuyển
+   khoản, ghi số tham chiếu (hoặc từ chối kèm lý do).
+   ===================================================================== */
+function anSo(s) { s = String(s || ''); return s.length > 4 ? '••••' + s.slice(-4) : s; }
+function nutRut(c, w, lon) {
+  var t = c.t, k = lon ? '' : ' sm';
+  if (w.status === 'requested') return '<button type="button" class="btn pri' + k + '" data-xl="process" data-id="' + HM.esc(w.id) + '">' + HM.esc(t('tiepNhan')) + '</button>' +
+    '<button type="button" class="btn ghost' + k + '" data-xl="reject" data-id="' + HM.esc(w.id) + '">' + HM.esc(t('tuChoi')) + '</button>';
+  if (w.status === 'processing') return '<button type="button" class="btn pri' + k + '" data-xl="pay" data-id="' + HM.esc(w.id) + '">' + HM.esc(t('daChuyen')) + '</button>' +
+    '<button type="button" class="btn ghost' + k + '" data-xl="reject" data-id="' + HM.esc(w.id) + '">' + HM.esc(t('tuChoi')) + '</button>';
+  if (w.status === 'paid') return '<span class="mono muted">' + HM.esc(w.ref || '') + '</span>';
+  return '';
+}
+function veRut(c) {
+  var A = c.A, t = c.t;
+  var wc = A.withdrawals.counts();
+  var ds = A.withdrawals.list({ status: LOC.rutTt || undefined, q: LOC.rutTim || undefined });
+  var html = HM.ghi({ kieu: 'info', tieuDe: HM.esc(t('tabRut')), than: HM.esc(t('rMo')) });
+  html += HM.so([
+    { l: t('rTong'), v: HT.fmt.usd(wc.pendingAmount), lon: true, s: HT.fmt.n(wc.requested) + ' ' + t('rTongS') },
+    { l: t('rXuLy'), v: HT.fmt.n(wc.processing), mau: wc.processing ? HB.mau('warn') : '' },
+    { l: t('rDaChuyen'), v: HT.fmt.n(wc.paid) },
+    { l: t('rTuChoi'), v: HT.fmt.n(wc.rejected + wc.cancelled) }
+  ]);
+  html += '<div class="bar">' +
+    '<div class="srch">' + HM.icon('tim') + '<input type="search" data-rut-tim placeholder="' + HM.esc(t('rTim')) + '" value="' + HM.esc(LOC.rutTim) + '"></div>' +
+    [['', t('rTatCa'), ds.length && !LOC.rutTt ? ds.length : A.withdrawals.list({}).length], ['requested', t('requested'), wc.requested], ['processing', t('processing'), wc.processing],
+     ['paid', t('paid'), wc.paid], ['rejected', t('rejected'), wc.rejected], ['cancelled', t('cancelled'), wc.cancelled]].map(function (x) {
+      return '<button type="button" class="pill' + (LOC.rutTt === x[0] ? ' on' : '') + '" data-rut-tt="' + x[0] + '">' + HM.esc(x[1]) + ' <b>' + HT.fmt.n(x[2]) + '</b></button>';
+    }).join('') +
+    '<div class="sp"></div><button type="button" class="btn sm" data-tao-ho>' + HM.icon('user') + HM.esc(t('taoHo')) + '</button></div>';
+  html += HM.the({ thoBody: true, than: ds.length
+    ? '<div class="tw"><table class="t"><thead><tr><th>' + HM.esc(t('rcDoiTac')) + '</th><th class="num">' + HM.esc(t('rcSoTien')) + '</th><th>' + HM.esc(t('rcNgay')) + '</th>' +
+      '<th>' + HM.esc(t('rcNh')) + '</th><th>' + HM.esc(t('rcTt')) + '</th><th>' + HM.esc(t('rcThaoTac')) + '</th></tr></thead><tbody>' +
+      ds.map(function (w) {
+        return '<tr class="pick" data-rut="' + HM.esc(w.id) + '">' +
+          '<td><div class="t-ttl">' + HM.esc(HM.dai(w.party.name, 30)) + '</div><div class="t-sub">' + HM.esc(w.id + ' · ' + w.party.clientId) + '</div></td>' +
+          '<td class="num band"><b>' + HM.esc(HT.fmt.usd(w.amount)) + '</b></td>' +
+          '<td style="white-space:nowrap">' + HM.esc(HT.fmt.luc(w.requestedAt)) + '</td>' +
+          '<td>' + (w.bank ? HM.esc(w.bank.bank) + '<div class="t-sub">' + HM.esc(w.bank.holder + ' · ' + anSo(w.bank.account)) + '</div>' : '<span class="nil">—</span>') + '</td>' +
+          '<td>' + HM.tag(t(w.status), KIEU_RUT[w.status]) + '</td>' +
+          '<td><div class="btnrow">' + nutRut(c, w) + '</div></td></tr>';
+      }).join('') + '</tbody></table></div>'
+    : HM.trong({ icon: 'cash', tieuDe: t('khongRut'), moTa: t('khongRutMo') }) });
+  return html;
+}
+function xuLyRut(c, id, viec) {
+  var A = c.A, t = c.t, me = A.staff.me;
+  var xong = function (msg) { c.thongBao(msg, 'ok'); c.dongNgan(); c.veLai(); };
+  try {
+    if (viec === 'process') { A.withdrawals.process(id, me.email); return xong(t('daTiepNhan')); }
+  } catch (e) { return c.thongBao(e.message, 'no'); }
+  if (viec === 'pay') {
+    c.hoiThoai({ tieuDe: t('hoiChuyen') + ' · ' + id, moTa: HM.esc(t('hoiChuyenMo')),
+      than: '<label class="fld">' + HM.esc(t('hThamChieu')) + '</label><input class="in mono" data-o="ref" value="TT' + HM.esc(String(A.asOf()).replace(/-/g, '').slice(2)) + String(Math.floor(Math.random() * 900) + 100) + '">',
+      dong: t('daChuyen') }).then(function (f) {
+      if (!f) return;
+      try { A.withdrawals.pay(id, me.email, f.ref); xong(t('daGhiChuyen')); } catch (e) { c.thongBao(e.message, 'no'); }
+    });
+  }
+  if (viec === 'reject') {
+    c.hoiThoai({ tieuDe: t('hoiTuChoi') + ' · ' + id, moTa: HM.esc(t('hoiTuChoiMo')),
+      than: '<label class="fld">' + HM.esc(t('hLyDo')) + '</label><input class="in" data-o="why">', dong: t('tuChoi'), nguyHiem: true }).then(function (f) {
+      if (!f) return;
+      try { A.withdrawals.reject(id, me.email, f.why); xong(t('daTuChoi')); } catch (e) { c.thongBao(e.message, 'no'); }
+    });
+  }
+}
+function taoHo(c) {
+  var A = c.A, t = c.t, me = A.staff.me;
+  c.hoiThoai({ tieuDe: t('hoiTaoHo'), moTa: HM.esc(t('hoiTaoHoMo')),
+    than: '<label class="fld">' + HM.esc(t('hDoiTac')) + '</label><input class="in" data-o="party" list="ds-dt-rut" placeholder="HTK-L001">' +
+      '<datalist id="ds-dt-rut">' + A.parties.list({}).rows.slice(0, 300).map(function (r) { return '<option value="' + HM.esc(r.clientId) + '">' + HM.esc(r.name) + '</option>'; }).join('') + '</datalist>' +
+      '<label class="fld" style="margin-top:12px">' + HM.esc(t('hSoTien')) + '</label><input class="in" type="number" step="0.01" data-o="amount">' +
+      '<label class="fld" style="margin-top:12px">' + HM.esc(t('hGhi')) + '</label><input class="in" data-o="note">',
+    dong: t('taoHo') }).then(function (f) {
+    if (!f) return;
+    var pk = null;
+    A.parties.list({ q: f.party }).rows.forEach(function (r) { if (r.clientId.toLowerCase() === String(f.party).trim().toLowerCase()) pk = r.partyKey; });
+    if (!pk) return c.thongBao((c.lang === 'vi' ? 'Không tìm thấy đối tác ' : 'No partner ') + f.party, 'no');
+    try { var w = A.withdrawals.create(pk, +f.amount, me.email, f.note); c.thongBao(t('daTaoHo') + ' · ' + w.id, 'ok'); c.veLai(); }
+    catch (e) { c.thongBao(e.message, 'no'); }
+  });
+}
+function moRut(c, id) {
+  var A = c.A, t = c.t, vi = c.lang === 'vi';
+  var w = A.withdrawals.get(id); if (!w) return;
+  var vi2 = null; try { vi2 = A.wallet(w.partyKey); } catch (e) { vi2 = null; }
+  c.nganTruot(
+    HM.so([
+      { l: t('rcSoTien'), v: HT.fmt.usd(w.amount), lon: true },
+      { l: t('rcTt'), html: HM.tag(t(w.status), KIEU_RUT[w.status]) },
+      { l: t('rcNgay'), v: HT.fmt.luc(w.requestedAt) }
+    ]) +
+    '<div class="btnrow" style="margin:12px 0">' + nutRut(c, w, true) + '</div>' +
+    HM.kv([
+      { t: t('rcDoiTac'), v: w.party.name + ' · ' + w.party.clientId, manh: true },
+      w.bank ? { t: t('rcNh'), v: w.bank.bank + ' · ' + w.bank.holder + ' · ' + anSo(w.bank.account) + (w.bank.swift ? ' · ' + w.bank.swift : '') } : null,
+      { t: t('nguoiTao'), v: w.by },
+      w.ref ? { t: t('thamChieu'), v: w.ref, manh: true } : null,
+      w.paidAt ? { t: t('chuyenLuc'), v: HT.fmt.luc(w.paidAt) } : null,
+      w.why ? { t: t('lyDo'), v: w.why, mau: 'neg' } : null,
+      { t: t('ghiChu'), v: w.note || t('khongGhi') }
+    ]) +
+    (vi2 ? '<h4 class="sec">' + HM.esc(t('viDoiTac')) + '</h4>' + HM.so([
+      { l: t('viKhaDung'), v: HT.fmt.usd(vi2.available), mau: HB.mau('ok') },
+      { l: t('viCho'), v: HT.fmt.usd(vi2.pending) },
+      { l: t('viDaRut'), v: HT.fmt.usd(vi2.paid) }
+    ]) : '') +
+    '<h4 class="sec">' + HM.esc(t('lichSu')) + '</h4><div class="wf">' + (w.history || []).map(function (h) {
+      return '<div class="st' + (h.status === 'paid' ? ' fin' : h.status === 'rejected' || h.status === 'cancelled' ? ' out' : '') + '"><div class="mk"></div>' +
+        '<div><div class="lbl">' + HM.esc(t(h.status)) + '</div><div class="nt">' + HM.esc(HT.fmt.luc(h.at) + ' · ' + h.by + (h.ref ? ' · ' + h.ref : '') + (h.note ? ' · ' + h.note : '')) + '</div></div></div>';
+    }).join('') + '</div>',
+    { tieuDe: w.id, phu: w.party.name,
+      khiMo: function (dr) { HM.bam(dr, '[data-xl]', function (el) { xuLyRut(c, el.getAttribute('data-id'), el.getAttribute('data-xl')); }); } });
+}
+
+/* =====================================================================
+   Tab bảng kê PDF: mỗi bên thụ hưởng của kỳ đã xét duyệt một tệp
+   ===================================================================== */
+function veBangKe(c) {
+  var A = c.A, t = c.t;
+  var theoKy = HM.the({
+    h2: HM.esc(t('bkTheoKy')), p: HM.esc(t('bkTheoKyMo')),
+    than: '<div class="btnrow">' + A.periods.filter(function (p) { return A.isApproved(p.k); }).map(function (p) {
+      var s = A.statements.list(p.k), du = s.attached >= s.total;
+      return '<button type="button" class="pill' + (p.k === c.kyKey ? ' on' : '') + '" data-kyto="' + HM.esc(p.k) + '">' + HM.esc(p.label) +
+        ' <b style="color:' + (du ? 'var(--ok)' : 'var(--warn)') + '">' + HT.fmt.n(s.attached) + '/' + HT.fmt.n(s.total) + '</b></button>';
+    }).join('') + '</div>'
+  });
+  if (!A.isApproved(c.kyKey)) return HM.ghi({ kieu: 'info', tieuDe: HM.esc(t('bkChuaDuyet')), than: HM.esc(t('bkChuaDuyetMo')) }) + theoKy;
+  var st = A.statements.list(c.kyKey);
+  var html = HM.ghi({ kieu: 'info', tieuDe: HM.esc(t('tabBk')) + ' · ' + HM.esc(c.ky.label), than: HM.esc(t('bkMo')) });
+  html += HM.so([
+    { l: t('bkDaDinh'), v: HT.fmt.n(st.attached) + ' / ' + HT.fmt.n(st.total), lon: true },
+    { l: t('bkThieu'), v: HT.fmt.n(st.total - st.attached), mau: st.total - st.attached ? HB.mau('warn') : HB.mau('ok') },
+    { l: t('bkTong'), v: HT.fmt.n(st.total) }
+  ]);
+  html += '<div class="bar"><div class="srch">' + HM.icon('tim') + '<input type="search" data-bk-tim placeholder="' + HM.esc(t('bkTim')) + '" value="' + HM.esc(LOC.bkTim) + '"></div>' +
+    '<div class="sp"></div>' + (st.attached < st.total ? '<button type="button" class="btn sm pri" data-dinh-het>' + HM.icon('file') + HM.esc(t('bkDinhHet')) + '</button>' : '') + '</div>';
+  html += HM.the({ thoBody: true, than: '<div data-bang-bk></div>' });
+  return html + theoKy;
+}
+function dungBangBk(root, c) {
+  var A = c.A, t = c.t;
+  var host = root.querySelector('[data-bang-bk]'); if (!host) return;
+  var q = LOC.bkTim.trim().toLowerCase();
+  var rows = A.statements.list(c.kyKey).rows.filter(function (r) { return !q || r.name.toLowerCase().indexOf(q) >= 0 || r.clientId.toLowerCase().indexOf(q) >= 0; });
+  var b = c.bang({
+    host: host, dong: function () { return rows; }, sort: 'credit', dir: -1, co: 25,
+    cot: [
+      { k: 'name', l: t('cBen') }, { k: 'kind', l: t('cLoai'), w: '90px' },
+      { k: 'earned', l: t('cKiem'), num: true, w: '130px' }, { k: 'credit', l: t('cGhiVi'), num: true, w: '130px' },
+      { k: 'pdf', l: t('cPdf'), s: false, w: '300px' }
+    ],
+    veDong: function (r) {
+      return '<td><div class="t-ttl">' + HM.esc(HM.dai(r.name, 30)) + '</div><div class="t-sub">' + HM.esc(r.clientId) + '</div></td>' +
+        '<td>' + HM.tag(r.kind === 'label' ? 'Label' : (c.lang === 'vi' ? 'Nghệ sĩ' : 'Artist'), r.kind === 'label' ? 'info' : 'link') + '</td>' +
+        '<td class="num">' + HM.esc(c.tien2(r.earned)) + '</td>' +
+        '<td class="num band"><b>' + HM.esc(c.tien2(r.credit)) + '</b></td>' +
+        '<td>' + (r.pdf
+          ? '<div class="btnrow"><span class="tag ok">' + HM.icon('file') + HM.esc(HM.dai(r.pdf.file, 34)) + '</span><span class="muted" style="font-size:12px">' + HM.esc(HT.fmt.ngay(r.pdf.at)) + '</span>' +
+            '<button type="button" class="btn sm ghost" data-go="' + HM.esc(r.partyKey) + '" title="' + HM.esc(t('bkGo')) + '">' + HM.icon('x') + '</button></div>'
+          : '<button type="button" class="btn sm" data-dinh="' + HM.esc(r.partyKey) + '">' + HM.icon('up') + HM.esc(t('bkDinh')) + '</button>') + '</td>';
+    },
+    rongTieuDe: t('khongAi'), rongMoTa: ''
+  });
+  b.ve();
+  HM.bam(host, '[data-sx]', function (el) { var k = el.getAttribute('data-sx'); if (b.st.sort === k) b.st.dir = -b.st.dir; else { b.st.sort = k; b.st.dir = k === 'name' ? 1 : -1; } b.ve(); });
+  HM.bam(host, '[data-tr]', function (el) { b.st.trang += +el.getAttribute('data-tr'); b.ve(); });
+  HM.doi(host, '[data-co]', function (el) { b.st.co = +el.value; b.st.trang = 0; b.ve(); });
+}
 
 function moChuoi(c, r, duyet) {
   var A = c.A, la = r.loai === 'label', id = +r.key.slice(2);

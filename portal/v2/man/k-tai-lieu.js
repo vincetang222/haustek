@@ -120,8 +120,10 @@ function veBangKe(c) {
     return HM.the({ than: HM.trong({ icon: 'file', tieuDe: t('chuaCo'), moTa: t('chuaCoMo') }) }) + veCho(c);
   }
 
+  var pdfCua = {};
+  try { (api.statements(me.role, me.partyId).rows || []).forEach(function (r) { if (r.pdf) pdfCua[r.k] = r.pdf; }); } catch (e) { pdfCua = {}; }
   var ds = c.kys.map(function (p) {
-    var o = { k: p.k, label: p.label, tong: null, chi: null, chot: null };
+    var o = { k: p.k, label: p.label, tong: null, chi: null, chot: null, pdf: pdfCua[p.k] || null };
     try {
       var s = api.summary(me.role, me.partyId, p.k, 'rec');
       o.tong = s.total; o.chot = s.approvedAt;
@@ -145,7 +147,8 @@ function veBangKe(c) {
       '<th>' + HM.esc(t('cChot')) + '</th>' +
       '<th class="num">' + HM.esc(t('cVe')) + '</th>' +
       '<th class="num">' + HM.esc(t('cChi')) + '</th>' +
-      '<th style="width:180px"></th></tr></thead><tbody>' +
+      '<th>' + HM.esc(c.lang === 'vi' ? 'Bảng kê PDF' : 'PDF statement') + '</th>' +
+      '<th style="width:180px">' + HM.esc(c.lang === 'vi' ? 'Thao tác' : 'Actions') + '</th></tr></thead><tbody>' +
       ds.map(function (r) {
         return '<tr' + (r.k === c.kyKey ? ' style="box-shadow:inset 3px 0 0 var(--accent)"' : '') + '>' +
           '<td><div class="t-ttl">' + HM.esc(r.label) + '</div></td>' +
@@ -154,6 +157,8 @@ function veBangKe(c) {
           '<td class="num">' + (r.chi != null && r.chi > 0
             ? HM.esc(HT.fmt.usd(r.chi))
             : '<span class="muted">' + HM.esc(c.lang === 'vi' ? 'chuyển sang kỳ sau' : 'carried') + '</span>') + '</td>' +
+          '<td>' + (r.pdf ? '<span class="tag ok">' + HM.icon('file') + HM.esc(HM.dai(r.pdf.file, 28)) + '</span>'
+                          : '<span class="muted">' + HM.esc(c.lang === 'vi' ? 'Haustek chưa gửi' : 'not sent yet') + '</span>') + '</td>' +
           '<td><div class="btnrow">' +
             '<button type="button" class="btn sm" data-mo="' + HM.esc(r.k) + '">' + HM.esc(t('xem')) + '</button>' +
             '<button type="button" class="btn sm ghost" data-tai="' + HM.esc(r.k) + '">' + HM.icon('down2') + '</button>' +

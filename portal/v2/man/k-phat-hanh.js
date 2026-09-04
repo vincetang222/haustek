@@ -27,9 +27,9 @@ HT.dangKy({
       mo: 'Bản phát hành đã có trong danh mục, hồ sơ đang xử lý, và gửi hồ sơ phát hành mới.',
       dangXuLy: 'Hồ sơ đang xử lý', canBoSung: 'Cần bổ sung', daPh: 'Đã phát hành', trongDm: 'Trong danh mục',
       gui: 'Gửi hồ sơ phát hành', hoSo: 'Hồ sơ đã gửi', hoSoMo: 'Bấm một hồ sơ để xem chi tiết và lịch sử xử lý.',
-      danhMuc: 'Bản phát hành trong danh mục', danhMucMo: 'Suy ra từ các bản ghi đang phân phối. Bản phát hành có doanh thu ở kỳ đã xét duyệt được đánh dấu.',
+      danhMuc: 'Bản phát hành trong danh mục', danhMucMo: 'Suy ra từ các bài hát đã gửi tới nền tảng. Bản phát hành có doanh thu ở kỳ đã xét duyệt được đánh dấu.',
       cMa: 'Mã hồ sơ', cTen: 'Bản phát hành', cLoai: 'Loại', cNgay: 'Ngày phát hành mong muốn', cTt: 'Trạng thái', cCapNhat: 'Cập nhật lần cuối',
-      cKy: 'Kỳ phát hành', cTrack: 'Track', cDt: 'Doanh thu gộp các kỳ đã xét duyệt', coDt: 'đã có', chuaDt: 'chưa có',
+      cKy: 'Kỳ phát hành', cTrack: 'Track', cDt: 'Doanh thu các kỳ đã xét duyệt', coDt: 'đã có', chuaDt: 'chưa có',
       khongHs: 'Chưa gửi hồ sơ nào', khongHsMo: 'Hồ sơ phát hành gửi từ hồ sơ metadata ở trang chủ hoặc từ nút phía trên sẽ hiển thị ở đây.',
       quyTrinh: 'Hồ sơ đi qua những bước nào',
       b1: 'Đã gửi', b1m: 'Hồ sơ đã vào danh sách chờ xử lý của Haustek. Bạn chưa cần làm gì thêm.',
@@ -52,9 +52,9 @@ HT.dangKy({
       mo: 'Releases already in the catalogue, submissions in progress, and submitting a new release.',
       dangXuLy: 'In progress', canBoSung: 'Needs fixes', daPh: 'Released', trongDm: 'In the catalogue',
       gui: 'Submit a release', hoSo: 'Submissions', hoSoMo: 'Open a submission for details and its history.',
-      danhMuc: 'Releases in the catalogue', danhMucMo: 'Derived from the recordings being distributed. Releases earning in an approved period are marked.',
+      danhMuc: 'Releases in the catalogue', danhMucMo: 'Derived from the tracks delivered to platforms. Releases earning in an approved period are marked.',
       cMa: 'Submission', cTen: 'Release', cLoai: 'Type', cNgay: 'Requested date', cTt: 'Status', cCapNhat: 'Updated',
-      cKy: 'Release period', cTrack: 'Tracks', cDt: 'Gross across approved periods', coDt: 'earning', chuaDt: 'none yet',
+      cKy: 'Release period', cTrack: 'Tracks', cDt: 'Revenue across approved periods', coDt: 'earning', chuaDt: 'none yet',
       khongHs: 'No submissions yet', khongHsMo: 'Submissions from the homepage metadata form or the button above appear here.',
       quyTrinh: 'The steps a submission goes through',
       b1: 'Submitted', b1m: 'The submission is in Haustek’s queue. Nothing else is needed from you.',
@@ -126,7 +126,7 @@ HT.dangKy({
           r.catalogue.slice(0, 20).map(function (x) {
             return '<tr><td><div class="t-ttl">' + HM.esc(HM.dai(x.title, 32)) + '</div><div class="t-sub">' + HM.esc(me.role === 'label' ? x.artistName : (x.isrc || '')) + '</div></td>' +
               '<td>' + HM.esc(x.type) + '</td><td class="mono">' + HM.esc(x.releasePeriod) + '</td>' +
-              '<td class="num">' + x.tracks + '</td><td class="num">' + (x.earning ? HM.esc(HT.fmt.usd0(x.gross)) : '<span class="nil">' + HM.esc(t('chuaDt')) + '</span>') + '</td></tr>';
+              '<td class="num">' + x.tracks + '</td><td class="num">' + (x.earning ? HM.esc(HT.fmt.usd0(x.revenue)) : '<span class="nil">' + HM.esc(t('chuaDt')) + '</span>') + '</td></tr>';
           }).join('') + '</tbody></table></div>'
       }) +
       HM.the({

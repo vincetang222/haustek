@@ -5,7 +5,7 @@
    đây là bài của các nghệ sĩ trong label; với nghệ sĩ là bài của chính
    họ; với dòng tác quyền là bài họ có phần sáng tác.
 
-   Điều màn này phải nói rõ: cột "về tay bạn" KHÁC cột "doanh thu gộp",
+   Điều màn này phải nói rõ: cột "về tay bạn" KHÁC cột "doanh thu",
    và khác bao nhiêu thì mở một bài ra là thấy từng chặng.
    ===================================================================== */
 "use strict";
@@ -25,8 +25,8 @@ HT.dangKy({
       banGhi: 'Doanh thu bản ghi', tacQuyen: 'Tác quyền',
       tim: 'Tìm theo tên bài hát, mã ISRC hoặc nghệ sĩ…',
       cBai: 'Bài hát', cNs: 'Nghệ sĩ', cLoai: 'Loại', cLuot: 'Lượt nghe',
-      cGop: 'Doanh thu gộp', cToi: 'Thu nhập của bạn', cLabel: 'Phần label được hưởng',
-      tongBai: 'Bài hát có doanh thu', tongGop: 'Tổng doanh thu gộp', tongToi: 'Tổng thu nhập của bạn',
+      cGop: 'Doanh thu', cToi: 'Thu nhập của bạn', cLabel: 'Phần label được hưởng',
+      tongBai: 'Bài hát có doanh thu', tongGop: 'Tổng doanh thu', tongToi: 'Tổng thu nhập của bạn',
       khong: 'Không tìm thấy bài hát nào',
       khongMo: 'Bạn thử tìm bằng mã ISRC, hoặc xoá nội dung ô tìm kiếm.',
       chuaMo: 'Kỳ này chưa chốt sổ',
@@ -49,8 +49,8 @@ HT.dangKy({
       banGhi: 'Recording revenue', tacQuyen: 'Publishing',
       tim: 'Search title, ISRC, artist…',
       cBai: 'Track', cNs: 'Artist', cLoai: 'Type', cLuot: 'Streams',
-      cGop: 'Gross', cToi: 'Yours', cLabel: 'Label keeps',
-      tongBai: 'Earning tracks', tongGop: 'Total gross', tongToi: 'Total yours',
+      cGop: 'Revenue', cToi: 'Yours', cLabel: 'Label keeps',
+      tongBai: 'Earning tracks', tongGop: 'Total revenue', tongToi: 'Total yours',
       khong: 'No track matches',
       khongMo: 'Try an ISRC, or clear the search box.',
       chuaMo: 'Period not open',
@@ -89,7 +89,7 @@ HT.dangKy({
     }
 
     var tongGop = 0, tongToi = 0;
-    kq.rows.forEach(function (r) { tongGop += r.gross; tongToi += r.mine; });
+    kq.rows.forEach(function (r) { tongGop += r.revenue; tongToi += r.mine; });
 
     var het = Math.max(0, Math.ceil(kq.rows.length / LOC.co) - 1);
     if (LOC.trang > het) LOC.trang = het;
@@ -101,9 +101,9 @@ HT.dangKy({
       mo: HM.esc(la ? t('moLb') : t('moNs')),
       so: [
         { l: t('tongBai'), v: HT.fmt.n(kq.rows.length) },
-        { l: t('tongGop'), v: HT.fmt.usd0(tongGop) },
+        la ? { l: t('tongGop'), v: HT.fmt.usd0(tongGop) } : null,
         { l: la ? t('cLabel') : t('cToi'), v: HT.fmt.usd0(tongToi) }
-      ]
+      ].filter(Boolean)
     });
 
     if (coPub) {
@@ -125,7 +125,7 @@ HT.dangKy({
       la ? { k: 'artist', l: t('cNs') } : null,
       { k: 'type', l: t('cLoai'), s: false, w: '80px' },
       LUONG === 'rec' ? { k: 'streams', l: t('cLuot'), num: true, w: '116px' } : null,
-      { k: 'gross', l: t('cGop'), num: true, w: '124px' },
+      la ? { k: 'revenue', l: t('cGop'), num: true, w: '124px' } : null,
       { k: 'mine', l: la ? t('cLabel') : t('cToi'), num: true, w: '130px' }
     ].filter(Boolean);
 
@@ -151,11 +151,11 @@ HT.dangKy({
               (la ? '<td>' + HM.esc(HM.dai(r.artist, 26)) + '</td>' : '') +
               '<td>' + HM.esc(r.type) + '</td>' +
               (LUONG === 'rec' ? '<td class="num">' + HM.esc(HT.fmt.n(r.streams)) + '</td>' : '') +
-              '<td class="num">' + HM.esc(HT.fmt.usd0(r.gross)) + '</td>' +
+              (la ? '<td class="num">' + HM.esc(HT.fmt.usd0(r.revenue)) + '</td>' : '') +
               '<td class="num band"><b>' + HM.esc(HT.fmt.usd(r.mine)) + '</b></td></tr>';
           }).join('') + '</tbody><tfoot><tr>' +
-          '<td colspan="' + (cot.length - 2) + '">' + HM.esc(c.lang === 'vi' ? 'Tổng cộng' : 'Total') + '</td>' +
-          '<td class="num">' + HM.esc(HT.fmt.usd(tongGop)) + '</td>' +
+          '<td colspan="' + (cot.length - (la ? 2 : 1)) + '">' + HM.esc(c.lang === 'vi' ? 'Tổng cộng' : 'Total') + '</td>' +
+          (la ? '<td class="num">' + HM.esc(HT.fmt.usd(tongGop)) + '</td>' : '') +
           '<td class="num band">' + HM.esc(HT.fmt.usd(tongToi)) + '</td></tr></tfoot></table></div>' +
           '<div class="card-f"><span class="sp" style="flex:1"></span>' + HM.esc(c.CHU[c.lang].showing) +
             ' <select class="inline-sel" data-co>' + [12, 25, 50, 100].map(function (n) {
@@ -213,11 +213,11 @@ HT.dangKy({
     HM.bam(root, '[data-kyto]', function (el) { c.doiKy(el.getAttribute('data-kyto')); });
     HM.bam(root, '[data-xuat]', function () {
       HM.csv('bai-cua-toi-' + c.kyKey + '.csv',
-        ['ISRC', 'Tên bài hát', 'Loại', 'Nghệ sĩ', 'Lượt nghe', 'Doanh thu gộp USD',
+        ['ISRC', 'Tên bài hát', 'Loại', 'Nghệ sĩ', 'Lượt nghe', 'Doanh thu USD',
          (la ? 'Phần label được hưởng' : 'Thu nhập của bạn') + ' USD'],
         kq.rows.map(function (r) {
           return [r.isrc, r.title, r.type, r.artist, r.streams == null ? '' : r.streams,
-                  r.gross.toFixed(2), r.mine.toFixed(2)];
+                  r.revenue.toFixed(2), r.mine.toFixed(2)];
         }));
     });
   }
@@ -232,7 +232,7 @@ function moBai(c, id, luong, la) {
   c.nganTruot(
     HM.so([
       { l: la ? c.t('cLabel') : c.t('cToi'), v: HT.fmt.usd(d.mine), lon: true },
-      { l: c.t('cGop'), v: HT.fmt.usd0(d.gross) },
+      la ? { l: c.t('cGop'), v: HT.fmt.usd0(d.revenue) } : null,
       d.streams != null ? { l: c.t('cLuot'), v: HT.fmt.n(d.streams) } : null
     ].filter(Boolean)) +
     '<h4 class="sec">' + (c.lang === 'vi' ? 'Chi tiết dòng tiền của bài hát này' : 'Where this track’s money went') + '</h4>' +
@@ -246,8 +246,8 @@ function moBai(c, id, luong, la) {
     (d.byTerritory.length ? '<h4 class="sec">' + (c.lang === 'vi' ? 'Thu nhập theo thị trường' : 'From where') + '</h4>' +
       HB.o({ loai: 'thanh', hang: d.byTerritory.map(function (x, i) { return { ten: c.song(x, 'name'), gt: x.value, mau: P[i % 8] }; }) }) : '') +
     '<div class="hint" style="margin-top:14px">' + HM.esc(c.lang === 'vi'
-      ? 'Số liệu tách theo nền tảng và thị trường là phần bạn được hưởng trên bài hát này, không phải doanh thu gộp, nên cộng lại đúng bằng con số lớn ở trên.'
-      : 'The store and territory splits show YOUR share of this track, not gross — so they add back to the figure at the top.') + '</div>' +
+      ? 'Số liệu tách theo nền tảng và thị trường là phần bạn được hưởng trên bài hát này, nên cộng lại đúng bằng con số lớn ở trên.'
+      : 'The platform and territory splits show your share of this track, so they add back to the figure at the top.') + '</div>' +
     /* Sang hồ sơ bài hát (quy trình phát hành, nền tảng, theo tháng). Chỉ
        với doanh thu bản ghi: tác quyền không tách theo nền tảng. */
     (luong === 'rec'
@@ -262,7 +262,12 @@ function moBai(c, id, luong, la) {
           try { hs = api.trackAsset(me.role, me.partyId, id); }
           catch (e) { c.thongBao(e.message, 'no'); return; }
           /* c.nganTruot tự thay ngăn cũ bằng ngăn mới */
-          HTS.moNgan(c, hs, { mineLabel: la ? c.t('cLabel') : c.t('cToi'), tien: HT.fmt.usd, tien0: HT.fmt.usd0, tabDau: 'nt' });
+          HTS.moNgan(c, hs, { mineLabel: la ? c.t('cLabel') : c.t('cToi'), revenueLabel: c.t('cGop'), anMine: !la, tien: HT.fmt.usd, tien0: HT.fmt.usd0, tabDau: 'nt', hoTro: true });
+          var dr2 = document.querySelector('.drawer');
+          if (dr2 && HT.moTicket) {
+            HM.bam(dr2, '[data-yc-mkt]', function (b) { HT.moTicket(c, { type: 'marketing', trackId: +b.getAttribute('data-yc-mkt') }); });
+            HM.bam(dr2, '[data-yc-ht]', function (b) { HT.moTicket(c, { type: 'nen-tang', trackId: +b.getAttribute('data-yc-ht') }); });
+          }
         });
       } });
 }

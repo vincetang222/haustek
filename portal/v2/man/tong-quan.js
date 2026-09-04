@@ -227,10 +227,10 @@ HT.dangKy({
          không ai đọc được. */
       '<h4 class="sec" style="margin-top:14px">' + HM.esc(t('luot')) + '</h4>' +
       HB.o({
-        loai: 'cot', cao: 120, dinhDang: 'so', chuThich: false,
+        loai: 'duong', cao: 140, dinhDang: 'so', chuThich: false,
         truc: A.periods.map(function (p) { return p.label.slice(0, 2); }),
         tieuDeTip: function (i) { return (c.lang === 'vi' ? 'Kỳ ' : 'Period ') + A.periods[i].label; },
-        chuoi: [{ ten: t('luot'), gt: day.luot, mau: P[3] }], dangDo: chuaDuyetIdx, noiBat: pi
+        chuoi: [{ ten: t('luot'), gt: day.luot, mau: P[3] }], noiBat: pi
       }),
       chan: (c.lang === 'vi'
         ? 'Doanh thu của một nguồn báo cáo chỉ được tính vào tổng khi nguồn đó đã nhập cho kỳ. Cột thấp bất thường thì kiểm tra trang Nhập báo cáo trước khi kết luận về thị trường.'

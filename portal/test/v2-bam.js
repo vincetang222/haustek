@@ -92,14 +92,32 @@ const KHONG_BAM = ['data-duyet', 'data-boqua', 'data-thuhoi', 'data-xoahet',
         /* --- chuột rê lên biểu đồ: mách nước phải hiện --- */
         const bd = await p.$('main .bd .hz, main .bars .row[data-tip]');
         if (bd) {
+          /* Các bước bấm ở trên có thể còn để ngăn trượt mở đè lên nửa phải
+             trang; rê chuột vào đó là rê vào ngăn, không phải biểu đồ. */
+          await p.keyboard.press('Escape').catch(() => {}); await p.waitForTimeout(150);
+          await p.evaluate(() => { document.querySelectorAll('.drawer, .drawer-bg, .modal-bg').forEach(x => x.remove()); });
           /* Bấm vào dòng bảng bên trên đã cuộn trang xuống, nên phần tử
              này có thể đang nằm trên đỉnh khung nhìn. Kéo nó vào tầm mắt
              TRƯỚC rồi mới đo — đo trước rồi rê là rê vào chỗ không có gì,
              và bài kiểm sẽ báo mách nước hỏng trong khi nó vẫn chạy. */
-          await bd.scrollIntoViewIfNeeded().catch(() => {});
+          /* Kéo vào GIỮA khung nhìn: kéo vừa đủ thì mép trên của biểu đồ
+             nằm ngay dưới thanh trên dính, và điểm rê rơi vào thanh đó. */
+          await bd.evaluate(el => el.scrollIntoView({ block: 'center' })).catch(() => {});
           await p.waitForTimeout(150);
+          /* Donut: tâm hộp bao của một miếng thường rơi vào LỖ giữa (không có
+             gì để rê). Lấy một điểm trên cung ngoài rồi kéo vào vành một chút. */
+          const diem = await bd.evaluate(el => {
+            const svg = el.closest('svg'); const path = el.tagName === 'path' ? el : el.querySelector('path');
+            if (!svg || !path || !svg.classList.contains('vong') || !path.getTotalLength) return null;
+            const q = path.getPointAtLength(path.getTotalLength() * 0.12);
+            const vb = svg.viewBox.baseVal, cx = Math.min(vb.width, vb.height) / 2, cy = vb.height / 2;
+            const x = q.x + (cx - q.x) * 0.2, y = q.y + (cy - q.y) * 0.2;
+            const pt = new DOMPoint(x, y).matrixTransform(svg.getScreenCTM());
+            return { x: pt.x, y: pt.y };
+          }).catch(() => null);
           const hop = await bd.boundingBox();
-          if (hop) await p.mouse.move(hop.x + hop.width / 2, hop.y + hop.height / 2);
+          if (diem) await p.mouse.move(diem.x, diem.y);
+          else if (hop) await p.mouse.move(hop.x + hop.width / 2, hop.y + hop.height / 2);
           await p.waitForTimeout(220);
           const tip = await p.evaluate(() => {
             const t = document.querySelector('.tip.on');

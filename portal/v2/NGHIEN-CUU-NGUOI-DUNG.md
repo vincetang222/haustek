@@ -219,6 +219,13 @@ nút yêu cầu hỗ trợ marketing tạo ticket cho đội hỗ trợ.
   cáo. Cổng nói rõ điều này ở mọi chỗ hiện dự báo.
 * Bảng kê PDF ở bản mẫu chỉ là bản ghi tên file; hệ thống thật lưu file trên kho
   đối tượng có chữ ký số và đường dẫn tải có hạn.
+* Hợp đồng đối tác: bản mẫu sinh ngày ký và ngày hết hạn từ kỳ đầu có doanh thu,
+  nên một phần roster đang "đã hết hạn nhưng vẫn có doanh thu" và được xếp vào
+  nhóm cần gia hạn. Hệ thống thật lấy ngày từ hợp đồng đã ký và cần quy tắc riêng
+  cho hợp đồng tự động gia hạn (câu hỏi 11).
+* Nhân viên và vai (kinh doanh, hỗ trợ, kế toán, vận hành, quản lý) ở bản mẫu là
+  danh sách cố định với ô chọn để xem thử; hệ thống thật lấy vai từ tài khoản đăng
+  nhập và phân quyền theo vai ở tầng máy chủ, không chỉ ẩn trang ở cột trái.
 
 ## 6. Tính năng tham khảo từ các nền tảng cùng ngành (OneSystem, ONErpm Artist Oracle)
 

@@ -40,7 +40,7 @@ gọi `HAUSTEK.lockdown()` **trước khi** chạy bất cứ trang nào, và kh
 > `localStorage` thì trang nào cùng gốc cũng đọc được. Xem tab **Quản trị → Ranh giới
 > hai cổng** để biết cái gì thật sự chặn được và cái gì không.
 
-## Mười trang nội bộ
+## Mười tám trang nội bộ
 
 | Trang | File | Trả lời câu gì |
 |---|---|---|
@@ -50,7 +50,7 @@ gọi `HAUSTEK.lockdown()` **trước khi** chạy bất cứ trang nào, và kh
 | Đối soát & xét duyệt kỳ | `man/doi-chieu.js` | Tổng hệ thống có khớp file gốc không, xét duyệt được chưa |
 | Phát hành | `man/phat-hanh.js` | Hồ sơ phát hành đối tác gửi lên: tiếp nhận → cấp ISRC/UPC → đã phát hành, hoặc trả lại bổ sung |
 | **Kế toán** | `man/ke-toan.js` | Bút toán kỳ, công nợ bên thụ hưởng, tạm ứng phải thu, ghi nhận 12 kỳ, thuế |
-| Thanh toán | `man/chi-tra.js` | Bên nào được thanh toán bao nhiêu, vì sao phần còn lại chưa thanh toán được |
+| Thanh toán | `man/chi-tra.js` | Ba tab: thanh toán theo kỳ (bên nào được bao nhiêu, vì sao phần còn lại chưa thanh toán được); yêu cầu rút tiền của đối tác (tiếp nhận, chuyển khoản, số tham chiếu, từ chối, tạo hộ); bảng kê PDF từng bên thụ hưởng theo kỳ |
 | Tạm ứng | `man/tam-ung.js` | Ai còn nợ, thu hồi tới đâu, còn mấy kỳ nữa |
 | Tỷ lệ chia | `man/ty-le.js` | Bảng tỷ lệ có ngày hiệu lực, đổi từ kỳ nào |
 | Danh mục | `man/danh-muc.js` | 50.000 bản ghi, tìm được, lọc bản có vấn đề; mở ra xem dòng tiền, quy trình phát hành, trạng thái từng nền tảng, lượt nghe và doanh thu theo nền tảng theo tháng |

@@ -1715,7 +1715,7 @@ function partiesList(opts) {
   const counts = { all: rows.length };
   ["managed", "renew", "inactive", "incomplete", "never-logged"].forEach(s => { counts[s] = rows.filter(r => r.status === s).length; });
   counts["no-account"] = rows.filter(r => !r.hasAccount).length;
-  if (opts.status === "no-account") out = rows.filter(r => !r.hasAccount);
+  if (opts.status === "no-account") out = out.filter(r => !r.hasAccount);
   return { total: out.length, counts, rows: out, homNay };
 }
 function salesKpi(staffId, pIdx) {

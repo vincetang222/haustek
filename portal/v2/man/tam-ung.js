@@ -169,7 +169,7 @@ HT.dangKy({
         { k: 'balance', l: t('cCon'), num: true, w: '120px' },
         { k: 'pc', l: t('cTd'), num: false, w: '150px' },
         { k: 'soKy', l: t('cKy'), num: true, w: '110px' },
-        { k: 'x', l: '', s: false, w: '92px' }
+        { k: 'x', l: c.lang === 'vi' ? 'Thao tác' : 'Actions', s: false, w: '92px' }
       ],
       veDong: function (r) {
         return '<td><div class="t-ttl">' + HM.esc(HM.dai(r.ten, 30)) + '</div>' +

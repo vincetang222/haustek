@@ -9,12 +9,12 @@
    Trang không đổi theo kỳ đang chọn (mọi kỳ đã xét duyệt đều có mặt),
    nhưng kỳ đang chọn được làm nổi trong biểu đồ và là kỳ của các ô số
    đầu trang và của thẻ tỷ trọng. Một thước đo cho cả ba thẻ: lượt nghe,
-   doanh thu gộp, hoặc phần của bạn; giữ trong LOC.
+   doanh thu, hoặc phần của bạn; giữ trong LOC.
    ===================================================================== */
 "use strict";
 (function () {
 
-var LOC = { metric: 'gross' };
+var LOC = { metric: 'revenue' };
 
 HT.dangKy({
   id: 'k-nen-tang', nav: 'navNenTang', nhom: 'nhomBai', icon: 'shop',
@@ -24,10 +24,10 @@ HT.dangKy({
       navNenTang: 'Nền tảng', h1: 'Nền tảng',
       moLb: 'Từng nền tảng mang về bao nhiêu lượt nghe và bao nhiêu tiền mỗi kỳ, tính trên toàn bộ bài hát của các nghệ sĩ thuộc label.',
       moNs: 'Từng nền tảng mang về bao nhiêu lượt nghe và bao nhiêu tiền mỗi kỳ, tính trên toàn bộ bài hát của bạn.',
-      danDau: 'Nền tảng dẫn đầu', luotKy: 'Lượt nghe', gopKy: 'Doanh thu gộp',
+      danDau: 'Nền tảng dẫn đầu', luotKy: 'Lượt nghe', gopKy: 'Doanh thu',
       phanLabel: 'Phần label được hưởng', thuNhap: 'Thu nhập của bạn',
       dienBien: 'Diễn biến theo nền tảng',
-      dienBienMo: 'Mỗi cột là một kỳ đã xét duyệt, chồng theo nền tảng. Năm nền tảng lớn nhất hiện riêng, phần còn lại gộp vào "Nền tảng khác".',
+      dienBienMo: 'Mỗi cột là một kỳ đã xét duyệt, chồng theo nền tảng. Năm nền tảng lớn nhất hiện riêng, phần còn lại gom vào "Nền tảng khác".',
       tyTrong: 'Tỷ trọng kỳ {k}',
       tyTrongMo: 'Theo {m}, tính trên tổng của kỳ. Dòng nhỏ dưới tên là mức thay đổi so với kỳ trước.',
       bangThang: 'Bảng theo tháng', bangThangMo: 'Từng nền tảng theo từng kỳ đã xét duyệt, theo {m}.',
@@ -42,7 +42,7 @@ HT.dangKy({
       navNenTang: 'Platforms', h1: 'Platforms',
       moLb: 'How many streams and how much money each platform brought in per period, across every track by artists on your label.',
       moNs: 'How many streams and how much money each platform brought in per period, across every track of yours.',
-      danDau: 'Top platform', luotKy: 'Streams', gopKy: 'Gross revenue',
+      danDau: 'Top platform', luotKy: 'Streams', gopKy: 'Revenue',
       phanLabel: 'Label keeps', thuNhap: 'Yours',
       dienBien: 'Platforms across periods',
       dienBienMo: 'One column per approved period, stacked by platform. The five largest platforms are shown on their own; the rest are folded into “Other platforms”.',
@@ -73,7 +73,7 @@ HT.dangKy({
 
     var metric = LOC.metric;
     var per = d.periods, rows = d.rows, tot = d.totals;
-    var TEN = { streams: HTS.t('luot'), gross: HTS.t('gop'), mine: mineLabel };
+    var TEN = { streams: HTS.t('luot'), revenue: HTS.t('gop'), mine: mineLabel };
     var dinhDang = metric === 'streams' ? 'so' : 'tien';
 
     /* Kỳ đang chọn; không có trong báo cáo thì lấy kỳ mới nhất và nói rõ. */
@@ -85,18 +85,18 @@ HT.dangKy({
 
     /* ---- ô số đầu trang: kỳ đang chọn ---- */
     var dan = null;
-    rows.forEach(function (r) { if (!dan || (r.gross[idx] || 0) > (dan.gross[idx] || 0)) dan = r; });
-    var gopKy = tot.gross[idx] || 0;
+    rows.forEach(function (r) { if (!dan || (r.revenue[idx] || 0) > (dan.revenue[idx] || 0)) dan = r; });
+    var gopKy = tot.revenue[idx] || 0;
     var html = HM.dau({
       h1: HM.esc(t('h1')),
       mo: HM.esc(la ? t('moLb') : t('moNs')),
       so: [
         { l: t('danDau') + ' ' + ky.label,
-          v: dan && gopKy > 0 ? c.song(dan, 'name') + ' · ' + HT.fmt.pct((dan.gross[idx] || 0) / gopKy) : '—' },
+          v: dan && gopKy > 0 ? c.song(dan, 'name') + ' · ' + HT.fmt.pct((dan.revenue[idx] || 0) / gopKy) : '—' },
         { l: t('luotKy') + ' ' + ky.label, v: HT.fmt.n(tot.streams[idx] || 0) },
         { l: t('gopKy') + ' ' + ky.label, v: HT.fmt.usd0(gopKy) },
-        { l: mineLabel + ' ' + ky.label, v: HT.fmt.usd0(tot.mine[idx] || 0), mau: 'var(--ok)' }
-      ]
+        la ? { l: mineLabel + ' ' + ky.label, v: HT.fmt.usd0(tot.mine[idx] || 0), mau: 'var(--ok)' } : null
+      ].filter(Boolean)
     });
     if (kyKhac) html += '<p class="hint" style="margin:0 0 14px">' +
       HM.esc(t('kyKhac').replace('{a}', c.ky ? c.ky.label : String(c.kyKey)).replace('{b}', ky.label)) + '</p>';
@@ -143,7 +143,7 @@ HT.dangKy({
     html += '<div class="grid g3">' +
       HM.the({
         h2: HM.esc(t('dienBien')), p: HM.esc(t('dienBienMo')),
-        hanhDong: HTS.chonThuocDo(metric, { mineLabel: mineLabel }),
+        hanhDong: HTS.chonThuocDo(metric, { mineLabel: mineLabel, revenueLabel: t('gopKy'), anMine: !la }),
         than: bieuDo
       }) +
       HM.the({

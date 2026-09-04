@@ -8,7 +8,7 @@
    label; với nghệ sĩ là bài của chính mình.
 
    Danh mục là của bài hát, không của kỳ, nên trang không đổi theo kỳ
-   đang chọn. Hai cột số cuối (lượt nghe, doanh thu gộp) là tích luỹ các
+   đang chọn. Hai cột số cuối (lượt nghe, doanh thu) là tích luỹ các
    kỳ đã xét duyệt.
 
    Lọc, sắp xếp, phân trang đều do api.catalogue làm; trang chỉ giữ
@@ -40,7 +40,7 @@ HT.dangKy({
       locAll: 'Tất cả', locLive: 'Đã lên đủ', locProcessing: 'Đang xử lý', locIssue: 'Có vấn đề', locMissing: 'Còn thiếu',
       tim: 'Tìm theo tên bài hát, mã ISRC hoặc nghệ sĩ…',
       cBai: 'Bài hát', cNs: 'Nghệ sĩ', cLoai: 'Loại', cPhatHanh: 'Phát hành', cNenTang: 'Nền tảng',
-      cTrangThai: 'Trạng thái', cThieu: 'Còn thiếu', cLuot: 'Lượt nghe', cGop: 'Doanh thu gộp',
+      cTrangThai: 'Trạng thái', cThieu: 'Còn thiếu', cLuot: 'Lượt nghe', cGop: 'Doanh thu',
       goiY1: 'gợi ý', goiYN: 'gợi ý',
       dangLoc: 'Đang lọc', xoaLoc: 'Xoá bộ lọc', xuat: 'Xuất CSV',
       khong: 'Không tìm thấy bài hát nào',
@@ -50,7 +50,7 @@ HT.dangKy({
       trong: 'Chưa có bài hát nào trong danh mục',
       trongMo: 'Khi Haustek tiếp nhận hồ sơ phát hành của bạn, bài hát sẽ xuất hiện ở đây.',
       loi: 'Chưa tải được danh mục',
-      ghiChu: 'Lượt nghe và doanh thu gộp là số tích luỹ của các kỳ đã xét duyệt. Bấm một dòng để xem quy trình phát hành, nền tảng và số liệu theo tháng của bài hát đó.',
+      ghiChu: 'Lượt nghe và doanh thu là số tích luỹ của các kỳ đã xét duyệt. Bấm một dòng để xem quy trình phát hành, nền tảng và số liệu theo tháng của bài hát đó.',
       phanLabel: 'Phần label được hưởng', thuNhap: 'Thu nhập của bạn',
       csvLive: 'Nền tảng đã lên', csvTong: 'Tổng nền tảng', csvGoiY: 'Gợi ý', csvNgay: 'Ngày phát hành',
       daCat: 'Danh sách quá dài nên chỉ xuất {n} dòng đầu theo thứ tự đang sắp xếp. Bạn thu hẹp bộ lọc để xuất phần còn lại.'
@@ -63,7 +63,7 @@ HT.dangKy({
       locAll: 'All', locLive: 'Live', locProcessing: 'Processing', locIssue: 'Issues', locMissing: 'Missing',
       tim: 'Search title, ISRC, artist…',
       cBai: 'Track', cNs: 'Artist', cLoai: 'Type', cPhatHanh: 'Released', cNenTang: 'Platforms',
-      cTrangThai: 'Status', cThieu: 'Missing', cLuot: 'Streams', cGop: 'Gross',
+      cTrangThai: 'Status', cThieu: 'Missing', cLuot: 'Streams', cGop: 'Revenue',
       goiY1: 'suggestion', goiYN: 'suggestions',
       dangLoc: 'Filtered', xoaLoc: 'Clear filters', xuat: 'Export CSV',
       khong: 'No track matches',
@@ -73,7 +73,7 @@ HT.dangKy({
       trong: 'No tracks in your catalogue yet',
       trongMo: 'Tracks appear here once Haustek receives your release submission.',
       loi: 'The catalogue could not be loaded',
-      ghiChu: 'Streams and gross are cumulative across approved periods. Open a row to see the track’s pipeline, platforms and monthly figures.',
+      ghiChu: 'Streams and revenue are cumulative across approved periods. Open a row to see the track’s pipeline, platforms and monthly figures.',
       phanLabel: 'Label keeps', thuNhap: 'Yours',
       csvLive: 'Platforms live', csvTong: 'Platforms total', csvGoiY: 'Suggestions', csvNgay: 'Release date',
       daCat: 'The list is long, so only the first {n} rows in the current order were exported. Narrow the filter to export the rest.'
@@ -145,7 +145,7 @@ HT.dangKy({
       { k: 'stage', l: t('cTrangThai'), s: false },
       { k: 'missing', l: t('cThieu'), num: true },
       { k: 'streams', l: t('cLuot'), num: true },
-      { k: 'gross', l: t('cGop'), num: true }
+      { k: 'revenue', l: t('cGop'), num: true }
     ].filter(Boolean);
 
     html += HM.the({
@@ -182,7 +182,7 @@ HT.dangKy({
               '<td>' + HTS.tagGiaiDoan(r.stage) + '</td>' +
               '<td class="num">' + thieu + '</td>' +
               '<td class="num">' + (r.streams ? HM.esc(HT.fmt.n(r.streams)) : '<span class="nil">—</span>') + '</td>' +
-              '<td class="num band">' + (r.gross ? HM.esc(HT.fmt.usd0(r.gross)) : '<span class="nil">—</span>') + '</td></tr>';
+              '<td class="num band">' + (r.revenue ? HM.esc(HT.fmt.usd0(r.revenue)) : '<span class="nil">—</span>') + '</td></tr>';
           }).join('') + '</tbody></table></div>' +
           '<div class="card-f"><span style="flex:1;min-width:0">' + HM.esc(t('ghiChu')) + '</span>' +
             '<span style="white-space:nowrap">' + HM.esc(c.CHU[c.lang].showing) +
@@ -222,7 +222,12 @@ function moHoSo(c, id, la) {
   var d;
   try { d = c.api.trackAsset(c.phien.me.role, c.phien.me.partyId, id); }
   catch (e) { c.thongBao(e.message, 'no'); return; }
-  HTS.moNgan(c, d, { mineLabel: la ? c.t('phanLabel') : c.t('thuNhap'), tien: HT.fmt.usd, tien0: HT.fmt.usd0 });
+  HTS.moNgan(c, d, { mineLabel: la ? c.t('phanLabel') : c.t('thuNhap'), revenueLabel: c.t('cGop'), anMine: !la, tien: HT.fmt.usd, tien0: HT.fmt.usd0, hoTro: true });
+  var dr2 = document.querySelector('.drawer');
+  if (dr2 && HT.moTicket) {
+    HM.bam(dr2, '[data-yc-mkt]', function (b) { HT.moTicket(c, { type: 'marketing', trackId: +b.getAttribute('data-yc-mkt') }); });
+    HM.bam(dr2, '[data-yc-ht]', function (b) { HT.moTicket(c, { type: 'nen-tang', trackId: +b.getAttribute('data-yc-ht') }); });
+  }
 }
 
 /* Xuất toàn bộ kết quả đang lọc theo thứ tự đang sắp xếp. API trả tối đa
@@ -241,7 +246,7 @@ function xuatCsv(c, tong, tuyChon) {
      t('cThieu'), t('csvGoiY'), t('cLuot'), t('cGop') + ' USD'],
     dong.map(function (r) {
       return [r.isrc, r.title, r.artist, r.type, r.releaseDate, HTS.t(CHU_GD[r.stage] || r.stage),
-              r.live, r.total, r.missing, r.hints, r.streams, r.gross.toFixed(2)];
+              r.live, r.total, r.missing, r.hints, r.streams, r.revenue.toFixed(2)];
     }));
   if (tong > XUAT_TOI_DA) c.thongBao(t('daCat').replace('{n}', HT.fmt.n(XUAT_TOI_DA)), 'no');
 }

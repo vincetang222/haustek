@@ -15,7 +15,7 @@
 
 var TOP_NS = 5;   /* số nghệ sĩ hiện sẵn dưới mỗi label trong cây */
 
-var LOC = { sap: 'gross', huong: -1, moRong: {} };
+var LOC = { sap: 'revenue', huong: -1, moRong: {} };
 
 HT.dangKy({
   id: 'k-he-thong', nav: 'navHeThong', nhom: 'nhomLabel', icon: 'tree',
@@ -28,24 +28,24 @@ HT.dangKy({
     vi: {
       navHeThong: 'Hệ thống label', h1: 'Hệ thống label',
       mo: 'Toàn bộ label con và nghệ sĩ bên dưới, theo kỳ đã xét duyệt. Phần label được hưởng của mỗi bản ghi thuộc về label trực tiếp quản lý bản ghi đó; label mẹ theo dõi số liệu, không có dòng tiền đi qua label mẹ (câu hỏi cần chốt số 9).',
-      kGop: 'Doanh thu gộp toàn hệ thống', kTraNs: 'Thanh toán cho nghệ sĩ',
+      kGop: 'Doanh thu toàn hệ thống', kTraNs: 'Thanh toán cho nghệ sĩ',
       kLabel: 'Phần label được hưởng toàn hệ thống', kLabelMe: 'trong đó label mẹ: {n}',
       kNs: 'Nghệ sĩ toàn hệ thống', kLabelCon: '{n} label con',
       dienBien: 'Diễn biến qua các kỳ',
-      dienBienMo: 'Doanh thu gộp của label mẹ và từng label con, chồng theo từng kỳ đã xét duyệt. Kỳ đang chọn được tô đậm.',
+      dienBienMo: 'Doanh thu của label mẹ và từng label con, chồng theo từng kỳ đã xét duyệt. Kỳ đang chọn được tô đậm.',
       cauTruc: 'Cấu trúc',
       cauTrucMo: 'Label mẹ, các label con và nghệ sĩ bên dưới. Bấm một label con để xem chi tiết.',
       labelMe: 'Label mẹ', labelCon: 'Label con', labelConS: 'label con',
       nsTrucTiep: 'nghệ sĩ trực tiếp', ns: 'nghệ sĩ', nsHuong: 'nghệ sĩ được hưởng',
-      gop: 'gộp', phanLabel: 'phần label', baiCoDt: 'bài hát có doanh thu',
+      gop: 'doanh thu', phanLabel: 'phần label', baiCoDt: 'bài hát có doanh thu',
       them: 'và {n} nghệ sĩ khác', thuGon: 'Thu gọn danh sách',
       khongNs: 'Chưa có nghệ sĩ nào', khongDt: 'chưa có doanh thu',
       xemCong: 'Xem cổng của label này',
       bang: 'Label con',
       cLabel: 'Label', cNs: 'Nghệ sĩ', cBai: 'Bài hát có doanh thu / tổng', cLuot: 'Lượt nghe',
-      cGop: 'Doanh thu gộp', cNsHuong: 'Phần nghệ sĩ', cLabelHuong: 'Phần label', cTyLe: 'Tỷ lệ',
+      cGop: 'Doanh thu', cNsHuong: 'Phần nghệ sĩ', cLabelHuong: 'Phần label', cTyLe: 'Tỷ lệ',
       tong: 'Tổng cộng toàn hệ thống',
-      ghiChu: 'Tỷ lệ là tỷ lệ nghệ sĩ được hưởng trên doanh thu sau phí dịch vụ Haustek, do từng label đặt riêng. Phần label của một label con thuộc về label con đó; label mẹ theo dõi số liệu, không được hưởng phần này.',
+      ghiChu: 'Tỷ lệ là tỷ lệ nghệ sĩ được hưởng trên doanh thu, do từng label đặt riêng. Phần label của một label con thuộc về label con đó; label mẹ theo dõi số liệu, không được hưởng phần này.',
       xuat: 'Xuất CSV',
       chuaMo: 'Kỳ này chưa chốt sổ', chuaMoMo: 'Số liệu hệ thống label chỉ hiển thị sau khi kỳ được xét duyệt.',
       nganNs: 'Nghệ sĩ của label con này trong kỳ', cMa: 'Mã', cTen: 'Nghệ sĩ',
@@ -54,24 +54,24 @@ HT.dangKy({
     en: {
       navHeThong: 'Label network', h1: 'Label network',
       mo: 'Every sub-label and the artists under it, for approved periods. The label share of each recording belongs to the label that directly manages it; the parent label sees the figures, no money passes through it (open question 9).',
-      kGop: 'Network gross revenue', kTraNs: 'Paid to artists',
+      kGop: 'Network revenue', kTraNs: 'Paid to artists',
       kLabel: 'Label share across the network', kLabelMe: 'of which parent label: {n}',
       kNs: 'Artists across the network', kLabelCon: '{n} sub-labels',
       dienBien: 'Across periods',
-      dienBienMo: 'Gross revenue of the parent label and each sub-label, stacked per approved period. The selected period is highlighted.',
+      dienBienMo: 'Revenue of the parent label and each sub-label, stacked per approved period. The selected period is highlighted.',
       cauTruc: 'Structure',
       cauTrucMo: 'Parent label, sub-labels and the artists under each. Open a sub-label for details.',
       labelMe: 'Parent label', labelCon: 'Sub-label', labelConS: 'sub-labels',
       nsTrucTiep: 'direct artists', ns: 'artists', nsHuong: 'artist share',
-      gop: 'gross', phanLabel: 'label share', baiCoDt: 'earning tracks',
+      gop: 'revenue', phanLabel: 'label share', baiCoDt: 'earning tracks',
       them: 'and {n} more artists', thuGon: 'Show fewer',
       khongNs: 'No artists yet', khongDt: 'nothing earned',
       xemCong: 'Open this label’s portal',
       bang: 'Sub-labels',
       cLabel: 'Label', cNs: 'Artists', cBai: 'Earning tracks / total', cLuot: 'Streams',
-      cGop: 'Gross', cNsHuong: 'Artist share', cLabelHuong: 'Label share', cTyLe: 'Rate',
+      cGop: 'Revenue', cNsHuong: 'Artist share', cLabelHuong: 'Label share', cTyLe: 'Rate',
       tong: 'Network total',
-      ghiChu: 'Rate is the artist share of revenue after the Haustek service fee, set by each label. A sub-label’s label share belongs to that sub-label; the parent label sees the figure but does not receive it.',
+      ghiChu: 'Rate is the artist share of revenue, set by each label. A sub-label’s label share belongs to that sub-label; the parent label sees the figure but does not receive it.',
       xuat: 'Export CSV',
       chuaMo: 'Period not closed', chuaMoMo: 'Label network figures appear once the period is approved.',
       nganNs: 'This sub-label’s artists this period', cMa: 'Code', cTen: 'Artist',
@@ -98,7 +98,7 @@ HT.dangKy({
 
     /* ---- ô số ---- */
     html += HM.so([
-      { l: t('kGop'), v: HT.fmt.usd0(tong.gross), lon: true },
+      { l: t('kGop'), v: HT.fmt.usd0(tong.revenue), lon: true },
       { l: t('kTraNs'), v: HT.fmt.usd0(tong.artist) },
       { l: t('kLabel'), v: HT.fmt.usd0(tong.labelCut), mau: HB.mau('ok'),
         s: t('kLabelMe').replace('{n}', HT.fmt.usd0(own.labelCut)) },
@@ -129,14 +129,14 @@ HT.dangKy({
         '<div class="nd me"><div class="ic">' + HM.icon('tree') + '</div>' +
           '<div><b>' + HM.esc(own.name) + '</b><span>' + HM.esc(own.clientId + ' · ' + t('labelMe').toLowerCase() + ' · ' +
             HT.fmt.n(own.artistsCount) + ' ' + t('nsTrucTiep')) + '</span></div>' +
-          '<div class="v">' + HM.esc(HT.fmt.usd0(own.gross)) + '<span>' + HM.esc(t('phanLabel') + ' ' + HT.fmt.usd0(own.labelCut)) + '</span></div>' +
+          '<div class="v">' + HM.esc(HT.fmt.usd0(own.revenue)) + '<span>' + HM.esc(t('phanLabel') + ' ' + HT.fmt.usd0(own.labelCut)) + '</span></div>' +
         '</div>' +
         veNgheSi(c, own) +
         (cons.length ? '<ul>' + cons.map(function (ch) {
           return '<li><div class="nd pick" data-lc="' + ch.labelId + '"><div class="ic">' + HM.icon('layers') + '</div>' +
             '<div><b>' + HM.esc(ch.name) + '</b><span>' + HM.esc(ch.clientId + ' · ' + HT.fmt.n(ch.artistsCount) + ' ' + t('ns') +
               ' · ' + t('nsHuong') + ' ' + HT.fmt.pct(ch.rate)) + '</span></div>' +
-            '<div class="v">' + HM.esc(HT.fmt.usd0(ch.gross)) + '<span>' + HM.esc(t('phanLabel') + ' ' + HT.fmt.usd0(ch.labelCut)) + '</span></div>' +
+            '<div class="v">' + HM.esc(HT.fmt.usd0(ch.revenue)) + '<span>' + HM.esc(t('phanLabel') + ' ' + HT.fmt.usd0(ch.labelCut)) + '</span></div>' +
             '</div>' +
             veNgheSi(c, ch, '<li><div class="btnrow" style="padding:2px 0 10px 12px"><button type="button" class="btn sm" data-xem-thay="' + ch.labelId + '">' +
               HM.icon('out') + HM.esc(t('xemCong')) + '</button></div></li>') +
@@ -158,7 +158,7 @@ HT.dangKy({
         '<td class="num">' + HM.esc(HT.fmt.n(x.artistsCount)) + '</td>' +
         '<td class="num">' + HM.esc(HT.fmt.n(x.earning) + ' / ' + HT.fmt.n(x.tracks)) + '</td>' +
         '<td class="num">' + (x.streams ? HM.esc(HT.fmt.n(x.streams)) : '<span class="nil">—</span>') + '</td>' +
-        '<td class="num">' + (x.gross ? HM.esc(HT.fmt.usd(x.gross)) : '<span class="nil">—</span>') + '</td>' +
+        '<td class="num">' + (x.revenue ? HM.esc(HT.fmt.usd(x.revenue)) : '<span class="nil">—</span>') + '</td>' +
         '<td class="num">' + (x.artist ? HM.esc(HT.fmt.usd(x.artist)) : '<span class="nil">—</span>') + '</td>' +
         '<td class="num band">' + (x.labelCut ? HM.esc(HT.fmt.usd(x.labelCut)) : '<span class="nil">—</span>') + '</td>' +
         '<td class="num">' + HM.esc(HT.fmt.pct(x.rate)) + '</td></tr>';
@@ -169,14 +169,14 @@ HT.dangKy({
       thoBody: true,
       than: '<div class="tw"><table class="t"><thead><tr>' +
         cot('name', t('cLabel'), false) + cot('artistsCount', t('cNs'), true) + cot('earning', t('cBai'), true) +
-        cot('streams', t('cLuot'), true) + cot('gross', t('cGop'), true) + cot('artist', t('cNsHuong'), true) +
+        cot('streams', t('cLuot'), true) + cot('revenue', t('cGop'), true) + cot('artist', t('cNsHuong'), true) +
         cot('labelCut', t('cLabelHuong'), true) + cot('rate', t('cTyLe'), true) +
         '</tr></thead><tbody>' + dong(own, true) + rows.map(function (x) { return dong(x, false); }).join('') +
         '</tbody><tfoot><tr><td>' + HM.esc(t('tong')) + '</td>' +
         '<td class="num">' + HM.esc(HT.fmt.n(tong.artists)) + '</td>' +
         '<td class="num">' + HM.esc(HT.fmt.n(tong.earning) + ' / ' + HT.fmt.n(tong.tracks)) + '</td>' +
         '<td class="num">' + HM.esc(HT.fmt.n(tong.streams)) + '</td>' +
-        '<td class="num">' + HM.esc(HT.fmt.usd(tong.gross)) + '</td>' +
+        '<td class="num">' + HM.esc(HT.fmt.usd(tong.revenue)) + '</td>' +
         '<td class="num">' + HM.esc(HT.fmt.usd(tong.artist)) + '</td>' +
         '<td class="num band">' + HM.esc(HT.fmt.usd(tong.labelCut)) + '</td>' +
         '<td class="num"></td></tr></tfoot></table></div>',
@@ -207,7 +207,7 @@ HT.dangKy({
          t('cGop'), t('cNsHuong'), t('cLabelHuong'), t('cTyLe')],
         [own].concat(rows).map(function (x) {
           return [x.clientId, x.name, x.labelId === own.labelId ? t('labelMe') : t('labelCon'), x.artistsCount,
-                  x.earning, x.tracks, x.streams, x.gross.toFixed(2), x.artist.toFixed(2), x.labelCut.toFixed(2), (x.rate * 100).toFixed(1) + '%'];
+                  x.earning, x.tracks, x.streams, x.revenue.toFixed(2), x.artist.toFixed(2), x.labelCut.toFixed(2), (x.rate * 100).toFixed(1) + '%'];
         }));
     });
     /* Nút "Xem cổng của label này" nằm trong cây; nút đó do trang khởi
@@ -222,7 +222,7 @@ HT.dangKy({
 /* ---------------------------------------------------------------------
    Danh sách nghệ sĩ dưới một nút của cây: 5 người có doanh thu cao nhất,
    phần còn lại gộp thành một dòng "và n nghệ sĩ khác" bấm để mở rộng.
-   Danh sách api trả về đã sắp theo doanh thu gộp giảm dần.
+   Danh sách api trả về đã sắp theo doanh thu giảm dần.
    --------------------------------------------------------------------- */
 function veNgheSi(c, lb, duoi) {
   var t = c.t;
@@ -235,7 +235,7 @@ function veNgheSi(c, lb, duoi) {
     return '<li><div class="nd"><div class="ic ns">' + HM.icon('user') + '</div>' +
       '<div><b>' + HM.esc(a.name) + '</b><span>' + HM.esc(a.clientId + ' · ' +
         (a.tracks ? HT.fmt.n(a.tracks) + ' ' + t('baiCoDt') : t('khongDt'))) + '</span></div>' +
-      '<div class="v">' + (a.gross ? HM.esc(HT.fmt.usd0(a.gross)) : '<span class="nil">—</span>') +
+      '<div class="v">' + (a.revenue ? HM.esc(HT.fmt.usd0(a.revenue)) : '<span class="nil">—</span>') +
         '<span>' + HM.esc(t('phanLabel') + ' ' + HT.fmt.usd0(a.labelCut)) + '</span></div>' +
       '</div></li>';
   }).join('') : '<li><div class="nd"><div class="ic ns">' + HM.icon('user') + '</div><div><span>' + HM.esc(t('khongNs')) + '</span></div><div></div></div></li>') +
@@ -250,10 +250,10 @@ function veNgheSi(c, lb, duoi) {
 function moLabelCon(c, ch) {
   if (!ch) return;
   var t = c.t, vi = c.lang === 'vi';
-  var ds = (ch.artists || []).slice().sort(function (a, b) { return b.gross - a.gross; });
+  var ds = (ch.artists || []).slice().sort(function (a, b) { return b.revenue - a.revenue; });
   c.nganTruot(
     HM.so([
-      { l: t('cGop'), v: HT.fmt.usd(ch.gross), lon: true },
+      { l: t('cGop'), v: HT.fmt.usd(ch.revenue), lon: true },
       { l: t('cNsHuong'), v: HT.fmt.usd(ch.artist) },
       { l: t('cLabelHuong'), v: HT.fmt.usd(ch.labelCut), mau: HB.mau('ok') }
     ]) +
@@ -273,7 +273,7 @@ function moLabelCon(c, ch) {
         return '<tr><td><div class="t-ttl">' + HM.esc(a.name) + '</div><div class="t-sub">' + HM.esc(a.clientId) + '</div></td>' +
           '<td class="num">' + (a.tracks ? HM.esc(HT.fmt.n(a.tracks)) : '<span class="nil">—</span>') + '</td>' +
           '<td class="num">' + (a.streams ? HM.esc(HT.fmt.n(a.streams)) : '<span class="nil">—</span>') + '</td>' +
-          '<td class="num">' + (a.gross ? HM.esc(HT.fmt.usd0(a.gross)) : '<span class="nil">—</span>') + '</td>' +
+          '<td class="num">' + (a.revenue ? HM.esc(HT.fmt.usd0(a.revenue)) : '<span class="nil">—</span>') + '</td>' +
           '<td class="num band">' + (a.labelCut ? HM.esc(HT.fmt.usd(a.labelCut)) : '<span class="nil">—</span>') + '</td></tr>';
       }).join('') + '</tbody></table></div>'
       : '<p class="say">' + HM.esc(t('nganKhongNs')) + '</p>'),

@@ -37,7 +37,7 @@ HT.dangKy({
       chuaMoMo: 'Bảng kê chỉ được lập sau khi kỳ chốt sổ. Chốt sổ nghĩa là Haustek đã nhận đủ báo cáo của tất cả các nền tảng và đối soát khớp đến từng xu.',
       dieuKhoan: 'Căn cứ tính',
       luuY: 'Lưu ý',
-      luuYNoiDung: 'Số liệu trong bảng kê này là số trước thuế và trước phí chuyển khoản. Khoản thực nhận vào tài khoản của bạn sẽ nhỏ hơn nếu có thuế hoặc phí; phần chênh lệch được ghi rõ trên chứng từ chuyển tiền.',
+      luuYNoiDung: 'Số liệu trong bảng kê này là số trước thuế. Bảng kê PDF do Haustek gửi riêng từng kỳ ghi đầy đủ căn cứ tính và các khoản khấu trừ theo hợp đồng; khi có, bạn tải ở thẻ Bảng kê PDF phía trên.',
       khongTq: 'Kỳ này không có báo cáo tác quyền',
       cacKy: 'Các kỳ đã chốt sổ', xemKy: 'Xem'
     },
@@ -59,7 +59,7 @@ HT.dangKy({
       chuaMoMo: 'A statement exists only after the period is closed. Closed means every platform has reported and reconciliation balances to the cent.',
       dieuKhoan: 'Basis of calculation',
       luuY: 'Note',
-      luuYNoiDung: 'Figures here are BEFORE tax and before transfer fees. What reaches your account may be less; the difference is itemised on the transfer voucher.',
+      luuYNoiDung: 'Figures here are before tax. The PDF statement Haustek sends each period carries the full basis of calculation and every contractual deduction; once ready it is in the PDF statement card above.',
       khongTq: 'No publishing report this period',
       cacKy: 'Closed periods', xemKy: 'Open'
     }
@@ -176,8 +176,8 @@ HT.dangKy({
       HM.the({
         h2: HM.esc(t('dieuKhoan')),
         than: '<p class="say">' + HM.esc(c.lang === 'vi'
-          ? 'Doanh thu gộp là toàn bộ số tiền các nền tảng báo cáo cho các bài hát liên quan trong kỳ, trước các khoản khấu trừ. Từ đó khấu trừ phí dịch vụ Haustek theo hợp đồng, rồi phần label quản lý được hưởng (nếu có), rồi điểm producer (nếu bài hát có).'
-          : 'Gross is everything the platforms reported for the related tracks in the period, before any deduction. From it comes the contractual Haustek fee, then the managing party’s share, then producer points where the track carries them.') + '</p>' +
+          ? 'Doanh thu trong bảng kê này là phần thuộc về bạn theo hợp đồng, sau khi Haustek đã đối soát với báo cáo của từng nền tảng. Phần label quản lý được hưởng (nếu có) và điểm producer (nếu bài hát có) được tách ra ngay trong bảng trên.'
+          : 'Revenue in this statement is the part that belongs to you under your agreement, after Haustek has reconciled every platform’s report. The managing label’s share (if any) and producer points (where the track carries them) are itemised in the table above.') + '</p>' +
           '<p class="say">' + HM.esc(c.lang === 'vi'
           ? 'Điểm producer được khấu trừ từ phần của nghệ sĩ, không phải là một phần cộng thêm. Nếu cộng thêm, tổng các phần sẽ vượt quá 100%.'
           : 'Producer points come off the artist share rather than being added on top — the other way round, the parts would exceed 100%.') + '</p>' +
@@ -198,6 +198,7 @@ HT.dangKy({
           : 'Send client ID ' + me.clientId + ', period ' + c.ky.label + ', and the ISRC of the track in question to ops@haustek-group.com. With those three, the exact row is found in minutes; missing one means combing the whole period.') + '</p>'
       }) + '</div>';
 
+    html += vePdf(c);
     html += veCacKy(c);
 
     root.innerHTML = html;
@@ -205,6 +206,9 @@ HT.dangKy({
 
     HM.bam(root, '[data-kyto]', function (el) { c.doiKy(el.getAttribute('data-kyto')); });
     HM.bam(root, '[data-in]', function () { window.print(); });
+    HM.bam(root, '[data-tai-pdf]', function (el) {
+      c.thongBao((c.lang === 'vi' ? 'Bản mẫu: tệp ' : 'Prototype: ') + el.getAttribute('data-tai-pdf') + (c.lang === 'vi' ? ' sẽ được tải về từ máy chủ thật.' : ' would download from the real server.'), 'ok');
+    });
     HM.bam(root, '[data-xuat]', function () {
       HM.csv('bang-ke-' + me.clientId + '-' + c.kyKey + '.csv',
         ['Bên thụ hưởng', 'Mã đối tác', 'Kỳ', 'Chốt sổ', 'Tỷ giá', 'Khoản mục', 'Số tiền USD', 'Quy đổi VND', 'Ghi chú'],
@@ -215,6 +219,32 @@ HT.dangKy({
     });
   }
 });
+
+/* ---- bảng kê PDF do Haustek tải lên cho kỳ này ---- */
+function vePdf(c) {
+  var api = c.api, me = c.phien.me, vi = c.lang === 'vi';
+  var row = null;
+  try { (api.statements(me.role, me.partyId).rows || []).forEach(function (r) { if (r.k === c.kyKey) row = r; }); } catch (e) { row = null; }
+  if (!row) return '';
+  var pdf = row.pdf;
+  return HM.the({
+    dai: { kieu: pdf ? 'ok' : 'info', icon: 'file', chu: HM.esc(vi ? 'Bảng kê PDF' : 'PDF statement') },
+    h2: HM.esc(vi ? 'Bảng kê PDF do Haustek gửi' : 'PDF statement from Haustek'),
+    p: HM.esc(vi
+      ? 'Bản chính thức của kỳ, có đầy đủ căn cứ tính và các khoản khấu trừ theo hợp đồng. Haustek tải lên sau khi xét duyệt kỳ.'
+      : 'The official copy for the period, with the full basis of calculation and every contractual deduction. Haustek uploads it after approving the period.'),
+    than: pdf
+      ? HM.kv([
+          { t: vi ? 'Tệp' : 'File', v: pdf.file, manh: true },
+          { t: vi ? 'Tải lên lúc' : 'Uploaded', v: HT.fmt.luc(pdf.at) },
+          { t: vi ? 'Kích thước' : 'Size', v: (pdf.size / 1024).toFixed(0) + ' KB' }
+        ]) + '<div class="btnrow" style="margin-top:12px"><button type="button" class="btn pri sm" data-tai-pdf="' + HM.esc(pdf.file) + '">' +
+          HM.icon('down2') + HM.esc(vi ? 'Tải bảng kê PDF' : 'Download PDF') + '</button></div>'
+      : '<p class="say">' + HM.esc(vi
+          ? 'Haustek chưa tải bảng kê PDF của kỳ này lên. Khi có, nút tải xuất hiện ở đây và bạn nhận được thông báo.'
+          : 'Haustek has not uploaded this period’s PDF statement yet. Once it is up, the download button appears here and you are notified.') + '</p>'
+  });
+}
 
 /* ---- danh sách các kỳ đã chốt, để nhảy nhanh ---- */
 function veCacKy(c) {
