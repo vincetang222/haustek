@@ -1851,8 +1851,10 @@ function dailyStreams(i, back) {
   const trend = 0.85 + hash(i, 61) * 0.55;                      /* xu hướng 60 ngày: −15% … +40% */
   const t = 1 - back / N_DAYS;
   const dow = new Date(ASOF.getTime() - back * 864e5).getDay();
-  const wk = dow === 5 || dow === 6 ? 1.15 : dow === 0 ? 1.05 : 0.96;
-  const noise = 0.88 + hash(i * 97 + back, 62) * 0.24;
+  const wk = dow === 5 || dow === 6 ? 1.07 : dow === 0 ? 1.03 : 0.985;
+  /* nhiễu có nhớ: hai ngày kề nhau gần nhau, để đường không thành răng cưa */
+  const n1 = hash(i * 97 + back, 62), n2 = hash(i * 97 + back + 1, 62), n3 = hash(i * 97 + back + 2, 62);
+  const noise = 0.9 + (n1 + n2 + n3) / 3 * 0.2;
   return Math.round(base * Math.pow(trend, t) * wk * noise);
 }
 /* mức trả gộp USD trên 1.000 lượt nghe của từng nền tảng, từ 3 kỳ đã xét duyệt gần nhất */

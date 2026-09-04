@@ -336,7 +336,10 @@ function veCot(cfg, W) {
      ở màn hẹp */
   var ep = [n - 1]; if (cfg.noiBat != null && cfg.noiBat >= 0) ep.push(cfg.noiBat);
   var gan = function (i) { for (var k = 0; k < ep.length; k++) if (i !== ep[k] && Math.abs(i - ep[k]) < buocNhan) return true; return false; };
+  /* nhãn cuối cũng nhường khi đứng sát nhãn nổi bật */
+  var boCuoi = buocNhan > 1 && cfg.noiBat != null && cfg.noiBat !== n - 1 && n - 1 - cfg.noiBat < buocNhan;
   for (var i3 = 0; i3 < n; i3++) {
+    if (i3 === n - 1 && boCuoi) continue;
     if (i3 !== n - 1 && cfg.noiBat !== i3 && (i3 % buocNhan !== 0 || (buocNhan > 1 && gan(i3)))) continue;
     s += '<text class="lb' + (cfg.noiBat === i3 ? ' on' : '') + '" x="' + (LE_TR + i3 * bw + bw / 2).toFixed(1) +
       '" y="' + (H - 9) + '" text-anchor="middle">' + esc(truc[i3]) + '</text>';
@@ -618,10 +621,13 @@ function veDuong(cfg, W) {
       '<line class="ch" x1="' + xo(i).toFixed(1) + '" y1="' + LE_T + '" x2="' + xo(i).toFixed(1) + '" y2="' + (LE_T + cao) + '"/>' + cham + '</g>';
   }
   /* nhãn trục hoành, bỏ bớt khi chật */
-  var buoc = Math.ceil(n / Math.max(1, Math.floor(rong / 52)));
+  /* nhãn dạng "08/2025" rộng ~48px; chừa 64px mỗi nhãn để hai nhãn kề không chạm nhau */
+  var buoc = Math.ceil(n / Math.max(1, Math.floor(rong / 64)));
   var ep = [n - 1]; if (cfg.noiBat != null && cfg.noiBat >= 0) ep.push(cfg.noiBat);
   var gan = function (i) { for (var k = 0; k < ep.length; k++) if (i !== ep[k] && Math.abs(i - ep[k]) < buoc) return true; return false; };
+  var boCuoi = buoc > 1 && cfg.noiBat != null && cfg.noiBat !== n - 1 && n - 1 - cfg.noiBat < buoc;
   for (var i3 = 0; i3 < n; i3++) {
+    if (i3 === n - 1 && boCuoi) continue;
     if (i3 !== n - 1 && cfg.noiBat !== i3 && (i3 % buoc !== 0 || (buoc > 1 && gan(i3)))) continue;
     s += '<text class="lb' + (cfg.noiBat === i3 ? ' on' : '') + '" x="' + xo(i3).toFixed(1) + '" y="' + (H - 9) + '" text-anchor="' + (i3 === 0 ? 'start' : i3 === n - 1 ? 'end' : 'middle') + '">' + esc(truc[i3]) + '</text>';
   }

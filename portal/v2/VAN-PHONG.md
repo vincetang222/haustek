@@ -68,6 +68,19 @@ dịch từng chữ từ tiếng Anh. Người đọc là kế toán, chủ labe
 | per-platform monthly report | **báo cáo theo nền tảng**; bảng **theo tháng** (mỗi cột một kỳ) | store report |
 | "other platforms" bucket | **Nền tảng khác** | cửa hàng khác, đuôi |
 | catalogue screen (partner) | **Danh mục bài hát** | tài sản, asset |
+| partner-facing revenue (net of Haustek fee) | **doanh thu** (label: phần trả nghệ sĩ + phần label); nghệ sĩ: **thu nhập của bạn**. KHÔNG có "doanh thu gộp", "phí dịch vụ", "phần Haustek" ở cổng đối tác | gộp, sau phí, trước khấu trừ |
+| wallet / available balance | **ví**, **số dư khả dụng**, **đang xử lý**, **đã rút** | tài khoản tiền, balance |
+| withdraw / withdrawal request | **rút tiền**, **yêu cầu rút tiền**; trạng thái **đang chờ xử lý / đang chuyển khoản / đã chuyển khoản / từ chối / đã huỷ**; **ngưỡng rút tối thiểu** | thanh toán ra, payout request |
+| statement PDF uploaded by accounting | **bảng kê PDF** (chứng từ chính thức, ghi căn cứ tính và khoản khấu trừ) | — |
+| reporting cadence | **nhịp báo cáo**: **hằng tháng** / **hằng quý** | chu kỳ |
+| forecast | **dự báo**; **dự kiến kỳ này**; **mức trả** (USD trên 1.000 lượt nghe); **tăng trưởng 7 ngày / 28 ngày** | ước đoán, projection |
+| support ticket | **yêu cầu hỗ trợ** (nội bộ gọi tắt **ticket**); trạng thái **đã gửi / đang xử lý / chờ nền tảng phản hồi / đã xong**; **hạn xử lý**; **người phụ trách** | vé, case |
+| rights claim / Content ID conflict | **khiếu nại bản quyền**, **xung đột Content ID**; trạng thái **mới ghi nhận / đang tranh chấp / đã chuyển lên nền tảng / đã giải quyết / đã nhả claim** | dispute |
+| staff desk | **bàn làm việc** (theo vai: giám đốc, vận hành, kinh doanh, hỗ trợ, kế toán) | dashboard nhân viên |
+| account manager | **người phụ trách** | quản lý tài khoản |
+| delivery request | **giao nhận nền tảng**, **yêu cầu giao** | delivery |
+| bulk edit | **sửa hàng loạt** | chỉnh sửa nhiều |
+| pre-save / editorial pitch / marketing campaign | **đặt trước (pre-save)** / **đề xuất playlist biên tập** / **chiến dịch marketing sau phát hành**; bước không mua: **không đăng ký** | — |
 
 Giữ nguyên: ISRC, UPC, VCPMC, The MLC, USD, VND, CSV, JSON, tên nền tảng, tên
 riêng, email, mã.

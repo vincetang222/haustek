@@ -28,6 +28,8 @@ Hai giả định lớn của bản mẫu, chưa được xác nhận (xem tab C
 |---|---|---|---|
 | Vận hành Haustek | ops@ | Nhập báo cáo, khớp dòng chưa có ISRC, đối soát tới từng xu, chốt tỷ giá, xét duyệt kỳ, chạy thanh toán, trả lời thắc mắc của đối tác | hằng tháng, dồn vào tuần thứ ba và tư |
 | Kế toán Haustek | kế toán | Bút toán kỳ, công nợ theo bên thụ hưởng, tạm ứng phải thu, thuế khấu trừ, chứng từ, đối chiếu sao kê | hằng tháng, sau xét duyệt |
+| Kinh doanh Haustek | sales1@, sales2@ | Tài khoản mình phụ trách: doanh thu quý, chỉ tiêu, mới ký, sắp hết hạn hợp đồng, chưa đăng nhập, chưa đủ hồ sơ; tài khoản dẫn đầu | hằng tuần |
+| Hỗ trợ Haustek | support1@, support2@ | Hàng đợi yêu cầu hỗ trợ (ticket) của đối tác theo hạn xử lý; xung đột Content ID và khiếu nại trên nền tảng | hằng ngày |
 | Quản lý Haustek | mgmt@ | Doanh thu phí 12 kỳ, top đối tác, tiền chưa khớp, vấn đề cần chốt trước khi lên hệ thống thật | hằng tháng, hằng quý |
 | Label (hãng đĩa, công ty quản lý) | chủ label, kế toán label | Doanh thu cả roster, phần label được hưởng, phần trả từng nghệ sĩ, bảng kê, tạm ứng của label, tỷ lệ theo phụ lục | hằng tháng |
 | Ca sĩ / nghệ sĩ thuộc label | nghệ sĩ có hợp đồng với label | Bài nào ra tiền, mình được bao nhiêu sau phần label, bao giờ nhận, tỷ lệ đang áp là gì và theo phụ lục nào, tạm ứng cá nhân | hằng tháng, sau khi kỳ mở |
@@ -158,6 +160,42 @@ Khi lên hệ thống thật: form trang chủ ghi thẳng vào `releases`/`trac
 `publishing_splits`; cổng đọc bằng RLS như mọi bảng khác. `submission_id`
 (HSTK-…) là khoá nối giữa email xác nhận, Google Sheets và cổng.
 
+## 4b. Nguyên tắc số liệu ở cổng đối tác: chỉ số NET (vòng 3)
+
+Đối tác chỉ thấy **số của họ**. Không có "doanh thu gộp", không có "phí dịch vụ",
+không có "phần Haustek" ở bất kỳ trang nào của cổng đối tác. Gói dữ liệu chỉ mang
+`revenue` (label: phần trả nghệ sĩ + phần label; nghệ sĩ: phần mình) và `mine`
+(phần của người xem). Tầng API ném lỗi nếu một gói lọt chữ "gross", "fee", "phí
+dịch vụ", "doanh thu gộp" (api-guard kiểm). Căn cứ tính và các khoản khấu trừ nằm
+trong **bảng kê PDF** do kế toán Haustek đính kèm từng kỳ; cổng chỉ liệt kê và cho
+tải. Tạm ứng của chính đối tác vẫn hiện, vì đó là khoản của họ.
+
+## 4c. Ví, rút tiền và nhịp báo cáo (vòng 3)
+
+Mỗi kỳ được xét duyệt ghi một khoản vào **ví** của đối tác (phần được hưởng sau
+khấu trừ tạm ứng). Đối tác bấm **Rút tiền** khi muốn, tối thiểu bằng ngưỡng; kế
+toán tiếp nhận, chuyển khoản và ghi số tham chiếu. Nguồn nào về trước ghi trước:
+phần lớn nền tảng theo tháng, TikTok theo quý (câu hỏi cần chốt số 10: báo cáo về
+muộn ghi vào kỳ nào). Thay cho "chuyển sang kỳ sau", số dư nhỏ hơn ngưỡng đơn giản
+nằm lại trong ví.
+
+## 4d. Dự báo tăng trưởng (vòng 3)
+
+Sau khi bài đã lên nền tảng, lượt nghe mỗi ngày là con số về sớm nhất. Dự báo =
+lượt nghe hằng ngày × mức trả trung bình USD/1.000 lượt của từng nền tảng (rút từ
+ba kỳ đã xét duyệt gần nhất) × phần của người xem. Cho kỳ đang mở và kỳ sau, kèm
+tăng trưởng 7 và 28 ngày, theo nền tảng, bài tăng mạnh. Bản mẫu sinh lượt nghe
+hằng ngày xác định; hệ thống thật lấy từ API phân tích của nền tảng (Spotify for
+Artists, YouTube Analytics, TikTok Insights).
+
+## 4e. Quy trình phát hành đủ 11 bước, có marketing (vòng 3)
+
+Hồ sơ → tiếp nhận → cấp mã → kiểm tra nội dung, bản quyền, Content ID → lên lịch
+và đặt trước (pre-save) → gửi nền tảng → đề xuất playlist biên tập → có mặt trên
+nền tảng → chiến dịch marketing sau phát hành → theo dõi và tối ưu → báo cáo doanh
+thu. Bước không đăng ký (pre-save, pitch, marketing) ghi rõ "không đăng ký" và có
+nút yêu cầu hỗ trợ marketing tạo ticket cho đội hỗ trợ.
+
 ## 5. Chỗ còn mở, ghi rõ để không ai tưởng đã xong
 
 * Producer chưa có mã nên chưa có tài khoản và chưa nhận được tiền (câu hỏi 3).
@@ -174,6 +212,13 @@ Khi lên hệ thống thật: form trang chủ ghi thẳng vào `releases`/`trac
 * Mục "còn thiếu" (lời bài hát, ngôn ngữ, nhà xuất bản, mã producer, đồng sáng tác
   chưa xác nhận) là những kiểm tra hồ sơ hệ thống thật nên làm ngay lúc nhận
   metadata; bản mẫu chỉ hiện chúng trên bài đã phát hành để thấy hình dạng.
+* Báo cáo về muộn (TikTok theo quý) ghi vào kỳ nào (câu hỏi 10, vòng 3).
+* Rút tiền: bản mẫu chưa có xác thực hai lớp khi đổi tài khoản ngân hàng và chưa
+  có hạn mức rút theo ngày; hệ thống thật cần cả hai.
+* Dự báo là ước tính từ lượt nghe hằng ngày; con số thật chỉ có khi nền tảng báo
+  cáo. Cổng nói rõ điều này ở mọi chỗ hiện dự báo.
+* Bảng kê PDF ở bản mẫu chỉ là bản ghi tên file; hệ thống thật lưu file trên kho
+  đối tượng có chữ ký số và đường dẫn tải có hạn.
 
 ## 6. Tính năng tham khảo từ các nền tảng cùng ngành (OneSystem, ONErpm Artist Oracle)
 
@@ -192,4 +237,9 @@ tiếp phục vụ vận hành và kế toán Haustek; phần còn lại ghi đ�
 | Track discovery strategies (Artist Oracle: bài đang lên ở đâu, đề xuất playlist) | chưa; cần dữ liệu playlist / xu hướng từ nền tảng | làm sau |
 | My Key Releases: lọc theo trạng thái, ngày, tài khoản | Nội bộ · Phát hành (lọc trạng thái) + Danh mục (lọc Có vấn đề / Còn thiếu) | có một phần |
 | Releases to manage: to approve / to validate / in progress / issues | Nội bộ · Phát hành: Chờ tiếp nhận / Chờ cấp mã / Chờ phát hành / Trả lại bổ sung | có (tên bước theo quy trình Haustek) |
-| My accounts: Managed / Signed / Inactive / Incomplete / Never logged in / Delegation received–given, cột hợp đồng (rate, turnover, ngày ký, ngày hết hạn, account manager) | Nội bộ · Quản trị · Tài khoản (trạng thái, bên thụ hưởng, label mẹ / label con); **uỷ quyền xem** = label mẹ → label con | có một phần; cột hợp đồng (ngày ký, ngày hết hạn, người phụ trách, phân loại đối tác) làm sau khi có master data |
+| My accounts: Managed / Signed / Inactive / Incomplete / Never logged in / Delegation received–given, cột hợp đồng (rate, turnover, ngày ký, ngày hết hạn, account manager) | Nội bộ · **Đối tác** (vòng 3): tab Đang quản lý / Sắp hết hạn / Không hoạt động / Chưa đủ hồ sơ / Chưa đăng nhập / Chưa cấp tài khoản; cột người phụ trách, tỷ lệ, doanh thu quý và quý trước, phân loại A/B/C, ngày ký, hết hạn, tài khoản, ngân hàng; **uỷ quyền xem** = label mẹ → label con | có (ngày ký / hết hạn sinh xác định, thay bằng master data khi có) |
+| Rights Manager dashboard: lọc UPC / ISRC / Asset ID / loại xung đột / trạng thái / bên khác / nền tảng / thị trường / ngày; chỉ của tôi; cột lượt xem mỗi ngày, ưu tiên, hết hạn | Nội bộ · **Quản lý quyền** (vòng 3): xung đột Content ID và khiếu nại, chọn nhiều dòng, tranh chấp / chuyển lên nền tảng / giải quyết / nhả; đối tác thấy khiếu nại trên bài của mình trong hồ sơ bài hát và trang Hỗ trợ | có |
+| Video settings: tìm tài khoản, chính sách Content ID, kênh | Nội bộ · Quản lý quyền · tab Cài đặt video | có |
+| Album delivery dashboard: tạo yêu cầu giao (tên, theo producer / UPC list / UPC file / albums, chọn nền tảng), danh sách yêu cầu | Nội bộ · **Giao nhận nền tảng** (vòng 3) | có |
+| Multiple releases edition tools: khoá / mở khoá, đổi giá album, đổi ngày phát hành số, đổi giá track; tổng quan yêu cầu | Nội bộ · **Sửa hàng loạt** (vòng 3) | có |
+| Bàn làm việc theo vai (sales KPI, support tickets, kế toán) | Nội bộ · **Bàn làm việc** (vòng 3): mgmt, vận hành, kinh doanh, hỗ trợ, kế toán | có |

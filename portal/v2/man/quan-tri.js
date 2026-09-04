@@ -193,7 +193,7 @@ function veTaiKhoan(c, tk) {
       '<th>' + HM.esc(t('cEmail')) + '</th><th>' + HM.esc(t('cVt')) + '</th>' +
       '<th>' + HM.esc(t('cBen')) + '</th><th>' + HM.esc(t('cTt')) + '</th>' +
       '<th>' + HM.esc(t('cMfa')) + '</th><th>' + HM.esc(t('cNgay')) + '</th>' +
-      '<th style="width:190px"></th></tr></thead><tbody>' +
+      '<th style="width:190px">' + HM.esc(c.lang === 'vi' ? 'Thao tác' : 'Actions') + '</th></tr></thead><tbody>' +
       loc.map(function (a) {
         return '<tr><td><div class="t-ttl mono">' + HM.esc(a.email) + '</div>' +
             '<div class="t-sub">' + HM.esc(a.id) + '</div></td>' +

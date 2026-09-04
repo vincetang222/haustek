@@ -562,6 +562,80 @@ check("Không gói nào của đối tác mang doanh thu gộp, phí dịch vụ
   return "13 gói · không chữ nào lọt · label: " + H.fmt.usd(goi.sL.revenue) + " = " + H.fmt.usd(goi.sL.paidToArtists) + " + " + H.fmt.usd(goi.sL.total);
 });
 
+/* ===================== 5e. VÍ · TICKET · KHIẾU NẠI · DỰ BÁO ===================== */
+check("Ví của nghệ sĩ A không lộ sang nghệ sĩ B; số dư = tổng khoản ghi − đã rút − đang chờ", () => {
+  const w = H.api.wallet("artist", A1.id);
+  must(Math.abs(w.available - (w.totalCredit - w.pending - w.paid)) < 0.005 || w.available === 0, "số dư không khớp công thức");
+  w.withdrawals.forEach(x => must(x.partyKey === "A:" + A1.id, "ví chứa yêu cầu rút của người khác: " + x.partyKey));
+  const cr = A.credits("A:" + A1.id);
+  must(Math.abs(cr.reduce((s, c) => s + c.credit, 0) - w.totalCredit) < 0.005, "tổng khoản ghi không khớp sổ nội bộ");
+  /* mỗi khoản ghi = phần được hưởng − thu hồi tạm ứng của kỳ đã xét duyệt */
+  cr.forEach(c => { const row = (A.payoutOf(c.k) || []).find(r => r.partyKey === "A:" + A1.id); must(row && Math.abs(row.earned - row.recoup - c.credit) < 0.005, "khoản ghi kỳ " + c.k + " lệch bảng thanh toán"); });
+  return H.fmt.usd(w.totalCredit) + " ghi · " + H.fmt.usd(w.paid) + " đã rút · khả dụng " + H.fmt.usd(w.available);
+});
+
+check("Rút tiền: chặn dưới ngưỡng, chặn vượt số dư, chặn khi chưa có ngân hàng; hợp lệ thì ghi sổ và trừ khả dụng", () => {
+  const w0 = H.api.wallet("label", L1.id);
+  mustThrow(() => H.api.requestWithdrawal("label", L1.id, { amount: A.cfg.PAYOUT_MIN - 1 }), "rút dưới ngưỡng");
+  mustThrow(() => H.api.requestWithdrawal("label", L1.id, { amount: w0.available + 1 }), "rút vượt số dư");
+  /* một tài khoản mẫu cố tình không có ngân hàng */
+  const khongBank = A.accounts.list().filter(a => a.role !== "admin" && a.partyKey && !A.bank.get(a.partyKey))[0];
+  if (khongBank) mustThrow(() => H.api.requestWithdrawal(khongBank.role, +khongBank.partyKey.slice(2), { amount: 100 }), "rút khi chưa có ngân hàng");
+  if (w0.available >= A.cfg.PAYOUT_MIN) {
+    const r = H.api.requestWithdrawal("label", L1.id, { amount: A.cfg.PAYOUT_MIN });
+    const w1 = H.api.wallet("label", L1.id);
+    must(Math.abs(w0.available - w1.available - A.cfg.PAYOUT_MIN) < 0.005, "khả dụng không giảm đúng số đã yêu cầu");
+    must(A.withdrawals.get(r.id) && A.withdrawals.get(r.id).status === "requested", "kế toán không thấy yêu cầu");
+    H.api.cancelWithdrawal("label", L1.id, r.id);
+    must(Math.abs(H.api.wallet("label", L1.id).available - w0.available) < 0.005, "huỷ xong số dư không trở lại");
+  }
+  return "chặn ba trường hợp · yêu cầu hợp lệ trừ đúng số, huỷ trả lại đúng số";
+});
+
+check("Ticket và khiếu nại: nghệ sĩ chỉ thấy của mình, không tạo được ticket cho bài người khác", () => {
+  const t1 = H.api.tickets("artist", A1.id), t2 = H.api.tickets("artist", A2.id);
+  t1.rows.forEach(t => must(t.partyKey === "A:" + A1.id, "ticket của người khác lọt vào"));
+  const chung = t1.rows.filter(t => t2.rows.some(x => x.id === t.id));
+  must(chung.length === 0, chung.length + " ticket xuất hiện ở cả hai nghệ sĩ");
+  mustThrow(() => H.api.createTicket("artist", A1.id, { type: "nen-tang", title: "x", body: "y", trackId: trackOfA2 }), "tạo ticket cho bài của B");
+  const c = H.api.createTicket("artist", A1.id, { type: "nen-tang", title: "Thử", body: "Nội dung", trackId: trackOfA1 });
+  must(H.api.tickets("artist", A1.id).rows.some(t => t.id === c.id), "ticket vừa tạo không thấy");
+  must(!H.api.tickets("artist", A2.id).rows.some(t => t.id === c.id), "ticket vừa tạo lộ sang B");
+  mustThrow(() => H.api.replyTicket("artist", A2.id, c.id, "xen vào"), "B trả lời ticket của A");
+  const mineTracks = new Set(Array.from(A.idxOf(A.byArtist, A1.id)));
+  const kn = H.api.claims("artist", A1.id);
+  kn.rows.forEach(r => must(A.claims.get(r.id) && mineTracks.has(A.claims.get(r.id).trackId), "khiếu nại của bài người khác lọt vào"));
+  must(!JSON.stringify(kn).includes("assignee"), "khiếu nại lộ tên nhân viên nội bộ");
+  return t1.rows.length + " ticket của A · " + kn.rows.length + " khiếu nại của A · chặn tạo/trả lời chéo";
+});
+
+check("Dự báo chỉ tính trên bài của người xem và không lộ doanh thu gộp", () => {
+  const f = H.api.forecast("artist", A1.id);
+  must(f.tracksCounted <= A.idxOf(A.byArtist, A1.id).length, "đếm nhiều bài hơn danh mục của A");
+  f.topTracks.forEach(t => must(Array.from(A.idxOf(A.byArtist, A1.id)).includes(t.id), "bài của người khác trong top"));
+  must(f.days.length === 60 && f.projected.streams >= f.projected.monthToDate, "chuỗi ngày hoặc dự báo tháng sai");
+  const txt = JSON.stringify(f).toLowerCase();
+  must(!txt.includes("gross") && !txt.includes("phí"), "dự báo lộ gộp/phí");
+  /* với nghệ sĩ, revenue == mine; với label, revenue ≥ mine */
+  must(Math.abs(f.projected.revenue - f.projected.mine) < 0.005, "nghệ sĩ thấy hai con số khác nhau");
+  const fl = H.api.forecast("label", L1.id);
+  must(fl.projected.revenue >= fl.projected.mine - 0.005, "label: doanh thu nhỏ hơn phần label");
+  return f.tracksCounted + " bài · 7 ngày " + H.fmt.num(f.last7) + " lượt · dự kiến " + H.fmt.usd0(f.projected.mine);
+});
+
+check("Bảng kê: chỉ kỳ đã xét duyệt, số ghi vào ví khớp ví; PDF chỉ hiện sau khi kế toán đính kèm", () => {
+  const st = H.api.statements("artist", A1.id);
+  st.rows.forEach(r => must(A.isApproved(r.k), "bảng kê có kỳ chưa xét duyệt " + r.k));
+  const w = H.api.wallet("artist", A1.id);
+  must(Math.abs(st.rows.reduce((s, r) => s + r.credit, 0) - w.totalCredit) < 0.005, "tổng ghi vào ví trên bảng kê khác ví");
+  const k = st.rows[0].k;
+  A.statements.remove(k, "A:" + A1.id, "test");
+  must(!H.api.statements("artist", A1.id).rows[0].pdf, "PDF hiện khi chưa đính kèm");
+  A.statements.attach(k, "A:" + A1.id, "bang-ke-thu.pdf", "test");
+  must(H.api.statements("artist", A1.id).rows[0].pdf && H.api.statements("artist", A1.id).rows[0].pdf.file === "bang-ke-thu.pdf", "PDF đính kèm không hiện");
+  return st.rows.length + " kỳ · khớp ví · PDF đúng lúc";
+});
+
 /* ===================== 6. KHOÁ CỬA ===================== */
 check("lockdown() gỡ hẳn mặt tiền admin khỏi trang", () => {
   must(!!H.admin, "chưa lockdown mà admin đã mất");
