@@ -33,7 +33,22 @@ HT.dangKy({
       daMo: 'Kỳ này đã mở cho label và nghệ sĩ. Xét duyệt lúc',
       conThieu: 'Còn thiếu', xong: 'Đủ điều kiện xét duyệt kỳ',
       dong: 'dòng', tien: 'Số tiền', khong: 'Không có dòng nào chờ khớp',
-      soVoi: 'so với', khac: 'nền tảng khác', luotNghe: 'lượt nghe'
+      soVoi: 'so với', khac: 'nền tảng khác', luotNghe: 'lượt nghe',
+      /* góc nhìn A&R */
+      doiTac: 'Đối tác dẫn đầu kỳ này',
+      doiTacMo: 'Label và nghệ sĩ độc lập xếp theo doanh thu gộp; nghệ sĩ thuộc label tính vào label. Bấm một dòng để xem chi tiết dòng tiền.',
+      cDoiTac: 'Đối tác', cTyLe: 'Tỷ lệ nghệ sĩ', cHuong: 'Được hưởng', docLap: 'Nghệ sĩ độc lập',
+      ungThu: 'Tạm ứng còn phải thu hồi',
+      ungThuMo: 'Bình quân phần được hưởng của 3 kỳ đã xét duyệt gần nhất ({k}) cho biết còn bao nhiêu kỳ nữa thì thu hồi hết.',
+      cBen: 'Bên thụ hưởng', cCon: 'Còn phải thu hồi', cBq: 'Bình quân mỗi kỳ', cKyDu: 'Kỳ dự kiến',
+      chuaDt: 'chưa có doanh thu', xemUng: 'Xem tạm ứng', ungTong: 'Tổng còn phải thu hồi', ben: 'bên',
+      ungKhong: 'Không còn khoản tạm ứng nào phải thu hồi', ungKhongMo: 'Mọi khoản tạm ứng đã được thu hồi đủ qua các kỳ đã xét duyệt.',
+      phSap: 'Phát hành sắp tới',
+      phSapMo: 'Hồ sơ phát hành có ngày mong muốn từ hôm nay trở đi và chưa đánh dấu đã phát hành.',
+      cNgay: 'Ngày', cBanPh: 'Bản phát hành', cNs: 'Nghệ sĩ', cTt: 'Trạng thái', cConNgay: 'Còn',
+      ngay: 'ngày', homNay: 'hôm nay', xemPh: 'Mở trang phát hành',
+      phKhong: 'Không có bản phát hành nào sắp tới', phKhongMo: 'Mọi hồ sơ đã phát hành hoặc đã qua ngày mong muốn.',
+      luotDoiTac: 'Lượt nghe theo đối tác', luotDoiTacMo: '8 đối tác có lượt nghe cao nhất kỳ này.'
     },
     en: {
       nhomVanHanh: 'Operations', navTongQuan: 'Overview',
@@ -54,7 +69,21 @@ HT.dangKy({
       daMo: 'Clients can see this period.',
       conThieu: 'Still missing', xong: 'All conditions met — the period can be approved',
       dong: 'rows', tien: 'Amount', khong: 'Nothing on hold',
-      soVoi: 'vs', khac: 'other stores', luotNghe: 'streams'
+      soVoi: 'vs', khac: 'other stores', luotNghe: 'streams',
+      doiTac: 'Top partners this period',
+      doiTacMo: 'Labels and independent artists by gross revenue; artists under a label count toward the label. Click a row for the money chain.',
+      cDoiTac: 'Partner', cTyLe: 'Artist rate', cHuong: 'Earned', docLap: 'Independent artist',
+      ungThu: 'Advances outstanding',
+      ungThuMo: 'Average earnings over the last 3 approved periods ({k}) give the number of periods left to clear.',
+      cBen: 'Payee', cCon: 'Outstanding', cBq: 'Avg per period', cKyDu: 'Periods left',
+      chuaDt: 'no revenue yet', xemUng: 'View advances', ungTong: 'Total outstanding', ben: 'payees',
+      ungKhong: 'No advance outstanding', ungKhongMo: 'Every advance has been fully recovered across approved periods.',
+      phSap: 'Upcoming releases',
+      phSapMo: 'Submissions with a requested date from today on, not yet marked as released.',
+      cNgay: 'Date', cBanPh: 'Release', cNs: 'Artist', cTt: 'Status', cConNgay: 'In',
+      ngay: 'days', homNay: 'today', xemPh: 'Open releases',
+      phKhong: 'No upcoming release', phKhongMo: 'Every submission is released or past its requested date.',
+      luotDoiTac: 'Streams by partner', luotDoiTacMo: 'Top 8 partners by streams this period.'
     }
   },
 
@@ -265,6 +294,135 @@ HT.dangKy({
                 ? '<span class="neg">' + HM.esc(c.tien(r.ung)) + '</span>'
                 : '<span class="nil">—</span>') + '</td></tr>';
           }).join('') + '</tbody></table></div>'
+      }) + '</div>';
+
+    /* =================================================================
+       GÓC NHÌN A&R (tham khảo bảng điều khiển của các nền tảng phân phối)
+       Ai mang về nhiều tiền nhất kỳ này, tạm ứng nào còn lâu mới thu hồi
+       xong, bản phát hành nào sắp tới. Số nặng nhớ theo dấu mốc trạng thái.
+       ================================================================= */
+    var kiem = HM.nho(A, 'kiem:' + pi, function () { return A.earnedByParty(pi); });
+    /* gộp theo bên: label (kể cả bản ghi của nghệ sĩ thuộc label) và nghệ
+       sĩ độc lập; producer không phải đối tác nên không tính */
+    var top = HM.nho(A, 'top:' + pi, function () {
+      var r = [];
+      var cong = function (key, ix) {
+        var g = 0, s = 0;
+        for (var k = 0; k < ix.length; k++) { g += A.grossRec(ix[k], pi); s += A.streamsOf(ix[k], pi); }
+        if (g > 0 || s > 0) r.push({ key: key, gross: Math.round(g * 100) / 100, streams: s });
+      };
+      A.labels.forEach(function (l) { cong(l.key, A.idxOf(A.byLabel, l.id)); });
+      A.artists.forEach(function (a) { if (a.labelId < 0) cong(a.key, A.idxOf(A.byArtist, a.id)); });
+      return r.sort(function (a, b) { return b.gross - a.gross; });
+    });
+    var top8 = top.slice(0, 8);
+    var topLuot = top.slice().sort(function (a, b) { return b.streams - a.streams; }).slice(0, 8);
+
+    /* tạm ứng: bình quân được hưởng của 3 kỳ đã xét duyệt gần nhất */
+    var kyGan = A.periods.filter(function (p) { return A.isApproved(p.k); }).slice(-3);
+    var kiem3 = kyGan.map(function (p) { return HM.nho(A, 'kiem:' + p.idx, function () { return A.earnedByParty(p.idx); }); });
+    var ungNo = A.advances.list().filter(function (x) { return x.balance > 0; }).map(function (x) {
+      var bq = 0;
+      kiem3.forEach(function (m) { bq += m.get(x.partyKey) || 0; });
+      bq = kyGan.length ? bq / kyGan.length : 0;
+      return { key: x.partyKey, ten: x.name, ma: x.clientId, loai: x.kind, balance: x.balance, bq: bq,
+               soKy: bq > 0 ? Math.ceil(x.balance / bq) : null };
+    }).sort(function (a, b) { return b.balance - a.balance; });
+    var ungTong = ungNo.reduce(function (s, x) { return s + x.balance; }, 0);
+
+    /* phát hành sắp tới: ngày mong muốn từ hôm nay, chưa phát hành */
+    var homNay = new Date(); homNay.setHours(0, 0, 0, 0);
+    var homNayIso = homNay.getFullYear() + '-' + String(homNay.getMonth() + 1).padStart(2, '0') + '-' + String(homNay.getDate()).padStart(2, '0');
+    var sapPh = A.releases.list().filter(function (r) { return r.status !== 'released' && r.releaseDate >= homNayIso; })
+      .sort(function (a, b) { return a.releaseDate < b.releaseDate ? -1 : a.releaseDate > b.releaseDate ? 1 : 0; });
+    var conNgay = function (iso) {
+      var d = new Date(+iso.slice(0, 4), +iso.slice(5, 7) - 1, +iso.slice(8, 10));
+      return Math.round((d - homNay) / 86400000);
+    };
+    var NHAN_PH = { submitted: ['Đã gửi', 'Submitted'], received: ['Đã tiếp nhận', 'Received'],
+                    coded: ['Đã cấp mã', 'Codes assigned'], returned: ['Trả lại bổ sung', 'Returned'], released: ['Đã phát hành', 'Released'] };
+    var KIEU_PH = { submitted: 'info', received: 'link', coded: 'warn', released: 'ok', returned: 'no' };
+    var LOAI_PH = { single: 'Single', ep: 'EP', album: 'Album' };
+
+    html += '<div class="grid g2">' +
+      HM.the({
+        h2: HM.esc(t('doiTac')), p: HM.esc(t('doiTacMo')), thoBody: true,
+        than: '<div class="tw"><table class="t" style="min-width:0"><thead><tr>' +
+          '<th>' + HM.esc(t('cDoiTac')) + '</th>' +
+          '<th class="num">' + HM.esc(t('gop')) + '</th>' +
+          '<th class="num">' + HM.esc(t('cTyLe')) + '</th>' +
+          '<th class="num">' + HM.esc(t('cHuong')) + '</th>' +
+          '<th class="num">' + HM.esc(t('luot')) + '</th></tr></thead><tbody>' +
+          top8.map(function (r) {
+            return '<tr class="pick" data-ben="' + HM.esc(r.key) + '">' +
+              '<td><div class="t-ttl">' + HM.esc(HM.dai(A.partyName(r.key), 28)) + '</div>' +
+              '<div class="t-sub">' + HM.esc(A.partyClientId(r.key)) + ' · ' +
+              HM.esc(r.key[0] === 'L' ? 'Label' : t('docLap')) + '</div></td>' +
+              '<td class="num band">' + HM.esc(c.tien(r.gross)) + '</td>' +
+              '<td class="num">' + HM.esc(HT.fmt.pct(A.rates.rateFor(r.key, pk))) + '</td>' +
+              '<td class="num">' + HM.esc(c.tien(kiem.get(r.key) || 0)) + '</td>' +
+              '<td class="num">' + HM.esc(HT.fmt.n(r.streams)) + '</td></tr>';
+          }).join('') + '</tbody></table></div>'
+      }) +
+      HM.the({
+        h2: HM.esc(t('ungThu')),
+        p: HM.esc(t('ungThuMo').replace('{k}', kyGan.length ? kyGan.map(function (p) { return p.label; }).join(', ') : '—')),
+        hanhDong: '<button type="button" class="btn sm" data-di="tam-ung">' + HM.esc(t('xemUng')) + '</button>',
+        thoBody: true,
+        than: ungNo.length
+          ? '<div class="tw"><table class="t" style="min-width:0"><thead><tr>' +
+            '<th>' + HM.esc(t('cBen')) + '</th>' +
+            '<th class="num">' + HM.esc(t('cCon')) + '</th>' +
+            '<th class="num">' + HM.esc(t('cBq')) + '</th>' +
+            '<th class="num">' + HM.esc(t('cKyDu')) + '</th></tr></thead><tbody>' +
+            ungNo.slice(0, 8).map(function (r) {
+              return '<tr class="pick" data-ben="' + HM.esc(r.key) + '">' +
+                '<td><div class="t-ttl">' + HM.esc(HM.dai(r.ten, 28)) + '</div>' +
+                '<div class="t-sub">' + HM.esc(r.ma) + ' · ' + HM.esc(r.loai === 'label' ? 'Label' : (c.lang === 'vi' ? 'Nghệ sĩ' : 'Artist')) + '</div></td>' +
+                '<td class="num band"><span class="neg">' + HM.esc(c.tien(r.balance)) + '</span></td>' +
+                '<td class="num">' + (r.bq > 0 ? HM.esc(c.tien(r.bq)) : '<span class="nil">—</span>') + '</td>' +
+                '<td class="num">' + (r.soKy == null
+                  ? '<span class="nil">' + HM.esc(t('chuaDt')) + '</span>'
+                  : '<b>' + HM.esc(String(r.soKy)) + '</b>') + '</td></tr>';
+            }).join('') + '</tbody></table></div>' +
+            '<div class="card-f">' + HM.esc(t('ungTong')) + ': <b>' + HM.esc(c.tien(ungTong)) + '</b> · ' +
+            HM.esc(HT.fmt.n(ungNo.length) + ' ' + t('ben')) + '</div>'
+          : HM.trong({ icon: 'up', tieuDe: t('ungKhong'), moTa: t('ungKhongMo') })
+      }) + '</div>';
+
+    html += '<div class="grid g2">' +
+      HM.the({
+        h2: HM.esc(t('phSap')), p: HM.esc(t('phSapMo')),
+        hanhDong: '<button type="button" class="btn sm" data-di="phat-hanh">' + HM.esc(t('xemPh')) + '</button>',
+        thoBody: true,
+        than: sapPh.length
+          ? '<div class="tw"><table class="t" style="min-width:0"><thead><tr>' +
+            '<th>' + HM.esc(t('cNgay')) + '</th>' +
+            '<th>' + HM.esc(t('cBanPh')) + '</th>' +
+            '<th>' + HM.esc(t('cNs')) + '</th>' +
+            '<th>' + HM.esc(t('cTt')) + '</th>' +
+            '<th class="num">' + HM.esc(t('cConNgay')) + '</th></tr></thead><tbody>' +
+            sapPh.map(function (r) {
+              var n = conNgay(r.releaseDate);
+              var nhan = NHAN_PH[r.status] || [r.status, r.status];
+              return '<tr class="pick" data-di="phat-hanh">' +
+                '<td class="mono">' + HM.esc(HT.fmt.ngay(r.releaseDate)) + '</td>' +
+                '<td><div class="t-ttl">' + HM.esc(HM.dai(r.title, 26)) + '</div>' +
+                '<div class="t-sub">' + HM.esc((LOAI_PH[r.type] || r.type) + ' · ' + r.tracks.length + ' track · ' + r.id) + '</div></td>' +
+                '<td><div class="t-ttl">' + HM.esc(HM.dai(r.artistName, 22)) + '</div>' +
+                (r.labelId >= 0 ? '<div class="t-sub">' + HM.esc(HM.dai(A.partyName('L:' + r.labelId), 22)) + '</div>' : '') + '</td>' +
+                '<td>' + HM.tag(c.lang === 'vi' ? nhan[0] : nhan[1], KIEU_PH[r.status] || '') + '</td>' +
+                '<td class="num">' + HM.esc(n === 0 ? t('homNay') : HT.fmt.n(n) + ' ' + t('ngay')) + '</td></tr>';
+            }).join('') + '</tbody></table></div>'
+          : HM.trong({ icon: 'file', tieuDe: t('phKhong'), moTa: t('phKhongMo') })
+      }) +
+      HM.the({
+        h2: HM.esc(t('luotDoiTac')), p: HM.esc(t('luotDoiTacMo')),
+        than: HB.o({ loai: 'thanh', dinhDang: 'so', tenTong: t('luot'),
+          hang: topLuot.map(function (r, i) {
+            return { ten: HM.dai(A.partyName(r.key), 28), gt: r.streams, mau: P[i % 8],
+                     phu: t('gop') + ' ' + c.tien(r.gross) };
+          }) })
       }) + '</div>';
 
     /* ---- điều kiện duyệt + hàng chờ ---- */

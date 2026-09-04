@@ -88,7 +88,7 @@ HT.dangKy({
     var d;
     try { d = api.labelTree(me.role, me.partyId, c.kyKey); }
     catch (e) {
-      root.innerHTML = HM.dau({ h1: HM.esc(t('h1')) + ' <span>' + HM.esc(c.ky.label) + '</span>', mo: HM.esc(t('mo')) }) +
+      root.innerHTML = HM.dau({ h1: HM.esc(t('h1')) + (c.ky ? ' <span>' + HM.esc(c.ky.label) + '</span>' : ''), mo: HM.esc(t('mo')) }) +
         HM.the({ than: HM.trong({ icon: 'clock', tieuDe: t('chuaMo'), moTa: t('chuaMoMo') }) });
       return;
     }

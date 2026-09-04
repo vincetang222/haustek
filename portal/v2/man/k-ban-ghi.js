@@ -39,7 +39,8 @@ HT.dangKy({
       tqGiaiThich: 'Tác quyền khác doanh thu bản ghi như thế nào',
       tqG1: 'Doanh thu bản ghi được trả cho <b>bản thu</b>: người tạo ra bản thu đó được nhận. Khoản này được thanh toán hằng tháng qua các nền tảng.',
       tqG2: 'Tác quyền được trả cho <b>bài hát</b>: người viết giai điệu và lời được nhận, kể cả khi người khác trình bày. Khoản này được thanh toán theo quý qua các tổ chức quản lý tác quyền.',
-      tqG3: 'Hai dòng tiền này độc lập với nhau. Một bài hát có thể có doanh thu ở dòng này mà chưa có ở dòng kia, và ngược lại.'
+      tqG3: 'Hai dòng tiền này độc lập với nhau. Một bài hát có thể có doanh thu ở dòng này mà chưa có ở dòng kia, và ngược lại.',
+      xemHoSo: 'Xem quy trình phát hành và nền tảng'
     },
     en: {
       navBai: 'My tracks', h1: 'My tracks',
@@ -62,7 +63,8 @@ HT.dangKy({
       tqGiaiThich: 'How publishing differs from recording revenue',
       tqG1: 'Recording revenue pays for the <b>master</b> — whoever made that recording is paid. It arrives monthly through the platforms.',
       tqG2: 'Publishing pays for the <b>song</b> — whoever wrote the melody and lyric is paid, even when someone else sings it. It arrives quarterly through collecting societies.',
-      tqG3: 'The two streams are independent. A track can be earning in one and not yet in the other, and the other way round.'
+      tqG3: 'The two streams are independent. A track can be earning in one and not yet in the other, and the other way round.',
+      xemHoSo: 'Pipeline and platforms'
     }
   },
 
@@ -240,14 +242,29 @@ function moBai(c, id, luong, la) {
         '<div class="amt">' + HM.esc(st.value != null ? HT.fmt.usd(st.value) : st.text) + '</div></div>';
     }).join('') + '</div>' +
     (d.byStore.length ? '<h4 class="sec">' + (c.lang === 'vi' ? 'Thu nhập theo nền tảng' : 'Where it was played') + '</h4>' +
-      HB.o({ loai: 'thanh', hang: d.byStore.map(function (x, i) { return { ten: x.name, gt: x.value, mau: P[i % 8] }; }) }) : '') +
+      HB.o({ loai: 'thanh', hang: d.byStore.map(function (x, i) { return { ten: c.song(x, 'name'), gt: x.value, mau: P[i % 8] }; }) }) : '') +
     (d.byTerritory.length ? '<h4 class="sec">' + (c.lang === 'vi' ? 'Thu nhập theo thị trường' : 'From where') + '</h4>' +
-      HB.o({ loai: 'thanh', hang: d.byTerritory.map(function (x, i) { return { ten: x.name, gt: x.value, mau: P[i % 8] }; }) }) : '') +
+      HB.o({ loai: 'thanh', hang: d.byTerritory.map(function (x, i) { return { ten: c.song(x, 'name'), gt: x.value, mau: P[i % 8] }; }) }) : '') +
     '<div class="hint" style="margin-top:14px">' + HM.esc(c.lang === 'vi'
       ? 'Số liệu tách theo nền tảng và thị trường là phần bạn được hưởng trên bài hát này, không phải doanh thu gộp, nên cộng lại đúng bằng con số lớn ở trên.'
-      : 'The store and territory splits show YOUR share of this track, not gross — so they add back to the figure at the top.') + '</div>',
+      : 'The store and territory splits show YOUR share of this track, not gross — so they add back to the figure at the top.') + '</div>' +
+    /* Sang hồ sơ bài hát (quy trình phát hành, nền tảng, theo tháng). Chỉ
+       với doanh thu bản ghi: tác quyền không tách theo nền tảng. */
+    (luong === 'rec'
+      ? '<div class="btnrow" style="margin-top:14px"><button type="button" class="btn sm" data-ho-so>' +
+        HM.icon('layers') + HM.esc(c.t('xemHoSo')) + '</button></div>'
+      : ''),
     { tieuDe: d.title, phu: d.isrc + ' · ' + d.type + (d.artist ? ' · ' + d.artist : ''),
-      khiMo: function (dr) { HB.gan(dr); } });
+      khiMo: function (dr) {
+        HB.gan(dr);
+        HM.bam(dr, '[data-ho-so]', function () {
+          var hs;
+          try { hs = api.trackAsset(me.role, me.partyId, id); }
+          catch (e) { c.thongBao(e.message, 'no'); return; }
+          /* c.nganTruot tự thay ngăn cũ bằng ngăn mới */
+          HTS.moNgan(c, hs, { mineLabel: la ? c.t('cLabel') : c.t('cToi'), tien: HT.fmt.usd, tien0: HT.fmt.usd0, tabDau: 'nt' });
+        });
+      } });
 }
 
 })();

@@ -30,6 +30,11 @@ HT.dangKy({
       khoaLai: 'Khoá tài khoản', moLai: 'Mở lại tài khoản', xoaTk: 'Xoá tài khoản',
       hoiEmail: 'Email', hoiVt: 'Vai trò', hoiBen: 'Gắn với bên thụ hưởng',
       canhQuyen: 'Quyền truy cập gắn với mã số, không bao giờ gắn với tên hiển thị. Với những tên như "nae & de\'lay", "ling:chi", "HƯƠNGMYBÔNG", sai một ký tự là nghệ sĩ mất tiền hoặc xem được dữ liệu của người khác.',
+      labelConCua: 'Label con của', labelCon: 'label con',
+      cauTruc: 'Cấu trúc label',
+      cauTrucMo: 'Label mẹ và các label con đã ký riêng. Mỗi label con là một tài khoản riêng với roster riêng và tỷ lệ riêng.',
+      ngheSi: 'nghệ sĩ', banGhi: 'bản ghi', chuaTk: 'chưa có tài khoản', xemCauHoi: 'Xem câu hỏi cần chốt',
+      ghiQ9: 'Label mẹ được uỷ quyền xem toàn bộ số liệu của label con; không có dòng tiền đi qua label mẹ (câu hỏi cần chốt số 9).',
       nkTim: 'Lọc theo thao tác…', nkHet: 'Tất cả',
       chTraLoi: 'Câu trả lời', chDoan: 'Giả định hiện tại của bản mẫu', chViSao: 'Vì sao câu này quan trọng',
       chLuu: 'Lưu câu trả lời', chXuat: 'Xuất toàn bộ câu trả lời',
@@ -49,6 +54,11 @@ HT.dangKy({
       khoaLai: 'Suspend', moLai: 'Reactivate', xoaTk: 'Delete account',
       hoiEmail: 'Email', hoiVt: 'Role', hoiBen: 'Bound to payee',
       canhQuyen: 'Access binds to the ID, never to the display name. "nae & de\'lay", "ling:chi", "HƯƠNGMYBÔNG" — one wrong character and an artist loses money or sees someone else’s data.',
+      labelConCua: 'Sub-label of', labelCon: 'sub-labels',
+      cauTruc: 'Label structure',
+      cauTrucMo: 'Parent labels and the sub-labels signed under them. Each sub-label is its own account with its own roster and rate.',
+      ngheSi: 'artists', banGhi: 'recordings', chuaTk: 'no account yet', xemCauHoi: 'Open questions',
+      ghiQ9: 'A parent label is delegated to see everything about its sub-labels; no money flows through the parent (open question 9).',
       nkTim: 'Filter by action…', nkHet: 'All',
       chTraLoi: 'Your answer', chDoan: 'What the prototype assumes', chViSao: 'Why this matters',
       chLuu: 'Save answer', chXuat: 'Export all answers',
@@ -142,6 +152,18 @@ HT.dangKy({
    ===================================================================== */
 function veTaiKhoan(c, tk) {
   var A = c.A, t = c.t;
+  /* Tài khoản label: cho biết ngay đây là label con của ai, hoặc có bao
+     nhiêu label con bên dưới, vì quyền xem của label mẹ phủ cả cây. */
+  var nhanLabel = function (key) {
+    if (!key || key[0] !== 'L') return '';
+    var lid = +key.slice(2), lb = A.labels[lid];
+    if (!lb) return '';
+    var out = '';
+    if (lb.parentId >= 0) out += HM.tag(t('labelConCua') + ' ' + A.labels[lb.parentId].name, 'info');
+    var con = A.labelChildren(lid).length;
+    if (con) out += (out ? ' ' : '') + HM.tag(con + ' ' + t('labelCon'), 'link');
+    return out ? '<div style="margin-top:4px">' + out + '</div>' : '';
+  };
   var loc = tk.filter(function (a) {
     if (LOC.vt && a.role !== LOC.vt) return false;
     if (LOC.tim) {
@@ -178,7 +200,8 @@ function veTaiKhoan(c, tk) {
           '<td>' + HM.tag(a.role, a.role === 'admin' ? 'no' : a.role === 'label' ? 'info' : 'link') + '</td>' +
           '<td>' + (a.partyKey
             ? '<div class="t-ttl">' + HM.esc(HM.dai(A.partyName(a.partyKey), 26)) + '</div>' +
-              '<div class="t-sub">' + HM.esc(a.partyKey) + ' · ' + HM.esc(A.partyClientId(a.partyKey)) + '</div>'
+              '<div class="t-sub">' + HM.esc(a.partyKey) + ' · ' + HM.esc(A.partyClientId(a.partyKey)) + '</div>' +
+              nhanLabel(a.partyKey)
             : '<span class="muted">' + HM.esc(c.lang === 'vi' ? 'toàn hệ thống' : 'whole system') + '</span>') + '</td>' +
           '<td>' + HM.tag(a.status === 'active' ? t('hd') : a.status === 'invited' ? t('moi') : t('khoa'),
             a.status === 'active' ? 'ok' : a.status === 'invited' ? 'warn' : 'no') + '</td>' +
@@ -194,6 +217,42 @@ function veTaiKhoan(c, tk) {
     chan: c.lang === 'vi'
       ? 'Bản mẫu <b>không</b> có đăng nhập thật. Cổng đối tác mô phỏng đăng nhập bằng ô chọn tài khoản ở cột trái. Trên hệ thống thật, phiên đăng nhập ở máy chủ quyết định partyId, còn Row Level Security quyết định dòng nào được đọc.'
       : 'The prototype has NO real login. The client portal simulates one with the account picker in its sidebar. A real system: a server session decides the partyId, and row-level security decides which rows can be read.'
+  }) + veCauTrucLabel(c);
+}
+
+/* ---------------------------------------------------------------------
+   Cấu trúc label: label mẹ và các label con, dạng cây. Mỗi nút: tên, mã,
+   số nghệ sĩ, số bản ghi, và tài khoản đã cấp cho label đó (nếu có).
+   --------------------------------------------------------------------- */
+function veCauTrucLabel(c) {
+  var A = c.A, t = c.t;
+  var tkCua = {};
+  A.accounts.list().forEach(function (a) {
+    if (a.partyKey) (tkCua[a.partyKey] = tkCua[a.partyKey] || []).push(a.email);
+  });
+  var me = A.labels.filter(function (l) { return A.labelChildren(l.id).length > 0; });
+  var nut = function (l, con) {
+    var soNs = A.artists.filter(function (a) { return a.labelId === l.id; }).length;
+    var soBg = A.idxOf(A.byLabel, l.id).length;
+    var tk = tkCua['L:' + l.id] || [];
+    return '<div class="nd"><span class="ic' + (con ? ' ns' : '') + '">' + HM.icon(con ? 'layers' : 'tree') + '</span>' +
+      '<div><b>' + HM.esc(l.name) + '</b><span>' +
+        HM.esc(l.clientId + ' · ' + HT.fmt.n(soNs) + ' ' + t('ngheSi') + ' · ' + HT.fmt.n(soBg) + ' ' + t('banGhi')) + '</span></div>' +
+      '<div class="v">' + (tk.length
+        ? '<span class="mono">' + HM.esc(tk.join(', ')) + '</span>'
+        : '<span class="muted">' + HM.esc(t('chuaTk')) + '</span>') + '</div></div>';
+  };
+  return HM.the({
+    h2: HM.esc(t('cauTruc')), p: HM.esc(t('cauTrucMo')),
+    hanhDong: '<button type="button" class="btn sm" data-tab="cauhoi">' + HM.icon('ask') + HM.esc(t('xemCauHoi')) + '</button>',
+    than: me.length
+      ? '<ul class="tree">' + me.map(function (l) {
+          return '<li>' + nut(l, false) + '<ul>' +
+            A.labelChildren(l.id).map(function (k) { return '<li>' + nut(k, true) + '</li>'; }).join('') +
+            '</ul></li>';
+        }).join('') + '</ul>'
+      : HM.trong({ icon: 'tree', tieuDe: c.lang === 'vi' ? 'Chưa có label mẹ nào' : 'No parent label yet', moTa: '' }),
+    chan: HM.esc(t('ghiQ9'))
   });
 }
 
