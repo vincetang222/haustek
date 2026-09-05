@@ -271,3 +271,55 @@ nghe với năm tín hiệu, gom theo tài khoản, sổ phạt, khiếu nại; 
 của nền tảng; sức khoẻ metadata; giải thích con số từng kỳ; thuế khấu trừ khi
 rút; chuông thông báo và tìm nhanh; chiến dịch; dải P10–P90 cho dự báo; bảng
 dữ liệu thiết kế lại.
+
+## Vòng 6 — xét duyệt tạm ứng và hợp đồng, mức trả theo thị trường Việt Nam
+
+**Vấn đề người dùng nêu.** (1) Mức trả mỗi 1.000 lượt trong dữ liệu mẫu cao
+theo chuẩn Âu–Mỹ, nên dự báo phóng đại doanh thu Việt Nam. (2) Giám đốc cần
+một chỗ xét duyệt hợp đồng và khoản tạm ứng, với ROI và các số cần thiết tính
+sẵn, không phải tự mở bảng kê từng đối tác.
+
+**Mức trả.** Dữ liệu mẫu hiệu chỉnh về tham chiếu Việt Nam (USD gộp / 1.000
+lượt): Spotify ≈ 1,60 · Apple Music ≈ 3,20 · YouTube Music ≈ 0,75 · Facebook
+≈ 0,45 · Zing MP3 ≈ 0,40 · Instagram ≈ 0,40 · TikTok ≈ 0,35 · NhacCuaTui ≈
+0,30 (xem `NGHIEN-CUU-THI-TRUONG.md` §1.4). Mức trộn theo cơ cấu lượt nghe
+≈ 0,94 USD / 1.000. Trang **Mức trả nền tảng** cho vận hành, kế toán và giám
+đốc nhập số thật từng nền tảng (có ngày, người nhập, ghi chú, dán CSV); số
+nhập ghi đè số suy từ báo cáo và dự báo hai cổng đổi theo ngay. Khi Haustek
+gửi số thật, dán vào đây là đủ, không cần sửa mã.
+
+**Luồng xét duyệt (một luồng cho mọi vai).**
+
+| Vai | Làm gì | Ở đâu |
+|---|---|---|
+| Kinh doanh | Đề xuất tạm ứng / hợp đồng cho đối tác mình phụ trách; theo dõi, rút, gửi lại khi bị trả | Bàn làm việc (*Đề xuất của tôi*), ngăn hồ sơ đối tác, Xét duyệt |
+| Đối tác | Xem mức có thể ứng, gửi đề nghị trong mức tối đa, theo dõi trạng thái, rút; nhận thông báo khi có kết quả | Cổng đối tác › Tạm ứng |
+| Kế toán | Đối chiếu thu nhập 12 kỳ với bảng kê và sổ tạm ứng, bấm *Đã kiểm số* hoặc *Trả lại* | Bàn làm việc (*Cần kiểm số*), Xét duyệt |
+| Giám đốc | Duyệt / từ chối / trả lại, có bản tính và lý do khuyến nghị; duyệt xong hệ thống tự ghi sổ | Bàn làm việc (*Chờ xét duyệt*), Xét duyệt |
+| Vận hành, hỗ trợ | Xem trạng thái để trả lời đối tác | Xét duyệt (chỉ xem) |
+
+Trạng thái: *đã gửi → đã kiểm → đã duyệt / từ chối*, nhánh *trả lại → gửi
+lại*, *rút* bởi người đề xuất. Chỉ giám đốc duyệt; kế toán và giám đốc kiểm
+số; máy chủ mẫu chặn mọi vai khác (`test/api-guard.js`).
+
+**Bản tính chụp lúc tạo (không đổi khi số kỳ sau về).**
+
+- *Tạm ứng*: thu nhập ròng bình quân 12 kỳ đã xét duyệt của đối tác, tăng
+  trưởng 3 kỳ gần so 3 kỳ trước, độ dao động (CV), tập trung bài đầu, hạng
+  rủi ro A/B/C (dao động, xu hướng, số kỳ có số, tập trung), mức ứng tối đa
+  = 60 % / 45 % / 30 % thu nhập ròng 12 tháng dự kiến theo hạng; khoản thu
+  hồi = số ứng × (1 + phí ứng 12 %), thời gian thu hồi, phí ứng thu về, phần
+  Haustek giữ trong thời gian thu hồi, ROI trên vốn ứng (tổng thu về trong
+  thời gian thu hồi so với vốn) và lợi suất phí ứng quy năm. Khuyến nghị
+  *nên duyệt / cần cân nhắc / không nên duyệt* kèm lý do.
+- *Hợp đồng*: doanh thu gộp bình quân, kỳ hạn, phí Haustek hiện tại và đề
+  xuất, ngày hết hạn hợp đồng hiện tại, doanh thu gộp dự kiến cả kỳ hạn,
+  phần Haustek giữ theo hai mức phí và chênh lệch. Duyệt xong phí mới chỉ áp
+  từ kỳ mở kế tiếp; các kỳ đã xét duyệt không đổi số.
+- Đối tác chỉ thấy số của mình: mức có thể ứng, khoản phải khấu trừ, thời
+  gian khấu trừ, trạng thái. Không có doanh thu gộp, phần Haustek giữ, ROI
+  trong bất kỳ gói nào gửi ra cổng đối tác.
+
+**Còn mở.** Mức trả thật theo từng tháng (hiện ghi đè một số cho mọi kỳ);
+chữ ký duyệt hai người cho khoản lớn; mẫu hợp đồng PDF sinh từ đề xuất được
+duyệt; hạn mức tạm ứng theo tổng dư nợ toàn danh mục.

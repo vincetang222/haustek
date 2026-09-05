@@ -1221,7 +1221,10 @@ table.mx th.dim{color:var(--faint);font-style:italic}
 }
 
 /* ---- hộp thoại rộng: biểu mẫu nhiều trường (hồ sơ phát hành) ---- */
-.modal.rong{max-width:820px;width:min(820px,96vw);max-height:92vh;overflow:auto}
+/* hộp rộng: thân cuộn, nút Huỷ/Xác nhận luôn thấy — bản tính ROI có thể dài hơn màn */
+.modal.rong{max-width:820px;width:min(820px,96vw);max-height:92vh;display:flex;flex-direction:column;overflow:hidden}
+.modal.rong>[data-than]{overflow:auto;min-height:0;flex:1 1 auto;margin:0 -8px;padding:0 8px}
+.modal.rong>h3,.modal.rong>p.h,.modal.rong>.modal-f{flex-shrink:0}
 .modal.rong .fldrow{margin-top:4px}
 
 /* =====================================================================
@@ -1609,7 +1612,11 @@ for (let i = 0; i < N; i++) {
     const st = Math.round(pop * decay * season * (9000 + rnd() * 260000));
     const idx = i * P + p;
     recStreams[idx] = st;
-    const g = st * (0.0020 + rnd() * 0.0022);
+    /* Mức trả thị trường Việt Nam: gộp về đơn vị phân phối ≈ 0,9–1,9 USD trên
+       1.000 lượt nghe (trộn mọi nền tảng), thấp hơn 2–3 lần thị trường Âu–Mỹ.
+       Từng nền tảng khác nhau qua PLAT_SPM bên dưới; số thật do Haustek nhập
+       ở màn Mức trả nền tảng sẽ ghi đè cho dự báo. */
+    const g = st * (0.00050 + rnd() * 0.00058);
     /* chia doanh thu bài đó cho ba luồng, mỗi bài một khẩu vị thị trường riêng */
     let sum = 0; const part = [0, 0, 0];
     for (let f = 0; f < 3; f++) { part[f] = FEED_W[f] * (0.6 + hash(i, 900 + f) * 0.8); sum += part[f]; }
@@ -1618,7 +1625,7 @@ for (let i = 0; i < N; i++) {
       const v = f === 2 ? cents(g - acc) : cents(g * part[f] / sum);
       recGross[idx * 3 + f] = v; acc = cents(acc + v);
     }
-    if (p >= rel + 2) pubGross[idx] = cents(pop * decay * (3 + rnd() * 70));
+    if (p >= rel + 2) pubGross[idx] = cents(pop * decay * (0.7 + rnd() * 16));
   }
 }
 
@@ -1728,8 +1735,8 @@ function fileNameFor(f, p) {
 
 let state = null;
 function ensureShape(s) {
-  ["withdrawals", "tickets", "claims", "deliveries", "bulk", "releases"].forEach(k => { if (!Array.isArray(s[k])) s[k] = []; });
-  ["statements", "bank", "videoSettings", "partyManager", "splits", "alerts", "notifRead"].forEach(k => { if (!s[k] || typeof s[k] !== "object") s[k] = {}; });
+  ["withdrawals", "tickets", "claims", "deliveries", "bulk", "releases", "proposals"].forEach(k => { if (!Array.isArray(s[k])) s[k] = []; });
+  ["statements", "bank", "videoSettings", "partyManager", "splits", "alerts", "notifRead", "rateOverride", "contracts"].forEach(k => { if (!s[k] || typeof s[k] !== "object") s[k] = {}; });
   return s;
 }
 
@@ -1900,7 +1907,7 @@ function buildQueueSeed() {
           store: STORES[(rnd() * N_TOP) | 0],
           territory: pick(TERR),
           streams: Math.round(200 + rnd() * 90000),
-          amount: cents(2 + rnd() * 900),
+          amount: cents(1 + rnd() * 250),
           reason: broken < 0.34 ? "Thiếu mã ISRC" : broken < 0.67 ? "Mã ISRC không có trong danh mục" : "Mã ISRC của nhà phát hành khác",
           hint: seedTrack,     /* bản ghi "đúng" — dùng để chấm điểm gợi ý, không hiện cho ai */
           status: "pending", resolvedTo: null, at: null
@@ -2018,8 +2025,19 @@ function partyClientId(key) {
    Điểm producer trừ vào phần nghệ sĩ là chuẩn ngành. Làm ngược lại thì
    tổng các phần vượt quá 100%.
    ===================================================================== */
+/* Phí Haustek trên doanh thu bản ghi: mặc định CFG.HAUSTEK_FEE; hợp đồng đã
+   xét duyệt (19j) đặt phí riêng cho đối tác từ kỳ hiệu lực trở đi. Đường
+   nhanh: chưa có hợp đồng nào thì không tra gì. */
+let _ctCount = 0;
+function demHopDong() { _ctCount = state.contracts ? Object.keys(state.contracts).length : 0; }
+function feeOf(i, periodKey) {
+  if (!_ctCount) return CFG.HAUSTEK_FEE;
+  const c = state.contracts[partyKeyOfTrack(i)];
+  return c && c.feePct != null && (!c.fromKey || c.fromKey <= periodKey) ? c.feePct : CFG.HAUSTEK_FEE;
+}
+demHopDong();   /* state đã nạp ở mục 9 phía trên */
 function splitRec(i, gross, periodKey) {
-  const fee = cents(gross * CFG.HAUSTEK_FEE);
+  const fee = cents(gross * feeOf(i, periodKey));
   const net = cents(gross - fee);
   const r = rates.rateFor(partyKeyOfTrack(i), periodKey);
   const artistBase = cents(net * r);
@@ -2190,9 +2208,12 @@ const TAIL_SUM = TAIL_W.reduce((a, b) => a + b, 0);
 /* trọng số của các ô thuộc nguồn 0 (mọi nền tảng trừ YouTube Music và TikTok) */
 const PLAT_W0 = STORE_W.slice(0, N_TOP).map((w, j) => STORE_FEED[j] === 0 ? w : 0).concat([TAIL_SUM]);
 const PLAT_FEED = STORE_FEED.slice(0, N_TOP).concat([0]);
-/* lượt nghe trên mỗi đô la, so với Spotify = 1. TikTok và mạng xã hội trả
-   rất ít cho mỗi lượt, Apple Music trả nhiều hơn. */
-const PLAT_SPM = [1, 1.7, 4.4, 0.72, 2.3, 2.5, 3.2, 3.4, 1.35];
+/* lượt nghe trên mỗi đô la, so với Spotify = 1, theo mức tham chiếu thị
+   trường Việt Nam (USD gộp / 1.000 lượt): Spotify 1,60 · YouTube Music 0,75 ·
+   TikTok 0,35 · Apple Music 3,20 · Zing MP3 0,40 · NhacCuaTui 0,30 ·
+   Facebook 0,45 · Instagram 0,40 · nền tảng khác (quốc tế) 2,50. */
+const VN_REF_PER1K = [1.60, 0.75, 0.35, 3.20, 0.40, 0.30, 0.45, 0.40, 2.50];
+const PLAT_SPM = VN_REF_PER1K.map(r => 1.60 / r);
 
 function splitStores(i, p, out) {
   out = out || new Float64Array(N_PLAT);
@@ -2977,6 +2998,8 @@ function signedAtOf(partyKey) {
   return isoDate(new Date(2023, thang, 1 + ((hash(id, salt + 1) * 27) | 0)));
 }
 function contractEndOf(partyKey) {
+  const ct = state.contracts && state.contracts[partyKey];
+  if (ct && ct.to) return ct.to;
   const s = signedAtOf(partyKey), id = +partyKey.slice(2);
   const nam = 2 + ((hash(id, 84) * 3) | 0);          /* hợp đồng 2, 3 hoặc 4 năm */
   return isoDate(new Date(+s.slice(0, 4) + nam, +s.slice(5, 7) - 1, +s.slice(8, 10)));
@@ -3179,14 +3202,18 @@ function dailyStreams(i, back) {
 /* mức trả gộp USD trên 1.000 lượt nghe của từng nền tảng, từ 3 kỳ đã xét duyệt gần nhất */
 let _rateCacheKey = null, _rateCacheVal = null;
 function platformRates() {
-  const key = Object.keys(state.approved).join(",");
+  const ov = state.rateOverride || {};
+  const key = Object.keys(state.approved).join(",") + "|" + JSON.stringify(ov);
   if (_rateCacheKey === key) return _rateCacheVal;
   const pList = lastQuarterIdx();
   const rev = new Float64Array(N_PLAT), st = new Float64Array(N_PLAT), accR = new Float64Array(N_PLAT), accS = new Float64Array(N_PLAT);
   const step = 25;
   pList.forEach(p => { for (let i = 0; i < N; i += step) { if (grossRec(i, p) <= 0) continue; splitStores(i, p, rev); splitStreams(i, p, rev, st); for (let j = 0; j < N_PLAT; j++) { accR[j] += rev[j]; accS[j] += st[j]; } } });
   _rateCacheKey = key;
-  _rateCacheVal = PLAT_NAMES.map((n, j) => ({ name: n, nameEn: PLAT_NAMES_EN[j], per1k: accS[j] > 0 ? accR[j] / accS[j] * 1000 : 0 }));
+  _rateCacheVal = PLAT_NAMES.map((n, j) => {
+    const derived = accS[j] > 0 ? accR[j] / accS[j] * 1000 : 0, o = ov[n];
+    return { name: n, nameEn: PLAT_NAMES_EN[j], per1k: o ? o.per1k : derived, derived, source: o ? "override" : "derived", at: o ? o.at : null, note: o ? o.note : "" };
+  });
   return _rateCacheVal;
 }
 function forecastOf(role, partyId) {
@@ -3763,6 +3790,8 @@ function notificationsOf(role, partyId) {
     if (moi.length) push("pl:" + moi[0].addedAt, moi[0].addedAt, "info", moi.length + " vị trí playlist mới trong 45 ngày", moi.length + " new playlist placements in 45 days", "Mới nhất: " + moi[0].title + " · " + moi[0].playlist + " #" + moi[0].position, "Latest: " + moi[0].title + " · " + moi[0].playlistEn + " #" + moi[0].position, "k-playlist");
     state.releases.filter(r => (role === "label" ? r.labelId === partyId : r.artistId === partyId)).slice(0, 4).forEach(r => push("ph:" + r.id + ":" + r.status, String(r.updatedAt || r.submittedAt || "").slice(0, 10), r.status === "returned" ? "warn" : "info",
       "Hồ sơ phát hành " + r.id + " · " + ({ submitted: "đã gửi", received: "đã tiếp nhận", coded: "đã cấp mã", released: "đã phát hành", returned: "bị trả lại" }[r.status] || r.status), "Release " + r.id + " · " + r.status, r.title, r.title, "k-phat-hanh"));
+    proposalsList({ partyKey }).filter(p => p.updatedAt >= cut).slice(0, 4).forEach(p => push("dx:" + p.id + ":" + p.status, String(p.updatedAt).slice(0, 10), p.status === "rejected" ? "warn" : "info",
+      "Đề xuất " + p.id + " · " + ({ submitted: "đã gửi", checked: "kế toán đã kiểm", approved: "đã được duyệt", rejected: "bị từ chối", returned: "cần bổ sung", withdrawn: "đã rút" }[p.status] || p.status), "Proposal " + p.id + " · " + p.status, moTaDeXuat(p, true).vi, moTaDeXuat(p, true).en, "k-tam-ung"));
     const sp = splitsReport(role, partyId);
     if (sp.counts.invited) push("sp:invited", sp.asOf, "info", sp.counts.invited + " lời mời chia sẻ tác quyền chưa được nhận", sp.counts.invited + " split invitations still pending", "Nhắc người cộng tác nhận lời mời để được chia tiền.", "Remind collaborators to accept so they get paid.", "k-chia-se");
   } else {
@@ -3776,6 +3805,8 @@ function notificationsOf(role, partyId) {
     if (cases.length) push("q:lift", q.asOf, "warn", cases.length + " tài khoản có nhiều bài tăng đồng loạt", cases.length + " accounts with many small lifts at once", "Kiểu tách nhỏ để lách ngưỡng (vụ Michael Smith 2024).", "Spreading streams thinly to stay under thresholds (Smith case, 2024).", "chat-luong");
     const ph = state.releases.filter(r => r.status === "submitted");
     if (ph.length) push("ph:sub", isoDate(ASOF), "info", ph.length + " hồ sơ phát hành chờ tiếp nhận", ph.length + " releases awaiting intake", "", "", "phat-hanh");
+    const dx = proposalCounts();
+    if (dx.pending) push("dx:cho", isoDate(ASOF), "warn", dx.pending + " đề xuất chờ xét duyệt (" + dx.checked + " đã kiểm số)", dx.pending + " proposals awaiting approval (" + dx.checked + " checked)", "Tạm ứng và hợp đồng: giám đốc duyệt, kế toán kiểm.", "Advances and contracts: director approves, accounting checks.", "xet-duyet");
     const gn = state.deliveries.filter(d => d.status !== "done");
     if (gn.length) push("gn:open", isoDate(ASOF), "info", gn.length + " yêu cầu giao nhận nền tảng đang mở", gn.length + " open delivery requests", "", "", "giao-nhan");
     const md = metadataReport("admin", 0);
@@ -3823,6 +3854,7 @@ function searchAll(role, partyId, q, limit) {
     state.withdrawals.forEach(w => { if (docs.length < limit && w.id.toLowerCase().includes(q)) docs.push({ id: w.id, kind: "withdrawal", title: w.party.name + " · " + fmt.usd(w.amount), di: "chi-tra" }); });
     state.tickets.forEach(t => { if (docs.length < limit && (t.id.toLowerCase().includes(q) || boDau(t.title).includes(q))) docs.push({ id: t.id, kind: "ticket", title: t.title, di: "ho-tro" }); });
     state.releases.forEach(r => { if (docs.length < limit && (r.id.toLowerCase().includes(q) || boDau(r.title).includes(q))) docs.push({ id: r.id, kind: "release", title: r.title, di: "phat-hanh" }); });
+    proposalsOf().forEach(p => { if (docs.length < limit && (p.id.toLowerCase().includes(q) || boDau(p.party.name).includes(q))) docs.push({ id: p.id, kind: "proposal", title: p.party.name + " · " + moTaDeXuat(p).vi, di: "xet-duyet" }); });
   }
   return { tracks, parties, docs };
 }
@@ -3874,6 +3906,282 @@ function campaignsOf(role, partyId) {
     rows, sampled: step > 1,
     note: "Ba loại chiến dịch: liên kết thông minh có pre-save (lượt xem → bấm → lưu trước), pitch playlist biên tập (gửi → nhận), quảng cáo trả phí (ngân sách → hiển thị → bấm → lượt nghe quy được). Số liệu mẫu; hệ thống thật nhận từ công cụ liên kết và tài khoản quảng cáo.",
     noteEn: "Three campaign kinds: smart links with pre-save (views → clicks → saves), editorial playlist pitching (sent → accepted), paid ads (budget → impressions → clicks → attributed streams). Sample figures; the real system reads from the link tool and ad accounts." };
+}
+
+/* =====================================================================
+   19j. MỨC TRẢ NỀN TẢNG (ghi đè bằng số thật) · ĐỀ XUẤT & XÉT DUYỆT
+        (tạm ứng tính từ ROI, hợp đồng)
+   ---------------------------------------------------------------------
+   · Mức trả: dự báo dùng platformRates() — mặc định suy từ báo cáo 3 kỳ
+     gần nhất của dữ liệu mẫu (đã hiệu chỉnh về thị trường Việt Nam). Khi
+     Haustek có số thật, nhập ở màn Mức trả nền tảng: ghi đè theo tên nền
+     tảng, có ngày và người nhập; dự báo và giải thích số đổi theo ngay.
+   · Đề xuất: kinh doanh (hoặc đối tác ở cổng) đề xuất tạm ứng / hợp đồng
+     → kế toán kiểm số → giám đốc xét duyệt. Mỗi đề xuất mang một bản tính
+     chụp tại thời điểm tạo: thu nhập ròng 12 kỳ, tăng trưởng, độ dao động,
+     độ tập trung, số tối đa nên ứng, tháng thu hồi, ROI của Haustek (phí
+     ứng + phần giữ lại trong thời gian thu hồi), hạng rủi ro và khuyến
+     nghị. Duyệt xong thì ghi thẳng vào sổ tạm ứng / bảng tỷ lệ, có nhật ký.
+   ===================================================================== */
+const _ebp = new Map();
+function earnedByPartyCached(p) {
+  const key = p + "|" + state.rates.length + "|" + Object.keys(state.match).length + "|" + Object.keys(state.approved).length;
+  let v = _ebp.get(key);
+  if (!v) { if (_ebp.size > 40) _ebp.clear(); v = earnedByParty(p); _ebp.set(key, v); }
+  return v;
+}
+function partySeries(partyKey, n) {
+  const ps = []; for (let p = 0; p < P; p++) if (state.approved[PERIODS[p].k]) ps.push(p);
+  const id = +partyKey.slice(2);
+  const ids = partyKey[0] === "L" ? idxOf(byLabel, id) : idxOf(byArtist, id);
+  return ps.slice(-(n || 12)).map(p => {
+    const net = earnedByPartyCached(p).get(partyKey) || 0;
+    let g = 0, keep = 0;
+    for (const i of ids) { const gi = grossRec(i, p); if (gi > 0) { g += gi; keep += cents(gi * feeOf(i, PERIODS[p].k)); } }
+    return { k: PERIODS[p].k, label: PERIODS[p].label, net: cents(net), gross: cents(g), keep: cents(keep) };
+  });
+}
+function partyConcentration(partyKey) {
+  const id = +partyKey.slice(2);
+  const ids = partyKey[0] === "L" ? idxOf(byLabel, id) : idxOf(byArtist, id);
+  const ps = []; for (let p = 0; p < P; p++) if (state.approved[PERIODS[p].k]) ps.push(p);
+  const p = ps[ps.length - 1]; if (p == null) return 0;
+  let sum = 0, max = 0;
+  for (const i of ids) { const g = grossRec(i, p); sum += g; if (g > max) max = g; }
+  return sum > 0 ? max / sum : 0;
+}
+function thongKe(arr) {
+  const n = arr.length; if (!n) return { mean: 0, cv: 0 };
+  const mean = arr.reduce((s, v) => s + v, 0) / n;
+  const sd = Math.sqrt(arr.reduce((s, v) => s + (v - mean) * (v - mean), 0) / n);
+  return { mean, cv: mean > 0 ? sd / mean : 0 };
+}
+const ADVANCE_FEE = 0.12;              /* phí tạm ứng mặc định 12% (Amuse 10–20%) */
+const ADVANCE_CAP = { A: 0.6, B: 0.45, C: 0.3 };
+function advanceCalc(partyKey, amount, feePct) {
+  amount = Math.round((+amount || 0) * 100) / 100;
+  feePct = feePct == null ? ADVANCE_FEE : Math.max(0, Math.min(0.5, +feePct));
+  const ser = partySeries(partyKey, 12), coSo = ser.filter(x => x.gross > 0);
+  const st = thongKe(coSo.map(x => x.net));
+  const monthlyNet = cents(st.mean), monthlyGross = cents(thongKe(coSo.map(x => x.gross)).mean);
+  const l3 = coSo.slice(-3), p3 = coSo.slice(-6, -3);
+  const avg = a => a.length ? a.reduce((s, x) => s + x.net, 0) / a.length : 0;
+  const growth = p3.length >= 3 && avg(p3) > 0 ? (avg(l3) - avg(p3)) / avg(p3) : null;
+  const gAdj = Math.max(-0.3, Math.min(0.5, growth || 0));
+  const projected12 = cents(monthlyNet * 12 * (1 + gAdj / 2));
+  const monthlyKeep = cents(thongKe(coSo.map(x => x.keep)).mean);
+  const margin = monthlyGross > 0 ? monthlyKeep / monthlyGross : 0;      /* phí Haustek trên doanh thu gộp của đối tác */
+  const conc = partyConcentration(partyKey);
+  const grade = (st.cv > 0.45 || (growth != null && growth < -0.2) || conc > 0.6 || coSo.length < 3) ? "C"
+    : (st.cv < 0.2 && (growth == null || growth >= -0.05) && conc < 0.35 && coSo.length >= 6) ? "A" : "B";
+  const maxAdvance = Math.round(projected12 * ADVANCE_CAP[grade]);
+  const repayment = cents(amount * (1 + feePct));
+  const recoupMonths = monthlyNet > 0 && amount > 0 ? Math.round(repayment / monthlyNet * 10) / 10 : null;
+  const feeIncome = cents(amount * feePct);
+  const retained = recoupMonths ? cents(Math.min(recoupMonths, 24) * monthlyGross * margin) : 0;
+  const roi = amount > 0 ? (feeIncome + retained) / amount : 0;
+  const roiAnnual = recoupMonths ? roi * 12 / Math.max(recoupMonths, 1) : null;
+  const roiFee = recoupMonths ? feePct * 12 / Math.max(recoupMonths, 1) : null;   /* lợi suất riêng của phí ứng, tính theo năm */
+  const coverage = repayment > 0 ? projected12 / repayment : null;
+  const reasons = [];
+  if (grade === "C") reasons.push({ vi: "Hạng rủi ro C: dao động lớn, giảm mạnh, tập trung vào một bài hoặc quá ít kỳ có số", en: "Risk grade C: volatile, falling, concentrated on one track or too few periods" });
+  if (amount > maxAdvance) reasons.push({ vi: "Vượt mức nên ứng " + fmt.usd0(maxAdvance) + " (" + Math.round(ADVANCE_CAP[grade] * 100) + "% thu nhập ròng 12 tháng dự kiến)", en: "Above the suggested cap " + fmt.usd0(maxAdvance) + " (" + Math.round(ADVANCE_CAP[grade] * 100) + "% of projected 12-month net)" });
+  if (recoupMonths != null && recoupMonths > 12) reasons.push({ vi: "Thu hồi mất " + recoupMonths + " tháng, quá 12 tháng", en: "Recoupment takes " + recoupMonths + " months, over 12" });
+  if (recoupMonths == null) reasons.push({ vi: "Chưa có thu nhập ròng để thu hồi", en: "No net earnings to recoup from" });
+  const recommendation = !reasons.length ? "approve" : (grade !== "C" && amount <= maxAdvance * 1.25 && recoupMonths != null && recoupMonths <= 18) ? "review" : "decline";
+  return { partyKey, amount, feePct, repayment, monthlyNet, monthlyGross, monthlyKeep, margin, growth, roiFee: roiFee == null ? null : Math.round(roiFee * 1000) / 1000, cv: Math.round(st.cv * 1000) / 1000, concentration: Math.round(conc * 1000) / 1000, periods: coSo.length,
+    projected12, grade, maxAdvance, recoupMonths, feeIncome, retainedDuringRecoup: retained, roi: Math.round(roi * 1000) / 1000, roiAnnual: roiAnnual == null ? null : Math.round(roiAnnual * 1000) / 1000, coverage: coverage == null ? null : Math.round(coverage * 100) / 100,
+    recommendation, reasons, series: ser };
+}
+/* Bản dành cho đối tác: không có gộp, biên, phần giữ lại, ROI của Haustek. */
+function advanceOfferOf(partyKey) {
+  const c = advanceCalc(partyKey, 0, ADVANCE_FEE);
+  const vd = c.maxAdvance > 0 ? advanceCalc(partyKey, c.maxAdvance, ADVANCE_FEE) : null;
+  const eligible = c.maxAdvance >= 100 && c.grade !== "C";
+  return { monthlyNet: c.monthlyNet, projected12: c.projected12, periods: c.periods, growth: c.growth, grade: c.grade, maxAdvance: c.maxAdvance, feePct: ADVANCE_FEE,
+    example: vd ? { amount: vd.amount, repayment: vd.repayment, recoupMonths: vd.recoupMonths } : null, eligible,
+    reason: eligible ? null : (c.grade === "C" ? { vi: "Thu nhập còn dao động hoặc chưa đủ kỳ có số; hãy đề nghị lại sau 3 kỳ.", en: "Earnings are still volatile or too few periods have figures; try again after three periods." } : { vi: "Thu nhập ròng 12 tháng dự kiến chưa đủ để tạm ứng.", en: "Projected 12-month net is not yet enough for an advance." }),
+    note: "Số tối đa = " + Math.round(ADVANCE_CAP[c.grade] * 100) + "% thu nhập ròng 12 tháng dự kiến. Phí " + Math.round(ADVANCE_FEE * 100) + "% cộng vào khoản phải thu hồi; thu hồi từ phần bạn được hưởng mỗi kỳ cho đến khi đủ.",
+    noteEn: "Maximum = " + Math.round(ADVANCE_CAP[c.grade] * 100) + "% of projected 12-month net. A " + Math.round(ADVANCE_FEE * 100) + "% fee is added to the amount to recoup; recouped from your share each period until met." };
+}
+function contractCalc(partyKey, terms) {
+  terms = terms || {};
+  const months = Math.max(6, Math.min(60, Math.round(+terms.months || 24)));
+  const feePct = Math.max(0.03, Math.min(0.5, +terms.feePct || CFG.HAUSTEK_FEE));
+  const ser = partySeries(partyKey, 12), coSo = ser.filter(x => x.gross > 0);
+  const monthlyGross = cents(thongKe(coSo.map(x => x.gross)).mean), monthlyNet = cents(thongKe(coSo.map(x => x.net)).mean), monthlyKeep = cents(thongKe(coSo.map(x => x.keep)).mean);
+  const l3 = coSo.slice(-3), p3 = coSo.slice(-6, -3);
+  const avg = a => a.length ? a.reduce((s, x) => s + x.gross, 0) / a.length : 0;
+  const growth = p3.length >= 3 && avg(p3) > 0 ? (avg(l3) - avg(p3)) / avg(p3) : null;
+  const gAdj = Math.max(-0.3, Math.min(0.5, growth || 0));
+  const ct = state.contracts && state.contracts[partyKey];
+  const currentFeePct = ct && ct.feePct != null ? ct.feePct : (monthlyGross > 0 ? Math.round(monthlyKeep / monthlyGross * 1000) / 1000 : CFG.HAUSTEK_FEE);
+  const projectedGross = cents(monthlyGross * months * (1 + gAdj / 2));
+  const retainedNow = cents(projectedGross * currentFeePct), retainedNew = cents(projectedGross * feePct);
+  const end = contractEndOf(partyKey), daysToEnd = Math.round((new Date(end) - ASOF) / 864e5);
+  const reasons = [];
+  if (feePct < 0.10) reasons.push({ vi: "Phí Haustek dưới 10%", en: "Haustek fee below 10%" });
+  else if (feePct < 0.12) reasons.push({ vi: "Phí Haustek 10–12%, thấp hơn mức thường 15–25%", en: "Haustek fee 10–12%, below the usual 15–25%" });
+  if (retainedNow > 0 && retainedNew < retainedNow * 0.8) reasons.push({ vi: "Phần Haustek giữ lại giảm hơn 20% so với hợp đồng hiện tại", en: "Haustek’s retained amount falls more than 20% versus the current contract" });
+  if (coSo.length < 3) reasons.push({ vi: "Chưa đủ 3 kỳ có số để ước tính", en: "Fewer than three periods with figures" });
+  if (months > 36 && feePct < 0.15) reasons.push({ vi: "Hạn dài hơn 36 tháng với phí thấp", en: "Term longer than 36 months at a low fee" });
+  const recommendation = !reasons.length ? "approve" : feePct >= 0.10 ? "review" : "decline";
+  return { partyKey, months, feePct, currentFeePct, monthlyGross, monthlyNet, monthlyKeep, growth, periods: coSo.length, projectedGross, projectedNet: cents(projectedGross * (1 - feePct)),
+    retainedNow, retainedNew, delta: cents(retainedNew - retainedNow), marginNew: feePct,
+    contractEnd: end, daysToEnd, renewalDue: daysToEnd <= 180, recommendation, reasons, series: ser };
+}
+let proposalSeq = 0;
+function proposalId(now) { proposalSeq++; return "DX-" + String(now).slice(2, 4) + String(now).slice(5, 7) + "-" + String(proposalSeq).padStart(3, "0"); }
+function proposalsOf() { if (!Array.isArray(state.proposals)) state.proposals = []; return state.proposals; }
+function moTaDeXuat(pr, doiTac) {
+  if (pr.type === "advance") return { vi: "Tạm ứng " + fmt.usd0(pr.terms.amount) + " · phí ứng " + Math.round(pr.terms.feePct * 100) + "%", en: "Advance " + fmt.usd0(pr.terms.amount) + " · " + Math.round(pr.terms.feePct * 100) + "% fee" };
+  const huong = Math.round((1 - pr.terms.feePct) * 100);
+  return doiTac
+    ? { vi: "Hợp đồng " + pr.terms.months + " tháng · bạn hưởng " + huong + "%", en: "Contract " + pr.terms.months + " months · you keep " + huong + "%" }
+    : { vi: "Hợp đồng " + pr.terms.months + " tháng · phí Haustek " + Math.round(pr.terms.feePct * 100) + "%", en: "Contract " + pr.terms.months + " months · Haustek fee " + Math.round(pr.terms.feePct * 100) + "%" };
+}
+function proposeAdvance(partyKey, d, by, byRole) {
+  if (!partyName(partyKey)) throw new Error("Không có đối tác " + partyKey);
+  const amount = Math.round((+d.amount || 0) * 100) / 100;
+  if (!(amount >= 100)) throw new Error("Số tiền tạm ứng tối thiểu " + fmt.usd0(100));
+  const feePct = d.feePct == null ? ADVANCE_FEE : Math.max(0, Math.min(0.5, +d.feePct));
+  const calc = advanceCalc(partyKey, amount, feePct);
+  if (byRole === "partner" && amount > calc.maxAdvance) throw new Error("Số tiền vượt mức tối đa " + fmt.usd0(calc.maxAdvance));
+  const dup = proposalsOf().find(p => p.partyKey === partyKey && p.type === "advance" && ["submitted", "checked", "returned"].includes(p.status));
+  if (dup) throw new Error("Đối tác đã có đề xuất tạm ứng " + dup.id + " đang xử lý");
+  const now = nowISO();
+  const pr = { id: proposalId(now), type: "advance", partyKey, party: { name: partyName(partyKey), clientId: partyClientId(partyKey) }, by: by || "", byRole: byRole || "sales",
+    createdAt: now, updatedAt: now, status: "submitted", terms: { amount, feePct, note: d.note || "" }, calc, history: [{ at: now, status: "submitted", by: by || "", note: d.note || "" }] };
+  proposalsOf().unshift(pr);
+  audit.log("proposal.advance", pr.id + " · " + pr.party.name + " · " + fmt.usd0(amount), by); store.save();
+  return pr;
+}
+function proposeContract(partyKey, d, by, byRole) {
+  if (!partyName(partyKey)) throw new Error("Không có đối tác " + partyKey);
+  const calc = contractCalc(partyKey, d);
+  const dup = proposalsOf().find(p => p.partyKey === partyKey && p.type === "contract" && ["submitted", "checked", "returned"].includes(p.status));
+  if (dup) throw new Error("Đối tác đã có đề xuất hợp đồng " + dup.id + " đang xử lý");
+  const now = nowISO();
+  const pr = { id: proposalId(now), type: "contract", partyKey, party: { name: partyName(partyKey), clientId: partyClientId(partyKey) }, by: by || "", byRole: byRole || "sales",
+    createdAt: now, updatedAt: now, status: "submitted", terms: { months: calc.months, feePct: calc.feePct, exclusive: !!d.exclusive, note: d.note || "" }, calc, history: [{ at: now, status: "submitted", by: by || "", note: d.note || "" }] };
+  proposalsOf().unshift(pr);
+  audit.log("proposal.contract", pr.id + " · " + pr.party.name + " · " + calc.months + " tháng · phí " + Math.round(calc.feePct * 100) + "%", by); store.save();
+  return pr;
+}
+const PROPOSAL_FLOW = {
+  check:    { from: ["submitted"], to: "checked", roles: ["accounting", "mgmt"] },
+  approve:  { from: ["submitted", "checked"], to: "approved", roles: ["mgmt"] },
+  reject:   { from: ["submitted", "checked"], to: "rejected", roles: ["mgmt"] },
+  return:   { from: ["submitted", "checked"], to: "returned", roles: ["accounting", "mgmt"] },
+  resubmit: { from: ["returned"], to: "submitted", roles: ["sales", "mgmt", "partner", "ops", "support", "accounting"] },
+  withdraw: { from: ["submitted", "checked", "returned"], to: "withdrawn", roles: ["sales", "mgmt", "partner", "ops", "support", "accounting"] }
+};
+function reviewProposal(id, action, note, by, role) {
+  const pr = proposalsOf().find(p => p.id === id);
+  if (!pr) throw new Error("Không tìm thấy đề xuất " + id);
+  const fl = PROPOSAL_FLOW[action];
+  if (!fl) throw new Error("Thao tác không hợp lệ");
+  if (!fl.roles.includes(role)) throw new Error("Vai " + role + " không được " + action + " đề xuất");
+  if (!fl.from.includes(pr.status)) throw new Error("Đề xuất đang ở trạng thái " + pr.status + ", không " + action + " được");
+  if ((action === "reject" || action === "return") && !(note && note.trim())) throw new Error("Cần ghi lý do");
+  if ((action === "withdraw" || action === "resubmit") && role !== "mgmt" && pr.byRole !== role) throw new Error("Chỉ người đề xuất mới rút / gửi lại được");
+  const now = nowISO();
+  if (action === "resubmit") pr.calc = pr.type === "advance" ? advanceCalc(pr.partyKey, pr.terms.amount, pr.terms.feePct) : contractCalc(pr.partyKey, pr.terms);
+  pr.status = fl.to; pr.updatedAt = now;
+  pr.history.push({ at: now, status: fl.to, by: by || "", note: note || "" });
+  if (fl.to === "approved") applyApproved(pr, by);
+  audit.log("proposal." + action, pr.id + " · " + pr.party.name + (note ? " · " + note : ""), by); store.save();
+  return pr;
+}
+function applyApproved(pr, by) {
+  if (pr.type === "advance") {
+    const cur = state.advances[pr.partyKey];
+    const rep = pr.calc.repayment;
+    if (cur) { cur.opening = cents(cur.opening + rep); cur.note = (cur.note ? cur.note + "; " : "") + pr.id + " tạm ứng " + fmt.usd0(pr.terms.amount) + " + phí " + Math.round(pr.terms.feePct * 100) + "%"; }
+    else state.advances[pr.partyKey] = { opening: rep, note: pr.id + " tạm ứng " + fmt.usd0(pr.terms.amount) + " + phí " + Math.round(pr.terms.feePct * 100) + "%", byPeriod: {} };
+    pr.applied = { advanceOpening: state.advances[pr.partyKey].opening, at: nowISO() };
+    audit.log("advance.fromProposal", pr.party.name + " · " + fmt.usd0(rep), by);
+  } else {
+    const nextOpen = PERIODS.find(p => !state.approved[p.k]);
+    const from = nextOpen ? nextOpen.k : PERIODS[P - 1].k;
+    const start = new Date(ASOF.getFullYear(), ASOF.getMonth(), 1), end = new Date(start.getFullYear(), start.getMonth() + pr.terms.months, 0);
+    lazyState("contracts", {})[pr.partyKey] = { proposalId: pr.id, months: pr.terms.months, feePct: pr.terms.feePct, exclusive: !!pr.terms.exclusive, from: isoDate(start), fromKey: from, to: isoDate(end), approvedAt: nowISO(), by: by || "" };
+    demHopDong(); invalidateRates(); _ebp.clear();
+    pr.applied = { contractTo: isoDate(end), feeFrom: from, at: nowISO() };
+  }
+}
+function proposalsList(f) {
+  f = f || {};
+  let ds = proposalsOf().slice();
+  if (f.status) ds = ds.filter(p => f.status === "pending" ? ["submitted", "checked", "returned"].includes(p.status) : p.status === f.status);
+  if (f.type) ds = ds.filter(p => p.type === f.type);
+  if (f.partyKey) ds = ds.filter(p => p.partyKey === f.partyKey);
+  if (f.by) ds = ds.filter(p => p.by === f.by);
+  return ds.map(p => Object.assign({ moTa: moTaDeXuat(p).vi, moTaEn: moTaDeXuat(p).en, ageDays: Math.max(0, Math.round((new Date(String(p.updatedAt).replace(" ", "T")) - new Date()) / -864e5)) }, p));
+}
+function proposalCounts() {
+  const ds = proposalsOf();
+  const c = { submitted: 0, checked: 0, returned: 0, approved: 0, rejected: 0, withdrawn: 0, pending: 0, approvedAdvance: 0, approvedContract: 0 };
+  ds.forEach(p => { c[p.status] = (c[p.status] || 0) + 1; if (["submitted", "checked", "returned"].includes(p.status)) c.pending++; if (p.status === "approved") { if (p.type === "advance") c.approvedAdvance = cents(c.approvedAdvance + p.terms.amount); else c.approvedContract++; } });
+  return c;
+}
+/* bản cho đối tác: không có calc nội bộ */
+function proposalForPartner(p) {
+  const mt = moTaDeXuat(p, true);
+  return { id: p.id, type: p.type, status: p.status, createdAt: p.createdAt, updatedAt: p.updatedAt,
+    terms: p.type === "advance" ? { amount: p.terms.amount, feePct: p.terms.feePct, note: p.terms.note } : { months: p.terms.months, partnerPct: Math.round((1 - p.terms.feePct) * 1000) / 1000, note: p.terms.note },
+    repayment: p.calc.repayment, recoupMonths: p.calc.recoupMonths, moTa: mt.vi, moTaEn: mt.en,
+    history: p.history.map(h => ({ at: h.at, status: h.status, note: ["rejected", "returned", "approved"].includes(h.status) ? h.note : "" })) };
+}
+/* dữ liệu mẫu: vài đề xuất đang chờ để bàn giám đốc có việc */
+function seedProposals() {
+  if (proposalsOf().length) return;
+  const cands = LABELS.slice(0, 6).map(l => l.key).concat(ARTISTS.filter(a => a.labelId < 0).slice(0, 4).map(a => a.key));
+  const sales = STAFF.filter(s => s.role === "sales");
+  cands.forEach((pk, n) => {
+    try {
+      const by = sales[n % sales.length] ? sales[n % sales.length].name : "sales";
+      if (n % 3 === 2) { const pr = proposeContract(pk, { months: [24, 36][n % 2], feePct: [0.15, 0.18, 0.12, 0.2][n % 4], note: "Gia hạn trước hạn" }, by, "sales"); if (n % 2) reviewProposal(pr.id, "check", "Số đã đối chiếu với bảng kê", "Kế toán", "accounting"); }
+      else { const c = advanceCalc(pk, 0, ADVANCE_FEE); if (c.maxAdvance >= 100) { const pr = proposeAdvance(pk, { amount: Math.round(c.maxAdvance * (0.5 + (n % 3) * 0.3) / 100) * 100, feePct: ADVANCE_FEE, note: n % 2 ? "Sản xuất album mới" : "Chiến dịch quảng bá quý 4" }, by, n === 1 ? "partner" : "sales"); if (n % 2 === 0) reviewProposal(pr.id, "check", "Đã kiểm thu nhập 12 kỳ", "Kế toán", "accounting"); } }
+    } catch (e) { /* trùng hoặc không đủ điều kiện thì bỏ qua */ }
+  });
+  proposalsOf().forEach(p => { const d = new Date(Date.now() - (1 + (p.id.charCodeAt(p.id.length - 1) % 9)) * 864e5); const at = d.toISOString().slice(0, 19).replace("T", " "); p.createdAt = at; p.updatedAt = at; p.history.forEach(h => { h.at = at; }); });
+  store.save();
+}
+
+/* ---- mức trả nền tảng: bảng đầy đủ để hiển thị và ghi đè ---- */
+function platformRatesFull() {
+  const ov = lazyState("rateOverride", {});
+  return platformRates().map((r, j) => Object.assign({}, r, { refVn: VN_REF_PER1K[j] != null ? VN_REF_PER1K[j] : null, override: ov[r.name] || null }));
+}
+function setPlatformRate(name, per1k, note, by) {
+  if (PLAT_NAMES.indexOf(name) < 0) throw new Error("Không có nền tảng " + name);
+  per1k = Math.round(+per1k * 10000) / 10000;
+  if (!(per1k > 0 && per1k < 100)) throw new Error("Mức trả phải là số dương dưới 100 USD / 1.000 lượt");
+  lazyState("rateOverride", {})[name] = { per1k, note: note || "", by: by || "", at: nowISO() };
+  _rateCacheKey = null; audit.log("rate.platform", name + " → " + per1k + " USD/1.000" + (note ? " · " + note : ""), by); store.save();
+  return platformRatesFull();
+}
+function clearPlatformRate(name, by) {
+  const ov = lazyState("rateOverride", {}); delete ov[name];
+  _rateCacheKey = null; audit.log("rate.platform.clear", name, by); store.save();
+  return platformRatesFull();
+}
+/* Dán CSV "Nền tảng,USD/1000" (chấp nhận ; hoặc tab, dấu phẩy thập phân). */
+function importPlatformRates(text, by) {
+  const ok = [], skipped = [];
+  String(text || "").split(/\r?\n/).forEach(line => {
+    const t = line.trim(); if (!t) return;
+    const parts = t.split(/[;\t]|,(?=\s*[\d.,]+\s*$)/).map(x => x.trim());
+    if (parts.length < 2) { skipped.push(t); return; }
+    const name = PLAT_NAMES.find(n => n.toLowerCase() === parts[0].toLowerCase()) || PLAT_NAMES_EN.map((n, j) => n.toLowerCase() === parts[0].toLowerCase() ? PLAT_NAMES[j] : null).find(Boolean);
+    const v = parseFloat(parts[1].replace(/\s/g, "").replace(",", "."));
+    if (!name || !(v > 0)) { skipped.push(t); return; }
+    lazyState("rateOverride", {})[name] = { per1k: Math.round(v * 10000) / 10000, note: "nhập từ CSV", by: by || "", at: nowISO() };
+    ok.push(name);
+  });
+  if (ok.length) { _rateCacheKey = null; audit.log("rate.platform.import", ok.join(", "), by); store.save(); }
+  return { ok, skipped, rows: platformRatesFull() };
 }
 
 const TICKET_TYPES = [
@@ -4359,7 +4667,7 @@ function esc(s) {
     .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
 }
 
-if (!FRESH) { try { seedPartyManager(); seedWithdrawals(); seedTickets(); seedClaims(); seedOps(); } catch (e) { console.warn("[haustek-core] gieo dữ liệu mẫu: " + e.message); } }
+if (!FRESH) { try { seedPartyManager(); seedWithdrawals(); seedTickets(); seedClaims(); seedOps(); seedProposals(); } catch (e) { console.warn("[haustek-core] gieo dữ liệu mẫu: " + e.message); } }
 
 /* =====================================================================
    23. MẶT TIỀN CHO ADMIN — chỉ intranet.html được chạm
@@ -4571,6 +4879,11 @@ const admin = {
   withdrawalQuote, notifications: () => notificationsOf("admin", 0), markNotifications: ids => markNotifications("admin", 0, ids),
   search: (q, limit) => searchAll("admin", 0, q, limit), campaigns: () => campaignsOf("admin", 0), campaignsFor: (role, id) => campaignsOf(role, id),
   penaltyPerTrackUsd: PENALTY_USD,
+  /* 19j */
+  platformRatesFull, setPlatformRate, clearPlatformRate, importPlatformRates, vnRef: VN_REF_PER1K.slice(), advanceFee: ADVANCE_FEE,
+  advanceCalc, contractCalc, partySeries, advanceOfferOf,
+  proposals: { list: proposalsList, counts: proposalCounts, get: id => proposalsOf().find(p => p.id === id) || null,
+    proposeAdvance, proposeContract, review: reviewProposal, flow: PROPOSAL_FLOW },
   tickets: {
     types: TICKET_TYPES, statuses: TICKET_STATUS,
     list(f) {
@@ -5018,6 +5331,11 @@ const api = {
   markNotifications(role, partyId, ids) { assertParty(role, partyId); return scrub(markNotifications(role, partyId, ids)); },
   search(role, partyId, q, limit) { assertParty(role, partyId); return scrub(searchAll(role, partyId, q, limit)); },
   campaigns(role, partyId) { assertParty(role, partyId); return scrub(campaignsOf(role, partyId)); },
+  /* ---- 19j: đề nghị tạm ứng và theo dõi đề xuất ---- */
+  advanceOffer(role, partyId) { assertParty(role, partyId); return scrub(advanceOfferOf(role === "label" ? "L:" + partyId : "A:" + partyId)); },
+  requestAdvance(role, partyId, d) { assertParty(role, partyId); const pk = role === "label" ? "L:" + partyId : "A:" + partyId; return scrub(proposalForPartner(proposeAdvance(pk, { amount: d.amount, feePct: ADVANCE_FEE, note: d.note }, partyClientIdOf(role, partyId), "partner"))); },
+  proposals(role, partyId) { assertParty(role, partyId); const pk = role === "label" ? "L:" + partyId : "A:" + partyId; return scrub(proposalsList({ partyKey: pk }).map(proposalForPartner)); },
+  withdrawProposal(role, partyId, id) { assertParty(role, partyId); const pk = role === "label" ? "L:" + partyId : "A:" + partyId; const pr = proposalsOf().find(p => p.id === id); if (!pr || pr.partyKey !== pk) throw new Error("Không có quyền"); return scrub(proposalForPartner(reviewProposal(id, "withdraw", "", partyClientIdOf(role, partyId), "partner"))); },
   /* ---- ví, rút tiền, bảng kê ---- */
   wallet(role, partyId) {
     assertParty(role, partyId);
@@ -5406,7 +5724,7 @@ if (FRESH) {
       state.fx.locked[p.k].at = state.approved[p.k].at.slice(0, 10);
     } catch (e) { console.warn("[haustek-core] không xét duyệt được kỳ " + PERIODS[pi].label + ": " + e.message); }
   }
-  seedPartyManager(); seedWithdrawals(); seedTickets(); seedClaims(); seedOps();
+  seedPartyManager(); seedWithdrawals(); seedTickets(); seedClaims(); seedOps(); seedProposals();
   /* Những lần nạp trong lịch sử cũng phải để lại dấu vết, không thì mở
      nhật ký ra thấy trống trơn và tưởng hệ thống không ghi gì. */
   PERIODS.forEach((p, pi) => {
@@ -7670,7 +7988,13 @@ var CHU = {
     cdRunning: 'Đang chạy', cdPlanned: 'Sắp chạy', cdDone: 'Đã xong',
     xem: 'lượt xem', bam: 'lượt bấm', luuTruoc: 'lưu trước', chuyenDoi: 'chuyển đổi', daGui: 'đã gửi', daNhan: 'nhận', choKq: 'chờ', tuChoi: 'từ chối',
     nganSach: 'ngân sách', daChi: 'đã chi', hienThi: 'hiển thị', luotNghe: 'lượt nghe quy được', giaLuot: 'giá mỗi lượt nghe',
-    cDoiTac: 'Đối tác', cAlerts: 'Cảnh báo', cCoNt: 'Bị gắn cờ', cPhat: 'Phạt / tháng', cMau: 'Kiểu', cMo: 'Đang mở'
+    cDoiTac: 'Đối tác', cAlerts: 'Cảnh báo', cCoNt: 'Bị gắn cờ', cPhat: 'Phạt / tháng', cMau: 'Kiểu', cMo: 'Đang mở',
+    dxSubmitted: 'Chờ kiểm số', dxChecked: 'Đã kiểm · chờ duyệt', dxApproved: 'Đã duyệt', dxRejected: 'Từ chối', dxReturned: 'Trả lại bổ sung', dxWithdrawn: 'Đã rút',
+    knApprove: 'Nên duyệt', knReview: 'Cần cân nhắc', knDecline: 'Không nên duyệt',
+    dxNet: 'Thu nhập ròng / tháng', dxNetS: 'trung bình {n} kỳ đã xét duyệt', dxGross: 'Doanh thu gộp / tháng', dxKeep: 'Haustek giữ / tháng', dxGrowth: 'Tăng trưởng 3 kỳ', dxCv: 'Độ dao động', dxConc: 'Tập trung bài đầu',
+    dxProj: 'Thu nhập ròng 12 tháng dự kiến', dxMax: 'Mức nên ứng tối đa', dxRepay: 'Khoản phải thu hồi', dxRecoup: 'Thời gian thu hồi', dxFee: 'Phí ứng thu về', dxRetained: 'Haustek giữ trong thời gian thu hồi', dxRoi: 'ROI trên vốn ứng', dxRoiH: 'Hiệu quả vốn ứng (trong thời gian thu hồi)', dxRoiFee: 'Lợi suất phí ứng / năm', dxRoiA: 'quy năm', dxCover: 'Độ phủ (thu nhập 12 tháng ÷ khoản thu hồi)',
+    dxGrade: 'Hạng rủi ro', dxProjGross: 'Doanh thu gộp dự kiến cả kỳ hạn', dxNow: 'Haustek giữ theo hợp đồng hiện tại', dxNew: 'Haustek giữ theo đề xuất', dxDelta: 'Chênh lệch', dxFeeNow: 'Phí hiện tại', dxFeeNew: 'Phí đề xuất', dxEnd: 'Hợp đồng hiện tại hết hạn', dxDue: 'đến hạn gia hạn', dxTerm: 'Kỳ hạn', thang: ' tháng',
+    dxLyDo: 'Lý do khuyến nghị', dxSeries: 'Thu nhập ròng 12 kỳ', dxHistory: 'Diễn biến', dxNote: 'Ghi chú đề xuất', dxBy: 'Người đề xuất', dxPartner: 'đối tác gửi từ cổng'
   },
   en: {
     mucCritical: 'Critical', mucWarn: 'Warning', mucWatch: 'Watch',
@@ -7688,7 +8012,13 @@ var CHU = {
     cdRunning: 'Running', cdPlanned: 'Planned', cdDone: 'Done',
     xem: 'views', bam: 'clicks', luuTruoc: 'pre-saves', chuyenDoi: 'conversion', daGui: 'sent', daNhan: 'accepted', choKq: 'pending', tuChoi: 'declined',
     nganSach: 'budget', daChi: 'spent', hienThi: 'impressions', luotNghe: 'attributed streams', giaLuot: 'cost per stream',
-    cDoiTac: 'Partner', cAlerts: 'Alerts', cCoNt: 'Flagged', cPhat: 'Penalty / month', cMau: 'Pattern', cMo: 'Open'
+    cDoiTac: 'Partner', cAlerts: 'Alerts', cCoNt: 'Flagged', cPhat: 'Penalty / month', cMau: 'Pattern', cMo: 'Open',
+    dxSubmitted: 'Awaiting check', dxChecked: 'Checked · awaiting approval', dxApproved: 'Approved', dxRejected: 'Rejected', dxReturned: 'Returned for changes', dxWithdrawn: 'Withdrawn',
+    knApprove: 'Recommend approve', knReview: 'Needs judgement', knDecline: 'Recommend decline',
+    dxNet: 'Net earnings / month', dxNetS: 'average over {n} approved periods', dxGross: 'Gross revenue / month', dxKeep: 'Haustek keeps / month', dxGrowth: 'Growth, 3 periods', dxCv: 'Volatility', dxConc: 'Top-track concentration',
+    dxProj: 'Projected 12-month net', dxMax: 'Suggested maximum advance', dxRepay: 'Amount to recoup', dxRecoup: 'Recoupment time', dxFee: 'Advance fee earned', dxRetained: 'Haustek keeps during recoupment', dxRoi: 'ROI on the advance', dxRoiH: 'Return on the advance (over recoupment)', dxRoiFee: 'Fee yield / year', dxRoiA: 'annualised', dxCover: 'Coverage (12-month net ÷ amount to recoup)',
+    dxGrade: 'Risk grade', dxProjGross: 'Projected gross over the term', dxNow: 'Haustek keeps under current contract', dxNew: 'Haustek keeps under proposal', dxDelta: 'Difference', dxFeeNow: 'Current fee', dxFeeNew: 'Proposed fee', dxEnd: 'Current contract ends', dxDue: 'renewal due', dxTerm: 'Term', thang: ' months',
+    dxLyDo: 'Why this recommendation', dxSeries: 'Net earnings, 12 periods', dxHistory: 'History', dxNote: 'Proposal note', dxBy: 'Proposed by', dxPartner: 'sent by the partner from the portal'
   }
 };
 function t(k) { var d = CHU[HT.lang] || CHU.vi; return d[k] != null ? d[k] : (CHU.vi[k] != null ? CHU.vi[k] : k); }
@@ -7866,7 +8196,62 @@ function ganTrang(root, st, veLai) {
   HM.bam(root, '[data-htm-tr]', function (el) { st.trang = (st.trang || 0) + (+el.getAttribute('data-htm-tr')); veLai(); });
 }
 
-global.HTM = { t: t, song: song, phanTrang: phanTrang, ganTrang: ganTrang, tagMuc: tagMuc, tagTt: tagTt, tinHieu: tinHieu, chipTinHieu: chipTinHieu, bangCanhBao: bangCanhBao, theCanhBao: theCanhBao,
+/* ---- đề xuất tạm ứng / hợp đồng: nhãn, khuyến nghị, thẻ chi tiết ---- */
+function tagDx(st) {
+  var m = { submitted: ['dxSubmitted', 'warn'], checked: ['dxChecked', 'info'], approved: ['dxApproved', 'ok'], rejected: ['dxRejected', 'no'], returned: ['dxReturned', 'warn'], withdrawn: ['dxWithdrawn', ''] }[st] || [st, ''];
+  return HM.tag(t(m[0]), m[1]);
+}
+function tagKn(r) { return r === 'approve' ? HM.tag(t('knApprove'), 'ok') : r === 'review' ? HM.tag(t('knReview'), 'warn') : HM.tag(t('knDecline'), 'no'); }
+function tagHang(g) { return HM.tag(t('dxGrade') + ' ' + g, g === 'A' ? 'ok' : g === 'B' ? 'warn' : 'no'); }
+function oSo(l, v, s, hit) { return '<div class="sig-i' + (hit ? ' hit' : '') + '"><b>' + esc(v) + '</b><span>' + esc(l) + '</span>' + (s ? '<em>' + esc(s) + '</em>' : '') + '</div>'; }
+/* Bản tính của đề xuất; opts.tien định dạng tiền (nội bộ theo tiền tệ đang chọn). */
+function theDeXuat(pr, opts) {
+  opts = opts || {}; var tien = opts.tien || HT.fmt.usd, c = pr.calc, P = HB.dayMau();
+  var dau = '<div class="bar" style="margin-bottom:10px">' + tagDx(pr.status) + tagKn(c.recommendation) + (c.grade ? tagHang(c.grade) : '') +
+    '<span class="muted" style="font-size:12.5px">' + esc(song(pr, 'moTa')) + '</span></div>';
+  var html = dau;
+  if (pr.type === 'advance') {
+    html += '<div class="sig">' +
+      oSo(t('dxNet'), tien(c.monthlyNet), t('dxNetS').replace('{n}', c.periods)) +
+      oSo(t('dxGrowth'), c.growth == null ? '—' : (c.growth >= 0 ? '+' : '') + pct(c.growth), null, c.growth != null && c.growth < -0.2) +
+      oSo(t('dxCv'), pct(c.cv), null, c.cv > 0.45) +
+      oSo(t('dxConc'), pct(c.concentration), null, c.concentration > 0.6) +
+      oSo(t('dxProj'), tien(c.projected12)) +
+      oSo(t('dxMax'), tien(c.maxAdvance), null, c.amount > c.maxAdvance) +
+      '</div><h4 class="sec" style="margin-top:14px">' + esc(t('dxRoiH')) + '</h4><div class="sig">' +
+      oSo(t('dxRepay'), tien(c.repayment), pct(c.feePct) + ' ' + (HT.lang === 'en' ? 'fee' : 'phí ứng')) +
+      oSo(t('dxRecoup'), c.recoupMonths == null ? '—' : c.recoupMonths + t('thang'), null, c.recoupMonths != null && c.recoupMonths > 12) +
+      oSo(t('dxFee'), tien(c.feeIncome)) +
+      oSo(t('dxRetained'), tien(c.retainedDuringRecoup), pct(c.margin) + ' × ' + tien(c.monthlyGross) + t('thang')) +
+      oSo(t('dxRoiFee'), c.roiFee == null ? '—' : pct(c.roiFee)) +
+      oSo(t('dxRoi'), pct(c.roi), c.roiAnnual != null && c.recoupMonths >= 6 ? pct(c.roiAnnual) + ' ' + t('dxRoiA') : null) +
+      '</div>';
+  } else {
+    html += '<div class="sig">' +
+      oSo(t('dxGross'), tien(c.monthlyGross), t('dxNetS').replace('{n}', c.periods)) +
+      oSo(t('dxGrowth'), c.growth == null ? '—' : (c.growth >= 0 ? '+' : '') + pct(c.growth)) +
+      oSo(t('dxTerm'), c.months + t('thang')) +
+      oSo(t('dxFeeNow'), pct(c.currentFeePct)) +
+      oSo(t('dxFeeNew'), pct(c.feePct), null, c.feePct < 0.12) +
+      oSo(t('dxEnd'), HT.fmt.date(c.contractEnd), c.renewalDue ? t('dxDue') : null, c.renewalDue) +
+      '</div><h4 class="sec" style="margin-top:14px">' + esc(t('dxProjGross')) + '</h4><div class="sig">' +
+      oSo(t('dxProjGross'), tien(c.projectedGross)) +
+      oSo(t('dxNow'), tien(c.retainedNow)) +
+      oSo(t('dxNew'), tien(c.retainedNew), null, c.delta < 0) +
+      oSo(t('dxDelta'), (c.delta >= 0 ? '+' : '−') + tien(Math.abs(c.delta))) +
+      '</div>';
+  }
+  if (c.reasons && c.reasons.length) html += '<h4 class="sec" style="margin-top:14px">' + esc(t('dxLyDo')) + '</h4><ul class="tl">' + c.reasons.map(function (r) { return '<li>' + esc(song(r, 'vi') === r.vi && HT.lang === 'en' ? r.en : r.vi) + '</li>'; }).join('') + '</ul>';
+  if (c.series && c.series.length) html += '<h4 class="sec" style="margin-top:14px">' + esc(t('dxSeries')) + '</h4>' +
+    HB.o({ loai: 'cot', cao: 150, chuThich: false, dinhDang: 'tien', truc: c.series.map(function (x) { return x.label; }), chuoi: [{ ten: t('dxNet'), gt: c.series.map(function (x) { return x.net; }), mau: P[0] }] });
+  if (pr.terms && pr.terms.note) html += '<p class="hint" style="margin-top:10px"><b>' + esc(t('dxNote')) + ':</b> ' + esc(pr.terms.note) + '</p>';
+  html += '<h4 class="sec" style="margin-top:14px">' + esc(t('dxHistory')) + '</h4><ul class="tl">' + pr.history.slice().reverse().map(function (h) {
+    return '<li>' + tagDx(h.status) + ' <span class="mono" style="font-size:12px">' + esc(h.at) + '</span>' + (h.by ? ' · ' + esc(h.by) : '') + (h.note ? '<div class="muted" style="font-size:12.5px">' + esc(h.note) + '</div>' : '') + '</li>';
+  }).join('') + '</ul>';
+  return html;
+}
+
+global.HTM = { t: t, song: song, phanTrang: phanTrang, ganTrang: ganTrang, oSo: oSo, tagDx: tagDx, tagKn: tagKn, tagHang: tagHang, theDeXuat: theDeXuat, tagMuc: tagMuc, tagTt: tagTt, tinHieu: tinHieu, chipTinHieu: chipTinHieu, bangCanhBao: bangCanhBao, theCanhBao: theCanhBao,
   dongCong: dongCong, bangChiaSe: bangChiaSe, nguong: nguong, diemMeta: diemMeta, kiemMeta: kiemMeta, bangMeta: bangMeta, giaiThich: giaiThich,
   tagCd: tagCd, ketQuaCd: ketQuaCd, bangChienDich: bangChienDich, theChienDich: theChienDich };
 
@@ -7918,6 +8303,10 @@ HT.dangKy({
   chu: {
     vi: {
       navBan: 'Bàn làm việc', h1: 'Bàn làm việc', homNay: 'Việc của bạn hôm nay, {d}.', nhanVien: 'Nhân viên', vaiTro: 'Vai',
+      dxCho: 'Chờ xét duyệt', dxChoMo: 'Tạm ứng và hợp đồng do kinh doanh hoặc đối tác đề xuất, kèm ROI và hạng rủi ro tính từ 12 kỳ thu nhập. Kế toán kiểm số trước, bạn duyệt sau.', dxChoS: '{a} tạm ứng chờ duyệt · {b} đã kiểm số', moXetDuyet: 'Mở xét duyệt', dxKhong: 'Không có đề xuất nào chờ duyệt', dxKhongMo: 'Đề xuất mới từ kinh doanh hoặc đối tác sẽ hiện ở đây.',
+      dxToi: 'Đề xuất của tôi', dxToiMo: 'Tạm ứng và hợp đồng bạn đã đề xuất; trạng thái đổi khi kế toán kiểm số và giám đốc xét duyệt.', dxTaoUng: 'Đề xuất tạm ứng', dxTaoHd: 'Đề xuất hợp đồng', dxToiKhong: 'Bạn chưa có đề xuất nào', dxToiKhongMo: 'Bấm nút phía trên, hoặc mở ngăn một đối tác trong sổ đối tác.',
+      dxKiem: 'Cần kiểm số', dxKiemMo: 'Đề xuất mới gửi. Đối chiếu thu nhập 12 kỳ với bảng kê và sổ tạm ứng, rồi bấm Đã kiểm để giám đốc xét duyệt.', dxKiemKhong: 'Không có đề xuất nào cần kiểm số', dxKiemKhongMo: 'Đề xuất đã kiểm chuyển sang chờ giám đốc duyệt.',
+      dxNoiDung: 'Nội dung', dxThaoTac: 'Thao tác', dxRoi: 'ROI', dxThuHoi: 'thu hồi {n} tháng', dxTuDoiTac: 'từ cổng đối tác',
       ticketToi: 'Ticket của tôi', ticketToiMo: 'Đang mở, sắp hạn trước. Bấm một dòng để xử lý.',
       hangDoi: 'Hàng đợi chưa gán', hangDoiMo: 'Ticket đối tác gửi lên chưa có người phụ trách.', nhanViec: 'Nhận việc', daNhan: 'Đã nhận việc',
       khongTicket: 'Không có ticket nào', khongTicketMo: 'Hàng đợi trống. Sang trang Hỗ trợ để xem toàn bộ.',
@@ -7960,6 +8349,10 @@ HT.dangKy({
     },
     en: {
       navBan: 'My desk', h1: 'My desk', homNay: 'Your work for today, {d}.', nhanVien: 'Staff', vaiTro: 'Role',
+      dxCho: 'Awaiting approval', dxChoMo: 'Advances and contracts proposed by sales or partners, with ROI and a risk grade from 12 periods of earnings. Accounting checks first, you approve.', dxChoS: '{a} in advances pending · {b} checked', moXetDuyet: 'Open approvals', dxKhong: 'Nothing awaiting approval', dxKhongMo: 'New proposals from sales or partners show up here.',
+      dxToi: 'My proposals', dxToiMo: 'Advances and contracts you proposed; status moves as accounting checks and the director approves.', dxTaoUng: 'Propose advance', dxTaoHd: 'Propose contract', dxToiKhong: 'You have no proposals yet', dxToiKhongMo: 'Use the buttons above, or open a partner’s drawer in Partners.',
+      dxKiem: 'Figures to check', dxKiemMo: 'Newly submitted proposals. Reconcile 12 periods of earnings against statements and the advance ledger, then mark Checked so the director can approve.', dxKiemKhong: 'No proposal needs a check', dxKiemKhongMo: 'Checked proposals move on to the director.',
+      dxNoiDung: 'Terms', dxThaoTac: 'Actions', dxRoi: 'ROI', dxThuHoi: 'recoup {n} mo', dxTuDoiTac: 'from the partner portal',
       ticketToi: 'My tickets', ticketToiMo: 'Open ones, soonest due first. Open a row to work it.',
       hangDoi: 'Unassigned queue', hangDoiMo: 'Partner tickets nobody owns yet.', nhanViec: 'Take it', daNhan: 'Assigned to you',
       khongTicket: 'No tickets', khongTicketMo: 'The queue is empty. The Support page has everything.',
@@ -8022,8 +8415,55 @@ HT.dangKy({
       try { A.statements.attachAll(pk, me.email); c.thongBao(t('daDinh').replace('{k}', A.periods[A.pIndexOf(pk)].label), 'ok'); c.veLai(); }
       catch (err) { c.thongBao(err.message, 'no'); }
     });
+    /* xét duyệt: nút và ngăn dùng chung với màn Xét duyệt */
+    HM.bam(root, '[data-dx]', function (el, e) { e.stopPropagation(); if (HT.xuLyDeXuat) HT.xuLyDeXuat(c, el.getAttribute('data-dx'), el.getAttribute('data-id')); else c.di('xet-duyet'); });
+    HM.bam(root, 'tr[data-pr]', function (el, e) { if (e.target.closest('button')) return; if (HT.moDeXuat) HT.moDeXuat(c, el.getAttribute('data-pr')); else c.di('xet-duyet'); });
+    HM.bam(root, '[data-them-ung]', function () { if (HT.deXuatTamUng) HT.deXuatTamUng(c, null); else c.di('xet-duyet'); });
+    HM.bam(root, '[data-them-hd]', function () { if (HT.deXuatHopDong) HT.deXuatHopDong(c, null); else c.di('xet-duyet'); });
   }
 });
+
+/* ---------------------------------------------------------------------
+   Xét duyệt trên bàn làm việc: giám đốc duyệt, kế toán kiểm, kinh doanh
+   theo dõi đề xuất của mình. Bảng gọn; chi tiết và bản tính ROI mở ở ngăn.
+   --------------------------------------------------------------------- */
+var DX_CHO = ['submitted', 'checked', 'returned'];
+function bangDx(c, rows, nut) {
+  var t = c.t;
+  return '<div class="tw"><table class="t" style="min-width:0"><thead><tr><th>' + HM.esc(t('cDoiTac')) + '</th><th>' + HM.esc(t('dxNoiDung')) + '</th><th class="num">' + HM.esc(t('dxRoi')) + '</th><th>' + HM.esc(t('cTt')) + '</th>' + (nut ? '<th>' + HM.esc(t('dxThaoTac')) + '</th>' : '') + '</tr></thead><tbody>' +
+    rows.map(function (p) {
+      var roi = p.type === 'advance' ? p.calc.roi : null;
+      return '<tr class="pick" data-pr="' + HM.esc(p.id) + '"><td>' + HM.tenBia({ ten: p.party.name, seed: p.party.clientId, phu: p.id + ' · ' + (p.byRole === 'partner' ? t('dxTuDoiTac') : p.by) }) + '</td>' +
+        '<td><div class="t-ttl">' + HM.esc(c.song(p, 'moTa')) + '</div><div class="t-sub" style="font-family:var(--f)">' + HTM.tagKn(p.calc.recommendation) + (p.calc.grade ? ' ' + HTM.tagHang(p.calc.grade) : '') + '</div></td>' +
+        '<td class="num">' + (roi == null ? '<span class="nil">—</span>' : '<b>' + HM.esc(HT.fmt.pct(roi)) + '</b><div class="t-sub" style="font-family:var(--f)">' + HM.esc(t('dxThuHoi').replace('{n}', p.calc.recoupMonths == null ? '—' : p.calc.recoupMonths)) + '</div>') + '</td>' +
+        '<td>' + HTM.tagDx(p.status) + '</td>' +
+        (nut ? '<td>' + (HT.nutDeXuat ? HT.nutDeXuat(c, p) : '') + '</td>' : '') + '</tr>';
+    }).join('') + '</tbody></table></div>';
+}
+function theDxQuanLy(c) {
+  var A = c.A, t = c.t, k = A.proposals.counts();
+  var rows = A.proposals.list().filter(function (p) { return p.status === 'submitted' || p.status === 'checked'; })
+    .sort(function (a, b) { return (a.status === 'checked' ? 0 : 1) - (b.status === 'checked' ? 0 : 1) || b.ageDays - a.ageDays; });
+  var ung = rows.filter(function (p) { return p.type === 'advance'; }).reduce(function (s, p) { return s + p.terms.amount; }, 0);
+  return HM.the({ h2: HM.esc(t('dxCho')) + ' <span class="muted">(' + rows.length + ')</span>', p: HM.esc(t('dxChoMo') + ' ' + t('dxChoS').replace('{a}', c.tien2(ung)).replace('{b}', k.checked)),
+    hanhDong: '<button type="button" class="btn sm pri" data-di="xet-duyet">' + HM.esc(t('moXetDuyet')) + '</button>', thoBody: rows.length > 0,
+    than: rows.length ? bangDx(c, rows.slice(0, 6), true) : HM.trong({ icon: 'check', tieuDe: t('dxKhong'), moTa: t('dxKhongMo') }) });
+}
+function theDxSales(c) {
+  var A = c.A, t = c.t, me = A.staff.me;
+  var rows = A.proposals.list().filter(function (p) { return p.by === me.name; })
+    .sort(function (a, b) { return (DX_CHO.indexOf(a.status) >= 0 ? 0 : 1) - (DX_CHO.indexOf(b.status) >= 0 ? 0 : 1) || String(b.updatedAt).localeCompare(String(a.updatedAt)); });
+  return HM.the({ h2: HM.esc(t('dxToi')) + ' <span class="muted">(' + rows.length + ')</span>', p: HM.esc(t('dxToiMo')),
+    hanhDong: '<div class="btnrow" style="flex-wrap:nowrap"><button type="button" class="btn sm" data-them-hd>' + HM.icon('file') + HM.esc(t('dxTaoHd')) + '</button><button type="button" class="btn sm pri" data-them-ung>' + HM.icon('cash') + HM.esc(t('dxTaoUng')) + '</button></div>', thoBody: rows.length > 0,
+    than: rows.length ? bangDx(c, rows.slice(0, 6), true) : HM.trong({ icon: 'cash', tieuDe: t('dxToiKhong'), moTa: t('dxToiKhongMo') }) });
+}
+function theDxKeToan(c) {
+  var A = c.A, t = c.t;
+  var rows = A.proposals.list().filter(function (p) { return p.status === 'submitted'; }).sort(function (a, b) { return b.ageDays - a.ageDays; });
+  return HM.the({ h2: HM.esc(t('dxKiem')) + ' <span class="muted">(' + rows.length + ')</span>', p: HM.esc(t('dxKiemMo')),
+    hanhDong: '<button type="button" class="btn sm" data-di="xet-duyet">' + HM.esc(t('moXetDuyet')) + '</button>', thoBody: rows.length > 0,
+    than: rows.length ? bangDx(c, rows.slice(0, 6), true) : HM.trong({ icon: 'check', tieuDe: t('dxKiemKhong'), moTa: t('dxKiemKhongMo') }) });
+}
 
 /* ---------------------------------------------------------------------
    Khối dùng chung
@@ -8102,6 +8542,7 @@ function veSales(c) {
     { l: t('kdGiaHan'), v: HT.fmt.n((k.renewals || []).length), mau: (k.renewals || []).length ? HB.mau('warn') : '' }
   ]);
   var pct = Math.max(0, Math.min(100, k.targetPct * 100));
+  html += theDxSales(c);
   html += '<div class="grid g3">' +
     HM.the({
       h2: HM.esc(t('kdTienDo')), p: HM.esc(t('kdTienDoMo')),
@@ -8195,6 +8636,7 @@ function veKeToan(c) {
     { l: t('ktTicket'), v: HT.fmt.n(tkTt.length) },
     { l: t('kKyChua'), v: HT.fmt.n(chuaDuyet) }
   ]);
+  html += theDxKeToan(c);
   html += '<div class="grid g3">' +
     HM.the({
       h2: HM.esc(t('ktRut')) + ' <span class="muted">(' + cho.length + ')</span>', p: HM.esc(t('ktRutMo')),
@@ -8307,6 +8749,7 @@ function veQuanLy(c) {
     { l: t('kRutCho'), v: HT.fmt.usd(wc.pendingAmount), s: HT.fmt.n(wc.requested + wc.processing) + ' ' + t('kRutTien') },
     db ? { l: t('dbDuKien').replace('{k}', db.openPeriod), v: HT.fmt.usd0(db.projected.revenue), d: { chu: (db.growth7 >= 0 ? '▲ ' : '▼ ') + HT.fmt.pct(Math.abs(db.growth7)) + ' · 7d', duong: db.growth7 >= 0 } } : null
   ].filter(Boolean));
+  html += theDxQuanLy(c);
   html += '<div class="grid g3">' +
     HM.the({
       h2: HM.esc(t('qlKd')), p: HM.esc(t('qlKdMo')),
@@ -9420,6 +9863,317 @@ HT.dangKy({
       var id = el.getAttribute('data-cd'), r = d.rows.filter(function (x) { return x.id === id; })[0]; if (!r) return;
       c.nganTruot('<div class="asset-h">' + HM.bia(r.trackId, r.title, 'xl') + '<div class="asset-t"><b>' + HM.esc(r.title) + '</b><span>' + HM.esc(r.artist + ' · ' + A.partyName(r.partyKey) + ' · ' + r.id) + '</span></div></div>' + HTM.theChienDich(r, c.tien2),
         { tieuDe: t('chiTiet'), phu: c.song(r, 'kindLabel'), khiMo: function (dr) { HB.gan(dr); } });
+    });
+  }
+});
+
+})();
+
+},
+/* ---- man/xet-duyet.js ---- */
+function(){
+/* =====================================================================
+   NỘI BỘ · XÉT DUYỆT (tạm ứng, hợp đồng)
+   ---------------------------------------------------------------------
+   Một hàng chờ cho mọi vai: kinh doanh (hoặc đối tác từ cổng) đề xuất →
+   kế toán kiểm số → giám đốc xét duyệt. Mỗi đề xuất mang bản tính chụp
+   lúc tạo: thu nhập ròng 12 kỳ, tăng trưởng, độ dao động, độ tập trung,
+   mức nên ứng tối đa, thời gian thu hồi, phí ứng và phần Haustek giữ trong
+   thời gian thu hồi (ROI), hạng rủi ro, khuyến nghị. Giám đốc bấm duyệt /
+   từ chối / trả lại ngay trên dòng; mọi thao tác ghi nhật ký. Duyệt xong
+   thì sổ tạm ứng hoặc phí hợp đồng đổi theo từ kỳ mở tiếp theo.
+   ===================================================================== */
+"use strict";
+(function () {
+
+var LOC = { tab: 'cho', loai: 'all', tim: '', trang: 0 };
+var VAI_DUYET = ['mgmt'], VAI_KIEM = ['accounting', 'mgmt'];
+
+var CHU = null; /* gán sau khi đăng ký, để hộp thoại dùng chung tra được chữ từ màn khác */
+function tx(k) { var d = (CHU && CHU[HT.lang]) || (CHU && CHU.vi) || {}; return d[k] != null ? d[k] : k; }
+
+HT.dangKy({
+  id: 'xet-duyet', nav: 'navXetDuyet', nhom: 'nhomTien', icon: 'check',
+  vai: ['ops', 'sales', 'support', 'mgmt', 'accounting'],
+  dem: function (c) { try { var k = c.A.proposals.counts(); return (c.A.staff.me.role === 'accounting' ? k.submitted : k.pending) || null; } catch (e) { return null; } },
+
+  chu: {
+    vi: {
+      navXetDuyet: 'Xét duyệt', h1: 'Xét duyệt đề xuất',
+      mo: 'Tạm ứng và hợp đồng: kinh doanh hoặc đối tác đề xuất, kế toán kiểm số, giám đốc xét duyệt. Mỗi đề xuất có bản tính ROI và hạng rủi ro chụp lúc tạo.',
+      kCho: 'Chờ xét duyệt', kChoS: '{a} chờ kiểm số · {b} đã kiểm', kUng: 'Tạm ứng đề xuất đang chờ', kUngS: 'tổng số tiền', kDuyet: 'Đã duyệt', kDuyetS: '{a} tạm ứng · {b} hợp đồng', kTuChoi: 'Từ chối / trả lại', kRoi: 'ROI trung bình', kRoiS: 'trên vốn ứng · các tạm ứng đang chờ',
+      tabCho: 'Đang chờ', tabXong: 'Đã xử lý', tabToi: 'Của tôi',
+      loaiAll: 'Mọi loại', loaiUng: 'Tạm ứng', loaiHd: 'Hợp đồng', tim: 'Tìm đối tác, mã đề xuất…',
+      cDx: 'Đề xuất', cTk: 'Đối tác', cNoiDung: 'Nội dung', cRoi: 'ROI', cHang: 'Hạng', cKn: 'Khuyến nghị', cTt: 'Trạng thái', cTuoi: 'Tuổi', cThaoTac: 'Thao tác', ngay: 'ngày',
+      themUng: 'Đề xuất tạm ứng', themHd: 'Đề xuất hợp đồng',
+      duyet: 'Duyệt', tuChoi: 'Từ chối', traLai: 'Trả lại', kiem: 'Đã kiểm số', rut: 'Rút', guiLai: 'Gửi lại',
+      hoiDuyet: 'Duyệt {id} cho {t}?', hoiDuyetUng: 'Khoản {a} cộng phí ứng {f} được ghi vào sổ tạm ứng của đối tác và thu hồi từ phần họ được hưởng mỗi kỳ.', hoiDuyetHd: 'Phí Haustek {f} áp cho đối tác từ kỳ mở tiếp theo, hạn {m} tháng; hợp đồng cũ hết hiệu lực.',
+      hoiTuChoi: 'Từ chối {id}', hoiTraLai: 'Trả lại {id} để bổ sung', lyDo: 'Lý do (đối tác và người đề xuất đều thấy)', hoiKiem: 'Xác nhận đã kiểm số {id}', hoiKiemMo: 'Bạn đã đối chiếu thu nhập 12 kỳ với bảng kê và sổ tạm ứng.', ghiChu: 'Ghi chú',
+      daDuyet: 'Đã duyệt {id}', daTuChoi: 'Đã từ chối {id}', daTraLai: 'Đã trả lại {id}', daKiem: 'Đã ghi kiểm số {id}', daRut: 'Đã rút {id}', daGuiLai: 'Đã gửi lại {id}',
+      khong: 'Không có đề xuất nào', khongMo: 'Đề xuất mới bấm ở góc phải, hoặc từ ngăn hồ sơ đối tác.',
+      fTk: 'Đối tác (tên hoặc mã)', fSo: 'Số tiền tạm ứng (USD)', fPhi: 'Phí ứng', fGhi: 'Mục đích / ghi chú', fHan: 'Kỳ hạn (tháng)', fPhiHd: 'Phí Haustek trên doanh thu gộp', fDocQuyen: 'Độc quyền', xemTinh: 'Bản tính theo số đang nhập', khongThayTk: 'Không tìm thấy đối tác “{q}”', daTao: 'Đã tạo đề xuất {id}',
+      chiTiet: 'Đề xuất', cuaDoiTac: 'gửi từ cổng đối tác'
+    },
+    en: {
+      navXetDuyet: 'Approvals', h1: 'Proposal approvals',
+      mo: 'Advances and contracts: sales or the partner proposes, accounting checks the figures, the director approves. Each proposal carries an ROI calculation and risk grade snapshotted at creation.',
+      kCho: 'Awaiting approval', kChoS: '{a} awaiting check · {b} checked', kUng: 'Advances proposed, pending', kUngS: 'total amount', kDuyet: 'Approved', kDuyetS: '{a} advances · {b} contracts', kTuChoi: 'Rejected / returned', kRoi: 'Average ROI', kRoiS: 'on capital · pending advances',
+      tabCho: 'Pending', tabXong: 'Handled', tabToi: 'Mine',
+      loaiAll: 'Any kind', loaiUng: 'Advances', loaiHd: 'Contracts', tim: 'Search partner, proposal id…',
+      cDx: 'Proposal', cTk: 'Partner', cNoiDung: 'Terms', cRoi: 'ROI', cHang: 'Grade', cKn: 'Recommendation', cTt: 'Status', cTuoi: 'Age', cThaoTac: 'Actions', ngay: 'days',
+      themUng: 'Propose advance', themHd: 'Propose contract',
+      duyet: 'Approve', tuChoi: 'Reject', traLai: 'Return', kiem: 'Checked', rut: 'Withdraw', guiLai: 'Resubmit',
+      hoiDuyet: 'Approve {id} for {t}?', hoiDuyetUng: '{a} plus the {f} advance fee is booked to the partner’s advance ledger and recouped from their share each period.', hoiDuyetHd: 'Haustek fee {f} applies to the partner from the next open period for {m} months; the old contract ends.',
+      hoiTuChoi: 'Reject {id}', hoiTraLai: 'Return {id} for changes', lyDo: 'Reason (visible to the partner and the proposer)', hoiKiem: 'Confirm figures checked for {id}', hoiKiemMo: 'You have reconciled 12 periods of earnings against statements and the advance ledger.', ghiChu: 'Note',
+      daDuyet: 'Approved {id}', daTuChoi: 'Rejected {id}', daTraLai: 'Returned {id}', daKiem: 'Recorded check for {id}', daRut: 'Withdrew {id}', daGuiLai: 'Resubmitted {id}',
+      khong: 'No proposals', khongMo: 'Create one at the top right, or from a partner’s drawer.',
+      fTk: 'Partner (name or id)', fSo: 'Advance amount (USD)', fPhi: 'Advance fee', fGhi: 'Purpose / note', fHan: 'Term (months)', fPhiHd: 'Haustek fee on gross revenue', fDocQuyen: 'Exclusive', xemTinh: 'Calculation for the figures entered', khongThayTk: 'No partner matching “{q}”', daTao: 'Created proposal {id}',
+      chiTiet: 'Proposal', cuaDoiTac: 'sent from the partner portal'
+    }
+  },
+
+  ve: function (root, c) {
+    var A = c.A, t = c.t, me = A.staff.me, vi = c.lang === 'vi';
+    var all = A.proposals.list(), k = A.proposals.counts(), qq = LOC.tim.trim().toLowerCase();
+    var choUng = all.filter(function (p) { return p.type === 'advance' && ['submitted', 'checked', 'returned'].indexOf(p.status) >= 0; });
+    var roiTb = choUng.length ? choUng.reduce(function (s, p) { return s + (p.calc.roi || 0); }, 0) / choUng.length : null;
+    var rows = all.filter(function (p) {
+      if (LOC.tab === 'cho' && ['submitted', 'checked', 'returned'].indexOf(p.status) < 0) return false;
+      if (LOC.tab === 'xong' && ['approved', 'rejected', 'withdrawn'].indexOf(p.status) < 0) return false;
+      if (LOC.tab === 'toi' && p.by !== me.name) return false;
+      if (LOC.loai !== 'all' && p.type !== LOC.loai) return false;
+      if (qq && (p.id + ' ' + p.party.name + ' ' + p.party.clientId + ' ' + p.by).toLowerCase().indexOf(qq) < 0) return false;
+      return true;
+    });
+    var pt = HTM.phanTrang(rows, LOC);
+    var html = HM.dau({ h1: HM.esc(t('h1')), mo: HM.esc(t('mo')) });
+    html += HM.so([
+      { l: t('kCho'), v: HT.fmt.n(k.pending), lon: true, s: t('kChoS').replace('{a}', k.submitted).replace('{b}', k.checked) },
+      { l: t('kUng'), v: c.tien2(choUng.reduce(function (s, p) { return s + p.terms.amount; }, 0)), s: t('kUngS') },
+      { l: t('kDuyet'), v: HT.fmt.n(k.approved), s: t('kDuyetS').replace('{a}', c.tien2(k.approvedAdvance)).replace('{b}', k.approvedContract), mau: k.approved ? HB.mau('ok') : '' },
+      { l: t('kTuChoi'), v: HT.fmt.n(k.rejected + k.returned) },
+      { l: t('kRoi'), v: roiTb == null ? '—' : HT.fmt.pct(roiTb), s: t('kRoiS') }
+    ]);
+    html += HM.tabs([{ k: 'cho', l: t('tabCho'), dem: k.pending }, { k: 'xong', l: t('tabXong'), dem: k.approved + k.rejected + k.withdrawn || undefined }, { k: 'toi', l: t('tabToi') }], LOC.tab);
+    html += '<div class="bar">' +
+      [['all', t('loaiAll')], ['advance', t('loaiUng')], ['contract', t('loaiHd')]].map(function (x) { return '<button type="button" class="pill' + (LOC.loai === x[0] ? ' on' : '') + '" data-loai="' + x[0] + '">' + HM.esc(x[1]) + '</button>'; }).join('') +
+      '<div class="srch">' + HM.icon('tim') + '<input type="search" data-tim placeholder="' + HM.esc(t('tim')) + '" value="' + HM.esc(LOC.tim) + '"></div><div class="sp"></div>' +
+      '<button type="button" class="btn sm" data-them-hd>' + HM.icon('file') + HM.esc(t('themHd')) + '</button>' +
+      '<button type="button" class="btn sm pri" data-them-ung>' + HM.icon('cash') + HM.esc(t('themUng')) + '</button></div>';
+    html += HM.the({ thoBody: true,
+      than: !rows.length ? HM.trong({ icon: 'check', tieuDe: t('khong'), moTa: t('khongMo') }) :
+        '<div class="tw"><table class="t"><thead><tr><th>' + HM.esc(t('cTk')) + '</th><th>' + HM.esc(t('cNoiDung')) + '</th><th class="num">' + HM.esc(t('cRoi')) + '</th><th>' + HM.esc(t('cKn')) + '</th><th>' + HM.esc(t('cTt')) + '</th><th class="num">' + HM.esc(t('cTuoi')) + '</th><th>' + HM.esc(t('cThaoTac')) + '</th></tr></thead><tbody>' +
+        pt.page.map(function (p) { return dongDx(c, p, me); }).join('') + '</tbody></table></div>' + pt.chan });
+    root.innerHTML = html;
+    HTM.ganTrang(root, LOC, c.veLai);
+    HM.bam(root, '[data-tab]', function (el) { LOC.tab = el.getAttribute('data-tab'); LOC.trang = 0; c.veLai(); });
+    HM.bam(root, '[data-loai]', function (el) { LOC.loai = el.getAttribute('data-loai'); LOC.trang = 0; c.veLai(); });
+    HM.nhap(root, '[data-tim]', function (el) { LOC.tim = el.value; LOC.trang = 0; c.veLai(); var i = root.querySelector('[data-tim]'); if (i) { i.focus(); i.setSelectionRange(i.value.length, i.value.length); } });
+    HM.bam(root, '[data-them-ung]', function () { HT.deXuatTamUng(c, null); });
+    HM.bam(root, '[data-them-hd]', function () { HT.deXuatHopDong(c, null); });
+    HM.bam(root, '[data-dx]', function (el, e) { e.stopPropagation(); thaoTac(c, el.getAttribute('data-dx'), el.getAttribute('data-id')); });
+    HM.bam(root, 'tr[data-pr]', function (el, e) { if (e.target.closest('button')) return; moDx(c, el.getAttribute('data-pr')); });
+  }
+});
+
+function dongDx(c, p, me) {
+  var t = tx, roi = p.type === 'advance' ? p.calc.roi : null;
+  return '<tr class="pick" data-pr="' + HM.esc(p.id) + '"><td>' + HM.tenBia({ ten: p.party.name, seed: p.party.clientId, phu: p.id }) + '</td>' +
+    '<td style="min-width:220px"><div class="t-ttl">' + HM.esc(c.song(p, 'moTa')) + '</div><div class="t-sub" style="font-family:var(--f)">' + HM.esc((p.byRole === 'partner' ? t('cuaDoiTac') : p.by) + (p.terms.note ? ' · ' + HM.dai(p.terms.note, 48) : '')) + '</div></td>' +
+    '<td class="num" style="white-space:nowrap">' + (roi == null ? '<span class="nil">—</span>' : '<b>' + HM.esc(HT.fmt.pct(roi)) + '</b><div class="t-sub" style="font-family:var(--f)">' + HM.esc((c.lang === 'vi' ? 'thu hồi ' : 'recoup ') + (p.calc.recoupMonths == null ? '—' : p.calc.recoupMonths + (c.lang === 'vi' ? ' tháng' : ' mo'))) + '</div>') + '</td>' +
+    '<td>' + HTM.tagKn(p.calc.recommendation) + (p.calc.grade ? ' ' + HTM.tagHang(p.calc.grade) : '') + '</td>' +
+    '<td>' + HTM.tagDx(p.status) + '</td><td class="num">' + HM.esc(p.ageDays + ' ' + t('ngay')) + '</td>' +
+    '<td>' + nutDx(c, p, me) + '</td></tr>';
+}
+function nutDx(c, p, me) {
+  var t = tx, role = me.role, out = [];
+  var cho = ['submitted', 'checked'].indexOf(p.status) >= 0;
+  if (cho && role === 'mgmt') { out.push('<button type="button" class="btn sm pri" data-dx="approve" data-id="' + p.id + '">' + HM.esc(t('duyet')) + '</button>'); out.push('<button type="button" class="btn sm dang" data-dx="reject" data-id="' + p.id + '">' + HM.esc(t('tuChoi')) + '</button>'); }
+  if (p.status === 'submitted' && (role === 'accounting' || role === 'mgmt')) out.push('<button type="button" class="btn sm" data-dx="check" data-id="' + p.id + '">' + HM.esc(t('kiem')) + '</button>');
+  if (cho && (role === 'accounting' || role === 'mgmt')) out.push('<button type="button" class="btn sm ghost" data-dx="return" data-id="' + p.id + '">' + HM.esc(t('traLai')) + '</button>');
+  if (p.status === 'returned' && (p.byRole === role || role === 'mgmt')) out.push('<button type="button" class="btn sm" data-dx="resubmit" data-id="' + p.id + '">' + HM.esc(t('guiLai')) + '</button>');
+  if (['submitted', 'checked', 'returned'].indexOf(p.status) >= 0 && (p.byRole === role || role === 'mgmt') && p.byRole !== 'partner') out.push('<button type="button" class="btn sm ghost" data-dx="withdraw" data-id="' + p.id + '">' + HM.esc(t('rut')) + '</button>');
+  return out.length ? '<div class="btnrow" style="flex-wrap:nowrap">' + out.join('') + '</div>' : '<span class="nil">—</span>';
+}
+function thaoTac(c, act, id) {
+  var A = c.A, t = tx, me = A.staff.me, p = A.proposals.get(id); if (!p) return;
+  var xong = { approve: 'daDuyet', reject: 'daTuChoi', return: 'daTraLai', check: 'daKiem', withdraw: 'daRut', resubmit: 'daGuiLai' }[act];
+  function chay(note) {
+    try { A.proposals.review(id, act, note || '', me.name, me.role); c.thongBao(t(xong).replace('{id}', id), 'ok'); c.dongNgan(); c.veLai(); }
+    catch (e) { c.thongBao(e.message, 'no'); }
+  }
+  if (act === 'approve') {
+    var mo = p.type === 'advance' ? t('hoiDuyetUng').replace('{a}', c.tien2(p.terms.amount)).replace('{f}', HT.fmt.pct(p.terms.feePct)) : t('hoiDuyetHd').replace('{f}', HT.fmt.pct(p.terms.feePct)).replace('{m}', p.terms.months);
+    c.hoiThoai({ tieuDe: t('hoiDuyet').replace('{id}', id).replace('{t}', p.party.name), moTa: HM.esc(mo), than: HTM.theDeXuat(p, { tien: c.tien2 }) + '<label class="fld" style="margin-top:12px">' + HM.esc(t('ghiChu')) + '</label><input class="in" data-o="note">', dong: t('duyet'), rong: true })
+      .then(function (f) { if (f) chay(f.note); setTimeout(function () { var m = document.querySelector('.modal'); if (m) HB.gan(m); }, 20); });
+    setTimeout(function () { var m = document.querySelector('.modal'); if (m) HB.gan(m); }, 20);
+    return;
+  }
+  if (act === 'reject' || act === 'return') {
+    c.hoiThoai({ tieuDe: t(act === 'reject' ? 'hoiTuChoi' : 'hoiTraLai').replace('{id}', id), moTa: HM.esc(c.song(p, 'moTa') + ' · ' + p.party.name),
+      than: '<label class="fld">' + HM.esc(t('lyDo')) + '</label><textarea class="in" rows="3" data-o="note"></textarea>', dong: t(act === 'reject' ? 'tuChoi' : 'traLai'), nguyHiem: act === 'reject' })
+      .then(function (f) { if (f) chay(f.note); });
+    return;
+  }
+  if (act === 'check') {
+    c.hoiThoai({ tieuDe: t('hoiKiem').replace('{id}', id), moTa: HM.esc(t('hoiKiemMo')), than: '<label class="fld">' + HM.esc(t('ghiChu')) + '</label><input class="in" data-o="note">', dong: t('kiem') })
+      .then(function (f) { if (f) chay(f.note); });
+    return;
+  }
+  chay('');
+}
+function moDx(c, id) {
+  var A = c.A, t = tx, me = A.staff.me, p = A.proposals.get(id); if (!p) return;
+  var html = '<div class="asset-h">' + HM.hinh(p.party.name, p.party.clientId, 'lon') + '<div class="asset-t"><b>' + HM.esc(p.party.name) + '</b><span>' + HM.esc(p.party.clientId + ' · ' + p.id + ' · ' + (p.byRole === 'partner' ? t('cuaDoiTac') : t('cDx').toLowerCase() + ' ' + p.by)) + '</span></div></div>' +
+    HTM.theDeXuat(p, { tien: c.tien2 }) + '<div class="btnrow" style="margin-top:14px">' + nutDx(c, p, me) + '</div>';
+  c.nganTruot(html, { tieuDe: t('chiTiet') + ' ' + p.id, phu: c.song(p, 'moTa'), khiMo: function (dr) {
+    HB.gan(dr);
+    HM.bam(dr, '[data-dx]', function (el) { thaoTac(c, el.getAttribute('data-dx'), el.getAttribute('data-id')); });
+  } });
+}
+
+/* ---- hộp thoại đề xuất, dùng chung từ Xét duyệt, Bàn làm việc và ngăn Đối tác ---- */
+function chonTk(c, q) {
+  var A = c.A; q = String(q || '').trim().toLowerCase(); if (!q) return null;
+  var ds = A.parties.list({ q: q }).rows;
+  return ds.length ? ds[0] : null;
+}
+function xemTinh(c, loai) {
+  var A = c.A, md = document.querySelector('.modal'); if (!md) return;
+  var host = md.querySelector('[data-tinh]'), tkIn = md.querySelector('[data-o="tk"]'), pkIn = md.querySelector('[data-o="pk"]');
+  var pk = pkIn && pkIn.value; if (!pk && tkIn) { var r = chonTk(c, tkIn.value); pk = r ? r.partyKey : null; }
+  if (!pk) { host.innerHTML = '<p class="say">' + HM.esc(tx('fTk')) + '</p>'; return; }
+  try {
+    var calc = loai === 'advance' ? A.advanceCalc(pk, +md.querySelector('[data-o="amount"]').value || 0, (+md.querySelector('[data-o="fee"]').value || 12) / 100)
+      : A.contractCalc(pk, { months: +md.querySelector('[data-o="months"]').value || 24, feePct: (+md.querySelector('[data-o="fee"]').value || 15) / 100 });
+    var gia = { type: loai, status: 'submitted', calc: calc, terms: loai === 'advance' ? { amount: calc.amount, feePct: calc.feePct } : { months: calc.months, feePct: calc.feePct }, history: [], moTa: A.partyName(pk), moTaEn: A.partyName(pk) };
+    host.innerHTML = '<h4 class="sec">' + HM.esc(tx('xemTinh')) + ' · ' + HM.esc(A.partyName(pk)) + '</h4>' + HTM.theDeXuat(gia, { tien: c.tien2 });
+    HB.gan(host);
+  } catch (e) { host.innerHTML = '<p class="say">' + HM.esc(e.message) + '</p>'; }
+}
+function hoiDeXuat(c, loai, partyKey) {
+  var A = c.A, t = tx, me = A.staff.me;
+  var ten = partyKey ? A.partyName(partyKey) : '';
+  var than = (partyKey ? '<input type="hidden" data-o="pk" value="' + HM.esc(partyKey) + '"><div class="bar" style="margin-bottom:10px">' + HM.hinh(ten, A.partyClientId(partyKey), 'sm') + '<b>' + HM.esc(ten) + '</b><span class="muted mono" style="font-size:12px">' + HM.esc(A.partyClientId(partyKey)) + '</span></div>'
+      : '<label class="fld">' + HM.esc(t('fTk')) + '</label><input class="in" data-o="tk" placeholder="Nightform Records · HTK-L001">') +
+    (loai === 'advance'
+      ? '<div class="grid g2" style="margin-bottom:0"><div><label class="fld">' + HM.esc(t('fSo')) + '</label><input class="in" type="number" data-o="amount" min="100" step="100" value="2000"></div><div><label class="fld">' + HM.esc(t('fPhi')) + ' (%)</label><input class="in" type="number" data-o="fee" min="0" max="50" step="1" value="' + Math.round(A.advanceFee * 100) + '"></div></div>'
+      : '<div class="grid g3" style="margin-bottom:0"><div><label class="fld">' + HM.esc(t('fHan')) + '</label><input class="in" type="number" data-o="months" min="6" max="60" step="6" value="24"></div><div><label class="fld">' + HM.esc(t('fPhiHd')) + ' (%)</label><input class="in" type="number" data-o="fee" min="3" max="50" step="1" value="15"></div><div><label class="fld">' + HM.esc(t('fDocQuyen')) + '</label><select class="in" data-o="exclusive"><option value="">—</option><option value="1">' + HM.esc(t('fDocQuyen')) + '</option></select></div></div>') +
+    '<label class="fld" style="margin-top:12px">' + HM.esc(t('fGhi')) + '</label><input class="in" data-o="note">' +
+    '<div data-tinh style="margin-top:14px"></div>';
+  c.hoiThoai({ tieuDe: t(loai === 'advance' ? 'themUng' : 'themHd') + (ten ? ' · ' + ten : ''), moTa: HM.esc(t('mo')), than: than, dong: t(loai === 'advance' ? 'themUng' : 'themHd'), rong: true })
+    .then(function (f) {
+      if (!f) return;
+      var pk = f.pk; if (!pk) { var r = chonTk(c, f.tk); if (!r) { c.thongBao(t('khongThayTk').replace('{q}', f.tk || ''), 'no'); return; } pk = r.partyKey; }
+      try {
+        var pr = loai === 'advance' ? A.proposals.proposeAdvance(pk, { amount: +f.amount, feePct: (+f.fee || 0) / 100, note: f.note }, me.name, me.role)
+          : A.proposals.proposeContract(pk, { months: +f.months, feePct: (+f.fee || 0) / 100, exclusive: !!f.exclusive, note: f.note }, me.name, me.role);
+        c.thongBao(t('daTao').replace('{id}', pr.id), 'ok'); c.dongNgan(); c.veLai();
+      } catch (e) { c.thongBao(e.message, 'no'); }
+    });
+  setTimeout(function () {
+    var md = document.querySelector('.modal'); if (!md) return;
+    xemTinh(c, loai);
+    md.addEventListener('input', function () { clearTimeout(md._hen); md._hen = setTimeout(function () { xemTinh(c, loai); }, 220); });
+    md.addEventListener('change', function () { xemTinh(c, loai); });
+  }, 30);
+}
+HT.deXuatTamUng = function (c, partyKey) { hoiDeXuat(c, 'advance', partyKey); };
+HT.deXuatHopDong = function (c, partyKey) { hoiDeXuat(c, 'contract', partyKey); };
+/* Bàn làm việc dùng lại: nút theo vai, xử lý một thao tác, mở ngăn chi tiết */
+HT.nutDeXuat = function (c, p) { return nutDx(c, p, c.A.staff.me); };
+HT.xuLyDeXuat = function (c, act, id) { thaoTac(c, act, id); };
+HT.moDeXuat = function (c, id) { moDx(c, id); };
+(function () { for (var i = 0; i < HT.man.length; i++) if (HT.man[i].id === 'xet-duyet') CHU = HT.man[i].chu; })();
+
+})();
+
+},
+/* ---- man/muc-tra.js ---- */
+function(){
+/* =====================================================================
+   NỘI BỘ · MỨC TRẢ NỀN TẢNG
+   ---------------------------------------------------------------------
+   Dự báo doanh thu = lượt nghe theo ngày × mức trả (USD gộp / 1.000 lượt)
+   của từng nền tảng. Mặc định mức trả suy từ báo cáo ba kỳ đã xét duyệt
+   gần nhất; dữ liệu mẫu đã hiệu chỉnh về thị trường Việt Nam (Spotify ≈
+   1,6 · Apple Music ≈ 3,2 · YouTube Music ≈ 0,75 · Zing MP3 ≈ 0,4 · TikTok
+   ≈ 0,35). Khi Haustek có số thật từ báo cáo nền tảng, nhập ở đây — ghi
+   đè theo tên nền tảng, có ngày và người nhập — dự báo hai cổng, mức trả
+   trong ngăn hồ sơ và giải thích số đổi theo ngay. Dán CSV để nhập nhanh.
+   ===================================================================== */
+"use strict";
+(function () {
+
+HT.dangKy({
+  id: 'muc-tra', nav: 'navMucTra', nhom: 'nhomTien', icon: 'chart',
+  vai: ['ops', 'mgmt', 'accounting'],
+
+  chu: {
+    vi: {
+      navMucTra: 'Mức trả nền tảng', h1: 'Mức trả nền tảng',
+      mo: 'USD gộp trên 1.000 lượt nghe của từng nền tảng, dùng cho dự báo và giải thích số. Mặc định suy từ báo cáo 3 kỳ gần nhất; nhập số thật để ghi đè.',
+      kTron: 'Mức trả trộn', kTronS: 'USD / 1.000 lượt, theo cơ cấu lượt nghe 3 kỳ', kGhiDe: 'Nền tảng đã nhập số thật', kGhiDeS: 'trong {n} nền tảng', kDuBao: 'Dự báo doanh thu kỳ mở', kDuBaoS: 'đổi theo mức trả ngay', kVn: 'Tham chiếu thị trường VN', kVnS: 'Spotify, USD / 1.000',
+      cNt: 'Nền tảng', cSuy: 'Suy từ báo cáo', cVn: 'Tham chiếu VN', cDung: 'Đang dùng', cNguon: 'Nguồn', cNhap: 'Nhập số thật', cThaoTac: 'Thao tác',
+      nguonSuy: 'báo cáo 3 kỳ', nguonNhap: 'nhập tay', luu: 'Lưu', bo: 'Bỏ ghi đè', daLuu: 'Đã lưu {n}: {v} USD / 1.000', daBo: 'Đã bỏ ghi đè {n}',
+      dan: 'Dán CSV', danMo: 'Mỗi dòng: tên nền tảng, USD trên 1.000 lượt (chấp nhận dấu phẩy thập phân, dấu ; hoặc tab). Ví dụ: Spotify,1.52', nhap: 'Nhập', daNhap: 'Đã nhập {a} nền tảng, bỏ qua {b} dòng',
+      soSanh: 'Suy từ báo cáo so với tham chiếu và số đang dùng', soSanhMo: 'USD / 1.000 lượt. Cột đỏ là nền tảng đang dùng số nhập tay.',
+      ghiChu: 'Ghi chú (nguồn, kỳ báo cáo)', chua: 'chưa',
+      note: 'Mức trả thị trường Việt Nam thấp hơn Âu–Mỹ 2–3 lần vì giá thuê bao và CPM quảng cáo thấp; nền tảng nội địa (Zing MP3, NhacCuaTui) trả thấp nhất. Số ở đây là gộp về Haustek trước khi chia; đối tác thấy mức trả đã nhân với tỷ lệ của họ.'
+    },
+    en: {
+      navMucTra: 'Platform payout rates', h1: 'Platform payout rates',
+      mo: 'Gross USD per 1,000 streams per platform, used by forecasts and number explanations. Derived from the last three approved reports by default; enter real figures to override.',
+      kTron: 'Blended rate', kTronS: 'USD / 1,000 streams, weighted by 3-period stream mix', kGhiDe: 'Platforms with real figures', kGhiDeS: 'of {n} platforms', kDuBao: 'Open-period revenue forecast', kDuBaoS: 'moves with the rates', kVn: 'Vietnam market reference', kVnS: 'Spotify, USD / 1,000',
+      cNt: 'Platform', cSuy: 'Derived from reports', cVn: 'VN reference', cDung: 'In use', cNguon: 'Source', cNhap: 'Enter real figure', cThaoTac: 'Actions',
+      nguonSuy: '3-period reports', nguonNhap: 'entered', luu: 'Save', bo: 'Clear override', daLuu: 'Saved {n}: {v} USD / 1,000', daBo: 'Cleared override for {n}',
+      dan: 'Paste CSV', danMo: 'One line per platform: name, USD per 1,000 streams (decimal comma, ; or tab accepted). Example: Spotify,1.52', nhap: 'Import', daNhap: 'Imported {a} platforms, skipped {b} lines',
+      soSanh: 'Derived vs reference vs in use', soSanhMo: 'USD / 1,000 streams. Red bars are platforms using entered figures.',
+      ghiChu: 'Note (source, report period)', chua: 'none',
+      note: 'Vietnamese market rates are 2–3× below Europe/US because subscription prices and ad CPMs are low; domestic platforms (Zing MP3, NhacCuaTui) pay the least. Figures here are gross to Haustek before the split; partners see rates multiplied by their share.'
+    }
+  },
+
+  ve: function (root, c) {
+    var A = c.A, t = c.t, P = HB.dayMau();
+    var rows = A.platformRatesFull(), ov = rows.filter(function (r) { return r.source === 'override'; }).length;
+    var f = null; try { f = A.forecast(); } catch (e) { f = null; }
+    var tron = f && f.byPlatform.length ? f.byPlatform.reduce(function (s, x) { return s + x.per1k * x.share; }, 0) : 0;
+    var html = HM.dau({ h1: HM.esc(t('h1')), mo: HM.esc(t('mo')) });
+    html += HM.so([
+      { l: t('kTron'), v: HT.fmt.usd(tron), lon: true, s: t('kTronS') },
+      { l: t('kGhiDe'), v: HT.fmt.n(ov), s: t('kGhiDeS').replace('{n}', rows.length), mau: ov ? HB.mau('ok') : '' },
+      f ? { l: t('kDuBao').replace('{k}', f.openPeriod), v: c.tien(f.projected.revenue), s: t('kDuBaoS') } : null,
+      { l: t('kVn'), v: HT.fmt.usd(A.vnRef[0]), s: t('kVnS') }
+    ].filter(Boolean));
+    html += HM.the({ thoBody: true,
+      than: '<div class="tw"><table class="t"><thead><tr><th>' + HM.esc(t('cNt')) + '</th><th class="num">' + HM.esc(t('cSuy')) + '</th><th class="num">' + HM.esc(t('cVn')) + '</th><th class="num band">' + HM.esc(t('cDung')) + '</th><th>' + HM.esc(t('cNguon')) + '</th><th>' + HM.esc(t('cNhap')) + '</th><th>' + HM.esc(t('cThaoTac')) + '</th></tr></thead><tbody>' +
+        rows.map(function (r) {
+          return '<tr><td>' + HM.tenBia({ ten: c.song(r, 'name'), seed: r.name, phu: r.source === 'override' && r.at ? HT.fmt.ngay(String(r.at).slice(0, 10)) + (r.note ? ' · ' + r.note : '') : '' }) + '</td>' +
+            '<td class="num mono">' + HM.esc(HT.fmt.usd(r.derived)) + '</td><td class="num mono muted">' + (r.refVn != null ? HM.esc(HT.fmt.usd(r.refVn)) : '—') + '</td>' +
+            '<td class="num band"><b>' + HM.esc(HT.fmt.usd(r.per1k)) + '</b></td>' +
+            '<td>' + HM.tag(r.source === 'override' ? t('nguonNhap') : t('nguonSuy'), r.source === 'override' ? 'ok' : '') + '</td>' +
+            '<td><div class="bar" style="margin:0;gap:6px;flex-wrap:nowrap"><input class="in mono" type="number" step="0.01" min="0.01" max="99" style="width:96px" data-gia="' + HM.esc(r.name) + '" value="' + (r.source === 'override' ? r.per1k : '') + '" placeholder="' + HM.esc(HT.fmt.usd(r.refVn != null ? r.refVn : r.derived).replace('$', '')) + '"><input class="in" style="width:150px" data-ghi="' + HM.esc(r.name) + '" placeholder="' + HM.esc(t('ghiChu')) + '" value="' + HM.esc(r.source === 'override' ? (r.note || '') : '') + '"></div></td>' +
+            '<td><div class="btnrow" style="flex-wrap:nowrap"><button type="button" class="btn sm pri" data-luu="' + HM.esc(r.name) + '">' + HM.esc(t('luu')) + '</button>' + (r.source === 'override' ? '<button type="button" class="btn sm ghost" data-bo="' + HM.esc(r.name) + '">' + HM.esc(t('bo')) + '</button>' : '') + '</div></td></tr>';
+        }).join('') + '</tbody></table></div>',
+      chan: HM.esc(t('note')) });
+    html += '<div class="grid g2">' +
+      HM.the({ h2: HM.esc(t('soSanh')), p: HM.esc(t('soSanhMo')),
+        than: HB.o({ loai: 'thanh', dinhDang: function (v) { return HT.fmt.usd(v); }, hang: rows.map(function (r, i) { return { ten: c.song(r, 'name'), gt: r.per1k, mau: r.source === 'override' ? HB.mau('no') : P[i % 8], phu: t('cSuy') + ' ' + HT.fmt.usd(r.derived) + (r.refVn != null ? ' · ' + t('cVn') + ' ' + HT.fmt.usd(r.refVn) : '') }; }) }) }) +
+      HM.the({ h2: HM.esc(t('dan')), p: HM.esc(t('danMo')),
+        than: '<textarea class="in mono" rows="7" data-csv placeholder="Spotify,1.52\nApple Music,3.05\nYouTube Music,0.71\nZing MP3,0.38"></textarea><div class="btnrow" style="margin-top:10px"><button type="button" class="btn pri" data-nhap>' + HM.icon('down2') + HM.esc(t('nhap')) + '</button></div>' }) +
+      '</div>';
+    root.innerHTML = html;
+    HB.gan(root);
+    HM.bam(root, '[data-luu]', function (el) {
+      var n = el.getAttribute('data-luu'), v = root.querySelector('[data-gia="' + n.replace(/"/g, '\\"') + '"]').value, ghi = root.querySelector('[data-ghi="' + n.replace(/"/g, '\\"') + '"]').value;
+      try { A.setPlatformRate(n, parseFloat(String(v).replace(',', '.')), ghi, A.staff.me.name); c.thongBao(t('daLuu').replace('{n}', n).replace('{v}', v), 'ok'); c.veLai(); }
+      catch (e) { c.thongBao(e.message, 'no'); }
+    });
+    HM.bam(root, '[data-bo]', function (el) { var n = el.getAttribute('data-bo'); A.clearPlatformRate(n, A.staff.me.name); c.thongBao(t('daBo').replace('{n}', n), 'ok'); c.veLai(); });
+    HM.bam(root, '[data-nhap]', function () {
+      var kq = A.importPlatformRates(root.querySelector('[data-csv]').value, A.staff.me.name);
+      c.thongBao(t('daNhap').replace('{a}', kq.ok.length).replace('{b}', kq.skipped.length), kq.ok.length ? 'ok' : 'no'); if (kq.ok.length) c.veLai();
     });
   }
 });
@@ -14321,7 +15075,7 @@ HT.dangKy({
       dHangMo: 'A từ $150,000 gộp một quý · B từ $40,000 · C còn lại',
       dTk: 'Tài khoản cổng', dNh: 'Tài khoản ngân hàng', coNh: 'đã khai', chuaNh: 'chưa khai',
       dVi: 'Ví của đối tác', viKhaDung: 'Khả dụng', viCho: 'Đang xử lý', viDaRut: 'Đã rút',
-      dTicket: 'Ticket đang mở', khongTicket: 'Không có ticket nào đang mở', taoTicket: 'Tạo ticket hộ', moHoTro: 'Mở hỗ trợ',
+      dTicket: 'Ticket đang mở', khongTicket: 'Không có ticket nào đang mở', taoTicket: 'Tạo ticket hộ', moHoTro: 'Mở hỗ trợ', deUng: 'Đề xuất tạm ứng', deHd: 'Đề xuất hợp đồng',
       dCha: 'Thuộc label mẹ', dDtQ: 'Doanh thu gộp quý này', soQuyTruoc: 'so với quý trước', dienBien: 'Doanh thu gộp 12 kỳ gần nhất',
       dPh: 'Bản phát hành', dPhMo: 'Bài hát có doanh thu cao nhất của đối tác. Bấm để mở hồ sơ.', dPhTrong: 'Đối tác chưa có bài hát nào trong danh mục.', xemDanhMuc: 'Mở danh mục',
       /* chỉ tiêu */
@@ -14351,7 +15105,7 @@ HT.dangKy({
       dHangMo: 'A from $150,000 gross a quarter · B from $40,000 · C otherwise',
       dTk: 'Portal account', dNh: 'Bank account', coNh: 'on file', chuaNh: 'missing',
       dVi: 'Partner wallet', viKhaDung: 'Available', viCho: 'In progress', viDaRut: 'Withdrawn',
-      dTicket: 'Open tickets', khongTicket: 'No open ticket', taoTicket: 'Log a ticket', moHoTro: 'Open support',
+      dTicket: 'Open tickets', khongTicket: 'No open ticket', taoTicket: 'Log a ticket', moHoTro: 'Open support', deUng: 'Propose advance', deHd: 'Propose contract',
       dCha: 'Parent label', dDtQ: 'Gross this quarter', soQuyTruoc: 'vs previous quarter', dienBien: 'Gross, last 12 periods',
       dPh: 'Releases', dPhMo: 'The partner’s highest-earning tracks. Open one for its record.', dPhTrong: 'This partner has no tracks in the catalogue yet.', xemDanhMuc: 'Open catalogue',
       kdTieuDe: 'Sales targets, quarter {q}',
@@ -14587,7 +15341,8 @@ function moDoiTac(c, r) {
     }).join('') + '</tbody></table></div>' : '<p class="say">' + HM.esc(t('khongTicket')) + '</p>') +
     '<div class="btnrow" style="margin-top:10px">' +
       '<button type="button" class="btn sm pri" data-tao-tk>' + HM.icon('info') + HM.esc(t('taoTicket')) + '</button>' +
-      '<button type="button" class="btn sm" data-di="ho-tro">' + HM.esc(t('moHoTro')) + '</button></div>' +
+      '<button type="button" class="btn sm" data-di="ho-tro">' + HM.esc(t('moHoTro')) + '</button>' +
+      (['sales', 'mgmt'].indexOf(me.role) >= 0 ? '<button type="button" class="btn sm" data-de-ung>' + HM.icon('cash') + HM.esc(t('deUng')) + '</button><button type="button" class="btn sm" data-de-hd>' + HM.icon('file') + HM.esc(t('deHd')) + '</button>' : '') + '</div>' +
     '<h4 class="sec">' + HM.esc(t('dienBien')) + '</h4>' +
     HB.o({ loai: 'cot', cao: 150, anTruc: true, chuThich: false,
       truc: A.periods.map(function (p) { return p.label.slice(0, 2); }),
@@ -14601,6 +15356,8 @@ function moDoiTac(c, r) {
           catch (e) { c.thongBao(e.message, 'no'); }
         });
         HM.bam(dr, '[data-tao-tk]', function () { if (HT.moTicketNoiBo) HT.moTicketNoiBo(c, { partyKey: pk, name: r.name, clientId: r.clientId }); });
+        HM.bam(dr, '[data-de-ung]', function () { if (HT.deXuatTamUng) HT.deXuatTamUng(c, pk); });
+        HM.bam(dr, '[data-de-hd]', function () { if (HT.deXuatHopDong) HT.deXuatHopDong(c, pk); });
         HM.bam(dr, '[data-di]', function (el) { c.di(el.getAttribute('data-di')); });
         HM.bam(dr, '[data-tk]', function (el) { if (HT.hoTroMo) HT.hoTroMo(c, el.getAttribute('data-tk')); });
         HM.bam(dr, '[data-bai]', function (el) {
@@ -19720,7 +20477,12 @@ HT.dangKy({
       chuaTru: 'Chưa khấu trừ được kỳ nào',
       chuaTruMo: 'Kể từ khi nhận khoản tạm ứng, bạn chưa có doanh thu ở kỳ đã chốt sổ nào.',
       xong: 'Đã khấu trừ xong', xongMo: 'Khoản tạm ứng của bạn đã được khấu trừ hết. Từ kỳ sau, việc thanh toán trở lại bình thường.',
-      chuaMo: 'Kỳ này chưa chốt sổ'
+      chuaMo: 'Kỳ này chưa chốt sổ',
+      dnH2: 'Đề nghị tạm ứng', dnMo: 'Haustek có thể tạm ứng trước một phần thu nhập 12 tháng tới của bạn, tính từ thu nhập ròng các kỳ đã xét duyệt. Khoản ứng được khấu trừ dần từ phần bạn được hưởng mỗi kỳ.',
+      dnNet: 'Thu nhập ròng / tháng', dnNetS: 'trung bình {n} kỳ đã xét duyệt', dnProj: 'Thu nhập 12 tháng dự kiến', dnMax: 'Có thể tạm ứng tới', dnMaxS: 'hạng {g} · tăng trưởng {t}', dnVd: 'Ví dụ: phải khấu trừ', dnVdS: 'nếu ứng {a}, hết sau khoảng {m} tháng',
+      dnChua: 'Chưa thể đề nghị tạm ứng', dnNut: 'Đề nghị tạm ứng', dnHoiMo: 'Tối đa {max}. Kế toán Haustek kiểm số, giám đốc xét duyệt; bạn nhận thông báo khi có kết quả.', dnSo: 'Số tiền đề nghị (USD)', dnMucDich: 'Mục đích (sản xuất, quảng bá…)', dnGui: 'Gửi đề nghị', dnDaGui: 'Đã gửi đề nghị {id}',
+      dnTinh: 'Phải khấu trừ {r} (gồm phí ứng {f}), dự kiến hết sau khoảng {m} tháng.', dnVuot: 'Vượt mức tối đa.', dnDangCho: 'Bạn có đề nghị đang chờ xử lý. Gửi đề nghị mới sau khi có kết quả.', dnDangUng: 'Khấu trừ hết khoản hiện tại rồi mới đề nghị khoản mới.',
+      dnDs: 'Đề nghị đã gửi', dnDsMo: 'Trạng thái đổi khi Haustek kiểm số và xét duyệt. Bạn có thể rút đề nghị đang chờ.', cDx: 'Mã', cNoiDung: 'Nội dung', cTt: 'Trạng thái', cNgay: 'Cập nhật', cThaoTac: 'Thao tác', dnRut: 'Rút', dnDaRut: 'Đã rút {id}', dnRutHoi: 'Rút đề nghị {id}?', dnRutMo: 'Đề nghị sẽ đóng; bạn có thể gửi đề nghị mới sau.'
     },
     en: {
       navUng: 'Advance', h1: 'Your advance',
@@ -19741,7 +20503,12 @@ HT.dangKy({
       chuaTru: 'Nothing offset yet',
       chuaTruMo: 'You have earned nothing in a closed period since the advance was recorded.',
       xong: 'Fully repaid', xongMo: 'Your advance is fully offset. Transfers resume from the next period.',
-      chuaMo: 'Period not open'
+      chuaMo: 'Period not open',
+      dnH2: 'Request an advance', dnMo: 'Haustek can advance part of your next 12 months of earnings, based on net earnings in approved periods. The advance is recouped from your share each period.',
+      dnNet: 'Net earnings / month', dnNetS: 'average over {n} approved periods', dnProj: 'Projected 12-month earnings', dnMax: 'You can request up to', dnMaxS: 'grade {g} · growth {t}', dnVd: 'Example: amount to recoup', dnVdS: 'for a {a} advance, cleared in about {m} months',
+      dnChua: 'An advance is not available yet', dnNut: 'Request an advance', dnHoiMo: 'Up to {max}. Haustek accounting checks the figures and the director approves; you are notified of the outcome.', dnSo: 'Amount requested (USD)', dnMucDich: 'Purpose (production, promotion…)', dnGui: 'Send request', dnDaGui: 'Request {id} sent',
+      dnTinh: '{r} to recoup (including the {f} advance fee), cleared in about {m} months.', dnVuot: 'Above the maximum.', dnDangCho: 'You have a request in progress. Send a new one once it is decided.', dnDangUng: 'Your current advance must be recouped before a new request.',
+      dnDs: 'Requests sent', dnDsMo: 'Status moves as Haustek checks and approves. You can withdraw a pending request.', cDx: 'Id', cNoiDung: 'Terms', cTt: 'Status', cNgay: 'Updated', cThaoTac: 'Actions', dnRut: 'Withdraw', dnDaRut: 'Withdrew {id}', dnRutHoi: 'Withdraw request {id}?', dnRutMo: 'The request closes; you can send a new one later.'
     }
   },
 
@@ -19764,12 +20531,15 @@ HT.dangKy({
       return;
     }
 
+    var dn = layDeNghi(c);
     if (!s.advance) {
       root.innerHTML = HM.dau({ h1: HM.esc(t('h1')), mo: HM.esc(t('mo')) }) +
+        veDeNghi(c, dn, false) +
         HM.the({ than: HM.trong({ icon: 'check', tieuDe: t('khongCo'), moTa: t('khongCoMo'),
           nut: '<button type="button" class="btn" data-di="k-tong-quan">' + HM.esc(t('veTongQuan')) + '</button>' }) }) +
         veGiaiThich(c);
       HM.bam(root, '[data-di]', function (el) { c.di(el.getAttribute('data-di')); });
+      ganDeNghi(root, c, dn);
       return;
     }
 
@@ -19868,13 +20638,94 @@ HT.dangKy({
         : HM.trong({ icon: 'clock', tieuDe: t('chuaTru'), moTa: t('chuaTruMo') })
     });
 
+    html += veDeNghi(c, dn, a.left > 0.004);
     html += veGiaiThich(c);
 
     root.innerHTML = html;
     HB.gan(root);
     HM.bam(root, '[data-di]', function (el) { c.di(el.getAttribute('data-di')); });
+    ganDeNghi(root, c, dn);
   }
 });
+
+/* ---- đề nghị tạm ứng từ cổng đối tác: mức có thể ứng, gửi đề nghị, theo dõi ---- */
+var DN_CHO = ['submitted', 'checked', 'returned'];
+function layDeNghi(c) {
+  var api = c.api, me = c.phien.me, out = { offer: null, ds: [] };
+  try { out.offer = api.advanceOffer(me.role, me.partyId); } catch (e) { out.offer = null; }
+  try { out.ds = api.proposals(me.role, me.partyId); } catch (e) { out.ds = []; }
+  return out;
+}
+function veDeNghi(c, dn, dangUng) {
+  var t = c.t, o = dn.offer, ds = dn.ds, vi = c.lang === 'vi';
+  var cho = ds.filter(function (p) { return p.type === 'advance' && DN_CHO.indexOf(p.status) >= 0; });
+  var html = '';
+  if (o) {
+    var than, nut = '';
+    if (o.eligible) {
+      than = '<div class="sig">' +
+        HTM.oSo(t('dnNet'), HT.fmt.usd(o.monthlyNet), t('dnNetS').replace('{n}', o.periods)) +
+        HTM.oSo(t('dnProj'), HT.fmt.usd0(o.projected12)) +
+        HTM.oSo(t('dnMax'), HT.fmt.usd0(o.maxAdvance), t('dnMaxS').replace('{g}', o.grade).replace('{t}', o.growth == null ? '—' : (o.growth >= 0 ? '+' : '') + HT.fmt.pct(o.growth))) +
+        (o.example ? HTM.oSo(t('dnVd'), HT.fmt.usd0(o.example.repayment), t('dnVdS').replace('{a}', HT.fmt.usd0(o.example.amount)).replace('{m}', o.example.recoupMonths == null ? '—' : o.example.recoupMonths)) : '') +
+        '</div><p class="hint" style="margin-top:10px">' + HM.esc(c.song(o, 'note')) + '</p>';
+      if (cho.length) than += HM.ghi({ kieu: 'info', tieuDe: HM.esc(t('dnDangCho')) });
+      else if (dangUng) than += HM.ghi({ kieu: 'info', tieuDe: HM.esc(t('dnDangUng')) });
+      else nut = '<button type="button" class="btn sm pri" data-de-nghi>' + HM.icon('cash') + HM.esc(t('dnNut')) + '</button>';
+    } else {
+      than = HM.ghi({ kieu: 'info', tieuDe: HM.esc(t('dnChua')), than: HM.esc(o.reason ? (vi ? o.reason.vi : o.reason.en) : '') });
+    }
+    html += HM.the({ h2: HM.esc(t('dnH2')), p: HM.esc(t('dnMo')), hanhDong: nut, than: than });
+  }
+  if (ds.length) {
+    html += HM.the({ h2: HM.esc(t('dnDs')) + ' <span class="muted">(' + ds.length + ')</span>', p: HM.esc(t('dnDsMo')), thoBody: true,
+      than: '<div class="tw"><table class="t"><thead><tr><th>' + HM.esc(t('cDx')) + '</th><th>' + HM.esc(t('cNoiDung')) + '</th><th>' + HM.esc(t('cTt')) + '</th><th>' + HM.esc(t('cNgay')) + '</th><th>' + HM.esc(t('cThaoTac')) + '</th></tr></thead><tbody>' +
+        ds.map(function (p) {
+          var cuoi = p.history[p.history.length - 1];
+          return '<tr><td class="mono">' + HM.esc(p.id) + '</td><td><div class="t-ttl">' + HM.esc(c.song(p, 'moTa')) + '</div>' +
+            (p.terms.note ? '<div class="t-sub" style="font-family:var(--f)">' + HM.esc(p.terms.note) + '</div>' : '') +
+            (cuoi && cuoi.note ? '<div class="t-sub" style="font-family:var(--f)">' + HM.esc((vi ? 'Haustek: ' : 'Haustek: ') + cuoi.note) + '</div>' : '') + '</td>' +
+            '<td>' + HTM.tagDx(p.status) + '</td><td class="mono" style="font-size:12.5px">' + HM.esc(String(p.updatedAt).slice(0, 10)) + '</td>' +
+            '<td>' + (DN_CHO.indexOf(p.status) >= 0 ? '<button type="button" class="btn sm ghost" data-rut="' + HM.esc(p.id) + '">' + HM.esc(t('dnRut')) + '</button>' : '') + '</td></tr>';
+        }).join('') + '</tbody></table></div>' });
+  }
+  return html;
+}
+function ganDeNghi(root, c, dn) {
+  var t = c.t, api = c.api, me = c.phien.me;
+  HM.bam(root, '[data-de-nghi]', function () { hoiDeNghi(c, dn.offer); });
+  HM.bam(root, '[data-rut]', function (el) {
+    var id = el.getAttribute('data-rut');
+    c.xacNhan(t('dnRutHoi').replace('{id}', id), HM.esc(t('dnRutMo')), t('dnRut'), true).then(function (ok) {
+      if (!ok) return;
+      try { api.withdrawProposal(me.role, me.partyId, id); c.thongBao(t('dnDaRut').replace('{id}', id), 'ok'); c.veLai(); }
+      catch (e) { c.thongBao(e.message, 'no'); }
+    });
+  });
+}
+function hoiDeNghi(c, o) {
+  var t = c.t, api = c.api, me = c.phien.me;
+  var goiY = Math.max(100, Math.min(o.maxAdvance, Math.round(o.maxAdvance / 2 / 100) * 100));
+  c.hoiThoai({
+    tieuDe: t('dnNut'), moTa: HM.esc(t('dnHoiMo').replace('{max}', HT.fmt.usd0(o.maxAdvance))),
+    than: '<label class="fld">' + HM.esc(t('dnSo')) + '</label><input class="in" type="number" data-o="amount" min="100" max="' + o.maxAdvance + '" step="100" value="' + goiY + '">' +
+      '<label class="fld" style="margin-top:12px">' + HM.esc(t('dnMucDich')) + '</label><input class="in" data-o="note">' +
+      '<p class="hint" data-tinh style="margin-top:12px"></p>',
+    dong: t('dnGui')
+  }).then(function (f) {
+    if (!f) return;
+    try { var pr = api.requestAdvance(me.role, me.partyId, { amount: +f.amount, note: f.note }); c.thongBao(t('dnDaGui').replace('{id}', pr.id), 'ok'); c.veLai(); }
+    catch (e) { c.thongBao(e.message, 'no'); }
+  });
+  setTimeout(function () {
+    var md = document.querySelector('.modal'); if (!md) return;
+    function tinh() {
+      var a = +md.querySelector('[data-o="amount"]').value || 0, rp = a * (1 + o.feePct), th = o.monthlyNet > 0 ? Math.ceil(rp / o.monthlyNet) : null;
+      md.querySelector('[data-tinh]').innerHTML = HM.esc(t('dnTinh').replace('{r}', HT.fmt.usd0(rp)).replace('{f}', HT.fmt.pct(o.feePct)).replace('{m}', th == null ? '—' : th)) + (a > o.maxAdvance ? ' <b class="neg">' + HM.esc(t('dnVuot')) + '</b>' : '');
+    }
+    tinh(); md.addEventListener('input', tinh);
+  }, 30);
+}
 
 function veGiaiThich(c) {
   var t = c.t;

@@ -739,6 +739,101 @@ check("Thông báo và tìm nhanh chỉ trong phạm vi của người xem", () 
   return kq.tracks.length + " bài khớp, không lọt bài người khác";
 });
 
+/* ===================== VÒNG 6: xét duyệt tạm ứng / hợp đồng, mức trả ===================== */
+const CHO_DX = ["submitted", "checked", "returned"];
+function dxDangCho(pk) { return A.proposals.list({ partyKey: pk }).filter(p => CHO_DX.includes(p.status)); }
+function donDx(pk) { dxDangCho(pk).forEach(p => A.proposals.review(p.id, "withdraw", "dọn để kiểm", "guard", "mgmt")); }
+function khoaCua(o, cam, duong) {
+  duong = duong || "";
+  if (Array.isArray(o)) { o.forEach((x, i) => khoaCua(x, cam, duong + "[" + i + "]")); return; }
+  if (o && typeof o === "object") Object.keys(o).forEach(k => { must(!cam.includes(k), "khoá bị cấm \"" + k + "\" ở " + duong); khoaCua(o[k], cam, duong + "." + k); });
+}
+const A3 = artistsWithTracks[2];
+check("Đối tác chỉ thấy đề xuất của chính mình và không rút được đề xuất của người khác", () => {
+  donDx("A:" + A2.id);
+  const cuaA2 = A.proposals.proposeAdvance("A:" + A2.id, { amount: 300, note: "guard" }, "Sales", "sales");
+  const cuaA1 = H.api.proposals("artist", A1.id);
+  must(!cuaA1.some(p => p.id === cuaA2.id), "đề xuất của B lọt vào danh sách của A");
+  mustThrow(() => H.api.withdrawProposal("artist", A1.id, cuaA2.id), "rút đề xuất của người khác");
+  must(A.proposals.get(cuaA2.id).status === "submitted", "đề xuất của B bị đổi trạng thái");
+  return cuaA2.id + " của B không hiện, không rút được từ A";
+});
+check("Chỉ giám đốc duyệt / từ chối; kinh doanh và kế toán bị chặn, kế toán chỉ kiểm số", () => {
+  const pr = dxDangCho("A:" + A2.id)[0];
+  must(pr, "thiếu đề xuất đang chờ của B");
+  mustThrow(() => A.proposals.review(pr.id, "approve", "", "Sales", "sales"), "kinh doanh duyệt");
+  mustThrow(() => A.proposals.review(pr.id, "approve", "", "Kế toán", "accounting"), "kế toán duyệt");
+  mustThrow(() => A.proposals.review(pr.id, "check", "", "Sales", "sales"), "kinh doanh kiểm số");
+  const daKiem = A.proposals.review(pr.id, "check", "đối chiếu xong", "Kế toán", "accounting");
+  must(daKiem.status === "checked", "kiểm số xong phải là checked, đang " + daKiem.status);
+  mustThrow(() => A.proposals.review(pr.id, "check", "", "Kế toán", "accounting"), "kiểm số hai lần");
+  const daDuyet = A.proposals.review(pr.id, "approve", "ok", "Giám đốc", "mgmt");
+  must(daDuyet.status === "approved", "giám đốc duyệt không thành");
+  mustThrow(() => A.proposals.review(pr.id, "approve", "", "Giám đốc", "mgmt"), "duyệt lại đề xuất đã duyệt");
+  return "sales/accounting bị chặn · accounting kiểm · mgmt duyệt " + pr.id;
+});
+check("Duyệt tạm ứng ghi đúng khoản phải thu hồi vào sổ tạm ứng của đối tác", () => {
+  const pr = A.proposals.list({ partyKey: "A:" + A2.id }).filter(p => p.status === "approved" && p.type === "advance")[0];
+  must(pr, "thiếu đề xuất tạm ứng đã duyệt của B");
+  const s = H.api.summary("artist", A2.id, approvedKey, "rec");
+  must(s.advance && s.advance.opening >= pr.calc.repayment - 0.011, "sổ tạm ứng của B (" + (s.advance ? s.advance.opening : "không có") + ") chưa cộng khoản thu hồi " + pr.calc.repayment);
+  must(Math.abs(pr.calc.repayment - pr.terms.amount * (1 + pr.terms.feePct)) < 0.02, "khoản thu hồi ≠ số ứng × (1 + phí)");
+  return "ứng " + pr.terms.amount + " → thu hồi " + pr.calc.repayment + " · sổ mở " + s.advance.opening;
+});
+check("Đối tác không đề nghị vượt mức tối đa; đề nghị hợp lệ vào hàng chờ với trạng thái đã gửi", () => {
+  donDx("A:" + A3.id);
+  const o = H.api.advanceOffer("artist", A3.id);
+  must(typeof o.maxAdvance === "number" && o.maxAdvance >= 0, "gói đề nghị thiếu mức tối đa");
+  mustThrow(() => H.api.requestAdvance("artist", A3.id, { amount: o.maxAdvance + 1000, note: "guard" }), "đề nghị vượt mức tối đa");
+  if (o.maxAdvance < 100) return "mức tối đa " + o.maxAdvance + " < 100 nên chỉ kiểm chặn";
+  const pr = H.api.requestAdvance("artist", A3.id, { amount: Math.min(o.maxAdvance, 500), note: "guard" });
+  must(pr.status === "submitted", "đề nghị hợp lệ không ở trạng thái đã gửi");
+  must(H.api.proposals("artist", A3.id).some(p => p.id === pr.id), "đề nghị vừa gửi không hiện cho chính người gửi");
+  const noiBo = A.proposals.get(pr.id);
+  must(noiBo && noiBo.byRole === "partner" && noiBo.calc && typeof noiBo.calc.roi === "number", "nội bộ không thấy bản tính ROI của đề nghị đối tác");
+  return pr.id + " tối đa " + o.maxAdvance + " · ROI nội bộ " + noiBo.calc.roi;
+});
+check("Gói tạm ứng của đối tác không lộ doanh thu gộp, phần Haustek giữ, biên hay ROI", () => {
+  const cam = ["gross", "monthlyGross", "keep", "monthlyKeep", "margin", "marginNew", "retainedDuringRecoup", "feeIncome", "roi", "roiAnnual", "roiFee", "calc", "currentFeePct", "retainedNow", "retainedNew"];
+  const chu = /gross|haustekFee|counterpartShare|doanh thu gộp|phí dịch vụ|service fee/i;
+  ["artist"].forEach(r => {
+    const o = H.api.advanceOffer(r, A3.id), ds = H.api.proposals(r, A3.id);
+    khoaCua(o, cam, "advanceOffer"); khoaCua(ds, cam, "proposals");
+    must(!chu.test(JSON.stringify(o)) && !chu.test(JSON.stringify(ds)), "chữ bị cấm trong gói tạm ứng");
+  });
+  const oL = H.api.advanceOffer("label", L1.id); khoaCua(oL, cam, "advanceOffer(label)");
+  return "advanceOffer, proposals sạch cho nghệ sĩ và label";
+});
+check("Phí hợp đồng được duyệt chỉ áp từ kỳ mở kế tiếp; kỳ đã xét duyệt giữ nguyên số", () => {
+  const pk = "L:" + L1.id, openIdx = A.periods.findIndex(p => !A.isApproved(p.k)), apIdx = A.pIndexOf(approvedKey);
+  const truocAp = A.agg("label", L1.id, apIdx, "rec"), truocMo = A.agg("label", L1.id, openIdx, "rec");
+  const tongTruoc = H.api.summary("label", L1.id, approvedKey, "rec").total;
+  donDx(pk);
+  const pr = A.proposals.proposeContract(pk, { months: 24, feePct: 0.30, note: "guard" }, "Sales", "sales");
+  must(pr.calc.currentFeePct < 0.30, "phí hiện tại đã ≥ 30%, phép kiểm vô nghĩa");
+  A.proposals.review(pr.id, "approve", "ok", "Giám đốc", "mgmt");
+  const sauAp = A.agg("label", L1.id, apIdx, "rec"), sauMo = A.agg("label", L1.id, openIdx, "rec");
+  must(Math.abs(sauAp.fee - truocAp.fee) < 0.011 && Math.abs(sauAp.total - truocAp.total) < 0.011, "kỳ đã xét duyệt đổi số sau khi duyệt hợp đồng");
+  must(Math.abs(H.api.summary("label", L1.id, approvedKey, "rec").total - tongTruoc) < 0.011, "tổng đối tác thấy ở kỳ đã duyệt bị đổi");
+  must(sauMo.fee > truocMo.fee * 1.5, "kỳ mở chưa áp phí mới: " + truocMo.fee + " → " + sauMo.fee);
+  must(Math.abs(sauMo.fee / sauMo.gross - 0.30) < 0.005, "phí kỳ mở không phải 30% doanh thu gộp");
+  return "kỳ " + approvedKey + " giữ " + truocAp.fee + " · kỳ mở " + truocMo.fee + " → " + sauMo.fee;
+});
+check("Mức trả nền tảng nhập tay đổi dự báo; xoá ghi đè thì quay về số suy từ báo cáo", () => {
+  const f0 = A.forecast().projected.revenue, r0 = A.platformRatesFull().filter(r => r.name === "Spotify")[0];
+  must(r0 && r0.source === "derived", "Spotify phải đang dùng số suy từ báo cáo");
+  A.setPlatformRate("Spotify", r0.per1k * 2, "guard", "Kế toán");
+  const r1 = A.platformRatesFull().filter(r => r.name === "Spotify")[0], f1 = A.forecast().projected.revenue;
+  must(r1.source === "override" && Math.abs(r1.per1k - r0.per1k * 2) < 0.001 && r1.derived === r0.derived, "ghi đè không đúng hoặc làm mất số suy");
+  must(f1 > f0 * 1.05, "dự báo không đổi theo mức trả: " + f0 + " → " + f1);
+  mustThrow(() => A.setPlatformRate("Spotify", 0, "guard", "Kế toán"), "mức trả 0");
+  mustThrow(() => A.setPlatformRate("Nền tảng lạ", 1, "guard", "Kế toán"), "nền tảng không có");
+  A.clearPlatformRate("Spotify", "Kế toán");
+  const f2 = A.forecast().projected.revenue;
+  must(Math.abs(f2 - f0) < 0.011 && A.platformRatesFull().filter(r => r.name === "Spotify")[0].source === "derived", "xoá ghi đè không quay về số cũ");
+  return "dự báo " + Math.round(f0) + " → " + Math.round(f1) + " → " + Math.round(f2);
+});
+
 check("lockdown() gỡ hẳn mặt tiền admin khỏi trang", () => {
   must(!!H.admin, "chưa lockdown mà admin đã mất");
   H.lockdown();

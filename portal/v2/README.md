@@ -42,7 +42,7 @@ gọi `HAUSTEK.lockdown()` **trước khi** chạy bất cứ trang nào, và kh
 > `localStorage` thì trang nào cùng gốc cũng đọc được. Xem tab **Quản trị → Ranh giới
 > hai cổng** để biết cái gì thật sự chặn được và cái gì không.
 
-## Hai mươi ba trang nội bộ
+## Hai mươi lăm trang nội bộ
 
 | Trang | File | Trả lời câu gì |
 |---|---|---|
@@ -57,10 +57,10 @@ gọi `HAUSTEK.lockdown()` **trước khi** chạy bất cứ trang nào, và kh
 | Tỷ lệ chia | `man/ty-le.js` | Bảng tỷ lệ có ngày hiệu lực, đổi từ kỳ nào |
 | Danh mục | `man/danh-muc.js` | 50.000 bản ghi, tìm được, lọc bản có vấn đề; mở ra xem dòng tiền, quy trình phát hành, trạng thái từng nền tảng, lượt nghe và doanh thu theo nền tảng theo tháng |
 | Nền tảng | `man/nen-tang.js` | Toàn danh mục: từng nền tảng mang về bao nhiêu lượt nghe, bao nhiêu tiền mỗi kỳ; kỳ thiếu nguồn nào thì cột đó bằng 0 |
-| Bàn làm việc | `man/ban-lam-viec.js` | Trang đầu theo vai: giám đốc, vận hành, kinh doanh (KPI, chỉ tiêu, sắp hết hạn), hỗ trợ (ticket, khiếu nại), kế toán (rút tiền, bảng kê) |
+| Bàn làm việc | `man/ban-lam-viec.js` | Trang đầu theo vai: giám đốc (thẻ *Chờ xét duyệt* duyệt / từ chối tại chỗ, đội kinh doanh, dự báo), vận hành, kinh doanh (KPI, chỉ tiêu, *Đề xuất của tôi* và nút đề xuất tạm ứng / hợp đồng), hỗ trợ (ticket, khiếu nại), kế toán (rút tiền, bảng kê, *Cần kiểm số*) |
 | Giao nhận nền tảng | `man/giao-nhan.js` | Tạo và theo dõi yêu cầu giao bản ghi tới nền tảng (theo label, UPC, bản phát hành) |
 | Sửa hàng loạt | `man/sua-hang-loat.js` | Khoá / mở khoá, đổi giá, đổi ngày phát hành, đổi giá track cho danh sách UPC |
-| Đối tác | `man/doi-tac.js` | Quản lý tài khoản đối tác: người phụ trách, doanh thu quý, phân loại, hợp đồng, trạng thái |
+| Đối tác | `man/doi-tac.js` | Quản lý tài khoản đối tác: người phụ trách, doanh thu quý, phân loại, hợp đồng, trạng thái; ngăn hồ sơ có nút *Đề xuất tạm ứng* / *Đề xuất hợp đồng* mở hộp thoại tính ROI sống |
 | Hỗ trợ | `man/ho-tro.js` | Hàng đợi yêu cầu hỗ trợ: hạn, ưu tiên, người phụ trách, trả lời |
 | Quản lý quyền | `man/quyen.js` | Xung đột Content ID và khiếu nại trên nền tảng; cài đặt video theo tài khoản |
 | Theo dõi | `man/theo-doi.js` | Bài hát, tài khoản, bản phát hành đang lên trong cửa sổ 7 / 28 / 60 ngày; yêu thích (lưu trình duyệt, có Lưu / Khôi phục), top hits, đang bùng nổ, số playlist và video ngắn |
@@ -68,6 +68,8 @@ gọi `HAUSTEK.lockdown()` **trước khi** chạy bất cứ trang nào, và kh
 | Chất lượng lượt nghe | `man/chat-luong.js` | Cảnh báo lượt nghe bất thường gom theo tài khoản (kiểu tách nhỏ để lách ngưỡng), năm tín hiệu có bằng chứng, sổ phạt của nền tảng, xác nhận / gỡ có nhật ký; sức khoẻ metadata toàn danh mục |
 | Chia sẻ tác quyền | `man/chia-se.js` | Splits của mọi tài khoản: ai được chia bao nhiêu, lời mời chưa nhận, thu hồi còn dở; xác nhận thay có nhật ký |
 | Chiến dịch | `man/chien-dich.js` | Liên kết thông minh / pre-save, pitch playlist, quảng cáo trả phí của mọi tài khoản, phễu kết quả và chi tiết |
+| Xét duyệt | `man/xet-duyet.js` | Đề xuất tạm ứng và hợp đồng: kinh doanh hoặc đối tác đề xuất, kế toán kiểm số, giám đốc duyệt / từ chối / trả lại. Mỗi đề xuất chụp bản tính lúc tạo: thu nhập ròng 12 kỳ, tăng trưởng, độ dao động, tập trung bài đầu, mức ứng tối đa theo hạng rủi ro, khoản thu hồi, thời gian thu hồi, phí ứng thu về, phần Haustek giữ trong thời gian thu hồi, ROI; hợp đồng so phần Haustek giữ theo phí hiện tại và phí đề xuất. Duyệt xong tự ghi sổ tạm ứng hoặc áp phí mới từ kỳ mở kế tiếp |
+| Mức trả nền tảng | `man/muc-tra.js` | USD gộp trên 1.000 lượt của từng nền tảng, suy từ báo cáo 3 kỳ và hiệu chỉnh theo thị trường Việt Nam; nhập số thật từng nền tảng hoặc dán CSV để ghi đè, dự báo và giải thích số đổi theo ngay |
 | Quản trị | `man/quan-tri.js` | Tài khoản, nhật ký, câu hỏi treo, dữ liệu, ranh giới |
 
 ## Mười tám trang cổng đối tác
@@ -94,7 +96,7 @@ mục 4b). Mọi trang tiền ở đây dùng khoá `revenue` / `mine`; tầng A
 | Chiến dịch | `man/k-chien-dich.js` | Liên kết thông minh có pre-save, pitch playlist biên tập, quảng cáo trả phí: mỗi dòng một phễu kết quả; yêu cầu chiến dịch mới qua ticket marketing |
 | Phát hành | `man/k-phat-hanh.js` | Bản phát hành trong danh mục, hồ sơ đang xử lý, gửi hồ sơ mới theo đúng trường của form metadata |
 | Bảng kê thanh toán | `man/k-bang-ke.js` | Bản đối soát chính thức: in ra, tải về, gửi kế toán |
-| Tạm ứng | `man/k-tam-ung.js` | Vì sao kỳ này có doanh thu mà không nhận được tiền |
+| Tạm ứng | `man/k-tam-ung.js` | Vì sao kỳ này có doanh thu mà không nhận được tiền; thẻ *Đề nghị tạm ứng* (mức có thể ứng theo thu nhập ròng 12 kỳ, ví dụ khấu trừ) và gửi đề nghị trong mức tối đa, theo dõi trạng thái, rút đề nghị |
 | Tài liệu | `man/k-tai-lieu.js` | Bảng kê các kỳ cũ, và câu trả lời cho những câu hay hỏi |
 
 ## Hồ sơ một bài hát dùng chung hai cổng

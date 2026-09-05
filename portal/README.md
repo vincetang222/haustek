@@ -142,7 +142,7 @@ file mẫu (xem màn hình **Câu hỏi còn treo**).
 ## Kiểm tra
 
 ```bash
-node portal/test/api-guard.js       # 49 phép kiểm ranh giới quyền, không cần trình duyệt
+node portal/test/api-guard.js       # 56 phép kiểm ranh giới quyền, không cần trình duyệt
 ```
 
 Đây là mốc số 2 trong tài liệu bàn giao — test chứng minh nghệ sĩ A không truy vấn được

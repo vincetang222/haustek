@@ -121,6 +121,19 @@ Music Business Worldwide, Music Week, A2IM.
 - Khoảng trống: không cổng toàn cầu nào khảo sát có sẵn chi trả VND, logic
   thuế TNCN 5% / 10% và hoá đơn điện tử Việt Nam; cộng với nạp báo cáo Zing
   MP3 / NhacCuaTui, đây là chỗ Haustek khác biệt rõ nhất.
+- Mức trả mỗi 1.000 lượt (USD gộp về đơn vị phân phối, trước khi chia) ở
+  Việt Nam thấp hơn Âu–Mỹ 2–3 lần vì giá thuê bao (Spotify Premium 59.000 ₫
+  ≈ 2,3 USD so với 11,99 USD ở Mỹ) và CPM quảng cáo thấp; tỷ lệ nghe miễn
+  phí cao. Tham chiếu dùng cho dữ liệu mẫu và cột *Tham chiếu VN* trong
+  trang Mức trả nền tảng: Spotify ≈ 1,6 · Apple Music ≈ 3,2 · YouTube Music
+  ≈ 0,75 · Facebook ≈ 0,45 · Zing MP3 ≈ 0,4 · Instagram ≈ 0,4 · TikTok ≈
+  0,35 · NhacCuaTui ≈ 0,3 · nhóm nền tảng khác (Deezer, Amazon, Tidal…) ≈
+  2,5. Nguồn: khoảng giá công bố của các đơn vị phân phối và báo cáo nghệ sĩ
+  Việt Nam 2024–2025 (Spotify VN 0,0012–0,0020 USD/lượt; YouTube Music
+  0,0006–0,0009; Apple Music 0,0025–0,0040; Zing MP3 và NhacCuaTui dưới
+  0,0005), Duetti *Music Economics Report 2025* (trung bình toàn cầu Spotify
+  ≈ 3,0 USD/1.000, thị trường mới nổi thấp hơn 40–60 %). Đây là ước lượng
+  để dựng bản mẫu; Haustek nhập số thật từ báo cáo nền tảng để ghi đè.
 
 ## 2. Học thuật và chuyên môn
 
@@ -202,6 +215,16 @@ trường; ≥ 4 điểm hoặc bị nền tảng gắn cờ → nghiêm trọng
 - Chiến dịch: liên kết thông minh / pre-save, pitch playlist, quảng cáo.
 - Dải P10–P90 cho dự báo; bảng dữ liệu: đầu cột dính, mật độ, thanh trong
   ô, chọn nhiều dòng, số trang.
+
+Vòng 6 (theo phản hồi người dùng):
+- Mức trả hiệu chỉnh về thị trường Việt Nam (§1.4) và trang nhập số thật
+  từng nền tảng, ghi đè số suy từ báo cáo, dự báo đổi theo.
+- Xét duyệt tạm ứng và hợp đồng cho giám đốc, với bản tính ROI, hạng rủi ro
+  và khuyến nghị (theo cách các đơn vị cấp vốn cho nghệ sĩ như beatBread,
+  Amuse Fast Forward, Sound Royalties định mức ứng theo phần trăm thu nhập
+  12 tháng dự kiến và điều chỉnh theo độ dao động, xu hướng, tập trung
+  danh mục); kế toán kiểm số, kinh doanh và đối tác đề xuất, đối tác chỉ
+  thấy số của mình.
 
 Còn mở (đề xuất vòng sau): offer tạm ứng tự động kiểu Amuse; danh sách video
 UGC theo bài; vai trong tài khoản đối tác; quyền liên quan (SoundExchange,

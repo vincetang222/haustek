@@ -30,7 +30,13 @@ var CHU = {
     cdRunning: 'Đang chạy', cdPlanned: 'Sắp chạy', cdDone: 'Đã xong',
     xem: 'lượt xem', bam: 'lượt bấm', luuTruoc: 'lưu trước', chuyenDoi: 'chuyển đổi', daGui: 'đã gửi', daNhan: 'nhận', choKq: 'chờ', tuChoi: 'từ chối',
     nganSach: 'ngân sách', daChi: 'đã chi', hienThi: 'hiển thị', luotNghe: 'lượt nghe quy được', giaLuot: 'giá mỗi lượt nghe',
-    cDoiTac: 'Đối tác', cAlerts: 'Cảnh báo', cCoNt: 'Bị gắn cờ', cPhat: 'Phạt / tháng', cMau: 'Kiểu', cMo: 'Đang mở'
+    cDoiTac: 'Đối tác', cAlerts: 'Cảnh báo', cCoNt: 'Bị gắn cờ', cPhat: 'Phạt / tháng', cMau: 'Kiểu', cMo: 'Đang mở',
+    dxSubmitted: 'Chờ kiểm số', dxChecked: 'Đã kiểm · chờ duyệt', dxApproved: 'Đã duyệt', dxRejected: 'Từ chối', dxReturned: 'Trả lại bổ sung', dxWithdrawn: 'Đã rút',
+    knApprove: 'Nên duyệt', knReview: 'Cần cân nhắc', knDecline: 'Không nên duyệt',
+    dxNet: 'Thu nhập ròng / tháng', dxNetS: 'trung bình {n} kỳ đã xét duyệt', dxGross: 'Doanh thu gộp / tháng', dxKeep: 'Haustek giữ / tháng', dxGrowth: 'Tăng trưởng 3 kỳ', dxCv: 'Độ dao động', dxConc: 'Tập trung bài đầu',
+    dxProj: 'Thu nhập ròng 12 tháng dự kiến', dxMax: 'Mức nên ứng tối đa', dxRepay: 'Khoản phải thu hồi', dxRecoup: 'Thời gian thu hồi', dxFee: 'Phí ứng thu về', dxRetained: 'Haustek giữ trong thời gian thu hồi', dxRoi: 'ROI trên vốn ứng', dxRoiH: 'Hiệu quả vốn ứng (trong thời gian thu hồi)', dxRoiFee: 'Lợi suất phí ứng / năm', dxRoiA: 'quy năm', dxCover: 'Độ phủ (thu nhập 12 tháng ÷ khoản thu hồi)',
+    dxGrade: 'Hạng rủi ro', dxProjGross: 'Doanh thu gộp dự kiến cả kỳ hạn', dxNow: 'Haustek giữ theo hợp đồng hiện tại', dxNew: 'Haustek giữ theo đề xuất', dxDelta: 'Chênh lệch', dxFeeNow: 'Phí hiện tại', dxFeeNew: 'Phí đề xuất', dxEnd: 'Hợp đồng hiện tại hết hạn', dxDue: 'đến hạn gia hạn', dxTerm: 'Kỳ hạn', thang: ' tháng',
+    dxLyDo: 'Lý do khuyến nghị', dxSeries: 'Thu nhập ròng 12 kỳ', dxHistory: 'Diễn biến', dxNote: 'Ghi chú đề xuất', dxBy: 'Người đề xuất', dxPartner: 'đối tác gửi từ cổng'
   },
   en: {
     mucCritical: 'Critical', mucWarn: 'Warning', mucWatch: 'Watch',
@@ -48,7 +54,13 @@ var CHU = {
     cdRunning: 'Running', cdPlanned: 'Planned', cdDone: 'Done',
     xem: 'views', bam: 'clicks', luuTruoc: 'pre-saves', chuyenDoi: 'conversion', daGui: 'sent', daNhan: 'accepted', choKq: 'pending', tuChoi: 'declined',
     nganSach: 'budget', daChi: 'spent', hienThi: 'impressions', luotNghe: 'attributed streams', giaLuot: 'cost per stream',
-    cDoiTac: 'Partner', cAlerts: 'Alerts', cCoNt: 'Flagged', cPhat: 'Penalty / month', cMau: 'Pattern', cMo: 'Open'
+    cDoiTac: 'Partner', cAlerts: 'Alerts', cCoNt: 'Flagged', cPhat: 'Penalty / month', cMau: 'Pattern', cMo: 'Open',
+    dxSubmitted: 'Awaiting check', dxChecked: 'Checked · awaiting approval', dxApproved: 'Approved', dxRejected: 'Rejected', dxReturned: 'Returned for changes', dxWithdrawn: 'Withdrawn',
+    knApprove: 'Recommend approve', knReview: 'Needs judgement', knDecline: 'Recommend decline',
+    dxNet: 'Net earnings / month', dxNetS: 'average over {n} approved periods', dxGross: 'Gross revenue / month', dxKeep: 'Haustek keeps / month', dxGrowth: 'Growth, 3 periods', dxCv: 'Volatility', dxConc: 'Top-track concentration',
+    dxProj: 'Projected 12-month net', dxMax: 'Suggested maximum advance', dxRepay: 'Amount to recoup', dxRecoup: 'Recoupment time', dxFee: 'Advance fee earned', dxRetained: 'Haustek keeps during recoupment', dxRoi: 'ROI on the advance', dxRoiH: 'Return on the advance (over recoupment)', dxRoiFee: 'Fee yield / year', dxRoiA: 'annualised', dxCover: 'Coverage (12-month net ÷ amount to recoup)',
+    dxGrade: 'Risk grade', dxProjGross: 'Projected gross over the term', dxNow: 'Haustek keeps under current contract', dxNew: 'Haustek keeps under proposal', dxDelta: 'Difference', dxFeeNow: 'Current fee', dxFeeNew: 'Proposed fee', dxEnd: 'Current contract ends', dxDue: 'renewal due', dxTerm: 'Term', thang: ' months',
+    dxLyDo: 'Why this recommendation', dxSeries: 'Net earnings, 12 periods', dxHistory: 'History', dxNote: 'Proposal note', dxBy: 'Proposed by', dxPartner: 'sent by the partner from the portal'
   }
 };
 function t(k) { var d = CHU[HT.lang] || CHU.vi; return d[k] != null ? d[k] : (CHU.vi[k] != null ? CHU.vi[k] : k); }
@@ -226,7 +238,62 @@ function ganTrang(root, st, veLai) {
   HM.bam(root, '[data-htm-tr]', function (el) { st.trang = (st.trang || 0) + (+el.getAttribute('data-htm-tr')); veLai(); });
 }
 
-global.HTM = { t: t, song: song, phanTrang: phanTrang, ganTrang: ganTrang, tagMuc: tagMuc, tagTt: tagTt, tinHieu: tinHieu, chipTinHieu: chipTinHieu, bangCanhBao: bangCanhBao, theCanhBao: theCanhBao,
+/* ---- đề xuất tạm ứng / hợp đồng: nhãn, khuyến nghị, thẻ chi tiết ---- */
+function tagDx(st) {
+  var m = { submitted: ['dxSubmitted', 'warn'], checked: ['dxChecked', 'info'], approved: ['dxApproved', 'ok'], rejected: ['dxRejected', 'no'], returned: ['dxReturned', 'warn'], withdrawn: ['dxWithdrawn', ''] }[st] || [st, ''];
+  return HM.tag(t(m[0]), m[1]);
+}
+function tagKn(r) { return r === 'approve' ? HM.tag(t('knApprove'), 'ok') : r === 'review' ? HM.tag(t('knReview'), 'warn') : HM.tag(t('knDecline'), 'no'); }
+function tagHang(g) { return HM.tag(t('dxGrade') + ' ' + g, g === 'A' ? 'ok' : g === 'B' ? 'warn' : 'no'); }
+function oSo(l, v, s, hit) { return '<div class="sig-i' + (hit ? ' hit' : '') + '"><b>' + esc(v) + '</b><span>' + esc(l) + '</span>' + (s ? '<em>' + esc(s) + '</em>' : '') + '</div>'; }
+/* Bản tính của đề xuất; opts.tien định dạng tiền (nội bộ theo tiền tệ đang chọn). */
+function theDeXuat(pr, opts) {
+  opts = opts || {}; var tien = opts.tien || HT.fmt.usd, c = pr.calc, P = HB.dayMau();
+  var dau = '<div class="bar" style="margin-bottom:10px">' + tagDx(pr.status) + tagKn(c.recommendation) + (c.grade ? tagHang(c.grade) : '') +
+    '<span class="muted" style="font-size:12.5px">' + esc(song(pr, 'moTa')) + '</span></div>';
+  var html = dau;
+  if (pr.type === 'advance') {
+    html += '<div class="sig">' +
+      oSo(t('dxNet'), tien(c.monthlyNet), t('dxNetS').replace('{n}', c.periods)) +
+      oSo(t('dxGrowth'), c.growth == null ? '—' : (c.growth >= 0 ? '+' : '') + pct(c.growth), null, c.growth != null && c.growth < -0.2) +
+      oSo(t('dxCv'), pct(c.cv), null, c.cv > 0.45) +
+      oSo(t('dxConc'), pct(c.concentration), null, c.concentration > 0.6) +
+      oSo(t('dxProj'), tien(c.projected12)) +
+      oSo(t('dxMax'), tien(c.maxAdvance), null, c.amount > c.maxAdvance) +
+      '</div><h4 class="sec" style="margin-top:14px">' + esc(t('dxRoiH')) + '</h4><div class="sig">' +
+      oSo(t('dxRepay'), tien(c.repayment), pct(c.feePct) + ' ' + (HT.lang === 'en' ? 'fee' : 'phí ứng')) +
+      oSo(t('dxRecoup'), c.recoupMonths == null ? '—' : c.recoupMonths + t('thang'), null, c.recoupMonths != null && c.recoupMonths > 12) +
+      oSo(t('dxFee'), tien(c.feeIncome)) +
+      oSo(t('dxRetained'), tien(c.retainedDuringRecoup), pct(c.margin) + ' × ' + tien(c.monthlyGross) + t('thang')) +
+      oSo(t('dxRoiFee'), c.roiFee == null ? '—' : pct(c.roiFee)) +
+      oSo(t('dxRoi'), pct(c.roi), c.roiAnnual != null && c.recoupMonths >= 6 ? pct(c.roiAnnual) + ' ' + t('dxRoiA') : null) +
+      '</div>';
+  } else {
+    html += '<div class="sig">' +
+      oSo(t('dxGross'), tien(c.monthlyGross), t('dxNetS').replace('{n}', c.periods)) +
+      oSo(t('dxGrowth'), c.growth == null ? '—' : (c.growth >= 0 ? '+' : '') + pct(c.growth)) +
+      oSo(t('dxTerm'), c.months + t('thang')) +
+      oSo(t('dxFeeNow'), pct(c.currentFeePct)) +
+      oSo(t('dxFeeNew'), pct(c.feePct), null, c.feePct < 0.12) +
+      oSo(t('dxEnd'), HT.fmt.date(c.contractEnd), c.renewalDue ? t('dxDue') : null, c.renewalDue) +
+      '</div><h4 class="sec" style="margin-top:14px">' + esc(t('dxProjGross')) + '</h4><div class="sig">' +
+      oSo(t('dxProjGross'), tien(c.projectedGross)) +
+      oSo(t('dxNow'), tien(c.retainedNow)) +
+      oSo(t('dxNew'), tien(c.retainedNew), null, c.delta < 0) +
+      oSo(t('dxDelta'), (c.delta >= 0 ? '+' : '−') + tien(Math.abs(c.delta))) +
+      '</div>';
+  }
+  if (c.reasons && c.reasons.length) html += '<h4 class="sec" style="margin-top:14px">' + esc(t('dxLyDo')) + '</h4><ul class="tl">' + c.reasons.map(function (r) { return '<li>' + esc(song(r, 'vi') === r.vi && HT.lang === 'en' ? r.en : r.vi) + '</li>'; }).join('') + '</ul>';
+  if (c.series && c.series.length) html += '<h4 class="sec" style="margin-top:14px">' + esc(t('dxSeries')) + '</h4>' +
+    HB.o({ loai: 'cot', cao: 150, chuThich: false, dinhDang: 'tien', truc: c.series.map(function (x) { return x.label; }), chuoi: [{ ten: t('dxNet'), gt: c.series.map(function (x) { return x.net; }), mau: P[0] }] });
+  if (pr.terms && pr.terms.note) html += '<p class="hint" style="margin-top:10px"><b>' + esc(t('dxNote')) + ':</b> ' + esc(pr.terms.note) + '</p>';
+  html += '<h4 class="sec" style="margin-top:14px">' + esc(t('dxHistory')) + '</h4><ul class="tl">' + pr.history.slice().reverse().map(function (h) {
+    return '<li>' + tagDx(h.status) + ' <span class="mono" style="font-size:12px">' + esc(h.at) + '</span>' + (h.by ? ' · ' + esc(h.by) : '') + (h.note ? '<div class="muted" style="font-size:12.5px">' + esc(h.note) + '</div>' : '') + '</li>';
+  }).join('') + '</ul>';
+  return html;
+}
+
+global.HTM = { t: t, song: song, phanTrang: phanTrang, ganTrang: ganTrang, oSo: oSo, tagDx: tagDx, tagKn: tagKn, tagHang: tagHang, theDeXuat: theDeXuat, tagMuc: tagMuc, tagTt: tagTt, tinHieu: tinHieu, chipTinHieu: chipTinHieu, bangCanhBao: bangCanhBao, theCanhBao: theCanhBao,
   dongCong: dongCong, bangChiaSe: bangChiaSe, nguong: nguong, diemMeta: diemMeta, kiemMeta: kiemMeta, bangMeta: bangMeta, giaiThich: giaiThich,
   tagCd: tagCd, ketQuaCd: ketQuaCd, bangChienDich: bangChienDich, theChienDich: theChienDich };
 

@@ -49,7 +49,7 @@ HT.dangKy({
       dHangMo: 'A từ $150,000 gộp một quý · B từ $40,000 · C còn lại',
       dTk: 'Tài khoản cổng', dNh: 'Tài khoản ngân hàng', coNh: 'đã khai', chuaNh: 'chưa khai',
       dVi: 'Ví của đối tác', viKhaDung: 'Khả dụng', viCho: 'Đang xử lý', viDaRut: 'Đã rút',
-      dTicket: 'Ticket đang mở', khongTicket: 'Không có ticket nào đang mở', taoTicket: 'Tạo ticket hộ', moHoTro: 'Mở hỗ trợ',
+      dTicket: 'Ticket đang mở', khongTicket: 'Không có ticket nào đang mở', taoTicket: 'Tạo ticket hộ', moHoTro: 'Mở hỗ trợ', deUng: 'Đề xuất tạm ứng', deHd: 'Đề xuất hợp đồng',
       dCha: 'Thuộc label mẹ', dDtQ: 'Doanh thu gộp quý này', soQuyTruoc: 'so với quý trước', dienBien: 'Doanh thu gộp 12 kỳ gần nhất',
       dPh: 'Bản phát hành', dPhMo: 'Bài hát có doanh thu cao nhất của đối tác. Bấm để mở hồ sơ.', dPhTrong: 'Đối tác chưa có bài hát nào trong danh mục.', xemDanhMuc: 'Mở danh mục',
       /* chỉ tiêu */
@@ -79,7 +79,7 @@ HT.dangKy({
       dHangMo: 'A from $150,000 gross a quarter · B from $40,000 · C otherwise',
       dTk: 'Portal account', dNh: 'Bank account', coNh: 'on file', chuaNh: 'missing',
       dVi: 'Partner wallet', viKhaDung: 'Available', viCho: 'In progress', viDaRut: 'Withdrawn',
-      dTicket: 'Open tickets', khongTicket: 'No open ticket', taoTicket: 'Log a ticket', moHoTro: 'Open support',
+      dTicket: 'Open tickets', khongTicket: 'No open ticket', taoTicket: 'Log a ticket', moHoTro: 'Open support', deUng: 'Propose advance', deHd: 'Propose contract',
       dCha: 'Parent label', dDtQ: 'Gross this quarter', soQuyTruoc: 'vs previous quarter', dienBien: 'Gross, last 12 periods',
       dPh: 'Releases', dPhMo: 'The partner’s highest-earning tracks. Open one for its record.', dPhTrong: 'This partner has no tracks in the catalogue yet.', xemDanhMuc: 'Open catalogue',
       kdTieuDe: 'Sales targets, quarter {q}',
@@ -315,7 +315,8 @@ function moDoiTac(c, r) {
     }).join('') + '</tbody></table></div>' : '<p class="say">' + HM.esc(t('khongTicket')) + '</p>') +
     '<div class="btnrow" style="margin-top:10px">' +
       '<button type="button" class="btn sm pri" data-tao-tk>' + HM.icon('info') + HM.esc(t('taoTicket')) + '</button>' +
-      '<button type="button" class="btn sm" data-di="ho-tro">' + HM.esc(t('moHoTro')) + '</button></div>' +
+      '<button type="button" class="btn sm" data-di="ho-tro">' + HM.esc(t('moHoTro')) + '</button>' +
+      (['sales', 'mgmt'].indexOf(me.role) >= 0 ? '<button type="button" class="btn sm" data-de-ung>' + HM.icon('cash') + HM.esc(t('deUng')) + '</button><button type="button" class="btn sm" data-de-hd>' + HM.icon('file') + HM.esc(t('deHd')) + '</button>' : '') + '</div>' +
     '<h4 class="sec">' + HM.esc(t('dienBien')) + '</h4>' +
     HB.o({ loai: 'cot', cao: 150, anTruc: true, chuThich: false,
       truc: A.periods.map(function (p) { return p.label.slice(0, 2); }),
@@ -329,6 +330,8 @@ function moDoiTac(c, r) {
           catch (e) { c.thongBao(e.message, 'no'); }
         });
         HM.bam(dr, '[data-tao-tk]', function () { if (HT.moTicketNoiBo) HT.moTicketNoiBo(c, { partyKey: pk, name: r.name, clientId: r.clientId }); });
+        HM.bam(dr, '[data-de-ung]', function () { if (HT.deXuatTamUng) HT.deXuatTamUng(c, pk); });
+        HM.bam(dr, '[data-de-hd]', function () { if (HT.deXuatHopDong) HT.deXuatHopDong(c, pk); });
         HM.bam(dr, '[data-di]', function (el) { c.di(el.getAttribute('data-di')); });
         HM.bam(dr, '[data-tk]', function (el) { if (HT.hoTroMo) HT.hoTroMo(c, el.getAttribute('data-tk')); });
         HM.bam(dr, '[data-bai]', function (el) {

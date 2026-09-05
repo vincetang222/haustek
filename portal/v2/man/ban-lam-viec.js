@@ -35,6 +35,10 @@ HT.dangKy({
   chu: {
     vi: {
       navBan: 'Bàn làm việc', h1: 'Bàn làm việc', homNay: 'Việc của bạn hôm nay, {d}.', nhanVien: 'Nhân viên', vaiTro: 'Vai',
+      dxCho: 'Chờ xét duyệt', dxChoMo: 'Tạm ứng và hợp đồng do kinh doanh hoặc đối tác đề xuất, kèm ROI và hạng rủi ro tính từ 12 kỳ thu nhập. Kế toán kiểm số trước, bạn duyệt sau.', dxChoS: '{a} tạm ứng chờ duyệt · {b} đã kiểm số', moXetDuyet: 'Mở xét duyệt', dxKhong: 'Không có đề xuất nào chờ duyệt', dxKhongMo: 'Đề xuất mới từ kinh doanh hoặc đối tác sẽ hiện ở đây.',
+      dxToi: 'Đề xuất của tôi', dxToiMo: 'Tạm ứng và hợp đồng bạn đã đề xuất; trạng thái đổi khi kế toán kiểm số và giám đốc xét duyệt.', dxTaoUng: 'Đề xuất tạm ứng', dxTaoHd: 'Đề xuất hợp đồng', dxToiKhong: 'Bạn chưa có đề xuất nào', dxToiKhongMo: 'Bấm nút phía trên, hoặc mở ngăn một đối tác trong sổ đối tác.',
+      dxKiem: 'Cần kiểm số', dxKiemMo: 'Đề xuất mới gửi. Đối chiếu thu nhập 12 kỳ với bảng kê và sổ tạm ứng, rồi bấm Đã kiểm để giám đốc xét duyệt.', dxKiemKhong: 'Không có đề xuất nào cần kiểm số', dxKiemKhongMo: 'Đề xuất đã kiểm chuyển sang chờ giám đốc duyệt.',
+      dxNoiDung: 'Nội dung', dxThaoTac: 'Thao tác', dxRoi: 'ROI', dxThuHoi: 'thu hồi {n} tháng', dxTuDoiTac: 'từ cổng đối tác',
       ticketToi: 'Ticket của tôi', ticketToiMo: 'Đang mở, sắp hạn trước. Bấm một dòng để xử lý.',
       hangDoi: 'Hàng đợi chưa gán', hangDoiMo: 'Ticket đối tác gửi lên chưa có người phụ trách.', nhanViec: 'Nhận việc', daNhan: 'Đã nhận việc',
       khongTicket: 'Không có ticket nào', khongTicketMo: 'Hàng đợi trống. Sang trang Hỗ trợ để xem toàn bộ.',
@@ -77,6 +81,10 @@ HT.dangKy({
     },
     en: {
       navBan: 'My desk', h1: 'My desk', homNay: 'Your work for today, {d}.', nhanVien: 'Staff', vaiTro: 'Role',
+      dxCho: 'Awaiting approval', dxChoMo: 'Advances and contracts proposed by sales or partners, with ROI and a risk grade from 12 periods of earnings. Accounting checks first, you approve.', dxChoS: '{a} in advances pending · {b} checked', moXetDuyet: 'Open approvals', dxKhong: 'Nothing awaiting approval', dxKhongMo: 'New proposals from sales or partners show up here.',
+      dxToi: 'My proposals', dxToiMo: 'Advances and contracts you proposed; status moves as accounting checks and the director approves.', dxTaoUng: 'Propose advance', dxTaoHd: 'Propose contract', dxToiKhong: 'You have no proposals yet', dxToiKhongMo: 'Use the buttons above, or open a partner’s drawer in Partners.',
+      dxKiem: 'Figures to check', dxKiemMo: 'Newly submitted proposals. Reconcile 12 periods of earnings against statements and the advance ledger, then mark Checked so the director can approve.', dxKiemKhong: 'No proposal needs a check', dxKiemKhongMo: 'Checked proposals move on to the director.',
+      dxNoiDung: 'Terms', dxThaoTac: 'Actions', dxRoi: 'ROI', dxThuHoi: 'recoup {n} mo', dxTuDoiTac: 'from the partner portal',
       ticketToi: 'My tickets', ticketToiMo: 'Open ones, soonest due first. Open a row to work it.',
       hangDoi: 'Unassigned queue', hangDoiMo: 'Partner tickets nobody owns yet.', nhanViec: 'Take it', daNhan: 'Assigned to you',
       khongTicket: 'No tickets', khongTicketMo: 'The queue is empty. The Support page has everything.',
@@ -139,8 +147,55 @@ HT.dangKy({
       try { A.statements.attachAll(pk, me.email); c.thongBao(t('daDinh').replace('{k}', A.periods[A.pIndexOf(pk)].label), 'ok'); c.veLai(); }
       catch (err) { c.thongBao(err.message, 'no'); }
     });
+    /* xét duyệt: nút và ngăn dùng chung với màn Xét duyệt */
+    HM.bam(root, '[data-dx]', function (el, e) { e.stopPropagation(); if (HT.xuLyDeXuat) HT.xuLyDeXuat(c, el.getAttribute('data-dx'), el.getAttribute('data-id')); else c.di('xet-duyet'); });
+    HM.bam(root, 'tr[data-pr]', function (el, e) { if (e.target.closest('button')) return; if (HT.moDeXuat) HT.moDeXuat(c, el.getAttribute('data-pr')); else c.di('xet-duyet'); });
+    HM.bam(root, '[data-them-ung]', function () { if (HT.deXuatTamUng) HT.deXuatTamUng(c, null); else c.di('xet-duyet'); });
+    HM.bam(root, '[data-them-hd]', function () { if (HT.deXuatHopDong) HT.deXuatHopDong(c, null); else c.di('xet-duyet'); });
   }
 });
+
+/* ---------------------------------------------------------------------
+   Xét duyệt trên bàn làm việc: giám đốc duyệt, kế toán kiểm, kinh doanh
+   theo dõi đề xuất của mình. Bảng gọn; chi tiết và bản tính ROI mở ở ngăn.
+   --------------------------------------------------------------------- */
+var DX_CHO = ['submitted', 'checked', 'returned'];
+function bangDx(c, rows, nut) {
+  var t = c.t;
+  return '<div class="tw"><table class="t" style="min-width:0"><thead><tr><th>' + HM.esc(t('cDoiTac')) + '</th><th>' + HM.esc(t('dxNoiDung')) + '</th><th class="num">' + HM.esc(t('dxRoi')) + '</th><th>' + HM.esc(t('cTt')) + '</th>' + (nut ? '<th>' + HM.esc(t('dxThaoTac')) + '</th>' : '') + '</tr></thead><tbody>' +
+    rows.map(function (p) {
+      var roi = p.type === 'advance' ? p.calc.roi : null;
+      return '<tr class="pick" data-pr="' + HM.esc(p.id) + '"><td>' + HM.tenBia({ ten: p.party.name, seed: p.party.clientId, phu: p.id + ' · ' + (p.byRole === 'partner' ? t('dxTuDoiTac') : p.by) }) + '</td>' +
+        '<td><div class="t-ttl">' + HM.esc(c.song(p, 'moTa')) + '</div><div class="t-sub" style="font-family:var(--f)">' + HTM.tagKn(p.calc.recommendation) + (p.calc.grade ? ' ' + HTM.tagHang(p.calc.grade) : '') + '</div></td>' +
+        '<td class="num">' + (roi == null ? '<span class="nil">—</span>' : '<b>' + HM.esc(HT.fmt.pct(roi)) + '</b><div class="t-sub" style="font-family:var(--f)">' + HM.esc(t('dxThuHoi').replace('{n}', p.calc.recoupMonths == null ? '—' : p.calc.recoupMonths)) + '</div>') + '</td>' +
+        '<td>' + HTM.tagDx(p.status) + '</td>' +
+        (nut ? '<td>' + (HT.nutDeXuat ? HT.nutDeXuat(c, p) : '') + '</td>' : '') + '</tr>';
+    }).join('') + '</tbody></table></div>';
+}
+function theDxQuanLy(c) {
+  var A = c.A, t = c.t, k = A.proposals.counts();
+  var rows = A.proposals.list().filter(function (p) { return p.status === 'submitted' || p.status === 'checked'; })
+    .sort(function (a, b) { return (a.status === 'checked' ? 0 : 1) - (b.status === 'checked' ? 0 : 1) || b.ageDays - a.ageDays; });
+  var ung = rows.filter(function (p) { return p.type === 'advance'; }).reduce(function (s, p) { return s + p.terms.amount; }, 0);
+  return HM.the({ h2: HM.esc(t('dxCho')) + ' <span class="muted">(' + rows.length + ')</span>', p: HM.esc(t('dxChoMo') + ' ' + t('dxChoS').replace('{a}', c.tien2(ung)).replace('{b}', k.checked)),
+    hanhDong: '<button type="button" class="btn sm pri" data-di="xet-duyet">' + HM.esc(t('moXetDuyet')) + '</button>', thoBody: rows.length > 0,
+    than: rows.length ? bangDx(c, rows.slice(0, 6), true) : HM.trong({ icon: 'check', tieuDe: t('dxKhong'), moTa: t('dxKhongMo') }) });
+}
+function theDxSales(c) {
+  var A = c.A, t = c.t, me = A.staff.me;
+  var rows = A.proposals.list().filter(function (p) { return p.by === me.name; })
+    .sort(function (a, b) { return (DX_CHO.indexOf(a.status) >= 0 ? 0 : 1) - (DX_CHO.indexOf(b.status) >= 0 ? 0 : 1) || String(b.updatedAt).localeCompare(String(a.updatedAt)); });
+  return HM.the({ h2: HM.esc(t('dxToi')) + ' <span class="muted">(' + rows.length + ')</span>', p: HM.esc(t('dxToiMo')),
+    hanhDong: '<div class="btnrow" style="flex-wrap:nowrap"><button type="button" class="btn sm" data-them-hd>' + HM.icon('file') + HM.esc(t('dxTaoHd')) + '</button><button type="button" class="btn sm pri" data-them-ung>' + HM.icon('cash') + HM.esc(t('dxTaoUng')) + '</button></div>', thoBody: rows.length > 0,
+    than: rows.length ? bangDx(c, rows.slice(0, 6), true) : HM.trong({ icon: 'cash', tieuDe: t('dxToiKhong'), moTa: t('dxToiKhongMo') }) });
+}
+function theDxKeToan(c) {
+  var A = c.A, t = c.t;
+  var rows = A.proposals.list().filter(function (p) { return p.status === 'submitted'; }).sort(function (a, b) { return b.ageDays - a.ageDays; });
+  return HM.the({ h2: HM.esc(t('dxKiem')) + ' <span class="muted">(' + rows.length + ')</span>', p: HM.esc(t('dxKiemMo')),
+    hanhDong: '<button type="button" class="btn sm" data-di="xet-duyet">' + HM.esc(t('moXetDuyet')) + '</button>', thoBody: rows.length > 0,
+    than: rows.length ? bangDx(c, rows.slice(0, 6), true) : HM.trong({ icon: 'check', tieuDe: t('dxKiemKhong'), moTa: t('dxKiemKhongMo') }) });
+}
 
 /* ---------------------------------------------------------------------
    Khối dùng chung
@@ -219,6 +274,7 @@ function veSales(c) {
     { l: t('kdGiaHan'), v: HT.fmt.n((k.renewals || []).length), mau: (k.renewals || []).length ? HB.mau('warn') : '' }
   ]);
   var pct = Math.max(0, Math.min(100, k.targetPct * 100));
+  html += theDxSales(c);
   html += '<div class="grid g3">' +
     HM.the({
       h2: HM.esc(t('kdTienDo')), p: HM.esc(t('kdTienDoMo')),
@@ -312,6 +368,7 @@ function veKeToan(c) {
     { l: t('ktTicket'), v: HT.fmt.n(tkTt.length) },
     { l: t('kKyChua'), v: HT.fmt.n(chuaDuyet) }
   ]);
+  html += theDxKeToan(c);
   html += '<div class="grid g3">' +
     HM.the({
       h2: HM.esc(t('ktRut')) + ' <span class="muted">(' + cho.length + ')</span>', p: HM.esc(t('ktRutMo')),
@@ -424,6 +481,7 @@ function veQuanLy(c) {
     { l: t('kRutCho'), v: HT.fmt.usd(wc.pendingAmount), s: HT.fmt.n(wc.requested + wc.processing) + ' ' + t('kRutTien') },
     db ? { l: t('dbDuKien').replace('{k}', db.openPeriod), v: HT.fmt.usd0(db.projected.revenue), d: { chu: (db.growth7 >= 0 ? '▲ ' : '▼ ') + HT.fmt.pct(Math.abs(db.growth7)) + ' · 7d', duong: db.growth7 >= 0 } } : null
   ].filter(Boolean));
+  html += theDxQuanLy(c);
   html += '<div class="grid g3">' +
     HM.the({
       h2: HM.esc(t('qlKd')), p: HM.esc(t('qlKdMo')),

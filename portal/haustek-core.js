@@ -291,7 +291,11 @@ for (let i = 0; i < N; i++) {
     const st = Math.round(pop * decay * season * (9000 + rnd() * 260000));
     const idx = i * P + p;
     recStreams[idx] = st;
-    const g = st * (0.0020 + rnd() * 0.0022);
+    /* Mức trả thị trường Việt Nam: gộp về đơn vị phân phối ≈ 0,9–1,9 USD trên
+       1.000 lượt nghe (trộn mọi nền tảng), thấp hơn 2–3 lần thị trường Âu–Mỹ.
+       Từng nền tảng khác nhau qua PLAT_SPM bên dưới; số thật do Haustek nhập
+       ở màn Mức trả nền tảng sẽ ghi đè cho dự báo. */
+    const g = st * (0.00050 + rnd() * 0.00058);
     /* chia doanh thu bài đó cho ba luồng, mỗi bài một khẩu vị thị trường riêng */
     let sum = 0; const part = [0, 0, 0];
     for (let f = 0; f < 3; f++) { part[f] = FEED_W[f] * (0.6 + hash(i, 900 + f) * 0.8); sum += part[f]; }
@@ -300,7 +304,7 @@ for (let i = 0; i < N; i++) {
       const v = f === 2 ? cents(g - acc) : cents(g * part[f] / sum);
       recGross[idx * 3 + f] = v; acc = cents(acc + v);
     }
-    if (p >= rel + 2) pubGross[idx] = cents(pop * decay * (3 + rnd() * 70));
+    if (p >= rel + 2) pubGross[idx] = cents(pop * decay * (0.7 + rnd() * 16));
   }
 }
 
@@ -410,8 +414,8 @@ function fileNameFor(f, p) {
 
 let state = null;
 function ensureShape(s) {
-  ["withdrawals", "tickets", "claims", "deliveries", "bulk", "releases"].forEach(k => { if (!Array.isArray(s[k])) s[k] = []; });
-  ["statements", "bank", "videoSettings", "partyManager", "splits", "alerts", "notifRead"].forEach(k => { if (!s[k] || typeof s[k] !== "object") s[k] = {}; });
+  ["withdrawals", "tickets", "claims", "deliveries", "bulk", "releases", "proposals"].forEach(k => { if (!Array.isArray(s[k])) s[k] = []; });
+  ["statements", "bank", "videoSettings", "partyManager", "splits", "alerts", "notifRead", "rateOverride", "contracts"].forEach(k => { if (!s[k] || typeof s[k] !== "object") s[k] = {}; });
   return s;
 }
 
@@ -582,7 +586,7 @@ function buildQueueSeed() {
           store: STORES[(rnd() * N_TOP) | 0],
           territory: pick(TERR),
           streams: Math.round(200 + rnd() * 90000),
-          amount: cents(2 + rnd() * 900),
+          amount: cents(1 + rnd() * 250),
           reason: broken < 0.34 ? "Thiếu mã ISRC" : broken < 0.67 ? "Mã ISRC không có trong danh mục" : "Mã ISRC của nhà phát hành khác",
           hint: seedTrack,     /* bản ghi "đúng" — dùng để chấm điểm gợi ý, không hiện cho ai */
           status: "pending", resolvedTo: null, at: null
@@ -700,8 +704,19 @@ function partyClientId(key) {
    Điểm producer trừ vào phần nghệ sĩ là chuẩn ngành. Làm ngược lại thì
    tổng các phần vượt quá 100%.
    ===================================================================== */
+/* Phí Haustek trên doanh thu bản ghi: mặc định CFG.HAUSTEK_FEE; hợp đồng đã
+   xét duyệt (19j) đặt phí riêng cho đối tác từ kỳ hiệu lực trở đi. Đường
+   nhanh: chưa có hợp đồng nào thì không tra gì. */
+let _ctCount = 0;
+function demHopDong() { _ctCount = state.contracts ? Object.keys(state.contracts).length : 0; }
+function feeOf(i, periodKey) {
+  if (!_ctCount) return CFG.HAUSTEK_FEE;
+  const c = state.contracts[partyKeyOfTrack(i)];
+  return c && c.feePct != null && (!c.fromKey || c.fromKey <= periodKey) ? c.feePct : CFG.HAUSTEK_FEE;
+}
+demHopDong();   /* state đã nạp ở mục 9 phía trên */
 function splitRec(i, gross, periodKey) {
-  const fee = cents(gross * CFG.HAUSTEK_FEE);
+  const fee = cents(gross * feeOf(i, periodKey));
   const net = cents(gross - fee);
   const r = rates.rateFor(partyKeyOfTrack(i), periodKey);
   const artistBase = cents(net * r);
@@ -872,9 +887,12 @@ const TAIL_SUM = TAIL_W.reduce((a, b) => a + b, 0);
 /* trọng số của các ô thuộc nguồn 0 (mọi nền tảng trừ YouTube Music và TikTok) */
 const PLAT_W0 = STORE_W.slice(0, N_TOP).map((w, j) => STORE_FEED[j] === 0 ? w : 0).concat([TAIL_SUM]);
 const PLAT_FEED = STORE_FEED.slice(0, N_TOP).concat([0]);
-/* lượt nghe trên mỗi đô la, so với Spotify = 1. TikTok và mạng xã hội trả
-   rất ít cho mỗi lượt, Apple Music trả nhiều hơn. */
-const PLAT_SPM = [1, 1.7, 4.4, 0.72, 2.3, 2.5, 3.2, 3.4, 1.35];
+/* lượt nghe trên mỗi đô la, so với Spotify = 1, theo mức tham chiếu thị
+   trường Việt Nam (USD gộp / 1.000 lượt): Spotify 1,60 · YouTube Music 0,75 ·
+   TikTok 0,35 · Apple Music 3,20 · Zing MP3 0,40 · NhacCuaTui 0,30 ·
+   Facebook 0,45 · Instagram 0,40 · nền tảng khác (quốc tế) 2,50. */
+const VN_REF_PER1K = [1.60, 0.75, 0.35, 3.20, 0.40, 0.30, 0.45, 0.40, 2.50];
+const PLAT_SPM = VN_REF_PER1K.map(r => 1.60 / r);
 
 function splitStores(i, p, out) {
   out = out || new Float64Array(N_PLAT);
@@ -1659,6 +1677,8 @@ function signedAtOf(partyKey) {
   return isoDate(new Date(2023, thang, 1 + ((hash(id, salt + 1) * 27) | 0)));
 }
 function contractEndOf(partyKey) {
+  const ct = state.contracts && state.contracts[partyKey];
+  if (ct && ct.to) return ct.to;
   const s = signedAtOf(partyKey), id = +partyKey.slice(2);
   const nam = 2 + ((hash(id, 84) * 3) | 0);          /* hợp đồng 2, 3 hoặc 4 năm */
   return isoDate(new Date(+s.slice(0, 4) + nam, +s.slice(5, 7) - 1, +s.slice(8, 10)));
@@ -1861,14 +1881,18 @@ function dailyStreams(i, back) {
 /* mức trả gộp USD trên 1.000 lượt nghe của từng nền tảng, từ 3 kỳ đã xét duyệt gần nhất */
 let _rateCacheKey = null, _rateCacheVal = null;
 function platformRates() {
-  const key = Object.keys(state.approved).join(",");
+  const ov = state.rateOverride || {};
+  const key = Object.keys(state.approved).join(",") + "|" + JSON.stringify(ov);
   if (_rateCacheKey === key) return _rateCacheVal;
   const pList = lastQuarterIdx();
   const rev = new Float64Array(N_PLAT), st = new Float64Array(N_PLAT), accR = new Float64Array(N_PLAT), accS = new Float64Array(N_PLAT);
   const step = 25;
   pList.forEach(p => { for (let i = 0; i < N; i += step) { if (grossRec(i, p) <= 0) continue; splitStores(i, p, rev); splitStreams(i, p, rev, st); for (let j = 0; j < N_PLAT; j++) { accR[j] += rev[j]; accS[j] += st[j]; } } });
   _rateCacheKey = key;
-  _rateCacheVal = PLAT_NAMES.map((n, j) => ({ name: n, nameEn: PLAT_NAMES_EN[j], per1k: accS[j] > 0 ? accR[j] / accS[j] * 1000 : 0 }));
+  _rateCacheVal = PLAT_NAMES.map((n, j) => {
+    const derived = accS[j] > 0 ? accR[j] / accS[j] * 1000 : 0, o = ov[n];
+    return { name: n, nameEn: PLAT_NAMES_EN[j], per1k: o ? o.per1k : derived, derived, source: o ? "override" : "derived", at: o ? o.at : null, note: o ? o.note : "" };
+  });
   return _rateCacheVal;
 }
 function forecastOf(role, partyId) {
@@ -2445,6 +2469,8 @@ function notificationsOf(role, partyId) {
     if (moi.length) push("pl:" + moi[0].addedAt, moi[0].addedAt, "info", moi.length + " vị trí playlist mới trong 45 ngày", moi.length + " new playlist placements in 45 days", "Mới nhất: " + moi[0].title + " · " + moi[0].playlist + " #" + moi[0].position, "Latest: " + moi[0].title + " · " + moi[0].playlistEn + " #" + moi[0].position, "k-playlist");
     state.releases.filter(r => (role === "label" ? r.labelId === partyId : r.artistId === partyId)).slice(0, 4).forEach(r => push("ph:" + r.id + ":" + r.status, String(r.updatedAt || r.submittedAt || "").slice(0, 10), r.status === "returned" ? "warn" : "info",
       "Hồ sơ phát hành " + r.id + " · " + ({ submitted: "đã gửi", received: "đã tiếp nhận", coded: "đã cấp mã", released: "đã phát hành", returned: "bị trả lại" }[r.status] || r.status), "Release " + r.id + " · " + r.status, r.title, r.title, "k-phat-hanh"));
+    proposalsList({ partyKey }).filter(p => p.updatedAt >= cut).slice(0, 4).forEach(p => push("dx:" + p.id + ":" + p.status, String(p.updatedAt).slice(0, 10), p.status === "rejected" ? "warn" : "info",
+      "Đề xuất " + p.id + " · " + ({ submitted: "đã gửi", checked: "kế toán đã kiểm", approved: "đã được duyệt", rejected: "bị từ chối", returned: "cần bổ sung", withdrawn: "đã rút" }[p.status] || p.status), "Proposal " + p.id + " · " + p.status, moTaDeXuat(p, true).vi, moTaDeXuat(p, true).en, "k-tam-ung"));
     const sp = splitsReport(role, partyId);
     if (sp.counts.invited) push("sp:invited", sp.asOf, "info", sp.counts.invited + " lời mời chia sẻ tác quyền chưa được nhận", sp.counts.invited + " split invitations still pending", "Nhắc người cộng tác nhận lời mời để được chia tiền.", "Remind collaborators to accept so they get paid.", "k-chia-se");
   } else {
@@ -2458,6 +2484,8 @@ function notificationsOf(role, partyId) {
     if (cases.length) push("q:lift", q.asOf, "warn", cases.length + " tài khoản có nhiều bài tăng đồng loạt", cases.length + " accounts with many small lifts at once", "Kiểu tách nhỏ để lách ngưỡng (vụ Michael Smith 2024).", "Spreading streams thinly to stay under thresholds (Smith case, 2024).", "chat-luong");
     const ph = state.releases.filter(r => r.status === "submitted");
     if (ph.length) push("ph:sub", isoDate(ASOF), "info", ph.length + " hồ sơ phát hành chờ tiếp nhận", ph.length + " releases awaiting intake", "", "", "phat-hanh");
+    const dx = proposalCounts();
+    if (dx.pending) push("dx:cho", isoDate(ASOF), "warn", dx.pending + " đề xuất chờ xét duyệt (" + dx.checked + " đã kiểm số)", dx.pending + " proposals awaiting approval (" + dx.checked + " checked)", "Tạm ứng và hợp đồng: giám đốc duyệt, kế toán kiểm.", "Advances and contracts: director approves, accounting checks.", "xet-duyet");
     const gn = state.deliveries.filter(d => d.status !== "done");
     if (gn.length) push("gn:open", isoDate(ASOF), "info", gn.length + " yêu cầu giao nhận nền tảng đang mở", gn.length + " open delivery requests", "", "", "giao-nhan");
     const md = metadataReport("admin", 0);
@@ -2505,6 +2533,7 @@ function searchAll(role, partyId, q, limit) {
     state.withdrawals.forEach(w => { if (docs.length < limit && w.id.toLowerCase().includes(q)) docs.push({ id: w.id, kind: "withdrawal", title: w.party.name + " · " + fmt.usd(w.amount), di: "chi-tra" }); });
     state.tickets.forEach(t => { if (docs.length < limit && (t.id.toLowerCase().includes(q) || boDau(t.title).includes(q))) docs.push({ id: t.id, kind: "ticket", title: t.title, di: "ho-tro" }); });
     state.releases.forEach(r => { if (docs.length < limit && (r.id.toLowerCase().includes(q) || boDau(r.title).includes(q))) docs.push({ id: r.id, kind: "release", title: r.title, di: "phat-hanh" }); });
+    proposalsOf().forEach(p => { if (docs.length < limit && (p.id.toLowerCase().includes(q) || boDau(p.party.name).includes(q))) docs.push({ id: p.id, kind: "proposal", title: p.party.name + " · " + moTaDeXuat(p).vi, di: "xet-duyet" }); });
   }
   return { tracks, parties, docs };
 }
@@ -2556,6 +2585,282 @@ function campaignsOf(role, partyId) {
     rows, sampled: step > 1,
     note: "Ba loại chiến dịch: liên kết thông minh có pre-save (lượt xem → bấm → lưu trước), pitch playlist biên tập (gửi → nhận), quảng cáo trả phí (ngân sách → hiển thị → bấm → lượt nghe quy được). Số liệu mẫu; hệ thống thật nhận từ công cụ liên kết và tài khoản quảng cáo.",
     noteEn: "Three campaign kinds: smart links with pre-save (views → clicks → saves), editorial playlist pitching (sent → accepted), paid ads (budget → impressions → clicks → attributed streams). Sample figures; the real system reads from the link tool and ad accounts." };
+}
+
+/* =====================================================================
+   19j. MỨC TRẢ NỀN TẢNG (ghi đè bằng số thật) · ĐỀ XUẤT & XÉT DUYỆT
+        (tạm ứng tính từ ROI, hợp đồng)
+   ---------------------------------------------------------------------
+   · Mức trả: dự báo dùng platformRates() — mặc định suy từ báo cáo 3 kỳ
+     gần nhất của dữ liệu mẫu (đã hiệu chỉnh về thị trường Việt Nam). Khi
+     Haustek có số thật, nhập ở màn Mức trả nền tảng: ghi đè theo tên nền
+     tảng, có ngày và người nhập; dự báo và giải thích số đổi theo ngay.
+   · Đề xuất: kinh doanh (hoặc đối tác ở cổng) đề xuất tạm ứng / hợp đồng
+     → kế toán kiểm số → giám đốc xét duyệt. Mỗi đề xuất mang một bản tính
+     chụp tại thời điểm tạo: thu nhập ròng 12 kỳ, tăng trưởng, độ dao động,
+     độ tập trung, số tối đa nên ứng, tháng thu hồi, ROI của Haustek (phí
+     ứng + phần giữ lại trong thời gian thu hồi), hạng rủi ro và khuyến
+     nghị. Duyệt xong thì ghi thẳng vào sổ tạm ứng / bảng tỷ lệ, có nhật ký.
+   ===================================================================== */
+const _ebp = new Map();
+function earnedByPartyCached(p) {
+  const key = p + "|" + state.rates.length + "|" + Object.keys(state.match).length + "|" + Object.keys(state.approved).length;
+  let v = _ebp.get(key);
+  if (!v) { if (_ebp.size > 40) _ebp.clear(); v = earnedByParty(p); _ebp.set(key, v); }
+  return v;
+}
+function partySeries(partyKey, n) {
+  const ps = []; for (let p = 0; p < P; p++) if (state.approved[PERIODS[p].k]) ps.push(p);
+  const id = +partyKey.slice(2);
+  const ids = partyKey[0] === "L" ? idxOf(byLabel, id) : idxOf(byArtist, id);
+  return ps.slice(-(n || 12)).map(p => {
+    const net = earnedByPartyCached(p).get(partyKey) || 0;
+    let g = 0, keep = 0;
+    for (const i of ids) { const gi = grossRec(i, p); if (gi > 0) { g += gi; keep += cents(gi * feeOf(i, PERIODS[p].k)); } }
+    return { k: PERIODS[p].k, label: PERIODS[p].label, net: cents(net), gross: cents(g), keep: cents(keep) };
+  });
+}
+function partyConcentration(partyKey) {
+  const id = +partyKey.slice(2);
+  const ids = partyKey[0] === "L" ? idxOf(byLabel, id) : idxOf(byArtist, id);
+  const ps = []; for (let p = 0; p < P; p++) if (state.approved[PERIODS[p].k]) ps.push(p);
+  const p = ps[ps.length - 1]; if (p == null) return 0;
+  let sum = 0, max = 0;
+  for (const i of ids) { const g = grossRec(i, p); sum += g; if (g > max) max = g; }
+  return sum > 0 ? max / sum : 0;
+}
+function thongKe(arr) {
+  const n = arr.length; if (!n) return { mean: 0, cv: 0 };
+  const mean = arr.reduce((s, v) => s + v, 0) / n;
+  const sd = Math.sqrt(arr.reduce((s, v) => s + (v - mean) * (v - mean), 0) / n);
+  return { mean, cv: mean > 0 ? sd / mean : 0 };
+}
+const ADVANCE_FEE = 0.12;              /* phí tạm ứng mặc định 12% (Amuse 10–20%) */
+const ADVANCE_CAP = { A: 0.6, B: 0.45, C: 0.3 };
+function advanceCalc(partyKey, amount, feePct) {
+  amount = Math.round((+amount || 0) * 100) / 100;
+  feePct = feePct == null ? ADVANCE_FEE : Math.max(0, Math.min(0.5, +feePct));
+  const ser = partySeries(partyKey, 12), coSo = ser.filter(x => x.gross > 0);
+  const st = thongKe(coSo.map(x => x.net));
+  const monthlyNet = cents(st.mean), monthlyGross = cents(thongKe(coSo.map(x => x.gross)).mean);
+  const l3 = coSo.slice(-3), p3 = coSo.slice(-6, -3);
+  const avg = a => a.length ? a.reduce((s, x) => s + x.net, 0) / a.length : 0;
+  const growth = p3.length >= 3 && avg(p3) > 0 ? (avg(l3) - avg(p3)) / avg(p3) : null;
+  const gAdj = Math.max(-0.3, Math.min(0.5, growth || 0));
+  const projected12 = cents(monthlyNet * 12 * (1 + gAdj / 2));
+  const monthlyKeep = cents(thongKe(coSo.map(x => x.keep)).mean);
+  const margin = monthlyGross > 0 ? monthlyKeep / monthlyGross : 0;      /* phí Haustek trên doanh thu gộp của đối tác */
+  const conc = partyConcentration(partyKey);
+  const grade = (st.cv > 0.45 || (growth != null && growth < -0.2) || conc > 0.6 || coSo.length < 3) ? "C"
+    : (st.cv < 0.2 && (growth == null || growth >= -0.05) && conc < 0.35 && coSo.length >= 6) ? "A" : "B";
+  const maxAdvance = Math.round(projected12 * ADVANCE_CAP[grade]);
+  const repayment = cents(amount * (1 + feePct));
+  const recoupMonths = monthlyNet > 0 && amount > 0 ? Math.round(repayment / monthlyNet * 10) / 10 : null;
+  const feeIncome = cents(amount * feePct);
+  const retained = recoupMonths ? cents(Math.min(recoupMonths, 24) * monthlyGross * margin) : 0;
+  const roi = amount > 0 ? (feeIncome + retained) / amount : 0;
+  const roiAnnual = recoupMonths ? roi * 12 / Math.max(recoupMonths, 1) : null;
+  const roiFee = recoupMonths ? feePct * 12 / Math.max(recoupMonths, 1) : null;   /* lợi suất riêng của phí ứng, tính theo năm */
+  const coverage = repayment > 0 ? projected12 / repayment : null;
+  const reasons = [];
+  if (grade === "C") reasons.push({ vi: "Hạng rủi ro C: dao động lớn, giảm mạnh, tập trung vào một bài hoặc quá ít kỳ có số", en: "Risk grade C: volatile, falling, concentrated on one track or too few periods" });
+  if (amount > maxAdvance) reasons.push({ vi: "Vượt mức nên ứng " + fmt.usd0(maxAdvance) + " (" + Math.round(ADVANCE_CAP[grade] * 100) + "% thu nhập ròng 12 tháng dự kiến)", en: "Above the suggested cap " + fmt.usd0(maxAdvance) + " (" + Math.round(ADVANCE_CAP[grade] * 100) + "% of projected 12-month net)" });
+  if (recoupMonths != null && recoupMonths > 12) reasons.push({ vi: "Thu hồi mất " + recoupMonths + " tháng, quá 12 tháng", en: "Recoupment takes " + recoupMonths + " months, over 12" });
+  if (recoupMonths == null) reasons.push({ vi: "Chưa có thu nhập ròng để thu hồi", en: "No net earnings to recoup from" });
+  const recommendation = !reasons.length ? "approve" : (grade !== "C" && amount <= maxAdvance * 1.25 && recoupMonths != null && recoupMonths <= 18) ? "review" : "decline";
+  return { partyKey, amount, feePct, repayment, monthlyNet, monthlyGross, monthlyKeep, margin, growth, roiFee: roiFee == null ? null : Math.round(roiFee * 1000) / 1000, cv: Math.round(st.cv * 1000) / 1000, concentration: Math.round(conc * 1000) / 1000, periods: coSo.length,
+    projected12, grade, maxAdvance, recoupMonths, feeIncome, retainedDuringRecoup: retained, roi: Math.round(roi * 1000) / 1000, roiAnnual: roiAnnual == null ? null : Math.round(roiAnnual * 1000) / 1000, coverage: coverage == null ? null : Math.round(coverage * 100) / 100,
+    recommendation, reasons, series: ser };
+}
+/* Bản dành cho đối tác: không có gộp, biên, phần giữ lại, ROI của Haustek. */
+function advanceOfferOf(partyKey) {
+  const c = advanceCalc(partyKey, 0, ADVANCE_FEE);
+  const vd = c.maxAdvance > 0 ? advanceCalc(partyKey, c.maxAdvance, ADVANCE_FEE) : null;
+  const eligible = c.maxAdvance >= 100 && c.grade !== "C";
+  return { monthlyNet: c.monthlyNet, projected12: c.projected12, periods: c.periods, growth: c.growth, grade: c.grade, maxAdvance: c.maxAdvance, feePct: ADVANCE_FEE,
+    example: vd ? { amount: vd.amount, repayment: vd.repayment, recoupMonths: vd.recoupMonths } : null, eligible,
+    reason: eligible ? null : (c.grade === "C" ? { vi: "Thu nhập còn dao động hoặc chưa đủ kỳ có số; hãy đề nghị lại sau 3 kỳ.", en: "Earnings are still volatile or too few periods have figures; try again after three periods." } : { vi: "Thu nhập ròng 12 tháng dự kiến chưa đủ để tạm ứng.", en: "Projected 12-month net is not yet enough for an advance." }),
+    note: "Số tối đa = " + Math.round(ADVANCE_CAP[c.grade] * 100) + "% thu nhập ròng 12 tháng dự kiến. Phí " + Math.round(ADVANCE_FEE * 100) + "% cộng vào khoản phải thu hồi; thu hồi từ phần bạn được hưởng mỗi kỳ cho đến khi đủ.",
+    noteEn: "Maximum = " + Math.round(ADVANCE_CAP[c.grade] * 100) + "% of projected 12-month net. A " + Math.round(ADVANCE_FEE * 100) + "% fee is added to the amount to recoup; recouped from your share each period until met." };
+}
+function contractCalc(partyKey, terms) {
+  terms = terms || {};
+  const months = Math.max(6, Math.min(60, Math.round(+terms.months || 24)));
+  const feePct = Math.max(0.03, Math.min(0.5, +terms.feePct || CFG.HAUSTEK_FEE));
+  const ser = partySeries(partyKey, 12), coSo = ser.filter(x => x.gross > 0);
+  const monthlyGross = cents(thongKe(coSo.map(x => x.gross)).mean), monthlyNet = cents(thongKe(coSo.map(x => x.net)).mean), monthlyKeep = cents(thongKe(coSo.map(x => x.keep)).mean);
+  const l3 = coSo.slice(-3), p3 = coSo.slice(-6, -3);
+  const avg = a => a.length ? a.reduce((s, x) => s + x.gross, 0) / a.length : 0;
+  const growth = p3.length >= 3 && avg(p3) > 0 ? (avg(l3) - avg(p3)) / avg(p3) : null;
+  const gAdj = Math.max(-0.3, Math.min(0.5, growth || 0));
+  const ct = state.contracts && state.contracts[partyKey];
+  const currentFeePct = ct && ct.feePct != null ? ct.feePct : (monthlyGross > 0 ? Math.round(monthlyKeep / monthlyGross * 1000) / 1000 : CFG.HAUSTEK_FEE);
+  const projectedGross = cents(monthlyGross * months * (1 + gAdj / 2));
+  const retainedNow = cents(projectedGross * currentFeePct), retainedNew = cents(projectedGross * feePct);
+  const end = contractEndOf(partyKey), daysToEnd = Math.round((new Date(end) - ASOF) / 864e5);
+  const reasons = [];
+  if (feePct < 0.10) reasons.push({ vi: "Phí Haustek dưới 10%", en: "Haustek fee below 10%" });
+  else if (feePct < 0.12) reasons.push({ vi: "Phí Haustek 10–12%, thấp hơn mức thường 15–25%", en: "Haustek fee 10–12%, below the usual 15–25%" });
+  if (retainedNow > 0 && retainedNew < retainedNow * 0.8) reasons.push({ vi: "Phần Haustek giữ lại giảm hơn 20% so với hợp đồng hiện tại", en: "Haustek’s retained amount falls more than 20% versus the current contract" });
+  if (coSo.length < 3) reasons.push({ vi: "Chưa đủ 3 kỳ có số để ước tính", en: "Fewer than three periods with figures" });
+  if (months > 36 && feePct < 0.15) reasons.push({ vi: "Hạn dài hơn 36 tháng với phí thấp", en: "Term longer than 36 months at a low fee" });
+  const recommendation = !reasons.length ? "approve" : feePct >= 0.10 ? "review" : "decline";
+  return { partyKey, months, feePct, currentFeePct, monthlyGross, monthlyNet, monthlyKeep, growth, periods: coSo.length, projectedGross, projectedNet: cents(projectedGross * (1 - feePct)),
+    retainedNow, retainedNew, delta: cents(retainedNew - retainedNow), marginNew: feePct,
+    contractEnd: end, daysToEnd, renewalDue: daysToEnd <= 180, recommendation, reasons, series: ser };
+}
+let proposalSeq = 0;
+function proposalId(now) { proposalSeq++; return "DX-" + String(now).slice(2, 4) + String(now).slice(5, 7) + "-" + String(proposalSeq).padStart(3, "0"); }
+function proposalsOf() { if (!Array.isArray(state.proposals)) state.proposals = []; return state.proposals; }
+function moTaDeXuat(pr, doiTac) {
+  if (pr.type === "advance") return { vi: "Tạm ứng " + fmt.usd0(pr.terms.amount) + " · phí ứng " + Math.round(pr.terms.feePct * 100) + "%", en: "Advance " + fmt.usd0(pr.terms.amount) + " · " + Math.round(pr.terms.feePct * 100) + "% fee" };
+  const huong = Math.round((1 - pr.terms.feePct) * 100);
+  return doiTac
+    ? { vi: "Hợp đồng " + pr.terms.months + " tháng · bạn hưởng " + huong + "%", en: "Contract " + pr.terms.months + " months · you keep " + huong + "%" }
+    : { vi: "Hợp đồng " + pr.terms.months + " tháng · phí Haustek " + Math.round(pr.terms.feePct * 100) + "%", en: "Contract " + pr.terms.months + " months · Haustek fee " + Math.round(pr.terms.feePct * 100) + "%" };
+}
+function proposeAdvance(partyKey, d, by, byRole) {
+  if (!partyName(partyKey)) throw new Error("Không có đối tác " + partyKey);
+  const amount = Math.round((+d.amount || 0) * 100) / 100;
+  if (!(amount >= 100)) throw new Error("Số tiền tạm ứng tối thiểu " + fmt.usd0(100));
+  const feePct = d.feePct == null ? ADVANCE_FEE : Math.max(0, Math.min(0.5, +d.feePct));
+  const calc = advanceCalc(partyKey, amount, feePct);
+  if (byRole === "partner" && amount > calc.maxAdvance) throw new Error("Số tiền vượt mức tối đa " + fmt.usd0(calc.maxAdvance));
+  const dup = proposalsOf().find(p => p.partyKey === partyKey && p.type === "advance" && ["submitted", "checked", "returned"].includes(p.status));
+  if (dup) throw new Error("Đối tác đã có đề xuất tạm ứng " + dup.id + " đang xử lý");
+  const now = nowISO();
+  const pr = { id: proposalId(now), type: "advance", partyKey, party: { name: partyName(partyKey), clientId: partyClientId(partyKey) }, by: by || "", byRole: byRole || "sales",
+    createdAt: now, updatedAt: now, status: "submitted", terms: { amount, feePct, note: d.note || "" }, calc, history: [{ at: now, status: "submitted", by: by || "", note: d.note || "" }] };
+  proposalsOf().unshift(pr);
+  audit.log("proposal.advance", pr.id + " · " + pr.party.name + " · " + fmt.usd0(amount), by); store.save();
+  return pr;
+}
+function proposeContract(partyKey, d, by, byRole) {
+  if (!partyName(partyKey)) throw new Error("Không có đối tác " + partyKey);
+  const calc = contractCalc(partyKey, d);
+  const dup = proposalsOf().find(p => p.partyKey === partyKey && p.type === "contract" && ["submitted", "checked", "returned"].includes(p.status));
+  if (dup) throw new Error("Đối tác đã có đề xuất hợp đồng " + dup.id + " đang xử lý");
+  const now = nowISO();
+  const pr = { id: proposalId(now), type: "contract", partyKey, party: { name: partyName(partyKey), clientId: partyClientId(partyKey) }, by: by || "", byRole: byRole || "sales",
+    createdAt: now, updatedAt: now, status: "submitted", terms: { months: calc.months, feePct: calc.feePct, exclusive: !!d.exclusive, note: d.note || "" }, calc, history: [{ at: now, status: "submitted", by: by || "", note: d.note || "" }] };
+  proposalsOf().unshift(pr);
+  audit.log("proposal.contract", pr.id + " · " + pr.party.name + " · " + calc.months + " tháng · phí " + Math.round(calc.feePct * 100) + "%", by); store.save();
+  return pr;
+}
+const PROPOSAL_FLOW = {
+  check:    { from: ["submitted"], to: "checked", roles: ["accounting", "mgmt"] },
+  approve:  { from: ["submitted", "checked"], to: "approved", roles: ["mgmt"] },
+  reject:   { from: ["submitted", "checked"], to: "rejected", roles: ["mgmt"] },
+  return:   { from: ["submitted", "checked"], to: "returned", roles: ["accounting", "mgmt"] },
+  resubmit: { from: ["returned"], to: "submitted", roles: ["sales", "mgmt", "partner", "ops", "support", "accounting"] },
+  withdraw: { from: ["submitted", "checked", "returned"], to: "withdrawn", roles: ["sales", "mgmt", "partner", "ops", "support", "accounting"] }
+};
+function reviewProposal(id, action, note, by, role) {
+  const pr = proposalsOf().find(p => p.id === id);
+  if (!pr) throw new Error("Không tìm thấy đề xuất " + id);
+  const fl = PROPOSAL_FLOW[action];
+  if (!fl) throw new Error("Thao tác không hợp lệ");
+  if (!fl.roles.includes(role)) throw new Error("Vai " + role + " không được " + action + " đề xuất");
+  if (!fl.from.includes(pr.status)) throw new Error("Đề xuất đang ở trạng thái " + pr.status + ", không " + action + " được");
+  if ((action === "reject" || action === "return") && !(note && note.trim())) throw new Error("Cần ghi lý do");
+  if ((action === "withdraw" || action === "resubmit") && role !== "mgmt" && pr.byRole !== role) throw new Error("Chỉ người đề xuất mới rút / gửi lại được");
+  const now = nowISO();
+  if (action === "resubmit") pr.calc = pr.type === "advance" ? advanceCalc(pr.partyKey, pr.terms.amount, pr.terms.feePct) : contractCalc(pr.partyKey, pr.terms);
+  pr.status = fl.to; pr.updatedAt = now;
+  pr.history.push({ at: now, status: fl.to, by: by || "", note: note || "" });
+  if (fl.to === "approved") applyApproved(pr, by);
+  audit.log("proposal." + action, pr.id + " · " + pr.party.name + (note ? " · " + note : ""), by); store.save();
+  return pr;
+}
+function applyApproved(pr, by) {
+  if (pr.type === "advance") {
+    const cur = state.advances[pr.partyKey];
+    const rep = pr.calc.repayment;
+    if (cur) { cur.opening = cents(cur.opening + rep); cur.note = (cur.note ? cur.note + "; " : "") + pr.id + " tạm ứng " + fmt.usd0(pr.terms.amount) + " + phí " + Math.round(pr.terms.feePct * 100) + "%"; }
+    else state.advances[pr.partyKey] = { opening: rep, note: pr.id + " tạm ứng " + fmt.usd0(pr.terms.amount) + " + phí " + Math.round(pr.terms.feePct * 100) + "%", byPeriod: {} };
+    pr.applied = { advanceOpening: state.advances[pr.partyKey].opening, at: nowISO() };
+    audit.log("advance.fromProposal", pr.party.name + " · " + fmt.usd0(rep), by);
+  } else {
+    const nextOpen = PERIODS.find(p => !state.approved[p.k]);
+    const from = nextOpen ? nextOpen.k : PERIODS[P - 1].k;
+    const start = new Date(ASOF.getFullYear(), ASOF.getMonth(), 1), end = new Date(start.getFullYear(), start.getMonth() + pr.terms.months, 0);
+    lazyState("contracts", {})[pr.partyKey] = { proposalId: pr.id, months: pr.terms.months, feePct: pr.terms.feePct, exclusive: !!pr.terms.exclusive, from: isoDate(start), fromKey: from, to: isoDate(end), approvedAt: nowISO(), by: by || "" };
+    demHopDong(); invalidateRates(); _ebp.clear();
+    pr.applied = { contractTo: isoDate(end), feeFrom: from, at: nowISO() };
+  }
+}
+function proposalsList(f) {
+  f = f || {};
+  let ds = proposalsOf().slice();
+  if (f.status) ds = ds.filter(p => f.status === "pending" ? ["submitted", "checked", "returned"].includes(p.status) : p.status === f.status);
+  if (f.type) ds = ds.filter(p => p.type === f.type);
+  if (f.partyKey) ds = ds.filter(p => p.partyKey === f.partyKey);
+  if (f.by) ds = ds.filter(p => p.by === f.by);
+  return ds.map(p => Object.assign({ moTa: moTaDeXuat(p).vi, moTaEn: moTaDeXuat(p).en, ageDays: Math.max(0, Math.round((new Date(String(p.updatedAt).replace(" ", "T")) - new Date()) / -864e5)) }, p));
+}
+function proposalCounts() {
+  const ds = proposalsOf();
+  const c = { submitted: 0, checked: 0, returned: 0, approved: 0, rejected: 0, withdrawn: 0, pending: 0, approvedAdvance: 0, approvedContract: 0 };
+  ds.forEach(p => { c[p.status] = (c[p.status] || 0) + 1; if (["submitted", "checked", "returned"].includes(p.status)) c.pending++; if (p.status === "approved") { if (p.type === "advance") c.approvedAdvance = cents(c.approvedAdvance + p.terms.amount); else c.approvedContract++; } });
+  return c;
+}
+/* bản cho đối tác: không có calc nội bộ */
+function proposalForPartner(p) {
+  const mt = moTaDeXuat(p, true);
+  return { id: p.id, type: p.type, status: p.status, createdAt: p.createdAt, updatedAt: p.updatedAt,
+    terms: p.type === "advance" ? { amount: p.terms.amount, feePct: p.terms.feePct, note: p.terms.note } : { months: p.terms.months, partnerPct: Math.round((1 - p.terms.feePct) * 1000) / 1000, note: p.terms.note },
+    repayment: p.calc.repayment, recoupMonths: p.calc.recoupMonths, moTa: mt.vi, moTaEn: mt.en,
+    history: p.history.map(h => ({ at: h.at, status: h.status, note: ["rejected", "returned", "approved"].includes(h.status) ? h.note : "" })) };
+}
+/* dữ liệu mẫu: vài đề xuất đang chờ để bàn giám đốc có việc */
+function seedProposals() {
+  if (proposalsOf().length) return;
+  const cands = LABELS.slice(0, 6).map(l => l.key).concat(ARTISTS.filter(a => a.labelId < 0).slice(0, 4).map(a => a.key));
+  const sales = STAFF.filter(s => s.role === "sales");
+  cands.forEach((pk, n) => {
+    try {
+      const by = sales[n % sales.length] ? sales[n % sales.length].name : "sales";
+      if (n % 3 === 2) { const pr = proposeContract(pk, { months: [24, 36][n % 2], feePct: [0.15, 0.18, 0.12, 0.2][n % 4], note: "Gia hạn trước hạn" }, by, "sales"); if (n % 2) reviewProposal(pr.id, "check", "Số đã đối chiếu với bảng kê", "Kế toán", "accounting"); }
+      else { const c = advanceCalc(pk, 0, ADVANCE_FEE); if (c.maxAdvance >= 100) { const pr = proposeAdvance(pk, { amount: Math.round(c.maxAdvance * (0.5 + (n % 3) * 0.3) / 100) * 100, feePct: ADVANCE_FEE, note: n % 2 ? "Sản xuất album mới" : "Chiến dịch quảng bá quý 4" }, by, n === 1 ? "partner" : "sales"); if (n % 2 === 0) reviewProposal(pr.id, "check", "Đã kiểm thu nhập 12 kỳ", "Kế toán", "accounting"); } }
+    } catch (e) { /* trùng hoặc không đủ điều kiện thì bỏ qua */ }
+  });
+  proposalsOf().forEach(p => { const d = new Date(Date.now() - (1 + (p.id.charCodeAt(p.id.length - 1) % 9)) * 864e5); const at = d.toISOString().slice(0, 19).replace("T", " "); p.createdAt = at; p.updatedAt = at; p.history.forEach(h => { h.at = at; }); });
+  store.save();
+}
+
+/* ---- mức trả nền tảng: bảng đầy đủ để hiển thị và ghi đè ---- */
+function platformRatesFull() {
+  const ov = lazyState("rateOverride", {});
+  return platformRates().map((r, j) => Object.assign({}, r, { refVn: VN_REF_PER1K[j] != null ? VN_REF_PER1K[j] : null, override: ov[r.name] || null }));
+}
+function setPlatformRate(name, per1k, note, by) {
+  if (PLAT_NAMES.indexOf(name) < 0) throw new Error("Không có nền tảng " + name);
+  per1k = Math.round(+per1k * 10000) / 10000;
+  if (!(per1k > 0 && per1k < 100)) throw new Error("Mức trả phải là số dương dưới 100 USD / 1.000 lượt");
+  lazyState("rateOverride", {})[name] = { per1k, note: note || "", by: by || "", at: nowISO() };
+  _rateCacheKey = null; audit.log("rate.platform", name + " → " + per1k + " USD/1.000" + (note ? " · " + note : ""), by); store.save();
+  return platformRatesFull();
+}
+function clearPlatformRate(name, by) {
+  const ov = lazyState("rateOverride", {}); delete ov[name];
+  _rateCacheKey = null; audit.log("rate.platform.clear", name, by); store.save();
+  return platformRatesFull();
+}
+/* Dán CSV "Nền tảng,USD/1000" (chấp nhận ; hoặc tab, dấu phẩy thập phân). */
+function importPlatformRates(text, by) {
+  const ok = [], skipped = [];
+  String(text || "").split(/\r?\n/).forEach(line => {
+    const t = line.trim(); if (!t) return;
+    const parts = t.split(/[;\t]|,(?=\s*[\d.,]+\s*$)/).map(x => x.trim());
+    if (parts.length < 2) { skipped.push(t); return; }
+    const name = PLAT_NAMES.find(n => n.toLowerCase() === parts[0].toLowerCase()) || PLAT_NAMES_EN.map((n, j) => n.toLowerCase() === parts[0].toLowerCase() ? PLAT_NAMES[j] : null).find(Boolean);
+    const v = parseFloat(parts[1].replace(/\s/g, "").replace(",", "."));
+    if (!name || !(v > 0)) { skipped.push(t); return; }
+    lazyState("rateOverride", {})[name] = { per1k: Math.round(v * 10000) / 10000, note: "nhập từ CSV", by: by || "", at: nowISO() };
+    ok.push(name);
+  });
+  if (ok.length) { _rateCacheKey = null; audit.log("rate.platform.import", ok.join(", "), by); store.save(); }
+  return { ok, skipped, rows: platformRatesFull() };
 }
 
 const TICKET_TYPES = [
@@ -3041,7 +3346,7 @@ function esc(s) {
     .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
 }
 
-if (!FRESH) { try { seedPartyManager(); seedWithdrawals(); seedTickets(); seedClaims(); seedOps(); } catch (e) { console.warn("[haustek-core] gieo dữ liệu mẫu: " + e.message); } }
+if (!FRESH) { try { seedPartyManager(); seedWithdrawals(); seedTickets(); seedClaims(); seedOps(); seedProposals(); } catch (e) { console.warn("[haustek-core] gieo dữ liệu mẫu: " + e.message); } }
 
 /* =====================================================================
    23. MẶT TIỀN CHO ADMIN — chỉ intranet.html được chạm
@@ -3253,6 +3558,11 @@ const admin = {
   withdrawalQuote, notifications: () => notificationsOf("admin", 0), markNotifications: ids => markNotifications("admin", 0, ids),
   search: (q, limit) => searchAll("admin", 0, q, limit), campaigns: () => campaignsOf("admin", 0), campaignsFor: (role, id) => campaignsOf(role, id),
   penaltyPerTrackUsd: PENALTY_USD,
+  /* 19j */
+  platformRatesFull, setPlatformRate, clearPlatformRate, importPlatformRates, vnRef: VN_REF_PER1K.slice(), advanceFee: ADVANCE_FEE,
+  advanceCalc, contractCalc, partySeries, advanceOfferOf,
+  proposals: { list: proposalsList, counts: proposalCounts, get: id => proposalsOf().find(p => p.id === id) || null,
+    proposeAdvance, proposeContract, review: reviewProposal, flow: PROPOSAL_FLOW },
   tickets: {
     types: TICKET_TYPES, statuses: TICKET_STATUS,
     list(f) {
@@ -3700,6 +4010,11 @@ const api = {
   markNotifications(role, partyId, ids) { assertParty(role, partyId); return scrub(markNotifications(role, partyId, ids)); },
   search(role, partyId, q, limit) { assertParty(role, partyId); return scrub(searchAll(role, partyId, q, limit)); },
   campaigns(role, partyId) { assertParty(role, partyId); return scrub(campaignsOf(role, partyId)); },
+  /* ---- 19j: đề nghị tạm ứng và theo dõi đề xuất ---- */
+  advanceOffer(role, partyId) { assertParty(role, partyId); return scrub(advanceOfferOf(role === "label" ? "L:" + partyId : "A:" + partyId)); },
+  requestAdvance(role, partyId, d) { assertParty(role, partyId); const pk = role === "label" ? "L:" + partyId : "A:" + partyId; return scrub(proposalForPartner(proposeAdvance(pk, { amount: d.amount, feePct: ADVANCE_FEE, note: d.note }, partyClientIdOf(role, partyId), "partner"))); },
+  proposals(role, partyId) { assertParty(role, partyId); const pk = role === "label" ? "L:" + partyId : "A:" + partyId; return scrub(proposalsList({ partyKey: pk }).map(proposalForPartner)); },
+  withdrawProposal(role, partyId, id) { assertParty(role, partyId); const pk = role === "label" ? "L:" + partyId : "A:" + partyId; const pr = proposalsOf().find(p => p.id === id); if (!pr || pr.partyKey !== pk) throw new Error("Không có quyền"); return scrub(proposalForPartner(reviewProposal(id, "withdraw", "", partyClientIdOf(role, partyId), "partner"))); },
   /* ---- ví, rút tiền, bảng kê ---- */
   wallet(role, partyId) {
     assertParty(role, partyId);
@@ -4088,7 +4403,7 @@ if (FRESH) {
       state.fx.locked[p.k].at = state.approved[p.k].at.slice(0, 10);
     } catch (e) { console.warn("[haustek-core] không xét duyệt được kỳ " + PERIODS[pi].label + ": " + e.message); }
   }
-  seedPartyManager(); seedWithdrawals(); seedTickets(); seedClaims(); seedOps();
+  seedPartyManager(); seedWithdrawals(); seedTickets(); seedClaims(); seedOps(); seedProposals();
   /* Những lần nạp trong lịch sử cũng phải để lại dấu vết, không thì mở
      nhật ký ra thấy trống trơn và tưởng hệ thống không ghi gì. */
   PERIODS.forEach((p, pi) => {
