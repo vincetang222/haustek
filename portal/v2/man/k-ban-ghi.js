@@ -82,7 +82,7 @@ HT.dangKy({
 
   dem: function (c) {
     try {
-      return HT.fmt.n(c.api.tracks(c.phien.me.role, c.phien.me.partyId, c.kyKey, 'rec', {}).total);
+      return ''; /* số bài / nghệ sĩ / label con là số đếm, không phải việc cần làm — không đưa lên điều hướng */
     } catch (e) { return ''; }
   },
 

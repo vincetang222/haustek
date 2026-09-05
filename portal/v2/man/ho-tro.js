@@ -108,7 +108,7 @@ HT.dangKy({
     var dangMo = dem.open + dem.in_progress + dem.waiting;
     var knMo = kn.open + kn.disputed + kn.escalated;
 
-    var html = HM.dau({ h1: HM.esc(t('h1')), mo: HM.esc(t('mo')) });
+    var html = HM.dau({ h1: HM.esc(t('h1')), mo: HM.esc(t('mo')), nut: LOC.tab === 'khieunai' ? '' : '<button type="button" class="btn pri" data-tao>' + HM.icon('info') + HM.esc(t('taoTicket')) + '</button>' });
     html += HM.tabs([
       { k: 'ticket', l: t('tTicket'), icon: 'info', dem: dangMo },
       { k: 'khieunai', l: t('tKn'), icon: 'alert', dem: knMo }
@@ -198,7 +198,6 @@ function veTicket(c, dem, rows) {
     '<button type="button" class="pill' + (LOC.toi ? ' on' : '') + '" data-toi>' + HM.icon('user') + HM.esc(t('chiToi')) +
       ' <span class="muted">' + A.tickets.counts(me.id).open + '</span></button>' +
     '<div class="sp"></div>' +
-    '<button type="button" class="btn sm pri" data-tao>' + HM.icon('info') + HM.esc(t('taoTicket')) + '</button>' +
     '<button type="button" class="btn sm" data-xuat>' + HM.icon('down2') + HM.esc(t('xuat')) + '</button></div>';
 
   html += HM.the({ thoBody: true, than: '<div data-bang></div>' });

@@ -14,6 +14,7 @@
 
 var LS_THEME = 'haustek.theme';   /* auto | light | dark */
 var LS_LANG  = 'haustek.lang';    /* vi | en */
+var LS_GAP   = 'haustek.nav.gap'; /* nhóm điều hướng đang thu gọn, cách nhau bằng dấu phẩy */
 
 /* ---------------------------------------------------------------------
    Chế độ sáng/tối
@@ -41,7 +42,7 @@ apTheme();
 var CHU = {
   vi: {
     internal: 'Nội bộ', portal: 'Cổng đối tác',
-    themeAuto: 'Theo máy', themeLight: 'Sáng', themeDark: 'Tối',
+    themeAuto: 'Theo máy', themeLight: 'Sáng', themeDark: 'Tối', themeCycle: 'Bấm để đổi chế độ', thuGon: 'Thu gọn / mở nhóm', them: 'Thêm',
     period: 'Kỳ', currency: 'Tiền tệ', search: 'Tìm',
     cancel: 'Huỷ', confirm: 'Xác nhận', close: 'Đóng', save: 'Lưu',
     approved: 'đã xét duyệt', notApproved: 'chưa xét duyệt',
@@ -58,7 +59,7 @@ var CHU = {
   },
   en: {
     internal: 'Internal', portal: 'Client portal',
-    themeAuto: 'System', themeLight: 'Light', themeDark: 'Dark',
+    themeAuto: 'System', themeLight: 'Light', themeDark: 'Dark', themeCycle: 'Click to switch mode', thuGon: 'Collapse / expand group', them: 'More',
     period: 'Period', currency: 'Currency', search: 'Search',
     cancel: 'Cancel', confirm: 'Confirm', close: 'Close', save: 'Save',
     approved: 'approved', notApproved: 'not approved',
@@ -86,6 +87,7 @@ var IC = {
   x:     '<path d="M3.5 3.5l9 9M12.5 3.5l-9 9"/>',
   check: '<path d="M3 8.5l3.5 3.5L13 4.5"/>',
   alert: '<path d="M8 1.8 15 14H1zM8 6.5v3.2M8 11.6v.1"/>',
+  more:  '<circle cx="3.2" cy="8" r="1.45" fill="currentColor" stroke="none"/><circle cx="8" cy="8" r="1.45" fill="currentColor" stroke="none"/><circle cx="12.8" cy="8" r="1.45" fill="currentColor" stroke="none"/>',
   bell:  '<path d="M8 2.2a3.8 3.8 0 0 0-3.8 3.8v2.6L2.8 11h10.4l-1.4-2.4V6A3.8 3.8 0 0 0 8 2.2zM6.6 13a1.4 1.4 0 0 0 2.8 0"/>',
   info:  '<circle cx="8" cy="8" r="6.4"/><path d="M8 7.4v4M8 4.9v.1"/>',
   clock: '<circle cx="8" cy="8" r="6.2"/><path d="M8 4.4V8l2.6 1.6"/>',
@@ -522,16 +524,17 @@ function chay(cauHinh) {
      rộng), một trong cột điều hướng (điện thoại, thanh trên không còn chỗ).
      CSS quyết định cụm nào hiện; cả hai cùng bắt sự kiện qua data-th /
      data-l nên không cần biết mình đang ở đâu. */
-  function oCaiDat() {
+  function oCaiDat(tren) {
     return (cauHinh.coTienTe === false ? '' :
         '<div class="seg" data-cur>' +
           '<button type="button" data-c="USD" class="on">USD</button>' +
           '<button type="button" data-c="VND">VND</button></div>') +
+      (tren ? '<button type="button" class="top-ico" data-th-cycle>' + icon('auto') + '</button>' :
       '<div class="seg" data-theme-sw>' +
         '<button type="button" data-th="auto" title="' + esc(t('themeAuto')) + '">' + icon('auto') + '</button>' +
         '<button type="button" data-th="light" title="' + esc(t('themeLight')) + '">' + icon('sun') + '</button>' +
         '<button type="button" data-th="dark" title="' + esc(t('themeDark')) + '">' + icon('moon') + '</button>' +
-      '</div>' +
+      '</div>') +
       '<div class="seg" data-lang>' +
         '<button type="button" data-l="vi">VI</button>' +
         '<button type="button" data-l="en">EN</button></div>';
@@ -554,7 +557,7 @@ function chay(cauHinh) {
           '<select class="inline-sel" data-ky aria-label="Kỳ"></select>' +
           '<button type="button" class="top-ico" data-tim-nhanh>' + icon('tim') + '</button>' +
           '<button type="button" class="top-ico" data-chuong>' + icon('bell') + '<b class="badge" data-chuong-so hidden></b></button>' +
-          oCaiDat() +
+          oCaiDat(true) +
         '</header>' +
         '<div class="popover" data-chuong-panel hidden></div>' +
         '<div class="palette-bg" data-palette hidden><div class="palette" role="dialog" aria-modal="true">' +
@@ -611,18 +614,25 @@ function chay(cauHinh) {
       if (!g) { g = { ten: m.nhom || '', muc: [] }; nhom.push(g); }
       g.muc.push(m);
     });
+    /* Nhóm có thể thu gọn (nhớ trong trình duyệt); nhóm đang chứa màn mở thì
+       luôn mở. Nhóm thu gọn mà bên trong có việc cần xử lý thì mang chấm đỏ. */
+    var gap = String(docKho(LS_GAP, '') || '').split(',').filter(Boolean);
     $('[data-nav]').innerHTML = nhom.map(function (g) {
-      return (g.ten ? '<div class="nav-grp">' + esc(chuNhom(g.ten)) + '</div>' : '') +
-        g.muc.map(function (m) {
+      var coMo = g.muc.some(function (m) { return m.id === manHienTai; });
+      var thu = !!g.ten && gap.indexOf(g.ten) >= 0 && !coMo, canhNhom = 0;
+      var muc = g.muc.map(function (m) {
           var dem = '';
           try { dem = m.dem ? (m.dem(c) || '') : ''; } catch (e) { dem = ''; }
           var canh = dem && String(dem).indexOf('!') === 0;
-          if (canh) dem = String(dem).slice(1);
+          if (canh) { dem = String(dem).slice(1); canhNhom++; }
           return '<a href="#' + m.id + '" class="' + (m.id === manHienTai ? 'on' : '') + '">' +
             icon(m.icon || 'grid') + '<span>' + esc(chuCua(m, m.nav || m.id)) + '</span>' +
             (dem !== '' ? '<span class="c' + (canh ? ' alert' : '') + '">' + esc(dem) + '</span>' : '') +
             '</a>';
         }).join('');
+      return (g.ten ? '<button type="button" class="nav-grp' + (thu ? ' gap' : '') + '" data-grp="' + esc(g.ten) + '" aria-expanded="' + (thu ? 'false' : 'true') + '" title="' + esc(c.t('thuGon')) + '">' +
+          '<span>' + esc(chuNhom(g.ten)) + '</span>' + (thu && canhNhom ? '<i class="dot"></i>' : '') + icon('right') + '</button>' : '') +
+        '<div class="nav-items"' + (thu ? ' hidden' : '') + '>' + muc + '</div>';
     }).join('');
   }
 
@@ -664,6 +674,11 @@ function chay(cauHinh) {
 
     document.querySelectorAll('[data-th]').forEach(function (b) {
       b.classList.toggle('on', b.dataset.th === theme);
+    });
+    document.querySelectorAll('[data-th-cycle]').forEach(function (b) {
+      var nhan = theme === 'dark' ? 'themeDark' : theme === 'light' ? 'themeLight' : 'themeAuto';
+      b.innerHTML = icon(theme === 'dark' ? 'moon' : theme === 'light' ? 'sun' : 'auto');
+      b.setAttribute('title', c.t(nhan) + ' · ' + c.t('themeCycle')); b.setAttribute('aria-label', c.t(nhan));
     });
     document.querySelectorAll('[data-l]').forEach(function (b) {
       b.classList.toggle('on', b.dataset.l === lang);
@@ -790,6 +805,13 @@ function chay(cauHinh) {
     if (pi) { chonPal(+pi.getAttribute('data-pal-i')); return; }
     if (e.target.closest('[data-palette]') && !e.target.closest('.palette')) { moPalette(false); return; }
     if (e.target.closest('[data-menu]')) { moMenu(!goc.classList.contains('menu-mo')); return; }
+    var gp = e.target.closest('[data-grp]');
+    if (gp) {
+      var tenG = gp.getAttribute('data-grp'), ds = String(docKho(LS_GAP, '') || '').split(',').filter(Boolean), i = ds.indexOf(tenG);
+      if (i >= 0) ds.splice(i, 1); else ds.push(tenG);
+      ghiKho(LS_GAP, ds.join(',')); veNav(); return;
+    }
+    if (e.target.closest('[data-th-cycle]')) { theme = { auto: 'light', light: 'dark', dark: 'auto' }[theme] || 'auto'; ghiKho(LS_THEME, theme); apTheme(); return ve(); }
     if (e.target.closest('[data-menu-dong]') || e.target.closest('.nav a')) moMenu(false);
     var th = e.target.closest('[data-th]');
     if (th) { theme = th.dataset.th; ghiKho(LS_THEME, theme); apTheme(); return ve(); }
@@ -825,8 +847,10 @@ function chay(cauHinh) {
   }
 
   ve();
+  _veLai = ve;
   return { veLai: ve, ctx: ctx };
 }
+var _veLai = null;
 
 global.HT = {
   dangKy: dangKy, man: MAN, chay: chay,
@@ -835,7 +859,9 @@ global.HT = {
   nganTruot: nganTruot, dongNgan: dongNgan, bang: bang, canhBang: canhBang,
   setFx: setFx,
   get lang() { return lang; },
-  get theme() { return theme; }
+  get theme() { return theme; },
+  /* đặt chế độ từ ngoài (kiểm thử, cửa): auto | light | dark */
+  datGiaoDien: function (th) { theme = th === 'dark' || th === 'light' ? th : 'auto'; ghiKho(LS_THEME, theme); apTheme(); if (_veLai) _veLai(); }
 };
 
 })(window);

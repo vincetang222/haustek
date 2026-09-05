@@ -250,3 +250,15 @@ sắp xếp / trang / cỡ trang. CSS bảng: đầu cột chữ hoa nhỏ, dín
 rộng (`.card` dùng `overflow:clip` để không chặn sticky), bỏ sọc xen kẽ (giữ
 `.zebra` khi cần), thanh tỷ lệ trong ô số (`HM.oThanh`), ảnh đại diện có màu
 nền đặc đủ tương phản.
+
+Vòng 7 làm gọn khung: cột điều hướng có **nhóm thu gọn / mở** (nhớ trong trình
+duyệt; nhóm chứa màn đang mở luôn mở; nhóm thu gọn mà có việc cần làm mang chấm
+đỏ) và **huy hiệu hai mức** — số đếm là chữ mờ, việc cần xử lý là chấm đỏ với số
+đậm (màn trả `'!' + n` từ `dem`); các số chỉ là "có bao nhiêu dòng" không đưa lên
+điều hướng. Thanh trên có một nút sáng / tối / theo máy xoay vòng (`HT.datGiaoDien`
+cho kiểm thử). Tiêu đề trang nhận `nut` (`HM.dau({ nut })`) làm chỗ đặt nút hành
+động chính, dùng thống nhất ở Đối tác, Hỗ trợ, Theo dõi, Xét duyệt, Ví, Hỗ trợ
+đối tác, Chia sẻ tác quyền, Chiến dịch. Ghi chú tắt được (`HM.ghi({ dong })`),
+menu tràn ⋯ (`HM.menu`) cho thao tác phụ trong dòng bảng, định vị cố định để
+không bị khung bảng cắt. Bảng: ô có tiêu đề hai dòng giữ tối thiểu 190px, ô chỉ
+có nhãn / ảnh / mã không xuống dòng, dòng phụ cắt bằng dấu ba chấm.

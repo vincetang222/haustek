@@ -80,7 +80,7 @@ HT.dangKy({
   },
 
   dem: function (c) {
-    try { return c.phien.me.childLabels > 0 ? HT.fmt.n(c.phien.me.childLabels) : ''; } catch (e) { return ''; }
+      return ''; /* số bài / nghệ sĩ / label con là số đếm, không phải việc cần làm — không đưa lên điều hướng */
   },
 
   ve: function (root, c) {

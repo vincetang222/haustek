@@ -47,7 +47,7 @@ HT.dangKy({
     var k = d.counts;
     var rows = d.rows.filter(function (r) { return (LOC.loai === 'all' || r.kind === LOC.loai) && (LOC.tt === 'all' || r.status === LOC.tt); });
     var pt = HTM.phanTrang(rows, LOC);
-    var html = HM.dau({ h1: HM.esc(t('h1')), mo: HM.esc(t('mo')) });
+    var html = HM.dau({ h1: HM.esc(t('h1')), mo: HM.esc(t('mo')), nut: '<button type="button" class="btn pri" data-yc>' + HM.icon('up') + HM.esc(t('yeuCau')) + '</button>' });
     html += HM.so([
       { l: t('kDang'), v: HT.fmt.n(k.running), lon: true, s: t('kDangS').replace('{a}', k.planned).replace('{b}', k.done) },
       { l: t('kLuu'), v: HT.fmt.n(k.presaves), s: t('kLuuS') },
@@ -59,7 +59,7 @@ HT.dangKy({
       [['all', t('loaiAll')], ['smartlink', t('loaiSl')], ['pitch', t('loaiPitch')], ['ads', t('loaiAds')]].map(function (x) { return '<button type="button" class="pill' + (LOC.loai === x[0] ? ' on' : '') + '" data-loai="' + x[0] + '">' + HM.esc(x[1]) + '</button>'; }).join('') +
       '<span class="muted">·</span>' +
       [['all', t('ttAll')], ['running', t('ttRunning')], ['planned', t('ttPlanned')], ['done', t('ttDone')]].map(function (x) { return '<button type="button" class="pill' + (LOC.tt === x[0] ? ' on' : '') + '" data-tt="' + x[0] + '">' + HM.esc(x[1]) + '</button>'; }).join('') +
-      '<div class="sp"></div><button type="button" class="btn pri" data-yc>' + HM.icon('up') + HM.esc(t('yeuCau')) + '</button></div>';
+      '</div>';
     html += HM.the({
       thoBody: true,
       than: !d.rows.length ? HM.trong({ icon: 'up', tieuDe: t('trong'), moTa: t('trongMo') })

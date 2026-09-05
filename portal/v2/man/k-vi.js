@@ -91,7 +91,7 @@ HT.dangKy({
     var dangXuLy = w.withdrawals.filter(function (x) { return x.status === 'requested' || x.status === 'processing'; });
     var daRut = w.withdrawals.filter(function (x) { return x.status === 'paid'; });
 
-    var html = HM.dau({ h1: HM.esc(t('h1')), mo: HM.esc(t('mo')) });
+    var html = HM.dau({ h1: HM.esc(t('h1')), mo: HM.esc(t('mo')), nut: '<button type="button" class="btn pri" data-rut' + (duoi ? ' disabled' : '') + '>' + HM.icon('cash') + HM.esc(t('rut')) + '</button>' });
     html += HM.so([
       { l: t('kKhaDung'), v: HT.fmt.usd(w.available), lon: true, s: t('tongGhi') + ' ' + HT.fmt.usd0(w.totalCredit),
         tia: w.credits.slice(-12).map(function (x) { return x.credit; }) },
@@ -100,9 +100,7 @@ HT.dangKy({
       { l: t('kNguong'), v: HT.fmt.usd0(w.threshold) }
     ]);
 
-    html += '<div class="bar">' +
-      (duoi ? '<p class="hint" style="margin:0;flex:1;min-width:0">' + HM.esc(t('duoiNguong').replace('{n}', HT.fmt.usd0(w.threshold))) + '</p>' : '<div class="sp"></div>') +
-      '<button type="button" class="btn pri" data-rut' + (duoi ? ' disabled' : '') + '>' + HM.icon('cash') + HM.esc(t('rut')) + '</button></div>';
+    if (duoi) html += HM.ghi({ kieu: 'info', tieuDe: HM.esc(t('duoiNguong').replace('{n}', HT.fmt.usd0(w.threshold))) });
 
     /* ---- hàng 1: tài khoản · cơ cấu ví · nhịp báo cáo ---- */
     var theNh = HM.the({

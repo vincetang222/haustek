@@ -323,3 +323,26 @@ số; máy chủ mẫu chặn mọi vai khác (`test/api-guard.js`).
 **Còn mở.** Mức trả thật theo từng tháng (hiện ghi đè một số cho mọi kỳ);
 chữ ký duyệt hai người cho khoản lớn; mẫu hợp đồng PDF sinh từ đề xuất được
 duyệt; hạn mức tạm ứng theo tổng dư nợ toàn danh mục.
+
+## Vòng 7 — làm gọn giao diện theo phản hồi
+
+Người dùng chưa hài lòng với UI/UX. Soát ảnh chụp hai cổng cho thấy các
+điểm yếu: huy hiệu điều hướng đỏ tràn lan không phân biệt "cần làm" và "số
+đếm"; hai mươi lăm mục điều hướng không thu gọn được; ba nút sáng / tối /
+theo máy chiếm chỗ thanh trên; nút hành động chính mỗi trang đặt một kiểu;
+dải KPI đầu trang lặp lại đúng các số trong viên lọc (Đối tác); bảng có cột
+tiêu đề bị bóp còn cột mã / ngày thì rộng (Hỗ trợ: tiêu đề gãy năm dòng);
+dòng bảng Xét duyệt có năm nút liền nhau; ghi chú vàng chiếm chỗ và không tắt
+được.
+
+Đã sửa ở tầng dùng chung để mọi màn cùng lên: huy hiệu hai mức khác hình
+(chữ mờ · chấm đỏ), bỏ số đếm không cần hành động; nhóm điều hướng thu gọn
+được và nhớ; một nút giao diện xoay vòng; tiêu đề trang có chỗ đặt nút chính;
+ghi chú gọn và tắt được; menu tràn ⋯ cho thao tác phụ; quy tắc co cột bảng
+(tiêu đề giữ tối thiểu 190px, nhãn / ảnh / mã không xuống dòng, dòng phụ cắt
+ba chấm); dòng bảng thấp hơn, nhãn nhỏ hơn; chuyển trang mờ dần nhẹ. Bảng Xét
+duyệt bỏ cột Tuổi và nhãn hạng để vừa 1440px.
+
+Còn mở: thanh tab dưới cho điện thoại ở cổng đối tác; kéo thả sắp lại nhóm
+điều hướng; lưu bộ lọc bảng theo người dùng; tối giản thêm dải KPI ở các
+màn còn lặp số với viên lọc (Thanh toán, Bài hát của tôi).

@@ -55,8 +55,7 @@ HT.dangKy({
   },
 
   dem: function (c) {
-    var n = c.A.advances.list().filter(function (x) { return x.balance > 0; }).length;
-    return n ? String(n) : '';
+    return ''; /* số đối tác còn dư tạm ứng là số đếm, không phải việc cần làm */
   },
 
   ve: function (root, c) {

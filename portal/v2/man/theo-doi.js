@@ -70,10 +70,10 @@ HT.dangKy({
     var d = HM.nho(A, 'theo-doi:' + LOC.ngay, function () { return A.dailyTrends(LOC.ngay, 300); });
     var pl = HM.nho(A, 'theo-doi:pl', function () { return A.playlists(); });
     var y = yeuThich();
-    var html = HM.dau({ h1: HM.esc(t('h1')), mo: HM.esc(t('mo')) });
-    html += HM.ghi({ kieu: 'warn', tieuDe: HM.esc(t('canhBao')), than: '',
-      nut: '<button type="button" class="btn sm" data-luu>' + HM.icon('down2') + HM.esc(t('luu')) + '</button>' +
-           '<button type="button" class="btn sm" data-khoi-phuc>' + HM.icon('up') + HM.esc(t('khoiPhuc')) + '</button>' });
+    var html = HM.dau({ h1: HM.esc(t('h1')), mo: HM.esc(t('mo')),
+      nut: '<button type="button" class="btn" data-luu>' + HM.icon('down2') + HM.esc(t('luu')) + '</button>' +
+           '<button type="button" class="btn" data-khoi-phuc>' + HM.icon('up') + HM.esc(t('khoiPhuc')) + '</button>' });
+    html += HM.ghi({ kieu: 'info', tieuDe: HM.esc(t('canhBao')), dong: 'theo-doi-yeu-thich' });
     var nguong = nguongBung(d);
     var bung = nguong == null ? null : d.topTracks.filter(function (x) { return x.change != null && x.change >= nguong; }).length;
     html += HM.so([

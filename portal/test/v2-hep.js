@@ -48,7 +48,7 @@ const RONG = (process.argv[3] || '390,640,900,1024,1280').split(',').map(Number)
       const nr = r(document.querySelector('.menu-btn'));
       const sr = r(side);
       const ctl = document.querySelector('.side-ctl');
-      const topTheme = document.querySelector('.top [data-theme-sw]');
+      const topTheme = document.querySelector('.top [data-th-cycle]');
       return {
         tran, cuonNgang,
         nutHien: !!nr && nr.width > 0,
@@ -92,7 +92,7 @@ const RONG = (process.argv[3] || '390,640,900,1024,1280').split(',').map(Number)
 
       await p.click('.menu-btn'); await p.waitForTimeout(300);
       const hrefs = await p.$$eval('.nav a', as => as.map(a => a.getAttribute('href')));
-      await p.click('.nav a:nth-of-type(2)'); await p.waitForTimeout(400);
+      await p.click('.nav a >> nth=1'); await p.waitForTimeout(400);
       k = await doKhung();
       const hash = await p.evaluate(() => location.hash);
       if (k.mo) bao(W, trang, 'chọn mục xong ngăn vẫn mở');

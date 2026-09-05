@@ -149,7 +149,7 @@ HT.dangKy({
     });
     /* xét duyệt: nút và ngăn dùng chung với màn Xét duyệt */
     HM.bam(root, '[data-dx]', function (el, e) { e.stopPropagation(); if (HT.xuLyDeXuat) HT.xuLyDeXuat(c, el.getAttribute('data-dx'), el.getAttribute('data-id')); else c.di('xet-duyet'); });
-    HM.bam(root, 'tr[data-pr]', function (el, e) { if (e.target.closest('button')) return; if (HT.moDeXuat) HT.moDeXuat(c, el.getAttribute('data-pr')); else c.di('xet-duyet'); });
+    HM.bam(root, 'tr[data-pr]', function (el, e) { if (e.target.closest('button,details')) return; if (HT.moDeXuat) HT.moDeXuat(c, el.getAttribute('data-pr')); else c.di('xet-duyet'); });
     HM.bam(root, '[data-them-ung]', function () { if (HT.deXuatTamUng) HT.deXuatTamUng(c, null); else c.di('xet-duyet'); });
     HM.bam(root, '[data-them-hd]', function () { if (HT.deXuatHopDong) HT.deXuatHopDong(c, null); else c.di('xet-duyet'); });
   }

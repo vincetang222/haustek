@@ -97,7 +97,7 @@ HT.dangKy({
     var gan = mo.slice().sort(function (a, b) { return a.dueAt < b.dueAt ? -1 : 1; })[0];
     var loaiCua = function (id) { var x = tk.types.filter(function (y) { return y.id === id; })[0]; return x ? c.song(x, 'label') : id; };
 
-    var html = HM.dau({ h1: HM.esc(t('h1')), mo: HM.esc(t('mo')) });
+    var html = HM.dau({ h1: HM.esc(t('h1')), mo: HM.esc(t('mo')), nut: '<button type="button" class="btn pri" data-moi>' + HM.icon('up') + HM.esc(t('guiMoi')) + '</button>' });
     html += HM.so([
       { l: t('kMo'), v: HT.fmt.n(mo.length), lon: true, s: choNt ? HT.fmt.n(choNt) + ' ' + t('choNt') : '' },
       { l: t('kXong'), v: HT.fmt.n(xong.length) },
@@ -109,8 +109,7 @@ HT.dangKy({
     html += '<div class="bar">' + HM.tabs([
       { k: 'mo', l: t('tabMo'), icon: 'clock', dem: mo.length },
       { k: 'xong', l: t('tabXong'), icon: 'check', dem: xong.length }
-    ], LOC.tab) + '<div class="sp"></div>' +
-      '<button type="button" class="btn pri" data-moi>' + HM.icon('up') + HM.esc(t('guiMoi')) + '</button></div>';
+    ], LOC.tab) + '</div>';
 
     var ds = LOC.tab === 'mo' ? mo : xong;
     var bang = ds.length

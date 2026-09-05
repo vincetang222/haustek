@@ -21,7 +21,7 @@ function tx(k) { var d = (CHU && CHU[HT.lang]) || (CHU && CHU.vi) || {}; return 
 HT.dangKy({
   id: 'xet-duyet', nav: 'navXetDuyet', nhom: 'nhomTien', icon: 'check',
   vai: ['ops', 'sales', 'support', 'mgmt', 'accounting'],
-  dem: function (c) { try { var k = c.A.proposals.counts(); return (c.A.staff.me.role === 'accounting' ? k.submitted : k.pending) || null; } catch (e) { return null; } },
+  dem: function (c) { try { var k = c.A.proposals.counts(), r = c.A.staff.me.role; if (r === 'accounting') return k.submitted ? '!' + k.submitted : ''; if (r === 'mgmt') return k.checked ? '!' + k.checked : (k.pending ? String(k.pending) : ''); return k.pending ? String(k.pending) : ''; } catch (e) { return ''; } },
 
   chu: {
     vi: {
@@ -72,7 +72,8 @@ HT.dangKy({
       return true;
     });
     var pt = HTM.phanTrang(rows, LOC);
-    var html = HM.dau({ h1: HM.esc(t('h1')), mo: HM.esc(t('mo')) });
+    var html = HM.dau({ h1: HM.esc(t('h1')), mo: HM.esc(t('mo')),
+      nut: '<button type="button" class="btn" data-them-hd>' + HM.icon('file') + HM.esc(t('themHd')) + '</button><button type="button" class="btn pri" data-them-ung>' + HM.icon('cash') + HM.esc(t('themUng')) + '</button>' });
     html += HM.so([
       { l: t('kCho'), v: HT.fmt.n(k.pending), lon: true, s: t('kChoS').replace('{a}', k.submitted).replace('{b}', k.checked) },
       { l: t('kUng'), v: c.tien2(choUng.reduce(function (s, p) { return s + p.terms.amount; }, 0)), s: t('kUngS') },
@@ -83,12 +84,10 @@ HT.dangKy({
     html += HM.tabs([{ k: 'cho', l: t('tabCho'), dem: k.pending }, { k: 'xong', l: t('tabXong'), dem: k.approved + k.rejected + k.withdrawn || undefined }, { k: 'toi', l: t('tabToi') }], LOC.tab);
     html += '<div class="bar">' +
       [['all', t('loaiAll')], ['advance', t('loaiUng')], ['contract', t('loaiHd')]].map(function (x) { return '<button type="button" class="pill' + (LOC.loai === x[0] ? ' on' : '') + '" data-loai="' + x[0] + '">' + HM.esc(x[1]) + '</button>'; }).join('') +
-      '<div class="srch">' + HM.icon('tim') + '<input type="search" data-tim placeholder="' + HM.esc(t('tim')) + '" value="' + HM.esc(LOC.tim) + '"></div><div class="sp"></div>' +
-      '<button type="button" class="btn sm" data-them-hd>' + HM.icon('file') + HM.esc(t('themHd')) + '</button>' +
-      '<button type="button" class="btn sm pri" data-them-ung>' + HM.icon('cash') + HM.esc(t('themUng')) + '</button></div>';
+      '<div class="srch">' + HM.icon('tim') + '<input type="search" data-tim placeholder="' + HM.esc(t('tim')) + '" value="' + HM.esc(LOC.tim) + '"></div></div>';
     html += HM.the({ thoBody: true,
       than: !rows.length ? HM.trong({ icon: 'check', tieuDe: t('khong'), moTa: t('khongMo') }) :
-        '<div class="tw"><table class="t"><thead><tr><th>' + HM.esc(t('cTk')) + '</th><th>' + HM.esc(t('cNoiDung')) + '</th><th class="num">' + HM.esc(t('cRoi')) + '</th><th>' + HM.esc(t('cKn')) + '</th><th>' + HM.esc(t('cTt')) + '</th><th class="num">' + HM.esc(t('cTuoi')) + '</th><th>' + HM.esc(t('cThaoTac')) + '</th></tr></thead><tbody>' +
+        '<div class="tw"><table class="t"><thead><tr><th>' + HM.esc(t('cTk')) + '</th><th>' + HM.esc(t('cNoiDung')) + '</th><th class="num">' + HM.esc(t('cRoi')) + '</th><th>' + HM.esc(t('cKn')) + '</th><th>' + HM.esc(t('cTt')) + '</th><th>' + HM.esc(t('cThaoTac')) + '</th></tr></thead><tbody>' +
         pt.page.map(function (p) { return dongDx(c, p, me); }).join('') + '</tbody></table></div>' + pt.chan });
     root.innerHTML = html;
     HTM.ganTrang(root, LOC, c.veLai);
@@ -98,28 +97,33 @@ HT.dangKy({
     HM.bam(root, '[data-them-ung]', function () { HT.deXuatTamUng(c, null); });
     HM.bam(root, '[data-them-hd]', function () { HT.deXuatHopDong(c, null); });
     HM.bam(root, '[data-dx]', function (el, e) { e.stopPropagation(); thaoTac(c, el.getAttribute('data-dx'), el.getAttribute('data-id')); });
-    HM.bam(root, 'tr[data-pr]', function (el, e) { if (e.target.closest('button')) return; moDx(c, el.getAttribute('data-pr')); });
+    HM.bam(root, 'tr[data-pr]', function (el, e) { if (e.target.closest('button,details')) return; moDx(c, el.getAttribute('data-pr')); });
   }
 });
 
 function dongDx(c, p, me) {
   var t = tx, roi = p.type === 'advance' ? p.calc.roi : null;
-  return '<tr class="pick" data-pr="' + HM.esc(p.id) + '"><td>' + HM.tenBia({ ten: p.party.name, seed: p.party.clientId, phu: p.id }) + '</td>' +
+  return '<tr class="pick" data-pr="' + HM.esc(p.id) + '"><td>' + HM.tenBia({ ten: p.party.name, seed: p.party.clientId, phu: p.id + ' · ' + p.ageDays + ' ' + t('ngay') }) + '</td>' +
     '<td style="min-width:220px"><div class="t-ttl">' + HM.esc(c.song(p, 'moTa')) + '</div><div class="t-sub" style="font-family:var(--f)">' + HM.esc((p.byRole === 'partner' ? t('cuaDoiTac') : p.by) + (p.terms.note ? ' · ' + HM.dai(p.terms.note, 48) : '')) + '</div></td>' +
-    '<td class="num" style="white-space:nowrap">' + (roi == null ? '<span class="nil">—</span>' : '<b>' + HM.esc(HT.fmt.pct(roi)) + '</b><div class="t-sub" style="font-family:var(--f)">' + HM.esc((c.lang === 'vi' ? 'thu hồi ' : 'recoup ') + (p.calc.recoupMonths == null ? '—' : p.calc.recoupMonths + (c.lang === 'vi' ? ' tháng' : ' mo'))) + '</div>') + '</td>' +
-    '<td>' + HTM.tagKn(p.calc.recommendation) + (p.calc.grade ? ' ' + HTM.tagHang(p.calc.grade) : '') + '</td>' +
-    '<td>' + HTM.tagDx(p.status) + '</td><td class="num">' + HM.esc(p.ageDays + ' ' + t('ngay')) + '</td>' +
+    '<td class="num" style="white-space:nowrap">' + (roi == null ? '<span class="nil">—</span>' : '<b>' + HM.esc(HT.fmt.pct(roi)) + '</b><div class="t-sub" style="font-family:var(--f)">' + HM.esc((c.lang === 'vi' ? 'thu hồi ' : 'recoup ') + (p.calc.recoupMonths == null ? '—' : p.calc.recoupMonths + (c.lang === 'vi' ? ' tháng' : ' mo')) + (p.calc.grade ? ' · ' + (c.lang === 'vi' ? 'hạng ' : 'grade ') + p.calc.grade : '')) + '</div>') + '</td>' +
+    '<td>' + HTM.tagKn(p.calc.recommendation) + '</td>' +
+    '<td>' + HTM.tagDx(p.status) + '</td>' +
     '<td>' + nutDx(c, p, me) + '</td></tr>';
 }
+/* Mỗi vai thấy tối đa hai nút chính; thao tác phụ nằm trong menu ⋯ để dòng
+   bảng không thành một dãy năm nút. */
 function nutDx(c, p, me) {
-  var t = tx, role = me.role, out = [];
+  var t = tx, role = me.role, chinh = [], phu = [];
   var cho = ['submitted', 'checked'].indexOf(p.status) >= 0;
-  if (cho && role === 'mgmt') { out.push('<button type="button" class="btn sm pri" data-dx="approve" data-id="' + p.id + '">' + HM.esc(t('duyet')) + '</button>'); out.push('<button type="button" class="btn sm dang" data-dx="reject" data-id="' + p.id + '">' + HM.esc(t('tuChoi')) + '</button>'); }
-  if (p.status === 'submitted' && (role === 'accounting' || role === 'mgmt')) out.push('<button type="button" class="btn sm" data-dx="check" data-id="' + p.id + '">' + HM.esc(t('kiem')) + '</button>');
-  if (cho && (role === 'accounting' || role === 'mgmt')) out.push('<button type="button" class="btn sm ghost" data-dx="return" data-id="' + p.id + '">' + HM.esc(t('traLai')) + '</button>');
-  if (p.status === 'returned' && (p.byRole === role || role === 'mgmt')) out.push('<button type="button" class="btn sm" data-dx="resubmit" data-id="' + p.id + '">' + HM.esc(t('guiLai')) + '</button>');
-  if (['submitted', 'checked', 'returned'].indexOf(p.status) >= 0 && (p.byRole === role || role === 'mgmt') && p.byRole !== 'partner') out.push('<button type="button" class="btn sm ghost" data-dx="withdraw" data-id="' + p.id + '">' + HM.esc(t('rut')) + '</button>');
-  return out.length ? '<div class="btnrow" style="flex-wrap:nowrap">' + out.join('') + '</div>' : '<span class="nil">—</span>';
+  function nut(act, nhan, cls) { return '<button type="button" class="btn sm ' + (cls || '') + '" data-dx="' + act + '" data-id="' + p.id + '">' + HM.esc(t(nhan)) + '</button>'; }
+  function muc(act, nhan, cls) { return '<button type="button" class="' + (cls || '') + '" data-dx="' + act + '" data-id="' + p.id + '">' + HM.esc(t(nhan)) + '</button>'; }
+  if (cho && role === 'mgmt') { chinh.push(nut('approve', 'duyet', 'pri')); chinh.push(nut('reject', 'tuChoi', 'dang')); }
+  if (p.status === 'submitted' && (role === 'accounting' || role === 'mgmt')) (role === 'mgmt' ? phu : chinh).push(role === 'mgmt' ? muc('check', 'kiem') : nut('check', 'kiem', 'pri'));
+  if (cho && (role === 'accounting' || role === 'mgmt')) phu.push(muc('return', 'traLai'));
+  if (p.status === 'returned' && (p.byRole === role || role === 'mgmt')) chinh.push(nut('resubmit', 'guiLai', 'pri'));
+  if (['submitted', 'checked', 'returned'].indexOf(p.status) >= 0 && (p.byRole === role || role === 'mgmt') && p.byRole !== 'partner') (chinh.length ? phu : chinh).push(chinh.length ? muc('withdraw', 'rut', 'dang') : nut('withdraw', 'rut', 'ghost'));
+  if (!chinh.length && !phu.length) return '<span class="nil">—</span>';
+  return '<div class="btnrow" style="flex-wrap:nowrap">' + chinh.join('') + HM.menu(phu) + '</div>';
 }
 function thaoTac(c, act, id) {
   var A = c.A, t = tx, me = A.staff.me, p = A.proposals.get(id); if (!p) return;

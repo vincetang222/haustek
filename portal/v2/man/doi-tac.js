@@ -98,12 +98,7 @@ HT.dangKy({
 
     var html = HM.dau({
       h1: HM.esc(t('h1')), mo: HM.esc(t('mo')),
-      so: [
-        { l: t('kTong'), v: HT.fmt.n(dem.all) },
-        { l: t('kQuanLy'), v: HT.fmt.n(dem.managed) },
-        { l: t('kGiaHan'), v: HT.fmt.n(dem.renew), mau: dem.renew ? HB.mau('warn') : '' },
-        { l: t('kChuaTk'), v: HT.fmt.n(dem['no-account']) }
-      ]
+      nut: LOC.tab === 'ds' ? '<button type="button" class="btn" data-xuat>' + HM.icon('down2') + HM.esc(t('xuat')) + '</button>' : ''
     });
     html += HM.tabs([
       { k: 'ds', l: t('tabDs'), icon: 'list' },
@@ -154,7 +149,7 @@ function veDanhSach(c, tatCa) {
     '<select class="in" data-hang style="width:auto;height:34px"><option value="">' + HM.esc(t('moiHang')) + '</option>' +
       ['A', 'B', 'C'].map(function (k) { return '<option value="' + k + '"' + (LOC.hang === k ? ' selected' : '') + '>' + HM.esc(t('hangX').replace('{c}', k)) + '</option>'; }).join('') + '</select>' +
     '<div class="sp"></div>' +
-    '<button type="button" class="btn sm" data-xuat>' + HM.icon('down2') + HM.esc(t('xuat')) + '</button></div>';
+    '</div>';
   html += '<div class="bar">' +
     '<button type="button" class="pill' + (LOC.tt === '' ? ' on' : '') + '" data-tt="">' + HM.esc(t('ttAll')) + ' <b>' + HT.fmt.n(dem.all) + '</b></button>' +
     TT.map(function (k) {

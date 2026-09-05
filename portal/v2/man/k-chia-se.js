@@ -61,7 +61,7 @@ HT.dangKy({
       return true;
     });
     var pt = HTM.phanTrang(rows, LOC, 15);
-    var html = HM.dau({ h1: HM.esc(t('h1')), mo: HM.esc(t('mo')) });
+    var html = HM.dau({ h1: HM.esc(t('h1')), mo: HM.esc(t('mo')), nut: '<button type="button" class="btn pri" data-them-moi>' + HM.icon('user') + HM.esc(t('themMoi')) + '</button>' });
     html += HM.so([
       { l: t('kBai'), v: HT.fmt.n(k.tracks), lon: true },
       { l: t('kNg'), v: HT.fmt.n(k.collaborators) },
@@ -72,7 +72,7 @@ HT.dangKy({
     html += '<div class="bar">' +
       [['all', t('locAll')], ['moi', t('locMoi')], ['thuhoi', t('locThuHoi')]].map(function (x) { return '<button type="button" class="pill' + (LOC.loc === x[0] ? ' on' : '') + '" data-loc="' + x[0] + '">' + HM.esc(x[1]) + '</button>'; }).join('') +
       '<div class="srch">' + HM.icon('tim') + '<input type="search" data-tim placeholder="' + HM.esc(t('tim')) + '" value="' + HM.esc(LOC.tim) + '"></div>' +
-      '<div class="sp"></div><button type="button" class="btn pri" data-them-moi>' + HM.icon('user') + HM.esc(t('themMoi')) + '</button></div>';
+      '</div>';
     html += HM.the({
       thoBody: true,
       than: !d.rows.length ? HM.trong({ icon: 'user', tieuDe: t('trong'), moTa: t('trongMo') })

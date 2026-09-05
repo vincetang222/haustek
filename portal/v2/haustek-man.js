@@ -16,13 +16,16 @@ function dai(s, n) {
 }
 
 /* ---- đầu trang ---- */
+/* o.nut: nút hành động chính của trang, đứng bên phải tiêu đề — một chỗ
+   cho mọi màn, thay cho mỗi màn tự đặt nút một kiểu dưới dải ô số. */
 function dau(o) {
   return '<div class="page"><div><h1>' + (o.h1 || '') + '</h1>' +
     (o.mo ? '<p>' + o.mo + '</p>' : '') + '</div>' +
     (o.so && o.so.length ? '<div class="page-kpis">' + o.so.map(function (k) {
       return '<div class="page-kpi"><div class="l">' + esc(k.l) + '</div>' +
         '<div class="v"' + (k.mau ? ' style="color:' + k.mau + '"' : '') + '>' + esc(k.v) + '</div></div>';
-    }).join('') + '</div>' : '') + '</div>';
+    }).join('') + '</div>' : '') +
+    (o.nut ? '<div class="page-act">' + o.nut + '</div>' : '') + '</div>';
 }
 
 /* ---- dải ô số ---- */
@@ -73,12 +76,44 @@ function trong(o) {
 }
 
 /* ---- ô ghi chú ---- */
+/* o.dong = khoá: ghi chú tắt được, nhớ trong trình duyệt để không hiện lại. */
+function daTat(k) { try { return localStorage.getItem('haustek.ghi.' + k) === '1'; } catch (e) { return false; } }
 function ghi(o) {
+  if (o.dong && daTat(o.dong)) return '';
   return '<div class="note ' + (o.kieu || 'info') + '">' + icon(o.icon || (o.kieu === 'no' ? 'alert' : o.kieu === 'ok' ? 'check' : 'info')) +
     '<div style="min-width:0;flex:1"><b>' + (o.tieuDe || '') + '</b>' +
     (o.than ? '<p>' + o.than + '</p>' : '') + '</div>' +
-    (o.nut ? '<div class="btnrow" style="align-self:center">' + o.nut + '</div>' : '') + '</div>';
+    (o.nut ? '<div class="btnrow" style="align-self:center">' + o.nut + '</div>' : '') +
+    (o.dong ? '<button type="button" class="note-x" data-ghi-dong="' + esc(o.dong) + '" aria-label="' + esc(HT.lang === 'en' ? 'Dismiss' : 'Đóng') + '" title="' + esc(HT.lang === 'en' ? 'Dismiss' : 'Đóng') + '">' + icon('x') + '</button>' : '') + '</div>';
 }
+/* Menu tràn: một nút ⋯ mở danh sách thao tác phụ. Dùng <details> nên không
+   cần trạng thái; danh sách định vị cố định lúc mở để không bị khung bảng
+   cắt. Các nút bên trong vẫn nhận sự kiện qua HM.bam của màn. */
+function menu(items, o) {
+  o = o || {};
+  var ds = (items || []).filter(Boolean);
+  if (!ds.length) return '';
+  return '<details class="menu"><summary class="btn sm ghost" aria-label="' + esc(o.nhan || (HT.lang === 'en' ? 'More' : 'Thêm')) + '" title="' + esc(o.nhan || (HT.lang === 'en' ? 'More' : 'Thêm')) + '">' + icon('more') + '</summary>' +
+    '<div class="menu-list">' + ds.join('') + '</div></details>';
+}
+document.addEventListener('click', function (e) {
+  var x = e.target.closest('[data-ghi-dong]');
+  if (x) { try { localStorage.setItem('haustek.ghi.' + x.getAttribute('data-ghi-dong'), '1'); } catch (err) {} var n = x.closest('.note'); if (n) n.remove(); return; }
+  document.querySelectorAll('details.menu[open]').forEach(function (d) {
+    if (!d.contains(e.target) || e.target.closest('.menu-list button')) d.removeAttribute('open');
+  });
+});
+document.addEventListener('toggle', function (e) {
+  var d = e.target; if (!d || !d.classList || !d.classList.contains('menu')) return;
+  var ls = d.querySelector('.menu-list'); if (!ls) return;
+  if (!d.open) { ls.style.cssText = ''; return; }
+  var r = d.querySelector('summary').getBoundingClientRect();
+  ls.style.position = 'fixed'; ls.style.visibility = 'hidden'; ls.style.top = '0'; ls.style.left = '0'; ls.style.right = 'auto';
+  var w = ls.offsetWidth, h = ls.offsetHeight;
+  var top = r.bottom + 4; if (top + h > window.innerHeight - 8) top = Math.max(8, r.top - h - 4);
+  var left = Math.max(8, Math.min(r.right - w, window.innerWidth - w - 8));
+  ls.style.top = top + 'px'; ls.style.left = left + 'px'; ls.style.visibility = '';
+}, true);
 
 /* ---- danh sách khoá : giá trị ---- */
 function kv(rows) {
@@ -98,7 +133,7 @@ function bam(root, sel, fn) {
   root.addEventListener('click', function (e) {
     var el = e.target.closest(sel);
     /* không chặn mặc định khi bấm vào ô nhập / ô chọn: checkbox phải còn đổi được trạng thái */
-    if (el && root.contains(el)) { if (!e.target.closest('input,select,textarea,label,a[href^="http"]')) e.preventDefault(); fn(el, e); }
+    if (el && root.contains(el)) { if (!e.target.closest('input,select,textarea,label,summary,a[href^="http"]')) e.preventDefault(); fn(el, e); }
   });
 }
 function doi(root, sel, fn) {
@@ -298,7 +333,7 @@ function xepHang(rows, o) {
 }
 
 global.HM = {
-  dau: dau, so: so, the: the, tabs: tabs, trong: trong, ghi: ghi, kv: kv,
+  dau: dau, so: so, the: the, tabs: tabs, trong: trong, ghi: ghi, menu: menu, kv: kv,
   tag: tag, cham: cham, bam: bam, doi: doi, nhap: nhap, csv: csv,
   lech: lech, lechHtml: lechHtml, dai: dai, esc: esc, icon: icon,
   nho: nho, quenHet: quenHet, moc: moc,
