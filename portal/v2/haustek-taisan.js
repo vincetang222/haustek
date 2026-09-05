@@ -21,6 +21,7 @@ var CHU = {
     stLive: 'Đã lên', stProcessing: 'Đang xử lý', stPending: 'Chưa xác nhận', stRejected: 'Bị từ chối', stTakedown: 'Đã gỡ',
     bDone: 'Đã xong', bDoing: 'Đang thực hiện', bTodo: 'Chưa tới', bIssue: 'Có vấn đề', bSkip: 'Không đăng ký',
     tabKn: 'Khiếu nại', ycMkt: 'Yêu cầu hỗ trợ marketing', ycHt: 'Gửi yêu cầu hỗ trợ về bài hát này',
+    tabPl: 'Playlist', plPlaylist: 'Playlist / bảng xếp hạng', plNt: 'Nền tảng', plViTri: 'Vị trí', plTheoDoi: 'Người theo dõi', plThem: 'Ngày vào', plTt: 'Trạng thái', plActive: 'Đang có mặt', plRemoved: 'Đã rời', plLuot: 'Lượt nghe 7 ngày', plTrong: 'Bài hát này chưa có mặt trong playlist hay bảng xếp hạng nào.', plMo: 'Vị trí do nền tảng báo mỗi ngày. Lượt nghe 7 ngày là ước tính phần playlist mang lại.',
     knTrong: 'Không có khiếu nại hay xung đột quyền nào trên bài hát này.', knMo: 'Haustek theo dõi Content ID và khiếu nại trên các nền tảng; mỗi dòng dưới đây là một việc Haustek đang xử lý thay bạn.',
     cNenTang: 'Nền tảng', cLoaiKn: 'Loại', cBenKia: 'Bên liên quan', cLuotNgay: 'Lượt xem / ngày', cTrangThaiKn: 'Trạng thái', cCapNhat: 'Cập nhật',
     knOpen: 'Mới ghi nhận', knDisputed: 'Đang tranh chấp', knEscalated: 'Đã chuyển lên nền tảng', knResolved: 'Đã giải quyết', knReleased: 'Đã nhả claim',
@@ -47,6 +48,7 @@ var CHU = {
     stLive: 'Live', stProcessing: 'Processing', stPending: 'Unconfirmed', stRejected: 'Rejected', stTakedown: 'Taken down',
     bDone: 'Done', bDoing: 'In progress', bTodo: 'Not yet', bIssue: 'Issue', bSkip: 'Not requested',
     tabKn: 'Claims', ycMkt: 'Request marketing support', ycHt: 'Open a support request about this track',
+    tabPl: 'Playlists', plPlaylist: 'Playlist / chart', plNt: 'Platform', plViTri: 'Position', plTheoDoi: 'Followers', plThem: 'Added', plTt: 'Status', plActive: 'Listed', plRemoved: 'Removed', plLuot: 'Streams, 7 days', plTrong: 'This track is not on any playlist or chart yet.', plMo: 'Positions are reported daily by the platforms. 7-day streams estimate the playlist’s contribution.',
     knTrong: 'No claim or rights conflict on this track.', knMo: 'Haustek watches Content ID and claims on the platforms; each row is something Haustek is handling for you.',
     cNenTang: 'Platform', cLoaiKn: 'Type', cBenKia: 'Other party', cLuotNgay: 'Views / day', cTrangThaiKn: 'Status', cCapNhat: 'Updated',
     knOpen: 'Logged', knDisputed: 'Disputed', knEscalated: 'Escalated to the platform', knResolved: 'Resolved', knReleased: 'Claim released',
@@ -211,6 +213,24 @@ function csvMaTran(ten, monthly, metric, nhanMetric) {
       .concat([(function () { var s = monthly.totals[metric].reduce(function (a, b) { return a + b; }, 0); return metric === 'streams' ? s : s.toFixed(2); })()])]));
 }
 
+/* ---- bảng playlist / bảng xếp hạng của một bài ---- */
+function playlistBang(rows) {
+  if (!rows || !rows.length) return '<p class="say">' + esc(t('plTrong')) + '</p>';
+  var KIEU = { editorial: 'info', algorithmic: 'link', chart: 'warn' };
+  return '<p class="say" style="margin-bottom:10px">' + esc(t('plMo')) + '</p>' +
+    '<div class="tw"><table class="t" style="min-width:0"><thead><tr><th>' + esc(t('plPlaylist')) + '</th><th>' + esc(t('plNt')) + '</th>' +
+    '<th class="num">' + esc(t('plViTri')) + '</th><th class="num">' + esc(t('plTheoDoi')) + '</th><th>' + esc(t('plThem')) + '</th><th>' + esc(t('plTt')) + '</th><th class="num">' + esc(t('plLuot')) + '</th></tr></thead><tbody>' +
+    rows.map(function (r) {
+      return '<tr' + (r.status === 'removed' ? ' style="opacity:.6"' : '') + '><td><div class="t-ttl">' + esc(HT.lang === 'en' ? r.playlistEn : r.playlist) + '</div>' +
+        '<div class="t-sub" style="font-family:var(--f)">' + HM.tag(HT.lang === 'en' ? r.kindLabelEn : r.kindLabel, KIEU[r.kind] || '') + '</div></td>' +
+        '<td>' + esc(r.platform) + '</td><td class="num">#' + r.position + '</td>' +
+        '<td class="num">' + (r.followers ? esc(HT.fmt.n(r.followers)) : '<span class="nil">—</span>') + '</td>' +
+        '<td class="mono">' + esc(HT.fmt.date(r.addedAt)) + '</td>' +
+        '<td>' + HM.tag(r.status === 'active' ? t('plActive') : t('plRemoved'), r.status === 'active' ? 'ok' : '') + (r.removedAt ? '<div class="t-sub">' + esc(HT.fmt.date(r.removedAt)) + '</div>' : '') + '</td>' +
+        '<td class="num">' + (r.streams7 ? esc(HT.fmt.n(r.streams7)) : '<span class="nil">—</span>') + '</td></tr>';
+    }).join('') + '</tbody></table></div>';
+}
+
 /* ---- ngăn trượt trọn bộ ----
    d: gói api.trackAsset / admin.asset. opts: { mineLabel, tien, tien2,
    noiBo, them:[{k, l, html, khiMo(panel)}], tabDau } */
@@ -221,6 +241,7 @@ function moNgan(c, d, opts) {
   var st = { tab: opts.tabDau || 'qt', metric: opts.metric || 'revenue' };
   var tabs = (opts.them || []).map(function (x) { return { k: x.k, l: x.l }; })
     .concat([{ k: 'qt', l: t('tabQt') }, { k: 'nt', l: t('tabNt') }, { k: 'thang', l: t('tabThang') }])
+    .concat(opts.playlists ? [{ k: 'pl', l: t('tabPl') + (opts.playlists.length ? ' (' + opts.playlists.filter(function (x) { return x.status === 'active'; }).length + ')' : '') }] : [])
     .concat(opts.claims ? [{ k: 'kn', l: t('tabKn') + (opts.claims.length ? ' (' + opts.claims.length + ')' : '') }] : []);
   if (!tabs.some(function (x) { return x.k === st.tab; })) st.tab = tabs[0].k;
 
@@ -243,12 +264,15 @@ function moNgan(c, d, opts) {
   panels.qt = quyTrinh(d.steps) + conThieu(d.missing);
   panels.nt = nenTang(d, { tien: tien, mine: !!mineLabel });
   if (opts.claims) panels.kn = khieuNai(opts.claims, opts);
+  if (opts.playlists) panels.pl = playlistBang(opts.playlists);
   panels.thang = '<p class="say" style="margin-bottom:10px">' + esc(opts.noiBo ? t('thangMoNb') : t('thangMo')) + '</p>' +
     '<div class="bar" style="margin-bottom:10px">' + chonThuocDo(st.metric, { mineLabel: mineLabel, revenueLabel: opts.revenueLabel, anMine: opts.anMine }) + '<div class="sp"></div>' +
     '<button type="button" class="btn sm" data-mx-csv>' + icon('down2') + esc(t('xuat')) + '</button></div>' +
     '<div data-mx-body>' + maTran(d.monthly, { metric: st.metric, tien: tien0, tien2: tien }) + '</div>';
 
-  var html = '<div class="asset-h">' + tagGiaiDoan(d.summary.stage) + '</div>' + dau +
+  var html = '<div class="asset-h">' + HM.bia(d.id, d.title, 'xl') + '<div class="asset-t"><b>' + esc(d.title) + '</b>' +
+      '<span>' + esc(d.artist + (d.label ? ' · ' + d.label : '') + ' · ' + d.type + ' · ' + d.releasePeriod) + '</span>' +
+      '<div style="margin-top:8px">' + tagGiaiDoan(d.summary.stage) + '</div></div></div>' + dau +
     '<div class="tabs sm" data-asset-tabs>' + tabs.map(function (x) {
       return '<button type="button" data-atab="' + esc(x.k) + '"' + (x.k === st.tab ? ' class="on"' : '') + '>' + esc(x.l) + '</button>';
     }).join('') + '</div>' +
@@ -283,8 +307,21 @@ function moNgan(c, d, opts) {
   });
 }
 
+/* ---------------------------------------------------------------------
+   Playlist & bảng xếp hạng của một bài (cổng đối tác). Nhớ tạm cả bảng
+   theo phiên (vai + đối tác); đổi tài khoản thì lấy lại. Trả về mảng dòng
+   để đưa vào opts.playlists của moNgan → ngăn có tab Playlist.
+   --------------------------------------------------------------------- */
+var PL = { key: null, rows: [] };
+function plCua(c, id) {
+  var me = c.phien && c.phien.me; if (!me || !c.api || !c.api.playlists) return [];
+  var key = me.role + ':' + me.partyId;
+  if (PL.key !== key) { try { PL.rows = c.api.playlists(me.role, me.partyId).rows; } catch (e) { PL.rows = []; } PL.key = key; }
+  return PL.rows.filter(function (r) { return r.trackId === id; });
+}
+
 global.HTS = {
-  t: t, song: song,
+  t: t, song: song, plCua: plCua,
   tagNenTang: tagNenTang, tagGiaiDoan: tagGiaiDoan, tagMuc: tagMuc, chamNenTang: chamNenTang,
   quyTrinh: quyTrinh, conThieu: conThieu, nenTang: nenTang, maTran: maTran, chonThuocDo: chonThuocDo, csvMaTran: csvMaTran, khieuNai: khieuNai,
   moNgan: moNgan

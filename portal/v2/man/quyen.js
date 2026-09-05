@@ -223,7 +223,7 @@ function veKhieuNai(c) {
           '<td>' + HM.esc(x.store) + '</td>' +
           '<td><div class="t-ttl" style="font-weight:500">' + HM.esc(d.loai) + '</div><div class="t-sub mono">' + HM.esc(x.id) + '</div></td>' +
           '<td>' + hanHtml + '</td>' +
-          '<td><div class="t-ttl">' + HM.esc(HM.dai(x.track.title, 28)) + '</div><div class="t-sub">' + HM.esc(HM.dai(x.track.artist, 24)) + ' · <span class="mono">' + HM.esc(x.track.isrc) + ' · ' + HM.esc(x.track.upc) + '</span></div></td>' +
+          '<td>' + HM.tenBia({ bia: x.trackId, ten: HM.dai(x.track.title, 28), phuHtml: true, phu: HM.esc(HM.dai(x.track.artist, 24)) + ' · <span class="mono">' + HM.esc(x.track.isrc) + ' · ' + HM.esc(x.track.upc) + '</span>' }) + '</td>' +
           '<td><div class="t-ttl">' + HM.esc(HM.dai(x.party.name, 24)) + '</div><div class="t-sub">' + HM.esc(x.party.clientId) + (d.pl ? ' · ' + HM.esc(d.pl) : '') + '</div></td>' +
           '<td>' + HM.esc(x.country) + '</td>' +
           '<td>' + (x.otherParty ? HM.esc(HM.dai(x.otherParty, 22)) : '<span class="nil">—</span>') + '</td>' +

@@ -22,7 +22,7 @@
    để ngăn mở được; chỗ đúng của dòng này là haustek-shell.js. */
 if (HT.fmt && !HT.fmt.date) HT.fmt.date = HT.fmt.ngay;
 
-var LOC = { tim: '', giaiDoan: '', sap: 'releaseDate', huong: -1, trang: 0, co: 25 };
+var LOC = { tim: '', giaiDoan: '', sap: 'releaseDate', huong: -1, trang: 0, co: 25, dang: 'bang' };
 var GIAI_DOAN = ['', 'live', 'processing', 'issue', 'missing'];
 var NHAN_LOC = { '': 'locAll', live: 'locLive', processing: 'locProcessing', issue: 'locIssue', missing: 'locMissing' };
 var CHU_GD = { live: 'gdLive', processing: 'gdProcessing', issue: 'gdIssue' };
@@ -51,7 +51,7 @@ HT.dangKy({
       trongMo: 'Khi Haustek tiếp nhận hồ sơ phát hành của bạn, bài hát sẽ xuất hiện ở đây.',
       loi: 'Chưa tải được danh mục',
       ghiChu: 'Lượt nghe và doanh thu là số tích luỹ của các kỳ đã xét duyệt. Bấm một dòng để xem quy trình phát hành, nền tảng và số liệu theo tháng của bài hát đó.',
-      phanLabel: 'Phần label được hưởng', thuNhap: 'Thu nhập của bạn',
+      phanLabel: 'Phần label được hưởng', thuNhap: 'Thu nhập của bạn', dangBang: 'Bảng', dangLuoi: 'Lưới bìa',
       csvLive: 'Nền tảng đã lên', csvTong: 'Tổng nền tảng', csvGoiY: 'Gợi ý', csvNgay: 'Ngày phát hành',
       daCat: 'Danh sách quá dài nên chỉ xuất {n} dòng đầu theo thứ tự đang sắp xếp. Bạn thu hẹp bộ lọc để xuất phần còn lại.'
     },
@@ -74,7 +74,7 @@ HT.dangKy({
       trongMo: 'Tracks appear here once Haustek receives your release submission.',
       loi: 'The catalogue could not be loaded',
       ghiChu: 'Streams and revenue are cumulative across approved periods. Open a row to see the track’s pipeline, platforms and monthly figures.',
-      phanLabel: 'Label keeps', thuNhap: 'Yours',
+      phanLabel: 'Label keeps', thuNhap: 'Yours', dangBang: 'Table', dangLuoi: 'Cover grid',
       csvLive: 'Platforms live', csvTong: 'Platforms total', csvGoiY: 'Suggestions', csvNgay: 'Release date',
       daCat: 'The list is long, so only the first {n} rows in the current order were exported. Narrow the filter to export the rest.'
     }
@@ -133,8 +133,16 @@ HT.dangKy({
           HM.esc(t(NHAN_LOC[k])) + ' <span class="muted">' + HM.esc(HT.fmt.n(k ? dem[k] : dem.all)) + '</span></button>';
       }).join('') +
       '<div class="sp"></div>' +
+      [['bang', t('dangBang'), 'list'], ['luoi', t('dangLuoi'), 'grid']].map(function (x) {
+        return '<button type="button" class="pill' + (LOC.dang === x[0] ? ' on' : '') + '" data-dang="' + x[0] + '">' + HM.icon(x[2]) + ' ' + HM.esc(x[1]) + '</button>';
+      }).join('') +
       (kq.total ? '<button type="button" class="btn sm" data-xuat>' + HM.icon('down2') + HM.esc(t('xuat')) + '</button>' : '') +
       '</div>';
+    /* Lưới bìa: cùng dữ liệu trang hiện tại, mỗi bài một thẻ có bìa, nhãn giai đoạn, tên và nghệ sĩ. */
+    var luoiHtml = '<div class="bia-grid" style="padding:6px 18px 14px">' + kq.rows.map(function (r) {
+      return '<div class="bia-card" data-bg="' + r.id + '">' + HM.bia(r.id, r.title) + HTS.tagGiaiDoan(r.stage) +
+        '<div><div class="t-ttl">' + HM.esc(r.title) + '</div><div class="t-sub">' + HM.esc((la ? r.artist + ' · ' : '') + r.type + ' · ' + HT.fmt.date(r.releaseDate)) + '</div></div></div>';
+    }).join('') + '</div>';
 
     var cot = [
       { k: 'title', l: t('cBai') },
@@ -159,7 +167,7 @@ HT.dangKy({
             '<div class="sp"></div>' +
             (dangLoc ? '<button type="button" class="btn sm" data-xoa-loc>' + HM.icon('x') + HM.esc(t('xoaLoc')) + '</button>' : '') +
           '</div>' +
-          '<div class="tw"><table class="t"><thead><tr>' + cot.map(function (x) {
+          (LOC.dang === 'luoi' ? luoiHtml : '<div class="tw"><table class="t"><thead><tr>' + cot.map(function (x) {
             var on = LOC.sap === x.k;
             return '<th class="' + (x.num ? 'num ' : '') + (x.s === false ? '' : 's ') + (on ? 'sorted band' : '') + '"' +
               (x.s === false ? '' : ' data-sx="' + x.k + '"') + '>' +
@@ -172,8 +180,7 @@ HT.dangKy({
             if (r.hints) thieu += '<div class="hint" style="margin-top:0">' +
               HM.esc(HT.fmt.n(r.hints) + ' ' + t(r.hints === 1 ? 'goiY1' : 'goiYN')) + '</div>';
             return '<tr class="pick" data-bg="' + r.id + '">' +
-              '<td><div class="t-ttl">' + HM.esc(HM.dai(r.title, 36)) + '</div>' +
-              '<div class="t-sub">' + HM.esc(r.isrc) + '</div></td>' +
+              '<td>' + HM.tenBia({ bia: r.id, ten: HM.dai(r.title, 36), phu: r.isrc }) + '</td>' +
               (la ? '<td>' + HM.esc(HM.dai(r.artist, 26)) + '</td>' : '') +
               '<td>' + HM.esc(r.type) + '</td>' +
               '<td style="white-space:nowrap">' + HM.esc(HT.fmt.date(r.releaseDate)) + '</td>' +
@@ -183,7 +190,7 @@ HT.dangKy({
               '<td class="num">' + thieu + '</td>' +
               '<td class="num">' + (r.streams ? HM.esc(HT.fmt.n(r.streams)) : '<span class="nil">—</span>') + '</td>' +
               '<td class="num band">' + (r.revenue ? HM.esc(HT.fmt.usd0(r.revenue)) : '<span class="nil">—</span>') + '</td></tr>';
-          }).join('') + '</tbody></table></div>' +
+          }).join('') + '</tbody></table></div>') +
           '<div class="card-f"><span style="flex:1;min-width:0">' + HM.esc(t('ghiChu')) + '</span>' +
             '<span style="white-space:nowrap">' + HM.esc(c.CHU[c.lang].showing) +
             ' <select class="inline-sel" data-co>' + [12, 25, 50, 100].map(function (n) {
@@ -211,6 +218,7 @@ HT.dangKy({
       else { LOC.sap = k; LOC.huong = (k === 'title' || k === 'artist') ? 1 : -1; }
       LOC.trang = 0; c.veLai();
     });
+    HM.bam(root, '[data-dang]', function (el) { LOC.dang = el.getAttribute('data-dang'); c.veLai(); });
     HM.bam(root, '[data-bg]', function (el) { moHoSo(c, +el.getAttribute('data-bg'), la); });
     HM.bam(root, '[data-xuat]', function () { xuatCsv(c, kq.total, tuyChon); });
   }
@@ -222,7 +230,7 @@ function moHoSo(c, id, la) {
   var d;
   try { d = c.api.trackAsset(c.phien.me.role, c.phien.me.partyId, id); }
   catch (e) { c.thongBao(e.message, 'no'); return; }
-  HTS.moNgan(c, d, { mineLabel: la ? c.t('phanLabel') : c.t('thuNhap'), revenueLabel: c.t('cGop'), anMine: !la, tien: HT.fmt.usd, tien0: HT.fmt.usd0, hoTro: true });
+  HTS.moNgan(c, d, { mineLabel: la ? c.t('phanLabel') : c.t('thuNhap'), revenueLabel: c.t('cGop'), anMine: !la, tien: HT.fmt.usd, tien0: HT.fmt.usd0, hoTro: true, playlists: HTS.plCua(c, id) });
   var dr2 = document.querySelector('.drawer');
   if (dr2 && HT.moTicket) {
     HM.bam(dr2, '[data-yc-mkt]', function (b) { HT.moTicket(c, { type: 'marketing', trackId: +b.getAttribute('data-yc-mkt') }); });

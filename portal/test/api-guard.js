@@ -637,6 +637,30 @@ check("Bảng kê: chỉ kỳ đã xét duyệt, số ghi vào ví khớp ví; P
 });
 
 /* ===================== 6. KHOÁ CỬA ===================== */
+check("Xu hướng ngày: chỉ bài của người xem, chuỗi ngày cộng đúng tổng, không lộ chữ nhạy cảm", () => {
+  const tr = H.api.dailyTrends("artist", A1.id, 28);
+  must(tr.series.length === 28, "cửa sổ 28 ngày phải có 28 điểm");
+  const sum = tr.series.reduce((s, x) => s + x.streams, 0);
+  must(sum === tr.total, "tổng cửa sổ " + tr.total + " khác tổng chuỗi ngày " + sum);
+  must(tr.topTracks.every(x => H.admin.artistOf(x.id).id === A1.id), "xu hướng ngày lộ bài của người khác");
+  must(tr.topArtists.length === 0, "nghệ sĩ không được thấy xếp hạng nghệ sĩ khác");
+  const trL = H.api.dailyTrends("label", L1.id, 7);
+  must(trL.topArtists.length > 0 && trL.series.length === 7, "label phải có xếp hạng nghệ sĩ và cửa sổ 7 ngày");
+  must(!/gross|haustekFee|phân phối/i.test(JSON.stringify(tr)), "gói xu hướng lộ chữ nhạy cảm");
+  return tr.tracksCounted + " bài · " + tr.days + " ngày " + tr.total.toLocaleString("en-US") + " lượt · label 7 ngày " + trL.total.toLocaleString("en-US");
+});
+
+check("Playlist: từng vị trí đều thuộc bài của người xem, số đếm khớp danh sách", () => {
+  const pl = H.api.playlists("artist", A1.id);
+  must(pl.rows.every(r => H.admin.artistOf(r.trackId).id === A1.id), "playlist lộ bài của người khác");
+  const active = pl.rows.filter(r => r.status === "active").length;
+  must(pl.truncated || active === pl.counts.active, "số đang có mặt " + pl.counts.active + " khác danh sách " + active);
+  must(pl.playlists.every(p => p.active <= p.tracks), "playlist đếm sai");
+  const plL = H.api.playlists("label", L1.id);
+  must(plL.rows.length >= pl.rows.length, "label phải thấy ít nhất bằng nghệ sĩ của mình");
+  return pl.counts.active + " vị trí đang có · " + pl.counts.playlists + " playlist · label " + plL.counts.active;
+});
+
 check("lockdown() gỡ hẳn mặt tiền admin khỏi trang", () => {
   must(!!H.admin, "chưa lockdown mà admin đã mất");
   H.lockdown();

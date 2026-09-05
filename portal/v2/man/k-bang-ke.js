@@ -198,6 +198,7 @@ HT.dangKy({
           : 'Send client ID ' + me.clientId + ', period ' + c.ky.label + ', and the ISRC of the track in question to ops@haustek-group.com. With those three, the exact row is found in minutes; missing one means combing the whole period.') + '</p>'
       }) + '</div>';
 
+    html += veBaoCaoThang(c);
     html += vePdf(c);
     html += veCacKy(c);
 
@@ -206,6 +207,11 @@ HT.dangKy({
 
     HM.bam(root, '[data-kyto]', function (el) { c.doiKy(el.getAttribute('data-kyto')); });
     HM.bam(root, '[data-in]', function () { window.print(); });
+    HM.doi(root, '[data-bk-tu]', function (el) { BK.tu = el.value; c.veLai(); });
+    HM.doi(root, '[data-bk-den]', function (el) { BK.den = el.value; c.veLai(); });
+    HM.bam(root, '[data-csv-tt]', function (el) { csvKy(c, el.getAttribute('data-csv-tt'), 'tt'); });
+    HM.bam(root, '[data-csv-ct]', function (el) { csvKy(c, el.getAttribute('data-csv-ct'), 'ct'); });
+    HM.bam(root, '[data-csv-ns]', function (el) { csvKy(c, el.getAttribute('data-csv-ns'), 'ns'); });
     HM.bam(root, '[data-tai-pdf]', function (el) {
       c.thongBao((c.lang === 'vi' ? 'Bản mẫu: tệp ' : 'Prototype: ') + el.getAttribute('data-tai-pdf') + (c.lang === 'vi' ? ' sẽ được tải về từ máy chủ thật.' : ' would download from the real server.'), 'ok');
     });
@@ -219,6 +225,73 @@ HT.dangKy({
     });
   }
 });
+
+/* ---- báo cáo theo tháng: mọi kỳ đã xét duyệt trong khoảng chọn, có tải về ---- */
+var BK = { tu: null, den: null };
+function veBaoCaoThang(c) {
+  var api = c.api, me = c.phien.me, vi = c.lang === 'vi', la = me.role === 'label';
+  var st;
+  try { st = api.statements(me.role, me.partyId).rows; } catch (e) { return ''; }
+  if (!st || !st.length) return '';
+  var ks = st.map(function (r) { return r.k; });
+  var den = BK.den && ks.indexOf(BK.den) >= 0 ? BK.den : ks[0];
+  var tu = BK.tu && ks.indexOf(BK.tu) >= 0 ? BK.tu : ks[Math.min(ks.length - 1, 5)];
+  if (tu > den) { var x = tu; tu = den; den = x; }
+  var rows = st.filter(function (r) { return r.k >= tu && r.k <= den; });
+  var tong = { revenue: 0, mine: 0, credit: 0, streams: 0 };
+  rows.forEach(function (r) { tong.revenue += r.revenue; tong.mine += r.mine; tong.credit += r.credit; tong.streams += r.streams; });
+  var chon = function (attr, gt) {
+    return '<select class="inline-sel" ' + attr + '>' + st.map(function (r) { return '<option value="' + r.k + '"' + (r.k === gt ? ' selected' : '') + '>' + HM.esc(r.label) + '</option>'; }).join('') + '</select>';
+  };
+  var th = function (s, num) { return '<th' + (num ? ' class="num"' : '') + '>' + HM.esc(s) + '</th>'; };
+  var nutTai = function (r) {
+    return '<div class="btnrow">' +
+      (r.pdf ? '<button type="button" class="btn sm" data-tai-pdf="' + HM.esc(r.pdf.file) + '">' + HM.icon('file') + 'PDF</button>' : '<span class="muted" style="font-size:12px">' + HM.esc(vi ? 'PDF chưa có' : 'PDF pending') + '</span>') +
+      '<button type="button" class="btn sm ghost" data-csv-tt="' + r.k + '">' + HM.esc(vi ? 'Tóm tắt' : 'Summary') + '</button>' +
+      '<button type="button" class="btn sm ghost" data-csv-ct="' + r.k + '">' + HM.esc(vi ? 'Chi tiết' : 'Details') + '</button>' +
+      (la ? '<button type="button" class="btn sm ghost" data-csv-ns="' + r.k + '">' + HM.esc(vi ? 'Theo nghệ sĩ' : 'By artist') + '</button>' : '') + '</div>';
+  };
+  return HM.the({
+    h2: HM.esc(vi ? 'Báo cáo theo tháng' : 'Monthly reports'),
+    p: HM.esc(vi ? 'Mỗi kỳ đã xét duyệt một dòng, với bảng kê PDF và các bảng CSV để tải về. Chọn khoảng kỳ ở góc phải.' : 'One row per approved period, with the PDF statement and CSV tables to download. Pick the range on the right.'),
+    hanhDong: '<span class="muted" style="font-size:12.5px">' + HM.esc(vi ? 'Từ' : 'From') + '</span> ' + chon('data-bk-tu', tu) + ' <span class="muted" style="font-size:12.5px">' + HM.esc(vi ? 'đến' : 'to') + '</span> ' + chon('data-bk-den', den),
+    thoBody: true,
+    than: '<div class="tw"><table class="t"><thead><tr>' + th(vi ? 'Kỳ' : 'Period') +
+      (la ? th(vi ? 'Doanh thu' : 'Revenue', true) + th(vi ? 'Thanh toán cho nghệ sĩ' : 'Paid to artists', true) + th(vi ? 'Phần label được hưởng' : 'Label keeps', true) : th(vi ? 'Thu nhập của bạn' : 'Yours', true)) +
+      th(vi ? 'Lượt nghe' : 'Streams', true) + th(vi ? 'Ghi vào ví' : 'Credited', true) + th(vi ? 'Tải về' : 'Download') + th(vi ? 'Xét duyệt' : 'Approved') + '</tr></thead><tbody>' +
+      '<tr style="background:var(--band);font-weight:600"><td>' + HM.esc(vi ? 'Tổng cộng' : 'Totals') + '</td>' +
+      (la ? '<td class="num">' + HM.esc(HT.fmt.usd(tong.revenue)) + '</td><td class="num">' + HM.esc(HT.fmt.usd(tong.revenue - tong.mine)) + '</td><td class="num">' + HM.esc(HT.fmt.usd(tong.mine)) + '</td>' : '<td class="num">' + HM.esc(HT.fmt.usd(tong.mine)) + '</td>') +
+      '<td class="num">' + HM.esc(HT.fmt.n(tong.streams)) + '</td><td class="num band">' + HM.esc(HT.fmt.usd(tong.credit)) + '</td><td></td><td></td></tr>' +
+      rows.map(function (r) {
+        return '<tr' + (r.k === c.kyKey ? ' style="box-shadow:inset 3px 0 0 var(--accent)"' : '') + '><td><button type="button" class="btn sm ghost" data-kyto="' + HM.esc(r.k) + '" style="font-family:var(--mono)">' + HM.esc(r.label) + '</button></td>' +
+          (la ? '<td class="num">' + HM.esc(HT.fmt.usd(r.revenue)) + '</td><td class="num">' + HM.esc(HT.fmt.usd(r.revenue - r.mine)) + '</td><td class="num">' + HM.esc(HT.fmt.usd(r.mine)) + '</td>' : '<td class="num">' + HM.esc(HT.fmt.usd(r.mine)) + '</td>') +
+          '<td class="num">' + HM.esc(HT.fmt.n(r.streams)) + '</td>' +
+          '<td class="num band"><b>' + HM.esc(HT.fmt.usd(r.credit)) + '</b>' + (r.recoup > 0 ? '<div class="t-sub" style="font-family:var(--f)">' + HM.esc((vi ? 'khấu trừ tạm ứng ' : 'advance recouped ') + HT.fmt.usd(r.recoup)) + '</div>' : '') + '</td>' +
+          '<td>' + nutTai(r) + '</td>' +
+          '<td class="mono muted">' + HM.esc(HT.fmt.ngay(r.approvedAt)) + '</td></tr>';
+      }).join('') + '</tbody></table></div>'
+  });
+}
+function csvKy(c, k, loai) {
+  var api = c.api, me = c.phien.me, vi = c.lang === 'vi', la = me.role === 'label';
+  var ky = c.kys.filter(function (p) { return p.k === k; })[0], nhan = ky ? ky.label.replace('/', '-') : k;
+  try {
+    if (loai === 'tt') {
+      var s = api.summary(me.role, me.partyId, k, 'rec');
+      HM.csv('tom-tat-' + me.clientId + '-' + nhan + '.csv', [vi ? 'Khoản mục' : 'Item', 'USD', vi ? 'Ghi chú' : 'Note'],
+        s.chain.map(function (b) { return [c.song(b, 'label'), b.value.toFixed(2), c.song(b, 'note') || '']; })
+          .concat([[vi ? 'Lượt nghe' : 'Streams', s.streams, ''], [vi ? 'Bài hát có doanh thu' : 'Earning tracks', s.tracks, '']]));
+    } else if (loai === 'ct') {
+      var kq = api.tracks(me.role, me.partyId, k, 'rec', { sort: 'mine', dir: -1 });
+      HM.csv('chi-tiet-' + me.clientId + '-' + nhan + '.csv', ['ISRC', vi ? 'Bài hát' : 'Track', vi ? 'Loại' : 'Type', vi ? 'Nghệ sĩ' : 'Artist', vi ? 'Lượt nghe' : 'Streams', (la ? (vi ? 'Doanh thu' : 'Revenue') : (vi ? 'Thu nhập' : 'Yours')) + ' USD'].concat(la ? [(vi ? 'Phần label' : 'Label keeps') + ' USD'] : []),
+        kq.rows.map(function (r) { return [r.isrc, r.title, r.type, r.artist, r.streams == null ? '' : r.streams, (la ? r.revenue : r.mine).toFixed(2)].concat(la ? [r.mine.toFixed(2)] : []); }));
+    } else {
+      var ro = api.roster(me.role, me.partyId, k);
+      HM.csv('theo-nghe-si-' + me.clientId + '-' + nhan + '.csv', [vi ? 'Mã nghệ sĩ' : 'Artist ID', vi ? 'Nghệ sĩ' : 'Artist', vi ? 'Bài hát' : 'Tracks', vi ? 'Lượt nghe' : 'Streams', (vi ? 'Doanh thu' : 'Revenue') + ' USD', (vi ? 'Thanh toán cho nghệ sĩ' : 'Paid to artist') + ' USD', (vi ? 'Phần label' : 'Label keeps') + ' USD'],
+        ro.rows.map(function (x) { return [x.clientId, x.name, x.tracks, x.streams, x.revenue.toFixed(2), x.artist.toFixed(2), x.labelCut.toFixed(2)]; }));
+    }
+  } catch (e) { c.thongBao(e.message, 'no'); }
+}
 
 /* ---- bảng kê PDF do Haustek tải lên cho kỳ này ---- */
 function vePdf(c) {

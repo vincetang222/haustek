@@ -146,8 +146,7 @@ HT.dangKy({
           }).join('') + '</tr></thead><tbody>' +
           trang.map(function (r) {
             return '<tr class="pick" data-bg="' + r.id + '">' +
-              '<td><div class="t-ttl">' + HM.esc(HM.dai(r.title, 36)) + '</div>' +
-              '<div class="t-sub">' + HM.esc(r.isrc) + '</div></td>' +
+              '<td>' + HM.tenBia({ bia: r.id, ten: HM.dai(r.title, 36), phu: r.isrc }) + '</td>' +
               (la ? '<td>' + HM.esc(HM.dai(r.artist, 26)) + '</td>' : '') +
               '<td>' + HM.esc(r.type) + '</td>' +
               (LUONG === 'rec' ? '<td class="num">' + HM.esc(HT.fmt.n(r.streams)) + '</td>' : '') +
@@ -262,7 +261,7 @@ function moBai(c, id, luong, la) {
           try { hs = api.trackAsset(me.role, me.partyId, id); }
           catch (e) { c.thongBao(e.message, 'no'); return; }
           /* c.nganTruot tự thay ngăn cũ bằng ngăn mới */
-          HTS.moNgan(c, hs, { mineLabel: la ? c.t('cLabel') : c.t('cToi'), revenueLabel: c.t('cGop'), anMine: !la, tien: HT.fmt.usd, tien0: HT.fmt.usd0, tabDau: 'nt', hoTro: true });
+          HTS.moNgan(c, hs, { mineLabel: la ? c.t('cLabel') : c.t('cToi'), revenueLabel: c.t('cGop'), anMine: !la, tien: HT.fmt.usd, tien0: HT.fmt.usd0, tabDau: 'nt', hoTro: true, playlists: HTS.plCua(c, id) });
           var dr2 = document.querySelector('.drawer');
           if (dr2 && HT.moTicket) {
             HM.bam(dr2, '[data-yc-mkt]', function (b) { HT.moTicket(c, { type: 'marketing', trackId: +b.getAttribute('data-yc-mkt') }); });

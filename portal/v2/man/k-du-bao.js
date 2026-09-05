@@ -150,7 +150,7 @@ HT.dangKy({
       than: tt.length ? '<div class="tw"><table class="t"><thead><tr><th>' + HM.esc(t('cBai')) + '</th>' + (la ? '<th>' + HM.esc(t('cNs')) + '</th>' : '') +
         '<th class="num">' + HM.esc(t('cLuot7')) + '</th><th class="num">' + HM.esc(t('cTang')) + '</th><th class="num band">' + HM.esc(t('cTien7')) + '</th></tr></thead><tbody>' +
         tt.map(function (x) {
-          return '<tr class="pick" data-bg="' + x.id + '"><td><div class="t-ttl">' + HM.esc(HM.dai(x.title, 40)) + '</div>' + (la ? '' : '<div class="t-sub">' + HM.esc(x.artist) + '</div>') + '</td>' +
+          return '<tr class="pick" data-bg="' + x.id + '"><td>' + HM.tenBia({ bia: x.id, ten: HM.dai(x.title, 40), phu: la ? '' : x.artist }) + '</td>' +
             (la ? '<td>' + HM.esc(HM.dai(x.artist, 26)) + '</td>' : '') +
             '<td class="num">' + HM.esc(HT.fmt.n(x.streams7)) + '</td>' +
             '<td class="num">' + (x.growth == null ? '<span class="nil">—</span>' : HM.lechHtml(1 + x.growth, 1, '')) + '</td>' +
@@ -190,7 +190,7 @@ HT.dangKy({
       var kn = [];
       try { kn = api.claims(me.role, me.partyId).rows.filter(function (r) { return r.track && r.track.isrc === hs.isrc; }); } catch (e) { kn = []; }
       HTS.moNgan(c, hs, { mineLabel: la ? HTS.t('label') : HTS.t('toi'), revenueLabel: la ? HTS.t('gop') : HTS.t('toi'), anMine: !la,
-        tien: HT.fmt.usd, tien0: HT.fmt.usd0, claims: kn, hoTro: true, tabDau: 'nt' });
+        tien: HT.fmt.usd, tien0: HT.fmt.usd0, claims: kn, hoTro: true, tabDau: 'nt', playlists: HTS.plCua(c, hs.id) });
       var dr = document.querySelector('.drawer');
       if (dr) {
         HM.bam(dr, '[data-yc-mkt]', function (b) { HT.moTicket(c, { type: 'marketing', trackId: +b.getAttribute('data-yc-mkt') }); });

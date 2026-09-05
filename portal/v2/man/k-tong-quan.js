@@ -283,8 +283,7 @@ HT.dangKy({
         '<th class="num band">' + HM.esc(la ? t('hdPhanLbCua') : t('veTay')) + '</th></tr></thead><tbody>' +
         bg.rows.slice(0, 10).map(function (r) {
           return '<tr class="pick" data-bg="' + r.id + '">' +
-            '<td><div class="t-ttl">' + HM.esc(HM.dai(r.title, 36)) + '</div>' +
-            '<div class="t-sub">' + HM.esc(r.isrc) + ' · ' + HM.esc(r.type) + (la && r.artist ? ' · ' + HM.esc(r.artist) : '') + '</div></td>' +
+            '<td>' + HM.tenBia({ bia: r.id, ten: HM.dai(r.title, 36), phu: r.isrc + ' · ' + r.type + (la && r.artist ? ' · ' + r.artist : '') }) + '</td>' +
             (LUONG === 'rec' ? '<td class="num">' + HM.esc(HT.fmt.n(r.streams)) + '</td>' : '') +
             (la ? '<td class="num">' + HM.esc(HT.fmt.usd0(r.revenue)) + '</td>' : '') +
             '<td class="num band"><b>' + HM.esc(HT.fmt.usd(r.mine)) + '</b></td></tr>';
@@ -499,7 +498,7 @@ function moBai(c, id, luong, la) {
           try { hs = api.trackAsset(me.role, me.partyId, id); }
           catch (e) { c.thongBao(e.message, 'no'); return; }
           HTS.moNgan(c, hs, { mineLabel: la ? t('hdPhanLbCua') : t('veTay'), revenueLabel: t('doanhThu'), anMine: !la,
-            tien: HT.fmt.usd, tien0: HT.fmt.usd0, tabDau: 'nt', hoTro: true });
+            tien: HT.fmt.usd, tien0: HT.fmt.usd0, tabDau: 'nt', hoTro: true, playlists: HTS.plCua(c, id) });
           var dr2 = document.querySelector('.drawer');
           if (dr2 && HT.moTicket) {
             HM.bam(dr2, '[data-yc-mkt]', function (b) { HT.moTicket(c, { type: 'marketing', trackId: +b.getAttribute('data-yc-mkt') }); });

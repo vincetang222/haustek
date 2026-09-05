@@ -142,7 +142,7 @@ file mẫu (xem màn hình **Câu hỏi còn treo**).
 ## Kiểm tra
 
 ```bash
-node portal/test/api-guard.js       # 39 phép kiểm ranh giới quyền, không cần trình duyệt
+node portal/test/api-guard.js       # 41 phép kiểm ranh giới quyền, không cần trình duyệt
 ```
 
 Đây là mốc số 2 trong tài liệu bàn giao — test chứng minh nghệ sĩ A không truy vấn được
@@ -164,7 +164,7 @@ Bản mẫu này là đặc tả để viết schema, không phải code để b
 
 ## Bản gói một trang
 
-`goi-mot-trang.html` (≈800 KB, đã gồm bộ chữ nhúng) là cả hai cổng gói vào một file,
+`goi-mot-trang.html` (≈1,4 MB, đã gồm bộ chữ nhúng) là cả hai cổng gói vào một file,
 dựng bằng `node portal/dung-goi.js` — dùng để xem online mà không phải tải gì về.
 
 Khác bản nhiều file ở đúng một chỗ: trang không tự đăng ký lúc tải file

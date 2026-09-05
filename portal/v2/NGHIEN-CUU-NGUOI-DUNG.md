@@ -250,3 +250,14 @@ tiếp phục vụ vận hành và kế toán Haustek; phần còn lại ghi đ�
 | Album delivery dashboard: tạo yêu cầu giao (tên, theo producer / UPC list / UPC file / albums, chọn nền tảng), danh sách yêu cầu | Nội bộ · **Giao nhận nền tảng** (vòng 3) | có |
 | Multiple releases edition tools: khoá / mở khoá, đổi giá album, đổi ngày phát hành số, đổi giá track; tổng quan yêu cầu | Nội bộ · **Sửa hàng loạt** (vòng 3) | có |
 | Bàn làm việc theo vai (sales KPI, support tickets, kế toán) | Nội bộ · **Bàn làm việc** (vòng 3): mgmt, vận hành, kinh doanh, hỗ trợ, kế toán | có |
+| Ảnh bìa (artwork) ở mọi danh sách, lưới bìa kiểu My Catalog | Cả hai cổng (vòng 4): bìa SVG sinh xác định theo mã bài, ảnh đại diện chữ cái cho đối tác; **Danh mục** đối tác có chế độ Lưới bìa | có (hệ thống thật thay bằng ảnh tải lên) |
+| Monitoring: favorites, Top hits, Booming, 7D/28D/90D, playlists & charts inclusions, short-form | Nội bộ · **Theo dõi** (vòng 4): 7 / 28 / 60 ngày theo dữ liệu lượt nghe ngày; yêu thích lưu trình duyệt có Lưu / Khôi phục | có |
+| Daily Stats / Daily Trends: cột · vùng · đường, tab Track / Album / Country / Store, top tracks, top artists | Đối tác · **Xu hướng ngày** (vòng 4) | có |
+| Demographics: giới tính, độ tuổi, nguồn nghe, loại thuê bao, quốc gia | Đối tác · **Xu hướng ngày**, thẻ Người nghe của bạn (sinh xác định theo tài khoản) | có; bản đồ thế giới chưa làm |
+| Top Playlists, Playlist Placement Tracker, Music Charts | Đối tác · **Playlist & bảng xếp hạng** (vòng 4); tab Playlist trong hồ sơ bài hát ở cả hai cổng | có |
+| Monthly Reports: Statement PDF, Summary, Details, Artist Details, chọn khoảng kỳ | Đối tác · **Bảng kê thanh toán**, thẻ Báo cáo theo tháng (vòng 4) | có |
+| Artist Details (ONESYSTEM): hồ sơ tài khoản với danh sách sản phẩm có bìa và trạng thái | Nội bộ · **Đối tác**, ngăn chi tiết có mục Bản phát hành (vòng 4) | có |
+| Releases to manage: lọc theo label manager, account, releases by page | Nội bộ · **Phát hành**: lọc người phụ trách và tài khoản (vòng 4) | có |
+| Pricing grids of stores | Nội bộ · **Bảng giá nền tảng** (vòng 4) | có, bảng giá mẫu |
+| Amplifier (chiến dịch marketing có tỷ lệ hoàn thành) | Chưa làm: hiện dùng bước marketing trong quy trình và ticket marketing | chưa |
+| Royalty Shares (shares in / shares out), Publishing (compositions, rights owners, share requests) | Một phần: tác quyền và phần label / nghệ sĩ; chưa có chia sẻ giữa tài khoản | một phần |

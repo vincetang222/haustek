@@ -228,7 +228,7 @@ function dungBang(c, root, rows) {
         '<td>' + HM.tag(r.loaiNhan, '') + '</td>' +
         '<td><div class="t-ttl">' + HM.esc(HM.dai(r.title, 64)) + '</div>' +
           '<div class="t-sub">' + HM.esc(r.party.name + ' · ' + r.party.clientId) + '</div></td>' +
-        '<td>' + (r.track ? '<div class="t-ttl">' + HM.esc(HM.dai(r.track.title, 24)) + '</div><div class="t-sub">' + HM.esc(r.track.isrc) + '</div>' : '<span class="nil">—</span>') + '</td>' +
+        '<td>' + (r.track ? HM.tenBia({ bia: r.trackId, ten: HM.dai(r.track.title, 24), phu: r.track.isrc, cls: 'sm' }) : '<span class="nil">—</span>') + '</td>' +
         '<td>' + (r.nvTen ? HM.esc(r.nvTen) : '<span class="nil">' + HM.esc(t('chuaGan')) + '</span>') + '</td>' +
         '<td class="mono' + (r.quaHan ? ' neg' : '') + '">' + HM.esc(HT.fmt.luc(r.dueAt)) +
           (r.quaHan ? '<div class="t-sub neg">' + HM.esc(t('quaHan')) + '</div>' : '') + '</td>' +
@@ -269,7 +269,7 @@ function veKhieuNai(c, kn, knMo) {
           '<th class="num">' + HM.esc(t('cXem')) + '</th><th>' + HM.esc(t('cTt')) + '</th></tr></thead><tbody>' +
           dau.map(function (x) {
             return '<tr class="pick" data-di="quyen"><td class="mono">' + HM.esc(x.id) + '</td>' +
-              '<td><div class="t-ttl">' + HM.esc(HM.dai(x.track.title, 22)) + '</div><div class="t-sub">' + HM.esc(HM.dai(x.party.name, 24)) + '</div></td>' +
+              '<td>' + HM.tenBia({ bia: x.trackId, ten: HM.dai(x.track.title, 22), phu: HM.dai(x.party.name, 24), cls: 'sm' }) + '</td>' +
               '<td>' + HM.esc(x.store) + '</td>' +
               '<td class="num">' + HM.esc(HT.fmt.n(x.dailyViews)) + '</td>' +
               '<td>' + HM.tag(nhanKn(x.status), KIEU_KN[x.status]) + '</td></tr>';

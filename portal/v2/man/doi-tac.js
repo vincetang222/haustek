@@ -51,6 +51,7 @@ HT.dangKy({
       dVi: 'Ví của đối tác', viKhaDung: 'Khả dụng', viCho: 'Đang xử lý', viDaRut: 'Đã rút',
       dTicket: 'Ticket đang mở', khongTicket: 'Không có ticket nào đang mở', taoTicket: 'Tạo ticket hộ', moHoTro: 'Mở hỗ trợ',
       dCha: 'Thuộc label mẹ', dDtQ: 'Doanh thu gộp quý này', soQuyTruoc: 'so với quý trước', dienBien: 'Doanh thu gộp 12 kỳ gần nhất',
+      dPh: 'Bản phát hành', dPhMo: 'Bài hát có doanh thu cao nhất của đối tác. Bấm để mở hồ sơ.', dPhTrong: 'Đối tác chưa có bài hát nào trong danh mục.', xemDanhMuc: 'Mở danh mục',
       /* chỉ tiêu */
       kdTieuDe: 'Chỉ tiêu kinh doanh quý {q}',
       kdMo: 'Doanh thu gộp quý của các đối tác do từng nhân viên kinh doanh phụ trách, so với chỉ tiêu quý. Kỳ đang chọn quyết định quý.',
@@ -80,6 +81,7 @@ HT.dangKy({
       dVi: 'Partner wallet', viKhaDung: 'Available', viCho: 'In progress', viDaRut: 'Withdrawn',
       dTicket: 'Open tickets', khongTicket: 'No open ticket', taoTicket: 'Log a ticket', moHoTro: 'Open support',
       dCha: 'Parent label', dDtQ: 'Gross this quarter', soQuyTruoc: 'vs previous quarter', dienBien: 'Gross, last 12 periods',
+      dPh: 'Releases', dPhMo: 'The partner’s highest-earning tracks. Open one for its record.', dPhTrong: 'This partner has no tracks in the catalogue yet.', xemDanhMuc: 'Open catalogue',
       kdTieuDe: 'Sales targets, quarter {q}',
       kdMo: 'Quarterly gross of the partners each salesperson manages, against the quarterly target. The selected period sets the quarter.',
       kdTk: 'Accounts managed', kdLabel: 'labels', kdNs: 'artists', kdDt: 'Quarter gross', kdChiTieu: 'Quarter target',
@@ -190,8 +192,8 @@ function dungBang(root, c) {
       var tk = !r.hasAccount ? HM.cham('off', t('chuaCoTk'))
         : r.lastSeen ? HM.cham('ok', t('lanCuoi').replace('{d}', HT.fmt.date(r.lastSeen)))
         : HM.cham('warn', t('chuaDn'));
-      return '<td style="min-width:200px"><div class="t-ttl">' + HM.esc(HM.dai(r.name, 34)) + '</div>' +
-          '<div class="t-sub" style="white-space:nowrap">' + HM.tag(t(r.kind), r.kind === 'artist' ? 'link' : 'info') + ' ' + HM.esc(r.clientId) + (r.children ? ' · ' + HM.esc(t('labelCon').replace('{n}', r.children)) : '') + '</div></td>' +
+      return '<td style="min-width:220px">' + HM.tenBia({ ten: HM.dai(r.name, 34), seed: r.clientId, phuHtml: true,
+          phu: HM.tag(t(r.kind), r.kind === 'artist' ? 'link' : 'info') + ' ' + HM.esc(r.clientId) + (r.children ? ' · ' + HM.esc(t('labelCon').replace('{n}', r.children)) : '') }) + '</td>' +
         '<td>' + (r.managerName ? HM.esc(r.managerName) : '<span class="nil">—</span>') + '</td>' +
         '<td>' + HM.tag(r.classification, KIEU_HANG[r.classification] || '') + '</td>' +
         '<td class="num band"><b>' + HM.esc(c.tien(r.revenueQ)) + '</b><div class="t-sub">' + HM.lechHtml(r.revenueQ, r.revenuePrevQ) + '</div></td>' +
@@ -270,6 +272,7 @@ function moDoiTac(c, r) {
   var tk = []; try { tk = A.tickets.list({ status: 'open-all' }).filter(function (x) { return x.partyKey === pk; }); } catch (e) { tk = []; }
   var sales = A.staff.byRole('sales').concat(A.staff.byRole('mgmt'));
   var lich = A.periods.map(function (p, i) { return A.agg(laNs ? 'artist' : 'label', id, i, 'rec').gross; });
+  var ph = []; try { ph = A.catalogueFor(laNs ? 'artist' : 'label', id, { limit: 8, sort: 'revenue' }).rows; } catch (e) { ph = []; }
 
   c.nganTruot(
     HM.so([
@@ -296,6 +299,11 @@ function moDoiTac(c, r) {
       { l: t('viCho'), v: HT.fmt.usd(w.pending) },
       { l: t('viDaRut'), v: HT.fmt.usd(w.paid) }
     ]) : '') +
+    '<h4 class="sec">' + HM.esc(t('dPh')) + '</h4>' +
+    (ph.length ? '<p class="hint" style="margin-top:0">' + HM.esc(t('dPhMo')) + '</p><div class="tw"><table class="t" style="min-width:0"><tbody>' + ph.map(function (x) {
+      return '<tr class="pick" data-bai="' + x.id + '"><td>' + HM.tenBia({ bia: x.id, ten: HM.dai(x.title, 28), phu: x.type + ' · ' + HT.fmt.date(x.releaseDate) }) + '</td>' +
+        '<td>' + HTS.tagGiaiDoan(x.stage) + '</td><td class="num">' + (x.revenue ? HM.esc(c.tien(x.revenue)) : '<span class="nil">—</span>') + '</td></tr>';
+    }).join('') + '</tbody></table></div>' : '<p class="say">' + HM.esc(t('dPhTrong')) + '</p>') +
     '<h4 class="sec">' + HM.esc(t('dTicket')) + ' <span class="muted">(' + tk.length + ')</span></h4>' +
     (tk.length ? '<div class="tw"><table class="t" style="min-width:0"><tbody>' + tk.slice(0, 6).map(function (x) {
       return '<tr class="pick" data-tk="' + HM.esc(x.id) + '"><td><div class="t-ttl">' + HM.esc(HM.dai(x.title, 40)) + '</div><div class="t-sub">' + HM.esc(x.id) + '</div></td>' +
@@ -319,6 +327,10 @@ function moDoiTac(c, r) {
         HM.bam(dr, '[data-tao-tk]', function () { if (HT.moTicketNoiBo) HT.moTicketNoiBo(c, { partyKey: pk, name: r.name, clientId: r.clientId }); });
         HM.bam(dr, '[data-di]', function (el) { c.di(el.getAttribute('data-di')); });
         HM.bam(dr, '[data-tk]', function (el) { if (HT.hoTroMo) HT.hoTroMo(c, el.getAttribute('data-tk')); });
+        HM.bam(dr, '[data-bai]', function (el) {
+          var a; try { a = A.asset(+el.getAttribute('data-bai')); } catch (err) { return; }
+          HTS.moNgan(c, a, { noiBo: true, tien: c.tien2, tien0: c.tien, playlists: A.playlistsOf(+el.getAttribute('data-bai')) });
+        });
       } });
 }
 

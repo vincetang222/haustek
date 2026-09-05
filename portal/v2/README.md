@@ -40,7 +40,7 @@ gọi `HAUSTEK.lockdown()` **trước khi** chạy bất cứ trang nào, và kh
 > `localStorage` thì trang nào cùng gốc cũng đọc được. Xem tab **Quản trị → Ranh giới
 > hai cổng** để biết cái gì thật sự chặn được và cái gì không.
 
-## Mười tám trang nội bộ
+## Hai mươi trang nội bộ
 
 | Trang | File | Trả lời câu gì |
 |---|---|---|
@@ -61,9 +61,11 @@ gọi `HAUSTEK.lockdown()` **trước khi** chạy bất cứ trang nào, và kh
 | Đối tác | `man/doi-tac.js` | Quản lý tài khoản đối tác: người phụ trách, doanh thu quý, phân loại, hợp đồng, trạng thái |
 | Hỗ trợ | `man/ho-tro.js` | Hàng đợi yêu cầu hỗ trợ: hạn, ưu tiên, người phụ trách, trả lời |
 | Quản lý quyền | `man/quyen.js` | Xung đột Content ID và khiếu nại trên nền tảng; cài đặt video theo tài khoản |
+| Theo dõi | `man/theo-doi.js` | Bài hát, tài khoản, bản phát hành đang lên trong cửa sổ 7 / 28 / 60 ngày; yêu thích (lưu trình duyệt, có Lưu / Khôi phục), top hits, đang bùng nổ, số playlist và video ngắn |
+| Bảng giá nền tảng | `man/bang-gia.js` | Nhóm giá của các nền tảng bán tải về: giá album và track theo nền tảng và tiền tệ, nối sang Sửa hàng loạt |
 | Quản trị | `man/quan-tri.js` | Tài khoản, nhật ký, câu hỏi treo, dữ liệu, ranh giới |
 
-## Mười ba trang cổng đối tác
+## Mười lăm trang cổng đối tác
 
 Cổng đối tác chỉ hiện **số NET** của người xem (xem `NGHIEN-CUU-NGUOI-DUNG.md`
 mục 4b). Mọi trang tiền ở đây dùng khoá `revenue` / `mine`; tầng API chặn chữ
@@ -80,6 +82,8 @@ mục 4b). Mọi trang tiền ở đây dùng khoá `revenue` / `mine`; tầng A
 | Dự báo | `man/k-du-bao.js` | Lượt nghe hằng ngày × mức trả của nền tảng: dự kiến kỳ đang mở và kỳ sau, tăng trưởng, bài tăng mạnh |
 | Ví & rút tiền | `man/k-vi.js` | Số dư khả dụng, rút tiền, tài khoản nhận tiền, lịch sử, khoản ghi theo kỳ, nhịp báo cáo |
 | Hỗ trợ | `man/k-ho-tro.js` | Gửi và theo dõi yêu cầu hỗ trợ; khiếu nại bản quyền Haustek đang xử lý thay bạn |
+| Xu hướng ngày | `man/k-xu-huong.js` | Lượt nghe theo ngày (cột / vùng / đường, 7 / 28 / 60 ngày) xếp theo bài hát, bản phát hành, nghệ sĩ, thị trường, nền tảng; nhân khẩu học người nghe |
+| Playlist & bảng xếp hạng | `man/k-playlist.js` | Bài hát đang ở playlist biên tập, thuật toán hay bảng xếp hạng nào, vị trí, ngày vào, còn ở đó không; playlist mang về nhiều lượt nghe nhất |
 | Phát hành | `man/k-phat-hanh.js` | Bản phát hành trong danh mục, hồ sơ đang xử lý, gửi hồ sơ mới theo đúng trường của form metadata |
 | Bảng kê thanh toán | `man/k-bang-ke.js` | Bản đối soát chính thức: in ra, tải về, gửi kế toán |
 | Tạm ứng | `man/k-tam-ung.js` | Vì sao kỳ này có doanh thu mà không nhận được tiền |
@@ -91,7 +95,10 @@ mục 4b). Mọi trang tiền ở đây dùng khoá `revenue` / `mine`; tầng A
 `api.trackAsset` (cổng đối tác) hoặc `A.asset` (nội bộ): tab **Quy trình** (bảy
 bước, còn thiếu gì), **Nền tảng** (12 nền tảng lớn với trạng thái và đường dẫn,
 206 nền tảng khác gộp một dòng), **Theo tháng** (ma trận nền tảng × kỳ, đổi được
-lượt nghe / doanh thu gộp / phần được hưởng, xuất CSV). Nội bộ đưa thêm tab Dòng
+lượt nghe / doanh thu gộp / phần được hưởng, xuất CSV), **Playlist** (playlist và
+bảng xếp hạng bài đang có mặt, vị trí, ngày vào; cổng đối tác lấy qua
+`HTS.plCua`, nội bộ qua `A.playlistsOf`). Đầu ngăn có ảnh bìa sinh xác định từ
+id bài (`HM.bia`), tên, nghệ sĩ và giai đoạn. Nội bộ đưa thêm tab Dòng
 tiền của mình vào qua `them`. Cùng một phép chia theo nền tảng dùng cho ma trận
 từng bài, thu nhập theo nền tảng của kỳ và báo cáo nền tảng của cả tài khoản, nên
 ba bảng đó cộng lại luôn ra cùng con số (api-guard kiểm điều này).

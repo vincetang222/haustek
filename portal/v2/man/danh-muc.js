@@ -221,10 +221,10 @@ HT.dangKy({
               /* trạng thái quy trình: chỉ tính cho dòng đang nhìn thấy */
               var s = A.assetSummary(i);
               return '<tr class="pick" data-bg="' + i + '">' +
-                '<td><div class="t-ttl">' + HM.esc(HM.dai(tr.title, 30)) + '</div>' +
+                '<td><div class="t-bia">' + HM.bia(i, tr.title) + '<div><div class="t-ttl">' + HM.esc(HM.dai(tr.title, 30)) + '</div>' +
                   '<div class="t-sub">' + HM.esc(tr.isrc) +
                   (tr.isrcAlt ? ' <span class="tag info" style="font-size:10.5px;padding:1px 6px">+1</span>' : '') +
-                  ' · ' + HM.esc(HM.dai(tr.artist, 24)) + '</div></td>' +
+                  ' · ' + HM.esc(HM.dai(tr.artist, 24)) + '</div></div></div></td>' +
                 '<td>' + HM.esc(tr.type) + '</td>' +
                 '<td>' + (tr.label ? HM.esc(HM.dai(tr.label, 24))
                   : '<span class="muted">' + HM.esc(t('docLap')) + '</span>') + '</td>' +

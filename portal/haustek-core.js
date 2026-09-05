@@ -506,7 +506,7 @@ function catalogueReleases(role, partyId, limit) {
   const total = arr.length;
   const rows = arr.slice(0, limit || 40).map(g => {
     const first = g.tracks[0];
-    return { id: "CAT-" + g.key.replace(/[^0-9a-z]/gi, "-"), title: tTitle[first], type: TYPES[g.type] || "Single",
+    return { id: "CAT-" + g.key.replace(/[^0-9a-z]/gi, "-"), trackId: first, title: tTitle[first], type: TYPES[g.type] || "Single",
       artistId: g.artistId, artistName: ARTISTS[g.artistId].name,
       releasePeriod: PERIODS[g.rel].label, tracks: g.tracks.length, earning: g.revenue > 0, revenue: g.revenue,
       isrc: g.tracks.length === 1 ? tIsrc[first] : null, status: "released" };
@@ -1938,6 +1938,170 @@ function forecastOf(role, partyId) {
 /* =====================================================================
    19e. TICKET HỖ TRỢ
    ===================================================================== */
+/* =====================================================================
+   19h. XU HƯỚNG NGÀY, PLAYLIST & BẢNG XẾP HẠNG, NHÂN KHẨU HỌC
+   ---------------------------------------------------------------------
+   Ba nguồn số liệu mà nền tảng cung cấp gần như tức thời, khác với báo
+   cáo doanh thu về sau một tới ba tháng:
+     · lượt nghe theo ngày (dailyStreams ở trên) gộp theo bài, bản phát
+       hành, nghệ sĩ, thị trường, nền tảng cho một cửa sổ N ngày;
+     · vị trí trong playlist biên tập, playlist thuật toán và bảng xếp
+       hạng; mỗi bài có 0 tới 5 vị trí, sinh xác định theo mã bài và mức
+       lượt nghe kỳ gần nhất, nên bài lớn có nhiều vị trí hơn;
+     · nhân khẩu học người nghe (giới tính, độ tuổi, nguồn nghe, loại thuê
+       bao), sinh xác định theo tài khoản.
+   Hệ thống thật lấy ba thứ này từ API của từng nền tảng; hình dạng gói
+   dữ liệu giữ như đây.
+   ===================================================================== */
+const PLAYLISTS = [
+  { n: "Nhạc Việt Mới Thứ Sáu",      en: "New V-Pop Friday",        plat: "Spotify",       f: 1850000, kind: "editorial" },
+  { n: "Hot Hits Việt Nam",           en: "Hot Hits Vietnam",        plat: "Spotify",       f: 2400000, kind: "editorial" },
+  { n: "Top 50 Việt Nam",             en: "Top 50 Vietnam",          plat: "Spotify",       f: 0,       kind: "chart" },
+  { n: "Viral 50 Việt Nam",           en: "Viral 50 Vietnam",        plat: "Spotify",       f: 0,       kind: "chart" },
+  { n: "Indie Việt",                  en: "Indie Việt",              plat: "Spotify",       f: 620000,  kind: "editorial" },
+  { n: "Chill Cùng Nhạc Việt",        en: "Chill with V-Pop",        plat: "Spotify",       f: 890000,  kind: "editorial" },
+  { n: "Rap Việt Mới",                en: "New Vietnamese Rap",      plat: "Spotify",       f: 1100000, kind: "editorial" },
+  { n: "Acoustic Việt",               en: "Acoustic Việt",           plat: "Spotify",       f: 410000,  kind: "editorial" },
+  { n: "Radar Phát Hành",             en: "Release Radar",           plat: "Spotify",       f: 0,       kind: "algorithmic" },
+  { n: "Gợi Ý Hằng Tuần",             en: "Weekly Mix",              plat: "Spotify",       f: 0,       kind: "algorithmic" },
+  { n: "Nhạc Việt Hôm Nay",           en: "V-Pop Today",             plat: "Apple Music",   f: 1300000, kind: "editorial" },
+  { n: "Top 100: Việt Nam",           en: "Top 100: Vietnam",        plat: "Apple Music",   f: 0,       kind: "chart" },
+  { n: "Lofi Việt",                   en: "Lofi Việt",               plat: "Apple Music",   f: 350000,  kind: "editorial" },
+  { n: "Ballad Việt",                 en: "Vietnamese Ballads",      plat: "Apple Music",   f: 720000,  kind: "editorial" },
+  { n: "Top 100 Bài Hát Việt Nam",    en: "Top 100 Vietnam Songs",   plat: "Zing MP3",      f: 0,       kind: "chart" },
+  { n: "Bảng Xếp Hạng Tuần",          en: "Weekly Chart",            plat: "Zing MP3",      f: 0,       kind: "chart" },
+  { n: "Nhạc Trẻ Hay Nhất",           en: "Best of V-Pop",           plat: "Zing MP3",      f: 1600000, kind: "editorial" },
+  { n: "Nhạc Hot Hôm Nay",            en: "Hot Today",               plat: "NhacCuaTui",    f: 980000,  kind: "editorial" },
+  { n: "Việt Nam Top 100",            en: "Vietnam Top 100",         plat: "YouTube Music", f: 0,       kind: "chart" },
+  { n: "V-Pop Thịnh Hành",            en: "Trending V-Pop",          plat: "YouTube Music", f: 540000,  kind: "editorial" },
+  { n: "Xu Hướng Âm Nhạc",            en: "Music Trends",            plat: "TikTok",        f: 0,       kind: "chart" },
+  { n: "Nhạc Việt Vươn Xa",           en: "V-Pop Going Global",      plat: "Deezer",        f: 120000,  kind: "editorial" }
+];
+const PL_KIND_LABEL = { editorial: ["Playlist biên tập", "Editorial playlist"], algorithmic: ["Playlist thuật toán", "Algorithmic playlist"], chart: ["Bảng xếp hạng", "Chart"] };
+function playlistsOf(i) {
+  const st = recStreams[i * P + (P - 1)];
+  if (st <= 0) return [];
+  const r = hash(i, 71);
+  const k = st > 200000 ? 3 + (r > 0.5 ? 1 : 0) + (r > 0.85 ? 1 : 0)
+          : st > 60000 ? 2 + (r > 0.6 ? 1 : 0)
+          : st > 15000 ? (r > 0.35 ? 1 : 0) + (r > 0.8 ? 1 : 0)
+          : (r > 0.9 ? 1 : 0);
+  if (!k) return [];
+  const start = Math.floor(hash(i, 72) * PLAYLISTS.length), step = 1 + Math.floor(hash(i, 73) * 7);
+  const out = [];
+  for (let j = 0; j < k; j++) {
+    const pl = PLAYLISTS[(start + j * step) % PLAYLISTS.length];
+    const position = 1 + Math.floor(hash(i, 80 + j) * (pl.kind === "chart" ? 100 : 60));
+    const agoAdd = Math.floor(hash(i, 90 + j) * 75);
+    const active = hash(i, 100 + j) > 0.22;
+    const agoRem = active ? null : Math.max(0, agoAdd - 12 - Math.floor(hash(i, 110 + j) * 30));
+    const perDay = st / 30;
+    const streams7 = pl.kind === "chart" ? perDay * 7 * 0.12
+                   : pl.kind === "algorithmic" ? perDay * 7 * 0.18
+                   : pl.f * 0.004 * Math.max(0.2, 1 - position / 80) * 7 / 7;
+    out.push({ playlist: pl.n, playlistEn: pl.en, platform: pl.plat, kind: pl.kind,
+      kindLabel: PL_KIND_LABEL[pl.kind][0], kindLabelEn: PL_KIND_LABEL[pl.kind][1],
+      followers: pl.f, position, addedAt: isoDate(new Date(ASOF.getTime() - agoAdd * 864e5)),
+      status: active ? "active" : "removed", removedAt: active ? null : isoDate(new Date(ASOF.getTime() - agoRem * 864e5)),
+      streams7: active ? Math.round(streams7) : 0 });
+  }
+  return out;
+}
+function playlistReport(role, partyId) {
+  const sc = scopeOf(role, partyId, "rec"), n = sc ? sc.length : N;
+  const rows = [], byPl = new Map();
+  let active = 0, removed = 0, newMonth = 0, charts = 0;
+  const cutNew = isoDate(new Date(ASOF.getTime() - 30 * 864e5));
+  for (let k = 0; k < n; k++) {
+    const i = sc ? sc[k] : k;
+    const pls = playlistsOf(i);
+    for (const pl of pls) {
+      rows.push(Object.assign({ trackId: i, title: tTitle[i], artist: ARTISTS[tArtist[i]].name, isrc: tIsrc[i] }, pl));
+      if (pl.status === "active") { active++; if (pl.kind === "chart") charts++; if (pl.addedAt >= cutNew) newMonth++; } else removed++;
+      const key = pl.platform + "|" + pl.playlist;
+      let g = byPl.get(key);
+      if (!g) { g = { playlist: pl.playlist, playlistEn: pl.playlistEn, platform: pl.platform, kind: pl.kind, kindLabel: pl.kindLabel, kindLabelEn: pl.kindLabelEn, followers: pl.followers, tracks: 0, active: 0, streams7: 0, bestPosition: null }; byPl.set(key, g); }
+      g.tracks++;
+      if (pl.status === "active") { g.active++; g.streams7 += pl.streams7; if (g.bestPosition == null || pl.position < g.bestPosition) g.bestPosition = pl.position; }
+    }
+  }
+  rows.sort((a, b) => (a.status === b.status ? 0 : a.status === "active" ? -1 : 1) || b.addedAt.localeCompare(a.addedAt) || b.streams7 - a.streams7);
+  const playlists = [...byPl.values()].sort((a, b) => b.streams7 - a.streams7 || b.active - a.active);
+  const reach = playlists.filter(p => p.active > 0).reduce((s, p) => s + p.followers, 0);
+  return { asOf: isoDate(ASOF), counts: { active, removed, newMonth, charts, playlists: playlists.filter(p => p.active > 0).length, reach, total: rows.length },
+    playlists: playlists.slice(0, 40), rows: rows.slice(0, 600), truncated: rows.length > 600,
+    note: "Vị trí playlist và bảng xếp hạng cập nhật mỗi ngày từ nền tảng. Lượt nghe 7 ngày là ước tính phần playlist đóng góp.",
+    noteEn: "Playlist and chart positions refresh daily from the platforms. 7-day streams are an estimate of the playlist’s contribution." };
+}
+/* ---- nhân khẩu học người nghe, sinh xác định theo tài khoản ---- */
+function demoOf(role, partyId) {
+  const s = role === "admin" ? 7 : role === "label" ? 1000 + partyId : 5000 + partyId;
+  const nm = arr => { const t = arr.reduce((a, b) => a + b, 0); return arr.map(x => Math.round(x / t * 1000) / 10); };
+  const g = nm([0.48 + hash(s, 201) * 0.12, 0.25 + hash(s, 202) * 0.15, 0.18 + hash(s, 203) * 0.1]);
+  const a = nm([0.38 + hash(s, 211) * 0.15, 0.33 + hash(s, 212) * 0.15, 0.08 + hash(s, 213) * 0.06, 0.02 + hash(s, 214) * 0.03, 0.005 + hash(s, 215) * 0.01, 0.04 + hash(s, 216) * 0.04]);
+  const src = nm([0.3 + hash(s, 221) * 0.15, 0.25 + hash(s, 222) * 0.12, 0.15 + hash(s, 223) * 0.1, 0.07 + hash(s, 224) * 0.05, 0.05 + hash(s, 225) * 0.04, 0.03 + hash(s, 226) * 0.03]);
+  const sub = nm([0.62 + hash(s, 231) * 0.2, 0.2 + hash(s, 232) * 0.15, 0.03 + hash(s, 233) * 0.04, 0.01 + hash(s, 234) * 0.02]);
+  return {
+    gender: [["Nam", "Male"], ["Nữ", "Female"], ["Không xác định", "Not specified"]].map((x, j) => ({ label: x[0], labelEn: x[1], pct: g[j] })),
+    age: ["18–24", "25–34", "35–44", "45–54", "55–64", "Không rõ"].map((x, j) => ({ label: x === "Không rõ" ? x : x, labelEn: x === "Không rõ" ? "Unknown" : x, pct: a[j] })),
+    source: [["Playlist", "Playlist"], ["Thư viện người nghe", "Listener library"], ["Radio / tự động phát", "Radio / autoplay"], ["Trang nghệ sĩ", "Artist page"], ["Tìm kiếm", "Search"], ["Khác", "Other"]].map((x, j) => ({ label: x[0], labelEn: x[1], pct: src[j] })),
+    subscription: [["Trả phí", "Paid"], ["Miễn phí", "Free"], ["Khuyến mại", "Promo"], ["Thử nghiệm", "Trial"]].map((x, j) => ({ label: x[0], labelEn: x[1], pct: sub[j] })),
+    skippedPct: Math.round((0.15 + hash(s, 241) * 0.12) * 1000) / 10,
+    providers: ["Apple Music", "Spotify"]
+  };
+}
+/* ---- xu hướng ngày: một cửa sổ N ngày, gộp theo nhiều chiều ---- */
+function dailyTrends(role, partyId, days, top) {
+  top = top || 25;
+  const W = Math.max(7, Math.min(days || 28, N_DAYS));
+  const sc = scopeOf(role, partyId, "rec"), n = sc ? sc.length : N;
+  const step = n > 3000 ? Math.ceil(n / 3000) : 1;
+  const lastP = P - 1;
+  const series = new Float64Array(W);
+  const prevN = Math.min(W, N_DAYS - W);
+  const byTrack = [], byArtist = new Map(), byRel = new Map();
+  const byPlat = new Float64Array(N_PLAT), byTerr = new Float64Array(TERR.length);
+  const rev = new Float64Array(N_PLAT), stPlat = new Float64Array(N_PLAT);
+  let total = 0, prevTotal = 0;
+  for (let k = 0; k < n; k += step) {
+    const i = sc ? sc[k] : k;
+    if (recStreams[i * P + lastP] <= 0) continue;
+    let cur = 0, prv = 0;
+    for (let b = 0; b < W; b++) { const v = dailyStreams(i, b) * step; cur += v; series[W - 1 - b] += v; }
+    for (let b = W; b < W + prevN; b++) prv += dailyStreams(i, b) * step;
+    if (prevN > 0 && prevN < W) prv = prv * W / prevN;
+    total += cur; prevTotal += prv;
+    byTrack.push({ id: i, title: tTitle[i], artist: ARTISTS[tArtist[i]].name, isrc: tIsrc[i], type: TYPES[tType[i]], streams: Math.round(cur), prev: Math.round(prv) });
+    const a = tArtist[i];
+    let ga = byArtist.get(a); if (!ga) { ga = { artistId: a, name: ARTISTS[a].name, clientId: ARTISTS[a].clientId, streams: 0, prev: 0, tracks: 0 }; byArtist.set(a, ga); }
+    ga.streams += cur; ga.prev += prv; ga.tracks++;
+    const rk = tType[i] === 0 ? "s:" + i : a + ":" + tRel[i] + ":" + tType[i];
+    let gr = byRel.get(rk); if (!gr) { gr = { id: "CAT-" + rk.replace(/[^0-9a-z]/gi, "-"), trackId: i, title: tTitle[i], artist: ARTISTS[a].name, type: TYPES[tType[i]], releasePeriod: PERIODS[tRel[i]].label, tracks: 0, streams: 0, prev: 0 }; byRel.set(rk, gr); }
+    gr.tracks++; gr.streams += cur; gr.prev += prv;
+    splitStores(i, lastP, rev); splitStreams(i, lastP, rev, stPlat);
+    let sp = 0; for (let j = 0; j < N_PLAT; j++) sp += stPlat[j];
+    if (sp > 0) for (let j = 0; j < N_PLAT; j++) byPlat[j] += cur * stPlat[j] / sp;
+    const tt = splitDim(i, cur, TERR_W, 0);
+    for (let j = 0; j < TERR.length; j++) byTerr[j] += tt[j];
+  }
+  const fin = (arr, key) => arr.map(x => Object.assign({}, x, { streams: Math.round(x.streams), prev: Math.round(x.prev), change: x.prev > 0 ? (x.streams - x.prev) / x.prev : null })).sort((a, b) => b.streams - a.streams);
+  const from = new Date(ASOF.getTime() - (W - 1) * 864e5);
+  return {
+    asOf: isoDate(ASOF), days: W, from: isoDate(from), to: isoDate(ASOF), sampled: step > 1,
+    series: Array.from(series, (v, d) => ({ date: isoDate(new Date(from.getTime() + d * 864e5)), streams: Math.round(v) })),
+    total: Array.from(series).reduce((s, v) => s + Math.round(v), 0), prevTotal: Math.round(prevTotal), growth: prevTotal > 0 ? (total - prevTotal) / prevTotal : null, avgPerDay: Math.round(total / W),
+    topTracks: fin(byTrack).slice(0, top),
+    topReleases: fin([...byRel.values()]).slice(0, Math.max(15, Math.round(top / 3))),
+    topArtists: role === "artist" ? [] : fin([...byArtist.values()]).slice(0, Math.max(15, Math.round(top / 5))),
+    byPlatform: PLAT_NAMES.map((nm, j) => ({ name: nm, nameEn: PLAT_NAMES_EN[j], streams: Math.round(byPlat[j]) })).filter(x => x.streams > 0).sort((a, b) => b.streams - a.streams),
+    byCountry: TERR.map((nm, j) => ({ name: nm, streams: Math.round(byTerr[j]) })).sort((a, b) => b.streams - a.streams).slice(0, 12),
+    demo: demoOf(role, partyId),
+    tracksCounted: byTrack.length,
+    note: "Lượt nghe theo ngày do nền tảng cung cấp, chưa qua đối soát doanh thu. Số này để theo dõi xu hướng; số tiền chỉ có khi kỳ được xét duyệt.",
+    noteEn: "Daily streams come straight from the platforms, before revenue reconciliation. Use them for trends; money only appears once a period is approved."
+  };
+}
+
 const TICKET_TYPES = [
   { id: "phat-hanh",  label: "Phát hành",         labelEn: "Release" },
   { id: "nen-tang",   label: "Nền tảng",          labelEn: "Platform" },
@@ -2616,6 +2780,13 @@ const admin = {
   forecast: () => forecastOf("admin", 0),
   forecastFor: (role, id) => forecastOf(role, id),
   platformRates, dailyStreams, asOf: () => isoDate(ASOF),
+  dailyTrends: (days, top) => dailyTrends("admin", 0, days, top),
+  dailyTrendsFor: (role, id, days) => dailyTrends(role, id, days),
+  playlists: () => playlistReport("admin", 0),
+  playlistsFor: (role, id) => playlistReport(role, id),
+  playlistsOf,
+  catalogueReleases: limit => catalogueReleases("admin", 0, limit),
+  catalogueFor: (role, id, opts) => catalogueOf(role, id, opts),
   tickets: {
     types: TICKET_TYPES, statuses: TICKET_STATUS,
     list(f) {
@@ -3036,6 +3207,15 @@ const api = {
       viewAs: labelChildren(partyId).map(l => ({ labelId: l.id, name: l.name, clientId: l.clientId })),
       parent: parent ? { labelId: parent.id, name: parent.name, clientId: parent.clientId } : null
     });
+  },
+  /* ---- xu hướng ngày, playlist ---- */
+  dailyTrends(role, partyId, days) {
+    assertParty(role, partyId);
+    return scrub(dailyTrends(role, partyId, days));
+  },
+  playlists(role, partyId) {
+    assertParty(role, partyId);
+    return scrub(playlistReport(role, partyId));
   },
   /* ---- ví, rút tiền, bảng kê ---- */
   wallet(role, partyId) {

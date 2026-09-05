@@ -407,8 +407,7 @@ HT.dangKy({
               var nhan = NHAN_PH[r.status] || [r.status, r.status];
               return '<tr class="pick" data-di="phat-hanh">' +
                 '<td class="mono">' + HM.esc(HT.fmt.ngay(r.releaseDate)) + '</td>' +
-                '<td><div class="t-ttl">' + HM.esc(HM.dai(r.title, 26)) + '</div>' +
-                '<div class="t-sub">' + HM.esc((LOAI_PH[r.type] || r.type) + ' · ' + r.tracks.length + ' track · ' + r.id) + '</div></td>' +
+                '<td>' + HM.tenBia({ bia: r.id, ten: HM.dai(r.title, 26), phu: (LOAI_PH[r.type] || r.type) + ' · ' + r.tracks.length + ' track · ' + r.id }) + '</td>' +
                 '<td><div class="t-ttl">' + HM.esc(HM.dai(r.artistName, 22)) + '</div>' +
                 (r.labelId >= 0 ? '<div class="t-sub">' + HM.esc(HM.dai(A.partyName('L:' + r.labelId), 22)) + '</div>' : '') + '</td>' +
                 '<td>' + HM.tag(c.lang === 'vi' ? nhan[0] : nhan[1], KIEU_PH[r.status] || '') + '</td>' +

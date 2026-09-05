@@ -107,7 +107,7 @@ HT.dangKy({
         cot('revenue', t('cGop'), true) + cot('artist', t('cNsHuong'), true) + cot('labelCut', t('cLabel'), true) +
         '</tr></thead><tbody>' + rows.map(function (x) {
           return '<tr class="pick" data-ns="' + x.artistId + '">' +
-            '<td><div class="t-ttl">' + HM.esc(x.name) + '</div><div class="t-sub">' + HM.esc(x.clientId) + '</div></td>' +
+            '<td>' + HM.tenBia({ ten: x.name, seed: x.clientId, phu: x.clientId }) + '</td>' +
             '<td class="num">' + (x.tracks ? HM.esc(HT.fmt.n(x.tracks)) : '<span class="nil">—</span>') + '</td>' +
             '<td class="num">' + (x.streams ? HM.esc(HT.fmt.n(x.streams)) : '<span class="nil">—</span>') + '</td>' +
             '<td class="num">' + (x.revenue ? HM.esc(HT.fmt.usd(x.revenue)) : '<span class="nil">—</span>') + '</td>' +
@@ -163,7 +163,7 @@ function moNgheSi(c, x) {
     (rows.length ? '<div class="tw"><table class="t" style="min-width:0"><thead><tr><th>' + HM.esc(c.lang === 'vi' ? 'Bài hát' : 'Track') + '</th>' +
       '<th class="num">' + HM.esc(t('cLuot')) + '</th><th class="num">' + HM.esc(t('cGop')) + '</th><th class="num band">' + HM.esc(t('cLabel')) + '</th></tr></thead><tbody>' +
       rows.map(function (r) {
-        return '<tr><td><div class="t-ttl">' + HM.esc(HM.dai(r.title, 34)) + '</div><div class="t-sub">' + HM.esc(r.isrc) + '</div></td>' +
+        return '<tr><td>' + HM.tenBia({ bia: r.id, ten: HM.dai(r.title, 34), phu: r.isrc }) + '</td>' +
           '<td class="num">' + HM.esc(HT.fmt.n(r.streams)) + '</td><td class="num">' + HM.esc(HT.fmt.usd0(r.revenue)) + '</td>' +
           '<td class="num band">' + HM.esc(HT.fmt.usd(r.mine)) + '</td></tr>';
       }).join('') + '</tbody></table></div>'

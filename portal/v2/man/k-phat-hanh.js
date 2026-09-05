@@ -108,7 +108,7 @@ HT.dangKy({
         hs.map(function (x) {
           return '<tr class="pick" data-hs="' + HM.esc(x.id) + '">' +
             '<td class="mono">' + HM.esc(x.id) + '</td>' +
-            '<td><div class="t-ttl">' + HM.esc(x.title) + '</div><div class="t-sub">' + HM.esc(x.artistName) + ' · ' + x.tracks.length + ' track</div></td>' +
+            '<td>' + HM.tenBia({ bia: x.id, ten: x.title, phu: x.artistName + ' · ' + x.tracks.length + ' track' }) + '</td>' +
             '<td>' + HM.esc(x.type === 'single' ? 'Single' : x.type === 'ep' ? 'EP' : 'Album') + '</td>' +
             '<td class="mono">' + HM.esc(HT.fmt.ngay(x.releaseDate)) + '</td>' +
             '<td>' + HM.tag(NHAN[c.lang][x.status], KIEU[x.status]) + '</td>' +
@@ -124,7 +124,7 @@ HT.dangKy({
         than: '<div class="tw"><table class="t" style="min-width:0"><thead><tr><th>' + HM.esc(t('cTen')) + '</th><th>' + HM.esc(t('cLoai')) + '</th>' +
           '<th>' + HM.esc(t('cKy')) + '</th><th class="num">' + HM.esc(t('cTrack')) + '</th><th class="num">' + HM.esc(t('cDt')) + '</th></tr></thead><tbody>' +
           r.catalogue.slice(0, 20).map(function (x) {
-            return '<tr><td><div class="t-ttl">' + HM.esc(HM.dai(x.title, 32)) + '</div><div class="t-sub">' + HM.esc(me.role === 'label' ? x.artistName : (x.isrc || '')) + '</div></td>' +
+            return '<tr><td>' + HM.tenBia({ bia: x.trackId != null ? x.trackId : x.id, ten: HM.dai(x.title, 32), phu: me.role === 'label' ? x.artistName : (x.isrc || '') }) + '</td>' +
               '<td>' + HM.esc(x.type) + '</td><td class="mono">' + HM.esc(x.releasePeriod) + '</td>' +
               '<td class="num">' + x.tracks + '</td><td class="num">' + (x.earning ? HM.esc(HT.fmt.usd0(x.revenue)) : '<span class="nil">' + HM.esc(t('chuaDt')) + '</span>') + '</td></tr>';
           }).join('') + '</tbody></table></div>'

@@ -10,7 +10,7 @@
 "use strict";
 (function () {
 
-var LOC = { loc: 'dang', tim: '' };
+var LOC = { loc: 'dang', tim: '', nv: '', tk: '' };
 var NHAN = {
   vi: { submitted: 'Đã gửi', received: 'Đã tiếp nhận', coded: 'Đã cấp mã', released: 'Đã phát hành', returned: 'Trả lại bổ sung' },
   en: { submitted: 'Submitted', received: 'Received', coded: 'Codes assigned', released: 'Released', returned: 'Returned' }
@@ -29,7 +29,7 @@ HT.dangKy({
       locDang: 'Đang xử lý', locHet: 'Tất cả',
       tim: 'Tìm mã hồ sơ, tên bản phát hành, nghệ sĩ…',
       cMa: 'Mã hồ sơ', cTen: 'Bản phát hành', cLoai: 'Loại', cNgay: 'Ngày mong muốn', cGui: 'Người gửi', cTt: 'Trạng thái', cCapNhat: 'Cập nhật',
-      khong: 'Không có hồ sơ nào', khongMo: 'Đổi bộ lọc, hoặc chờ đối tác gửi hồ sơ mới.',
+      khong: 'Không có hồ sơ nào', khongMo: 'Đổi bộ lọc, hoặc chờ đối tác gửi hồ sơ mới.', moiNv: 'Mọi người phụ trách', timTk: 'Tài khoản (tên label hoặc nghệ sĩ)',
       tiepNhan: 'Tiếp nhận hồ sơ', capMa: 'Cấp mã ISRC/UPC', danhDau: 'Đánh dấu đã phát hành', traLaiNut: 'Trả lại để bổ sung',
       hoiTra: 'Cần đối tác bổ sung gì?', hoiTraMo: 'Ghi rõ từng thứ còn thiếu. Đối tác nhìn thấy nguyên văn ghi chú này trên cổng của họ.',
       hoiPh: 'Ngày phát hành thực tế', hoiPhMo: 'Ngày bản ghi lên các nền tảng. Mặc định là ngày đối tác mong muốn.',
@@ -50,7 +50,7 @@ HT.dangKy({
       locDang: 'In progress', locHet: 'All',
       tim: 'Search submission ID, title, artist…',
       cMa: 'Submission', cTen: 'Release', cLoai: 'Type', cNgay: 'Requested date', cGui: 'Submitted by', cTt: 'Status', cCapNhat: 'Updated',
-      khong: 'No submissions', khongMo: 'Change the filter, or wait for partners to submit.',
+      khong: 'No submissions', khongMo: 'Change the filter, or wait for partners to submit.', moiNv: 'Any account manager', timTk: 'Account (label or artist name)',
       tiepNhan: 'Receive', capMa: 'Assign ISRC/UPC', danhDau: 'Mark as released', traLaiNut: 'Return for fixes',
       hoiTra: 'What does the partner need to add?', hoiTraMo: 'List each missing item. The partner sees this note verbatim on their portal.',
       hoiPh: 'Actual release date', hoiPhMo: 'The date the recording went live on platforms. Defaults to the requested date.',
@@ -75,8 +75,12 @@ HT.dangKy({
     var A = c.A, t = c.t;
     var dem = A.releases.counts();
     var tatCa = A.releases.list();
-    var q = LOC.tim.trim().toLowerCase();
+    var q = LOC.tim.trim().toLowerCase(), qTk = LOC.tk.trim().toLowerCase();
+    var nvCua = function (r) { var m = A.parties.managerOf(r.labelId >= 0 ? 'L:' + r.labelId : 'A:' + r.artistId); return m ? m.id : ''; };
+    var tkCua = function (r) { return (r.artistName + ' ' + (r.labelId >= 0 ? A.partyName('L:' + r.labelId) : '')).toLowerCase(); };
     var rows = tatCa.filter(function (r) {
+      if (LOC.nv && nvCua(r) !== LOC.nv) return false;
+      if (qTk && tkCua(r).indexOf(qTk) < 0) return false;
       if (LOC.loc === 'dang' && (r.status === 'released' || r.status === 'returned')) return false;
       if (LOC.loc !== 'dang' && LOC.loc !== 'het' && r.status !== LOC.loc) return false;
       if (q && (r.id + ' ' + r.title + ' ' + r.artistName).toLowerCase().indexOf(q) < 0) return false;
@@ -97,6 +101,9 @@ HT.dangKy({
       .concat([['het', t('locHet'), tatCa.length]]);
     html += '<div class="bar">' +
       '<div class="srch">' + HM.icon('tim') + '<input type="search" data-tim value="' + HM.esc(LOC.tim) + '" placeholder="' + HM.esc(t('tim')) + '"></div>' +
+      '<select class="in" data-nv style="width:auto;height:34px"><option value="">' + HM.esc(t('moiNv')) + '</option>' +
+        A.staff.byRole('sales').concat(A.staff.byRole('mgmt')).map(function (s) { return '<option value="' + s.id + '"' + (LOC.nv === s.id ? ' selected' : '') + '>' + HM.esc(s.name) + '</option>'; }).join('') + '</select>' +
+      '<input class="in" data-tk style="width:200px;height:34px" placeholder="' + HM.esc(t('timTk')) + '" value="' + HM.esc(LOC.tk) + '">' +
       boLoc.map(function (b) {
         return '<button type="button" class="pill' + (LOC.loc === b[0] ? ' on' : '') + '" data-loc="' + b[0] + '">' + HM.esc(b[1]) + ' <span class="muted">' + b[2] + '</span></button>';
       }).join('') +
@@ -110,8 +117,7 @@ HT.dangKy({
         '</tr></thead><tbody>' + rows.map(function (r) {
           return '<tr class="pick" data-hs="' + HM.esc(r.id) + '">' +
             '<td class="mono">' + HM.esc(r.id) + '</td>' +
-            '<td><div class="t-ttl">' + HM.esc(r.title) + (r.version ? ' <span class="muted">(' + HM.esc(r.version) + ')</span>' : '') + '</div>' +
-            '<div class="t-sub">' + HM.esc(r.artistName) + (r.labelId >= 0 ? ' · ' + HM.esc(A.partyName('L:' + r.labelId)) : '') + '</div></td>' +
+            '<td>' + HM.tenBia({ bia: r.id, ten: r.title, tenHtml: HM.esc(r.title) + (r.version ? ' <span class="muted">(' + HM.esc(r.version) + ')</span>' : ''), phu: r.artistName + (r.labelId >= 0 ? ' · ' + A.partyName('L:' + r.labelId) : '') }) + '</td>' +
             '<td>' + HM.esc(LOAI[c.lang][r.type] || r.type) + ' <span class="muted">· ' + r.tracks.length + ' track</span></td>' +
             '<td class="mono">' + HM.esc(HT.fmt.ngay(r.releaseDate)) + '</td>' +
             '<td class="mono">' + HM.esc(r.submittedBy) + '</td>' +
@@ -125,6 +131,8 @@ HT.dangKy({
 
     root.innerHTML = html;
     HM.nhap(root, '[data-tim]', function (el) { LOC.tim = el.value; c.veLai(); });
+    HM.doi(root, '[data-nv]', function (el) { LOC.nv = el.value; c.veLai(); });
+    HM.nhap(root, '[data-tk]', function (el) { LOC.tk = el.value; c.veLai(); });
     HM.bam(root, '[data-loc]', function (el) { LOC.loc = el.getAttribute('data-loc'); c.veLai(); });
     HM.bam(root, '[data-hs]', function (el) { moHoSo(c, el.getAttribute('data-hs')); });
     HM.bam(root, '[data-xuat]', function () {

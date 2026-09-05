@@ -191,7 +191,7 @@ function dongTip(ten, gt, mau2) {
    cfg: {
      loai:'cot', truc:[nhãn…],
      chuoi:[{ten, gt:[…], mau}],           ← chồng lên nhau
-     cao, dinhDang:'tien'|'so', hienGiaTri, dangDo:[idx…], mo:[idx…],
+     cao, dinhDang:'tien'|'so'|hàm(v)→chuỗi, hienGiaTri, dangDo:[idx…], mo:[idx…],
    KHÔNG có đường phủ trục phải: hai thước đo khác đơn vị thì vẽ hai biểu đồ
    nhỏ chung trục hoành, không chồng lên nhau bằng hai trục tung.
      chuThich:true
@@ -234,8 +234,8 @@ function veCot(cfg, W) {
   var truc = cfg.truc || [];
   var n = truc.length;
   var dangDo = cfg.dangDo || [], mo = cfg.mo || [];
-  var dinhDang = cfg.dinhDang === 'so' ? gonSo : gonTien;
-  var dayDu = cfg.dinhDang === 'so' ? so : usd0;
+  var dinhDang = typeof cfg.dinhDang === 'function' ? cfg.dinhDang : cfg.dinhDang === 'so' ? gonSo : gonTien;
+  var dayDu = typeof cfg.dinhDang === 'function' ? cfg.dinhDang : cfg.dinhDang === 'so' ? so : usd0;
 
   /* tổng theo cột để tính đỉnh */
   var tong = [], coSo = [];
@@ -361,7 +361,7 @@ function veCot(cfg, W) {
    ===================================================================== */
 function veThanh(cfg, W) {
   var hang = cfg.hang || [];
-  var dayDu = cfg.dinhDang === 'so' ? so : usd0;
+  var dayDu = typeof cfg.dinhDang === 'function' ? cfg.dinhDang : cfg.dinhDang === 'so' ? so : usd0;
   var dinh = Math.max.apply(null, hang.map(function (r) { return r.gt || 0; }).concat([0.0001]));
   var tong = hang.reduce(function (s2, r) { return s2 + (r.gt || 0); }, 0);
   var P = dayMau();
@@ -392,7 +392,7 @@ function veVong(cfg, W) {
   var H = cfg.cao || 190;
   var R = Math.min(H, W) / 2 - 6, r0 = R * 0.62;
   var cx = R + 6, cy = H / 2;
-  var dayDu = cfg.dinhDang === 'so' ? so : usd0;
+  var dayDu = typeof cfg.dinhDang === 'function' ? cfg.dinhDang : cfg.dinhDang === 'so' ? so : usd0;
   var goc = -Math.PI / 2, s = '<svg viewBox="0 0 ' + W + ' ' + H + '" class="vong">';
   phan.forEach(function (p, i) {
     var sw = tong > 0 ? p.gt / tong * Math.PI * 2 : 0;
@@ -571,8 +571,8 @@ function veDuong(cfg, W) {
   var P = dayMau();
   var chuoi = (cfg.chuoi || []).map(function (se, i) { return { ten: se.ten, gt: se.gt, mau: se.mau || P[i % 8], dubao: se.dubao }; });
   var truc = cfg.truc || [], n = truc.length;
-  var dinhDang = cfg.dinhDang === 'so' ? gonSo : gonTien;
-  var dayDu = cfg.dinhDang === 'so' ? so : usd0;
+  var dinhDang = typeof cfg.dinhDang === 'function' ? cfg.dinhDang : cfg.dinhDang === 'so' ? gonSo : gonTien;
+  var dayDu = typeof cfg.dinhDang === 'function' ? cfg.dinhDang : cfg.dinhDang === 'so' ? so : usd0;
   var dinh = 0;
   chuoi.forEach(function (se) { se.gt.forEach(function (v) { if (v != null && v > dinh) dinh = v; }); });
   var tr = mocTruc(dinh, 4);
