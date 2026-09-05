@@ -14,6 +14,18 @@
 var LUONG = 'rec';
 var LOC = { tim: '', sap: 'mine', huong: -1, trang: 0, co: 25 };
 
+/* Nhãn "dưới ngưỡng": bài chưa đủ 1.000 lượt / 12 tháng ở Spotify (hoặc luật
+   Deezer) thì nền tảng không trả tiền — nói thẳng ở dòng bài, đúng khuyến
+   nghị "dòng không được trả phải nói rõ luật". Nhớ theo phiên vì mỗi lần
+   vẽ bảng chỉ hỏi 12–100 bài. */
+var NG = {};
+function nhanNguong(id) {
+  var m = NG[id];
+  if (!m) { try { m = HT._api.monetization(HT._me.role, HT._me.partyId, id); } catch (e) { m = null; } NG[id] = m || { eligibleAll: true, below: [] }; m = NG[id]; }
+  if (m.eligibleAll) return '';
+  return ' <span class="tag warn" style="font-size:10.5px;padding:0 6px;vertical-align:1px" title="' + HM.esc(HT.lang === 'en' ? 'Below the payout threshold on ' + m.below.join(', ') : 'Dưới ngưỡng trả tiền ở ' + m.below.join(', ')) + '">' + HM.esc((HT.lang === 'en' ? 'below threshold · ' : 'dưới ngưỡng · ') + m.below.join(', ')) + '</span>';
+}
+
 HT.dangKy({
   id: 'k-ban-ghi', nav: 'navBai', nhom: 'nhomBai', icon: 'disc',
 
@@ -76,6 +88,7 @@ HT.dangKy({
 
   ve: function (root, c) {
     var api = c.api, me = c.phien.me, t = c.t;
+    HT._api = api; HT._me = me;   /* cho nhanNguong() ở ngoài ve() */
     var coPub = me.hasPublishing;
     if (!coPub) LUONG = 'rec';
     var la = me.role === 'label';
@@ -146,7 +159,7 @@ HT.dangKy({
           }).join('') + '</tr></thead><tbody>' +
           trang.map(function (r) {
             return '<tr class="pick" data-bg="' + r.id + '">' +
-              '<td>' + HM.tenBia({ bia: r.id, ten: HM.dai(r.title, 36), phu: r.isrc }) + '</td>' +
+              '<td>' + HM.tenBia({ bia: r.id, ten: HM.dai(r.title, 36), phu: HM.esc(r.isrc) + nhanNguong(r.id), phuHtml: true }) + '</td>' +
               (la ? '<td>' + HM.esc(HM.dai(r.artist, 26)) + '</td>' : '') +
               '<td>' + HM.esc(r.type) + '</td>' +
               (LUONG === 'rec' ? '<td class="num">' + HM.esc(HT.fmt.n(r.streams)) + '</td>' : '') +

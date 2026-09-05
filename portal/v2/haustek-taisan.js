@@ -33,6 +33,7 @@ var CHU = {
     nenTangLon: 'Nền tảng lớn', nenTangKhac: 'Nền tảng khác', daLen: 'đã lên', chuaXn: 'chưa xác nhận',
     mo: 'Mở', khongLink: 'Không có trang công khai', lenNgay: 'lên ngày',
     luot: 'Lượt nghe', gop: 'Doanh thu', toi: 'Thu nhập của bạn', label: 'Phần label được hưởng',
+    tabCl: 'Chất lượng', clNguong: 'Luật trả tiền của nền tảng', clMeta: 'Sức khoẻ metadata', clChiaSe: 'Chia sẻ tác quyền', clCanhBao: 'Cảnh báo lượt nghe', clChu: 'Chủ bản ghi giữ', clQuanLy: 'Quản lý chia sẻ', clKhongCb: 'Không có tín hiệu bất thường trong 7 ngày gần nhất.',
     kyGan: 'Số liệu cạnh mỗi nền tảng là của kỳ {k}.',
     kyChua: 'Chưa có kỳ nào đã xét duyệt cho bài hát này, nên chưa có số liệu theo nền tảng.',
     tong: 'Tổng', tongKy: 'Tổng kỳ', xuat: 'Xuất CSV',
@@ -60,6 +61,7 @@ var CHU = {
     nenTangLon: 'Major platforms', nenTangKhac: 'Other platforms', daLen: 'live', chuaXn: 'unconfirmed',
     mo: 'Open', khongLink: 'No public page', lenNgay: 'live on',
     luot: 'Streams', gop: 'Revenue', toi: 'Yours', label: 'Label keeps',
+    tabCl: 'Quality', clNguong: 'Platform payout rules', clMeta: 'Metadata health', clChiaSe: 'Royalty splits', clCanhBao: 'Stream alerts', clChu: 'Owner keeps', clQuanLy: 'Manage splits', clKhongCb: 'No unusual signals in the last 7 days.',
     kyGan: 'Figures next to each platform are for {k}.',
     kyChua: 'No approved period yet for this track, so no per-platform figures.',
     tong: 'Total', tongKy: 'Period total', xuat: 'Export CSV',
@@ -242,7 +244,8 @@ function moNgan(c, d, opts) {
   var tabs = (opts.them || []).map(function (x) { return { k: x.k, l: x.l }; })
     .concat([{ k: 'qt', l: t('tabQt') }, { k: 'nt', l: t('tabNt') }, { k: 'thang', l: t('tabThang') }])
     .concat(opts.playlists ? [{ k: 'pl', l: t('tabPl') + (opts.playlists.length ? ' (' + opts.playlists.filter(function (x) { return x.status === 'active'; }).length + ')' : '') }] : [])
-    .concat(opts.claims ? [{ k: 'kn', l: t('tabKn') + (opts.claims.length ? ' (' + opts.claims.length + ')' : '') }] : []);
+    .concat(opts.claims ? [{ k: 'kn', l: t('tabKn') + (opts.claims.length ? ' (' + opts.claims.length + ')' : '') }] : [])
+    .concat([{ k: 'cl', l: t('tabCl') }]);
   if (!tabs.some(function (x) { return x.k === st.tab; })) st.tab = tabs[0].k;
 
   var dau = HM.so([
@@ -265,6 +268,7 @@ function moNgan(c, d, opts) {
   panels.nt = nenTang(d, { tien: tien, mine: !!mineLabel });
   if (opts.claims) panels.kn = khieuNai(opts.claims, opts);
   if (opts.playlists) panels.pl = playlistBang(opts.playlists);
+  panels.cl = chatLuong(c, d, opts);
   panels.thang = '<p class="say" style="margin-bottom:10px">' + esc(opts.noiBo ? t('thangMoNb') : t('thangMo')) + '</p>' +
     '<div class="bar" style="margin-bottom:10px">' + chonThuocDo(st.metric, { mineLabel: mineLabel, revenueLabel: opts.revenueLabel, anMine: opts.anMine }) + '<div class="sp"></div>' +
     '<button type="button" class="btn sm" data-mx-csv>' + icon('down2') + esc(t('xuat')) + '</button></div>' +
@@ -286,8 +290,9 @@ function moNgan(c, d, opts) {
   c.nganTruot(html, {
     tieuDe: d.title, phu: d.isrc + ' · ' + d.artist + (d.label ? ' · ' + d.label : ''),
     khiMo: function (dr) {
-      HB.gan(dr);
+      HB.gan(dr); if (HT.canhBang) HT.canhBang(dr);
       (opts.them || []).forEach(function (x) { if (x.khiMo) x.khiMo(dr.querySelector('[data-apanel="' + x.k + '"]')); });
+      HM.bam(dr, '[data-di-chia-se]', function () { c.dongNgan(); c.di('k-chia-se'); });
       HM.bam(dr, '[data-atab]', function (el) {
         st.tab = el.getAttribute('data-atab');
         dr.querySelectorAll('[data-atab]').forEach(function (b) { b.classList.toggle('on', b.getAttribute('data-atab') === st.tab); });
@@ -312,6 +317,32 @@ function moNgan(c, d, opts) {
    theo phiên (vai + đối tác); đổi tài khoản thì lấy lại. Trả về mảng dòng
    để đưa vào opts.playlists của moNgan → ngăn có tab Playlist.
    --------------------------------------------------------------------- */
+/* Cảnh báo chất lượng của một bài ở cổng đối tác: nhớ tạm cả báo cáo theo phiên. */
+var QL = { key: null, rows: [] };
+function qCua(c, id) {
+  var me = c.phien && c.phien.me; if (!me || !c.api || !c.api.quality) return null;
+  var key = me.role + ':' + me.partyId;
+  if (QL.key !== key) { try { QL.rows = c.api.quality(me.role, me.partyId).rows; } catch (e) { QL.rows = []; } QL.key = key; }
+  return QL.rows.filter(function (r) { return r.trackId === id; })[0] || null;
+}
+function lamMoiQ() { QL.key = null; }
+/* Tab Chất lượng: luật trả tiền, metadata, chia sẻ, cảnh báo — cùng một mảnh cho hai cổng. */
+function chatLuong(c, d, opts) {
+  var cl = null;
+  try {
+    if (opts.noiBo && c.A) cl = { m: c.A.monetizationOf(d.id), h: c.A.metadataHealth(d.id), s: c.A.splitsOf(d.id), q: c.A.qualityOf(d.id) };
+    else if (c.api && c.phien) { var me = c.phien.me; cl = { m: c.api.monetization(me.role, me.partyId, d.id), h: c.api.metadataHealth(me.role, me.partyId, d.id), s: c.api.splitsOf(me.role, me.partyId, d.id), q: qCua(c, d.id) }; }
+  } catch (e) { cl = null; }
+  if (!cl || typeof HTM === 'undefined') return '<p class="say">—</p>';
+  var html = '<h4 class="sec">' + esc(t('clCanhBao')) + '</h4>' + (cl.q ? HTM.theCanhBao(cl.q) : '<p class="say">' + esc(t('clKhongCb')) + '</p>');
+  html += '<h4 class="sec" style="margin-top:16px">' + esc(t('clNguong')) + '</h4>' + HTM.nguong(cl.m);
+  html += '<h4 class="sec" style="margin-top:16px">' + esc(t('clMeta')) + '</h4>' + HTM.kiemMeta(cl.h);
+  html += '<h4 class="sec" style="margin-top:16px">' + esc(t('clChiaSe')) + '</h4>' +
+    '<div class="bar" style="margin-bottom:8px"><b>' + esc(t('clChu')) + ' ' + HT.fmt.n(cl.s.ownerPct) + '%</b><div class="meter thin" style="flex:1;max-width:220px"><i style="width:' + cl.s.ownerPct + '%"></i></div>' +
+    (!opts.noiBo ? '<button type="button" class="btn sm" data-di-chia-se>' + esc(t('clQuanLy')) + '</button>' : '') + '</div>' +
+    (cl.s.collaborators.length ? cl.s.collaborators.map(function (cg) { return HTM.dongCong(cg); }).join('') : '<p class="say">' + esc(HTM.t('chuaChia')) + '</p>');
+  return html;
+}
 var PL = { key: null, rows: [] };
 function plCua(c, id) {
   var me = c.phien && c.phien.me; if (!me || !c.api || !c.api.playlists) return [];
@@ -321,7 +352,7 @@ function plCua(c, id) {
 }
 
 global.HTS = {
-  t: t, song: song, plCua: plCua,
+  t: t, song: song, plCua: plCua, qCua: qCua, lamMoiQ: lamMoiQ,
   tagNenTang: tagNenTang, tagGiaiDoan: tagGiaiDoan, tagMuc: tagMuc, chamNenTang: chamNenTang,
   quyTrinh: quyTrinh, conThieu: conThieu, nenTang: nenTang, maTran: maTran, chonThuocDo: chonThuocDo, csvMaTran: csvMaTran, khieuNai: khieuNai,
   moNgan: moNgan

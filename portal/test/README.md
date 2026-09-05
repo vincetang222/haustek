@@ -6,7 +6,7 @@
 node portal/test/api-guard.js
 ```
 
-41 phép kiểm chạy thẳng trên lõi (vòng 3 thêm: đối tác chỉ thấy số NET, ví và rút tiền, ticket và khiếu nại theo phạm vi, dự báo theo phạm vi, bảng kê và PDF; vòng 4 thêm: xu hướng ngày và playlist theo phạm vi). Đây là thứ **phải chạy trong CI** — mốc số 2 trong tài
+49 phép kiểm chạy thẳng trên lõi (vòng 5 thêm: chia sẻ tác quyền, cảnh báo chất lượng và khiếu nại theo phạm vi, gói vòng 5 không lộ số gộp, giải thích khớp ví, thuế khấu trừ khi rút, thông báo và tìm nhanh theo phạm vi; vòng 3 thêm: đối tác chỉ thấy số NET, ví và rút tiền, ticket và khiếu nại theo phạm vi, dự báo theo phạm vi, bảng kê và PDF; vòng 4 thêm: xu hướng ngày và playlist theo phạm vi). Đây là thứ **phải chạy trong CI** — mốc số 2 trong tài
 liệu bàn giao: chứng minh nghệ sĩ A không truy vấn được dữ liệu nghệ sĩ B.
 
 Kiểm những gì:

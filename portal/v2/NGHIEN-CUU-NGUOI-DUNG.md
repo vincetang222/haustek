@@ -261,3 +261,13 @@ tiếp phục vụ vận hành và kế toán Haustek; phần còn lại ghi đ�
 | Pricing grids of stores | Nội bộ · **Bảng giá nền tảng** (vòng 4) | có, bảng giá mẫu |
 | Amplifier (chiến dịch marketing có tỷ lệ hoàn thành) | Chưa làm: hiện dùng bước marketing trong quy trình và ticket marketing | chưa |
 | Royalty Shares (shares in / shares out), Publishing (compositions, rights owners, share requests) | Một phần: tác quyền và phần label / nghệ sĩ; chưa có chia sẻ giữa tài khoản | một phần |
+
+## Vòng 5 — từ nghiên cứu thị trường và học thuật
+
+Xem `NGHIEN-CUU-THI-TRUONG.md` (ma trận 13 nền tảng, 12 tính năng phổ biến,
+tài liệu khoa học về kinh tế streaming, gian lận lượt nghe, UX bảng và niềm
+tin vào bảng kê). Vòng 5 cài: chia sẻ tác quyền có thu hồi; chất lượng lượt
+nghe với năm tín hiệu, gom theo tài khoản, sổ phạt, khiếu nại; ngưỡng trả tiền
+của nền tảng; sức khoẻ metadata; giải thích con số từng kỳ; thuế khấu trừ khi
+rút; chuông thông báo và tìm nhanh; chiến dịch; dải P10–P90 cho dự báo; bảng
+dữ liệu thiết kế lại.

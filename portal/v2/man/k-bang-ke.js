@@ -76,6 +76,13 @@ HT.dangKy({
         HM.the({ than: HM.trong({ icon: 'clock', tieuDe: t('chuaMo'), moTa: t('chuaMoMo') }) }) +
         veCacKy(c);
       HM.bam(root, '[data-kyto]', function (el) { c.doiKy(el.getAttribute('data-kyto')); });
+      HM.bam(root, '[data-gt]', function (el) {
+      var k = el.getAttribute('data-gt'), ex;
+      try { ex = c.api.explain(c.phien.me.role, c.phien.me.partyId, k); } catch (e) { c.thongBao(e.message, 'no'); return; }
+      c.hoiThoai({ tieuDe: (c.lang === 'vi' ? 'Giải thích con số kỳ ' : 'How the number for ') + ex.label + (c.lang === 'vi' ? '' : ' is derived'),
+        moTa: HM.esc(c.lang === 'vi' ? 'Mỗi bước là một con số có thể kiểm lại; bảng dưới tách theo nền tảng.' : 'Each step is a checkable figure; the table below splits it by platform.'),
+        than: HTM.giaiThich(ex, { tien: HT.fmt.usd }), dong: c.lang === 'vi' ? 'Đóng' : 'Close', huy: false, rong: true });
+    });
       return;
     }
     if (me.hasPublishing) {
@@ -267,7 +274,7 @@ function veBaoCaoThang(c) {
           (la ? '<td class="num">' + HM.esc(HT.fmt.usd(r.revenue)) + '</td><td class="num">' + HM.esc(HT.fmt.usd(r.revenue - r.mine)) + '</td><td class="num">' + HM.esc(HT.fmt.usd(r.mine)) + '</td>' : '<td class="num">' + HM.esc(HT.fmt.usd(r.mine)) + '</td>') +
           '<td class="num">' + HM.esc(HT.fmt.n(r.streams)) + '</td>' +
           '<td class="num band"><b>' + HM.esc(HT.fmt.usd(r.credit)) + '</b>' + (r.recoup > 0 ? '<div class="t-sub" style="font-family:var(--f)">' + HM.esc((vi ? 'khấu trừ tạm ứng ' : 'advance recouped ') + HT.fmt.usd(r.recoup)) + '</div>' : '') + '</td>' +
-          '<td>' + nutTai(r) + '</td>' +
+          '<td>' + nutTai(r) + ' <button type="button" class="btn sm ghost" data-gt="' + HM.esc(r.k) + '" title="' + HM.esc(vi ? 'Giải thích con số' : 'Explain this number') + '">' + HM.icon('ask') + HM.esc(vi ? 'Giải thích' : 'Explain') + '</button></td>' +
           '<td class="mono muted">' + HM.esc(HT.fmt.ngay(r.approvedAt)) + '</td></tr>';
       }).join('') + '</tbody></table></div>'
   });

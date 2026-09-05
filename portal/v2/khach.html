@@ -24,6 +24,7 @@ HAUSTEK.lockdown();
 <script src="haustek-bieudo.js"></script>
 <script src="haustek-man.js"></script>
 <script src="haustek-taisan.js"></script>
+<script src="haustek-them.js"></script>
 
 <script src="man/k-tong-quan.js"></script>
 <script src="man/k-ban-ghi.js"></script>
@@ -32,6 +33,9 @@ HAUSTEK.lockdown();
 <script src="man/k-du-bao.js"></script>
 <script src="man/k-xu-huong.js"></script>
 <script src="man/k-playlist.js"></script>
+<script src="man/k-chat-luong.js"></script>
+<script src="man/k-chia-se.js"></script>
+<script src="man/k-chien-dich.js"></script>
 <script src="man/k-phat-hanh.js"></script>
 <script src="man/k-nghe-si.js"></script>
 <script src="man/k-he-thong.js"></script>
@@ -89,6 +93,15 @@ HT.chay({
   ten: 'portal',
   api: api,
   phien: PHIEN,
+  thongBao: function () { return api.notifications(PHIEN.me.role, PHIEN.me.partyId); },
+  danhDauDoc: function (c, ids) { return api.markNotifications(PHIEN.me.role, PHIEN.me.partyId, ids); },
+  tim: function (c, q) { return api.search(PHIEN.me.role, PHIEN.me.partyId, q, 6); },
+  moBai: function (c, id) {
+    var me = PHIEN.me, la = me.role === 'label', hs = api.trackAsset(me.role, me.partyId, id);
+    HTS.moNgan(c, hs, { mineLabel: la ? HTS.t('label') : HTS.t('toi'), revenueLabel: la ? HTS.t('gop') : HTS.t('toi'), anMine: !la,
+      tien: HT.fmt.usd, tien0: HT.fmt.usd0, playlists: HTS.plCua(c, id), hoTro: true });
+  },
+  moDoiTac: function (c) { location.hash = '#k-nghe-si'; },
   coTienTe: false,
   kyDanhSach: function () {
     return PHIEN.kys.map(function (p) { return { k: p.k, label: p.label }; });

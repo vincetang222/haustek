@@ -97,7 +97,8 @@ function cham(kieu, chu) { return '<span class="dot ' + kieu + '"></span>' + esc
 function bam(root, sel, fn) {
   root.addEventListener('click', function (e) {
     var el = e.target.closest(sel);
-    if (el && root.contains(el)) { e.preventDefault(); fn(el, e); }
+    /* không chặn mặc định khi bấm vào ô nhập / ô chọn: checkbox phải còn đổi được trạng thái */
+    if (el && root.contains(el)) { if (!e.target.closest('input,select,textarea,label,a[href^="http"]')) e.preventDefault(); fn(el, e); }
   });
 }
 function doi(root, sel, fn) {
@@ -268,6 +269,14 @@ function hinh(ten, seed, cls) {
   var nen = 'hsl(' + hue2 + ' 58% ' + toi + '%)';
   return '<span class="hinh' + (cls ? ' ' + cls : '') + '" aria-hidden="true" style="background-color:' + nen + ';background-image:linear-gradient(135deg,hsl(' + hue + ' 55% ' + (toi + 8) + '%),' + nen + ')">' + esc(chuDau(ten)) + '</span>';
 }
+/* Ô số kèm thanh tỷ lệ mảnh, đặt trong <td class="num">: thấy hình ngay
+   trong bảng, không phải đọc từng số. max là giá trị lớn nhất của cột. */
+function oThanh(v, max, o) {
+  o = o || {};
+  var p = max > 0 ? Math.max(0, Math.min(100, v / max * 100)) : 0;
+  var chu = o.chu != null ? o.chu : HT.fmt.n(v);
+  return '<span class="cb"' + (o.mau ? ' style="--cb-mau:' + o.mau + '"' : '') + '><b>' + esc(chu) + '</b><i style="--p:' + p.toFixed(1) + '%"></i></span>';
+}
 /* Ô tên có bìa bên trái: dùng trong <td> và danh sách. */
 function tenBia(o) {
   return '<div class="t-bia">' + (o.bia != null ? bia(o.bia, o.ten, o.cls || '') : hinh(o.ten, o.seed, o.cls || '')) +
@@ -293,7 +302,7 @@ global.HM = {
   tag: tag, cham: cham, bam: bam, doi: doi, nhap: nhap, csv: csv,
   lech: lech, lechHtml: lechHtml, dai: dai, esc: esc, icon: icon,
   nho: nho, quenHet: quenHet, moc: moc,
-  bia: bia, hinh: hinh, tenBia: tenBia, xepHang: xepHang, hashChu: hashChu
+  bia: bia, hinh: hinh, tenBia: tenBia, xepHang: xepHang, hashChu: hashChu, oThanh: oThanh
 };
 
 })(window);

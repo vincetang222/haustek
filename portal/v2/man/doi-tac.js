@@ -39,7 +39,7 @@ HT.dangKy({
       label: 'Label', sublabel: 'Label con', artist: 'Nghệ sĩ', xuat: 'Xuất CSV',
       ttManaged: 'Đang quản lý', ttRenew: 'Sắp hết hạn', ttInactive: 'Không hoạt động', ttIncomplete: 'Thiếu hồ sơ',
       ttNeverLogged: 'Chưa đăng nhập', ttNoAccount: 'Chưa có tài khoản', ttAll: 'Tất cả',
-      cDoiTac: 'Đối tác', cNv: 'Người phụ trách', cHang: 'Hạng', cDtQ: 'Doanh thu gộp quý', cLuotQ: 'Lượt nghe quý', cBai: 'Bản ghi',
+      bulkCsv: 'Xuất CSV dòng đã chọn', daXuat: 'Đã xuất {n} đối tác', cDoiTac: 'Đối tác', cNv: 'Người phụ trách', cHang: 'Hạng', cDtQ: 'Doanh thu gộp quý', cLuotQ: 'Lượt nghe quý', cBai: 'Bản ghi',
       cHopDong: 'Hết hạn hợp đồng', cTk: 'Tài khoản cổng', cTt: 'Tình trạng',
       conNgay: 'còn {n} ngày', daHet: 'đã hết hạn', chuaCoTk: 'chưa có', chuaDn: 'chưa đăng nhập', lanCuoi: 'lần cuối {d}',
       labelCon: '{n} label con', khong: 'Không có đối tác nào khớp bộ lọc', khongMo: 'Đổi bộ lọc phía trên.',
@@ -70,7 +70,7 @@ HT.dangKy({
       label: 'Label', sublabel: 'Sub-label', artist: 'Artist', xuat: 'Export CSV',
       ttManaged: 'Managed', ttRenew: 'Renewal due', ttInactive: 'Inactive', ttIncomplete: 'Incomplete',
       ttNeverLogged: 'Never logged in', ttNoAccount: 'No account', ttAll: 'All',
-      cDoiTac: 'Partner', cNv: 'Account manager', cHang: 'Class', cDtQ: 'Quarter gross', cLuotQ: 'Quarter streams', cBai: 'Recordings',
+      bulkCsv: 'Export selected as CSV', daXuat: 'Exported {n} partners', cDoiTac: 'Partner', cNv: 'Account manager', cHang: 'Class', cDtQ: 'Quarter gross', cLuotQ: 'Quarter streams', cBai: 'Recordings',
       cHopDong: 'Contract ends', cTk: 'Portal account', cTt: 'Status',
       conNgay: '{n} days left', daHet: 'expired', chuaCoTk: 'none', chuaDn: 'never logged in', lanCuoi: 'last seen {d}',
       labelCon: '{n} sub-labels', khong: 'No partner matches the filters', khongMo: 'Change the filters above.',
@@ -170,6 +170,7 @@ function dungBang(root, c) {
   if (!host) return;
   var kq = A.parties.list({ q: LOC.tim, manager: LOC.nv, status: LOC.tt, kind: LOC.loai, classification: LOC.hang });
   var rows = kq.rows;
+  var maxDt = rows.reduce(function (m, r) { return r.revenueQ > m ? r.revenueQ : m; }, 0);
   var b = c.bang({
     host: host, dong: function () { return rows; }, sort: 'revenueQ', dir: -1, co: 25,
     cot: [
@@ -196,7 +197,7 @@ function dungBang(root, c) {
           phu: HM.tag(t(r.kind), r.kind === 'artist' ? 'link' : 'info') + ' ' + HM.esc(r.clientId) + (r.children ? ' · ' + HM.esc(t('labelCon').replace('{n}', r.children)) : '') }) + '</td>' +
         '<td>' + (r.managerName ? HM.esc(r.managerName) : '<span class="nil">—</span>') + '</td>' +
         '<td>' + HM.tag(r.classification, KIEU_HANG[r.classification] || '') + '</td>' +
-        '<td class="num band"><b>' + HM.esc(c.tien(r.revenueQ)) + '</b><div class="t-sub">' + HM.lechHtml(r.revenueQ, r.revenuePrevQ) + '</div></td>' +
+        '<td class="num band">' + HM.oThanh(r.revenueQ, maxDt, { chu: c.tien(r.revenueQ) }) + '<div class="t-sub">' + HM.lechHtml(r.revenueQ, r.revenuePrevQ) + '</div></td>' +
         '<td class="num">' + HM.esc(HT.fmt.n(r.streamsQ)) + '</td>' +
         '<td class="num">' + HM.esc(HT.fmt.n(r.tracks)) + '</td>' +
         '<td>' + hd + '</td>' +
@@ -204,17 +205,20 @@ function dungBang(root, c) {
         '<td>' + HM.tag(t(CHU_TT[r.status]), KIEU_TT[r.status]) + '</td>';
     },
     chon: function (r) { moDoiTac(c, r); },
-    rongTieuDe: t('khong'), rongMoTa: t('khongMo')
+    rongTieuDe: t('khong'), rongMoTa: t('khongMo'),
+    /* bảng tự xử lý sắp xếp / trang / cỡ trang; sau mỗi lần vẽ lại chỉ cần gắn lại biểu đồ trong ô */
+    khiDoi: function () { HB.gan(host); },
+    khoa: function (r) { return r.partyKey; },
+    chonNhieu: { nut: [{ k: 'csv', l: t('bulkCsv'), pri: true }],
+      khi: function (k, rows) {
+        if (k !== 'csv') return;
+        HM.csv('doi-tac-da-chon.csv', [t('cDoiTac'), 'clientId', t('cNv'), t('cHang'), t('cDtQ'), t('cLuotQ'), t('cBai')], rows.map(function (r) {
+          return [r.name, r.clientId, r.managerName || '', r.classification, r.revenueQ, r.streamsQ, r.tracks];
+        }));
+        c.thongBao(t('daXuat').replace('{n}', rows.length), 'ok');
+      } }
   });
-  b.ve();
-  HM.bam(host, '[data-sx]', function (el) {
-    var k = el.getAttribute('data-sx');
-    if (b.st.sort === k) b.st.dir = -b.st.dir; else { b.st.sort = k; b.st.dir = (k === 'name' || k === 'managerName' || k === 'classification') ? 1 : -1; }
-    b.ve(); HB.gan(host);
-  });
-  HM.bam(host, '[data-tr]', function (el) { b.st.trang += +el.getAttribute('data-tr'); b.ve(); });
-  HM.doi(host, '[data-co]', function (el) { b.st.co = +el.value; b.st.trang = 0; b.ve(); });
-  HM.bam(host, 'tr.pick', function (el) { var r = b.rows[+el.getAttribute('data-r')]; if (r) moDoiTac(c, r); });
+  b.ve(); HB.gan(host);
 }
 
 /* ---------------------------------------------------------------------

@@ -661,6 +661,84 @@ check("Playlist: từng vị trí đều thuộc bài của người xem, số �
   return pl.counts.active + " vị trí đang có · " + pl.counts.playlists + " playlist · label " + plL.counts.active;
 });
 
+/* ===================== VÒNG 5: SPLITS · CHẤT LƯỢNG · GIẢI THÍCH · THUẾ ===================== */
+check("Nghệ sĩ A không đọc được chia sẻ tác quyền của bài nghệ sĩ B", () => {
+  mustThrow(() => H.api.splitsOf("artist", A1.id, trackOfA2), "splits bài người khác");
+  mustThrow(() => H.api.setSplit("artist", A1.id, trackOfA2, { name: "x", email: "x@vidu.vn", role: "producer", pct: 10 }), "mời người chia trên bài người khác");
+  mustThrow(() => H.api.monetization("artist", A1.id, trackOfA2), "ngưỡng của bài người khác");
+  mustThrow(() => H.api.metadataHealth("artist", A1.id, trackOfA2), "metadata của bài người khác");
+  return "bốn cửa đều đóng";
+});
+check("Splits của label chỉ chứa bài của label và tổng phần chia không vượt 100%", () => {
+  const d = H.api.splits("label", L1.id);
+  must(d.rows.length > 0, "label không có bài nào có chia sẻ");
+  d.rows.forEach(r => {
+    must(r.partyKey === L1.key, "bài " + r.trackId + " không thuộc label " + L1.key);
+    const tong = r.collaborators.reduce((s, c) => s + c.pct, 0);
+    must(r.ownerPct + tong === 100, "tổng phần chia ≠ 100 ở bài " + r.trackId);
+    r.collaborators.forEach(c => must(c.payable <= c.earned + 0.005, "chi trả vượt phần được hưởng"));
+  });
+  return d.rows.length + " bài · " + d.counts.collaborators + " người cộng tác";
+});
+check("Thêm phần chia vượt 100% hoặc email sai bị chặn", () => {
+  mustThrow(() => H.api.setSplit("artist", A1.id, trackOfA1, { name: "x", email: "khong-phai-email", role: "producer", pct: 10 }), "email sai");
+  mustThrow(() => H.api.setSplit("artist", A1.id, trackOfA1, { name: "x", email: "x@vidu.vn", role: "producer", pct: 101 }), "vượt 100%");
+  const truoc = H.api.splitsOf("artist", A1.id, trackOfA1);
+  const conLai = truoc.ownerPct;
+  if (conLai > 5) {
+    mustThrow(() => H.api.setSplit("artist", A1.id, trackOfA1, { name: "x", email: "x@vidu.vn", role: "producer", pct: conLai + 1 }), "vượt phần còn lại");
+  }
+  return "email và tổng phần chia đều được kiểm";
+});
+check("Cảnh báo chất lượng của label chỉ thuộc label; khiếu nại bài người khác bị chặn", () => {
+  const q = H.api.quality("label", L1.id);
+  q.rows.forEach(r => must(r.partyKey === L1.key, "cảnh báo " + r.id + " không thuộc label"));
+  must(q.counts.alerts === q.counts.critical + q.counts.warn + q.counts.watch, "tổng mức không khớp tổng cảnh báo");
+  mustThrow(() => H.api.disputeAlert("artist", A1.id, trackOfA2, "thử"), "khiếu nại bài người khác");
+  return q.counts.alerts + " cảnh báo · " + q.counts.flagged + " bị gắn cờ";
+});
+check("Gói vòng 5 của đối tác không chứa doanh thu gộp hay phí", () => {
+  const cam = /gross|haustekFee|counterpartShare|phí dịch vụ|service fee/i;
+  ["splits", "quality", "metadataReport", "campaigns", "notifications"].forEach(k => {
+    const txt = JSON.stringify(H.api[k]("artist", A1.id));
+    must(!cam.test(txt), k + " để lộ chữ bị cấm");
+  });
+  const ex = H.api.explain("artist", A1.id, approvedKey);
+  must(!cam.test(JSON.stringify(ex)), "explain để lộ chữ bị cấm");
+  must(!ex.steps.some(s => s.k === "gross" || s.k === "kept"), "explain của đối tác có bước gộp / giữ lại");
+  return "sáu gói sạch";
+});
+check("Giải thích con số: bước ghi vào ví khớp với ví của đối tác", () => {
+  const ex = H.api.explain("artist", A1.id, approvedKey);
+  const buoc = ex.steps.filter(s => s.k === "credit")[0];
+  const w = H.api.wallet("artist", A1.id);
+  const cr = w.credits.filter(c => c.k === approvedKey)[0];
+  must(buoc && cr, "thiếu bước ghi ví hoặc dòng ví của kỳ " + approvedKey);
+  must(Math.abs(buoc.value - cr.credit) < 0.011, "ghi ví trong giải thích " + buoc.value + " ≠ ví " + cr.credit);
+  return ex.label + " · " + buoc.value;
+});
+check("Thuế khấu trừ khi rút: cá nhân từ 2 triệu đồng 10%, tổ chức 0%", () => {
+  const ca = H.api.withdrawalQuote("artist", A1.id, 100);
+  must(ca.vnd >= 2000000 && ca.rate === 0.10 && Math.abs(ca.net - 90) < 0.011, "cá nhân 100 USD phải khấu trừ 10%");
+  const nho = H.api.withdrawalQuote("artist", A1.id, 50);
+  must(nho.vnd < 2000000 ? nho.rate === 0 : nho.rate === 0.10, "ngưỡng 2 triệu đồng tính sai");
+  const to = H.api.withdrawalQuote("label", L1.id, 100);
+  must(to.rate === 0 && to.invoice === true, "tổ chức phải 0% và xuất hoá đơn");
+  return "cá nhân " + ca.rate * 100 + "% · tổ chức " + to.rate * 100 + "%";
+});
+check("Thông báo và tìm nhanh chỉ trong phạm vi của người xem", () => {
+  const n = H.api.notifications("artist", A1.id);
+  must(Array.isArray(n.items) && n.unread >= 0, "gói thông báo hỏng");
+  const daDoc = H.api.markNotifications("artist", A1.id, "all");
+  must(daDoc.unread === 0, "đánh dấu đã đọc hết mà vẫn còn " + daDoc.unread);
+  const tenA1 = A.asset(trackOfA1).title.toLowerCase().slice(0, 3);
+  const kq = H.api.search("artist", A1.id, tenA1, 50);
+  must(kq.tracks.length > 0, "tìm \"" + tenA1 + "\" không ra bài nào của chính nghệ sĩ");
+  kq.tracks.forEach(x => must(A.idxOf(A.byArtist, A1.id).includes(x.id), "tìm nhanh trả bài " + x.id + " ngoài phạm vi"));
+  must(kq.parties.length === 0 && kq.docs.length === 0, "nghệ sĩ không được thấy đối tác hay hồ sơ nội bộ");
+  return kq.tracks.length + " bài khớp, không lọt bài người khác";
+});
+
 check("lockdown() gỡ hẳn mặt tiền admin khỏi trang", () => {
   must(!!H.admin, "chưa lockdown mà admin đã mất");
   H.lockdown();

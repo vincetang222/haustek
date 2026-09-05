@@ -16,6 +16,8 @@ portal/
     VAN-PHONG.md           chuẩn thuật ngữ và văn phong tiếng Việt cho mọi chữ trên cổng
     NGHIEN-CUU-NGUOI-DUNG.md  từng vai dùng cổng để làm gì, trang nào trả lời, chỗ nào còn thiếu
     man/                   mười lăm trang, mỗi trang một file
+  haustek-them.js          mảnh giao diện vòng 5 dùng chung: cảnh báo, chia sẻ, ngưỡng, metadata, giải thích, chiến dịch, phân trang nhẹ
+  NGHIEN-CUU-THI-TRUONG.md nghiên cứu thị trường và học thuật vòng 5, có nguồn
   dung-goi.js              dựng goi-mot-trang.html: cả hai cổng trong một file để dán lên trình xem
   goi-mot-trang.html       bản gói đã dựng
   test/                    bộ kiểm thử (xem test/README.md)
@@ -40,7 +42,7 @@ gọi `HAUSTEK.lockdown()` **trước khi** chạy bất cứ trang nào, và kh
 > `localStorage` thì trang nào cùng gốc cũng đọc được. Xem tab **Quản trị → Ranh giới
 > hai cổng** để biết cái gì thật sự chặn được và cái gì không.
 
-## Hai mươi trang nội bộ
+## Hai mươi ba trang nội bộ
 
 | Trang | File | Trả lời câu gì |
 |---|---|---|
@@ -63,9 +65,12 @@ gọi `HAUSTEK.lockdown()` **trước khi** chạy bất cứ trang nào, và kh
 | Quản lý quyền | `man/quyen.js` | Xung đột Content ID và khiếu nại trên nền tảng; cài đặt video theo tài khoản |
 | Theo dõi | `man/theo-doi.js` | Bài hát, tài khoản, bản phát hành đang lên trong cửa sổ 7 / 28 / 60 ngày; yêu thích (lưu trình duyệt, có Lưu / Khôi phục), top hits, đang bùng nổ, số playlist và video ngắn |
 | Bảng giá nền tảng | `man/bang-gia.js` | Nhóm giá của các nền tảng bán tải về: giá album và track theo nền tảng và tiền tệ, nối sang Sửa hàng loạt |
+| Chất lượng lượt nghe | `man/chat-luong.js` | Cảnh báo lượt nghe bất thường gom theo tài khoản (kiểu tách nhỏ để lách ngưỡng), năm tín hiệu có bằng chứng, sổ phạt của nền tảng, xác nhận / gỡ có nhật ký; sức khoẻ metadata toàn danh mục |
+| Chia sẻ tác quyền | `man/chia-se.js` | Splits của mọi tài khoản: ai được chia bao nhiêu, lời mời chưa nhận, thu hồi còn dở; xác nhận thay có nhật ký |
+| Chiến dịch | `man/chien-dich.js` | Liên kết thông minh / pre-save, pitch playlist, quảng cáo trả phí của mọi tài khoản, phễu kết quả và chi tiết |
 | Quản trị | `man/quan-tri.js` | Tài khoản, nhật ký, câu hỏi treo, dữ liệu, ranh giới |
 
-## Mười lăm trang cổng đối tác
+## Mười tám trang cổng đối tác
 
 Cổng đối tác chỉ hiện **số NET** của người xem (xem `NGHIEN-CUU-NGUOI-DUNG.md`
 mục 4b). Mọi trang tiền ở đây dùng khoá `revenue` / `mine`; tầng API chặn chữ
@@ -84,6 +89,9 @@ mục 4b). Mọi trang tiền ở đây dùng khoá `revenue` / `mine`; tầng A
 | Hỗ trợ | `man/k-ho-tro.js` | Gửi và theo dõi yêu cầu hỗ trợ; khiếu nại bản quyền Haustek đang xử lý thay bạn |
 | Xu hướng ngày | `man/k-xu-huong.js` | Lượt nghe theo ngày (cột / vùng / đường, 7 / 28 / 60 ngày) xếp theo bài hát, bản phát hành, nghệ sĩ, thị trường, nền tảng; nhân khẩu học người nghe |
 | Playlist & bảng xếp hạng | `man/k-playlist.js` | Bài hát đang ở playlist biên tập, thuật toán hay bảng xếp hạng nào, vị trí, ngày vào, còn ở đó không; playlist mang về nhiều lượt nghe nhất |
+| Chất lượng lượt nghe | `man/k-chat-luong.js` | Tín hiệu bất thường tính từ lượt nghe ngày, bài bị nền tảng gắn cờ kèm lượt bị gỡ và mức phạt, khiếu nại có ghi chú; sức khoẻ metadata từng bài và cách sửa |
+| Chia sẻ tác quyền | `man/k-chia-se.js` | Mời producer, nghệ sĩ khách, đồng sáng tác, kỹ sư nhận phần trăm trên số tiền của một bài, tuỳ chọn ngưỡng thu hồi; người cộng tác chỉ thấy phần của họ |
+| Chiến dịch | `man/k-chien-dich.js` | Liên kết thông minh có pre-save, pitch playlist biên tập, quảng cáo trả phí: mỗi dòng một phễu kết quả; yêu cầu chiến dịch mới qua ticket marketing |
 | Phát hành | `man/k-phat-hanh.js` | Bản phát hành trong danh mục, hồ sơ đang xử lý, gửi hồ sơ mới theo đúng trường của form metadata |
 | Bảng kê thanh toán | `man/k-bang-ke.js` | Bản đối soát chính thức: in ra, tải về, gửi kế toán |
 | Tạm ứng | `man/k-tam-ung.js` | Vì sao kỳ này có doanh thu mà không nhận được tiền |
@@ -97,8 +105,10 @@ bước, còn thiếu gì), **Nền tảng** (12 nền tảng lớn với trạn
 206 nền tảng khác gộp một dòng), **Theo tháng** (ma trận nền tảng × kỳ, đổi được
 lượt nghe / doanh thu gộp / phần được hưởng, xuất CSV), **Playlist** (playlist và
 bảng xếp hạng bài đang có mặt, vị trí, ngày vào; cổng đối tác lấy qua
-`HTS.plCua`, nội bộ qua `A.playlistsOf`). Đầu ngăn có ảnh bìa sinh xác định từ
-id bài (`HM.bia`), tên, nghệ sĩ và giai đoạn. Nội bộ đưa thêm tab Dòng
+`HTS.plCua`, nội bộ qua `A.playlistsOf`), **Chất lượng** (cảnh báo lượt nghe của
+bài với năm tín hiệu, luật trả tiền của nền tảng với thanh tiến độ tới ngưỡng,
+điểm sức khoẻ metadata và cách sửa, phần chia sẻ tác quyền). Đầu ngăn có ảnh bìa
+sinh xác định từ id bài (`HM.bia`), tên, nghệ sĩ và giai đoạn. Nội bộ đưa thêm tab Dòng
 tiền của mình vào qua `them`. Cùng một phép chia theo nền tảng dùng cho ma trận
 từng bài, thu nhập theo nền tảng của kỳ và báo cáo nền tảng của cả tài khoản, nên
 ba bảng đó cộng lại luôn ra cùng con số (api-guard kiểm điều này).
@@ -219,3 +229,22 @@ node dung-goi.js && node test/v2-nhu-artifact.js && node test/v2-khong-mang.js  
 Ba bài đầu cần Chromium ở `/opt/pw-browsers/chromium-1194/` và bộ font thật ở
 `/tmp/fonts-local.css` (xem `test/README.md`) — thiếu font thì trang render bằng font
 dự phòng rộng hơn, và bài kiểm bố cục đo nhầm thứ.
+
+## Khung: chuông thông báo, tìm nhanh, bảng dữ liệu
+
+Thanh trên có **chuông** (sự kiện mới của chính người xem: bảng kê sẵn sàng,
+rút tiền đổi trạng thái, nền tảng gắn cờ, playlist mới, hồ sơ phát hành, lời
+mời chia sẻ; nội bộ: rút tiền chờ, ticket mở, cờ nền tảng, tài khoản tăng đồng
+loạt, hồ sơ chờ, giao nhận, metadata thiếu) — mỗi vấn đề một dòng, ba mức, đánh
+dấu đã đọc lưu trong trạng thái. **Tìm nhanh** (nút kính lúp hoặc Ctrl K) tìm
+bài hát theo tên không dấu hay ISRC, đối tác, hồ sơ (yêu cầu rút, ticket, phát
+hành) và tên trang; Enter mở ngăn hồ sơ bài hoặc chuyển trang. Cửa nào cung cấp
+dữ liệu cho hai thứ này qua `thongBao`, `danhDauDoc`, `tim`, `moBai` trong cấu
+hình `HT.chay`.
+
+Bảng dùng chung (`c.bang`) có số trang, nút đổi mật độ chặt / thoáng (lưu trình
+duyệt), cột ô chọn với thanh hành động (`chonNhieu`), gọi lại `khiDoi` khi đổi
+sắp xếp / trang / cỡ trang. CSS bảng: đầu cột chữ hoa nhỏ, dính khi cuộn ở màn
+rộng (`.card` dùng `overflow:clip` để không chặn sticky), bỏ sọc xen kẽ (giữ
+`.zebra` khi cần), thanh tỷ lệ trong ô số (`HM.oThanh`), ảnh đại diện có màu
+nền đặc đủ tương phản.

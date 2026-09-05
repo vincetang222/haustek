@@ -17,6 +17,8 @@ const KHONG_BAM = ['data-duyet', 'data-boqua', 'data-thuhoi', 'data-xoahet',
   for (const trang of ['v2/intranet.html', 'v2/khach.html']) {
     const ctx = await b.newContext({ viewport: { width: 1500, height: 1100 } });
     const p = await ctx.newPage();
+    /* Bài kiểm khói: một cú bấm không được thì ghi nhận và đi tiếp, không chờ 30 giây. */
+    p.setDefaultTimeout(5000);
     await dungFontThat(p);
     const errs = [];
     p.on('pageerror', e => errs.push('PAGEERROR ' + e.message));

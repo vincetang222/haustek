@@ -487,9 +487,6 @@ function dungBangBk(root, c) {
     rongTieuDe: t('khongAi'), rongMoTa: ''
   });
   b.ve();
-  HM.bam(host, '[data-sx]', function (el) { var k = el.getAttribute('data-sx'); if (b.st.sort === k) b.st.dir = -b.st.dir; else { b.st.sort = k; b.st.dir = k === 'name' ? 1 : -1; } b.ve(); });
-  HM.bam(host, '[data-tr]', function (el) { b.st.trang += +el.getAttribute('data-tr'); b.ve(); });
-  HM.doi(host, '[data-co]', function (el) { b.st.co = +el.value; b.st.trang = 0; b.ve(); });
 }
 
 function moChuoi(c, r, duyet) {

@@ -19,10 +19,14 @@
 <script src="haustek-bieudo.js"></script>
 <script src="haustek-man.js"></script>
 <script src="haustek-taisan.js"></script>
+<script src="haustek-them.js"></script>
 
 <script src="man/ban-lam-viec.js"></script>
 <script src="man/tong-quan.js"></script>
 <script src="man/theo-doi.js"></script>
+<script src="man/chat-luong.js"></script>
+<script src="man/chia-se.js"></script>
+<script src="man/chien-dich.js"></script>
 <script src="man/nap-du-lieu.js"></script>
 <script src="man/khop-isrc.js"></script>
 <script src="man/doi-chieu.js"></script>
@@ -61,6 +65,12 @@ HT.setFx(A.fx.get().rate);
 HT.chay({
   ten: 'internal',
   A: A,
+  /* chuông và tìm nhanh trên thanh trên: lõi tính, khung vẽ */
+  thongBao: function () { return A.notifications(); },
+  danhDauDoc: function (c, ids) { return A.markNotifications(ids); },
+  tim: function (c, q) { return A.search(q, 6); },
+  moBai: function (c, id) { var a = A.asset(id); HTS.moNgan(c, a, { noiBo: true, tien: c.tien2, tien0: c.tien, playlists: A.playlistsOf(id) }); },
+  moDoiTac: function (c) { location.hash = '#doi-tac'; },
   kyDanhSach: function () {
     return A.periods.map(function (p) {
       /* Nhãn này hiện trong ô chọn kỳ ở thanh trên, nên nó là CHỮ GIAO

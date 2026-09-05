@@ -44,7 +44,7 @@ HT.dangKy({
       locAll: 'Tất cả', locYt: 'Yêu thích', locTop: 'Top hits', locBung: 'Đang bùng nổ',
       tim: 'Tìm ISRC, bài hát, tài khoản…', n7: '7 ngày', n28: '28 ngày', n60: '60 ngày',
       kTong: 'Lượt nghe toàn danh mục', kyTruoc: 'cửa sổ trước', kBung: 'Đang bùng nổ', kBungS: 'tăng từ {p} trở lên, gấp đôi mức giữa của danh mục', kBungKhong: 'cửa sổ này không có cửa sổ trước để so', kYt: 'Đang theo dõi', kYtS: 'mục đánh dấu sao', kPl: 'Vị trí playlist đang có', kPlS: 'toàn danh mục', kLay: 'Lấy mẫu', kLayS: 'danh mục lớn, số đã nhân theo tỷ lệ mẫu',
-      cBai: 'Bài hát', cPh: 'Bản phát hành', cTk: 'Tài khoản', cPhatHanh: 'Phát hành gần nhất', cLuot: 'Lượt nghe', cDoi: 'Thay đổi', cPl: 'Playlist & bảng xếp hạng', cSf: 'Video ngắn', cDtQ: 'Doanh thu gộp quý', cLuotQ: 'Lượt nghe quý', cNv: 'Người phụ trách', cHang: 'Hạng',
+      bulkSao: 'Đánh dấu sao', bulkBoSao: 'Bỏ sao', daThemN: 'Đã đánh dấu {n} mục', daBoN: 'Đã bỏ sao {n} mục', cBai: 'Bài hát', cPh: 'Bản phát hành', cTk: 'Tài khoản', cPhatHanh: 'Phát hành gần nhất', cLuot: 'Lượt nghe', cDoi: 'Thay đổi', cPl: 'Playlist & bảng xếp hạng', cSf: 'Video ngắn', cDtQ: 'Doanh thu gộp quý', cLuotQ: 'Lượt nghe quý', cNv: 'Người phụ trách', cHang: 'Hạng',
       khong: 'Không có mục nào', khongMo: 'Đổi bộ lọc hoặc cửa sổ ngày.', khongYt: 'Chưa có mục yêu thích nào', khongYtMo: 'Bấm ngôi sao ở cuối dòng để theo dõi.',
       daThem: 'Đã thêm vào yêu thích', daBo: 'Đã bỏ khỏi yêu thích', track: 'track'
     },
@@ -59,7 +59,7 @@ HT.dangKy({
       locAll: 'All', locYt: 'Favorites', locTop: 'Top hits', locBung: 'Booming',
       tim: 'ISRC, track, artist or account…', n7: '7 days', n28: '28 days', n60: '60 days',
       kTong: 'Catalogue streams', kyTruoc: 'previous window', kBung: 'Booming', kBungS: 'up {p} or more, twice the catalogue median', kBungKhong: 'no earlier window to compare against', kYt: 'Following', kYtS: 'starred items', kPl: 'Current playlist placements', kPlS: 'whole catalogue', kLay: 'Sampled', kLayS: 'large catalogue, figures scaled from the sample',
-      cBai: 'Track', cPh: 'Release', cTk: 'Account', cPhatHanh: 'Last release', cLuot: 'Streams', cDoi: 'Change', cPl: 'Playlists & charts', cSf: 'Short-form', cDtQ: 'Quarter gross', cLuotQ: 'Quarter streams', cNv: 'Account manager', cHang: 'Class',
+      bulkSao: 'Star', bulkBoSao: 'Unstar', daThemN: 'Starred {n} items', daBoN: 'Unstarred {n} items', cBai: 'Track', cPh: 'Release', cTk: 'Account', cPhatHanh: 'Last release', cLuot: 'Streams', cDoi: 'Change', cPl: 'Playlists & charts', cSf: 'Short-form', cDtQ: 'Quarter gross', cLuotQ: 'Quarter streams', cNv: 'Account manager', cHang: 'Class',
       khong: 'Nothing here', khongMo: 'Change the filter or the window.', khongYt: 'No favorites yet', khongYtMo: 'Use the star at the end of a row to follow it.',
       daThem: 'Added to favorites', daBo: 'Removed from favorites', track: 'tracks'
     }
@@ -139,12 +139,13 @@ function dungBang(root, c, d, pl) {
   var rows, cot, veDong, loaiYt = LOC.tab;
   if (LOC.tab === 'bai') {
     rows = d.topTracks.map(function (x, i) { return { id: x.id, title: x.title, artist: x.artist, isrc: x.isrc, type: x.type, streams: x.streams, prev: x.prev, change: x.change, pl: plCua[x.id] || 0, sf: shortForm(x.id, x.streams), hang: i + 1, rel: A.releaseDateOf(x.id) }; });
+    var maxS = rows.reduce(function (m, r) { return r.streams > m ? r.streams : m; }, 0);
     cot = [{ k: 'title', l: t('cBai') }, { k: 'rel', l: t('cPhatHanh'), w: '120px' }, { k: 'streams', l: t('cLuot'), num: true, w: '120px' }, { k: 'change', l: t('cDoi'), num: true, w: '100px' },
            { k: 'pl', l: t('cPl'), num: true, w: '130px' }, { k: 'sf', l: t('cSf'), num: true, w: '100px' }, { k: 'yt', l: '★', s: false, w: '44px' }];
     veDong = function (r) {
       return '<td>' + HM.tenBia({ bia: r.id, ten: HM.dai(r.title, 34), phu: r.artist + ' · ' + r.isrc }) + '</td>' +
         '<td class="mono">' + HM.esc(HT.fmt.date(r.rel)) + '</td>' +
-        '<td class="num band"><b>' + HM.esc(HT.fmt.n(r.streams)) + '</b></td>' +
+        '<td class="num band">' + HM.oThanh(r.streams, maxS) + '</td>' +
         '<td class="num">' + (r.change == null ? '<span class="nil">—</span>' : '<span class="' + (r.change >= 0 ? 'pos' : 'neg') + '">' + HM.esc((r.change >= 0 ? '▲ ' : '▼ ') + HT.fmt.pct(Math.abs(r.change))) + '</span>') + '</td>' +
         '<td class="num">' + (r.pl ? '<span class="tag info">' + r.pl + '</span>' : '<span class="nil">—</span>') + '</td>' +
         '<td class="num">' + HM.esc(HT.fmt.n(r.sf)) + '</td>' +
@@ -185,12 +186,18 @@ function dungBang(root, c, d, pl) {
   var b = c.bang({
     host: host, dong: function () { return loc; }, sort: LOC.sap, dir: LOC.dir, co: LOC.co, cot: cot,
     veDong: veDong,
-    rongTieuDe: LOC.loc === 'yt' ? t('khongYt') : t('khong'), rongMoTa: LOC.loc === 'yt' ? t('khongYtMo') : t('khongMo')
+    rongTieuDe: LOC.loc === 'yt' ? t('khongYt') : t('khong'), rongMoTa: LOC.loc === 'yt' ? t('khongYtMo') : t('khongMo'),
+    khiDoi: function (st) { LOC.sap = st.sort; LOC.dir = st.dir; LOC.co = st.co; },
+    khoa: function (r) { return String(r.id); },
+    chonNhieu: { nut: [{ k: 'sao', l: t('bulkSao'), pri: true }, { k: 'boSao', l: t('bulkBoSao') }],
+      khi: function (k, rows, api) {
+        var y2 = yeuThich();
+        rows.forEach(function (r) { if (k === 'sao') y2[loaiYt][r.id] = 1; else delete y2[loaiYt][r.id]; });
+        luuYt(); c.thongBao((k === 'sao' ? t('daThemN') : t('daBoN')).replace('{n}', rows.length), 'ok');
+        api.xoaChon(); if (LOC.loc === 'yt') dungBang(root, c, d, pl); else c.veLai();
+      } }
   });
   b.ve();
-  HM.bam(host, '[data-sx]', function (el) { var k = el.getAttribute('data-sx'); if (b.st.sort === k) b.st.dir = -b.st.dir; else { b.st.sort = k; b.st.dir = k === 'title' || k === 'managerName' ? 1 : -1; } LOC.sap = b.st.sort; LOC.dir = b.st.dir; b.ve(); });
-  HM.bam(host, '[data-tr]', function (el) { b.st.trang += +el.getAttribute('data-tr'); b.ve(); });
-  HM.doi(host, '[data-co]', function (el) { b.st.co = +el.value; LOC.co = b.st.co; b.st.trang = 0; b.ve(); });
   HM.bam(host, '[data-yt]', function (el, e) {
     e.stopPropagation();
     var p = el.getAttribute('data-yt').split('|'), loai = p[0], id = p.slice(1).join('|');
@@ -199,8 +206,8 @@ function dungBang(root, c, d, pl) {
     luuYt(); c.thongBao(y2[loai][id] ? t('daThem') : t('daBo'), 'ok');
     if (LOC.loc === 'yt') dungBang(root, c, d, pl); else b.ve();
   });
-  HM.bam(host, 'tr', function (el, e) {
-    if (e.target.closest('button')) return;
+  HM.bam(host, 'tbody tr', function (el, e) {
+    if (e.target.closest('button, td.sel, input, .bulk')) return;
     var r = b.rows[+el.getAttribute('data-r')]; if (!r) return;
     if (LOC.tab === 'tk') { c.di('doi-tac'); return; }
     var id = LOC.tab === 'bai' ? r.id : r.trackId;

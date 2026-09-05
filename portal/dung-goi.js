@@ -17,9 +17,9 @@ const fs = require('fs');
 const V = __dirname + '/v2/';
 const doc = p => fs.readFileSync(p, 'utf8');
 
-const NOIBO = ['ban-lam-viec','tong-quan','theo-doi','nap-du-lieu','khop-isrc','doi-chieu','phat-hanh','giao-nhan','sua-hang-loat','bang-gia','ke-toan',
+const NOIBO = ['ban-lam-viec','tong-quan','theo-doi','chat-luong','chia-se','chien-dich','nap-du-lieu','khop-isrc','doi-chieu','phat-hanh','giao-nhan','sua-hang-loat','bang-gia','ke-toan',
                'chi-tra','tam-ung','ty-le','danh-muc','nen-tang','doi-tac','ho-tro','quyen','quan-tri'];
-const KHACH = ['k-tong-quan','k-ban-ghi','k-danh-muc','k-nen-tang','k-du-bao','k-xu-huong','k-playlist','k-phat-hanh','k-nghe-si','k-he-thong','k-vi','k-bang-ke','k-tam-ung','k-ho-tro','k-tai-lieu'];
+const KHACH = ['k-tong-quan','k-ban-ghi','k-danh-muc','k-nen-tang','k-du-bao','k-xu-huong','k-playlist','k-chat-luong','k-chia-se','k-chien-dich','k-phat-hanh','k-nghe-si','k-he-thong','k-vi','k-bang-ke','k-tam-ung','k-ho-tro','k-tai-lieu'];
 const boc = ds => ds.map(n =>
   '/* ---- man/' + n + '.js ---- */\nfunction(){\n' + doc(V + 'man/' + n + '.js') + '\n}').join(',\n');
 
@@ -56,6 +56,7 @@ PHAN.push('<scr'+'ipt>', doc(V + 'haustek-shell.js'), '</scr'+'ipt>');
 PHAN.push('<scr'+'ipt>', doc(V + 'haustek-bieudo.js'), '</scr'+'ipt>');
 PHAN.push('<scr'+'ipt>', doc(V + 'haustek-man.js'), '</scr'+'ipt>');
 PHAN.push('<scr'+'ipt>', doc(V + 'haustek-taisan.js'), '</scr'+'ipt>');
+PHAN.push('<scr'+'ipt>', doc(V + 'haustek-them.js'), '</scr'+'ipt>');
 PHAN.push(`
 
 <script>

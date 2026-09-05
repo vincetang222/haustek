@@ -71,9 +71,18 @@ HT.dangKy({
     /* tia 12 điểm: cộng dồn 60 ngày thành 12 nhóm 5 ngày */
     var tia = [];
     for (var g = 0; g < 12; g++) { var s = 0; for (var d = g * 5; d < g * 5 + 5 && d < f.days.length; d++) s += f.days[d].streams; tia.push(s); }
+    /* Dải P10–P90 từ độ dao động ngày của 28 ngày gần nhất: Joslyn & LeClerc
+       (2012) — dự báo có dải làm quyết định tốt hơn và giảm tác hại khi sai. */
+    var d28 = f.days.slice(-28).map(function (x) { return x.streams; });
+    var mu = d28.reduce(function (a2, b2) { return a2 + b2; }, 0) / (d28.length || 1);
+    var cv = mu > 0 ? Math.sqrt(d28.reduce(function (a2, b2) { return a2 + (b2 - mu) * (b2 - mu); }, 0) / (d28.length || 1)) / mu : 0;
+    var conLaiTyLe = Math.max(0, f.daysInMonth - f.daysElapsed) / f.daysInMonth;
+    var bienDo = Math.min(0.35, 1.28 * cv * Math.sqrt(1 + 6 * conLaiTyLe));   /* càng nhiều ngày chưa tới, dải càng rộng */
+    var duKien = la ? f.projected.revenue : f.projected.mine;
+    var dai = { thap: duKien * (1 - bienDo), cao: duKien * (1 + bienDo) };
     html += HM.so([
-      { l: t('kDuKien').replace('{k}', f.openPeriod), v: HT.fmt.usd0(la ? f.projected.revenue : f.projected.mine), lon: true,
-        s: (la ? t('phanLabel') + ' ' + HT.fmt.usd0(f.projected.mine) + ' · ' : '') + HT.fmt.n(f.projected.streams) + ' ' + t('luot'), tia: tia },
+      { l: t('kDuKien').replace('{k}', f.openPeriod), v: HT.fmt.usd0(duKien), lon: true,
+        s: (vi ? 'Dải P10–P90: ' : 'P10–P90 band: ') + HT.fmt.usd0(dai.thap) + ' – ' + HT.fmt.usd0(dai.cao) + (la ? ' · ' + t('phanLabel') + ' ' + HT.fmt.usd0(f.projected.mine) : '') + ' · ' + HT.fmt.n(f.projected.streams) + ' ' + t('luot'), tia: tia },
       { l: t('kToiNay'), v: HT.fmt.n(f.projected.monthToDate),
         s: t('luot') + ' · ' + HT.fmt.usd0(la ? f.projected.monthToDateRevenue : f.projected.monthToDateMine) + ' · ' + t('ngay').replace('{a}', f.daysElapsed).replace('{b}', f.daysInMonth) },
       { l: t('k7'), v: HT.fmt.n(f.last7), d: HM.lech(f.last7, f.prev7, t('truoc7')) },

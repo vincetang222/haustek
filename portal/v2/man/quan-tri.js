@@ -205,13 +205,13 @@ function veTaiKhoan(c, tk) {
             : '<span class="muted">' + HM.esc(c.lang === 'vi' ? 'toàn hệ thống' : 'whole system') + '</span>') + '</td>' +
           '<td>' + HM.tag(a.status === 'active' ? t('hd') : a.status === 'invited' ? t('moi') : t('khoa'),
             a.status === 'active' ? 'ok' : a.status === 'invited' ? 'warn' : 'no') + '</td>' +
-          '<td>' + (a.mfa ? '<span class="pos">' + HM.icon('check') + '</span>' : '<span class="nil">—</span>') + '</td>' +
+          '<td>' + (a.mfa ? '<span class="ico ok" title="' + HM.esc(t('cMfa')) + '">' + HM.icon('check') + '</span>' : '<span class="nil">—</span>') + '</td>' +
           '<td class="mono">' + HM.esc(HT.fmt.ngay(a.createdAt)) + '</td>' +
-          '<td><div class="btnrow">' +
+          '<td><div class="btnrow" style="flex-wrap:nowrap">' +
             (a.status === 'suspended'
               ? '<button type="button" class="btn sm" data-tt="' + a.id + '|active">' + HM.esc(t('moLai')) + '</button>'
               : '<button type="button" class="btn sm" data-tt="' + a.id + '|suspended">' + HM.esc(t('khoaLai')) + '</button>') +
-            '<button type="button" class="btn sm ghost dang" data-xoatk="' + a.id + '">' + HM.icon('x') + '</button>' +
+            '<button type="button" class="btn sm ghost dang" data-xoatk="' + a.id + '" title="' + HM.esc(t('xoaTk')) + '" aria-label="' + HM.esc(t('xoaTk')) + '">' + HM.icon('x') + '</button>' +
           '</div></td></tr>';
       }).join('') + '</tbody></table></div>',
     chan: c.lang === 'vi'

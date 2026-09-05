@@ -241,6 +241,7 @@ function hoiRut(c, w) {
         { t: t('nhSo'), v: anSo(w.bank.account) },
         { t: t('nhChu'), v: w.bank.holder, manh: true }
       ]) +
+      '<h4 class="sec">' + HM.esc(vi ? 'Thuế khấu trừ và số thực nhận' : 'Withholding and net amount') + '</h4><div data-thue></div>' +
       '<div class="hint">' + HM.esc(vi ? 'Cần đổi tài khoản nhận tiền thì bấm "Sửa" ở thẻ Tài khoản nhận tiền trước khi gửi yêu cầu.'
                                         : 'To change the account, use “Edit” on the payout account card before sending.') + '</div>',
     dong: t('guiRut')
@@ -248,10 +249,24 @@ function hoiRut(c, w) {
     if (!f) return;
     try {
       var kq = api.requestWithdrawal(me.role, me.partyId, { amount: +f.amount, note: f.note });
-      c.thongBao(t('daGuiRut') + ' · ' + kq.id + ' · ' + HT.fmt.usd(kq.amount), 'ok');
+      c.thongBao(t('daGuiRut') + ' · ' + kq.id + ' · ' + HT.fmt.usd(kq.amount) + (kq.tax && kq.tax.pit ? ' · ' + (vi ? 'thực nhận ' : 'net ') + HT.fmt.usd(kq.tax.net) : ''), 'ok');
       c.veLai();
     } catch (e) { c.thongBao(e.message, 'no'); }
   });
+  /* dòng thuế cập nhật theo số tiền đang gõ: cá nhân từ 2 triệu đồng mỗi lần chi thì khấu trừ 10% TNCN */
+  setTimeout(function () {
+    var md = document.querySelector('.modal'); if (!md) return;
+    var inp = md.querySelector('[data-o="amount"]'), host = md.querySelector('[data-thue]');
+    function ve() {
+      var q; try { q = api.withdrawalQuote(me.role, me.partyId, +inp.value || 0); } catch (e) { host.innerHTML = ''; return; }
+      host.innerHTML = HM.kv([
+        { t: vi ? 'Số tiền rút' : 'Amount', v: HT.fmt.usd(q.amount) + ' · ' + HT.fmt.n(q.vnd) + ' ₫' },
+        { t: (vi ? 'Thuế TNCN khấu trừ' : 'Personal income tax withheld') + ' ' + HT.fmt.pct(q.rate), v: q.pit ? '− ' + HT.fmt.usd(q.pit) + ' · ' + HT.fmt.n(q.pitVnd) + ' ₫' : (vi ? 'không' : 'none') },
+        { t: vi ? 'Thực nhận' : 'Net to you', v: HT.fmt.usd(q.net) + ' · ' + HT.fmt.n(q.netVnd) + ' ₫', manh: true }
+      ]) + '<p class="hint" style="margin-top:6px">' + HM.esc(vi ? q.rule : q.ruleEn) + (q.certificate ? ' ' + HM.esc(vi ? 'Chứng từ khấu trừ tải ở Bảng kê thanh toán sau khi chuyển.' : 'The withholding certificate is available in Statements after payment.') : '') + '</p>';
+    }
+    if (inp && host) { ve(); inp.addEventListener('input', ve); }
+  }, 30);
 }
 
 /* ---- hộp thoại khai / sửa tài khoản ngân hàng ---- */

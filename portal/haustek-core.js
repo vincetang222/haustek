@@ -411,7 +411,7 @@ function fileNameFor(f, p) {
 let state = null;
 function ensureShape(s) {
   ["withdrawals", "tickets", "claims", "deliveries", "bulk", "releases"].forEach(k => { if (!Array.isArray(s[k])) s[k] = []; });
-  ["statements", "bank", "videoSettings", "partyManager"].forEach(k => { if (!s[k] || typeof s[k] !== "object") s[k] = {}; });
+  ["statements", "bank", "videoSettings", "partyManager", "splits", "alerts", "notifRead"].forEach(k => { if (!s[k] || typeof s[k] !== "object") s[k] = {}; });
   return s;
 }
 
@@ -1784,7 +1784,8 @@ function requestWithdrawal(partyKey, amount, note, by) {
   const now = nowISO();
   const r = { id: withdrawalId(now), partyKey, party: { name: partyName(partyKey), clientId: partyClientId(partyKey) },
     amount, currency: "USD", requestedAt: now, updatedAt: now, status: "requested", bank: Object.assign({}, w.bank),
-    note: note || "", by: by || partyClientId(partyKey), ref: null, paidAt: null, history: [{ at: now, status: "requested", by: by || partyClientId(partyKey) }] };
+    note: note || "", by: by || partyClientId(partyKey), ref: null, paidAt: null, history: [{ at: now, status: "requested", by: by || partyClientId(partyKey) }],
+    tax: withdrawalQuote(partyKey, amount) };
   state.withdrawals.unshift(r);
   audit.log("withdraw.request", r.id + " · " + r.party.name + " · " + fmt.usd(amount), by);
   store.save();
@@ -2100,6 +2101,461 @@ function dailyTrends(role, partyId, days, top) {
     note: "Lượt nghe theo ngày do nền tảng cung cấp, chưa qua đối soát doanh thu. Số này để theo dõi xu hướng; số tiền chỉ có khi kỳ được xét duyệt.",
     noteEn: "Daily streams come straight from the platforms, before revenue reconciliation. Use them for trends; money only appears once a period is approved."
   };
+}
+
+/* =====================================================================
+   19i. CHIA SẺ TÁC QUYỀN · CHẤT LƯỢNG LƯỢT NGHE · NGƯỒNG TRẢ TIỀN ·
+        SỨC KHOẺ METADATA · GIẢI THÍCH SỐ · THUẾ KHI RÚT · THÔNG BÁO ·
+        TÌM NHANH · CHIẾN DỊCH
+   ---------------------------------------------------------------------
+   Từ nghiên cứu thị trường và học thuật (v2/NGHIEN-CUU-THI-TRUONG.md):
+   · Splits với recoup là tính năng phổ biến nhất ở DistroKid, TuneCore,
+     Symphonic, Amuse, Revelator; người cộng tác chỉ thấy phần của mình.
+   · Spotify phạt ≈ €10 / bài / tháng khi phát hiện lượt nghe giả (từ
+     4/2024), Deezer bỏ 7–8% lượt nghe khỏi quỹ, Apple phạt 10–50%; nền
+     gian lận ngành 1–3% (CNM 2023). Bộ tín hiệu tính được từ số ngày:
+     vọt so với nền 28 ngày, một nước chiếm quá nửa, lặp nghe cao, phụ
+     thuộc playlist, tỷ lệ nghe ngắn.
+   · Dòng không được trả tiền phải nói rõ luật: Spotify 1.000 lượt / 12
+     tháng; Deezer 1.000 lượt/tháng và 500 người nghe.
+   · Berklee 2015: 20–50% tiền không về đúng chủ vì metadata; MLC giữ
+     424 triệu đô không khớp → điểm sức khoẻ metadata chặn trước khi giao.
+   · Kulesza 2013: giải thích đủ chuỗi suy ra con số làm tăng niềm tin.
+   · Ancker 2017: cảnh báo lặp làm giảm chấp nhận 10% mỗi 5 điểm → mỗi
+     vấn đề một cảnh báo, gom theo ngày, ba mức.
+   · Việt Nam: khấu trừ 10% thuế TNCN cho cá nhân từ 2 triệu đồng mỗi lần
+     chi (Thông tư 111/2013, Điều 25); tổ chức tự xuất hoá đơn.
+   ===================================================================== */
+function lazyState(k, init) { if (!state[k] || typeof state[k] !== "object") state[k] = init; return state[k]; }
+
+/* ---- chia sẻ tác quyền (splits) ---- */
+const COLLAB_TEN = ["Minh", "An", "Khoa", "Linh", "Huy", "Thảo", "Nam", "Vy", "Đức", "Hà", "Quân", "Trang"];
+const COLLAB_HO = ["Nguyễn", "Trần", "Lê", "Phạm", "Hoàng", "Vũ", "Đặng", "Bùi", "Đỗ", "Ngô"];
+const COLLAB_ROLES = [
+  { k: "producer", vi: "Producer", en: "Producer" },
+  { k: "featured", vi: "Nghệ sĩ khách", en: "Featured artist" },
+  { k: "writer", vi: "Đồng sáng tác", en: "Co-writer" },
+  { k: "mixer", vi: "Kỹ sư mix / master", en: "Mix & master engineer" }
+];
+function lifetimeMine(i, role, partyId) {
+  let s = 0;
+  for (let p = 0; p < P; p++) { if (!state.approved[PERIODS[p].k]) continue; if (grossRec(i, p) <= 0) continue; s += role === "admin" ? grossRec(i, p) : mineOf(i, p, role, partyId, "rec"); }
+  return cents(s);
+}
+function baseSplits(i) {
+  if (hash(i, 71) > 0.34 || recStreams[i * P + (P - 1)] <= 0) return [];
+  const n = 1 + Math.floor(hash(i, 72) * 3), out = [];
+  const pcts = [[30], [20, 15], [25, 15, 10]][n - 1];
+  for (let k = 0; k < n; k++) {
+    const ten = COLLAB_TEN[(Math.floor(hash(i, 73 + k) * 1000) + k) % COLLAB_TEN.length], ho = COLLAB_HO[Math.floor(hash(i, 76 + k) * 1000) % COLLAB_HO.length];
+    const role = COLLAB_ROLES[(Math.floor(hash(i, 79 + k) * 1000) + k) % COLLAB_ROLES.length];
+    const email = (ten + "." + ho).toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/đ/g, "d") + (i % 97) + "@vidu.vn";
+    const recoup = hash(i, 82 + k) < 0.3 ? Math.round(150 + hash(i, 86 + k) * 2850) : 0;
+    out.push({ name: ho + " " + ten, email, role: role.k, roleLabel: role.vi, roleLabelEn: role.en, pct: pcts[k],
+      status: hash(i, 90 + k) < 0.82 ? "accepted" : "invited", recoup, invitedAt: isoDate(new Date(ASOF.getTime() - Math.floor(hash(i, 94 + k) * 400) * 864e5)) });
+  }
+  return out;
+}
+function splitsOf(i, role, partyId) {
+  const st = lazyState("splits", {});
+  const cols = st[i] ? st[i].slice() : baseSplits(i);
+  const mine = lifetimeMine(i, role || "admin", partyId || 0);
+  let sum = 0;
+  const collaborators = cols.map(c => {
+    sum += c.pct;
+    const earnedRaw = cents(mine * c.pct / 100);
+    const recouped = c.recoup ? Math.min(c.recoup, earnedRaw) : 0;
+    return Object.assign({}, c, { earned: earnedRaw, recouped, payable: cents(c.status === "accepted" ? earnedRaw - recouped : 0), recouping: !!c.recoup && recouped < c.recoup });
+  });
+  return { trackId: i, partyKey: partyKeyOfTrack(i), title: tTitle[i], isrc: tIsrc[i], artist: ARTISTS[tArtist[i]].name, ownerPct: Math.max(0, 100 - sum), collaborators, hasSplits: collaborators.length > 0, lifetimeMine: mine };
+}
+function splitsReport(role, partyId) {
+  const sc = scopeOf(role, partyId, "rec"), n = sc ? sc.length : N;
+  const step = n > 4000 ? Math.ceil(n / 4000) : 1;
+  const rows = []; const emails = new Set(); let invited = 0, paid = 0, recouping = 0;
+  for (let k = 0; k < n; k += step) {
+    const i = sc ? sc[k] : k;
+    const s = splitsOf(i, role, partyId);
+    if (!s.hasSplits) continue;
+    rows.push(s);
+    s.collaborators.forEach(c => { emails.add(c.email); if (c.status === "invited") invited++; if (c.recouping) recouping++; paid += c.payable; });
+  }
+  rows.sort((a, b) => b.lifetimeMine - a.lifetimeMine);
+  return { asOf: isoDate(ASOF), counts: { tracks: rows.length, collaborators: emails.size, invited, paid: cents(paid), recouping }, rows: rows.slice(0, 300), truncated: rows.length > 300, sampled: step > 1,
+    roles: COLLAB_ROLES.map(r => ({ k: r.k, label: r.vi, labelEn: r.en })),
+    note: "Người cộng tác nhận phần trăm trên số tiền của bạn cho bài đó, không thấy con số của bạn — chỉ thấy phần của họ. Có ngưỡng thu hồi thì bạn nhận trước cho đến khi đủ, rồi mới chia.",
+    noteEn: "Collaborators receive a percentage of your earnings on that track and only see their own share. With a recoupment amount you are paid first until it is met, then the split applies." };
+}
+function setSplit(role, partyId, trackId, c, by) {
+  const i = +trackId;
+  if (!(i >= 0 && i < N)) throw new Error("Không tìm thấy bản ghi");
+  const sc = scopeOf(role, partyId, "rec");
+  if (sc && !sc.includes(i)) throw new Error("Bản ghi không thuộc danh mục của bạn");
+  const email = String(c.email || "").trim().toLowerCase();
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) throw new Error("Email người cộng tác không hợp lệ");
+  const pct = Math.round(+c.pct * 10) / 10;
+  if (!(pct > 0 && pct <= 100)) throw new Error("Phần trăm phải trong khoảng 0–100");
+  const st = lazyState("splits", {});
+  const cur = (st[i] || baseSplits(i)).filter(x => x.email !== email);
+  const sum = cur.reduce((s, x) => s + x.pct, 0) + pct;
+  if (sum > 100) throw new Error("Tổng phần chia vượt 100% (đang là " + sum + "%)");
+  const role2 = COLLAB_ROLES.find(r => r.k === c.role) || COLLAB_ROLES[0];
+  cur.push({ name: String(c.name || email.split("@")[0]).trim(), email, role: role2.k, roleLabel: role2.vi, roleLabelEn: role2.en, pct, status: "invited", recoup: Math.max(0, Math.round(+c.recoup || 0)), invitedAt: isoDate(ASOF) });
+  st[i] = cur;
+  audit.log("split.set", tTitle[i] + " · " + email + " · " + pct + "%", by);
+  store.save();
+  return splitsOf(i, role, partyId);
+}
+function removeSplit(role, partyId, trackId, email, by) {
+  const i = +trackId; const sc = scopeOf(role, partyId, "rec");
+  if (sc && !sc.includes(i)) throw new Error("Bản ghi không thuộc danh mục của bạn");
+  const st = lazyState("splits", {});
+  st[i] = (st[i] || baseSplits(i)).filter(x => x.email !== String(email).toLowerCase());
+  audit.log("split.remove", tTitle[i] + " · " + email, by);
+  store.save();
+  return splitsOf(i, role, partyId);
+}
+function acceptSplit(trackId, email, by) {
+  const i = +trackId; const st = lazyState("splits", {});
+  st[i] = (st[i] || baseSplits(i)).map(x => x.email === String(email).toLowerCase() ? Object.assign({}, x, { status: "accepted" }) : x);
+  audit.log("split.accept", tTitle[i] + " · " + email, by); store.save();
+  return splitsOf(i);
+}
+
+/* ---- chất lượng lượt nghe: tín hiệu bất thường tính từ số ngày ---- */
+function listenersOf(i, streams) { return Math.round(streams / (1.6 + hash(i, 101) * 3.2)); }
+const PENALTY_USD = 10.8;   /* ≈ €10 / bài / tháng theo chính sách Spotify 4/2024 */
+function qualityOf(i) {
+  let last7 = 0; const base = [];
+  for (let b = 0; b < 35; b++) { const v = dailyStreams(i, b); if (b < 7) last7 += v; else base.push(v); }
+  if (last7 <= 0 && !base.length) return null;
+  const mean = base.reduce((s, v) => s + v, 0) / (base.length || 1);
+  const sd = Math.sqrt(base.reduce((s, v) => s + (v - mean) * (v - mean), 0) / (base.length || 1)) || Math.max(1, mean * 0.08);
+  /* Một số bài được "tiêm" bất thường để thấy hình dạng cảnh báo. Tỷ lệ
+     nhỏ và độc lập từng tín hiệu (tổng ≈ 5% danh mục, gần nền gian lận
+     1–3% của ngành); "bot" là kiểu ba tín hiệu cùng lúc → nghiêm trọng. */
+  const injSpike = hash(i, 102) < 0.015, injCountry = hash(i, 113) < 0.01, injRepeat = hash(i, 114) < 0.008, injShort = hash(i, 115) < 0.008, bot = hash(i, 116) < 0.005;
+  const spikeMul = (injSpike || bot) ? 2.2 + hash(i, 103) * 4 : 1;
+  const z = ((last7 / 7) * spikeMul - mean) / sd;
+  const tt = splitDim(i, 1, TERR_W, 0);
+  const KHAC = TERR.length - 1;                       /* rổ "Khác" không phải một thị trường */
+  let topIdx = 0; for (let j = 1; j < KHAC; j++) if (tt[j] > tt[topIdx]) topIdx = j;
+  let topShare = tt[topIdx];
+  if (injCountry) { topIdx = 1 + Math.floor(hash(i, 104) * (KHAC - 1)); topShare = 0.55 + hash(i, 105) * 0.35; }
+  const rep = last7 > 0 ? last7 / Math.max(1, listenersOf(i, last7)) : 0;
+  const repAdj = (injRepeat || bot) ? rep * (1.8 + hash(i, 106)) : rep;
+  const pls = playlistsOf(i).filter(p => p.status === "active");
+  const plStreams = pls.reduce((s, p) => s + p.streams7, 0);
+  const plShare = last7 > 0 ? Math.min(1, plStreams / last7) : 0;
+  const shortRatio = (injShort || bot) ? 0.6 + hash(i, 107) * 0.28 : 0.05 + hash(i, 108) * 0.22;
+  const spikeHit = z >= 3 && last7 >= 350 && (last7 / 7) * spikeMul >= mean * 1.5;
+  const countryHit = (topIdx !== 0 && topShare >= 0.55) || topShare >= 0.8;
+  const repeatHit = repAdj >= 5 && last7 >= 350;
+  const shortHit = shortRatio >= 0.45 && last7 >= 350;
+  /* điểm: tín hiệu hành vi máy (lặp nghe, nghe ngắn, vọt mạnh) nặng hơn tín hiệu thị trường;
+     phụ thuộc playlist chỉ là bằng chứng phụ, không tự tạo cảnh báo */
+  let points = (spikeHit ? (z >= 6 ? 2 : 1) : 0) + (repeatHit ? 2 : 0) + (shortHit ? 2 : 0) + (countryHit ? 1 : 0);
+  const playlistHit = points > 0 && plShare >= 0.7 && pls.length <= 2 && pls.length > 0;
+  if (playlistHit) points += 1;
+  const signals = [
+    { k: "spike", label: "Vọt so với nền 28 ngày", labelEn: "Spike vs 28-day baseline", value: Math.round(z * 10) / 10, unit: "σ", threshold: 3, hit: spikeHit },
+    { k: "country", label: "Một thị trường chiếm phần lớn", labelEn: "Single-market concentration", value: Math.round(topShare * 1000) / 10, unit: "%", threshold: 55, hit: countryHit, extra: TERR[topIdx] },
+    { k: "repeat", label: "Lượt nghe trên mỗi người nghe", labelEn: "Streams per listener", value: Math.round(repAdj * 10) / 10, unit: "×", threshold: 5, hit: repeatHit },
+    { k: "playlist", label: "Phụ thuộc một vài playlist", labelEn: "Playlist dependence", value: Math.round(plShare * 1000) / 10, unit: "%", threshold: 70, hit: playlistHit },
+    { k: "short", label: "Tỷ lệ nghe ngắn 30–31 giây", labelEn: "Share of 30–31s plays", value: Math.round(shortRatio * 1000) / 10, unit: "%", threshold: 45, hit: shortHit }
+  ];
+  const hits = signals.filter(s => s.hit).length;
+  const severity = points >= 4 ? "critical" : points >= 2 ? "warn" : points === 1 ? "watch" : null;
+  const flagged = hash(i, 109) < 0.012 && last7 >= 500;
+  const alerts = lazyState("alerts", {});
+  const id = "CL-" + String(i).padStart(5, "0");
+  const st = alerts[id] || null;
+  const dsp = flagged ? { platform: "Spotify", at: isoDate(new Date(ASOF.getTime() - Math.floor(hash(i, 110) * 40) * 864e5)), removedStreams: Math.round(last7 * (0.5 + hash(i, 111) * 0.45)), penaltyUsd: PENALTY_USD,
+    reason: "Lượt nghe giả trên mức cho phép", reasonEn: "Artificial streams above tolerance" } : null;
+  if (!severity && !dsp) return null;
+  return { id, trackId: i, title: tTitle[i], isrc: tIsrc[i], artist: ARTISTS[tArtist[i]].name, partyKey: partyKeyOfTrack(i),
+    last7: Math.round(last7 * (spikeMul > 1 ? spikeMul : 1)), baselinePerDay: Math.round(mean), listeners7: listenersOf(i, last7), severity: dsp ? "critical" : severity, hits, signals, dsp,
+    status: st ? st.status : "open", note: st ? st.note : "", history: st ? st.history : [], firstSeen: isoDate(new Date(ASOF.getTime() - Math.floor(hash(i, 112) * 6) * 864e5)) };
+}
+function qualityReport(role, partyId) {
+  const sc = scopeOf(role, partyId, "rec"), n = sc ? sc.length : N;
+  const step = n > 6000 ? Math.ceil(n / 6000) : 1;
+  const rows = [];
+  for (let k = 0; k < n; k += step) { const i = sc ? sc[k] : k; if (recStreams[i * P + (P - 1)] <= 0) continue; const q = qualityOf(i); if (q) rows.push(q); }
+  const rank = { critical: 0, warn: 1, watch: 2 };
+  rows.sort((a, b) => rank[a.severity] - rank[b.severity] || b.last7 - a.last7);
+  const byParty = new Map();
+  rows.forEach(r => {
+    let g = byParty.get(r.partyKey);
+    if (!g) { g = { partyKey: r.partyKey, name: partyName(r.partyKey), clientId: partyClientId(r.partyKey), alerts: 0, critical: 0, flagged: 0, spikes: 0, removedStreams: 0, penaltyUsd: 0, open: 0 }; byParty.set(r.partyKey, g); }
+    g.alerts++; if (r.severity === "critical") g.critical++; if (r.dsp) { g.flagged++; g.removedStreams += r.dsp.removedStreams; g.penaltyUsd = cents(g.penaltyUsd + r.dsp.penaltyUsd); }
+    if (r.signals[0].hit) g.spikes++; if (r.status === "open") g.open++;
+  });
+  const cases = [...byParty.values()].map(g => Object.assign(g, { pattern: g.spikes >= 5 ? "many-small-lifts" : g.flagged ? "dsp-flag" : g.critical ? "critical" : "watch",
+    patternLabel: g.spikes >= 5 ? "Nhiều bài tăng đồng loạt" : g.flagged ? "Nền tảng đã gắn cờ" : g.critical ? "Nhiều tín hiệu cùng lúc" : "Theo dõi",
+    patternLabelEn: g.spikes >= 5 ? "Many small lifts at once" : g.flagged ? "Flagged by platform" : g.critical ? "Several signals together" : "Watch" }))
+    .sort((a, b) => (b.flagged - a.flagged) || (b.critical - a.critical) || (b.alerts - a.alerts));
+  const flagged = rows.filter(r => r.dsp);
+  return { asOf: isoDate(ASOF), counts: { alerts: rows.length, critical: rows.filter(r => r.severity === "critical").length, warn: rows.filter(r => r.severity === "warn").length, watch: rows.filter(r => r.severity === "watch").length,
+      flagged: flagged.length, penaltyUsd: cents(flagged.reduce((s, r) => s + r.dsp.penaltyUsd, 0)), removedStreams: flagged.reduce((s, r) => s + r.dsp.removedStreams, 0),
+      open: rows.filter(r => r.status === "open").length, disputed: rows.filter(r => r.status === "disputed").length, tracksChecked: Math.ceil(n / step) },
+    baseline: { min: 1, max: 3, source: "CNM 2023" }, penaltyPerTrackUsd: PENALTY_USD, sampled: step > 1,
+    cases: cases.slice(0, 60), rows: rows.slice(0, 400), truncated: rows.length > 400,
+    note: "Tín hiệu tính từ lượt nghe theo ngày nền tảng gửi về: vọt so với nền 28 ngày, một thị trường chiếm quá nửa, lặp nghe cao, phụ thuộc một vài playlist, tỷ lệ nghe ngắn. Nền gian lận toàn ngành 1–3%; cảnh báo chỉ nhắm vào phần vượt xa mức đó. Bài bị nền tảng gắn cờ: lượt nghe bị gỡ khỏi báo cáo và có thể bị phạt theo bài mỗi tháng.",
+    noteEn: "Signals computed from daily platform streams: spike vs 28-day baseline, single-market share, repeat listens, playlist dependence, share of short plays. Industry baseline fraud is 1–3%; alerts target what sits far above it. Tracks flagged by a platform have streams removed from reports and may carry a per-track monthly penalty." };
+}
+function setAlertStatus(trackId, status, note, by, role, partyId) {
+  const i = +trackId; const sc = role && role !== "admin" ? scopeOf(role, partyId, "rec") : null;
+  if (sc && !sc.includes(i)) throw new Error("Bản ghi không thuộc danh mục của bạn");
+  if (!["open", "disputed", "resolved", "confirmed"].includes(status)) throw new Error("Trạng thái không hợp lệ");
+  const alerts = lazyState("alerts", {}); const id = "CL-" + String(i).padStart(5, "0");
+  const cur = alerts[id] || { status: "open", note: "", history: [] };
+  cur.status = status; cur.note = note || cur.note; cur.history.push({ at: nowISO(), status, by: by || "", note: note || "" });
+  alerts[id] = cur;
+  audit.log("alert." + status, id + " · " + tTitle[i] + (note ? " · " + note : ""), by);
+  store.save();
+  return qualityOf(i);
+}
+
+/* ---- ngưỡng trả tiền của nền tảng ---- */
+function monetizationOf(i) {
+  const lastP = P - 1;
+  let s12 = 0; for (let p = Math.max(0, P - 12); p < P; p++) s12 += recStreams[i * P + p];
+  const sm = recStreams[i * P + lastP];
+  const rev = new Float64Array(N_PLAT), st = new Float64Array(N_PLAT);
+  if (sm > 0) { splitStores(i, lastP, rev); splitStreams(i, lastP, rev, st); }
+  let sp = 0; for (let j = 0; j < N_PLAT; j++) sp += st[j];
+  const share = j => sp > 0 ? st[j] / sp : 0;
+  const jSpot = PLAT_NAMES.indexOf("Spotify");
+  const spot12 = Math.round(s12 * (jSpot >= 0 ? share(jSpot) : 0.3));
+  const dzMonth = Math.round(sm * 0.015);            /* Deezer nằm trong rổ nền tảng khác: ước tính 1,5% */
+  const dzListeners = listenersOf(i, dzMonth);
+  const rules = [
+    { platform: "Spotify", rule: "Từ 1.000 lượt nghe trong 12 tháng gần nhất mới được tính tiền (từ 4/2024)", ruleEn: "At least 1,000 streams in the last 12 months to earn royalties (since April 2024)",
+      value: spot12, threshold: 1000, ok: spot12 >= 1000, progress: Math.min(1, spot12 / 1000), unit: "streams" },
+    { platform: "Deezer", rule: "Nghệ sĩ chuyên nghiệp: từ 1.000 lượt nghe/tháng và 500 người nghe; dưới đó không được nhân đôi trọng số", ruleEn: "Professional artist: 1,000 streams/month and 500 unique listeners, else no double weighting",
+      value: dzMonth, threshold: 1000, value2: dzListeners, threshold2: 500, ok: dzMonth >= 1000 && dzListeners >= 500, progress: Math.min(1, Math.min(dzMonth / 1000, dzListeners / 500)), unit: "streams", estimated: true },
+    { platform: "Apple Music", rule: "Không có ngưỡng tối thiểu; trả theo tỷ lệ lượt nghe", ruleEn: "No minimum threshold; pro-rata payout", value: null, threshold: null, ok: true, progress: 1 }
+  ];
+  return { trackId: i, streams12: s12, streamsMonth: sm, rules, eligibleAll: rules.every(r => r.ok), below: rules.filter(r => !r.ok).map(r => r.platform) };
+}
+
+/* ---- sức khoẻ metadata ---- */
+const META_CHECKS = [
+  { k: "isrc", w: 20, label: "Có ISRC", labelEn: "ISRC present", hint: "Haustek cấp ISRC khi tiếp nhận.", hintEn: "Haustek assigns an ISRC on intake." },
+  { k: "upc", w: 10, label: "Có UPC cho bản phát hành", labelEn: "Release has a UPC", hint: "Cần UPC để nền tảng gom bài vào đúng bản phát hành.", hintEn: "Stores need a UPC to group tracks into the release." },
+  { k: "iswc", w: 15, label: "Tác phẩm có ISWC", labelEn: "Work has an ISWC", hint: "Đăng ký tác phẩm với tổ chức quản lý tác quyền để nhận ISWC; thiếu mã này tiền tác quyền dễ rơi vào quỹ không khớp.", hintEn: "Register the work with a collecting society for an ISWC; without it publishing money lands in the unmatched pool." },
+  { k: "ipi", w: 15, label: "Người sáng tác có mã IPI", labelEn: "Writers have IPI numbers", hint: "Mỗi người sáng tác cần mã IPI để đối soát với các tổ chức quản lý tác quyền.", hintEn: "Each writer needs an IPI to reconcile with societies." },
+  { k: "splits", w: 15, label: "Phần chia cộng đủ 100%", labelEn: "Splits add up to 100%", hint: "Tổng phần chia của người cộng tác và chủ bản ghi phải bằng 100%.", hintEn: "Owner and collaborator shares must total 100%." },
+  { k: "artwork", w: 10, label: "Ảnh bìa 3000×3000, không chữ mờ", labelEn: "Artwork 3000×3000, no blurry text", hint: "Nền tảng từ chối ảnh dưới 3000 điểm hoặc có URL, giá, chữ quảng cáo.", hintEn: "Stores reject artwork under 3000 px or carrying URLs, prices or promo text." },
+  { k: "explicit", w: 5, label: "Đã khai cờ nội dung nhạy cảm", labelEn: "Explicit flag declared", hint: "Thiếu cờ thì Apple và Spotify giữ lại bài để rà soát.", hintEn: "Missing flag holds the track for review at Apple and Spotify." },
+  { k: "language", w: 5, label: "Có ngôn ngữ lời bài hát", labelEn: "Lyric language set", hint: "Cần cho xếp bài vào đúng thị trường và playlist.", hintEn: "Needed for market and playlist placement." },
+  { k: "lyrics", w: 5, label: "Có lời bài hát", labelEn: "Lyrics attached", hint: "Lời giúp bài lên Apple Music Sing và TikTok tìm được; không bắt buộc.", hintEn: "Lyrics unlock Apple Music Sing and TikTok search; optional." }
+];
+function metadataHealth(i, role, partyId) {
+  const sp = splitsOf(i, role || "admin", partyId || 0);
+  const okOf = { isrc: true, upc: !!tUpc[i], iswc: hash(i, 121) < 0.82, ipi: hash(i, 122) < 0.88, splits: sp.ownerPct + sp.collaborators.reduce((s, c) => s + c.pct, 0) === 100,
+    artwork: hash(i, 123) < 0.9, explicit: hash(i, 124) < 0.86, language: hash(i, 125) < 0.92, lyrics: hash(i, 126) < 0.5 };
+  let score = 0, max = 0; const checks = META_CHECKS.map(c => { max += c.w; if (okOf[c.k]) score += c.w; return Object.assign({ ok: !!okOf[c.k] }, c); });
+  const pct = Math.round(score / max * 100);
+  return { trackId: i, partyKey: partyKeyOfTrack(i), title: tTitle[i], isrc: tIsrc[i], artist: ARTISTS[tArtist[i]].name, score: pct, grade: pct >= 90 ? "A" : pct >= 70 ? "B" : "C", checks, missing: checks.filter(c => !c.ok).length, blocking: checks.filter(c => !c.ok && c.w >= 15).length };
+}
+function metadataReport(role, partyId) {
+  const sc = scopeOf(role, partyId, "rec"), n = sc ? sc.length : N;
+  const step = n > 4000 ? Math.ceil(n / 4000) : 1;
+  const rows = []; const byGrade = { A: 0, B: 0, C: 0 }; const byCheck = {}; META_CHECKS.forEach(c => { byCheck[c.k] = 0; });
+  for (let k = 0; k < n; k += step) { const i = sc ? sc[k] : k; const h = metadataHealth(i, role, partyId); byGrade[h.grade]++; h.checks.forEach(c => { if (!c.ok) byCheck[c.k]++; }); if (h.grade !== "A") rows.push(h); }
+  rows.sort((a, b) => a.score - b.score || b.blocking - a.blocking);
+  const tot = byGrade.A + byGrade.B + byGrade.C;
+  return { asOf: isoDate(ASOF), counts: { tracks: tot, A: byGrade.A, B: byGrade.B, C: byGrade.C, blocking: rows.filter(r => r.blocking > 0).length, avg: tot ? Math.round((byGrade.A * 95 + byGrade.B * 80 + byGrade.C * 55) / tot) : 0 },
+    byCheck: META_CHECKS.map(c => ({ k: c.k, label: c.label, labelEn: c.labelEn, missing: byCheck[c.k] * step })), rows: rows.slice(0, 200), truncated: rows.length > 200, sampled: step > 1,
+    note: "Berklee (2015) ước tính 20–50% tiền tác quyền không về đúng chủ vì metadata thiếu hoặc lệch; The MLC giữ 424 triệu đô chưa khớp. Điểm dưới 70 hoặc thiếu mã quan trọng thì Haustek giữ lại trước khi giao nền tảng.",
+    noteEn: "Berklee (2015) estimated 20–50% of royalties never reach the right owner because of missing or inconsistent metadata; the MLC held $424m unmatched. Below 70, or missing a key identifier, Haustek holds the release before delivery." };
+}
+
+/* ---- giải thích một con số của kỳ ---- */
+function explainPeriod(role, partyId, pk) {
+  const p = pIndexOf(pk);
+  if (p < 0) throw new Error("Không có kỳ " + pk);
+  const sc = scopeOf(role, partyId, "rec"), n = sc ? sc.length : N;
+  const step = n > 6000 ? Math.ceil(n / 6000) : 1;
+  const rev = new Float64Array(N_PLAT), st = new Float64Array(N_PLAT), accR = new Float64Array(N_PLAT), accS = new Float64Array(N_PLAT);
+  let streams = 0, gross = 0, revenue = 0, mine = 0, tracks = 0;
+  for (let k = 0; k < n; k += step) {
+    const i = sc ? sc[k] : k; const g = grossRec(i, p); if (g <= 0) continue;
+    tracks++; streams += recStreams[i * P + p] * step; gross += g * step; revenue += revenueOf(i, p, role) * step;
+    mine += (role === "admin" ? g : mineOf(i, p, role, partyId, "rec")) * step;
+    splitStores(i, p, rev); splitStreams(i, p, rev, st);
+    for (let j = 0; j < N_PLAT; j++) { accR[j] += rev[j] * step; accS[j] += st[j] * step; }
+  }
+  const partyKey = role === "label" ? "L:" + partyId : role === "artist" ? "A:" + partyId : null;
+  const payout = partyKey ? (state.payouts[pk] || []).find(r => r.partyKey === partyKey) : null;
+  const matched = partyKey ? Object.keys(state.match).filter(k2 => k2.endsWith(":" + p)).reduce((s, k2) => { const i = +k2.split(":")[0]; return (sc ? sc.includes(i) : true) ? s + (state.match[k2] || 0) : s; }, 0) : 0;
+  const platforms = PLAT_NAMES.map((nm, j) => ({ name: nm, nameEn: PLAT_NAMES_EN[j], streams: Math.round(accS[j]), per1k: accS[j] > 0 ? cents(accR[j] / accS[j] * 1000 * (gross > 0 ? mine / gross : 0)) : 0, amount: cents(accR[j] * (gross > 0 ? mine / gross : 0)) })).filter(x => x.streams > 0).sort((a, b) => b.amount - a.amount);
+  const steps = [];
+  steps.push({ k: "streams", label: "Lượt nghe nền tảng báo về", labelEn: "Streams reported by platforms", value: Math.round(streams), kind: "so", detail: tracks * step + " bản ghi · " + platforms.length + " nền tảng", detailEn: tracks * step + " recordings · " + platforms.length + " platforms" });
+  steps.push({ k: "rate", label: "× mức trả bình quân trên 1.000 lượt (theo nền tảng)", labelEn: "× average payout per 1,000 streams (per platform)", value: streams > 0 ? cents(mine / streams * 1000) : 0, kind: "tien", detail: "Mỗi nền tảng một mức; bảng bên dưới", detailEn: "One rate per platform; table below" });
+  if (role === "admin") {
+    let partner = 0; earnedByParty(p).forEach(v => { partner += v; });
+    steps.push({ k: "gross", label: "= Doanh thu gộp về Haustek", labelEn: "= Gross revenue to Haustek", value: cents(gross), kind: "tien" });
+    steps.push({ k: "partner", label: "− Phần trả đối tác theo tỷ lệ chia", labelEn: "− Partner share by contract", value: cents(partner), kind: "tien" });
+    steps.push({ k: "kept", label: "= Phần Haustek giữ lại", labelEn: "= Retained by Haustek", value: cents(gross - partner), kind: "tien", tong: true });
+  } else {
+    steps.push({ k: "mine", label: "= Số tiền của bạn cho kỳ này", labelEn: "= Your earnings for this period", value: cents(mine), kind: "tien", tong: true });
+    if (matched) steps.push({ k: "matched", label: "+ Dòng khớp tay cộng thêm", labelEn: "+ Manually matched lines added", value: cents(matched), kind: "tien" });
+    if (payout) {
+      if (payout.recoup) steps.push({ k: "recoup", label: "− Thu hồi tạm ứng", labelEn: "− Advance recoupment", value: cents(payout.recoup), kind: "tien" });
+      if (payout.carry) steps.push({ k: "carry", label: "→ Dồn sang kỳ sau (dưới ngưỡng " + fmt.usd0(CFG.PAYOUT_MIN) + ")", labelEn: "→ Carried to next period (below " + fmt.usd0(CFG.PAYOUT_MIN) + ")", value: cents(payout.carry), kind: "tien" });
+      steps.push({ k: "credit", label: "= Ghi vào ví", labelEn: "= Credited to wallet", value: cents(payout.earned - payout.recoup), kind: "tien", tong: true });
+    }
+  }
+  return { period: pk, label: PERIODS[p].label, approved: !!state.approved[pk], steps, platforms: platforms.slice(0, 12), sampled: step > 1,
+    note: "Mỗi bước là một con số có thể kiểm: lượt nghe lấy từ báo cáo nền tảng, mức trả là tiền chia cho lượt nghe của chính nền tảng đó trong kỳ, các dòng điều chỉnh có ghi trong nhật ký.",
+    noteEn: "Each step is checkable: streams come from platform reports, the rate is that platform’s money divided by its streams in the period, adjustments are logged." };
+}
+
+/* ---- thuế khấu trừ khi rút tiền ---- */
+function withdrawalQuote(partyKey, amount) {
+  amount = Math.round(+amount * 100) / 100;
+  const fxRate = state.fx.rate, vnd = Math.round(amount * fxRate);
+  const individual = partyKey[0] === "A";
+  let rate = 0, rule, ruleEn;
+  if (individual && vnd >= 2000000) { rate = 0.10; rule = "Cá nhân cư trú, chi trả từ 2.000.000 ₫ mỗi lần: khấu trừ 10% thuế TNCN tại nguồn (Thông tư 111/2013, Điều 25). Haustek cấp chứng từ khấu trừ."; ruleEn = "Resident individual, payment of 2,000,000 ₫ or more: 10% personal income tax withheld at source (Circular 111/2013, Art. 25). Haustek issues a withholding certificate."; }
+  else if (individual) { rule = "Cá nhân, dưới 2.000.000 ₫ mỗi lần: không khấu trừ."; ruleEn = "Individual, under 2,000,000 ₫ per payment: no withholding."; }
+  else { rule = "Tổ chức: không khấu trừ; đối tác xuất hoá đơn điện tử cho Haustek theo bảng kê."; ruleEn = "Organisation: no withholding; the partner issues an e-invoice to Haustek against the statement."; }
+  const pit = cents(amount * rate);
+  return { amount, fxRate, vnd, individual, rate, pit, pitVnd: Math.round(vnd * rate), net: cents(amount - pit), netVnd: Math.round(vnd * (1 - rate)), rule, ruleEn, certificate: pit > 0, invoice: !individual };
+}
+
+/* ---- thông báo: sự kiện mới, mỗi vấn đề một dòng, ba mức ---- */
+function notificationsOf(role, partyId) {
+  const out = [];
+  const partyKey = role === "label" ? "L:" + partyId : role === "artist" ? "A:" + partyId : null;
+  const cut = isoDate(new Date(ASOF.getTime() - 45 * 864e5));
+  const push = (id, at, tier, title, titleEn, body, bodyEn, di) => out.push({ id, at, tier, title, titleEn, body: body || "", bodyEn: bodyEn || "", di: di || null });
+  if (partyKey) {
+    PERIODS.forEach(p => { const s = state.statements[p.k] && state.statements[p.k][partyKey]; if (s) push("bk:" + p.k, String(s.at).slice(0, 10), "info", "Bảng kê kỳ " + p.label + " đã sẵn sàng", "Statement for " + p.label + " is ready", "Tải PDF ở trang Bảng kê thanh toán.", "Download the PDF from Statements.", "k-bang-ke"); });
+    state.withdrawals.filter(w => w.partyKey === partyKey).slice(0, 6).forEach(w => push("rt:" + w.id + ":" + w.status, String(w.updatedAt).slice(0, 10), w.status === "rejected" ? "warn" : "info",
+      "Yêu cầu rút " + w.id + ": " + ({ requested: "đã nhận", processing: "đang xử lý", paid: "đã chuyển", rejected: "bị từ chối", cancelled: "đã huỷ" }[w.status] || w.status), "Withdrawal " + w.id + ": " + w.status, fmt.usd(w.amount), fmt.usd(w.amount), "k-vi"));
+    const q = qualityReport(role, partyId);
+    q.rows.filter(r => r.dsp && r.status === "open").slice(0, 5).forEach(r => push("dsp:" + r.id, r.dsp.at, "critical", "Nền tảng gắn cờ lượt nghe giả: " + r.title, "Platform flagged artificial streams: " + r.title, r.dsp.removedStreams + " lượt bị gỡ · phạt " + fmt.usd(r.dsp.penaltyUsd) + "/tháng · có thể khiếu nại", r.dsp.removedStreams + " streams removed · " + fmt.usd(r.dsp.penaltyUsd) + "/month penalty · dispute available", "k-chat-luong"));
+    if (q.counts.critical - q.counts.flagged > 0) push("q:crit", q.asOf, "warn", (q.counts.critical - q.counts.flagged) + " bài có nhiều tín hiệu bất thường cùng lúc", (q.counts.critical - q.counts.flagged) + " tracks with several unusual signals", "Xem tín hiệu và bằng chứng ở Chất lượng lượt nghe.", "See signals and evidence in Stream quality.", "k-chat-luong");
+    const pl = playlistReport(role, partyId);
+    const moi = pl.rows.filter(r => r.status === "active" && r.addedAt >= cut);
+    if (moi.length) push("pl:" + moi[0].addedAt, moi[0].addedAt, "info", moi.length + " vị trí playlist mới trong 45 ngày", moi.length + " new playlist placements in 45 days", "Mới nhất: " + moi[0].title + " · " + moi[0].playlist + " #" + moi[0].position, "Latest: " + moi[0].title + " · " + moi[0].playlistEn + " #" + moi[0].position, "k-playlist");
+    state.releases.filter(r => (role === "label" ? r.labelId === partyId : r.artistId === partyId)).slice(0, 4).forEach(r => push("ph:" + r.id + ":" + r.status, String(r.updatedAt || r.submittedAt || "").slice(0, 10), r.status === "returned" ? "warn" : "info",
+      "Hồ sơ phát hành " + r.id + " · " + ({ submitted: "đã gửi", received: "đã tiếp nhận", coded: "đã cấp mã", released: "đã phát hành", returned: "bị trả lại" }[r.status] || r.status), "Release " + r.id + " · " + r.status, r.title, r.title, "k-phat-hanh"));
+    const sp = splitsReport(role, partyId);
+    if (sp.counts.invited) push("sp:invited", sp.asOf, "info", sp.counts.invited + " lời mời chia sẻ tác quyền chưa được nhận", sp.counts.invited + " split invitations still pending", "Nhắc người cộng tác nhận lời mời để được chia tiền.", "Remind collaborators to accept so they get paid.", "k-chia-se");
+  } else {
+    const rut = state.withdrawals.filter(w => w.status === "requested");
+    if (rut.length) push("rt:req", String(rut[0].requestedAt).slice(0, 10), "warn", rut.length + " yêu cầu rút tiền chờ xử lý", rut.length + " withdrawal requests waiting", fmt.usd(rut.reduce((s, w) => s + w.amount, 0)), fmt.usd(rut.reduce((s, w) => s + w.amount, 0)), "chi-tra");
+    const tk = state.tickets.filter(t => t.status !== "done");
+    if (tk.length) push("tk:open", isoDate(ASOF), "info", tk.length + " yêu cầu hỗ trợ đang mở", tk.length + " open support tickets", "", "", "ho-tro");
+    const q = qualityReport("admin", 0);
+    if (q.counts.flagged) push("dsp:all", q.asOf, "critical", q.counts.flagged + " bài bị nền tảng gắn cờ · phạt " + fmt.usd(q.counts.penaltyUsd) + "/tháng", q.counts.flagged + " tracks flagged by platforms · " + fmt.usd(q.counts.penaltyUsd) + "/month", q.counts.removedStreams + " lượt nghe bị gỡ khỏi báo cáo", q.counts.removedStreams + " streams removed from reports", "chat-luong");
+    const cases = q.cases.filter(c => c.pattern === "many-small-lifts");
+    if (cases.length) push("q:lift", q.asOf, "warn", cases.length + " tài khoản có nhiều bài tăng đồng loạt", cases.length + " accounts with many small lifts at once", "Kiểu tách nhỏ để lách ngưỡng (vụ Michael Smith 2024).", "Spreading streams thinly to stay under thresholds (Smith case, 2024).", "chat-luong");
+    const ph = state.releases.filter(r => r.status === "submitted");
+    if (ph.length) push("ph:sub", isoDate(ASOF), "info", ph.length + " hồ sơ phát hành chờ tiếp nhận", ph.length + " releases awaiting intake", "", "", "phat-hanh");
+    const gn = state.deliveries.filter(d => d.status !== "done");
+    if (gn.length) push("gn:open", isoDate(ASOF), "info", gn.length + " yêu cầu giao nhận nền tảng đang mở", gn.length + " open delivery requests", "", "", "giao-nhan");
+    const md = metadataReport("admin", 0);
+    if (md.counts.blocking) push("md:block", md.asOf, "warn", md.counts.blocking + " bản ghi thiếu mã quan trọng (ISWC / IPI)", md.counts.blocking + " recordings missing key identifiers (ISWC / IPI)", "Giữ lại trước khi giao; xem Sức khoẻ metadata.", "Held before delivery; see Metadata health.", "chat-luong");
+  }
+  const read = lazyState("notifRead", {})[partyKey || "admin"] || {};
+  out.forEach(n => { n.read = !!read[n.id]; });
+  const tier = { critical: 0, warn: 1, info: 2 };
+  out.sort((a, b) => (a.read - b.read) || (tier[a.tier] - tier[b.tier]) || (b.at < a.at ? -1 : b.at > a.at ? 1 : 0));
+  return { asOf: isoDate(ASOF), unread: out.filter(n => !n.read).length, items: out.slice(0, 30) };
+}
+function markNotifications(role, partyId, ids) {
+  const partyKey = role === "label" ? "L:" + partyId : role === "artist" ? "A:" + partyId : "admin";
+  const st = lazyState("notifRead", {}); st[partyKey] = st[partyKey] || {};
+  const at = nowISO();
+  (ids === "all" ? notificationsOf(role, partyId).items.map(n => n.id) : [].concat(ids)).forEach(id => { st[partyKey][id] = at; });
+  store.save();
+  return notificationsOf(role, partyId);
+}
+
+/* ---- tìm nhanh toàn cục ---- */
+let _titleLow = null;
+function boDau(s) { return String(s).toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/đ/g, "d"); }
+function searchAll(role, partyId, q, limit) {
+  q = boDau(String(q || "").trim()); limit = limit || 8;
+  if (q.length < 2) return { tracks: [], parties: [], docs: [] };
+  if (!_titleLow) { _titleLow = new Array(N); for (let i = 0; i < N; i++) _titleLow[i] = boDau(tTitle[i]); }
+  const sc = scopeOf(role, partyId, "rec"), n = sc ? sc.length : N;
+  const tracks = [];
+  const isIsrc = /^[a-z]{2}[a-z0-9]{3}\d{2}/i.test(q);
+  for (let k = 0; k < n && tracks.length < limit; k++) {
+    const i = sc ? sc[k] : k;
+    if (isIsrc ? tIsrc[i].toLowerCase().startsWith(q) : _titleLow[i].includes(q)) tracks.push({ id: i, title: tTitle[i], artist: ARTISTS[tArtist[i]].name, isrc: tIsrc[i], streamsMonth: recStreams[i * P + (P - 1)] });
+  }
+  tracks.sort((a, b) => b.streamsMonth - a.streamsMonth);
+  const parties = [];
+  if (role === "admin") {
+    LABELS.forEach(l => { if (parties.length < limit && (boDau(l.name).includes(q) || l.clientId.toLowerCase().includes(q))) parties.push({ key: l.key, name: l.name, clientId: l.clientId, kind: "label" }); });
+    ARTISTS.forEach(a => { if (parties.length < limit && (boDau(a.name).includes(q) || a.clientId.toLowerCase().includes(q))) parties.push({ key: a.key, name: a.name, clientId: a.clientId, kind: "artist" }); });
+  } else if (role === "label") {
+    ARTISTS.forEach(a => { if (parties.length < limit && a.labelId === partyId && boDau(a.name).includes(q)) parties.push({ key: a.key, name: a.name, clientId: a.clientId, kind: "artist" }); });
+  }
+  const docs = [];
+  if (role === "admin") {
+    state.withdrawals.forEach(w => { if (docs.length < limit && w.id.toLowerCase().includes(q)) docs.push({ id: w.id, kind: "withdrawal", title: w.party.name + " · " + fmt.usd(w.amount), di: "chi-tra" }); });
+    state.tickets.forEach(t => { if (docs.length < limit && (t.id.toLowerCase().includes(q) || boDau(t.title).includes(q))) docs.push({ id: t.id, kind: "ticket", title: t.title, di: "ho-tro" }); });
+    state.releases.forEach(r => { if (docs.length < limit && (r.id.toLowerCase().includes(q) || boDau(r.title).includes(q))) docs.push({ id: r.id, kind: "release", title: r.title, di: "phat-hanh" }); });
+  }
+  return { tracks, parties, docs };
+}
+
+/* ---- chiến dịch marketing: liên kết thông minh, pitch playlist, quảng cáo ---- */
+function campaignsOf(role, partyId) {
+  const sc = scopeOf(role, partyId, "rec"), n = sc ? sc.length : N;
+  const step = n > 6000 ? Math.ceil(n / 6000) : 1;
+  const top = [];
+  for (let k = 0; k < n; k += step) { const i = sc ? sc[k] : k; const s = recStreams[i * P + (P - 1)]; if (s > 0) top.push({ i, s }); }
+  top.sort((a, b) => b.s - a.s);
+  const pick = top.slice(0, role === "admin" ? 24 : 8);
+  const rows = [];
+  pick.forEach((x, k) => {
+    const i = x.i, h = hash(i, 131);
+    const kinds = ["smartlink", "pitch", "ads"];
+    const nKinds = 1 + Math.floor(hash(i, 132) * 3);
+    for (let m = 0; m < nKinds; m++) {
+      const kind = kinds[(Math.floor(h * 10) + m) % 3];
+      const startBack = Math.floor(hash(i, 133 + m) * 70), dur = 14 + Math.floor(hash(i, 137 + m) * 30);
+      const start = new Date(ASOF.getTime() - startBack * 864e5), end = new Date(start.getTime() + dur * 864e5);
+      const status = end < ASOF ? "done" : start > ASOF ? "planned" : "running";
+      const base = { id: "CD-" + String(i).padStart(5, "0") + "-" + kind.slice(0, 2).toUpperCase(), trackId: i, title: tTitle[i], artist: ARTISTS[tArtist[i]].name, partyKey: partyKeyOfTrack(i), kind, status, start: isoDate(start), end: isoDate(end), days: dur };
+      const daysRun = Math.max(0, Math.min(dur, Math.floor((Math.min(ASOF, end) - start) / 864e5)));
+      if (kind === "smartlink") {
+        const views = Math.round((400 + hash(i, 141 + m) * 6000) * daysRun / dur * (status === "planned" ? 0 : 1));
+        const clicks = Math.round(views * (0.25 + hash(i, 142 + m) * 0.35)), presaves = Math.round(clicks * (0.12 + hash(i, 143 + m) * 0.25));
+        Object.assign(base, { kindLabel: "Liên kết thông minh · pre-save", kindLabelEn: "Smart link · pre-save", url: "htk.link/" + tIsrc[i].slice(-6).toLowerCase(), views, clicks, presaves, conversion: views ? presaves / views : 0,
+          byStore: [["Spotify", 0.46], ["Apple Music", 0.22], ["YouTube Music", 0.17], ["Zing MP3", 0.15]].map(s => ({ name: s[0], clicks: Math.round(clicks * s[1]) })) });
+      } else if (kind === "pitch") {
+        const pitched = 3 + Math.floor(hash(i, 144 + m) * 9), accepted = Math.round(pitched * (0.1 + hash(i, 145 + m) * 0.4));
+        const names = PLAYLISTS.filter((p, idx) => idx % 3 === (i % 3)).slice(0, pitched);
+        Object.assign(base, { kindLabel: "Pitch playlist biên tập", kindLabelEn: "Editorial playlist pitching", pitched, accepted, pending: status === "running" ? Math.max(0, Math.round((pitched - accepted) * 0.4)) : 0,
+          playlists: names.map((p, idx) => ({ playlist: p.n, playlistEn: p.en || p.n, platform: p.plat, result: idx < accepted ? "accepted" : (status === "running" && idx < accepted + 2) ? "pending" : "declined" })) });
+      } else {
+        const budget = Math.round(100 + hash(i, 146 + m) * 900), spent = cents(budget * (status === "done" ? 1 : status === "planned" ? 0 : daysRun / dur));
+        const impressions = Math.round(spent * (180 + hash(i, 147 + m) * 220)), clicks = Math.round(impressions * (0.008 + hash(i, 148 + m) * 0.02)), streams = Math.round(clicks * (0.9 + hash(i, 149 + m) * 1.6));
+        Object.assign(base, { kindLabel: "Quảng cáo trả phí", kindLabelEn: "Paid ads", channel: ["Meta", "TikTok", "YouTube"][Math.floor(hash(i, 150 + m) * 3)], budget, spent, impressions, clicks, streams, cpc: clicks ? cents(spent / clicks) : 0, costPerStream: streams ? cents(spent / streams) : 0 });
+      }
+      rows.push(base);
+    }
+  });
+  const order = { running: 0, planned: 1, done: 2 };
+  rows.sort((a, b) => order[a.status] - order[b.status] || (b.start < a.start ? -1 : 1));
+  const running = rows.filter(r => r.status === "running");
+  return { asOf: isoDate(ASOF), counts: { total: rows.length, running: running.length, planned: rows.filter(r => r.status === "planned").length, done: rows.filter(r => r.status === "done").length,
+      spent: cents(rows.filter(r => r.kind === "ads").reduce((s, r) => s + r.spent, 0)), streamsFromAds: rows.filter(r => r.kind === "ads").reduce((s, r) => s + r.streams, 0),
+      presaves: rows.filter(r => r.kind === "smartlink").reduce((s, r) => s + r.presaves, 0), accepted: rows.filter(r => r.kind === "pitch").reduce((s, r) => s + r.accepted, 0), pitched: rows.filter(r => r.kind === "pitch").reduce((s, r) => s + r.pitched, 0) },
+    rows, sampled: step > 1,
+    note: "Ba loại chiến dịch: liên kết thông minh có pre-save (lượt xem → bấm → lưu trước), pitch playlist biên tập (gửi → nhận), quảng cáo trả phí (ngân sách → hiển thị → bấm → lượt nghe quy được). Số liệu mẫu; hệ thống thật nhận từ công cụ liên kết và tài khoản quảng cáo.",
+    noteEn: "Three campaign kinds: smart links with pre-save (views → clicks → saves), editorial playlist pitching (sent → accepted), paid ads (budget → impressions → clicks → attributed streams). Sample figures; the real system reads from the link tool and ad accounts." };
 }
 
 const TICKET_TYPES = [
@@ -2787,6 +3243,16 @@ const admin = {
   playlistsOf,
   catalogueReleases: limit => catalogueReleases("admin", 0, limit),
   catalogueFor: (role, id, opts) => catalogueOf(role, id, opts),
+  /* 19i */
+  splits: () => splitsReport("admin", 0), splitsFor: (role, id) => splitsReport(role, id), splitsOf: i => splitsOf(i),
+  setSplit: (trackId, c, by) => setSplit("admin", 0, trackId, c, by), removeSplit: (trackId, email, by) => removeSplit("admin", 0, trackId, email, by), acceptSplit,
+  quality: () => qualityReport("admin", 0), qualityFor: (role, id) => qualityReport(role, id), qualityOf,
+  setAlertStatus: (trackId, status, note, by) => setAlertStatus(trackId, status, note, by, "admin"),
+  monetizationOf, metadataHealth: i => metadataHealth(i), metadataReport: () => metadataReport("admin", 0), metadataReportFor: (role, id) => metadataReport(role, id),
+  explain: pk => explainPeriod("admin", 0, pk), explainFor: (role, id, pk) => explainPeriod(role, id, pk),
+  withdrawalQuote, notifications: () => notificationsOf("admin", 0), markNotifications: ids => markNotifications("admin", 0, ids),
+  search: (q, limit) => searchAll("admin", 0, q, limit), campaigns: () => campaignsOf("admin", 0), campaignsFor: (role, id) => campaignsOf(role, id),
+  penaltyPerTrackUsd: PENALTY_USD,
   tickets: {
     types: TICKET_TYPES, statuses: TICKET_STATUS,
     list(f) {
@@ -2874,6 +3340,7 @@ function scrub(payload) {
   payload._bytes = s.length;
   return payload;
 }
+function partyClientIdOf(role, partyId) { return role === "label" ? LABELS[partyId].clientId : role === "artist" ? ARTISTS[partyId].clientId : "admin"; }
 function assertParty(role, partyId) {
   if (role === "label") { if (!(partyId >= 0 && partyId < CFG.N_LABELS)) throw new Error("Không có quyền"); }
   else if (role === "artist") { if (!(partyId >= 0 && partyId < CFG.N_ARTISTS)) throw new Error("Không có quyền"); }
@@ -3217,6 +3684,22 @@ const api = {
     assertParty(role, partyId);
     return scrub(playlistReport(role, partyId));
   },
+  /* ---- 19i: chia sẻ tác quyền, chất lượng lượt nghe, ngưỡng, metadata, giải thích, thông báo, tìm, chiến dịch ---- */
+  splits(role, partyId) { assertParty(role, partyId); return scrub(splitsReport(role, partyId)); },
+  splitsOf(role, partyId, trackId) { assertParty(role, partyId); const sc = scopeOf(role, partyId, "rec"); if (sc && !sc.includes(+trackId)) throw new Error("Không có quyền"); return scrub(splitsOf(+trackId, role, partyId)); },
+  setSplit(role, partyId, trackId, c) { assertParty(role, partyId); return scrub(setSplit(role, partyId, trackId, c, partyClientIdOf(role, partyId))); },
+  removeSplit(role, partyId, trackId, email) { assertParty(role, partyId); return scrub(removeSplit(role, partyId, trackId, email, partyClientIdOf(role, partyId))); },
+  quality(role, partyId) { assertParty(role, partyId); return scrub(qualityReport(role, partyId)); },
+  disputeAlert(role, partyId, trackId, note) { assertParty(role, partyId); return scrub(setAlertStatus(trackId, "disputed", note, partyClientIdOf(role, partyId), role, partyId)); },
+  monetization(role, partyId, trackId) { assertParty(role, partyId); const sc = scopeOf(role, partyId, "rec"); if (sc && !sc.includes(+trackId)) throw new Error("Không có quyền"); return scrub(monetizationOf(+trackId)); },
+  metadataHealth(role, partyId, trackId) { assertParty(role, partyId); const sc = scopeOf(role, partyId, "rec"); if (sc && !sc.includes(+trackId)) throw new Error("Không có quyền"); return scrub(metadataHealth(+trackId, role, partyId)); },
+  metadataReport(role, partyId) { assertParty(role, partyId); return scrub(metadataReport(role, partyId)); },
+  explain(role, partyId, pk) { assertParty(role, partyId); return scrub(explainPeriod(role, partyId, pk)); },
+  withdrawalQuote(role, partyId, amount) { assertParty(role, partyId); return scrub(withdrawalQuote(role === "label" ? "L:" + partyId : "A:" + partyId, amount)); },
+  notifications(role, partyId) { assertParty(role, partyId); return scrub(notificationsOf(role, partyId)); },
+  markNotifications(role, partyId, ids) { assertParty(role, partyId); return scrub(markNotifications(role, partyId, ids)); },
+  search(role, partyId, q, limit) { assertParty(role, partyId); return scrub(searchAll(role, partyId, q, limit)); },
+  campaigns(role, partyId) { assertParty(role, partyId); return scrub(campaignsOf(role, partyId)); },
   /* ---- ví, rút tiền, bảng kê ---- */
   wallet(role, partyId) {
     assertParty(role, partyId);
