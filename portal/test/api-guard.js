@@ -296,12 +296,27 @@ check("sau lockdown() không còn đường nào tới admin", () => {
   return "";
 });
 
+/* Danh sách đăng nhập mẫu là chỗ dễ phình nhất trong cả mặt tiền đối tác:
+   cửa mẫu cần thêm một trường để chọn mặc định cho đẹp, rồi thêm một
+   trường nữa, và một ngày nào đó nó trả về cả doanh thu. Nên ghim cứng
+   danh sách khoá ở đây: thêm trường mới thì phép kiểm này đỏ, và người
+   thêm phải viết ra vì sao trường đó không phải dữ liệu kinh doanh. */
 check("dangNhapMau chỉ là danh sách tên, không kèm dữ liệu kinh doanh", () => {
   const ds = api.dangNhapMau();
   must(ds.length > 0, "không có tài khoản mẫu nào");
+  /* doiTacId, ten, loai, nguoiDungId, nguoiDungTen — để đăng nhập giả.
+     dichVu, coNhac, coTien — dịch vụ đối tác mua, quyết định họ thấy mấy
+       trang; cổng đối tác đằng nào cũng đọc được qua api.phien.
+     soViec — đếm việc của CHÍNH họ, để cửa mẫu mở mặc định vào một đối
+       tác có dữ liệu. Không phải số của ai khác. */
+  const CHO_PHEP = "coNhac,coTien,dichVu,doiTacId,loai,nguoiDungId,nguoiDungTen,soViec,ten";
   const k = Object.keys(ds[0]).sort().join(",");
-  must(k === "dichVu,doiTacId,loai,nguoiDungId,nguoiDungTen,ten",
-    "dangNhapMau trả thêm trường ngoài dự kiến: " + k);
+  must(k === CHO_PHEP, "dangNhapMau trả thêm trường ngoài dự kiến: " + k);
+  /* Và tuyệt đối không có tiền, doanh thu hay lượt nghe của bất kỳ ai. */
+  const r = JSON.stringify(ds);
+  ["soTien", "doanhThu", "bangKe", "luotNghe", "nganHang", "hopDong"].forEach(x => {
+    must(r.indexOf(x) < 0, "dangNhapMau lộ trường '" + x + "'");
+  });
   return ds.length + " đối tác";
 });
 

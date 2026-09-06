@@ -108,7 +108,12 @@ const RONG = (process.argv[3] || '1500').split(',').map(Number);
                     out.traniO.push((e.textContent || '').trim().slice(0, 24) + ' (+' + (e.scrollWidth - e.clientWidth) + 'px)');
                 });
               out.dai = main.textContent.length;
-              out.coTrong = !!main.querySelector('.empty');
+              /* Trang "quá ít nội dung" chỉ đáng báo khi nó KHÔNG có gì cả.
+                 Một thẻ trạng thái rỗng có chủ ý, hay một danh sách đúng
+                 một dòng, đều là kết quả đúng: từ vòng 11 các trang viết
+                 thành câu chứ không thành bảng mười cột, nên chữ ít đi là
+                 chuyện bình thường. */
+              out.coTrong = !!main.querySelector('.empty, .hang .d, table.t tbody tr, .dt .m');
               return out;
             });
             const nhan = m.id + (tb ? '/' + tb : '');

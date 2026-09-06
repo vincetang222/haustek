@@ -6417,10 +6417,10 @@ function veCotPhai(A, c, d) {
     (ngoai ? HM.the({ h2: 'Mở ở công cụ thật', p: 'Số liệu và tiền nằm ở đây, portal không chép về.', thoBody: true,
       than: '<div class="card-b"><div class="ngoai">' + ngoai + '</div></div>' }) : '') +
     HM.the({ h2: 'Hợp đồng', thoBody: true, than: '<div class="card-b">' + HM.kv([
-      ['Thời hạn', A.ngayVi(d.hopDong.tuNgay) + ' đến ' + A.ngayVi(d.hopDong.denNgay)],
-      ['Còn lại', d.conHan < 0 ? 'đã hết hạn' : d.conHan + ' ngày'],
-      ['Nhịp bảng kê', d.hopDong.nhipBaoCao === 'thang' ? 'hằng tháng' : 'hằng quý'],
-      ['Tài khoản nhận', d.nganHang ? d.nganHang.nganHang + ' ' + d.nganHang.soTaiKhoanMask : 'chưa khai']
+      { t: 'Thời hạn', v: A.ngayVi(d.hopDong.tuNgay) + ' đến ' + A.ngayVi(d.hopDong.denNgay) },
+      { t: 'Còn lại', v: d.conHan < 0 ? 'đã hết hạn' : d.conHan + ' ngày' },
+      { t: 'Nhịp bảng kê', v: d.hopDong.nhipBaoCao === 'thang' ? 'hằng tháng' : 'hằng quý' },
+      { t: 'Tài khoản nhận', v: d.nganHang ? d.nganHang.nganHang + ' ' + d.nganHang.soTaiKhoanMask : 'chưa khai' }
     ]) + '</div>' });
 }
 
@@ -7122,7 +7122,8 @@ HT.dangKy({
           thoBody: true,
           than: '<div class="hang">' + d.dangLam.map(function (v) {
             return '<div class="d"><div class="c"><b>' + e(v.tieuDe) + '</b>' +
-              '<span class="khi">' + e(v.dichVuTen + ' · ' + v.nguoiPhuTrachTen + ' phụ trách') + '</span>' +
+              '<span class="khi">' + e(v.dichVuTen + ' · ' +
+                (v.nguoiPhuTrachTen || (ns ? ns.ten : 'Haustek')) + ' phụ trách') + '</span>' +
               '<span class="khi">' + e(v.buocTiep ? 'Bước tiếp: ' + v.buocTiep : (v.camKet || 'Đang chạy đúng tiến độ.')) + '</span></div>' +
               '<div class="btnrow"><button type="button" class="btn sm" data-di="k-viec" data-loc-id="' + e(v.id) + '">Xem</button></div></div>';
           }).join('') + '</div>'
@@ -7199,8 +7200,18 @@ function locViec(ds, k) {
   return ds;
 }
 
+/* Việc chưa phân công thì người phụ trách đối tác đứng tên. Nối thẳng
+   v.nguoiPhuTrachTen vào câu thì đối tác đọc được chữ "null phụ trách",
+   và đó là kiểu lỗi làm người ta thôi tin cả trang. Với đối tác thì luôn
+   có một cái tên: người phụ trách của họ. */
+function ai(c, v) {
+  if (v.nguoiPhuTrachTen) return v.nguoiPhuTrachTen;
+  var ns = c.phien && c.phien.nguoiPhuTrach;
+  return ns ? ns.ten : 'Haustek';
+}
+
 /* Một câu kể việc này đang ở đâu và ai đang nợ ai. */
-function cauViec(api, v) {
+function cauViec(api, v, c) {
   if (v.canBan) return 'Haustek đang chờ bạn ' + String(v.canBan.viec).toLowerCase() +
     (v.canBan.han ? ', mong nhận trước ' + api.ngayVi(v.canBan.han) : '') + '.';
   if (v.trangThai === 'xong') return 'Đã xong ngày ' + api.ngayVi(v.xongLuc) + '.';
@@ -7210,7 +7221,7 @@ function cauViec(api, v) {
     var tiep = (v.moc || []).filter(function (m) { return !m.xong; })[0];
     return 'Đã qua ' + xong + '/' + v.moc.length + ' chặng' + (tiep ? ', đang tới bước ' + String(tiep.ten).toLowerCase() : '') + '.';
   }
-  return v.nguoiPhuTrachTen + ' đang phụ trách việc này.';
+  return ai(c, v) + ' đang phụ trách việc này.';
 }
 
 function veChiTiet(c, v) {
@@ -7233,11 +7244,11 @@ function veChiTiet(c, v) {
 
   c.nganTruot(
     '<h2>' + e(v.tieuDe) + '</h2>' +
-    '<p class="say">' + e(v.dichVuTen + ' · mã ' + v.id + ' · ' + v.nguoiPhuTrachTen + ' phụ trách') + '</p>' +
+    '<p class="say">' + e(v.dichVuTen + ' · mã ' + v.id + ' · ' + ai(c, v) + ' phụ trách') + '</p>' +
     (v.canBan
       ? '<div class="tomtat" style="margin:14px 0"><b>Haustek đang chờ bạn: ' + e(v.canBan.viec) + '</b>' +
         (v.canBan.han ? '<br>Mong nhận trước ' + e(api.ngayVi(v.canBan.han)) + '.' : '') + '</div>'
-      : '<div class="tomtat" style="margin:14px 0">' + e(cauViec(api, v)) + '</div>') +
+      : '<div class="tomtat" style="margin:14px 0">' + e(cauViec(api, v, c)) + '</div>') +
     (v.tomTat ? '<p style="font-size:13.5px;line-height:1.6">' + e(v.tomTat) + '</p>' : '') +
     moc + dong +
     '<div class="soan" style="position:static;margin-top:18px;border-radius:var(--r);border:1px solid var(--line)">' +
@@ -7318,8 +7329,8 @@ HT.dangKy({
         ? '<div class="hang">' + ds.map(function (v) {
             return '<div class="d' + (v.canBan ? ' tre' : '') + '">' +
               '<div class="c"><b>' + e(v.tieuDe) + '</b>' +
-              '<span class="khi">' + e(cauViec(api, v)) + '</span>' +
-              '<span class="khi">' + e(v.dichVuTen + ' · ' + v.nguoiPhuTrachTen + ' phụ trách') + '</span></div>' +
+              '<span class="khi">' + e(cauViec(api, v, c)) + '</span>' +
+              '<span class="khi">' + e(v.dichVuTen + ' · ' + ai(c, v) + ' phụ trách') + '</span></div>' +
               '<div class="btnrow"><button type="button" class="btn' + (v.canBan ? ' pri' : '') + ' sm" data-xem="' + e(v.id) + '">' +
                 (v.canBan ? 'Xem việc cần bạn' : 'Xem') + '</button></div></div>';
           }).join('') + '</div>'
@@ -7494,14 +7505,17 @@ HT.dangKy({
     var bk = d.bangKe || [];
     var daChuyen = bk.filter(function (b) { return b.trangThai === 'da-chuyen'; });
 
+    /* api.thanhToan KHÔNG trả ngày ứng: đó là chi tiết nội bộ. Viết
+       api.ngayVi(t.ngayUng) ở đây thì trang hiện "ngày NaN tháng NaN"
+       ngay trước mặt đối tác. Chỉ dùng đúng những trường lõi có trả. */
     var tamUng = (d.tamUng || []).map(function (t) {
-      var pct = t.soTien ? Math.round(t.daHoan / t.soTien * 100) : 0;
+      var pct = t.phanTram != null ? t.phanTram : (t.soTien ? Math.round(t.daHoan / t.soTien * 100) : 0);
       return HM.the({
         h2: 'Khoản tạm ứng',
         than: '<p style="font-size:14.5px;line-height:1.6">Đã hoàn <b>' + pct + '%</b> khoản tạm ứng ' +
-          e('$' + Number(t.soTien).toLocaleString('vi-VN')) + ' nhận ngày ' + e(api.ngayVi(t.ngayUng)) + '.</p>' +
+          e('$' + Number(t.soTien).toLocaleString('vi-VN')) + '.</p>' +
           '<div style="max-width:420px;margin-top:8px">' + HM.thanh(t.daHoan, t.soTien, 'đã hoàn') + '</div>' +
-          '<p class="say" style="margin-top:8px">Khoản này khấu trừ dần vào bảng kê các kỳ tới.</p>'
+          '<p class="say" style="margin-top:8px">' + e(t.ghiChu || 'Khoản này khấu trừ dần vào bảng kê các kỳ tới.') + '</p>'
       });
     }).join('');
 
@@ -7531,7 +7545,9 @@ HT.dangKy({
               '. Ngay khi bên phân phối gửi báo cáo kỳ tới, Haustek đưa bảng kê lên đây kèm ngày chuyển khoản.' }) })) +
       tamUng +
       HM.the({ h2: 'Tài khoản nhận tiền', than: d.nganHang
-        ? HM.kv([['Ngân hàng', d.nganHang.nganHang], ['Chủ tài khoản', d.nganHang.chuTaiKhoan], ['Số tài khoản', d.nganHang.soTaiKhoanMask]]) +
+        ? HM.kv([{ t: 'Ngân hàng', v: d.nganHang.nganHang },
+                 { t: 'Chủ tài khoản', v: d.nganHang.chuTaiKhoan },
+                 { t: 'Số tài khoản', v: d.nganHang.soTaiKhoanMask }]) +
           '<p class="say" style="margin-top:10px">Cần đổi tài khoản, bạn nhắn cho người phụ trách để Haustek cập nhật.</p>'
         : '<p style="font-size:14px;line-height:1.6">Thêm tài khoản nhận tiền để Haustek chuyển được. ' +
           'Bạn nhắn số tài khoản cho người phụ trách, hoặc gửi một yêu cầu ở mục Việc của tôi.</p>' });
@@ -7686,11 +7702,12 @@ HT.dangKy({
     var d = api.taiKhoan(ph.doiTacId);
     var ns = d.nguoiPhuTrach;
 
-    var camKet = (d.dichVu || ph.dichVu || []).map(function (id) {
-      var dv = api.dichVu().filter(function (x) { return x.id === id; })[0];
-      if (!dv) return '';
+    /* api.taiKhoan trả dịch vụ dưới dạng { id, vi }, không phải mảng mã.
+       Đọc nhầm thì cả thẻ cam kết biến mất mà không báo lỗi gì. */
+    var camKet = (d.dichVu || []).map(function (dv) {
+      if (!dv || !dv.id) return '';
       return '<div class="d" style="padding:10px 0;border-top:1px solid var(--line)">' +
-        '<div class="c"><b>' + e(dv.vi) + '</b><span class="khi">' + e(api.camKet(id)) + '</span></div></div>';
+        '<div class="c"><b>' + e(dv.vi) + '</b><span class="khi">' + e(api.camKet(dv.id)) + '</span></div></div>';
     }).join('');
 
     root.innerHTML = HM.dau({ h1: 'Tài khoản' }) +
@@ -7721,17 +7738,22 @@ HT.dangKy({
           thoBody: true, than: '<div class="card-b" style="padding-top:2px">' + camKet + '</div>' }) : '') +
       '</div><div>' +
         HM.the({ h2: 'Hợp đồng', than: HM.kv([
-          ['Thời hạn', api.ngayVi(d.hopDong.tuNgay) + ' đến ' + api.ngayVi(d.hopDong.denNgay)],
-          ['Nhịp bảng kê', d.hopDong.nhipBaoCao === 'thang' ? 'hằng tháng' : 'hằng quý']
+          { t: 'Thời hạn', v: api.ngayVi(d.hopDong.tuNgay) + ' đến ' + api.ngayVi(d.hopDong.denNgay) },
+          { t: 'Còn lại', v: (function () {
+              var n = Math.round((new Date(d.hopDong.denNgay) - new Date(api.homNay())) / 86400000);
+              return n < 0 ? 'đã hết hạn' : n + ' ngày'; })() },
+          { t: 'Nhịp bảng kê', v: d.hopDong.nhipBaoCao === 'thang' ? 'hằng tháng' : 'hằng quý' }
         ]) }) +
         (d.nganHang ? HM.the({ h2: 'Tài khoản nhận tiền', than: HM.kv([
-          ['Ngân hàng', d.nganHang.nganHang],
-          ['Chủ tài khoản', d.nganHang.chuTaiKhoan],
-          ['Số tài khoản', d.nganHang.soTaiKhoanMask]
-        ]) }) : '') +
-        ((d.ngheSi || []).length ? HM.the({ h2: 'Nghệ sĩ thuộc quản lý', thoBody: true,
-          than: '<div class="card-b" style="padding-top:2px">' + d.ngheSi.map(function (a) {
-            return '<div class="d" style="padding:8px 0;border-top:1px solid var(--line)"><div class="c">' + e(a.ten || a) + '</div></div>';
+          { t: 'Ngân hàng', v: d.nganHang.nganHang },
+          { t: 'Chủ tài khoản', v: d.nganHang.chuTaiKhoan },
+          { t: 'Số tài khoản', v: d.nganHang.soTaiKhoanMask }
+        ]) + '<p class="say" style="margin-top:10px">Cần đổi tài khoản, bạn nhắn cho ' +
+          e(ns ? ns.ten : 'người phụ trách') + '.</p>' }) : '') +
+        ((d.nghesiThuocLabel || []).length ? HM.the({ h2: 'Nghệ sĩ thuộc quản lý', thoBody: true,
+          than: '<div class="card-b" style="padding-top:2px">' + d.nghesiThuocLabel.map(function (a) {
+            return '<div class="d" style="padding:8px 0;border-top:1px solid var(--line)"><div class="c">' +
+              e(a && a.ten ? a.ten : a) + '</div></div>';
           }).join('') + '</div>' }) : '') +
       '</div></div>';
   }
