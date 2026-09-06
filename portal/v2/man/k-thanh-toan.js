@@ -27,14 +27,17 @@ HT.dangKy({
     var bk = d.bangKe || [];
     var daChuyen = bk.filter(function (b) { return b.trangThai === 'da-chuyen'; });
 
+    /* api.thanhToan KHÔNG trả ngày ứng: đó là chi tiết nội bộ. Viết
+       api.ngayVi(t.ngayUng) ở đây thì trang hiện "ngày NaN tháng NaN"
+       ngay trước mặt đối tác. Chỉ dùng đúng những trường lõi có trả. */
     var tamUng = (d.tamUng || []).map(function (t) {
-      var pct = t.soTien ? Math.round(t.daHoan / t.soTien * 100) : 0;
+      var pct = t.phanTram != null ? t.phanTram : (t.soTien ? Math.round(t.daHoan / t.soTien * 100) : 0);
       return HM.the({
         h2: 'Khoản tạm ứng',
         than: '<p style="font-size:14.5px;line-height:1.6">Đã hoàn <b>' + pct + '%</b> khoản tạm ứng ' +
-          e('$' + Number(t.soTien).toLocaleString('vi-VN')) + ' nhận ngày ' + e(api.ngayVi(t.ngayUng)) + '.</p>' +
+          e('$' + Number(t.soTien).toLocaleString('vi-VN')) + '.</p>' +
           '<div style="max-width:420px;margin-top:8px">' + HM.thanh(t.daHoan, t.soTien, 'đã hoàn') + '</div>' +
-          '<p class="say" style="margin-top:8px">Khoản này khấu trừ dần vào bảng kê các kỳ tới.</p>'
+          '<p class="say" style="margin-top:8px">' + e(t.ghiChu || 'Khoản này khấu trừ dần vào bảng kê các kỳ tới.') + '</p>'
       });
     }).join('');
 
@@ -64,7 +67,9 @@ HT.dangKy({
               '. Ngay khi bên phân phối gửi báo cáo kỳ tới, Haustek đưa bảng kê lên đây kèm ngày chuyển khoản.' }) })) +
       tamUng +
       HM.the({ h2: 'Tài khoản nhận tiền', than: d.nganHang
-        ? HM.kv([['Ngân hàng', d.nganHang.nganHang], ['Chủ tài khoản', d.nganHang.chuTaiKhoan], ['Số tài khoản', d.nganHang.soTaiKhoanMask]]) +
+        ? HM.kv([{ t: 'Ngân hàng', v: d.nganHang.nganHang },
+                 { t: 'Chủ tài khoản', v: d.nganHang.chuTaiKhoan },
+                 { t: 'Số tài khoản', v: d.nganHang.soTaiKhoanMask }]) +
           '<p class="say" style="margin-top:10px">Cần đổi tài khoản, bạn nhắn cho người phụ trách để Haustek cập nhật.</p>'
         : '<p style="font-size:14px;line-height:1.6">Thêm tài khoản nhận tiền để Haustek chuyển được. ' +
           'Bạn nhắn số tài khoản cho người phụ trách, hoặc gửi một yêu cầu ở mục Việc của tôi.</p>' });

@@ -1628,7 +1628,13 @@ var api = {
     return state.doiTac.filter(function (d) { return d.trangThai === "dang-hop-tac"; })
       .map(function (d) {
         var nd = state.nguoiDung.filter(function (u) { return u.doiTacId === d.id; })[0];
-        return { doiTacId: d.id, ten: d.ten, loai: d.loai, dichVu: d.dichVu.slice(),
+        /* Kèm số việc đối tác nhìn thấy, để cửa mẫu chọn được đối tác có
+           dữ liệu thật mà mở mặc định. Mở lần đầu vào một đối tác chỉ có
+           một dòng thì người xem tưởng phần mềm rỗng. */
+        var soViec = state.viec.filter(function (v) { return v.doiTacId === d.id && v.hienChoDoiTac; }).length;
+        return { doiTacId: d.id, ten: d.ten, loai: d.loai, dichVu: d.dichVu.slice(), soViec: soViec,
+                 coNhac: d.dichVu.some(function (x) { return dvCua(x).coNhac; }),
+                 coTien: d.dichVu.some(function (x) { return dvCua(x).coTien; }),
                  nguoiDungId: nd ? nd.id : null, nguoiDungTen: nd ? nd.ten : "" };
       })
       .sort(function (x, y) { return x.ten.localeCompare(y.ten, "vi"); });

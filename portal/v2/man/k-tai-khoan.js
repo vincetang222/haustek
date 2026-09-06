@@ -21,11 +21,12 @@ HT.dangKy({
     var d = api.taiKhoan(ph.doiTacId);
     var ns = d.nguoiPhuTrach;
 
-    var camKet = (d.dichVu || ph.dichVu || []).map(function (id) {
-      var dv = api.dichVu().filter(function (x) { return x.id === id; })[0];
-      if (!dv) return '';
+    /* api.taiKhoan trả dịch vụ dưới dạng { id, vi }, không phải mảng mã.
+       Đọc nhầm thì cả thẻ cam kết biến mất mà không báo lỗi gì. */
+    var camKet = (d.dichVu || []).map(function (dv) {
+      if (!dv || !dv.id) return '';
       return '<div class="d" style="padding:10px 0;border-top:1px solid var(--line)">' +
-        '<div class="c"><b>' + e(dv.vi) + '</b><span class="khi">' + e(api.camKet(id)) + '</span></div></div>';
+        '<div class="c"><b>' + e(dv.vi) + '</b><span class="khi">' + e(api.camKet(dv.id)) + '</span></div></div>';
     }).join('');
 
     root.innerHTML = HM.dau({ h1: 'Tài khoản' }) +
@@ -56,17 +57,22 @@ HT.dangKy({
           thoBody: true, than: '<div class="card-b" style="padding-top:2px">' + camKet + '</div>' }) : '') +
       '</div><div>' +
         HM.the({ h2: 'Hợp đồng', than: HM.kv([
-          ['Thời hạn', api.ngayVi(d.hopDong.tuNgay) + ' đến ' + api.ngayVi(d.hopDong.denNgay)],
-          ['Nhịp bảng kê', d.hopDong.nhipBaoCao === 'thang' ? 'hằng tháng' : 'hằng quý']
+          { t: 'Thời hạn', v: api.ngayVi(d.hopDong.tuNgay) + ' đến ' + api.ngayVi(d.hopDong.denNgay) },
+          { t: 'Còn lại', v: (function () {
+              var n = Math.round((new Date(d.hopDong.denNgay) - new Date(api.homNay())) / 86400000);
+              return n < 0 ? 'đã hết hạn' : n + ' ngày'; })() },
+          { t: 'Nhịp bảng kê', v: d.hopDong.nhipBaoCao === 'thang' ? 'hằng tháng' : 'hằng quý' }
         ]) }) +
         (d.nganHang ? HM.the({ h2: 'Tài khoản nhận tiền', than: HM.kv([
-          ['Ngân hàng', d.nganHang.nganHang],
-          ['Chủ tài khoản', d.nganHang.chuTaiKhoan],
-          ['Số tài khoản', d.nganHang.soTaiKhoanMask]
-        ]) }) : '') +
-        ((d.ngheSi || []).length ? HM.the({ h2: 'Nghệ sĩ thuộc quản lý', thoBody: true,
-          than: '<div class="card-b" style="padding-top:2px">' + d.ngheSi.map(function (a) {
-            return '<div class="d" style="padding:8px 0;border-top:1px solid var(--line)"><div class="c">' + e(a.ten || a) + '</div></div>';
+          { t: 'Ngân hàng', v: d.nganHang.nganHang },
+          { t: 'Chủ tài khoản', v: d.nganHang.chuTaiKhoan },
+          { t: 'Số tài khoản', v: d.nganHang.soTaiKhoanMask }
+        ]) + '<p class="say" style="margin-top:10px">Cần đổi tài khoản, bạn nhắn cho ' +
+          e(ns ? ns.ten : 'người phụ trách') + '.</p>' }) : '') +
+        ((d.nghesiThuocLabel || []).length ? HM.the({ h2: 'Nghệ sĩ thuộc quản lý', thoBody: true,
+          than: '<div class="card-b" style="padding-top:2px">' + d.nghesiThuocLabel.map(function (a) {
+            return '<div class="d" style="padding:8px 0;border-top:1px solid var(--line)"><div class="c">' +
+              e(a && a.ten ? a.ten : a) + '</div></div>';
           }).join('') + '</div>' }) : '') +
       '</div></div>';
   }

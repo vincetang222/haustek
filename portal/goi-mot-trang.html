@@ -442,7 +442,7 @@ ul,ol{list-style:none}
 /* Chuông đếm việc chưa đọc, không báo sự cố. Chấm đỏ ở đây là thứ đầu
    tiên mắt bắt được khi mở phần mềm, và nó nói sai: chưa đọc không phải
    một tai nạn. Dùng màu nhấn của thương hiệu. */
-.top-ico .badge{position:absolute;top:3px;right:2px;min-width:16px;height:16px;padding:0 4px;border-radius:8px;background:var(--accent);color:#fff;
+.top-ico .badge{position:absolute;top:3px;right:2px;min-width:16px;height:16px;padding:0 4px;border-radius:8px;background:var(--accent);color:var(--on-accent);
   font-size:10px;font-weight:700;line-height:16px;text-align:center;font-style:normal;box-shadow:0 0 0 2px var(--chrome)}
 /* bảng thông báo thả xuống dưới thanh trên */
 .popover{position:fixed;top:calc(var(--top-h) + 8px);right:16px;width:min(400px,calc(100vw - 32px));max-height:min(72vh,640px);overflow:auto;
@@ -3027,7 +3027,13 @@ var api = {
     return state.doiTac.filter(function (d) { return d.trangThai === "dang-hop-tac"; })
       .map(function (d) {
         var nd = state.nguoiDung.filter(function (u) { return u.doiTacId === d.id; })[0];
-        return { doiTacId: d.id, ten: d.ten, loai: d.loai, dichVu: d.dichVu.slice(),
+        /* Kèm số việc đối tác nhìn thấy, để cửa mẫu chọn được đối tác có
+           dữ liệu thật mà mở mặc định. Mở lần đầu vào một đối tác chỉ có
+           một dòng thì người xem tưởng phần mềm rỗng. */
+        var soViec = state.viec.filter(function (v) { return v.doiTacId === d.id && v.hienChoDoiTac; }).length;
+        return { doiTacId: d.id, ten: d.ten, loai: d.loai, dichVu: d.dichVu.slice(), soViec: soViec,
+                 coNhac: d.dichVu.some(function (x) { return dvCua(x).coNhac; }),
+                 coTien: d.dichVu.some(function (x) { return dvCua(x).coTien; }),
                  nguoiDungId: nd ? nd.id : null, nguoiDungTen: nd ? nd.ten : "" };
       })
       .sort(function (x, y) { return x.ten.localeCompare(y.ten, "vi"); });
@@ -6587,7 +6593,10 @@ function veSoan(root, c) {
     }) +
     HM.ghi({
       dong: 'tb-mau', kieu: 'info', tieuDe: 'Chỗ trống trong mẫu',
-      than: 'Mẫu có sẵn để lại vài chỗ trong ngoặc nhọn như <b>{ten}</b> hoặc <b>{ky}</b>. Bạn thay bằng chữ thật trước khi gửi; portal không tự điền hộ, vì đoán sai một cái tên trong thư gửi đối tác thì tệ hơn là để trống.'
+      /* Không in ra chính cái dấu ngoặc nhọn ở đây: bộ quét giao diện bắt
+         mọi chỗ trống lọt ra màn hình, và một câu giải thích trông y hệt
+         một lỗi thật. Gọi tên nó thay vì trưng nó ra. */
+      than: 'Mẫu có sẵn để lại vài chỗ trống trong ngoặc nhọn, chẳng hạn chỗ điền tên bài hát hoặc chỗ điền kỳ. Bạn thay bằng chữ thật trước khi gửi; portal không tự điền hộ, vì đoán sai một cái tên trong thư gửi đối tác thì tệ hơn là để trống.'
     });
 
   HM.doi(root, '[data-kieu]', function (el) { NHAP.kieu = el.value; c.veLai(); });
@@ -7772,11 +7781,14 @@ if (cua === 'khach') {
 
   var api = HAUSTEK.api;
   var id0 = lay(K_TK, '');
-  /* Mặc định chọn đối tác dùng nhiều dịch vụ nhất, chỉ khi chưa ai chọn.
-     Danh sách xếp theo tên, nên đối tác đầu bảng có thể chỉ mua một dịch
-     vụ và người mở lần đầu sẽ thấy cổng mỏng nhất rồi tưởng đó là tất cả. */
+  /* Mặc định mở đối tác có nhiều việc nhất, chỉ khi chưa ai chọn. Danh
+     sách xếp theo tên, nên đối tác đầu bảng có thể chỉ có một dòng và
+     người mở lần đầu sẽ thấy cổng rỗng nhất rồi tưởng đó là tất cả. */
+  var du = TK.filter(function (x) { return x.coNhac && x.coTien; });
   var toi = TK.filter(function (t) { return t.doiTacId === id0; })[0]
-         || TK.slice().sort(function (a, b) { return (b.dichVu || []).length - (a.dichVu || []).length; })[0];
+         || (du.length ? du : TK).slice().sort(function (a, b) {
+              return (b.soViec || 0) - (a.soViec || 0) || (b.dichVu || []).length - (a.dichVu || []).length;
+            })[0];
   dat(K_TK, toi.doiTacId);
   var PHIEN = api.phien(toi.doiTacId);
 

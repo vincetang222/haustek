@@ -101,11 +101,14 @@ if (cua === 'khach') {
 
   var api = HAUSTEK.api;
   var id0 = lay(K_TK, '');
-  /* Mặc định chọn đối tác dùng nhiều dịch vụ nhất, chỉ khi chưa ai chọn.
-     Danh sách xếp theo tên, nên đối tác đầu bảng có thể chỉ mua một dịch
-     vụ và người mở lần đầu sẽ thấy cổng mỏng nhất rồi tưởng đó là tất cả. */
+  /* Mặc định mở đối tác có nhiều việc nhất, chỉ khi chưa ai chọn. Danh
+     sách xếp theo tên, nên đối tác đầu bảng có thể chỉ có một dòng và
+     người mở lần đầu sẽ thấy cổng rỗng nhất rồi tưởng đó là tất cả. */
+  var du = TK.filter(function (x) { return x.coNhac && x.coTien; });
   var toi = TK.filter(function (t) { return t.doiTacId === id0; })[0]
-         || TK.slice().sort(function (a, b) { return (b.dichVu || []).length - (a.dichVu || []).length; })[0];
+         || (du.length ? du : TK).slice().sort(function (a, b) {
+              return (b.soViec || 0) - (a.soViec || 0) || (b.dichVu || []).length - (a.dichVu || []).length;
+            })[0];
   dat(K_TK, toi.doiTacId);
   var PHIEN = api.phien(toi.doiTacId);
 

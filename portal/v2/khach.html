@@ -51,13 +51,22 @@ var CHON = 'haustek.doi-tac-mau';
 /* Trang nội bộ "Xem cổng như đối tác này" ghi khoá này rồi mở cửa sau. */
 var NHU = 'haustek.xem-nhu';
 
-/* Mặc định chọn đối tác dùng NHIỀU dịch vụ nhất, chỉ khi chưa ai chọn gì.
-   Danh sách xếp theo tên nên đối tác đầu bảng có thể chỉ mua một dịch vụ,
-   và người mở lần đầu sẽ thấy cổng mỏng nhất có thể rồi tưởng đó là tất
-   cả. Đây là lựa chọn mặc định của BẢN MẪU, không phải luật của hệ thật:
-   hệ thật lấy đối tác từ phiên đăng nhập. */
+/* Mặc định mở đối tác có NHIỀU VIỆC NHẤT, chỉ khi chưa ai chọn gì. Danh
+   sách xếp theo tên, nên đối tác đầu bảng có thể chỉ có một dòng, và người
+   mở lần đầu sẽ thấy cổng rỗng nhất có thể rồi tưởng đó là tất cả. Xếp
+   theo số dịch vụ cũng không đủ: mua bốn dịch vụ mà chưa chạy việc nào thì
+   trang vẫn trống. Đây là lựa chọn mặc định của BẢN MẪU, không phải luật
+   của hệ thật: hệ thật lấy đối tác từ phiên đăng nhập. */
 function dayNhat(ds) {
-  return ds.slice().sort(function (a, b) { return (b.dichVu || []).length - (a.dichVu || []).length; })[0] || ds[0];
+  /* Ưu tiên đối tác thấy ĐỦ SÁU TRANG (có nhạc và có tiền về), trong số đó
+     lấy người nhiều việc nhất. Chọn theo số việc thôi thì rơi vào một đối
+     tác chỉ mua booking: mười bốn việc nhưng chỉ bốn mục điều hướng, và
+     người xem lần đầu không biết là còn hai trang nữa. */
+  var du = ds.filter(function (x) { return x.coNhac && x.coTien; });
+  var nguon = du.length ? du : ds;
+  return nguon.slice().sort(function (a, b) {
+    return (b.soViec || 0) - (a.soViec || 0) || (b.dichVu || []).length - (a.dichVu || []).length;
+  })[0] || ds[0];
 }
 function nhoLai() {
   var id = null;

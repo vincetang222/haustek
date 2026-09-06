@@ -28,8 +28,18 @@ function locViec(ds, k) {
   return ds;
 }
 
+/* Việc chưa phân công thì người phụ trách đối tác đứng tên. Nối thẳng
+   v.nguoiPhuTrachTen vào câu thì đối tác đọc được chữ "null phụ trách",
+   và đó là kiểu lỗi làm người ta thôi tin cả trang. Với đối tác thì luôn
+   có một cái tên: người phụ trách của họ. */
+function ai(c, v) {
+  if (v.nguoiPhuTrachTen) return v.nguoiPhuTrachTen;
+  var ns = c.phien && c.phien.nguoiPhuTrach;
+  return ns ? ns.ten : 'Haustek';
+}
+
 /* Một câu kể việc này đang ở đâu và ai đang nợ ai. */
-function cauViec(api, v) {
+function cauViec(api, v, c) {
   if (v.canBan) return 'Haustek đang chờ bạn ' + String(v.canBan.viec).toLowerCase() +
     (v.canBan.han ? ', mong nhận trước ' + api.ngayVi(v.canBan.han) : '') + '.';
   if (v.trangThai === 'xong') return 'Đã xong ngày ' + api.ngayVi(v.xongLuc) + '.';
@@ -39,7 +49,7 @@ function cauViec(api, v) {
     var tiep = (v.moc || []).filter(function (m) { return !m.xong; })[0];
     return 'Đã qua ' + xong + '/' + v.moc.length + ' chặng' + (tiep ? ', đang tới bước ' + String(tiep.ten).toLowerCase() : '') + '.';
   }
-  return v.nguoiPhuTrachTen + ' đang phụ trách việc này.';
+  return ai(c, v) + ' đang phụ trách việc này.';
 }
 
 function veChiTiet(c, v) {
@@ -62,11 +72,11 @@ function veChiTiet(c, v) {
 
   c.nganTruot(
     '<h2>' + e(v.tieuDe) + '</h2>' +
-    '<p class="say">' + e(v.dichVuTen + ' · mã ' + v.id + ' · ' + v.nguoiPhuTrachTen + ' phụ trách') + '</p>' +
+    '<p class="say">' + e(v.dichVuTen + ' · mã ' + v.id + ' · ' + ai(c, v) + ' phụ trách') + '</p>' +
     (v.canBan
       ? '<div class="tomtat" style="margin:14px 0"><b>Haustek đang chờ bạn: ' + e(v.canBan.viec) + '</b>' +
         (v.canBan.han ? '<br>Mong nhận trước ' + e(api.ngayVi(v.canBan.han)) + '.' : '') + '</div>'
-      : '<div class="tomtat" style="margin:14px 0">' + e(cauViec(api, v)) + '</div>') +
+      : '<div class="tomtat" style="margin:14px 0">' + e(cauViec(api, v, c)) + '</div>') +
     (v.tomTat ? '<p style="font-size:13.5px;line-height:1.6">' + e(v.tomTat) + '</p>' : '') +
     moc + dong +
     '<div class="soan" style="position:static;margin-top:18px;border-radius:var(--r);border:1px solid var(--line)">' +
@@ -147,8 +157,8 @@ HT.dangKy({
         ? '<div class="hang">' + ds.map(function (v) {
             return '<div class="d' + (v.canBan ? ' tre' : '') + '">' +
               '<div class="c"><b>' + e(v.tieuDe) + '</b>' +
-              '<span class="khi">' + e(cauViec(api, v)) + '</span>' +
-              '<span class="khi">' + e(v.dichVuTen + ' · ' + v.nguoiPhuTrachTen + ' phụ trách') + '</span></div>' +
+              '<span class="khi">' + e(cauViec(api, v, c)) + '</span>' +
+              '<span class="khi">' + e(v.dichVuTen + ' · ' + ai(c, v) + ' phụ trách') + '</span></div>' +
               '<div class="btnrow"><button type="button" class="btn' + (v.canBan ? ' pri' : '') + ' sm" data-xem="' + e(v.id) + '">' +
                 (v.canBan ? 'Xem việc cần bạn' : 'Xem') + '</button></div></div>';
           }).join('') + '</div>'

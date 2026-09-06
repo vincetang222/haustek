@@ -301,7 +301,7 @@ ul,ol{list-style:none}
 /* Chuông đếm việc chưa đọc, không báo sự cố. Chấm đỏ ở đây là thứ đầu
    tiên mắt bắt được khi mở phần mềm, và nó nói sai: chưa đọc không phải
    một tai nạn. Dùng màu nhấn của thương hiệu. */
-.top-ico .badge{position:absolute;top:3px;right:2px;min-width:16px;height:16px;padding:0 4px;border-radius:8px;background:var(--accent);color:#fff;
+.top-ico .badge{position:absolute;top:3px;right:2px;min-width:16px;height:16px;padding:0 4px;border-radius:8px;background:var(--accent);color:var(--on-accent);
   font-size:10px;font-weight:700;line-height:16px;text-align:center;font-style:normal;box-shadow:0 0 0 2px var(--chrome)}
 /* bảng thông báo thả xuống dưới thanh trên */
 .popover{position:fixed;top:calc(var(--top-h) + 8px);right:16px;width:min(400px,calc(100vw - 32px));max-height:min(72vh,640px);overflow:auto;

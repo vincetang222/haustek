@@ -317,10 +317,10 @@ function veCotPhai(A, c, d) {
     (ngoai ? HM.the({ h2: 'Mở ở công cụ thật', p: 'Số liệu và tiền nằm ở đây, portal không chép về.', thoBody: true,
       than: '<div class="card-b"><div class="ngoai">' + ngoai + '</div></div>' }) : '') +
     HM.the({ h2: 'Hợp đồng', thoBody: true, than: '<div class="card-b">' + HM.kv([
-      ['Thời hạn', A.ngayVi(d.hopDong.tuNgay) + ' đến ' + A.ngayVi(d.hopDong.denNgay)],
-      ['Còn lại', d.conHan < 0 ? 'đã hết hạn' : d.conHan + ' ngày'],
-      ['Nhịp bảng kê', d.hopDong.nhipBaoCao === 'thang' ? 'hằng tháng' : 'hằng quý'],
-      ['Tài khoản nhận', d.nganHang ? d.nganHang.nganHang + ' ' + d.nganHang.soTaiKhoanMask : 'chưa khai']
+      { t: 'Thời hạn', v: A.ngayVi(d.hopDong.tuNgay) + ' đến ' + A.ngayVi(d.hopDong.denNgay) },
+      { t: 'Còn lại', v: d.conHan < 0 ? 'đã hết hạn' : d.conHan + ' ngày' },
+      { t: 'Nhịp bảng kê', v: d.hopDong.nhipBaoCao === 'thang' ? 'hằng tháng' : 'hằng quý' },
+      { t: 'Tài khoản nhận', v: d.nganHang ? d.nganHang.nganHang + ' ' + d.nganHang.soTaiKhoanMask : 'chưa khai' }
     ]) + '</div>' });
 }
 

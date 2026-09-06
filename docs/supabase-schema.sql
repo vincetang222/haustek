@@ -2,6 +2,28 @@
 -- HAUSTEK — SCHEMA SUPABASE v1.0
 -- ============================================================================
 --
+-- GHI CHÚ VÒNG 11 — file này chưa bao phủ portal v3
+--
+--   Portal v3 (portal/haustek-loi.js) xoay quanh VIỆC và DÒNG THỜI GIAN,
+--   không xoay quanh kỳ tác quyền. Sáu bảng dưới đây còn thiếu, viết ở
+--   phase 2, RLS theo party_id giống hệt các bảng đã có:
+--
+--     services              mười mảng dịch vụ, kèm cam kết phản hồi
+--     jobs                  việc, gắn một dịch vụ và một đối tác
+--     job_events            dòng thời gian hợp nhất; cột is_client_visible
+--                           là ranh giới an toàn quan trọng nhất của cả hệ
+--                           thống, và nó KHÔNG ĐƯỢC có giá trị mặc định
+--     announcements         thông báo do người viết
+--     announcement_reads    lượt đọc, theo từng người dùng chứ không theo
+--                           đối tác: hai người cùng một label có lượt đọc
+--                           riêng
+--     contacts_log          nhật ký liên lạc; chỉ nội bộ đọc, không bao giờ
+--                           lộ qua bất kỳ view nào của cổng đối tác
+--
+--   Khi viết, dịch từng phép kiểm trong portal/test/api-guard.js thành một
+--   policy RLS. Phép kiểm quan trọng nhất: một dòng job_events có
+--   is_client_visible = false không có đường nào ra được cổng đối tác.
+--
 -- CÁCH DÙNG
 --   1. Vào Supabase → project của bạn → SQL Editor → New query
 --   2. Dán TOÀN BỘ file này vào, bấm Run

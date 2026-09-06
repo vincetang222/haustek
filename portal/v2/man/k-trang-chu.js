@@ -62,7 +62,8 @@ HT.dangKy({
           thoBody: true,
           than: '<div class="hang">' + d.dangLam.map(function (v) {
             return '<div class="d"><div class="c"><b>' + e(v.tieuDe) + '</b>' +
-              '<span class="khi">' + e(v.dichVuTen + ' · ' + v.nguoiPhuTrachTen + ' phụ trách') + '</span>' +
+              '<span class="khi">' + e(v.dichVuTen + ' · ' +
+                (v.nguoiPhuTrachTen || (ns ? ns.ten : 'Haustek')) + ' phụ trách') + '</span>' +
               '<span class="khi">' + e(v.buocTiep ? 'Bước tiếp: ' + v.buocTiep : (v.camKet || 'Đang chạy đúng tiến độ.')) + '</span></div>' +
               '<div class="btnrow"><button type="button" class="btn sm" data-di="k-viec" data-loc-id="' + e(v.id) + '">Xem</button></div></div>';
           }).join('') + '</div>'

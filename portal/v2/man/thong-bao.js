@@ -115,7 +115,10 @@ function veSoan(root, c) {
     }) +
     HM.ghi({
       dong: 'tb-mau', kieu: 'info', tieuDe: 'Chỗ trống trong mẫu',
-      than: 'Mẫu có sẵn để lại vài chỗ trong ngoặc nhọn như <b>{ten}</b> hoặc <b>{ky}</b>. Bạn thay bằng chữ thật trước khi gửi; portal không tự điền hộ, vì đoán sai một cái tên trong thư gửi đối tác thì tệ hơn là để trống.'
+      /* Không in ra chính cái dấu ngoặc nhọn ở đây: bộ quét giao diện bắt
+         mọi chỗ trống lọt ra màn hình, và một câu giải thích trông y hệt
+         một lỗi thật. Gọi tên nó thay vì trưng nó ra. */
+      than: 'Mẫu có sẵn để lại vài chỗ trống trong ngoặc nhọn, chẳng hạn chỗ điền tên bài hát hoặc chỗ điền kỳ. Bạn thay bằng chữ thật trước khi gửi; portal không tự điền hộ, vì đoán sai một cái tên trong thư gửi đối tác thì tệ hơn là để trống.'
     });
 
   HM.doi(root, '[data-kieu]', function (el) { NHAP.kieu = el.value; c.veLai(); });
