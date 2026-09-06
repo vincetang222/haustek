@@ -41,6 +41,7 @@ HT.dangKy({
 
   chu: {
     vi: {
+      dcTieuDe: 'Bút toán điều chỉnh', dcMo: 'Khoản ghi tay ngoài báo cáo nền tảng: điều chỉnh, chi phí thu hộ, khoản thu khác, hoàn trả. Ghi vào kỳ đang mở, có diễn giải và người ghi.', themBt: 'Thêm bút toán', cMa: 'Mã', cKy: 'Kỳ', cDt: 'Đối tác', cLoai: 'Loại', cTien: 'Số tiền', cDienGiai: 'Diễn giải', cNguoi: 'Người ghi', khongBt: 'Kỳ này chưa có bút toán điều chỉnh', fKy: 'Kỳ', fDt: 'Đối tác (mã hoặc tên)', fDtHint: 'Bỏ trống nếu là bút toán chung.', fLoaiBt: 'Loại', fTien: 'Số tiền (USD, âm là trừ)', fDienGiai: 'Diễn giải', fRef: 'Chứng từ', daGhi: 'Đã ghi bút toán {id}', khongDt: 'Không tìm thấy đối tác', xoa: 'Xoá',
       nhomTien: 'Tài chính', navKeToan: 'Kế toán', h1: 'Kế toán',
       mo: 'Doanh thu kỳ ghi vào tài khoản nào, bên nào nợ bên nào, phần nào chưa có người thụ hưởng.',
       tBut: 'Bút toán kỳ', tCn: 'Công nợ bên thụ hưởng', tUng: 'Tạm ứng phải thu',
@@ -67,6 +68,7 @@ HT.dangKy({
       bienPhi: 'Tỷ lệ phí trên doanh thu gộp'
     },
     en: {
+      dcTieuDe: 'Adjustments', dcMo: 'Manual entries outside platform reports: adjustments, recoverable costs, other income, reversals. Booked into an open period with a note and author.', themBt: 'Add an entry', cMa: 'Id', cKy: 'Period', cDt: 'Partner', cLoai: 'Kind', cTien: 'Amount', cDienGiai: 'Note', cNguoi: 'By', khongBt: 'No adjustments in this period yet', fKy: 'Period', fDt: 'Partner (id or name)', fDtHint: 'Leave empty for a general entry.', fLoaiBt: 'Kind', fTien: 'Amount (USD, negative deducts)', fDienGiai: 'Note', fRef: 'Reference', daGhi: 'Booked {id}', khongDt: 'Partner not found', xoa: 'Remove',
       nhomTien: 'Money', navKeToan: 'Accounting', h1: 'Accounting',
       mo: 'What the period’s revenue was booked as, who owes whom, and what has no owner yet.',
       tBut: 'Period journal', tCn: 'Payee ledger', tUng: 'Advances receivable',
@@ -118,7 +120,7 @@ HT.dangKy({
     ], TAB);
 
     SAU = [];
-    if (TAB === 'butoan') html += veButToan(c, s);
+    if (TAB === 'butoan') html += veButToan(c, s) + veDieuChinh(c);
     if (TAB === 'congno') html += veCongNo(c, s);
     if (TAB === 'tamung') html += veTamUng(c);
     if (TAB === 'ghinhan') html += veGhiNhan(c);
@@ -133,6 +135,8 @@ HT.dangKy({
     HM.bam(root, '[data-kyto]', function (el) { c.doiKy(el.getAttribute('data-kyto')); });
     HM.bam(root, '[data-di]', function (el) { c.di(el.getAttribute('data-di')); });
     HM.bam(root, '[data-cn]', function (el) { LOC_CN.chi = el.getAttribute('data-cn'); c.veLai(); });
+    HM.bam(root, '[data-them-bt]', function () { hoiButToan(c); });
+    HM.bam(root, '[data-xoa-bt]', function (el) { try { A.ledger.removeAdjustment(el.getAttribute('data-xoa-bt'), A.staff.me.email); c.veLai(); } catch (e) { c.thongBao(e.message, 'no'); } });
     HM.doi(root, '[data-cnloai]', function (el) { LOC_CN.loai = el.value; c.veLai(); });
     HM.nhap(root, '[data-cntim]', function (el) { LOC_CN.tim = el.value; c.veLai(); });
     HM.bam(root, '[data-xuatbut]', function () { xuatButToan(c, s); });
@@ -833,6 +837,32 @@ function xuatCongNo(c, s) {
               r.carryIn.toFixed(2), r.earned.toFixed(2), r.recoup.toFixed(2),
               r.payable.toFixed(2), r.carryOut.toFixed(2), r.advanceLeft.toFixed(2)];
     }));
+}
+
+function veDieuChinh(c) {
+  var A = c.A, t = c.t, vi = c.lang === 'vi';
+  var ds = A.ledger.adjustments({ periodKey: c.kyKey });
+  var loai = function (k) { var x = A.ledger.kinds.filter(function (y) { return y[0] === k; })[0]; return x ? (vi ? x[1] : x[2]) : k; };
+  return HM.the({ h2: HM.esc(t('dcTieuDe')) + ' <span class="muted">(' + ds.length + ')</span>', p: HM.esc(t('dcMo')), thoBody: true,
+    hanhDong: A.quyen.nhom('tien') ? '<button type="button" class="btn sm pri" data-them-bt>' + HM.icon('book') + HM.esc(t('themBt')) + '</button>' : '',
+    than: !ds.length ? HM.trong({ icon: 'book', tieuDe: t('khongBt'), moTa: '' }) :
+      '<div class="tw"><table class="t" style="min-width:0"><thead><tr><th>' + HM.esc(t('cMa')) + '</th><th>' + HM.esc(t('cDt')) + '</th><th>' + HM.esc(t('cLoai')) + '</th><th class="num">' + HM.esc(t('cTien')) + '</th><th>' + HM.esc(t('cDienGiai')) + '</th><th>' + HM.esc(t('cNguoi')) + '</th><th></th></tr></thead><tbody>' +
+      ds.map(function (a) { return '<tr><td class="mono">' + HM.esc(a.id) + '</td><td>' + HM.esc(a.partyName || '—') + '</td><td>' + HM.esc(loai(a.kind)) + '</td><td class="num"><b class="' + (a.amount < 0 ? 'neg' : 'pos') + '">' + HM.esc(c.tien2(a.amount)) + '</b></td><td>' + HM.esc(a.note) + (a.ref ? ' <span class="muted mono">' + HM.esc(a.ref) + '</span>' : '') + '</td><td style="font-size:12px">' + HM.esc(a.by) + '<br><span class="muted">' + HM.esc(HT.fmt.luc(a.at)) + '</span></td><td>' + (A.quyen.nhom('tien') ? '<button type="button" class="btn sm ghost" data-xoa-bt="' + HM.esc(a.id) + '">' + HM.esc(t('xoa')) + '</button>' : '') + '</td></tr>'; }).join('') + '</tbody></table></div>' });
+}
+function hoiButToan(c) {
+  var A = c.A, t = c.t, vi = c.lang === 'vi';
+  var kyMo = A.periods.filter(function (p) { return !A.isApproved(p.k); });
+  HTM.hoiForm(c, { tieuDe: t('themBt'), dong: t('themBt'), fields: [
+    { k: 'periodKey', l: t('fKy'), kieu: 'select', opts: kyMo.map(function (p) { return [p.k, p.label]; }), v: kyMo.some(function (p) { return p.k === c.kyKey; }) ? c.kyKey : (kyMo[0] ? kyMo[0].k : ''), kbb: false },
+    { k: 'kind', l: t('fLoaiBt'), kieu: 'select', opts: A.ledger.kinds.map(function (k) { return [k[0], vi ? k[1] : k[2]]; }), kbb: false },
+    { k: 'dt', l: t('fDt'), hint: t('fDtHint'), list: 'ds-bt-dt' }, { k: 'amount', l: t('fTien'), kieu: 'number', step: 0.01, req: true },
+    { k: 'note', l: t('fDienGiai'), req: true, rong: true }, { k: 'ref', l: t('fRef') }
+  ], them: '<datalist id="ds-bt-dt">' + A.parties.list({}).rows.slice(0, 300).map(function (r) { return '<option value="' + HM.esc(r.clientId) + '">' + HM.esc(r.name) + '</option>'; }).join('') + '</datalist>' }).then(function (f) {
+    if (!f) return;
+    var pk = null;
+    if (String(f.dt || '').trim()) { var r = A.parties.list({ q: f.dt }).rows[0]; if (!r) { c.thongBao(t('khongDt'), 'no'); return; } pk = r.partyKey; }
+    try { var a = A.ledger.addAdjustment({ periodKey: f.periodKey, partyKey: pk, kind: f.kind, amount: f.amount, note: f.note, ref: f.ref }, A.staff.me.email); c.thongBao(t('daGhi').replace('{id}', a.id), 'ok'); c.veLai(); } catch (e) { c.thongBao(e.message, 'no'); }
+  });
 }
 
 })();

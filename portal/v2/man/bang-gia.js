@@ -45,6 +45,7 @@ HT.dangKy({
 
   chu: {
     vi: {
+      themGia: 'Thêm dòng giá', giaTay: 'Giá nhập tay', giaTayMo: 'Giá do vận hành nhập, đè lên bảng mẫu ở đúng ô nền tảng · nhóm · tiền tệ.', fLoaiGia: 'Áp cho', fGia: 'Giá', fHieuLuc: 'Hiệu lực từ', daThemGia: 'Đã lưu dòng giá', nhapTay: 'Giá nhập tay', xoa: 'Xoá',
       navBangGia: 'Bảng giá nền tảng', h1: 'Bảng giá nền tảng',
       mo: 'Nhóm giá album và track của các nền tảng bán tải về, theo từng nền tảng và tiền tệ.',
       chonNhom: 'Chọn nhóm giá', album: 'Giá album', track: 'Giá track',
@@ -54,6 +55,7 @@ HT.dangKy({
       soSanh: 'So sánh bốn nhóm giá', soSanhMo: 'Giá bằng USD của từng nhóm. Hai thước đo khác cỡ nên vẽ hai biểu đồ, không chồng lên nhau.'
     },
     en: {
+      themGia: 'Add a price row', giaTay: 'Prices entered by hand', giaTayMo: 'Entered by operations; overrides the sample grid for that store · tier · currency.', fLoaiGia: 'Applies to', fGia: 'Price', fHieuLuc: 'Effective from', daThemGia: 'Price row saved', nhapTay: 'Entered by hand', xoa: 'Remove',
       navBangGia: 'Store pricing', h1: 'Store pricing',
       mo: 'Album and track price tiers on download stores, per store and currency.',
       chonNhom: 'Pick a price tier', album: 'Album price', track: 'Track price',
@@ -67,9 +69,12 @@ HT.dangKy({
   ve: function (root, c) {
     var t = c.t, vi = c.lang === 'vi', P = HB.dayMau();
     var nhom = NHOM.filter(function (x) { return x.id === LOC.nhom; })[0] || NHOM[0];
-    var gia = nhom[LOC.loai];
+    var gia = nhom[LOC.loai], A = c.A;
+    var them = A.pricing.list();
+    var giaThem = function (nt, tt) { var x = them.filter(function (y) { return y.store === nt && y.tier === nhom.id && y.currency === tt && y.kind === LOC.loai; })[0]; return x ? x.price : null; };
     var html = HM.dau({
       h1: HM.esc(t('h1')), mo: HM.esc(t('mo')),
+      nut: A.quyen.nhom('vanHanh') ? '<button type="button" class="btn pri" data-them-gia>' + HM.icon('cash') + HM.esc(t('themGia')) + '</button>' : '',
       so: [{ l: t('soNt'), v: HT.fmt.n(NEN_TANG.length) }, { l: t('soTien'), v: HT.fmt.n(TIEN.length) }, { l: t('nhomHienTai'), v: vi ? nhom.ten : nhom.en }]
     });
     html += '<div class="bar">' +
@@ -85,7 +90,7 @@ HT.dangKy({
       than: '<div class="tw"><table class="t"><thead><tr><th>' + HM.esc(t('cNt')) + '</th>' + TIEN.map(function (tt) { return '<th class="num">' + tt + '</th>'; }).join('') + '</tr></thead><tbody>' +
         NEN_TANG.map(function (nt) {
           return '<tr><td><div class="t-ttl">' + HM.esc(nt.n) + '</div><div class="t-sub" style="font-family:var(--f)">' + nt.tien.length + ' ' + HM.esc(t('soTien').toLowerCase()) + '</div></td>' +
-            TIEN.map(function (tt) { return '<td class="num">' + (nt.tien.indexOf(tt) >= 0 ? '<b>' + HM.esc(dinhGia(gia[tt], tt)) + '</b>' : '<span class="nil">' + HM.esc(t('khongBan')) + '</span>') + '</td>'; }).join('') + '</tr>';
+            TIEN.map(function (tt) { var g2 = giaThem(nt.n, tt); return '<td class="num">' + (g2 != null ? '<b class="pos" title="' + HM.esc(t('nhapTay')) + '">' + HM.esc(dinhGia(g2, tt)) + '</b>' : nt.tien.indexOf(tt) >= 0 ? '<b>' + HM.esc(dinhGia(gia[tt], tt)) + '</b>' : '<span class="nil">' + HM.esc(t('khongBan')) + '</span>') + '</td>'; }).join('') + '</tr>';
         }).join('') + '</tbody></table></div>',
       chan: HM.esc(t('apDungMo') + ' ' + t('ghiChu'))
     });
@@ -100,8 +105,22 @@ HT.dangKy({
       }).join('') + '</div>'
     });
 
+    if (them.length) html += HM.the({ h2: HM.esc(t('giaTay')) + ' <span class="muted">(' + them.length + ')</span>', p: HM.esc(t('giaTayMo')), thoBody: true,
+      than: '<div class="tw"><table class="t" style="min-width:0"><thead><tr><th>' + HM.esc(t('cNt')) + '</th><th>' + HM.esc(t('chonNhom')) + '</th><th>' + HM.esc(t('fLoaiGia')) + '</th><th class="num">' + HM.esc(t('fGia')) + '</th><th>' + HM.esc(t('fHieuLuc')) + '</th><th></th></tr></thead><tbody>' +
+        them.map(function (x) { var nh = NHOM.filter(function (y) { return y.id === x.tier; })[0]; return '<tr><td>' + HM.esc(x.store) + '</td><td>' + HM.esc(nh ? (vi ? nh.ten : nh.en) : x.tier) + '</td><td>' + HM.esc(t(x.kind)) + '</td><td class="num"><b>' + HM.esc(dinhGia(x.price, x.currency)) + '</b></td><td class="mono">' + HM.esc(HT.fmt.ngay(x.effective)) + '</td><td>' + (A.quyen.nhom('vanHanh') ? '<button type="button" class="btn sm ghost" data-xoa-gia="' + HM.esc([x.store, x.tier, x.currency, x.kind].join('|')) + '">' + HM.esc(t('xoa')) + '</button>' : '') + '</td></tr>'; }).join('') + '</tbody></table></div>' });
     root.innerHTML = html;
     HB.gan(root);
+    HM.bam(root, '[data-them-gia]', function () {
+      HTM.hoiForm(c, { tieuDe: t('themGia'), dong: t('themGia'), fields: [
+        { k: 'store', l: t('cNt'), kieu: 'select', opts: NEN_TANG.map(function (x) { return [x.n, x.n]; }), kbb: false }, { k: 'tier', l: t('chonNhom'), kieu: 'select', opts: NHOM.map(function (x) { return [x.id, vi ? x.ten : x.en]; }), v: LOC.nhom, kbb: false },
+        { k: 'kind', l: t('fLoaiGia'), kieu: 'select', opts: [['album', t('album')], ['track', t('track')]], v: LOC.loai, kbb: false }, { k: 'currency', l: t('soTien'), kieu: 'select', opts: TIEN.map(function (x) { return [x, x]; }), kbb: false },
+        { k: 'price', l: t('fGia'), kieu: 'number', min: 0, step: 0.01, req: true }, { k: 'effective', l: t('fHieuLuc'), kieu: 'date', v: new Date().toISOString().slice(0, 10), kbb: false }
+      ] }).then(function (f) {
+        if (!f) return;
+        try { A.pricing.add(f, A.staff.me.email); c.thongBao(t('daThemGia'), 'ok'); c.veLai(); } catch (e) { c.thongBao(e.message, 'no'); }
+      });
+    });
+    HM.bam(root, '[data-xoa-gia]', function (el) { var p = el.getAttribute('data-xoa-gia').split('|'); try { A.pricing.remove({ store: p[0], tier: p[1], currency: p[2], kind: p[3] }, A.staff.me.email); c.veLai(); } catch (e) { c.thongBao(e.message, 'no'); } });
     HM.bam(root, '[data-nhom]', function (el) { LOC.nhom = el.getAttribute('data-nhom'); c.veLai(); });
     HM.bam(root, '[data-loai]', function (el) { LOC.loai = el.getAttribute('data-loai'); c.veLai(); });
     HM.bam(root, '[data-di]', function (el) { c.di(el.getAttribute('data-di')); });

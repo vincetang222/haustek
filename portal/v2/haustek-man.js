@@ -45,7 +45,7 @@ function so(list) {
       (k.s ? '<div class="s">' + (k.sHtml ? k.s : esc(k.s)) + '</div>' : '') +
       /* chênh lệch so với kỳ trước: viên nhỏ xanh / đỏ; tia: đường bé 12 kỳ */
       (k.d ? '<span class="d ' + (k.d.duong ? 'pos' : 'neg') + '">' + esc(k.d.chu) + '</span>' : '') +
-      (k.tia && k.tia.length > 1 && typeof HB !== 'undefined' ? '<div class="tia">' + HB.tia(k.tia, { rong: 160, cao: 26, mau: k.lon ? 'rgba(255,255,255,.9)' : (k.tiaMau || null), vung: true }) + '</div>' : '') +
+      (k.tia && k.tia.length > 1 && typeof HB !== 'undefined' ? '<div class="tia">' + HB.tia(k.tia, { rong: 160, cao: 26, mau: k.lon ? HB.mau('accent') : (k.tiaMau || null), vung: true }) + '</div>' : '') +
       '</div>';
   }).join('') + '</div>';
 }

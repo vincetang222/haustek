@@ -34,6 +34,7 @@ HT.dangKy({
 
   chu: {
     vi: {
+      nvToi: 'Nhiệm vụ của tôi', nvToiMo: 'Việc thường xuyên của tổ bạn theo cây tổ chức, đếm sống từ dữ liệu. Bấm để mở màn xử lý.', nvKhong: 'Không có việc đang chờ', xemToChuc: 'Xem cây tổ chức',
       navBan: 'Bàn làm việc', h1: 'Bàn làm việc', homNay: 'Việc của bạn hôm nay, {d}.', nhanVien: 'Nhân viên', vaiTro: 'Vai',
       dxCho: 'Chờ xét duyệt', dxChoMo: 'Kinh doanh hoặc đối tác đề xuất, kế toán kiểm số, bạn duyệt. ROI và hạng rủi ro tính từ 12 kỳ.', dxChoS: '{a} tạm ứng chờ duyệt · {b} đã kiểm số', moXetDuyet: 'Mở xét duyệt', dxKhong: 'Không có đề xuất nào chờ duyệt', dxKhongMo: 'Đề xuất mới từ kinh doanh hoặc đối tác sẽ hiện ở đây.',
       dxToi: 'Đề xuất của tôi', dxToiMo: 'Tạm ứng và hợp đồng bạn đã đề xuất; trạng thái đổi khi kế toán kiểm số và giám đốc xét duyệt.', dxTaoUng: 'Đề xuất tạm ứng', dxTaoHd: 'Đề xuất hợp đồng', dxToiKhong: 'Bạn chưa có đề xuất nào', dxToiKhongMo: 'Bấm nút phía trên, hoặc mở ngăn một đối tác trong sổ đối tác.',
@@ -80,6 +81,7 @@ HT.dangKy({
       cTang: 'Tăng trưởng', cLuot7: 'Lượt nghe 7 ngày'
     },
     en: {
+      nvToi: 'My duties', nvToiMo: 'Your team’s recurring work from the org tree, counted live. Click to open the screen.', nvKhong: 'Nothing waiting', xemToChuc: 'Open the org tree',
       navBan: 'My desk', h1: 'My desk', homNay: 'Your work for today, {d}.', nhanVien: 'Staff', vaiTro: 'Role',
       dxCho: 'Awaiting approval', dxChoMo: 'Sales or partners propose, accounting checks, you approve. ROI and risk grade from 12 periods.', dxChoS: '{a} in advances pending · {b} checked', moXetDuyet: 'Open approvals', dxKhong: 'Nothing awaiting approval', dxKhongMo: 'New proposals from sales or partners show up here.',
       dxToi: 'My proposals', dxToiMo: 'Advances and contracts you proposed; status moves as accounting checks and the director approves.', dxTaoUng: 'Propose advance', dxTaoHd: 'Propose contract', dxToiKhong: 'You have no proposals yet', dxToiKhongMo: 'Use the buttons above, or open a partner’s drawer in Partners.',
@@ -131,7 +133,7 @@ HT.dangKy({
       so: [{ l: t('nhanVien'), v: me.name }, { l: t('vaiTro'), v: vi ? me.title : me.titleEn }]
     });
     var ve = { sales: veSales, support: veSupport, accounting: veKeToan, ops: veVanHanh, mgmt: veQuanLy }[me.role] || veVanHanh;
-    html += ve(c);
+    html += veNhiemVuToi(c) + ve(c);
     root.innerHTML = html;
     HB.gan(root);
 
@@ -154,6 +156,21 @@ HT.dangKy({
     HM.bam(root, '[data-them-hd]', function () { if (HT.deXuatHopDong) HT.deXuatHopDong(c, null); else c.di('xet-duyet'); });
   }
 });
+
+/* Nhiệm vụ từ cây tổ chức: tổ của mình (trưởng bộ phận: cả khối), chỉ hiện
+   mục đang có việc để bàn làm việc không thành danh sách dài. */
+function veNhiemVuToi(c) {
+  var A = c.A, t = c.t, vi = c.lang === 'vi';
+  if (!A.toChuc) return '';
+  var toi; try { toi = A.toChuc.cuaToi(); } catch (e) { return ''; }
+  if (!toi.khoi) return '';
+  var co = toi.nhiemVu.filter(function (n) { return n.dem > 0 && (!n.man || A.quyen.man(n.man)); });
+  return HM.the({ h2: HM.esc(t('nvToi')) + ' <span class="muted">· ' + HM.esc((vi ? toi.khoi.vi : toi.khoi.en) + (toi.to ? ' · ' + (vi ? toi.to.vi : toi.to.en) : '')) + '</span>', p: HM.esc(t('nvToiMo')),
+    hanhDong: '<button type="button" class="btn sm ghost" data-di="to-chuc">' + HM.esc(t('xemToChuc')) + '</button>',
+    than: co.length ? '<div class="nv-grid">' + co.map(function (n) {
+      return '<button type="button" class="nv" data-di="' + HM.esc(n.man || 'to-chuc') + '"><b>' + HT.fmt.n(n.dem) + '</b><span>' + HM.esc(vi ? n.vi : n.en) + '</span></button>';
+    }).join('') + '</div>' : '<p class="say">' + HM.esc(t('nvKhong')) + '</p>' });
+}
 
 /* ---------------------------------------------------------------------
    Xét duyệt trên bàn làm việc: giám đốc duyệt, kế toán kiểm, kinh doanh

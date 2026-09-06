@@ -22,6 +22,7 @@ HT.dangKy({
 
   chu: {
     vi: {
+      themNt: 'Thêm nền tảng', ntThem: 'Nền tảng đang kết nối', ntThemMo: 'Nền tảng mới thêm bằng tay: đang kết nối, thử, đã lên hay tạm dừng. Doanh thu chỉ về sau khi có báo cáo kỳ.', fTenNt: 'Tên nền tảng', fLoaiNt: 'Loại', fVung: 'Khu vực', fTt: 'Trạng thái', fNhip: 'Nhịp báo cáo', fLh: 'Đầu mối bên nền tảng', fChu: 'Người phụ trách (Vận hành)', fGhiNt: 'Ghi chú', daThemNt: 'Đã thêm nền tảng {t}', daDoi: 'Đã đổi trạng thái', ttConnecting: 'Đang kết nối', ttTesting: 'Đang thử', ttLive: 'Đã lên', ttPaused: 'Tạm dừng', cNt: 'Nền tảng', cChu: 'Phụ trách', cTuNgay: 'Từ ngày', lStreaming: 'Streaming', lDownload: 'Bán tải về', lVideo: 'Video', lSocial: 'Mạng xã hội', lTelco: 'Nhà mạng', nMonthly: 'Hằng tháng', nQuarterly: 'Hằng quý', khongNt: 'Chưa thêm nền tảng nào bằng tay',
       nhomDuLieu: 'Danh mục', navNenTang: 'Nền tảng', h1: 'Nền tảng',
       mo: 'Lượt nghe và doanh thu gộp của toàn danh mục theo từng nền tảng, từng kỳ báo cáo, kể cả kỳ chưa xét duyệt.',
       kDanDau: 'Nền tảng dẫn đầu', kLuot: 'Lượt nghe', kGop: 'Doanh thu gộp', kSo: 'Nền tảng có doanh thu',
@@ -42,6 +43,7 @@ HT.dangKy({
       luotNghe: 'lượt nghe', khac: 'Nền tảng khác', xuat: 'Xuất CSV'
     },
     en: {
+      themNt: 'Add a platform', ntThem: 'Platforms being connected', ntThemMo: 'Platforms added by hand: connecting, testing, live or paused. Revenue arrives only once period reports come in.', fTenNt: 'Platform name', fLoaiNt: 'Kind', fVung: 'Region', fTt: 'Status', fNhip: 'Reporting cadence', fLh: 'Platform contact', fChu: 'Owner (Operations)', fGhiNt: 'Note', daThemNt: 'Added platform {t}', daDoi: 'Status updated', ttConnecting: 'Connecting', ttTesting: 'Testing', ttLive: 'Live', ttPaused: 'Paused', cNt: 'Platform', cChu: 'Owner', cTuNgay: 'Since', lStreaming: 'Streaming', lDownload: 'Download store', lVideo: 'Video', lSocial: 'Social', lTelco: 'Telco', nMonthly: 'Monthly', nQuarterly: 'Quarterly', khongNt: 'No platform added by hand yet',
       nhomDuLieu: 'Data', navNenTang: 'Platforms', h1: 'Platforms',
       mo: 'Streams and gross revenue for the whole catalogue, by platform and by reporting period, unapproved periods included.',
       kDanDau: 'Leading platform', kLuot: 'Streams', kGop: 'Gross revenue', kSo: 'Platforms earning',
@@ -90,6 +92,7 @@ HT.dangKy({
 
     var html = HM.dau({
       h1: HM.esc(t('h1')) + ' <span>' + HM.esc(c.ky.label) + '</span>', mo: HM.esc(t('mo')),
+      nut: A.quyen.nhom('vanHanh') ? '<button type="button" class="btn pri" data-them-nt>' + HM.icon('shop') + HM.esc(t('themNt')) + '</button>' : '',
       so: [
         { l: t('kDanDau'), v: dau && dau[metric] > 0 ? dau.ten + ' · ' + HT.fmt.pct(tongM ? dau[metric] / tongM : 0) : '—' },
         { l: t('kLuot'), v: HB.gonSo(tongS) },
@@ -167,13 +170,42 @@ HT.dangKy({
       chan: HM.esc(t('ghiChu'))
     });
 
+    html += veNenTangThem(c);
     root.innerHTML = html;
     HB.gan(root);
 
     HM.bam(root, '[data-mx]', function (el) { LOC.metric = el.getAttribute('data-mx'); c.veLai(); });
     HM.bam(root, '[data-csv]', function () { HTS.csvMaTran('nen-tang-' + LOC.metric + '.csv', data, LOC.metric); });
     HM.bam(root, '[data-di]', function (el) { c.di(el.getAttribute('data-di')); });
+    HM.bam(root, '[data-them-nt]', function () { hoiNenTang(c); });
+    HM.doi(root, '[data-nt-tt]', function (el) { try { A.platforms.setStatus(el.getAttribute('data-nt-tt'), el.value, A.staff.me.email); c.thongBao(t('daDoi'), 'ok'); c.veLai(); } catch (e) { c.thongBao(e.message, 'no'); } });
   }
 });
+
+function veNenTangThem(c) {
+  var A = c.A, t = c.t, vi = c.lang === 'vi';
+  var ds = A.platforms.list().filter(function (p) { return p.manual; });
+  var TT = { connecting: 'ttConnecting', testing: 'ttTesting', live: 'ttLive', paused: 'ttPaused' }, KIEU = { connecting: 'info', testing: 'warn', live: 'ok', paused: '' };
+  return HM.the({ h2: HM.esc(t('ntThem')) + (ds.length ? ' <span class="muted">(' + ds.length + ')</span>' : ''), p: HM.esc(t('ntThemMo')), thoBody: true,
+    than: !ds.length ? HM.trong({ icon: 'shop', tieuDe: t('khongNt'), moTa: '' }) :
+      '<div class="tw"><table class="t" style="min-width:0"><thead><tr><th>' + HM.esc(t('cNt')) + '</th><th>' + HM.esc(t('fLoaiNt')) + '</th><th>' + HM.esc(t('fTt')) + '</th><th>' + HM.esc(t('cChu')) + '</th><th>' + HM.esc(t('cTuNgay')) + '</th></tr></thead><tbody>' +
+      ds.map(function (p) {
+        return '<tr><td><div class="t-ttl">' + HM.esc(p.name) + '</div><div class="t-sub" style="font-family:var(--f)">' + HM.esc(p.region + (p.contact ? ' · ' + p.contact : '')) + '</div></td><td>' + HM.esc(t('l' + p.kind.charAt(0).toUpperCase() + p.kind.slice(1)) === 'l' + p.kind.charAt(0).toUpperCase() + p.kind.slice(1) ? p.kind : t('l' + p.kind.charAt(0).toUpperCase() + p.kind.slice(1))) + '</td>' +
+          '<td>' + (A.quyen.nhom('vanHanh') ? '<select class="inline-sel" data-nt-tt="' + HM.esc(p.name) + '">' + A.platforms.statuses.map(function (s) { return '<option value="' + s + '"' + (s === p.status ? ' selected' : '') + '>' + HM.esc(t(TT[s])) + '</option>'; }).join('') + '</select>' : HM.tag(t(TT[p.status]), KIEU[p.status])) + '</td>' +
+          '<td>' + HM.esc(p.owner || '—') + '</td><td class="mono">' + HM.esc(HT.fmt.ngay(p.addedAt)) + '</td></tr>';
+      }).join('') + '</tbody></table></div>' });
+}
+function hoiNenTang(c) {
+  var A = c.A, t = c.t, ops = A.staff.byRole('ops').filter(function (x) { return x.active !== false; });
+  HTM.hoiForm(c, { tieuDe: t('themNt'), dong: t('themNt'), fields: [
+    { k: 'name', l: t('fTenNt'), req: true }, { k: 'kind', l: t('fLoaiNt'), kieu: 'select', opts: [['streaming', t('lStreaming')], ['download', t('lDownload')], ['video', t('lVideo')], ['social', t('lSocial')], ['telco', t('lTelco')]], kbb: false },
+    { k: 'region', l: t('fVung'), v: 'Việt Nam' }, { k: 'status', l: t('fTt'), kieu: 'select', opts: [['connecting', t('ttConnecting')], ['testing', t('ttTesting')], ['live', t('ttLive')]], kbb: false },
+    { k: 'cadence', l: t('fNhip'), kieu: 'select', opts: [['monthly', t('nMonthly')], ['quarterly', t('nQuarterly')]], kbb: false }, { k: 'ownerId', l: t('fChu'), kieu: 'select', opts: ops.map(function (x) { return [x.id, x.name]; }), kbb: false },
+    { k: 'contact', l: t('fLh') }, { k: 'note', l: t('fGhiNt') }
+  ] }).then(function (f) {
+    if (!f) return;
+    try { var p = A.platforms.add(f, A.staff.me.email); c.thongBao(t('daThemNt').replace('{t}', p.name), 'ok'); c.veLai(); } catch (e) { c.thongBao(e.message, 'no'); }
+  });
+}
 
 })();

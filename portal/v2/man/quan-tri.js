@@ -23,7 +23,7 @@ HT.dangKy({
     vi: {
       nhomHeThong: 'Quản trị', navQuanTri: 'Quản trị', h1: 'Quản trị',
       tTk: 'Tài khoản', tNk: 'Nhật ký thao tác', tCh: 'Câu hỏi cần chốt', tDl: 'Dữ liệu bản mẫu', tBm: 'Phân quyền hai cổng', tPq: 'Phân quyền theo vai',
-      pqMo: 'Vai nào mở màn nào, gọi nhóm dữ liệu nào. Ma trận ở lõi; gọi sai vai thì máy chủ trả lỗi dù giao diện có giấu nút hay không.', pqMan: 'Màn hình', pqNhom: 'Nhóm dữ liệu', pqVaiCua: 'Vai được cấp',
+      pqMo: 'Ma trận này suy ra từ cây tổ chức: mỗi khối mang danh sách màn và nhóm dữ liệu; trưởng bộ phận trở lên thấy cả bộ phận. Gọi sai vai thì máy chủ trả lỗi dù giao diện có giấu nút hay không. Sửa ở trang Tổ chức.', pqMan: 'Màn hình', pqNhom: 'Nhóm dữ liệu', pqVaiCua: 'Vai được cấp',
       soTk: 'Tài khoản', soHd: 'Đang hoạt động', soMoi: 'Đã mời, chưa đăng nhập',
       themTk: 'Cấp tài khoản', tim: 'Tìm theo email hoặc bên thụ hưởng…', moiVt: 'Tất cả vai trò',
       cEmail: 'Email', cVt: 'Vai trò', cBen: 'Gắn với bên thụ hưởng', cTt: 'Trạng thái', cNgay: 'Ngày cấp', cMfa: 'Xác thực 2 lớp',
@@ -48,7 +48,7 @@ HT.dangKy({
     en: {
       nhomHeThong: 'System', navQuanTri: 'Administration', h1: 'Administration',
       tTk: 'Accounts', tNk: 'Audit log', tCh: 'Open questions', tDl: 'Prototype data', tBm: 'The boundary', tPq: 'Role permissions',
-      pqMo: 'Which role opens which screen and data group. The matrix lives in the core; a wrong-role call is refused whether or not the button is hidden.', pqMan: 'Screen', pqNhom: 'Data group', pqVaiCua: 'Granted roles',
+      pqMo: 'Derived from the org tree: each unit carries its screens and data groups; heads of department and above see the whole department. A wrong-role call is refused whether or not the button is hidden. Edit on the Organisation page.', pqMan: 'Screen', pqNhom: 'Data group', pqVaiCua: 'Granted roles',
       soTk: 'Accounts', soHd: 'Active', soMoi: 'Invited, not yet in',
       themTk: 'Create an account', tim: 'Search email or payee…', moiVt: 'All roles',
       cEmail: 'Email', cVt: 'Role', cBen: 'Bound to payee', cTt: 'Status', cNgay: 'Created', cMfa: 'Two-factor',

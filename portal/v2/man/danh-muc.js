@@ -30,6 +30,7 @@ HT.dangKy({
 
   chu: {
     vi: {
+      themBai: 'Thêm bài hát',
       nhomDuLieu: 'Danh mục', navDanhMuc: 'Danh mục', h1: 'Danh mục bản ghi',
       mo: 'Mọi bản ghi Haustek đang phân phối. Bấm một dòng để xem dòng tiền, quy trình và số theo nền tảng.',
       tong: 'Tổng bản ghi', coTien: 'Có doanh thu kỳ này', nghesi: 'Nghệ sĩ', labelKho: 'Label',
@@ -50,6 +51,7 @@ HT.dangKy({
       xuat: 'Xuất CSV', hienThi: 'Đang hiển thị'
     },
     en: {
+      themBai: 'Add a track',
       nhomDuLieu: 'Data', navDanhMuc: 'Catalogue', h1: 'Recording catalogue',
       mo: 'Every recording Haustek distributes. Open a row for money, pipeline and per-platform figures.',
       tong: 'Recordings', coTien: 'Earning this period', nghesi: 'Artists', labelKho: 'Labels',
@@ -137,6 +139,7 @@ HT.dangKy({
 
     var html = HM.dau({
       h1: HM.esc(t('h1')), mo: HM.esc(t('mo')),
+      nut: A.quyen.nhom('phatHanhHo') && HT.taoHoSoHo ? '<button type="button" class="btn pri" data-them-bai>' + HM.icon('file') + HM.esc(t('themBai')) + '</button>' : '',
       so: [
         { l: t('tong'), v: HT.fmt.n(A.trackCount) },
         { l: t('coTien'), v: HT.fmt.n(demCoTien) },
@@ -247,6 +250,7 @@ HT.dangKy({
     HM.doi(root, '[data-loai]', function (el) { LOC.loai = el.value; LOC.trang = 0; c.veLai(); });
     HM.doi(root, '[data-chu]', function (el) { LOC.chu = el.value; LOC.trang = 0; c.veLai(); });
     HM.doi(root, '[data-co]', function (el) { LOC.co = +el.value; LOC.trang = 0; c.veLai(); });
+    HM.bam(root, '[data-them-bai]', function () { HT.taoHoSoHo(c, null); });
     HM.bam(root, '[data-cotien]', function () { LOC.coTien = !LOC.coTien; LOC.trang = 0; c.veLai(); });
     HM.bam(root, '[data-maphu]', function () { LOC.maPhu = !LOC.maPhu; LOC.trang = 0; c.veLai(); });
     HM.bam(root, '[data-vande]', function () { LOC.vanDe = !LOC.vanDe; LOC.trang = 0; c.veLai(); });

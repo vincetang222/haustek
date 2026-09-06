@@ -423,3 +423,60 @@ thay đối tác chặn hỗ trợ, kinh doanh chỉ tài khoản mình, đối 
 **Còn mở.** Bộ phận marketing riêng (hiện gắn với kinh doanh); tự gán theo
 vòng trong bộ phận; SLA riêng từng bộ phận; nhân viên tải tệp âm thanh thật
 thay khách (bản mẫu chỉ nhận metadata).
+
+## Vòng 10 — cây tổ chức trước, quyền và nhiệm vụ suy ra sau; thêm dữ liệu; hồ sơ đủ
+
+**Vấn đề người dùng nêu.** (1) Nên có sơ đồ tổ chức công ty, rồi phân
+quyền, chức năng, nhiệm vụ, kể cả tài sản, suy ra từ đó. (2) Nhiều màn chỉ
+xem, không thêm được dữ liệu. (3) Trang phát hành thiếu nhiều so với form
+metadata ở trang chủ.
+
+**Cách làm (1).** Cây: Haustek Group → 5 khối (Ban giám đốc, Vận hành,
+Kinh doanh, Tài chính, Hỗ trợ) → 10 tổ → 4 chức danh. Khối mang hồ sơ
+quyền (màn, nhóm hàm) và lớp tài sản; tổ mang nhiệm vụ đếm sống; chức danh
+quyết định phạm vi (trưởng bộ phận thấy cả bộ phận). Ma trận phân quyền
+của vòng 8 không còn khai riêng mà dựng từ cây; thêm khối mới thì chọn một
+hồ sơ quyền có sẵn. Tài sản hiểu theo nghĩa thứ công ty quản lý và giao
+cho người: tài khoản đối tác, hợp đồng, chiến dịch, danh mục, hồ sơ phát
+hành, nền tảng, báo cáo kỳ, ví, tạm ứng, bảng kê, ticket, khiếu nại; phần
+giao đích danh (người phụ trách, người xử lý) đếm được trên từng người.
+Trang Tổ chức cho mọi vai xem chỗ mình đứng; giám đốc sửa.
+
+| Khối | Tổ | Nhiệm vụ đếm sống (ví dụ) | Tài sản |
+|---|---|---|---|
+| Ban giám đốc | Điều hành | Duyệt đề xuất, xét duyệt kỳ, nhân sự chưa gắn tổ | toàn công ty |
+| Vận hành | Phát hành & metadata · Giao nhận · Dữ liệu & đối soát | Hồ sơ chờ tiếp nhận, thiếu mục bắt buộc, giao nhận chờ, nguồn báo cáo thiếu, hàng chờ ISRC | danh mục, hồ sơ, nền tảng, báo cáo kỳ |
+| Kinh doanh | Đối tác & A&R · Marketing | Hợp đồng hết hạn 120 ngày, đề xuất bị trả lại, chưa đăng nhập, chiến dịch chạy, yêu cầu từ đối tác | tài khoản, hợp đồng, chiến dịch |
+| Tài chính | Thanh toán · Kế toán | Rút tiền chờ, bảng kê chưa đính, đề xuất chờ kiểm số, tạm ứng thu hồi, bút toán tháng | ví, tạm ứng, bảng kê |
+| Hỗ trợ | Chăm sóc đối tác · Bản quyền | Ticket mở / quá hạn, khiếu nại tranh chấp, sắp hết hạn | ticket, khiếu nại |
+
+**Cách làm (2).** Rà 26 màn nội bộ và 18 màn đối tác; màn dữ liệu nào
+chỉ đọc thì thêm nút "Thêm …" trên tiêu đề với hộp thoại một kiểu: đối
+tác, nền tảng, chiến dịch, chia sẻ tác quyền, dòng giá, bài hát (qua hồ sơ
+phát hành), bút toán điều chỉnh, khiếu nại, nhân sự / khối / tổ; đối tác:
+nghệ sĩ vào roster, đề nghị chiến dịch. Màn tổng hợp (tổng quan, theo
+dõi, dự báo) vẫn chỉ đọc vì dữ liệu của chúng suy ra từ nơi khác.
+
+**Cách làm (3).** Đối chiếu từng trường của `metadata.html`: hồ sơ trong
+lõi mở rộng đủ bốn bước, form dùng chung hai cổng, chặn ít mà kiểm nhiều
+(bảng kiểm bắt buộc / khuyến nghị) đúng cách Haustek làm thật: nhận hồ
+sơ, kiểm trong 2–3 ngày, thiếu thì gọi.
+
+**Thiết kế theo ba kho tham khảo.** Đọc taste-skill, ui-ux-pro-max-skill
+và marketingskills (form-cro, copywriting, onboarding, churn): rút thành
+ba bản tóm tắt và áp phần hợp với cổng B2B tài chính: một màu nhấn, dải
+xám lạnh, bớt bóng và hộp lồng hộp, chữ số tabular, nhãn viết thường, huy
+hiệu chỉ khi có trạng thái thật, một nút chính mỗi màn; form chia bước,
+"không bắt buộc" thay dấu sao, lỗi nói rõ cách sửa, nháp tự lưu; ô trống
+nói việc kế tiếp và thời gian Haustek phản hồi.
+
+`test/api-guard.js` thêm 5 phép kiểm (70 phép): quyền suy ra đúng từ cây,
+trưởng / chuyên viên kinh doanh khác phạm vi, nhân sự thêm / chuyển / khoá
+theo vai, mỗi hàm thêm dữ liệu đúng vai, cổng đối tác thêm nghệ sĩ và đề
+nghị chiến dịch đúng phạm vi, bảng kiểm hồ sơ tách bắt buộc / khuyến nghị.
+
+**Còn mở.** Quyền theo tổ (hiện theo khối); nhiều người phụ trách một tài
+khoản; tải tệp âm thanh thật; sửa hồ sơ sau khi gửi (trước khi tiếp nhận);
+điểm sức khoẻ đối tác và bậc thang gia hạn 180/120/60/30 ngày cho bàn
+kinh doanh (đã có tín hiệu, chưa có điểm).
+

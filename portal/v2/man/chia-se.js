@@ -18,6 +18,7 @@ HT.dangKy({
 
   chu: {
     vi: {
+      themCs: 'Thêm chia sẻ', fBai: 'Bài hát', fBaiHint: 'Gõ tên bài hoặc ISRC rồi chọn trong gợi ý.', fTen: 'Người cộng tác', fEmail: 'Email', fVai: 'Vai trò', fPct: 'Phần trăm', fThuHoi: 'Khoản thu hồi (USD)', fThuHoiHint: 'Trừ dần vào phần của người này cho đến khi hết.', daThemCs: 'Đã mời {t} · {p}%', khongBai: 'Không tìm thấy bài hát',
       navChiaSe: 'Chia sẻ tác quyền', h1: 'Chia sẻ tác quyền',
       mo: 'Bài nào chia phần trăm cho ai, lời mời chưa nhận, khoản thu hồi còn dở. Phần đã nhận tách khỏi số trả cho chủ bản ghi.',
       kBai: 'Bài có chia sẻ', kNg: 'Người cộng tác', kMoi: 'Lời mời chưa nhận', kMoiS: 'chưa được chia tiền', kDaChia: 'Đã chia cho người cộng tác', kDaChiaS: 'tích luỹ các kỳ đã xét duyệt', kThuHoi: 'Đang thu hồi',
@@ -26,6 +27,7 @@ HT.dangKy({
       khong: 'Không có bài nào khớp', khongMo: 'Đổi bộ lọc phía trên.'
     },
     en: {
+      themCs: 'Add a split', fBai: 'Track', fBaiHint: 'Type a title or ISRC and pick a suggestion.', fTen: 'Collaborator', fEmail: 'Email', fVai: 'Role', fPct: 'Share %', fThuHoi: 'Recoupment (USD)', fThuHoiHint: 'Deducted from this share until cleared.', daThemCs: 'Invited {t} · {p}%', khongBai: 'Track not found',
       navChiaSe: 'Royalty splits', h1: 'Royalty splits',
       mo: 'Who shares what on which track, pending invitations, running recoupments. Accepted shares are split out of the owner’s payout.',
       kBai: 'Tracks with splits', kNg: 'Collaborators', kMoi: 'Pending invitations', kMoiS: 'not paid yet', kDaChia: 'Paid to collaborators', kDaChiaS: 'across approved periods', kThuHoi: 'Recouping',
@@ -46,7 +48,7 @@ HT.dangKy({
       return true;
     });
     var pt = HTM.phanTrang(rows, LOC, 15);
-    var html = HM.dau({ h1: HM.esc(t('h1')), mo: HM.esc(t('mo')) });
+    var html = HM.dau({ h1: HM.esc(t('h1')), mo: HM.esc(t('mo')), nut: A.quyen.nhom('chiaSe') ? '<button type="button" class="btn pri" data-them-cs>' + HM.icon('swap') + HM.esc(t('themCs')) + '</button>' : '' });
     html += HM.so([
       { l: t('kBai'), v: HT.fmt.n(k.tracks), lon: true, s: d.sampled ? (c.lang === 'vi' ? 'đã lấy mẫu' : 'sampled') : '' },
       { l: t('kNg'), v: HT.fmt.n(k.collaborators) },
@@ -64,6 +66,19 @@ HT.dangKy({
       chan: HM.esc(c.song(d, 'note')) });
     root.innerHTML = html;
     HTM.ganTrang(root, LOC, c.veLai);
+    HM.bam(root, '[data-them-cs]', function () {
+      var tim = function (q) { return A.search(q, 8).tracks; };
+      HTM.hoiForm(c, { tieuDe: t('themCs'), dong: t('themCs'), fields: [
+        { k: 'q', l: t('fBai'), req: true, hint: t('fBaiHint'), rong: true }, { k: 'trackId', kieu: 'hidden' },
+        { k: 'name', l: t('fTen'), req: true }, { k: 'email', l: t('fEmail'), kieu: 'email', req: true },
+        { k: 'role', l: t('fVai'), kieu: 'select', opts: d.roles.map(function (r) { return [r.k, c.lang === 'en' ? r.labelEn : r.label]; }), kbb: false }, { k: 'pct', l: t('fPct'), kieu: 'number', min: 0.1, max: 100, step: 0.1, v: 10, req: true },
+        { k: 'recoup', l: t('fThuHoi'), kieu: 'number', min: 0, step: 10, hint: t('fThuHoiHint') }
+      ], khiMo: function (bg) { HTM.chonBai(bg, tim); } }).then(function (f) {
+        if (!f) return;
+        var id = HTM.baiTu(f, tim); if (id == null) { c.thongBao(t('khongBai'), 'no'); return; }
+        try { A.setSplit(id, f, A.staff.me.email); c.thongBao(t('daThemCs').replace('{t}', f.name).replace('{p}', f.pct), 'ok'); HM.quenHet(); c.veLai(); } catch (e) { c.thongBao(e.message, 'no'); }
+      });
+    });
     HM.bam(root, '[data-loc]', function (el) { LOC.loc = el.getAttribute('data-loc'); LOC.trang = 0; c.veLai(); });
     HM.nhap(root, '[data-tim]', function (el) { LOC.tim = el.value; c.veLai(); var i = root.querySelector('[data-tim]'); if (i) { i.focus(); i.setSelectionRange(i.value.length, i.value.length); } });
     HM.bam(root, '[data-xn]', function (el) {

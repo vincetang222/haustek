@@ -27,7 +27,7 @@ var CHU = {
     mdDiem: 'Điểm metadata', mdThieu: 'thiếu {n} mục', mdDu: 'đủ', mdChan: 'giữ lại trước khi giao', mdGoiY: 'Cách sửa',
     gtBuoc: 'Chuỗi suy ra con số', gtNt: 'Theo nền tảng', cNt: 'Nền tảng', cLuotN: 'Lượt nghe', cMucTra: 'Mức trả / 1.000', cTien: 'Số tiền',
     cdLoai: 'Loại', cdTrangThai: 'Trạng thái', cdThoiGian: 'Thời gian', cdKq: 'Kết quả', cdNgay: 'ngày',
-    cdRunning: 'Đang chạy', cdPlanned: 'Sắp chạy', cdDone: 'Đã xong',
+    cdRunning: 'Đang chạy', cdPlanned: 'Sắp chạy', cdDone: 'Đã xong', cdRequested: 'Đối tác yêu cầu',
     xem: 'lượt xem', bam: 'lượt bấm', luuTruoc: 'lưu trước', chuyenDoi: 'chuyển đổi', daGui: 'đã gửi', daNhan: 'nhận', choKq: 'chờ', tuChoi: 'từ chối',
     nganSach: 'ngân sách', daChi: 'đã chi', hienThi: 'hiển thị', luotNghe: 'lượt nghe quy được', giaLuot: 'giá mỗi lượt nghe',
     cDoiTac: 'Đối tác', cAlerts: 'Cảnh báo', cCoNt: 'Bị gắn cờ', cPhat: 'Phạt / tháng', cMau: 'Kiểu', cMo: 'Đang mở',
@@ -51,7 +51,7 @@ var CHU = {
     mdDiem: 'Metadata score', mdThieu: '{n} missing', mdDu: 'complete', mdChan: 'held before delivery', mdGoiY: 'How to fix',
     gtBuoc: 'How the number is derived', gtNt: 'By platform', cNt: 'Platform', cLuotN: 'Streams', cMucTra: 'Rate / 1,000', cTien: 'Amount',
     cdLoai: 'Kind', cdTrangThai: 'Status', cdThoiGian: 'Timing', cdKq: 'Results', cdNgay: 'days',
-    cdRunning: 'Running', cdPlanned: 'Planned', cdDone: 'Done',
+    cdRunning: 'Running', cdPlanned: 'Planned', cdDone: 'Done', cdRequested: 'Requested by partner',
     xem: 'views', bam: 'clicks', luuTruoc: 'pre-saves', chuyenDoi: 'conversion', daGui: 'sent', daNhan: 'accepted', choKq: 'pending', tuChoi: 'declined',
     nganSach: 'budget', daChi: 'spent', hienThi: 'impressions', luotNghe: 'attributed streams', giaLuot: 'cost per stream',
     cDoiTac: 'Partner', cAlerts: 'Alerts', cCoNt: 'Flagged', cPhat: 'Penalty / month', cMau: 'Pattern', cMo: 'Open',
@@ -194,7 +194,7 @@ function giaiThich(ex, opts) {
 }
 
 /* ---- chiến dịch ---- */
-function tagCd(st) { return st === 'running' ? HM.tag(t('cdRunning'), 'ok') : st === 'planned' ? HM.tag(t('cdPlanned'), 'info') : HM.tag(t('cdDone'), ''); }
+function tagCd(st) { return st === 'requested' ? HM.tag(t('cdRequested'), 'warn') : st === 'running' ? HM.tag(t('cdRunning'), 'ok') : st === 'planned' ? HM.tag(t('cdPlanned'), 'info') : HM.tag(t('cdDone'), ''); }
 function ketQuaCd(r, tien) {
   tien = tien || HT.fmt.usd;
   if (r.kind === 'smartlink') return '<div class="fun"><span><b>' + esc(n(r.views)) + '</b>' + esc(t('xem')) + '</span><i></i><span><b>' + esc(n(r.clicks)) + '</b>' + esc(t('bam')) + '</span><i></i><span><b>' + esc(n(r.presaves)) + '</b>' + esc(t('luuTruoc')) + '</span></div><div class="t-sub" style="font-family:var(--f)">' + esc(t('chuyenDoi') + ' ' + pct(r.conversion) + ' · ' + r.url) + '</div>';
@@ -297,7 +297,53 @@ function theDeXuat(pr, opts) {
   return html;
 }
 
-global.HTM = { t: t, song: song, phanTrang: phanTrang, ganTrang: ganTrang, oSo: oSo, tagDx: tagDx, tagKn: tagKn, tagHang: tagHang, theDeXuat: theDeXuat, tagMuc: tagMuc, tagTt: tagTt, tinHieu: tinHieu, chipTinHieu: chipTinHieu, bangCanhBao: bangCanhBao, theCanhBao: theCanhBao,
+/* ---------------------------------------------------------------------
+   Form nhanh cho hộp thoại "Thêm …": mô tả trường → HTML có data-o, cùng
+   một kiểu ở mọi màn. HTM.hoiForm(c, o) mở hộp thoại, kiểm trường bắt
+   buộc, trả về Promise giá trị (null nếu huỷ).
+   f = { k, l, kieu: text|number|date|select|textarea|check|hidden, opts: [[v,l]], v, ph, hint, req, rong, list }
+   --------------------------------------------------------------------- */
+function form(fields) {
+  return '<div class="fldrow two-up">' + fields.map(function (f) {
+    var id = 'data-o="' + esc(f.k) + '"', req = f.req ? ' *' : '', kbb = !f.req && f.kbb !== false && f.kieu !== 'hidden' && f.kieu !== 'check' ? ' <span class="kbb">(' + esc(HT.lang === 'en' ? 'optional' : 'không bắt buộc') + ')</span>' : '';
+    var than;
+    if (f.kieu === 'hidden') return '<input type="hidden" ' + id + ' value="' + esc(f.v == null ? '' : f.v) + '">';
+    if (f.kieu === 'select') than = '<select class="in" ' + id + '>' + (f.opts || []).map(function (x) { return '<option value="' + esc(x[0]) + '"' + (String(x[0]) === String(f.v == null ? '' : f.v) ? ' selected' : '') + '>' + esc(x[1]) + '</option>'; }).join('') + '</select>';
+    else if (f.kieu === 'textarea') than = '<textarea class="in" ' + id + ' rows="' + (f.rows || 3) + '"' + (f.ph ? ' placeholder="' + esc(f.ph) + '"' : '') + '>' + esc(f.v == null ? '' : f.v) + '</textarea>';
+    else if (f.kieu === 'check') return '<div class="fgrp' + (f.rong ? ' span2' : '') + '"><label class="tickrow"><input type="checkbox" ' + id + (f.v ? ' checked' : '') + ' value="1"><span>' + esc(f.l) + '</span></label>' + (f.hint ? '<div class="fhint">' + esc(f.hint) + '</div>' : '') + '</div>';
+    else than = '<input class="in" ' + id + ' type="' + (f.kieu || 'text') + '" value="' + esc(f.v == null ? '' : f.v) + '"' + (f.ph ? ' placeholder="' + esc(f.ph) + '"' : '') + (f.min != null ? ' min="' + f.min + '"' : '') + (f.max != null ? ' max="' + f.max + '"' : '') + (f.step != null ? ' step="' + f.step + '"' : '') + (f.list ? ' list="' + esc(f.list) + '"' : '') + (f.kieu === 'number' ? ' inputmode="decimal"' : '') + '>';
+    return '<div class="fgrp' + (f.rong ? ' span2' : '') + '"><label class="fld">' + esc(f.l) + req + kbb + '</label>' + than + (f.hint ? '<div class="fhint">' + esc(f.hint) + '</div>' : '') + '</div>';
+  }).join('') + '</div>';
+}
+function hoiForm(c, o) {
+  return c.hoiThoai({ tieuDe: o.tieuDe, moTa: o.moTa ? esc(o.moTa) : '', than: form(o.fields) + (o.them || ''), dong: o.dong, rong: o.rong !== false, khiMo: o.khiMo }).then(function (f) {
+    if (!f) return null;
+    var thieu = o.fields.filter(function (x) { return x.req && !String(f[x.k] == null ? '' : f[x.k]).trim(); });
+    if (thieu.length) { c.thongBao((HT.lang === 'en' ? 'Missing: ' : 'Còn thiếu: ') + thieu.map(function (x) { return x.l; }).join(', '), 'no'); return null; }
+    o.fields.forEach(function (x) { if (x.kieu === 'check') f[x.k] = f[x.k] === '1' || f[x.k] === 'on' || f[x.k] === true; });
+    return f;
+  });
+}
+/* Ô chọn bài hát trong hộp thoại: gõ tên / ISRC, datalist gợi ý, giữ id
+   trong ô ẩn. tim(q) → [{id, title, artist, isrc}] */
+function chonBai(bg, tim) {
+  var q = bg.querySelector('[data-o="q"]'), id = bg.querySelector('[data-o="trackId"]'); if (!q) return;
+  var dl = document.createElement('datalist'); dl.id = 'ds-chon-bai-' + Date.now(); bg.appendChild(dl); q.setAttribute('list', dl.id);
+  var hen = null, cache = [];
+  q.addEventListener('input', function () {
+    clearTimeout(hen);
+    hen = setTimeout(function () {
+      try { cache = tim(q.value) || []; } catch (e) { cache = []; }
+      dl.innerHTML = cache.map(function (x) { return '<option value="' + esc(x.title + ' · ' + x.isrc) + '">' + esc(x.artist) + '</option>'; }).join('');
+      var hit = cache.filter(function (x) { return x.title + ' · ' + x.isrc === q.value; })[0]; if (id) id.value = hit ? hit.id : '';
+    }, 150);
+  });
+}
+function baiTu(f, tim) {
+  if (f.trackId !== '' && f.trackId != null) return +f.trackId;
+  var q = String(f.q || '').split(' · ')[0]; var ds = tim(q) || []; return ds.length ? ds[0].id : null;
+}
+global.HTM = { form: form, hoiForm: hoiForm, chonBai: chonBai, baiTu: baiTu, t: t, song: song, phanTrang: phanTrang, ganTrang: ganTrang, oSo: oSo, tagDx: tagDx, tagKn: tagKn, tagHang: tagHang, theDeXuat: theDeXuat, tagMuc: tagMuc, tagTt: tagTt, tinHieu: tinHieu, chipTinHieu: chipTinHieu, bangCanhBao: bangCanhBao, theCanhBao: theCanhBao,
   dongCong: dongCong, bangChiaSe: bangChiaSe, nguong: nguong, diemMeta: diemMeta, kiemMeta: kiemMeta, bangMeta: bangMeta, giaiThich: giaiThich,
   tagCd: tagCd, ketQuaCd: ketQuaCd, bangChienDich: bangChienDich, theChienDich: theChienDich };
 

@@ -35,6 +35,7 @@ HT.dangKy({
 
   chu: {
     vi: {
+      themKn: 'Thêm khiếu nại', fBai: 'Bài hát', fBaiHint: 'Gõ tên bài hoặc ISRC rồi chọn trong gợi ý.', fStore: 'Nền tảng', fLoaiKn: 'Loại', fBenKia: 'Bên kia', fNuoc: 'Nước', fXem: 'Lượt xem / ngày', fUuTien: 'Ưu tiên', uNormal: 'Bình thường', uHigh: 'Cao', uUrgent: 'Khẩn', fGan: 'Giao cho', chuaGan: 'Chưa gán', fGhiKn: 'Ghi chú', daTaoKn: 'Đã tạo khiếu nại {id}', khongBai: 'Không tìm thấy bài hát',
       nhomDoiTac: 'Đối tác', navQuyen: 'Quản lý quyền', h1: 'Quản lý quyền',
       mo: 'Xung đột Content ID, khiếu nại trên nền tảng và cài đặt video theo tài khoản.',
       tabKn: 'Xung đột và khiếu nại', tabVideo: 'Cài đặt video',
@@ -71,6 +72,7 @@ HT.dangKy({
       loaiLabel: 'Label', loaiSub: 'Label con', loaiArtist: 'Nghệ sĩ'
     },
     en: {
+      themKn: 'Add a claim', fBai: 'Track', fBaiHint: 'Type a title or ISRC and pick a suggestion.', fStore: 'Platform', fLoaiKn: 'Category', fBenKia: 'Other party', fNuoc: 'Country', fXem: 'Daily views', fUuTien: 'Priority', uNormal: 'Normal', uHigh: 'High', uUrgent: 'Urgent', fGan: 'Assign to', chuaGan: 'Unassigned', fGhiKn: 'Note', daTaoKn: 'Created claim {id}', khongBai: 'Track not found',
       nhomDoiTac: 'Partners', navQuyen: 'Rights manager', h1: 'Rights manager',
       mo: 'Content ID conflicts, platform claims and per-account video settings.',
       tabKn: 'Conflicts and claims', tabVideo: 'Video settings',
@@ -113,6 +115,7 @@ HT.dangKy({
     var A = c.A, t = c.t;
     var dem = A.claims.counts();
     var html = HM.dau({ h1: HM.esc(t('h1')), mo: HM.esc(t('mo')),
+      nut: A.quyen.nhom('khieuNai') ? '<button type="button" class="btn pri" data-them-kn>' + HM.icon('alert') + HM.esc(t('themKn')) + '</button>' : '',
       so: [{ l: t('kDangMo'), v: HT.fmt.n(dem.open + dem.disputed + dem.escalated) },
            { l: t('kXem'), v: HB.gonSo(dem.views) }] });
     html += HM.tabs([
@@ -123,6 +126,21 @@ HT.dangKy({
     root.innerHTML = html + phan.html;
     phan.sau(root);
     HM.bam(root, '[data-tab]', function (el) { LOC.tab = el.getAttribute('data-tab'); c.veLai(); });
+    HM.bam(root, '[data-them-kn]', function () {
+      var tim = function (q) { return A.search(q, 8).tracks; }, vi = c.lang === 'vi', sup = A.staff.byRole('support').filter(function (x) { return x.active !== false; });
+      HTM.hoiForm(c, { tieuDe: t('themKn'), dong: t('themKn'), fields: [
+        { k: 'q', l: t('fBai'), req: true, hint: t('fBaiHint'), rong: true }, { k: 'trackId', kieu: 'hidden' },
+        { k: 'store', l: t('fStore'), kieu: 'select', opts: [['YouTube', 'YouTube'], ['Facebook', 'Facebook'], ['TikTok', 'TikTok'], ['Instagram', 'Instagram'], ['Spotify', 'Spotify']], kbb: false },
+        { k: 'category', l: t('fLoaiKn'), kieu: 'select', opts: A.claims.categories.map(function (x) { return [x.id, vi ? x.label : x.labelEn]; }), kbb: false },
+        { k: 'otherParty', l: t('fBenKia') }, { k: 'country', l: t('fNuoc'), v: 'VN' }, { k: 'dailyViews', l: t('fXem'), kieu: 'number', min: 0 },
+        { k: 'priority', l: t('fUuTien'), kieu: 'select', opts: [['normal', t('uNormal')], ['high', t('uHigh')], ['urgent', t('uUrgent')]], kbb: false },
+        { k: 'assignee', l: t('fGan'), kieu: 'select', opts: [['', t('chuaGan')]].concat(sup.map(function (x) { return [x.id, x.name]; })) }, { k: 'note', l: t('fGhiKn'), rong: true }
+      ], khiMo: function (bg) { HTM.chonBai(bg, tim); } }).then(function (f) {
+        if (!f) return;
+        var id = HTM.baiTu(f, tim); if (id == null) { c.thongBao(t('khongBai'), 'no'); return; }
+        try { var r = A.claimCreate(Object.assign({}, f, { trackId: id }), A.staff.me.email); c.thongBao(t('daTaoKn').replace('{id}', r.id), 'ok'); c.veLai(); } catch (e) { c.thongBao(e.message, 'no'); }
+      });
+    });
   }
 });
 

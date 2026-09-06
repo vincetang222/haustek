@@ -24,6 +24,7 @@ HT.dangKy({
 
   chu: {
     vi: {
+      ycMo: 'Chọn bài và loại chiến dịch. Đội Kinh doanh nhận yêu cầu qua ticket marketing và báo lại trong 2 ngày làm việc.', guiYc: 'Gửi đề nghị', fBai: 'Bài hát', fBaiHint: 'Gõ tên bài hoặc ISRC rồi chọn trong gợi ý.', fLoaiCd: 'Loại chiến dịch', fBd: 'Bắt đầu', fKt: 'Kết thúc', fNs: 'Ngân sách bạn dự kiến (USD, quảng cáo)', fGhiCd: 'Mục tiêu, ghi chú', daGuiYc: 'Đã gửi đề nghị {id} · ticket {t}', khongBai: 'Không tìm thấy bài hát', ttRequested: 'Đang chờ Haustek',
       navChienDich: 'Chiến dịch', h1: 'Chiến dịch quảng bá',
       mo: 'Liên kết thông minh có pre-save, pitch playlist và quảng cáo cho bài của bạn. Mỗi dòng là một phễu kết quả.',
       kDang: 'Đang chạy', kDangS: '{a} sắp chạy · {b} đã xong', kLuu: 'Lưu trước (pre-save)', kLuuS: 'từ liên kết thông minh', kPitch: 'Playlist nhận', kPitchS: 'trong {n} lượt pitch', kChi: 'Đã chi quảng cáo', kChiS: '{n} lượt nghe quy được', kGia: 'Giá mỗi lượt nghe', kGiaS: 'bình quân quảng cáo',
@@ -32,6 +33,7 @@ HT.dangKy({
       chiTiet: 'Chiến dịch', dong: 'Đóng'
     },
     en: {
+      ycMo: 'Pick a track and a campaign kind. The Sales team gets it as a marketing ticket and replies within 2 business days.', guiYc: 'Send request', fBai: 'Track', fBaiHint: 'Type a title or ISRC and pick a suggestion.', fLoaiCd: 'Campaign kind', fBd: 'Start', fKt: 'End', fNs: 'Your planned budget (USD, ads)', fGhiCd: 'Goal, notes', daGuiYc: 'Request {id} sent · ticket {t}', khongBai: 'Track not found', ttRequested: 'Awaiting Haustek',
       navChienDich: 'Campaigns', h1: 'Promotion campaigns',
       mo: 'Smart links with pre-save, playlist pitching and paid ads for your tracks. Each row is a results funnel.',
       kDang: 'Running', kDangS: '{a} planned · {b} done', kLuu: 'Pre-saves', kLuuS: 'from smart links', kPitch: 'Playlists accepted', kPitchS: 'of {n} pitches', kChi: 'Ad spend', kChiS: '{n} attributed streams', kGia: 'Cost per stream', kGiaS: 'average across ads',
@@ -58,7 +60,7 @@ HT.dangKy({
     html += '<div class="bar">' +
       [['all', t('loaiAll')], ['smartlink', t('loaiSl')], ['pitch', t('loaiPitch')], ['ads', t('loaiAds')]].map(function (x) { return '<button type="button" class="pill' + (LOC.loai === x[0] ? ' on' : '') + '" data-loai="' + x[0] + '">' + HM.esc(x[1]) + '</button>'; }).join('') +
       '<span class="muted">·</span>' +
-      [['all', t('ttAll')], ['running', t('ttRunning')], ['planned', t('ttPlanned')], ['done', t('ttDone')]].map(function (x) { return '<button type="button" class="pill' + (LOC.tt === x[0] ? ' on' : '') + '" data-tt="' + x[0] + '">' + HM.esc(x[1]) + '</button>'; }).join('') +
+      [['all', t('ttAll')], ['requested', t('ttRequested')], ['running', t('ttRunning')], ['planned', t('ttPlanned')], ['done', t('ttDone')]].map(function (x) { return '<button type="button" class="pill' + (LOC.tt === x[0] ? ' on' : '') + '" data-tt="' + x[0] + '">' + HM.esc(x[1]) + '</button>'; }).join('') +
       '</div>';
     html += HM.the({
       thoBody: true,
@@ -71,7 +73,20 @@ HT.dangKy({
     HTM.ganTrang(root, LOC, c.veLai);
     HM.bam(root, '[data-loai]', function (el) { LOC.loai = el.getAttribute('data-loai'); LOC.trang = 0; c.veLai(); });
     HM.bam(root, '[data-tt]', function (el) { LOC.tt = el.getAttribute('data-tt'); LOC.trang = 0; c.veLai(); });
-    HM.bam(root, '[data-yc]', function () { if (HT.moTicket) HT.moTicket(c, { type: 'marketing' }); else c.di('k-ho-tro'); });
+    HM.bam(root, '[data-yc]', function () {
+      var api = c.api, me = c.phien.me;
+      var tim = function (q) { return api.search(me.role, me.partyId, q, 8).tracks; };
+      var mai = function (n) { return new Date(Date.now() + n * 864e5).toISOString().slice(0, 10); };
+      HTM.hoiForm(c, { tieuDe: t('yeuCau'), moTa: t('ycMo'), dong: t('guiYc'), fields: [
+        { k: 'q', l: t('fBai'), req: true, hint: t('fBaiHint'), rong: true }, { k: 'trackId', kieu: 'hidden' },
+        { k: 'kind', l: t('fLoaiCd'), kieu: 'select', opts: [['smartlink', t('loaiSl')], ['pitch', t('loaiPitch')], ['ads', t('loaiAds')]], kbb: false }, { k: 'budget', l: t('fNs'), kieu: 'number', min: 0, step: 10 },
+        { k: 'start', l: t('fBd'), kieu: 'date', v: mai(7), kbb: false }, { k: 'end', l: t('fKt'), kieu: 'date', v: mai(37), kbb: false }, { k: 'note', l: t('fGhiCd'), rong: true }
+      ], khiMo: function (bg) { HTM.chonBai(bg, tim); } }).then(function (f) {
+        if (!f) return;
+        var id = HTM.baiTu(f, tim); if (id == null) { c.thongBao(t('khongBai'), 'no'); return; }
+        try { var r = api.requestCampaign(me.role, me.partyId, Object.assign({}, f, { trackId: id })); c.thongBao(t('daGuiYc').replace('{id}', r.id).replace('{t}', r.ticketId), 'ok'); c.veLai(); } catch (e) { c.thongBao(e.message, 'no'); }
+      });
+    });
     HM.bam(root, 'tr[data-cd]', function (el) {
       var id = el.getAttribute('data-cd'), r = d.rows.filter(function (x) { return x.id === id; })[0]; if (!r) return;
       c.nganTruot('<div class="asset-h">' + HM.bia(r.trackId, r.title, 'xl') + '<div class="asset-t"><b>' + HM.esc(r.title) + '</b><span>' + HM.esc(r.artist + ' · ' + r.id) + '</span></div></div>' + HTM.theChienDich(r, HT.fmt.usd),

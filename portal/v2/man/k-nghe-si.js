@@ -19,6 +19,7 @@ HT.dangKy({
 
   chu: {
     vi: {
+      themNs: 'Thêm nghệ sĩ', themNsMo: 'Nghệ sĩ mới vào roster của label, chưa có bản ghi. Có ngay hồ sơ để gửi phát hành.', fNgheDanh: 'Nghệ danh', fTenThat: 'Họ tên thật', fTenThatHint: 'Dùng cho hợp đồng và chứng từ thuế.', fSpotify: 'Link Spotify', fSpotifyHint: 'Thiếu link này, nhạc dễ bị đẩy nhầm sang hồ sơ trùng tên.', fApple: 'Link Apple Music', fEmailNs: 'Email đăng nhập cổng', fEmailNsHint: 'Có email thì nghệ sĩ được cấp tài khoản riêng để xem phần của mình.', fWriter: 'Nghệ sĩ cũng là người sáng tác', daThemNs: 'Đã thêm {t} · {id}',
       navNs: 'Nghệ sĩ', h1: 'Nghệ sĩ của label',
       mo: 'Từng nghệ sĩ trong roster mang về bao nhiêu trong kỳ, số thanh toán cho nghệ sĩ và phần label được hưởng.',
       soNs: 'Nghệ sĩ trong roster', coDt: 'Có doanh thu kỳ này', gop: 'Doanh thu của roster',
@@ -35,6 +36,7 @@ HT.dangKy({
       diemProducer: 'Điểm producer'
     },
     en: {
+      themNs: 'Add an artist', themNsMo: 'A new artist on your roster, no recordings yet. They can be picked in a release submission right away.', fNgheDanh: 'Stage name', fTenThat: 'Legal name', fTenThatHint: 'Used for contracts and tax documents.', fSpotify: 'Spotify link', fSpotifyHint: 'Without it the release may be mapped to a namesake profile.', fApple: 'Apple Music link', fEmailNs: 'Portal login email', fEmailNsHint: 'With an email the artist gets their own login to see their share.', fWriter: 'The artist is also a writer', daThemNs: 'Added {t} · {id}',
       navNs: 'Artists', h1: 'Artists on your label',
       mo: 'What each artist on the roster brought in this period, what Haustek pays the artist, and what the label keeps.',
       soNs: 'Artists on the roster', coDt: 'Earning this period', gop: 'Roster revenue',
@@ -78,7 +80,7 @@ HT.dangKy({
       return (va - vb) * LOC.huong;
     });
 
-    var html = HM.dau({ h1: HM.esc(t('h1')) + ' <span>' + HM.esc(c.ky.label) + '</span>', mo: HM.esc(t('mo')) });
+    var html = HM.dau({ h1: HM.esc(t('h1')) + ' <span>' + HM.esc(c.ky.label) + '</span>', mo: HM.esc(t('mo')), nut: '<button type="button" class="btn pri" data-them-ns>' + HM.icon('user') + HM.esc(t('themNs')) + '</button>' });
     html += HM.so([
       { l: t('gop'), v: HT.fmt.usd0(r.total.revenue), lon: true },
       { l: t('traNs'), v: HT.fmt.usd0(r.total.artist), s: hd ? HT.fmt.pct(hd.artistShare) + (c.lang === 'vi' ? ' của doanh thu' : ' of revenue') : '' },
@@ -135,6 +137,16 @@ HT.dangKy({
       var k = el.getAttribute('data-sx');
       if (LOC.sap === k) LOC.huong = -LOC.huong; else { LOC.sap = k; LOC.huong = k === 'name' ? 1 : -1; }
       c.veLai();
+    });
+    HM.bam(root, '[data-them-ns]', function () {
+      HTM.hoiForm(c, { tieuDe: t('themNs'), moTa: t('themNsMo'), dong: t('themNs'), fields: [
+        { k: 'name', l: t('fNgheDanh'), req: true }, { k: 'realName', l: t('fTenThat'), hint: t('fTenThatHint') },
+        { k: 'spotify', l: t('fSpotify'), kieu: 'url', hint: t('fSpotifyHint') }, { k: 'apple', l: t('fApple'), kieu: 'url' },
+        { k: 'email', l: t('fEmailNs'), kieu: 'email', hint: t('fEmailNsHint') }, { k: 'writer', l: t('fWriter'), kieu: 'check' }
+      ] }).then(function (f) {
+        if (!f) return;
+        try { var r = api.addArtist(me.role, me.partyId, f); c.thongBao(t('daThemNs').replace('{t}', r.name).replace('{id}', r.clientId), 'ok'); c.veLai(); } catch (e) { c.thongBao(e.message, 'no'); }
+      });
     });
     HM.bam(root, '[data-xuat]', function () {
       HM.csv('nghe-si-' + me.clientId + '-' + c.kyKey + '.csv',

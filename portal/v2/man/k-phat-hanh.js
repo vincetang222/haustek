@@ -15,8 +15,8 @@ var NHAN = {
 };
 var KIEU = { submitted: 'info', received: 'link', coded: 'warn', released: 'ok', returned: 'no' };
 var THE_LOAI = ['Pop', 'Indie', 'R&B', 'Hip-hop', 'Electronic', 'Alternative', 'Ballad', 'Rock', 'Lo-fi', 'Folk', 'Khác'];
-var VAI = { vi: { Composer: 'Sáng tác', Lyricist: 'Viết lời', 'Composer/Lyricist': 'Sáng tác & viết lời', Arranger: 'Phối khí' },
-            en: { Composer: 'Composer', Lyricist: 'Lyricist', 'Composer/Lyricist': 'Composer & lyricist', Arranger: 'Arranger' } };
+var VAI = { vi: { Composer: 'Sáng tác', Lyricist: 'Viết lời', 'Composer/Lyricist': 'Sáng tác & viết lời', ComposerLyricist: 'Sáng tác & viết lời', Arranger: 'Phối khí' },
+            en: { Composer: 'Composer', Lyricist: 'Lyricist', ComposerLyricist: 'Composer & lyricist', 'Composer/Lyricist': 'Composer & lyricist', Arranger: 'Arranger' } };
 
 HT.dangKy({
   id: 'k-phat-hanh', nav: 'navPh', nhom: 'nhomBai', icon: 'file',
@@ -25,12 +25,12 @@ HT.dangKy({
     vi: {
       navPh: 'Phát hành', h1: 'Phát hành',
       mo: 'Bản phát hành đã có trong danh mục, hồ sơ đang xử lý, và gửi hồ sơ phát hành mới.',
-      dangXuLy: 'Hồ sơ đang xử lý', canBoSung: 'Cần bổ sung', daPh: 'Đã phát hành', trongDm: 'Trong danh mục',
+      dangXuLy: 'Hồ sơ đang xử lý', canBoSung: 'Cần bạn bổ sung', daPh: 'Đã phát hành', trongDm: 'Trong danh mục',
       gui: 'Gửi hồ sơ phát hành', haustekTao: 'Haustek tạo thay bạn', hoSo: 'Hồ sơ đã gửi', hoSoMo: 'Bấm một hồ sơ để xem chi tiết và lịch sử xử lý.',
       danhMuc: 'Bản phát hành trong danh mục', danhMucMo: 'Suy ra từ các bài hát đã gửi tới nền tảng. Bản phát hành có doanh thu ở kỳ đã xét duyệt được đánh dấu.',
       cMa: 'Mã hồ sơ', cTen: 'Bản phát hành', cLoai: 'Loại', cNgay: 'Ngày phát hành mong muốn', cTt: 'Trạng thái', cCapNhat: 'Cập nhật lần cuối',
       cKy: 'Kỳ phát hành', cTrack: 'Track', cDt: 'Doanh thu các kỳ đã xét duyệt', coDt: 'đã có', chuaDt: 'chưa có',
-      khongHs: 'Chưa gửi hồ sơ nào', khongHsMo: 'Hồ sơ phát hành gửi từ hồ sơ metadata ở trang chủ hoặc từ nút phía trên sẽ hiển thị ở đây.',
+      khongHs: 'Bạn chưa gửi hồ sơ phát hành nào', khongHsMo: 'Hồ sơ đầu tiên mất khoảng 15 phút, có lưu nháp. Haustek tiếp nhận trong 2 ngày làm việc. Hoặc gửi file qua email để Haustek tạo thay bạn.',
       quyTrinh: 'Hồ sơ đi qua những bước nào',
       b1: 'Đã gửi', b1m: 'Hồ sơ đã vào danh sách chờ xử lý của Haustek. Bạn chưa cần làm gì thêm.',
       b2: 'Đã tiếp nhận', b2m: 'Haustek đã kiểm tra đủ thông tin. Nếu thiếu, hồ sơ được trả lại kèm ghi chú cần bổ sung.',
@@ -43,19 +43,19 @@ HT.dangKy({
       formBia: 'Đường dẫn ảnh bìa', formGhi: 'Ghi chú cho bộ phận phát hành', formTracks: 'Danh sách track',
       themTrack: 'Thêm track', xoaTrack: 'Xoá track', trTen: 'Tên track', trFeat: 'Nghệ sĩ khách mời (feat.)', trIsrc: 'ISRC (nếu đã có)',
       trProducer: 'Producer', trSangTac: 'Người sáng tác và tỷ lệ', themNguoi: 'Thêm người sáng tác', tenThat: 'Họ tên theo giấy tờ', vaiTro: 'Vai trò', tiLe: 'Tỷ lệ %',
-      formMo: 'Bản rút gọn của hồ sơ metadata, chỉ các trường bắt buộc. Gửi rồi không sửa; cần sửa thì Haustek trả lại.',
+      formMo: 'Sau khi Haustek tiếp nhận, bạn không sửa được nữa. Nếu cần chỉnh, Haustek trả hồ sơ về để bạn bổ sung.',
       daGui: 'Đã gửi hồ sơ', formDay: 'Mở hồ sơ metadata đầy đủ trên trang chủ',
       tongTiLe: 'Tổng tỷ lệ sáng tác phải bằng 100%'
     },
     en: {
       navPh: 'Releases', h1: 'Releases',
       mo: 'Releases already in the catalogue, submissions in progress, and submitting a new release.',
-      dangXuLy: 'In progress', canBoSung: 'Needs fixes', daPh: 'Released', trongDm: 'In the catalogue',
+      dangXuLy: 'In progress', canBoSung: 'Needs your input', daPh: 'Released', trongDm: 'In the catalogue',
       gui: 'Submit a release', haustekTao: 'Created by Haustek for you', hoSo: 'Submissions', hoSoMo: 'Open a submission for details and its history.',
       danhMuc: 'Releases in the catalogue', danhMucMo: 'Derived from the tracks delivered to platforms. Releases earning in an approved period are marked.',
       cMa: 'Submission', cTen: 'Release', cLoai: 'Type', cNgay: 'Requested date', cTt: 'Status', cCapNhat: 'Updated',
       cKy: 'Release period', cTrack: 'Tracks', cDt: 'Revenue across approved periods', coDt: 'earning', chuaDt: 'none yet',
-      khongHs: 'No submissions yet', khongHsMo: 'Submissions from the homepage metadata form or the button above appear here.',
+      khongHs: 'You have not sent a release yet', khongHsMo: 'The first one takes about 15 minutes and saves as a draft. Haustek takes it in within 2 business days. Or email the files and Haustek creates it for you.',
       quyTrinh: 'The steps a submission goes through',
       b1: 'Submitted', b1m: 'The submission is in Haustek’s queue. Nothing else is needed from you.',
       b2: 'Received', b2m: 'Haustek has checked the submission. If something is missing it is returned with a note.',
@@ -151,19 +151,13 @@ function moHoSo(c, r) {
   c.nganTruot(
     '<div class="btnrow" style="margin-bottom:14px">' + HM.tag(NHAN[c.lang][r.status], KIEU[r.status]) + '</div>' +
     (tra && tra.note ? HM.ghi({ kieu: 'no', tieuDe: HM.esc(t('ghiChuTra')), than: HM.esc(tra.note) }) : '') +
-    HM.kv([
-      { t: t('cLoai'), v: r.type === 'single' ? 'Single' : r.type === 'ep' ? 'EP' : 'Album' },
-      { t: t('formNs'), v: r.artistName },
-      { t: t('cNgay'), v: HT.fmt.ngay(r.releaseDate) },
-      r.releasedAt ? { t: t('b4'), v: HT.fmt.ngay(r.releasedAt), manh: true } : null,
-      { t: 'UPC', v: r.upc || t('chuaCoMa') },
-      r.genre ? { t: t('formTl'), v: r.genre } : null
-    ]) +
+    (r.kiem ? HHS.bangKiem(r.kiem, { gon: r.status === 'released' }) : '') +
+    HM.kv([r.releasedAt ? { t: t('b4'), v: HT.fmt.ngay(r.releasedAt), manh: true } : null].concat(HHS.chiTiet(r, HT.fmt))) +
     '<h4 class="sec">' + HM.esc(t('track')) + ' (' + r.tracks.length + ')</h4>' +
     '<div class="tw"><table class="t" style="min-width:0"><thead><tr><th>#</th><th>Track</th><th>ISRC</th><th>' + HM.esc(t('trSangTac')) + '</th></tr></thead><tbody>' +
     r.tracks.map(function (tr) {
       return '<tr><td class="mono">' + tr.pos + '</td><td><div class="t-ttl">' + HM.esc(tr.title) + '</div>' +
-        '<div class="t-sub">' + HM.esc(tr.artist) + (tr.feat ? ' feat. ' + HM.esc(tr.feat) : '') + (tr.producer ? ' · ' + HM.esc(tr.producer) : '') + '</div></td>' +
+        '<div class="t-sub">' + HM.esc([tr.artist, HHS.trackChiTiet(tr), tr.producer].filter(Boolean).join(' · ')) + '</div></td>' +
         '<td class="mono">' + (tr.isrc ? HM.esc(tr.isrc) : '<span class="nil">' + HM.esc(t('chuaCoMa')) + '</span>') + '</td>' +
         '<td style="font-size:12px">' + tr.writers.map(function (w) { return HM.esc(w.name) + ' <span class="muted">' + HM.esc(VAI[c.lang][w.role] || w.role) + ' · ' + w.pct + '%</span>'; }).join('<br>') + '</td></tr>';
     }).join('') + '</tbody></table></div>' +
@@ -176,102 +170,17 @@ function moHoSo(c, r) {
     { tieuDe: r.title, phu: r.id });
 }
 
-/* ---- gửi hồ sơ mới ---- */
+/* ---- gửi hồ sơ mới: form bốn bước dùng chung (haustek-hoso.js) ---- */
 function guiHoSo(c) {
   var api = c.api, me = c.phien.me, t = c.t;
-  var ns = api.rosterArtists(me.role, me.partyId).rows;
-  var tracks = [{ title: '', feat: '', isrc: '', producer: '', writers: [{ name: ns[0] ? ns[0].name : '', role: 'Composer', pct: 100 }] }];
-
-  function veTrack(tr, i) {
-    return '<div class="card" style="margin:10px 0 0;box-shadow:none" data-tr="' + i + '"><div class="card-b" style="padding:12px 14px">' +
-      '<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><b style="font-size:13px">Track ' + (i + 1) + '</b><span class="sp"></span>' +
-      (tracks.length > 1 ? '<button type="button" class="btn sm ghost" data-xoa="' + i + '">' + HM.esc(t('xoaTrack')) + '</button>' : '') + '</div>' +
-      '<div class="fldrow two-up">' +
-      '<div><label class="fld">' + HM.esc(t('trTen')) + ' *</label><input class="in" data-k="title" data-i="' + i + '" value="' + HM.esc(tr.title) + '"></div>' +
-      '<div><label class="fld">' + HM.esc(t('trFeat')) + '</label><input class="in" data-k="feat" data-i="' + i + '" value="' + HM.esc(tr.feat) + '"></div>' +
-      '<div><label class="fld">' + HM.esc(t('trIsrc')) + '</label><input class="in" data-k="isrc" data-i="' + i + '" value="' + HM.esc(tr.isrc) + '" placeholder="VNHTK2600001"></div>' +
-      '<div><label class="fld">' + HM.esc(t('trProducer')) + '</label><input class="in" data-k="producer" data-i="' + i + '" value="' + HM.esc(tr.producer) + '"></div></div>' +
-      '<label class="fld" style="margin-top:10px">' + HM.esc(t('trSangTac')) + '</label>' +
-      tr.writers.map(function (w, j) {
-        return '<div style="display:grid;grid-template-columns:minmax(0,3fr) minmax(0,2fr) 70px 28px;gap:6px;margin-bottom:6px" data-w="' + j + '">' +
-          '<input class="in" data-wk="name" data-i="' + i + '" data-j="' + j + '" value="' + HM.esc(w.name) + '" placeholder="' + HM.esc(t('tenThat')) + '">' +
-          '<select class="in" data-wk="role" data-i="' + i + '" data-j="' + j + '">' + Object.keys(VAI.vi).map(function (k) {
-            return '<option value="' + k + '"' + (w.role === k ? ' selected' : '') + '>' + HM.esc(VAI[c.lang][k]) + '</option>';
-          }).join('') + '</select>' +
-          '<input class="in" type="number" min="0" max="100" step="0.01" data-wk="pct" data-i="' + i + '" data-j="' + j + '" value="' + w.pct + '">' +
-          '<button type="button" class="x" data-xoaw="' + i + ':' + j + '" title="' + HM.esc(t('xoaTrack')) + '">' + HM.icon('x') + '</button></div>';
-      }).join('') +
-      '<button type="button" class="btn sm ghost" data-themw="' + i + '">' + HM.esc(t('themNguoi')) + '</button>' +
-      '</div></div>';
-  }
-  function veTatCa(bg) {
-    bg.querySelector('[data-tracks]').innerHTML = tracks.map(veTrack).join('');
-  }
-
-  c.hoiThoai({
-    tieuDe: t('gui'), moTa: HM.esc(t('formMo')),
-    than: '<div class="fldrow two-up">' +
-      '<div><label class="fld">' + HM.esc(t('formNs')) + ' *</label><select class="in" data-o="artistId">' +
-        ns.map(function (a) { return '<option value="' + a.artistId + '">' + HM.esc(a.name + ' · ' + a.clientId) + '</option>'; }).join('') + '</select></div>' +
-      '<div><label class="fld">' + HM.esc(t('formLoai')) + ' *</label><select class="in" data-o="type">' +
-        '<option value="single">Single</option><option value="ep">EP</option><option value="album">Album</option></select></div>' +
-      '<div><label class="fld">' + HM.esc(t('formTen')) + ' *</label><input class="in" data-o="title"></div>' +
-      '<div><label class="fld">' + HM.esc(t('formPb')) + '</label><input class="in" data-o="version" placeholder="Deluxe / Live / Remastered"></div>' +
-      '<div><label class="fld">' + HM.esc(t('formTl')) + ' *</label><select class="in" data-o="genre">' +
-        THE_LOAI.map(function (g) { return '<option>' + HM.esc(g) + '</option>'; }).join('') + '</select></div>' +
-      '<div><label class="fld">' + HM.esc(t('formNn')) + ' *</label><select class="in" data-o="lang"><option value="vi">Tiếng Việt</option><option value="en">English</option><option value="instrumental">Instrumental</option><option value="other">Khác</option></select></div>' +
-      '<div><label class="fld">' + HM.esc(t('formNgay')) + ' *</label><input class="in" data-o="releaseDate" type="date"></div>' +
-      '<div><label class="fld">' + HM.esc(t('formUpc')) + '</label><input class="in" data-o="upc" inputmode="numeric"></div>' +
-      '<div><label class="fld">' + HM.esc(t('formBia')) + '</label><input class="in" data-o="artwork" type="url" placeholder="https://drive.google.com/…"></div>' +
-      '<div><label class="fld">' + HM.esc(t('formGhi')) + '</label><input class="in" data-o="note"></div></div>' +
-      '<h4 class="sec">' + HM.esc(t('formTracks')) + '</h4>' +
-      '<div data-tracks></div>' +
-      '<div class="btnrow" style="margin-top:10px"><button type="button" class="btn sm" data-them>' + HM.icon('up') + HM.esc(t('themTrack')) + '</button></div>' +
-      '<input type="hidden" data-o="tracks" value="">',
-    dong: t('gui'),
-    khiMo: function (bg) {
-      bg.querySelector('.modal').classList.add('rong');
-      veTatCa(bg);
-      bg.addEventListener('input', function (e) {
-        var el = e.target;
-        if (el.dataset.k) tracks[+el.dataset.i][el.dataset.k] = el.value;
-        if (el.dataset.wk) tracks[+el.dataset.i].writers[+el.dataset.j][el.dataset.wk] = el.dataset.wk === 'pct' ? +el.value : el.value;
-        bg.querySelector('[data-o=tracks]').value = JSON.stringify(tracks);
-      });
-      bg.addEventListener('change', function (e) {
-        var el = e.target;
-        if (el.dataset.wk === 'role') tracks[+el.dataset.i].writers[+el.dataset.j].role = el.value;
-        bg.querySelector('[data-o=tracks]').value = JSON.stringify(tracks);
-      });
-      bg.addEventListener('click', function (e) {
-        var b = e.target.closest('[data-them],[data-xoa],[data-themw],[data-xoaw]');
-        if (!b) return;
-        e.preventDefault();
-        if (b.hasAttribute('data-them')) tracks.push({ title: '', feat: '', isrc: '', producer: '', writers: [{ name: '', role: 'Composer', pct: 100 }] });
-        if (b.hasAttribute('data-xoa')) tracks.splice(+b.getAttribute('data-xoa'), 1);
-        if (b.hasAttribute('data-themw')) tracks[+b.getAttribute('data-themw')].writers.push({ name: '', role: 'Composer', pct: 0 });
-        if (b.hasAttribute('data-xoaw')) { var p = b.getAttribute('data-xoaw').split(':'); tracks[+p[0]].writers.splice(+p[1], 1); }
-        veTatCa(bg);
-        bg.querySelector('[data-o=tracks]').value = JSON.stringify(tracks);
-      });
-      bg.querySelector('[data-o=tracks]').value = JSON.stringify(tracks);
-    }
-  }).then(function (f) {
-    if (!f) return;
-    var ds;
-    try { ds = JSON.parse(f.tracks || '[]'); } catch (e) { ds = tracks; }
-    for (var i = 0; i < ds.length; i++) {
-      var tong = (ds[i].writers || []).reduce(function (s, w) { return s + (+w.pct || 0); }, 0);
-      if (ds[i].title && Math.abs(tong - 100) > 0.01) { c.thongBao(t('tongTiLe') + ' · Track ' + (i + 1), 'no'); return; }
-    }
-    try {
-      var kq = api.submitRelease(me.role, me.partyId, {
-        artistId: f.artistId, type: f.type, title: f.title, version: f.version, genre: f.genre, lang: f.lang,
-        releaseDate: f.releaseDate, upc: f.upc, artwork: f.artwork, note: f.note, tracks: ds
-      });
-      c.thongBao(t('daGui') + ' · ' + kq.id, 'ok');
-      c.veLai();
-    } catch (e) { c.thongBao(e.message, 'no'); }
+  var ns = api.rosterArtists(me.role, me.partyId).rows.map(function (a) { return { id: a.artistId, name: a.name, clientId: a.clientId }; });
+  var rl = api.releases(me.role, me.partyId);
+  HHS.mo({
+    ns: ns, fields: rl.fields, ten: me.name, nhan: me.role === 'label' ? me.name : 'Haustek', khoa: me.role + '-' + me.partyId,
+    lienHe: { name: me.role === 'artist' ? me.name : '', email: '' },
+    kiem: function (payload) { return api.checkRelease(me.role, me.partyId, payload); },
+    gui: function (payload) { return api.submitRelease(me.role, me.partyId, payload); },
+    xong: function (kq) { c.thongBao(HHS.T('daGui', { id: kq.id }), 'ok'); c.veLai(); }
   });
 }
 

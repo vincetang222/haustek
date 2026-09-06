@@ -245,7 +245,7 @@ function hoiThoai(o) {
       if (!b) return;
       if (b.dataset.act === 'huy') return tat(null);
       var form = {};
-      bg.querySelectorAll('[data-o]').forEach(function (f) { form[f.dataset.o] = f.value; });
+      bg.querySelectorAll('[data-o]').forEach(function (f) { form[f.dataset.o] = f.type === 'checkbox' ? (f.checked ? f.value || '1' : '') : f.value; });
       tat(form);
     });
     document.addEventListener('keydown', phim);

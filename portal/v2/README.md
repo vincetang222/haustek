@@ -293,6 +293,53 @@ chuột hoặc bấm để đọc, bấm thì ghim, Esc / bấm ngoài thì đó
 thích tiếng Việt / tiếng Anh được viết lại ngắn gọn; hàng lối tắt trên bàn làm
 việc bỏ vì trùng thanh điều hướng.
 
+## Cây tổ chức, thêm dữ liệu ở mọi màn, hồ sơ phát hành đầy đủ (vòng 10)
+
+**Cây tổ chức là nguồn của quyền.** Lõi (mục 19l) khai công ty → khối →
+tổ → chức danh. Mỗi khối mang hồ sơ quyền: danh sách màn và nhóm hàm;
+`QUYEN_MAN` / `QUYEN_NHOM` của vòng 8 giờ được dựng từ cây chứ không khai
+riêng. Mỗi tổ mang nhiệm vụ thường xuyên (đếm sống từ dữ liệu: hồ sơ chờ
+tiếp nhận, rút tiền chờ xử lý, hợp đồng sắp hết hạn…) và lớp tài sản phụ
+trách (tài khoản đối tác, hợp đồng, chiến dịch, danh mục, hồ sơ phát hành,
+nền tảng, báo cáo kỳ, ví, tạm ứng, bảng kê, ticket, khiếu nại) với số đếm
+và phần giao đích danh. Nhân sự nằm trong `state.staff`, gắn khối / tổ /
+chức danh: vai suy ra từ khối, phạm vi suy ra từ cấp chức danh (trưởng bộ
+phận trở lên thấy cả bộ phận: kinh doanh trưởng thấy mọi đối tác, mọi đề
+xuất, chỉ tiêu nhân viên). Màn **Tổ chức** (`to-chuc`) mở cho mọi vai: sơ
+đồ khối, "Vị trí của tôi", bảng nhân sự, tài sản, quyền suy ra; giám đốc
+thêm khối / tổ / nhân sự, chuyển, khoá. Bàn làm việc mọi vai có thẻ *Nhiệm
+vụ của tôi* đọc từ cây.
+
+**Thêm dữ liệu ở mọi màn.** Mỗi màn dữ liệu có nút "Thêm …" trên tiêu đề,
+mở hộp thoại dựng bằng `HTM.hoiForm` (trường bắt buộc đánh dấu, trường
+khác ghi "không bắt buộc", ô chọn bài hát có gợi ý): Đối tác (label /
+nghệ sĩ, hợp đồng, người phụ trách, tài khoản cổng), Nền tảng (đang kết
+nối / thử / đã lên, người phụ trách), Chiến dịch (kèm yêu cầu từ đối tác),
+Chia sẻ tác quyền, Bảng giá (dòng giá nhập tay đè bảng mẫu), Danh mục (mở
+hồ sơ phát hành), Kế toán (bút toán điều chỉnh vào kỳ đang mở), Quản lý
+quyền (khiếu nại); cổng đối tác: label thêm nghệ sĩ vào roster, đề nghị
+chiến dịch (tạo chiến dịch ở trạng thái yêu cầu và ticket marketing về
+Kinh doanh). Mọi hàm thêm đi qua ma trận quyền và ghi nhật ký.
+
+**Hồ sơ phát hành đủ metadata.** Theo form ở trang chủ (`metadata.html`):
+bản phát hành (nghệ sĩ chính, feat, link Spotify / Apple, nhãn, thể loại
+chính / phụ, ngôn ngữ, ngày giờ, pre-save, UPC, số catalog, năm sản xuất,
+℗ / ©, phát hành lại, lãnh thổ, ảnh bìa, người thiết kế), từng track (phiên
+bản, feat, remixer, ISRC, ngôn ngữ lời, nội dung nhạy cảm, link WAV, mốc
+preview, người sáng tác với vai trò / tỷ lệ / nhà xuất bản, producer,
+mixing, mastering, sample / cover, mức dùng AI, lời), liên hệ, bốn cam kết.
+Form bốn bước dùng chung hai cổng (`haustek-hoso.js`): mỗi bước một chủ
+đề, lỗi nói rõ sai gì, nháp tự lưu trong trình duyệt, xem lại trước khi
+gửi. Lõi chỉ chặn thứ không thể thiếu; phần còn lại vào **bảng kiểm** (bắt
+buộc / khuyến nghị, điểm %) để vận hành thấy còn thiếu gì và đối tác thấy
+cùng bảng đó ở ngăn hồ sơ.
+
+**Thiết kế.** Theo ba kho tham khảo (taste-skill, ui-ux-pro-max, marketing
+skills): một màu nhấn, một dải xám lạnh, viền mảnh thay bóng, ô số không
+hộp riêng, chữ số tabular, nhãn viết thường, huy hiệu chỉ cho trạng thái
+thật, mỗi màn một nút chính; form dài chia bước, ghi "không bắt buộc" thay
+vì rải dấu sao; ô trống nói việc kế tiếp.
+
 ## Khung: chuông thông báo, tìm nhanh, bảng dữ liệu
 
 Thanh trên có **chuông** (sự kiện mới của chính người xem: bảng kê sẵn sàng,

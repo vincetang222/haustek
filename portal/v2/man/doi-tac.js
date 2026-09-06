@@ -29,6 +29,7 @@ HT.dangKy({
 
   chu: {
     vi: {
+      themDt: 'Thêm đối tác', fLoaiDt: 'Loại đối tác', fTenDt: 'Tên đối tác', fLabelMe: 'Thuộc label', fLabelMeHint: 'Nghệ sĩ độc lập thì để trống.', fTu: 'Ngày ký hợp đồng', fDen: 'Ngày hết hạn', fDenHint: 'Bỏ trống thì mặc định 2 năm.', fPhan: 'Phần đối tác hưởng (%)', fPhanHint: 'Bỏ trống thì dùng mức mặc định của loại đối tác.', fNvPt: 'Người phụ trách', fEmailDt: 'Email đăng nhập cổng', fEmailHint: 'Có email thì cấp luôn tài khoản cổng, trạng thái Đã mời.', fGhiDt: 'Ghi chú hợp đồng', daThemDt: 'Đã thêm {t} · {id}', khongLabel: 'Nghệ sĩ độc lập',
       nhomDoiTac: 'Đối tác', navDoiTac: 'Đối tác', h1: 'Đối tác',
       mo: 'Label, label con và nghệ sĩ đang ký với Haustek: người phụ trách, hạng, doanh thu quý, hạn hợp đồng, tài khoản cổng.',
       kTong: 'Đối tác', kQuanLy: 'Đang quản lý', kGiaHan: 'Sắp hết hạn hợp đồng', kGiaHanS: 'trong 90 ngày',
@@ -60,6 +61,7 @@ HT.dangKy({
       kdQuyTruoc: 'quý trước'
     },
     en: {
+      themDt: 'Add a partner', fLoaiDt: 'Partner type', fTenDt: 'Partner name', fLabelMe: 'Belongs to label', fLabelMeHint: 'Leave empty for an independent artist.', fTu: 'Contract signed', fDen: 'Contract ends', fDenHint: 'Defaults to 2 years when empty.', fPhan: 'Partner share (%)', fPhanHint: 'Leave empty for the default of this partner type.', fNvPt: 'Account manager', fEmailDt: 'Portal login email', fEmailHint: 'With an email the portal account is created right away as Invited.', fGhiDt: 'Contract note', daThemDt: 'Added {t} · {id}', khongLabel: 'Independent artist',
       nhomDoiTac: 'Partners', navDoiTac: 'Partners', h1: 'Partners',
       mo: 'Labels, sub-labels and artists signed with Haustek: manager, class, quarter revenue, contract end, portal account.',
       kTong: 'Partners', kQuanLy: 'Managed', kGiaHan: 'Contracts ending', kGiaHanS: 'within 90 days',
@@ -97,7 +99,7 @@ HT.dangKy({
 
     var html = HM.dau({
       h1: HM.esc(t('h1')), mo: HM.esc(t('mo')),
-      nut: LOC.tab === 'ds' ? '<button type="button" class="btn" data-xuat>' + HM.icon('down2') + HM.esc(t('xuat')) + '</button>' : ''
+      nut: (A.quyen.nhom('doiTacTao') ? '<button type="button" class="btn pri" data-them-dt>' + HM.icon('user') + HM.esc(t('themDt')) + '</button>' : '') + (LOC.tab === 'ds' ? '<button type="button" class="btn" data-xuat>' + HM.icon('down2') + HM.esc(t('xuat')) + '</button>' : '')
     });
     html += HM.tabs([
       { k: 'ds', l: t('tabDs'), icon: 'list' },
@@ -119,6 +121,20 @@ HT.dangKy({
     HM.nhap(root, '[data-tim]', function (el) { LOC.tim = el.value; c.veLai(); });
     HM.bam(root, '[data-kd-loc]', function (el) { LOC.tab = 'ds'; LOC.nv = el.getAttribute('data-kd-loc'); LOC.tt = ''; c.veLai(); });
     HM.bam(root, '[data-di]', function (el) { c.di(el.getAttribute('data-di')); });
+    HM.bam(root, '[data-them-dt]', function () {
+      var me = A.staff.me, sales = A.staff.byRole('sales').filter(function (x) { return x.active !== false; });
+      HTM.hoiForm(c, { tieuDe: t('themDt'), dong: t('themDt'), fields: [
+        { k: 'kind', l: t('fLoaiDt'), kieu: 'select', opts: A.parties.kinds.map(function (k) { return [k[0], vi ? k[1] : k[2]]; }), kbb: false }, { k: 'name', l: t('fTenDt'), req: true },
+        { k: 'labelId', l: t('fLabelMe'), kieu: 'select', opts: [['', t('khongLabel')]].concat(A.labels.map(function (l) { return [l.id, l.name + ' · ' + l.clientId]; })), hint: t('fLabelMeHint') },
+        { k: 'managerId', l: t('fNvPt'), kieu: 'select', opts: sales.map(function (x) { return [x.id, x.name]; }), v: me.role === 'sales' ? me.id : (sales[0] ? sales[0].id : ''), kbb: false },
+        { k: 'from', l: t('fTu'), kieu: 'date', v: new Date().toISOString().slice(0, 10), kbb: false }, { k: 'to', l: t('fDen'), kieu: 'date', hint: t('fDenHint') },
+        { k: 'share', l: t('fPhan'), kieu: 'number', min: 1, max: 99, step: 1, hint: t('fPhanHint') }, { k: 'email', l: t('fEmailDt'), kieu: 'email', hint: t('fEmailHint') },
+        { k: 'note', l: t('fGhiDt'), rong: true }
+      ] }).then(function (f) {
+        if (!f) return;
+        try { var r = A.parties.create(f, me.email); c.thongBao(t('daThemDt').replace('{t}', r.name).replace('{id}', r.clientId), 'ok'); HM.quenHet(); c.veLai(); } catch (e) { c.thongBao(e.message, 'no'); }
+      });
+    });
     HM.bam(root, '[data-xuat]', function () {
       var rows = A.parties.list({ q: LOC.tim, manager: LOC.nv, status: LOC.tt, kind: LOC.loai, classification: LOC.hang }).rows;
       HM.csv('doi-tac.csv',

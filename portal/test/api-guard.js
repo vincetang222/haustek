@@ -966,6 +966,97 @@ check("Tạo hồ sơ phát hành thay đối tác: hỗ trợ bị chặn, kinh
   return r.id + " · " + ns.name + " · kinh doanh chỉ tài khoản mình · hỗ trợ bị chặn";
 });
 
+/* ===================== VÒNG 10: CÂY TỔ CHỨC · THÊM DỮ LIỆU · HỒ SƠ ĐẦY ĐỦ ===================== */
+check("Quyền suy ra từ cây tổ chức: màn và nhóm hàm của mỗi vai đúng bằng khối tương ứng; trưởng bộ phận kinh doanh thấy cả bộ phận, chuyên viên chỉ phần mình", () => {
+  nhu("S01");
+  const b = A.quyen.bang();
+  b.khoi.forEach(k => {
+    Object.keys(b.man).forEach(m => must((b.man[m].includes(k.vai)) === (k.man.includes(m)), "màn " + m + " lệch với khối " + k.id));
+    Object.keys(b.nhom).forEach(g => must(b.nhom[g].vai.includes(k.vai) === k.nhom.includes(g), "nhóm " + g + " lệch với khối " + k.id));
+  });
+  const cay = A.toChuc.cay();
+  must(cay.khoi.length >= 5 && cay.khoi.every(k => k.to.length > 0), "cây thiếu khối hoặc tổ");
+  must(cay.khoi.every(k => k.to.every(t => t.nhiemVu.every(n => typeof n.dem === "number"))), "nhiệm vụ không đếm được");
+  const truong = nhu("S04"), tatCa = A.parties.list({}).rows.length, dxTruong = A.proposals.list().length;
+  must(A.quyen.truong() && tatCa > 118, "trưởng bộ phận kinh doanh không thấy cả bộ phận");
+  const cv = nhu("S03"), cuaMinh = A.parties.list({}).rows;
+  must(!A.quyen.truong() && cuaMinh.length < tatCa && cuaMinh.every(r => r.manager === cv.id), "chuyên viên kinh doanh thấy ngoài phần mình");
+  must(A.proposals.list().length < dxTruong, "chuyên viên thấy đề xuất cả bộ phận");
+  mustThrow(() => A.sales.kpi(truong.id, 9), "chỉ tiêu của trưởng bộ phận");
+  nhu("S04"); must(A.sales.kpi(cv.id, 9).accounts >= 0, "trưởng bộ phận không xem được chỉ tiêu nhân viên");
+  return cay.khoi.length + " khối · " + b.khoi.length + " hồ sơ quyền · trưởng thấy " + tatCa + ", chuyên viên thấy " + cuaMinh.length;
+});
+check("Nhân sự nằm trong state: giám đốc thêm / chuyển / khoá; vai khác bị chặn; vai và chức vụ suy ra từ khối", () => {
+  nhu("S05"); mustThrow(() => A.toChuc.themNhanSu({ name: "x", email: "x@haustek-group.com", boPhan: "ho-tro" }, "x"), "hỗ trợ thêm nhân sự");
+  nhu("S02"); mustThrow(() => A.toChuc.themKhoi({ vi: "Khối lạ", vai: "ops" }, "x"), "vận hành thêm khối");
+  nhu("S01");
+  const x = A.toChuc.themNhanSu({ name: "Phan Thử Việc", email: "thuviec@haustek-group.com", boPhan: "kinh-doanh", to: "marketing", chucDanh: "chuyen-vien" }, "x");
+  must(x.role === "sales" && x.cap === 1 && /Marketing/.test(x.title), "vai / chức vụ không suy ra từ khối");
+  must(A.staff.get(x.id) && A.state().staff.some(s => s.id === x.id), "nhân sự mới không vào state");
+  const y = A.toChuc.chuyenNhanSu(x.id, { boPhan: "van-hanh", to: "du-lieu", chucDanh: "truong-bo-phan" }, "x");
+  must(y.role === "ops" && y.cap === 2, "chuyển khối không đổi vai");
+  const k = A.toChuc.themKhoi({ vi: "Pháp chế", vai: "support", chucNang: "Hợp đồng", taiSan: "khieuNai" }, "x");
+  must(k.vai === "support" && k.man.length === A.quyen.bang().khoi.find(z => z.vai === "support").man.length, "khối mới không thừa hưởng hồ sơ quyền");
+  A.toChuc.khoaNhanSu(x.id, false, "x"); must(!A.toChuc.nhanSu().find(z => z.id === x.id).active, "không khoá được");
+  mustThrow(() => A.toChuc.khoaNhanSu("S01", false, "x"), "tự khoá mình");
+  return x.id + " thêm → chuyển → khoá · khối " + k.id;
+});
+check("Thêm dữ liệu theo vai: đối tác (kinh doanh, tự phụ trách), nền tảng (vận hành), chiến dịch (kinh doanh chỉ đối tác mình), khiếu nại (hỗ trợ), bút toán (kế toán), giá (vận hành)", () => {
+  const cv = nhu("S03");
+  const dt = A.parties.create({ kind: "label", name: "Hồ Tây Records", share: 70, email: "hotay@example.com" }, "x");
+  must(dt.managerId === cv.id && A.parties.list({ q: "Hồ Tây" }).rows[0].managerName === cv.name, "đối tác mới không gắn người tạo làm phụ trách");
+  must(H.api.session("label", +dt.partyKey.slice(2)).name === "Hồ Tây Records", "cổng đối tác không mở được tài khoản mới");
+  mustThrow(() => A.platforms.add({ name: "Nhạc Xanh" }, "x"), "kinh doanh thêm nền tảng");
+  mustThrow(() => A.ledger.addAdjustment({ periodKey: openKey, amount: 1, note: "x" }, "x"), "kinh doanh ghi bút toán");
+  const ngoai = A.idxOf(A.byLabel, 0).length ? [...Array(A.trackCount).keys()].find(i => { const pk = A.partyKeyOf ? A.partyKeyOf(i) : null; return pk && A.parties.managerOf(pk) && A.parties.managerOf(pk).id !== cv.id; }) : null;
+  const cuaToi = A.parties.list({}).rows.find(r => r.tracks > 0);
+  nhu("S05"); mustThrow(() => A.parties.create({ kind: "artist", name: "X" }, "x"), "hỗ trợ thêm đối tác");
+  const kn = A.claimCreate({ trackId: 7, category: "unauthorized-use", store: "YouTube" }, "x");
+  must(kn.status === "open" && A.claims.get(kn.id), "hỗ trợ không tạo được khiếu nại");
+  mustThrow(() => A.campaignCreate({ trackId: 7, kind: "ads", start: "2026-09-10", end: "2026-10-10" }, "x"), "hỗ trợ tạo chiến dịch");
+  nhu("S02");
+  const nt = A.platforms.add({ name: "Nhạc Xanh", status: "connecting", ownerId: "S02" }, "x");
+  must(A.platforms.list()[0].name === nt.name && A.platforms.list()[0].owner === "Trần Vận Hành", "nền tảng mới không đứng đầu danh sách");
+  mustThrow(() => A.platforms.add({ name: "Nhạc Xanh" }, "x"), "trùng tên nền tảng");
+  A.pricing.add({ store: "Qobuz", tier: "front", currency: "EUR", kind: "track", price: 1.49 }, "x"); must(A.pricing.list().length === 1, "giá không lưu");
+  nhu("S07");
+  const bt = A.ledger.addAdjustment({ periodKey: openKey, partyKey: "L:0", kind: "chi-phi", amount: -12.5, note: "Phí chuyển khoản" }, "x");
+  must(A.ledger.adjustments({ periodKey: openKey })[0].id === bt.id, "bút toán không vào sổ");
+  mustThrow(() => A.ledger.addAdjustment({ periodKey: approvedKey, amount: 1, note: "x" }, "x"), "ghi vào kỳ đã duyệt");
+  nhu("S01");
+  return dt.clientId + " · " + kn.id + " · " + nt.name + " · " + bt.id;
+});
+check("Cổng đối tác: label thêm nghệ sĩ vào roster, đề nghị chiến dịch tạo ticket Kinh doanh; nghệ sĩ độc lập không thêm roster, không đề nghị bài người khác", () => {
+  const ra = H.api.addArtist("label", L1.id, { name: "Sương Sớm", spotify: "https://open.spotify.com/artist/x" });
+  must(H.api.rosterArtists("label", L1.id).rows.some(a => a.name === "Sương Sớm"), "nghệ sĩ mới không vào roster");
+  mustThrow(() => H.api.addArtist("artist", A1.id, { name: "Y" }), "nghệ sĩ độc lập thêm roster");
+  const tid = A.idxOf(A.byLabel, L1.id)[0];
+  const rq = H.api.requestCampaign("label", L1.id, { trackId: tid, kind: "pitch", note: "Xin pitch" });
+  must(rq.status === "requested" && A.tickets.get(rq.ticketId).dept === "sales", "đề nghị chiến dịch không vào hàng đợi Kinh doanh");
+  must(H.api.campaigns("label", L1.id).rows.some(r => r.id === rq.id && r.status === "requested"), "đối tác không thấy chiến dịch đã đề nghị");
+  mustThrow(() => H.api.requestCampaign("artist", A2.id, { trackId: tid, kind: "ads" }), "đề nghị bài người khác");
+  nhu("S01"); must(A.campaigns().counts.requested >= 1 && A.campaignSetStatus(rq.id, "planned", "x").status === "planned", "kinh doanh không nhận được yêu cầu");
+  return ra.clientId + " · " + rq.id + " · ticket " + rq.ticketId;
+});
+check("Hồ sơ phát hành đầy đủ: bảng kiểm tách bắt buộc / khuyến nghị, cam kết bắt buộc với đối tác, không bắt buộc với nhân viên; single quá 3 track bị chặn", () => {
+  const goc = { type: "single", title: "Thử", label: "Haustek", genre: "Pop", lang: "vi", releaseDate: "2026-11-01", prodYear: "2026", pLine: "2026 Haustek", cLine: "2026 Haustek", artwork: "https://x/y.jpg",
+    tracks: [{ title: "A", audioUrl: "https://x/a.wav", lyricsLang: "vi", explicit: "no", writers: [{ name: "N", role: "ComposerLyricist", pct: 100 }] }], contact: { name: "N", phone: "0901" }, commitments: { rights: true, samples: true, splits: true, artwork: true } };
+  const k1 = H.api.checkRelease("artist", A1.id, goc);
+  must(k1.ok && k1.kiem.thieuBatBuoc === 0 && k1.kiem.thieu > 0, "hồ sơ đủ mà bảng kiểm còn thiếu bắt buộc, hoặc không có khuyến nghị");
+  const k2 = H.api.checkRelease("artist", A1.id, Object.assign({}, goc, { artwork: "", commitments: {} }));
+  must(k2.ok && k2.kiem.muc.filter(m => !m.ok && m.bat).map(m => m.k).sort().join() === "artwork,commit", "thiếu bìa và cam kết không bị đánh dấu bắt buộc");
+  const k3 = H.api.checkRelease("artist", A1.id, Object.assign({}, goc, { tracks: [1, 2, 3, 4].map(i => ({ title: "T" + i, writers: [] })) }));
+  must(!k3.ok && /Single/.test(k3.loi), "single 4 track không bị chặn");
+  nhu("S02");
+  const k4 = A.releases.check("A:" + A1.id, Object.assign({}, goc, { commitments: {}, contact: { name: "Trần Vận Hành" } }));
+  must(k4.ok && !k4.kiem.muc.some(m => m.k === "commit" && !m.ok), "hồ sơ nhân viên tạo vẫn đòi cam kết");
+  const r = A.releases.createFor("A:" + A1.id, goc, "ops");
+  must(r.kiem && r.pLine === "2026 Haustek" && r.tracks[0].lyricsLang === "vi" && r.contact.name === "N", "trường mới không được lưu");
+  must(H.api.releases("artist", A1.id).submissions.find(x => x.id === r.id).kiem.diem === 100, "đối tác không thấy bảng kiểm");
+  nhu("S01");
+  return r.id + " · kiểm " + k1.kiem.batBuoc + " mục bắt buộc, " + (k1.kiem.tong - k1.kiem.batBuoc) + " khuyến nghị";
+});
+
 check("lockdown() gỡ hẳn mặt tiền admin khỏi trang", () => {
   must(!!H.admin, "chưa lockdown mà admin đã mất");
   H.lockdown();

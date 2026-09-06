@@ -331,7 +331,7 @@ const byWriter = (() => {
   for (let i = 0; i < N; i++) { arr[cur[tW1[i]]++] = i; if (tW2[i] >= 0) arr[cur[tW2[i]]++] = i; }
   return { off, arr };
 })();
-const idxOf = (ix, k) => ix.arr.subarray(ix.off[k], ix.off[k + 1]);
+const idxOf = (ix, k) => (k >= 0 && k + 1 < ix.off.length ? ix.arr.subarray(ix.off[k], ix.off[k + 1]) : new Int32Array(0));
 
 /* =====================================================================
    8. TRẠNG THÁI VẬN HÀNH — phần DUY NHẤT được lưu lại
@@ -414,8 +414,8 @@ function fileNameFor(f, p) {
 
 let state = null;
 function ensureShape(s) {
-  ["withdrawals", "tickets", "claims", "deliveries", "bulk", "releases", "proposals"].forEach(k => { if (!Array.isArray(s[k])) s[k] = []; });
-  ["statements", "bank", "videoSettings", "partyManager", "splits", "alerts", "notifRead", "rateOverride", "contracts"].forEach(k => { if (!s[k] || typeof s[k] !== "object") s[k] = {}; });
+  ["withdrawals", "tickets", "claims", "deliveries", "bulk", "releases", "proposals", "staff", "campaigns", "adjustments", "priceExtra", "platformsExtra", "extraParties"].forEach(k => { if (!Array.isArray(s[k])) s[k] = []; });
+  ["statements", "bank", "videoSettings", "partyManager", "splits", "alerts", "notifRead", "rateOverride", "contracts", "platformOwner", "toChucThem"].forEach(k => { if (!s[k] || typeof s[k] !== "object") s[k] = {}; });
   return s;
 }
 
@@ -445,26 +445,57 @@ function releaseStamp(r, status, by, note) {
   r.updatedAt = nowISO();
   r.history.push({ at: r.updatedAt, status, by, note: note || null });
 }
+/* ---------------------------------------------------------------------
+   Hồ sơ phát hành theo form metadata ở trang chủ (metadata.html), bốn
+   bước: bản phát hành · track · liên hệ · cam kết. Luật kiểm (validate)
+   chỉ chặn thứ không thể thiếu để mở hồ sơ; phần còn lại đi vào bảng kiểm
+   (kiemHoSo) để vận hành thấy còn thiếu gì và gọi đối tác bổ sung — đúng
+   như quy trình thật: "Haustek kiểm tra trong 2–3 ngày, thiếu thì gọi".
+   --------------------------------------------------------------------- */
+const RELEASE_GENRES = ["Pop", "Ballad", "R&B", "Hip-hop / Rap", "Indie", "Rock", "Electronic / Dance", "Lo-fi", "Folk / Acoustic", "Alternative", "Jazz", "Classical", "Soundtrack", "Children", "Spiritual", "Khác"];
+const RELEASE_LANGS = [["vi", "Tiếng Việt", "Vietnamese"], ["en", "English", "English"], ["ko", "Tiếng Hàn", "Korean"], ["ja", "Tiếng Nhật", "Japanese"], ["zh", "Tiếng Trung", "Chinese"], ["zxx", "Không lời", "Instrumental"], ["other", "Khác", "Other"]];
+const TRACK_VERSIONS = ["", "Live", "Acoustic", "Cover", "Extended", "Radio Edit", "Remix", "Remastered", "Instrumental", "Khác"];
+const WRITER_ROLES = [["Composer", "Soạn nhạc", "Composer"], ["Lyricist", "Viết lời", "Lyricist"], ["ComposerLyricist", "Soạn nhạc & viết lời", "Composer & lyricist"], ["Arranger", "Phối khí", "Arranger"]];
+const SAMPLE_KINDS = [["none", "Hoàn toàn nguyên gốc", "Entirely original"], ["sample", "Có dùng sample", "Uses a sample"], ["cover", "Bản cover / hát lại", "Cover"], ["remix", "Bản remix có phép", "Licensed remix"]];
+const AI_LEVELS = [["0", "Hoàn toàn do con người làm", "Fully human-made"], ["1", "Có công cụ AI hỗ trợ một phần", "Partially AI-assisted"], ["2", "Một phần do AI tạo ra", "Partially AI-generated"], ["3", "Toàn bộ do AI tạo ra", "Fully AI-generated"]];
+const CONTACT_ROLES = [["artist", "Nghệ sĩ", "Artist"], ["manager", "Quản lý nghệ sĩ", "Artist manager"], ["producer", "Nhà sản xuất", "Producer"], ["writer", "Nhạc sĩ", "Songwriter"], ["label", "Đại diện nhãn", "Label representative"], ["staff", "Nhân viên Haustek", "Haustek staff"]];
+const CAM_KET = [
+  { id: "rights",  vi: "Tôi sở hữu hoặc được uỷ quyền đầy đủ với mọi bản thu và tác phẩm trong hồ sơ", en: "I own or am fully authorised for every recording and composition in this submission" },
+  { id: "samples", vi: "Mọi sample, cover, remix đều đã xin phép và khai đúng ở từng track", en: "Every sample, cover or remix is cleared and declared on the track" },
+  { id: "splits",  vi: "Tỉ lệ chia sáng tác đã được các bên đồng ý; họ tên là tên thật", en: "Writer splits are agreed by all parties; names are legal names" },
+  { id: "artwork", vi: "Ảnh bìa không dùng hình ảnh, logo, chữ của bên khác khi chưa được phép", en: "The artwork uses no third-party images, logos or text without permission" }
+];
+const chuoi = v => v == null ? "" : String(v).trim();
+const danhSach = v => Array.isArray(v) ? v.map(chuoi).filter(Boolean) : chuoi(v).split(/[,;\n]+/).map(x => x.trim()).filter(Boolean);
 function normaliseTrack(tr, pos, artistName) {
+  tr = tr || {};
   const writers = (tr.writers || []).filter(w => w && w.name).map(w => ({
-    name: String(w.name).trim(), role: w.role || "Composer",
-    pct: Math.max(0, Math.min(100, +w.pct || 0)) }));
-  return { pos, title: String(tr.title || "").trim(), version: tr.version ? String(tr.version).trim() : "",
-    artist: tr.artist ? String(tr.artist).trim() : artistName, feat: tr.feat ? String(tr.feat).trim() : "",
+    name: chuoi(w.name), role: WRITER_ROLES.some(r => r[0] === w.role) ? w.role : "Composer",
+    pct: Math.max(0, Math.min(100, Math.round((+w.pct || 0) * 10) / 10)), publisher: chuoi(w.publisher) }));
+  const version = TRACK_VERSIONS.indexOf(chuoi(tr.version)) >= 0 ? chuoi(tr.version) : (chuoi(tr.version) ? "Khác" : "");
+  const sampleKind = SAMPLE_KINDS.some(k => k[0] === tr.sampleKind) ? tr.sampleKind : "none";
+  return { pos, title: chuoi(tr.title), version, versionOther: version === "Khác" ? (chuoi(tr.versionOther) || chuoi(tr.version)) : "",
+    artist: chuoi(tr.artist) || artistName, feat: chuoi(tr.feat), remixer: chuoi(tr.remixer),
     isrc: tr.isrc ? String(tr.isrc).replace(/[^A-Za-z0-9]/g, "").toUpperCase() : "",
-    producer: tr.producer ? String(tr.producer).trim() : "", publisher: tr.publisher ? String(tr.publisher).trim() : "",
+    lyricsLang: chuoi(tr.lyricsLang) || "vi", explicit: ["no", "yes", "clean"].indexOf(tr.explicit) >= 0 ? tr.explicit : "no",
+    audioUrl: chuoi(tr.audioUrl), previewStart: Math.max(0, Math.round(+tr.previewStart || 0)), lyrics: chuoi(tr.lyrics),
+    producer: chuoi(tr.producer), mixing: chuoi(tr.mixing), mastering: chuoi(tr.mastering), publisher: chuoi(tr.publisher),
+    sampleKind, sampleSource: sampleKind === "none" ? "" : chuoi(tr.sampleSource), ai: ["0", "1", "2", "3"].indexOf(String(tr.ai)) >= 0 ? String(tr.ai) : "0",
     writers };
 }
 function validateRelease(payload, artistName) {
-  if (!payload || !String(payload.title || "").trim()) throw new Error("Thiếu tên bản phát hành");
+  if (!payload || !chuoi(payload.title)) throw new Error("Thiếu tên bản phát hành");
   if (RELEASE_TYPES.indexOf(payload.type) < 0) throw new Error("Loại phát hành không hợp lệ");
   if (!/^\d{4}-\d{2}-\d{2}$/.test(payload.releaseDate || "")) throw new Error("Ngày phát hành phải theo định dạng yyyy-mm-dd");
+  if (payload.upc && !/^\d{12,13}$/.test(String(payload.upc).replace(/\D/g, ""))) throw new Error("Mã UPC phải có 12–13 chữ số");
   const tracks = (payload.tracks || []).map((t, i) => normaliseTrack(t, i + 1, artistName)).filter(t => t.title);
   if (!tracks.length) throw new Error("Hồ sơ phải có ít nhất một track");
+  if (payload.type === "single" && tracks.length > 3) throw new Error("Single tối đa 3 track; từ 4 track trở lên chọn EP");
+  if (payload.type === "ep" && tracks.length > 6) throw new Error("EP tối đa 6 track; nhiều hơn chọn Album");
   tracks.forEach(t => {
     if (t.isrc && !/^[A-Z]{2}[A-Z0-9]{3}\d{7}$/.test(t.isrc)) throw new Error("Mã ISRC không đúng định dạng: " + t.isrc);
     const tong = t.writers.reduce((a, w) => a + w.pct, 0);
-    if (tong > 100.001) throw new Error("Tổng tỷ lệ sáng tác của track \"" + t.title + "\" vượt 100%");
+    if (tong > 100.001) throw new Error("Tổng tỉ lệ sáng tác của track \"" + t.title + "\" vượt 100%");
   });
   return tracks;
 }
@@ -472,17 +503,64 @@ function buildRelease(payload, artistId, submittedBy, role) {
   const a = ARTISTS[artistId];
   const tracks = validateRelease(payload, a.name);
   const now = nowISO();
+  const lienHe = payload.contact || {};
+  const camKet = {}; CAM_KET.forEach(c => { camKet[c.id] = !!(payload.commitments && payload.commitments[c.id]); });
   const r = {
     id: releaseId(), artistId, artistName: a.name, artistClientId: a.clientId,
     labelId: a.labelId, submittedBy, submittedRole: role,
-    title: String(payload.title).trim(), version: payload.version ? String(payload.version).trim() : "",
-    type: payload.type, genre: payload.genre || "", lang: payload.lang || "vi",
-    releaseDate: payload.releaseDate, upc: payload.upc ? String(payload.upc).replace(/\D/g, "") : "",
-    artwork: payload.artwork || "", note: payload.note || "",
+    title: chuoi(payload.title), version: chuoi(payload.version),
+    type: payload.type, label: chuoi(payload.label) || (a.labelId >= 0 && LABELS[a.labelId] ? LABELS[a.labelId].name : "Haustek"),
+    artists: danhSach(payload.artists).length ? danhSach(payload.artists) : [a.name], feats: danhSach(payload.feats),
+    links: { spotify: chuoi(payload.links && payload.links.spotify), apple: chuoi(payload.links && payload.links.apple) },
+    genre: chuoi(payload.genre), genre2: chuoi(payload.genre2), lang: chuoi(payload.lang) || "vi",
+    releaseDate: payload.releaseDate, releaseHour: chuoi(payload.releaseHour), presaveDate: chuoi(payload.presaveDate),
+    upc: payload.upc ? String(payload.upc).replace(/\D/g, "") : "", catalogNo: chuoi(payload.catalogNo),
+    prodYear: chuoi(payload.prodYear) || String(payload.releaseDate).slice(0, 4), reissue: !!payload.reissue, origDate: chuoi(payload.origDate),
+    territory: chuoi(payload.territory) || "worldwide", territoryNote: chuoi(payload.territoryNote),
+    pLine: chuoi(payload.pLine), cLine: chuoi(payload.cLine),
+    artwork: chuoi(payload.artwork), artworkDesigner: chuoi(payload.artworkDesigner), note: chuoi(payload.note),
+    contact: { name: chuoi(lienHe.name), role: CONTACT_ROLES.some(x => x[0] === lienHe.role) ? lienHe.role : (role === "staff" ? "staff" : "artist"), phone: chuoi(lienHe.phone), email: chuoi(lienHe.email), when: chuoi(lienHe.when), social: chuoi(lienHe.social), backup: chuoi(lienHe.backup) },
+    commitments: camKet,
     tracks, status: "submitted", history: [], createdAt: now, updatedAt: now, releasedAt: null
   };
   r.history.push({ at: now, status: "submitted", by: submittedBy, note: null });
+  r.kiem = kiemHoSo(r);
   return r;
+}
+/* Bảng kiểm hồ sơ: mục bắt buộc để giao được tới nền tảng, mục khuyến
+   nghị để bài dễ tìm hơn. Trả về điểm, số mục thiếu và danh sách mục. */
+function kiemHoSo(r) {
+  const muc = [];
+  const them = (k, ok, bat, vi, en, track) => muc.push({ k, ok: !!ok, bat: !!bat, vi, en, track: track || null });
+  const url = v => /^https?:\/\/\S+$/i.test(v || "");
+  them("title", r.title, true, "Tên bản phát hành", "Release title");
+  them("artists", r.artists && r.artists.length, true, "Nghệ sĩ chính", "Primary artist");
+  them("label", r.label, true, "Nhãn phát hành", "Release label");
+  them("genre", r.genre, true, "Thể loại", "Genre");
+  them("releaseDate", r.releaseDate, true, "Ngày phát hành", "Release date");
+  them("artwork", url(r.artwork), true, "Link ảnh bìa 3000×3000", "Artwork link 3000×3000");
+  them("pLine", r.pLine, true, "Dòng ℗ (bản thu)", "℗ line (recording)");
+  them("cLine", r.cLine, true, "Dòng © (tác phẩm / bìa)", "© line (composition / artwork)");
+  them("prodYear", /^\d{4}$/.test(r.prodYear || ""), true, "Năm sản xuất", "Production year");
+  them("spotify", url(r.links && r.links.spotify), false, "Link Spotify của nghệ sĩ (để gắn đúng hồ sơ)", "Artist Spotify link (to map the profile)");
+  them("upc", r.upc, false, "UPC (Haustek cấp nếu chưa có)", "UPC (assigned by Haustek if missing)");
+  (r.tracks || []).forEach(t => {
+    const tag = "#" + t.pos + " " + t.title;
+    them("t.audio", url(t.audioUrl), true, "File WAV", "WAV file", tag);
+    them("t.writers", t.writers && t.writers.length && Math.abs(t.writers.reduce((a, w) => a + w.pct, 0) - 100) < 0.01, true, "Người sáng tác đủ 100%", "Writers total 100%", tag);
+    them("t.lang", t.lyricsLang, true, "Ngôn ngữ lời", "Lyrics language", tag);
+    them("t.sample", t.sampleKind === "none" || t.sampleSource, true, "Nguồn sample / cover", "Sample / cover source", tag);
+    them("t.isrc", t.isrc, false, "ISRC (Haustek cấp nếu chưa có)", "ISRC (assigned if missing)", tag);
+    them("t.producer", t.producer, false, "Nhà sản xuất", "Producer", tag);
+    them("t.lyrics", t.explicit && (t.lyricsLang === "zxx" || t.lyrics), false, "Lời bài hát", "Lyrics", tag);
+    them("t.preview", t.previewStart > 0, false, "Mốc preview cho TikTok", "Preview start for TikTok", tag);
+  });
+  const staff = r.submittedRole === "staff";
+  them("contact", r.contact && r.contact.name && (r.contact.phone || r.contact.email || staff), true, "Người liên hệ (tên, số điện thoại)", "Contact (name, phone)");
+  them("commit", staff || CAM_KET.every(c => r.commitments && r.commitments[c.id]), true, "Cam kết bản quyền", "Rights commitments");
+  const batBuoc = muc.filter(m => m.bat), thieu = muc.filter(m => !m.ok);
+  return { tong: muc.length, ok: muc.filter(m => m.ok).length, batBuoc: batBuoc.length, thieuBatBuoc: batBuoc.filter(m => !m.ok).length, thieu: thieu.length,
+    diem: batBuoc.length ? Math.round(100 * batBuoc.filter(m => m.ok).length / batBuoc.length) : 100, muc };
 }
 /* Bản phát hành đã có trong danh mục, suy ra từ bản ghi: cùng nghệ sĩ,
    cùng kỳ phát hành, cùng loại. Single thì mỗi bản ghi một bản phát hành. */
@@ -1650,6 +1728,171 @@ const STAFF_TARGET = { S03: 3600000, S04: 6800000 };   /* chỉ tiêu doanh thu 
 let _me = STAFF[0];                                     /* nhân vật đang dùng cổng nội bộ (bản mẫu) */
 const staffById = id => STAFF.find(s => s.id === id) || null;
 const staffByRole = role => STAFF.filter(s => s.role === role);
+
+/* =====================================================================
+   19l. CÂY TỔ CHỨC — nguồn của quyền, chức năng, nhiệm vụ, tài sản
+   ---------------------------------------------------------------------
+   Công ty → khối (bộ phận) → tổ → chức danh. Mỗi khối mang một hồ sơ
+   quyền (vai): màn được mở, nhóm hàm được gọi — QUYEN_MAN / QUYEN_NHOM ở
+   mục 19k được DỰNG TỪ ĐÂY, không khai riêng nữa. Mỗi tổ mang nhiệm vụ
+   thường xuyên (đếm sống từ dữ liệu) và lớp tài sản mình phụ trách.
+   Nhân sự gắn vào khối / tổ / chức danh: vai suy ra từ khối, phạm vi
+   (của mình hay cả bộ phận) suy ra từ cấp chức danh. Nhân sự nằm trong
+   state nên thêm / chuyển / khoá đều giữ lại được.
+   ===================================================================== */
+const CHUC_DANH = [
+  { id: "giam-doc",       cap: 3, vi: "Giám đốc",       en: "Managing director" },
+  { id: "truong-bo-phan", cap: 2, vi: "Trưởng bộ phận", en: "Head of department" },
+  { id: "chuyen-vien",    cap: 1, vi: "Chuyên viên",    en: "Specialist" },
+  { id: "nhan-vien",      cap: 0, vi: "Nhân viên",      en: "Staff" }
+];
+/* Lớp tài sản: thứ công ty quản lý và giao cho bộ phận. dem() đếm sống;
+   gan(staffId) đếm phần đang giao đích danh cho một người. */
+const TAI_SAN = [
+  { id: "taiKhoanDoiTac", vi: "Tài khoản đối tác", en: "Partner accounts", man: "doi-tac", dem: () => mainParties().length, gan: id => Object.keys(state.partyManager).filter(k => state.partyManager[k] === id).length },
+  { id: "hopDong",        vi: "Hợp đồng đối tác",  en: "Partner contracts", man: "ty-le",  dem: () => mainParties().length },
+  { id: "chienDich",      vi: "Chiến dịch quảng bá", en: "Campaigns", man: "chien-dich", dem: () => campaignsOf("admin", 0).counts.total },
+  { id: "danhMuc",        vi: "Bản ghi trong danh mục", en: "Catalogue recordings", man: "danh-muc", dem: () => N },
+  { id: "hoSoPhatHanh",   vi: "Hồ sơ phát hành",   en: "Release files", man: "phat-hanh", dem: () => state.releases.length },
+  { id: "nenTang",        vi: "Nền tảng phân phối", en: "Platforms", man: "nen-tang", dem: () => STORES.length + state.platformsExtra.length, gan: id => Object.keys(state.platformOwner).filter(k => state.platformOwner[k] === id).length },
+  { id: "baoCaoKy",       vi: "Báo cáo kỳ đã nạp", en: "Period reports", man: "nap-du-lieu", dem: () => Object.keys(state.feeds).reduce((n, k) => n + Object.keys(state.feeds[k]).length, 0) },
+  { id: "vi",             vi: "Ví đối tác",        en: "Partner wallets", man: "chi-tra", dem: () => mainParties().length },
+  { id: "tamUng",         vi: "Sổ tạm ứng",        en: "Advance ledger", man: "tam-ung", dem: () => Object.keys(state.advances || {}).length },
+  { id: "bangKe",         vi: "Bảng kê PDF",       en: "Statements", man: "chi-tra", dem: () => Object.keys(state.statements).reduce((n, k) => n + Object.keys(state.statements[k] || {}).length, 0) },
+  { id: "ticket",         vi: "Ticket hỗ trợ",     en: "Support tickets", man: "ho-tro", dem: () => state.tickets.length, gan: id => state.tickets.filter(t => t.assignee === id).length },
+  { id: "khieuNai",       vi: "Khiếu nại bản quyền", en: "Rights claims", man: "quyen", dem: () => state.claims.length, gan: id => state.claims.filter(c => c.assignee === id).length }
+];
+const MAN_TAT_CA = ["ban-lam-viec", "to-chuc", "ho-tro", "tong-quan", "theo-doi", "chat-luong", "nap-du-lieu", "khop-isrc", "doi-chieu", "phat-hanh", "giao-nhan", "sua-hang-loat", "bang-gia", "chien-dich", "quyen", "muc-tra", "chia-se", "xet-duyet", "nen-tang", "ke-toan", "chi-tra", "tam-ung", "ty-le", "doi-tac", "danh-muc", "quan-tri"];
+const NHOM_TAT_CA = ["tong", "tien", "doiSoat", "doiTac", "doiTacTao", "deXuat", "deXuatTao", "vanHanh", "danhMuc", "theoDoi", "chienDich", "chiaSe", "khieuNai", "hoTro", "quanTri", "phatHanhHo", "nhanSu", "toChuc"];
+const doiTacSapHetHan = me => partiesList({ status: "renew", manager: me && me.role === "sales" && !laTruong(me) ? me.id : undefined }).total;
+const TO_CHUC = [
+  { id: "ban-giam-doc", vai: "mgmt", vi: "Ban giám đốc", en: "Management",
+    chucNang: { vi: ["Chiến lược, hợp đồng khung với nền tảng và đối tác lớn", "Xét duyệt tạm ứng, hợp đồng, kỳ thanh toán", "Chỉ tiêu và kết quả kinh doanh", "Tổ chức, nhân sự và phân quyền"],
+                en: ["Strategy, framework deals with platforms and key partners", "Approve advances, contracts and payout periods", "Sales targets and results", "Organisation, people and permissions"] },
+    man: MAN_TAT_CA, nhom: NHOM_TAT_CA, taiSan: [],
+    to: [{ id: "dieu-hanh", vi: "Điều hành", en: "Executive", nhiemVu: [
+      { id: "duyet-de-xuat", vi: "Duyệt đề xuất tạm ứng / hợp đồng", en: "Approve advance / contract proposals", man: "xet-duyet", dem: () => proposalsOf().filter(p => p.status === "submitted" || p.status === "checked").length },
+      { id: "duyet-ky", vi: "Xét duyệt kỳ đã đủ điều kiện", en: "Approve periods that are ready", man: "doi-chieu", dem: () => PERIODS.filter(p => !state.approved[p.k]).length },
+      { id: "nhan-su", vi: "Nhân sự chưa gắn tổ / chức danh", en: "People without a team or title", man: "to-chuc", dem: () => STAFF.filter(x => x.active !== false && (!x.to || !x.chucDanh)).length } ] }] },
+  { id: "van-hanh", vai: "ops", vi: "Vận hành", en: "Operations",
+    chucNang: { vi: ["Tiếp nhận hồ sơ phát hành, kiểm metadata, cấp ISRC / UPC", "Giao bản ghi tới nền tảng, theo dõi trạng thái lên kệ", "Nạp báo cáo kỳ, khớp ISRC, đối soát trước xét duyệt", "Mức trả nền tảng, danh mục, chất lượng lượt nghe"],
+                en: ["Receive release files, check metadata, assign ISRC / UPC", "Deliver recordings to platforms, track go-live", "Load period reports, match ISRC, reconcile before approval", "Platform rates, catalogue, stream quality"] },
+    man: ["ban-lam-viec", "to-chuc", "ho-tro", "doi-chieu", "chien-dich", "theo-doi", "nap-du-lieu", "khop-isrc", "giao-nhan", "sua-hang-loat", "bang-gia", "muc-tra", "danh-muc", "nen-tang", "chat-luong", "phat-hanh", "quyen"],
+    nhom: ["doiSoat", "vanHanh", "danhMuc", "theoDoi", "chienDich", "khieuNai", "hoTro", "phatHanhHo", "toChuc"],
+    taiSan: ["danhMuc", "hoSoPhatHanh", "nenTang", "baoCaoKy"],
+    to: [
+      { id: "phat-hanh", vi: "Phát hành & metadata", en: "Releases & metadata", nhiemVu: [
+        { id: "tiep-nhan", vi: "Hồ sơ mới chờ tiếp nhận", en: "New files awaiting intake", man: "phat-hanh", dem: () => state.releases.filter(r => r.status === "submitted").length },
+        { id: "cap-ma", vi: "Hồ sơ chờ cấp mã", en: "Files awaiting codes", man: "phat-hanh", dem: () => state.releases.filter(r => r.status === "received").length },
+        { id: "thieu-muc", vi: "Hồ sơ còn thiếu mục bắt buộc", en: "Files missing required items", man: "phat-hanh", dem: () => state.releases.filter(r => (r.status === "submitted" || r.status === "received") && kiemHoSo(r).thieuBatBuoc > 0).length } ] },
+      { id: "giao-nhan", vi: "Giao nhận nền tảng", en: "Platform delivery", nhiemVu: [
+        { id: "giao-cho", vi: "Yêu cầu giao nhận đang chờ", en: "Delivery requests in queue", man: "giao-nhan", dem: () => state.deliveries.filter(d => d.status !== "done" && d.status !== "failed").length },
+        { id: "nen-tang-moi", vi: "Nền tảng đang kết nối", en: "Platforms being connected", man: "nen-tang", dem: () => state.platformsExtra.filter(p => p.status !== "live").length } ] },
+      { id: "du-lieu", vi: "Dữ liệu & đối soát", en: "Data & reconciliation", nhiemVu: [
+        { id: "nap-thieu", vi: "Nguồn báo cáo còn thiếu ở kỳ hiện tại", en: "Feeds missing in the current period", man: "nap-du-lieu", dem: () => missingFeeds(P - 1).length },
+        { id: "khop-isrc", vi: "Dòng chờ khớp ISRC", en: "Rows awaiting ISRC match", man: "khop-isrc", dem: () => state.queue.filter(q => q.status === "pending").length },
+        { id: "doi-soat", vi: "Kỳ chưa xét duyệt", en: "Periods not yet approved", man: "doi-chieu", dem: () => PERIODS.filter(p => !state.approved[p.k]).length } ] } ] },
+  { id: "kinh-doanh", vai: "sales", vi: "Kinh doanh", en: "Sales",
+    chucNang: { vi: ["Tìm và ký đối tác mới, chăm sóc tài khoản đang có", "Đề xuất tạm ứng, hợp đồng, gia hạn", "Chiến dịch quảng bá cùng đối tác", "Tạo hồ sơ phát hành thay đối tác mình phụ trách"],
+                en: ["Sign new partners, look after existing accounts", "Propose advances, contracts and renewals", "Promotion campaigns with partners", "Create release files for managed partners"] },
+    man: ["ban-lam-viec", "to-chuc", "ho-tro", "xet-duyet", "doi-tac", "chien-dich"],
+    nhom: ["doiTac", "doiTacTao", "deXuat", "deXuatTao", "chienDich", "hoTro", "phatHanhHo", "toChuc"],
+    taiSan: ["taiKhoanDoiTac", "hopDong", "chienDich"],
+    to: [
+      { id: "doi-tac", vi: "Đối tác & A&R", en: "Partners & A&R", nhiemVu: [
+        { id: "gia-han", vi: "Hợp đồng hết hạn trong 120 ngày", en: "Contracts ending within 120 days", man: "doi-tac", dem: me => doiTacSapHetHan(me) },
+        { id: "tra-lai", vi: "Đề xuất bị trả lại cần sửa", en: "Proposals returned for changes", man: "xet-duyet", dem: me => proposalsOf().filter(p => p.status === "returned" && (!me || me.role !== "sales" || laTruong(me) || p.by === me.name)).length },
+        { id: "chua-dang-nhap", vi: "Tài khoản chưa đăng nhập lần nào", en: "Accounts never logged in", man: "doi-tac", dem: me => partiesList({ status: "never-logged", manager: me && me.role === "sales" && !laTruong(me) ? me.id : undefined }).total } ] },
+      { id: "marketing", vi: "Marketing", en: "Marketing", nhiemVu: [
+        { id: "cd-chay", vi: "Chiến dịch đang chạy", en: "Campaigns running", man: "chien-dich", dem: () => campaignsOf("admin", 0).counts.running },
+        { id: "cd-yeu-cau", vi: "Yêu cầu chiến dịch từ đối tác", en: "Campaign requests from partners", man: "chien-dich", dem: () => state.campaigns.filter(c => c.status === "requested").length },
+        { id: "ticket-mkt", vi: "Ticket marketing đang mở", en: "Open marketing tickets", man: "ho-tro", dem: () => state.tickets.filter(t => deptCua(t) === "sales" && t.status !== "done").length } ] } ] },
+  { id: "tai-chinh", vai: "accounting", vi: "Tài chính", en: "Finance",
+    chucNang: { vi: ["Chi trả theo kỳ, xử lý rút tiền, bảng kê PDF", "Sổ tạm ứng và thu hồi", "Kiểm số đề xuất trước khi giám đốc duyệt", "Sổ kế toán, thuế khấu trừ, bút toán điều chỉnh"],
+                en: ["Period payouts, withdrawals, PDF statements", "Advance ledger and recoupment", "Check proposal figures before management approval", "Ledger, withholding tax, adjustments"] },
+    man: ["ban-lam-viec", "to-chuc", "ho-tro", "ke-toan", "chi-tra", "tam-ung", "chia-se", "doi-chieu", "xet-duyet"],
+    nhom: ["tien", "doiSoat", "deXuat", "chiaSe", "hoTro", "toChuc"],
+    taiSan: ["vi", "tamUng", "bangKe"],
+    to: [
+      { id: "thanh-toan", vi: "Thanh toán", en: "Payments", nhiemVu: [
+        { id: "rut-tien", vi: "Yêu cầu rút tiền chờ xử lý", en: "Withdrawals awaiting processing", man: "chi-tra", dem: () => state.withdrawals.filter(w => w.status === "requested" || w.status === "processing").length },
+        { id: "bang-ke", vi: "Bảng kê chưa đính ở kỳ mới nhất đã duyệt", en: "Statements missing for the latest approved period", man: "chi-tra", dem: () => { const ap = PERIODS.filter(p => state.approved[p.k]); const k = ap.length ? ap[ap.length - 1].k : null; return k ? Math.max(0, mainParties().length - Object.keys(state.statements[k] || {}).length) : 0; } } ] },
+      { id: "ke-toan", vi: "Kế toán", en: "Accounting", nhiemVu: [
+        { id: "kiem-so", vi: "Đề xuất chờ kiểm số", en: "Proposals awaiting figure check", man: "xet-duyet", dem: () => proposalsOf().filter(p => p.status === "submitted").length },
+        { id: "tam-ung", vi: "Tạm ứng còn phải thu hồi", en: "Advances still recouping", man: "tam-ung", dem: () => Object.keys(state.advances || {}).filter(k => (state.advances[k].balance || 0) > 0).length },
+        { id: "but-toan", vi: "Bút toán điều chỉnh tháng này", en: "Adjustments this month", man: "ke-toan", dem: () => state.adjustments.filter(a => String(a.at || "").slice(0, 7) === nowISO().slice(0, 7)).length } ] } ] },
+  { id: "ho-tro", vai: "support", vi: "Hỗ trợ", en: "Support",
+    chucNang: { vi: ["Cửa trước cho mọi yêu cầu của đối tác, chuyển đúng bộ phận", "Khiếu nại bản quyền, Content ID, cài đặt video", "Tra cứu hồ sơ phát hành và chất lượng lượt nghe"],
+                en: ["Front door for partner requests, route to the right department", "Rights claims, Content ID, video settings", "Look up release files and stream quality"] },
+    man: ["ban-lam-viec", "to-chuc", "ho-tro", "chat-luong", "phat-hanh", "quyen"],
+    nhom: ["danhMuc", "khieuNai", "hoTro", "toChuc"],
+    taiSan: ["ticket", "khieuNai"],
+    to: [
+      { id: "cskh", vi: "Chăm sóc đối tác", en: "Partner care", nhiemVu: [
+        { id: "ticket-mo", vi: "Ticket đang mở của bộ phận", en: "Open tickets in the department", man: "ho-tro", dem: () => state.tickets.filter(t => deptCua(t) === "support" && t.status !== "done").length },
+        { id: "ticket-han", vi: "Ticket quá hạn", en: "Overdue tickets", man: "ho-tro", dem: () => { const now = nowISO(); return state.tickets.filter(t => deptCua(t) === "support" && t.status !== "done" && t.dueAt < now).length; } } ] },
+      { id: "ban-quyen", vi: "Bản quyền", en: "Rights", nhiemVu: [
+        { id: "tranh-chap", vi: "Khiếu nại đang tranh chấp", en: "Claims in dispute", man: "quyen", dem: () => state.claims.filter(c => c.status === "disputed" || c.status === "escalated").length },
+        { id: "sap-het-han", vi: "Tranh chấp hết hạn trong 7 ngày", en: "Disputes expiring within 7 days", man: "quyen", dem: () => { const han = addDays(isoDate(ASOF), 7); return state.claims.filter(c => c.expiresAt && c.expiresAt <= han && (c.status === "disputed" || c.status === "escalated")).length; } } ] } ] }
+];
+/* Khối / tổ thêm bằng tay (state.toChucThem) gộp vào cây: khối mới chọn
+   một hồ sơ quyền (vai) có sẵn; tổ mới nhận nhiệm vụ mô tả bằng chữ. */
+function khoiTatCa() {
+  const them = state.toChucThem || {};
+  const goc = TO_CHUC.map(k => Object.assign({}, k, { to: k.to.concat((them.to && them.to[k.id]) || []) }));
+  return goc.concat((them.khoi || []).map(k => Object.assign({ to: [], taiSan: [], chucNang: { vi: [], en: [] } }, k, { man: (TO_CHUC.find(x => x.vai === k.vai) || TO_CHUC[4]).man, nhom: (TO_CHUC.find(x => x.vai === k.vai) || TO_CHUC[4]).nhom, to: k.to || [] })));
+}
+const khoiCua = id => khoiTatCa().find(k => k.id === id) || null;
+const toCua = (khoiId, toId) => { const k = khoiCua(khoiId); return k ? (k.to.find(t => t.id === toId) || null) : null; };
+const chucDanhCua = id => CHUC_DANH.find(c => c.id === id) || CHUC_DANH[3];
+const capCua = s => s ? chucDanhCua(s.chucDanh).cap : 0;
+function laTruong(s) { return capCua(s || _me) >= 2; }
+function tenChucVu(s, lang) {
+  const k = khoiCua(s.boPhan), t = k ? k.to.find(x => x.id === s.to) : null, cd = chucDanhCua(s.chucDanh);
+  if (lang === "en") return cd.en + (t ? " · " + t.en : k ? " · " + k.en : "");
+  return cd.vi + (t ? " · " + t.vi : k ? " · " + k.vi : "");
+}
+/* Vị trí ban đầu của nhân sự mẫu. S03 là chuyên viên kinh doanh (chỉ thấy
+   tài khoản mình), S04 là trưởng bộ phận (thấy cả bộ phận). */
+const VI_TRI_MAU = {
+  S01: ["ban-giam-doc", "dieu-hanh", "giam-doc"], S02: ["van-hanh", "phat-hanh", "truong-bo-phan"],
+  S03: ["kinh-doanh", "doi-tac", "chuyen-vien"], S04: ["kinh-doanh", "doi-tac", "truong-bo-phan"],
+  S05: ["ho-tro", "cskh", "truong-bo-phan"], S06: ["ho-tro", "ban-quyen", "chuyen-vien"], S07: ["tai-chinh", "ke-toan", "truong-bo-phan"],
+  S08: ["van-hanh", "giao-nhan", "nhan-vien"], S09: ["van-hanh", "du-lieu", "chuyen-vien"], S10: ["tai-chinh", "thanh-toan", "nhan-vien"]
+};
+const NHAN_SU_THEM = [
+  { id: "S08", email: "delivery@haustek-group.com", name: "Ngô Giao Nhận", role: "ops", title: "Giao nhận nền tảng", titleEn: "Platform delivery" },
+  { id: "S09", email: "data@haustek-group.com", name: "Bùi Dữ Liệu", role: "ops", title: "Dữ liệu & đối soát", titleEn: "Data & reconciliation" },
+  { id: "S10", email: "payments@haustek-group.com", name: "Lý Thanh Toán", role: "accounting", title: "Thanh toán", titleEn: "Payments" }
+];
+function chuanNhanSu(x) {
+  const k = khoiCua(x.boPhan) || TO_CHUC.find(t => t.vai === x.role) || TO_CHUC[4];
+  x.boPhan = k.id; x.role = k.vai;
+  if (!x.to || !k.to.some(t => t.id === x.to)) x.to = k.to.length ? k.to[0].id : "";
+  if (!CHUC_DANH.some(c => c.id === x.chucDanh)) x.chucDanh = "nhan-vien";
+  if (x.active === undefined) x.active = true;
+  x.title = tenChucVu(x, "vi"); x.titleEn = tenChucVu(x, "en");
+  return x;
+}
+/* Nhân sự sống trong state.staff; mảng STAFF chỉ là gương của nó để mọi
+   hàm cũ (staffById, staffByRole…) không phải đổi. */
+function dongBoNhanSu() {
+  if (!state.staff.length) {
+    state.staff = STAFF.concat(NHAN_SU_THEM).map(x => { const y = Object.assign({}, x); const v = VI_TRI_MAU[y.id]; if (v) { y.boPhan = v[0]; y.to = v[1]; y.chucDanh = v[2]; } return chuanNhanSu(y); });
+  } else state.staff.forEach(chuanNhanSu);
+  STAFF.splice(0, STAFF.length, ...state.staff);
+  _me = staffById(_me && _me.id) || STAFF[0];
+}
+/* Đối tác thêm bằng tay (state.extraParties) nối vào LABELS / ARTISTS
+   ngay lúc nạp, giữ nguyên id đã cấp. */
+function apDungDoiTacThem() {
+  (state.extraParties || []).forEach(x => {
+    if (x.kind === "label") { if (!LABELS[x.id]) LABELS[x.id] = Object.assign({ key: "L:" + x.id, baseRate: 0.7, isPublisher: false, parentId: -1 }, x, { key: "L:" + x.id }); }
+    else if (!ARTISTS[x.id]) ARTISTS[x.id] = Object.assign({ key: "A:" + x.id, writer: false, indieRate: 0.85, labelId: -1 }, x, { key: "A:" + x.id });
+  });
+}
+apDungDoiTacThem();
+dongBoNhanSu();
 /* Bên thụ hưởng chính: label (mọi cấp) và nghệ sĩ độc lập. Nghệ sĩ thuộc
    label là khách của label, không phải tài khoản kinh doanh riêng. */
 function mainParties() {
@@ -2578,10 +2821,22 @@ function campaignsOf(role, partyId) {
       rows.push(base);
     }
   });
-  const order = { running: 0, planned: 1, done: 2 };
+  (state.campaigns || []).forEach(c => {
+    if (sc && !sc.includes(c.trackId)) return;
+    const nhan = { smartlink: ["Liên kết thông minh · pre-save", "Smart link · pre-save"], pitch: ["Pitch playlist biên tập", "Editorial playlist pitching"], ads: ["Quảng cáo trả phí", "Paid ads"] }[c.kind] || ["Chiến dịch", "Campaign"];
+    const start = new Date(c.start), end = new Date(c.end), dur = Math.max(1, Math.round((end - start) / 864e5));
+    const status = c.status === "requested" ? "requested" : end < ASOF ? "done" : start > ASOF ? "planned" : "running";
+    const row = { id: c.id, trackId: c.trackId, title: c.title || tTitle[c.trackId], artist: ARTISTS[tArtist[c.trackId]].name, partyKey: c.partyKey || partyKeyOfTrack(c.trackId), kind: c.kind, status, start: c.start, end: c.end, days: dur,
+      kindLabel: nhan[0], kindLabelEn: nhan[1], note: c.note || "", requestedBy: c.by || "", manual: true };
+    if (c.kind === "smartlink") Object.assign(row, { url: "htk.link/" + tIsrc[c.trackId].slice(-6).toLowerCase(), views: 0, clicks: 0, presaves: 0, conversion: 0, byStore: [] });
+    else if (c.kind === "pitch") Object.assign(row, { pitched: 0, accepted: 0, pending: 0, playlists: [] });
+    else Object.assign(row, { budget: +c.budget || 0, spent: 0, impressions: 0, clicks: 0, streams: 0, costPerStream: 0 });
+    rows.push(row);
+  });
+  const order = { requested: 0, running: 1, planned: 2, done: 3 };
   rows.sort((a, b) => order[a.status] - order[b.status] || (b.start < a.start ? -1 : 1));
   const running = rows.filter(r => r.status === "running");
-  return { asOf: isoDate(ASOF), counts: { total: rows.length, running: running.length, planned: rows.filter(r => r.status === "planned").length, done: rows.filter(r => r.status === "done").length,
+  return { asOf: isoDate(ASOF), counts: { total: rows.length, running: running.length, planned: rows.filter(r => r.status === "planned").length, done: rows.filter(r => r.status === "done").length, requested: rows.filter(r => r.status === "requested").length,
       spent: cents(rows.filter(r => r.kind === "ads").reduce((s, r) => s + r.spent, 0)), streamsFromAds: rows.filter(r => r.kind === "ads").reduce((s, r) => s + r.streams, 0),
       presaves: rows.filter(r => r.kind === "smartlink").reduce((s, r) => s + r.presaves, 0), accepted: rows.filter(r => r.kind === "pitch").reduce((s, r) => s + r.accepted, 0), pitched: rows.filter(r => r.kind === "pitch").reduce((s, r) => s + r.pitched, 0) },
     rows, sampled: step > 1,
@@ -3387,33 +3642,37 @@ if (!FRESH) { try { seedPartyManager(); seedWithdrawals(); seedTickets(); seedCl
    giấu nút hay không thì máy chủ vẫn chặn.
    ===================================================================== */
 const VAI_NB = ["mgmt", "accounting", "sales", "ops", "support"];
-const QUYEN_MAN = {
-  "ban-lam-viec": VAI_NB, "ho-tro": VAI_NB,
-  "tong-quan": ["mgmt"], "ty-le": ["mgmt"], "quan-tri": ["mgmt"],
-  "ke-toan": ["mgmt", "accounting"], "chi-tra": ["mgmt", "accounting"], "tam-ung": ["mgmt", "accounting"], "chia-se": ["mgmt", "accounting"],
-  "doi-chieu": ["mgmt", "ops", "accounting"],
-  "xet-duyet": ["mgmt", "accounting", "sales"], "doi-tac": ["mgmt", "sales"], "chien-dich": ["mgmt", "sales", "ops"],
-  "theo-doi": ["mgmt", "ops"], "nap-du-lieu": ["mgmt", "ops"], "khop-isrc": ["mgmt", "ops"], "giao-nhan": ["mgmt", "ops"], "sua-hang-loat": ["mgmt", "ops"],
-  "bang-gia": ["mgmt", "ops"], "muc-tra": ["mgmt", "ops"], "danh-muc": ["mgmt", "ops"], "nen-tang": ["mgmt", "ops"],
-  "chat-luong": ["mgmt", "ops", "support"], "phat-hanh": ["mgmt", "ops", "support"], "quyen": ["mgmt", "support", "ops"]
+/* Mô tả nhóm hàm; vai nào được gọi nhóm nào suy ra từ khối trong cây tổ chức. */
+const NHOM_MO = {
+  tong:      { vi: "Số toàn công ty: dự báo doanh thu, chỉ tiêu, tỷ lệ chia, giải thích số", en: "Company-wide figures: revenue forecast, targets, rate shares, explanations" },
+  tien:      { vi: "Tiền ra vào: ví, rút tiền, bảng kê, tạm ứng, tài khoản ngân hàng, bút toán", en: "Money in and out: wallets, withdrawals, statements, advances, bank details, adjustments" },
+  doiSoat:   { vi: "Báo cáo kỳ, đối soát, xét duyệt kỳ, hàng đợi ISRC, tỷ giá", en: "Period reports, reconciliation, period approval, ISRC queue, FX" },
+  doiTac:    { vi: "Sổ đối tác đầy đủ (doanh thu quý, hợp đồng); chuyên viên chỉ tài khoản mình, trưởng bộ phận cả bộ phận", en: "Full partner ledger; specialists see own accounts, heads see the whole department" },
+  doiTacTao: { vi: "Thêm đối tác mới (label, nghệ sĩ) và hợp đồng", en: "Add new partners (labels, artists) and contracts" },
+  deXuat:    { vi: "Đề xuất tạm ứng / hợp đồng; bản tính lược theo vai", en: "Advance / contract proposals; calculation trimmed per role" },
+  deXuatTao: { vi: "Tạo đề xuất", en: "Create proposals" },
+  vanHanh:   { vi: "Phát hành, giao nhận, sửa hàng loạt, nạp báo cáo, mức trả, nền tảng, bảng giá", en: "Releases, deliveries, bulk edits, report ingest, rates, platforms, pricing" },
+  danhMuc:   { vi: "Danh mục, chất lượng lượt nghe, metadata, hồ sơ phát hành (đọc)", en: "Catalogue, stream quality, metadata, release files (read)" },
+  theoDoi:   { vi: "Lượt nghe theo ngày, playlist toàn danh mục", en: "Daily streams and playlists across the catalogue" },
+  chienDich: { vi: "Chiến dịch quảng bá, tạo và nhận yêu cầu chiến dịch", en: "Promotion campaigns, create and take campaign requests" },
+  chiaSe:    { vi: "Chia sẻ tác quyền của mọi tài khoản", en: "Royalty splits across accounts" },
+  khieuNai:  { vi: "Khiếu nại bản quyền, cài đặt video", en: "Rights claims, video settings" },
+  hoTro:     { vi: "Ticket hỗ trợ", en: "Support tickets" },
+  quanTri:   { vi: "Tài khoản cổng, nhật ký, câu hỏi, dữ liệu", en: "Portal accounts, audit log, questions, data" },
+  phatHanhHo:{ vi: "Tạo hồ sơ phát hành thay đối tác (kinh doanh: đối tác mình phụ trách)", en: "Create a release file on a partner's behalf" },
+  nhanSu:    { vi: "Sửa cây tổ chức: thêm khối / tổ, thêm và chuyển nhân sự, giao tài sản", en: "Edit the org tree: add units, add and move people, assign assets" },
+  toChuc:    { vi: "Xem cây tổ chức, nhiệm vụ và tài sản của bộ phận mình", en: "View the org tree, own department duties and assets" }
 };
-const QUYEN_NHOM = {
-  tong:      { vai: ["mgmt"],                        vi: "Số toàn công ty: dự báo doanh thu, chỉ tiêu, tỷ lệ chia, giải thích số", en: "Company-wide figures: revenue forecast, targets, split rates, number explanations" },
-  tien:      { vai: ["mgmt", "accounting"],          vi: "Tiền ra vào: ví, rút tiền, bảng kê, tạm ứng, tài khoản ngân hàng", en: "Money in and out: wallets, withdrawals, statements, advances, bank details" },
-  doiSoat:   { vai: ["mgmt", "ops", "accounting"],   vi: "Báo cáo kỳ, đối soát, xét duyệt kỳ, hàng đợi ISRC, tỷ giá", en: "Period reports, reconciliation, period approval, ISRC queue, FX" },
-  doiTac:    { vai: ["mgmt", "sales"],               vi: "Sổ đối tác đầy đủ (doanh thu quý, hợp đồng); kinh doanh chỉ tài khoản mình phụ trách", en: "Full partner book (quarter revenue, contracts); sales only their own accounts" },
-  deXuat:    { vai: ["mgmt", "accounting", "sales"], vi: "Đề xuất tạm ứng / hợp đồng; bản tính lược theo vai", en: "Advance / contract proposals; calculation trimmed per role" },
-  deXuatTao: { vai: ["mgmt", "sales"],               vi: "Tạo đề xuất", en: "Create proposals" },
-  vanHanh:   { vai: ["mgmt", "ops"],                 vi: "Phát hành, giao nhận, sửa hàng loạt, nạp báo cáo, mức trả nền tảng", en: "Releases, delivery, bulk edit, report loading, platform payout rates" },
-  danhMuc:   { vai: ["mgmt", "ops", "support"],      vi: "Danh mục, chất lượng lượt nghe, metadata, hồ sơ phát hành (đọc)", en: "Catalogue, stream quality, metadata, release files (read)" },
-  theoDoi:   { vai: ["mgmt", "ops"],                 vi: "Lượt nghe theo ngày, playlist toàn danh mục", en: "Daily streams and playlists across the catalogue" },
-  chienDich: { vai: ["mgmt", "sales", "ops"],        vi: "Chiến dịch quảng bá", en: "Promotion campaigns" },
-  chiaSe:    { vai: ["mgmt", "accounting"],          vi: "Chia sẻ tác quyền của mọi tài khoản", en: "Royalty splits across accounts" },
-  khieuNai:  { vai: ["mgmt", "support", "ops"],      vi: "Khiếu nại bản quyền, cài đặt video", en: "Rights claims, video settings" },
-  hoTro:     { vai: VAI_NB,                          vi: "Ticket hỗ trợ", en: "Support tickets" },
-  quanTri:   { vai: ["mgmt"],                        vi: "Tài khoản cổng, nhật ký, câu hỏi, dữ liệu", en: "Portal accounts, audit log, questions, data" },
-  phatHanhHo:{ vai: ["mgmt", "ops", "sales"],        vi: "Tạo hồ sơ phát hành thay đối tác (kinh doanh: đối tác mình phụ trách)", en: "Create a release on a partner’s behalf (sales: own accounts only)" }
-};
+const QUYEN_MAN = {}, QUYEN_NHOM = {};
+(function dungQuyenTuCay() {
+  MAN_TAT_CA.forEach(m => { QUYEN_MAN[m] = []; });
+  Object.keys(NHOM_MO).forEach(g => { QUYEN_NHOM[g] = { vai: [], vi: NHOM_MO[g].vi, en: NHOM_MO[g].en }; });
+  VAI_NB.forEach(vai => {
+    const k = TO_CHUC.find(x => x.vai === vai); if (!k) return;
+    k.man.forEach(m => { if (QUYEN_MAN[m] && QUYEN_MAN[m].indexOf(vai) < 0) QUYEN_MAN[m].push(vai); });
+    k.nhom.forEach(g => { if (QUYEN_NHOM[g] && QUYEN_NHOM[g].vai.indexOf(vai) < 0) QUYEN_NHOM[g].vai.push(vai); });
+  });
+})();
 /* thành viên của mặt tiền admin → nhóm; "a.b" cho hàm con; không có trong
    bảng nghĩa là dùng chung (tra cứu tên, kỳ, bài hát…) */
 const QUYEN_HAM = {
@@ -3433,7 +3692,9 @@ const QUYEN_HAM = {
   deliveries: "vanHanh", bulk: "vanHanh", ingest: "vanHanh", platformRates: "vanHanh", platformRatesFull: "vanHanh", setPlatformRate: "vanHanh", clearPlatformRate: "vanHanh", importPlatformRates: "vanHanh",
   proposals: "deXuat", "proposals.proposeAdvance": "deXuatTao", "proposals.proposeContract": "deXuatTao", advanceCalc: "deXuat", contractCalc: "deXuat", partySeries: "deXuat", advanceOfferOf: "deXuat",
   tickets: "hoTro", claims: "khieuNai", videoSettings: "khieuNai",
-  accounts: "quanTri", answers: "quanTri", reset: "quanTri", refresh: "quanTri", store: "quanTri"
+  accounts: "quanTri", answers: "quanTri", reset: "quanTri", refresh: "quanTri", store: "quanTri",
+  "parties.create": "doiTacTao", platforms: "vanHanh", campaignCreate: "chienDich", campaignSetStatus: "chienDich", claimCreate: "khieuNai", ledger: "tien", pricing: "vanHanh",
+  "toChuc.themKhoi": "nhanSu", "toChuc.suaKhoi": "nhanSu", "toChuc.themTo": "nhanSu", "toChuc.themNhanSu": "nhanSu", "toChuc.suaNhanSu": "nhanSu", "toChuc.chuyenNhanSu": "nhanSu", "toChuc.khoaNhanSu": "nhanSu", "toChuc.ganTaiSan": "nhanSu"
 };
 function vaiHienTai() { return _me ? _me.role : null; }
 function coQuyenNhom(nhom, role) { role = role || vaiHienTai(); const g = QUYEN_NHOM[nhom]; return role === "mgmt" || !!(g && g.vai.includes(role)); }
@@ -3498,7 +3759,7 @@ function proposalChoVai(p, role) {
 }
 function proposalsListChoVai(f) {
   const role = vaiHienTai(); f = Object.assign({}, f || {});
-  if (role === "sales") f.by = _me.name;
+  if (role === "sales" && !laTruong()) f.by = _me.name;
   return proposalsList(f).map(p => proposalChoVai(p, role));
 }
 function demDeXuat(ds) {
@@ -3506,7 +3767,7 @@ function demDeXuat(ds) {
   ds.forEach(p => { c[p.status] = (c[p.status] || 0) + 1; if (["submitted", "checked", "returned"].includes(p.status)) c.pending++; if (p.status === "approved") { if (p.type === "advance") c.approvedAdvance = cents(c.approvedAdvance + p.terms.amount); else c.approvedContract++; } });
   return c;
 }
-function proposalCountsChoVai() { return vaiHienTai() === "sales" ? demDeXuat(proposalsOf().filter(p => p.by === _me.name)) : proposalCounts(); }
+function proposalCountsChoVai() { return vaiHienTai() === "sales" && !laTruong() ? demDeXuat(proposalsOf().filter(p => p.by === _me.name)) : proposalCounts(); }
 function proposalGetChoVai(id) {
   const p = proposalsOf().find(x => x.id === id) || null;
   if (!p) return null;
@@ -3519,14 +3780,14 @@ function proposalGetChoVai(id) {
 const DOI_TAC_AN = { accounting: ["revenueQ", "revenuePrevQ", "streamsQ", "rate", "classification"], ops: ["revenueQ", "revenuePrevQ", "streamsQ", "rate", "classification", "bank"], support: ["revenueQ", "revenuePrevQ", "streamsQ", "rate", "classification", "bank"] };
 function partiesListChoVai(opts) {
   const role = vaiHienTai(); opts = Object.assign({}, opts || {});
-  if (role === "sales") { opts.manager = _me.id; return partiesList(opts); }
+  if (role === "sales") { if (!laTruong()) opts.manager = _me.id; return partiesList(opts); }
   const r = partiesList(opts), an = DOI_TAC_AN[role];
   if (!an) return r;
   return Object.assign({}, r, { rows: r.rows.map(x => { const y = Object.assign({}, x); an.forEach(k => { y[k] = null; }); return y; }) });
 }
 function salesKpiChoVai(staffId, pIdx) {
   const role = vaiHienTai();
-  if (role === "sales" && staffId !== _me.id) { const e = new Error("Không có quyền: chỉ tiêu của người khác"); e.code = "NO_QUYEN"; throw e; }
+  if (role === "sales" && staffId !== _me.id && !laTruong()) { const e = new Error("Không có quyền: chỉ tiêu của người khác"); e.code = "NO_QUYEN"; throw e; }
   if (role !== "mgmt" && role !== "sales") chanQuyen("sales.kpi", "tong");
   return salesKpi(staffId, pIdx);
 }
@@ -3541,7 +3802,7 @@ function searchChoVai(q, limit) {
   if (role === "mgmt") return r;
   const docs = r.docs.filter(d => !d.di || manCoQuyen(d.di, role));
   let parties = [];
-  if (role === "sales") parties = r.parties.filter(p => state.partyManager[p.key] === _me.id);
+  if (role === "sales") parties = laTruong() ? r.parties : r.parties.filter(p => state.partyManager[p.key] === _me.id);
   return { tracks: r.tracks, parties, docs };
 }
 /* Dự báo lượt nghe cho vận hành: không có tiền. */
@@ -3561,10 +3822,14 @@ function forecastStreamsOf() {
 const quyenXuat = {
   vai: () => vaiHienTai(), vaiTatCa: VAI_NB.slice(),
   man: id => manCoQuyen(id), nhom: g => coQuyenNhom(g),
-  bang: () => ({ man: QUYEN_MAN, nhom: QUYEN_NHOM }),
+  bang: () => ({ man: QUYEN_MAN, nhom: QUYEN_NHOM, khoi: TO_CHUC.map(k => ({ id: k.id, vai: k.vai, vi: k.vi, en: k.en, man: k.man.slice(), nhom: k.nhom.slice() })) }),
+  cap: () => capCua(_me), truong: () => laTruong(),
   cua: role => ({ man: Object.keys(QUYEN_MAN).filter(id => manCoQuyen(id, role)), nhom: Object.keys(QUYEN_NHOM).filter(g => coQuyenNhom(g, role)) })
 };
 
+const demAnToan = (f, me) => { try { const v = f(me); return typeof v === "number" && isFinite(v) ? v : 0; } catch (e) { return 0; } };
+const nhanSuGon = x => ({ id: x.id, name: x.name, email: x.email, phone: x.phone || "", role: x.role, boPhan: x.boPhan, to: x.to, chucDanh: x.chucDanh, cap: capCua(x), title: x.title, titleEn: x.titleEn, active: x.active !== false, startedAt: x.startedAt || null });
+const maKhoi = ten => chuoi(ten).toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/đ/g, "d").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 32);
 const admin = {
   cfg: CFG,
   get distributor() { return DISTRIBUTOR || KHONG_CO_BI_MAT; },
@@ -3661,18 +3926,29 @@ const admin = {
     }
   },
   releases: {
+    fields: { types: RELEASE_TYPES, genres: RELEASE_GENRES, langs: RELEASE_LANGS, versions: TRACK_VERSIONS, writerRoles: WRITER_ROLES, sampleKinds: SAMPLE_KINDS, aiLevels: AI_LEVELS, contactRoles: CONTACT_ROLES, commitments: CAM_KET },
+    kiem: r => kiemHoSo(r),
+    /* Kiểm thử hồ sơ trước khi tạo: cùng luật với createFor, không lưu. */
+    check(partyKey, payload) {
+      const isLabel = String(partyKey)[0] === "L", pid = +String(partyKey).slice(2);
+      const artistId = isLabel ? +(payload && payload.artistId) : pid;
+      if (!ARTISTS[artistId]) return { ok: false, loi: "Chưa chọn nghệ sĩ chính" };
+      try { const r = buildRelease(payload, artistId, "preview", "staff"); releaseSeq--; return { ok: true, kiem: r.kiem, tracks: r.tracks.length }; }
+      catch (e) { return { ok: false, loi: e.message }; }
+    },
     list(filter) {
       let ds = state.releases.slice();
       if (filter && filter.status) ds = ds.filter(r => r.status === filter.status);
+      ds.forEach(r => { r.kiem = kiemHoSo(r); });
       return ds;
     },
-    get(id) { return state.releases.find(r => r.id === id) || null; },
+    get(id) { const r = state.releases.find(r => r.id === id) || null; if (r) r.kiem = kiemHoSo(r); return r; },
     /* Nhân viên tạo hồ sơ phát hành thay đối tác (đối tác gửi file qua email,
        gọi điện…). Cùng luật kiểm như hồ sơ đối tác tự gửi; ghi rõ người tạo là
        nhân viên và đối tác thấy nhãn "Haustek tạo thay bạn" trên cổng. Kinh
        doanh chỉ tạo cho đối tác mình phụ trách. */
     createFor(partyKey, payload, by) {
-      if (vaiHienTai() === "sales" && state.partyManager[partyKey] !== _me.id) throw new Error("Không có quyền: đối tác này không do bạn phụ trách");
+      if (vaiHienTai() === "sales" && !laTruong() && state.partyManager[partyKey] !== _me.id) throw new Error("Không có quyền: đối tác này không do bạn phụ trách");
       const isLabel = String(partyKey)[0] === "L", pid = +String(partyKey).slice(2);
       const artistId = isLabel ? +(payload && payload.artistId) : pid;
       if (!ARTISTS[artistId]) throw new Error("Chưa chọn nghệ sĩ chính");
@@ -3717,6 +3993,183 @@ const admin = {
       audit.log("release.return", r.id + " · " + r.title + " · " + note.slice(0, 80), by); store.save(); return r;
     }
   },
+  /* ---- cây tổ chức: quyền, chức năng, nhiệm vụ, tài sản, nhân sự ---- */
+  toChuc: {
+    chucDanh: CHUC_DANH,
+    taiSan() { return TAI_SAN.map(a => ({ id: a.id, vi: a.vi, en: a.en, man: a.man, dem: demAnToan(a.dem) })); },
+    cay() {
+      const khoi = khoiTatCa().map(k => {
+        const ns = STAFF.filter(x => x.boPhan === k.id && x.active !== false).map(x => nhanSuGon(x));
+        return { id: k.id, vai: k.vai, vi: k.vi, en: k.en, chucNang: k.chucNang, them: !TO_CHUC.some(x => x.id === k.id),
+          man: k.man.slice(), nhom: k.nhom.slice(),
+          taiSan: k.taiSan.map(id => { const a = TAI_SAN.find(x => x.id === id); return a ? { id: a.id, vi: a.vi, en: a.en, man: a.man, dem: demAnToan(a.dem) } : null; }).filter(Boolean),
+          to: k.to.map(t => ({ id: t.id, vi: t.vi, en: t.en, them: !(TO_CHUC.find(x => x.id === k.id) || { to: [] }).to.some(x => x.id === t.id),
+            nhiemVu: (t.nhiemVu || []).map(n => ({ id: n.id, vi: n.vi, en: n.en, man: n.man || null, dem: n.dem ? demAnToan(n.dem) : null })),
+            nhanSu: ns.filter(x => x.to === t.id) })),
+          nhanSu: ns, truong: ns.filter(x => x.cap >= 2).map(x => x.name) };
+      });
+      return { ten: "Haustek Group", khoi, tongNhanSu: STAFF.filter(x => x.active !== false).length, chucDanh: CHUC_DANH };
+    },
+    cuaToi() {
+      const me = _me, k = khoiCua(me.boPhan), t = k ? k.to.find(x => x.id === me.to) : null;
+      const nhiemVu = [];
+      if (k) (laTruong(me) || k.vai === "mgmt" ? k.to : (t ? [t] : [])).forEach(x => (x.nhiemVu || []).forEach(n => nhiemVu.push({ id: n.id, to: x.vi, toEn: x.en, vi: n.vi, en: n.en, man: n.man || null, dem: n.dem ? demAnToan(n.dem, me) : null })));
+      return { id: me.id, name: me.name, khoi: k ? { id: k.id, vi: k.vi, en: k.en, chucNang: k.chucNang } : null, to: t ? { id: t.id, vi: t.vi, en: t.en } : null,
+        chucDanh: chucDanhCua(me.chucDanh), cap: capCua(me), truong: laTruong(me), nhiemVu,
+        taiSan: TAI_SAN.filter(a => a.gan).map(a => ({ id: a.id, vi: a.vi, en: a.en, man: a.man, dem: demAnToan(() => a.gan(me.id)) })).filter(a => a.dem > 0) };
+    },
+    nhanSu() { return STAFF.map(nhanSuGon); },
+    themKhoi(o, by) {
+      const id = maKhoi(o.vi || o.id); if (!id) throw new Error("Thiếu tên khối");
+      if (khoiCua(id)) throw new Error("Đã có khối " + id);
+      if (!VAI_NB.includes(o.vai)) throw new Error("Chưa chọn hồ sơ quyền cho khối");
+      const them = lazyState("toChucThem", {}); them.khoi = them.khoi || [];
+      them.khoi.push({ id, vi: chuoi(o.vi), en: chuoi(o.en) || chuoi(o.vi), vai: o.vai, chucNang: { vi: danhSach(o.chucNang), en: danhSach(o.chucNangEn || o.chucNang) }, taiSan: danhSach(o.taiSan).filter(x => TAI_SAN.some(a => a.id === x)), to: [] });
+      audit.log("tochuc.khoi", id + " · " + chuoi(o.vi) + " · quyền " + o.vai, by); store.save(); return khoiCua(id);
+    },
+    suaKhoi(id, o, by) {
+      const them = lazyState("toChucThem", {}); const k = (them.khoi || []).find(x => x.id === id);
+      if (!k) throw new Error("Chỉ sửa được khối thêm bằng tay");
+      if (o.vi) k.vi = chuoi(o.vi); if (o.en) k.en = chuoi(o.en); if (o.vai && VAI_NB.includes(o.vai)) k.vai = o.vai;
+      if (o.chucNang != null) k.chucNang = { vi: danhSach(o.chucNang), en: danhSach(o.chucNangEn || o.chucNang) };
+      STAFF.filter(x => x.boPhan === id).forEach(chuanNhanSu);
+      audit.log("tochuc.khoi.sua", id, by); store.save(); return khoiCua(id);
+    },
+    themTo(khoiId, o, by) {
+      const k = khoiCua(khoiId); if (!k) throw new Error("Không có khối " + khoiId);
+      const id = maKhoi(o.vi || o.id); if (!id) throw new Error("Thiếu tên tổ");
+      if (k.to.some(t => t.id === id)) throw new Error("Đã có tổ " + id);
+      const them = lazyState("toChucThem", {});
+      const to = { id, vi: chuoi(o.vi), en: chuoi(o.en) || chuoi(o.vi), nhiemVu: danhSach(o.nhiemVu).map((v, i) => ({ id: id + "-" + (i + 1), vi: v, en: (danhSach(o.nhiemVuEn)[i]) || v, man: o.man || null })) };
+      if (TO_CHUC.some(x => x.id === khoiId)) { them.to = them.to || {}; (them.to[khoiId] = them.to[khoiId] || []).push(to); }
+      else { const kt = (them.khoi || []).find(x => x.id === khoiId); kt.to = kt.to || []; kt.to.push(to); }
+      audit.log("tochuc.to", khoiId + " / " + id + " · " + to.vi, by); store.save(); return toCua(khoiId, id);
+    },
+    themNhanSu(o, by) {
+      const email = chuoi(o.email).toLowerCase(), name = chuoi(o.name);
+      if (!name) throw new Error("Thiếu họ tên");
+      if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) throw new Error("Email không hợp lệ");
+      if (STAFF.some(x => x.email.toLowerCase() === email)) throw new Error("Email này đã có trong danh sách nhân sự");
+      if (!khoiCua(o.boPhan)) throw new Error("Chưa chọn bộ phận");
+      let n = STAFF.length + 1, id; do { id = "S" + String(n++).padStart(2, "0"); } while (staffById(id));
+      const x = chuanNhanSu({ id, email, name, boPhan: o.boPhan, to: o.to, chucDanh: o.chucDanh, active: true, phone: chuoi(o.phone), startedAt: isoDate(ASOF) });
+      state.staff.push(x); STAFF.push(x);
+      audit.log("tochuc.nhansu", id + " · " + name + " · " + x.title, by); store.save(); return nhanSuGon(x);
+    },
+    suaNhanSu(id, o, by) {
+      const x = staffById(id); if (!x) throw new Error("Không có nhân viên " + id);
+      if (o.name) x.name = chuoi(o.name); if (o.email) x.email = chuoi(o.email).toLowerCase(); if (o.phone != null) x.phone = chuoi(o.phone);
+      chuanNhanSu(x); audit.log("tochuc.nhansu.sua", id + " · " + x.name, by); store.save(); return nhanSuGon(x);
+    },
+    chuyenNhanSu(id, o, by) {
+      const x = staffById(id); if (!x) throw new Error("Không có nhân viên " + id);
+      if (x.id === "S01" && o.boPhan && o.boPhan !== "ban-giam-doc") throw new Error("Giám đốc mẫu phải ở Ban giám đốc");
+      const truoc = x.title;
+      if (o.boPhan) { if (!khoiCua(o.boPhan)) throw new Error("Không có khối " + o.boPhan); x.boPhan = o.boPhan; x.to = o.to || ""; }
+      if (o.to) x.to = o.to; if (o.chucDanh) x.chucDanh = o.chucDanh;
+      chuanNhanSu(x);
+      if (x.role !== "sales") Object.keys(state.partyManager).forEach(k => { if (state.partyManager[k] === id) delete state.partyManager[k]; });
+      audit.log("tochuc.chuyen", id + " · " + x.name + " · " + truoc + " → " + x.title, by); store.save(); return nhanSuGon(x);
+    },
+    khoaNhanSu(id, mo, by) {
+      const x = staffById(id); if (!x) throw new Error("Không có nhân viên " + id);
+      if (x.id === _me.id) throw new Error("Không tự khoá chính mình");
+      x.active = !!mo; if (!x.active) { state.tickets.forEach(t => { if (t.assignee === id) t.assignee = null; }); }
+      audit.log(x.active ? "tochuc.molai" : "tochuc.khoa", id + " · " + x.name, by); store.save(); return nhanSuGon(x);
+    },
+    ganTaiSan(loai, key, staffId, by) {
+      const st = staffById(staffId); if (!st) throw new Error("Không có nhân viên " + staffId);
+      if (loai === "taiKhoanDoiTac") { if (st.role !== "sales") throw new Error("Tài khoản đối tác chỉ giao cho Kinh doanh"); state.partyManager[key] = staffId; }
+      else if (loai === "nenTang") { if (st.role !== "ops") throw new Error("Nền tảng chỉ giao cho Vận hành"); state.platformOwner[key] = staffId; }
+      else if (loai === "ticket") { const t = state.tickets.find(x => x.id === key); if (!t) throw new Error("Không tìm thấy " + key); t.assignee = staffId; }
+      else if (loai === "khieuNai") { const c = state.claims.find(x => x.id === key); if (!c) throw new Error("Không tìm thấy " + key); c.assignee = staffId; }
+      else throw new Error("Lớp tài sản này không giao đích danh");
+      audit.log("tochuc.gan", loai + " · " + key + " → " + st.name, by); store.save(); return true;
+    }
+  },
+  /* ---- thêm nền tảng, chiến dịch, khiếu nại, bút toán, bảng giá ---- */
+  platforms: {
+    list() {
+      const goc = STORES.map((n, i) => ({ name: n, top: i < N_TOP, feed: STORE_FEED[i] != null ? STORE_FEED[i] : 0, status: "live", ownerId: state.platformOwner[n] || null, owner: staffById(state.platformOwner[n]) ? staffById(state.platformOwner[n]).name : null, manual: false }));
+      const them = state.platformsExtra.map(p => Object.assign({}, p, { ownerId: state.platformOwner[p.name] || p.ownerId || null, owner: staffById(state.platformOwner[p.name] || p.ownerId) ? staffById(state.platformOwner[p.name] || p.ownerId).name : null, manual: true }));
+      return them.concat(goc);
+    },
+    statuses: ["connecting", "testing", "live", "paused"],
+    add(o, by) {
+      const name = chuoi(o.name); if (!name) throw new Error("Thiếu tên nền tảng");
+      if (STORES.includes(name) || state.platformsExtra.some(p => p.name.toLowerCase() === name.toLowerCase())) throw new Error("Nền tảng này đã có");
+      const p = { name, kind: chuoi(o.kind) || "streaming", region: chuoi(o.region) || "Toàn cầu", status: ["connecting", "testing", "live", "paused"].includes(o.status) ? o.status : "connecting",
+        cadence: chuoi(o.cadence) || "monthly", contact: chuoi(o.contact), note: chuoi(o.note), addedAt: isoDate(ASOF), by: by || "" };
+      state.platformsExtra.unshift(p); if (o.ownerId && staffById(o.ownerId)) state.platformOwner[name] = o.ownerId;
+      audit.log("platform.add", name + " · " + p.kind + " · " + p.status, by); store.save(); return p;
+    },
+    setStatus(name, status, by) {
+      const p = state.platformsExtra.find(x => x.name === name); if (!p) throw new Error("Chỉ đổi được trạng thái nền tảng thêm bằng tay");
+      if (!["connecting", "testing", "live", "paused"].includes(status)) throw new Error("Trạng thái không hợp lệ");
+      p.status = status; audit.log("platform.status", name + " → " + status, by); store.save(); return p;
+    }
+  },
+  campaignCreate(o, by) {
+    const i = +o.trackId; if (!(i >= 0 && i < N)) throw new Error("Chưa chọn bài hát");
+    if (!["smartlink", "pitch", "ads"].includes(o.kind)) throw new Error("Loại chiến dịch không hợp lệ");
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(o.start || "") || !/^\d{4}-\d{2}-\d{2}$/.test(o.end || "")) throw new Error("Ngày bắt đầu / kết thúc phải theo yyyy-mm-dd");
+    if (o.end < o.start) throw new Error("Ngày kết thúc phải sau ngày bắt đầu");
+    if (vaiHienTai() === "sales" && !laTruong() && state.partyManager[partyKeyOfTrack(i)] !== _me.id) throw new Error("Không có quyền: bài này thuộc đối tác không do bạn phụ trách");
+    const c = { id: "CD-" + String(i).padStart(5, "0") + "-" + o.kind.slice(0, 2).toUpperCase() + "-" + String(state.campaigns.length + 1).padStart(2, "0"), trackId: i, title: tTitle[i], partyKey: partyKeyOfTrack(i), kind: o.kind, start: o.start, end: o.end,
+      budget: o.kind === "ads" ? Math.max(0, +o.budget || 0) : 0, note: chuoi(o.note), status: o.status === "requested" ? "requested" : "planned", by: by || "", at: nowISO() };
+    state.campaigns.unshift(c); audit.log("campaign.create", c.id + " · " + c.title + " · " + o.kind, by); store.save(); return c;
+  },
+  campaignSetStatus(id, status, by) {
+    const c = state.campaigns.find(x => x.id === id); if (!c) throw new Error("Chỉ đổi được chiến dịch tạo bằng tay");
+    if (!["requested", "planned", "running", "done"].includes(status)) throw new Error("Trạng thái không hợp lệ");
+    c.status = status; if (status === "running" && c.start > isoDate(ASOF)) c.start = isoDate(ASOF); if (status === "done" && c.end > isoDate(ASOF)) c.end = isoDate(ASOF);
+    audit.log("campaign.status", id + " → " + status, by); store.save(); return c;
+  },
+  claimCreate(o, by) {
+    const i = +o.trackId; if (!(i >= 0 && i < N)) throw new Error("Chưa chọn bài hát");
+    if (!CLAIM_CAT.some(c => c.id === o.category)) throw new Error("Chưa chọn loại khiếu nại");
+    const store2 = chuoi(o.store) || "YouTube", k = state.claims.length, created = isoDate(ASOF);
+    const c = { id: "CL-" + String(k + 1).padStart(4, "0"), trackId: i, track: { title: tTitle[i], isrc: tIsrc[i], artist: ARTISTS[tArtist[i]].name, upc: tUpc[i] },
+      partyKey: partyKeyOfTrack(i), party: { name: partyName(partyKeyOfTrack(i)), clientId: partyClientId(partyKeyOfTrack(i)) },
+      store: store2, category: o.category, assetId: "A" + maNgauNhien(k + 1, 100, 16, "ABCDEFGHJKLMNPQRSTUVWXYZ0123456789"),
+      otherParty: chuoi(o.otherParty) || null, country: chuoi(o.country) || "VN", dailyViews: Math.max(0, +o.dailyViews || 0), status: "open",
+      priority: ["urgent", "high", "normal"].includes(o.priority) ? o.priority : "normal", createdAt: created + " " + nowISO().slice(11), updatedAt: created + " " + nowISO().slice(11), expiresAt: null,
+      assignee: o.assignee && staffById(o.assignee) ? o.assignee : null, notes: chuoi(o.note) ? [{ at: nowISO(), by: by || "", text: chuoi(o.note) }] : [], manual: true };
+    state.claims.unshift(c); audit.log("claim.create", c.id + " · " + c.track.title + " · " + store2, by); store.save(); return c;
+  },
+  ledger: {
+    kinds: [["dieu-chinh", "Điều chỉnh doanh thu", "Revenue adjustment"], ["chi-phi", "Chi phí thu hộ", "Recoverable cost"], ["thu-khac", "Khoản thu khác", "Other income"], ["hoan", "Hoàn / trả lại", "Refund / reversal"]],
+    adjustments(f) {
+      let ds = state.adjustments.slice();
+      if (f && f.periodKey) ds = ds.filter(a => a.periodKey === f.periodKey);
+      if (f && f.partyKey) ds = ds.filter(a => a.partyKey === f.partyKey);
+      return ds.map(a => Object.assign({}, a, { partyName: a.partyKey ? partyName(a.partyKey) : "", clientId: a.partyKey ? partyClientId(a.partyKey) : "" }));
+    },
+    addAdjustment(o, by) {
+      const amount = Math.round((+o.amount || 0) * 100) / 100; if (!amount) throw new Error("Số tiền phải khác 0");
+      if (!PERIODS.some(p => p.k === o.periodKey)) throw new Error("Chưa chọn kỳ");
+      if (state.approved[o.periodKey] && !o.force) throw new Error("Kỳ này đã xét duyệt; bút toán phải ghi vào kỳ đang mở");
+      if (o.partyKey && !partyName(o.partyKey)) throw new Error("Không tìm thấy đối tác");
+      if (!chuoi(o.note)) throw new Error("Bút toán phải có diễn giải");
+      const kinds = ["dieu-chinh", "chi-phi", "thu-khac", "hoan"];
+      const a = { id: "BT-" + o.periodKey.replace("-", "") + "-" + String(state.adjustments.length + 1).padStart(3, "0"), periodKey: o.periodKey, partyKey: o.partyKey || null, kind: kinds.includes(o.kind) ? o.kind : "dieu-chinh", amount, note: chuoi(o.note), ref: chuoi(o.ref), by: by || "", at: nowISO() };
+      state.adjustments.unshift(a); audit.log("ledger.adjust", a.id + " · " + fmt.usd(amount) + " · " + a.note, by); store.save(); return a;
+    },
+    removeAdjustment(id, by) { const i = state.adjustments.findIndex(a => a.id === id); if (i < 0) throw new Error("Không tìm thấy " + id); const a = state.adjustments.splice(i, 1)[0]; audit.log("ledger.adjust.remove", a.id, by); store.save(); return true; }
+  },
+  pricing: {
+    list() { return state.priceExtra.slice(); },
+    add(o, by) {
+      const storeName = chuoi(o.store), tier = chuoi(o.tier), cur = chuoi(o.currency).toUpperCase(), gia = Math.round((+o.price || 0) * 100) / 100;
+      if (!storeName) throw new Error("Thiếu tên nền tảng"); if (!tier) throw new Error("Thiếu nhóm giá"); if (!/^[A-Z]{3}$/.test(cur)) throw new Error("Tiền tệ phải là mã 3 chữ (USD, VND…)");
+      if (!(gia > 0)) throw new Error("Giá phải lớn hơn 0");
+      const loai = o.kind === "track" ? "track" : "album";
+      const cu = state.priceExtra.find(x => x.store === storeName && x.tier === tier && x.currency === cur && x.kind === loai);
+      if (cu) { cu.price = gia; cu.by = by || ""; cu.at = nowISO(); } else state.priceExtra.unshift({ store: storeName, tier, currency: cur, kind: loai, price: gia, effective: chuoi(o.effective) || isoDate(ASOF), by: by || "", at: nowISO() });
+      audit.log("pricing.set", storeName + " · " + tier + " · " + loai + " · " + cur + " " + gia, by); store.save(); return state.priceExtra;
+    },
+    remove(o, by) { const i = state.priceExtra.findIndex(x => x.store === o.store && x.tier === o.tier && x.currency === o.currency && x.kind === o.kind); if (i < 0) throw new Error("Không có dòng giá này"); state.priceExtra.splice(i, 1); audit.log("pricing.remove", o.store + " · " + o.tier, by); store.save(); return true; }
+  },
   /* ---- nhân viên, đối tác, kinh doanh ---- */
   staff: {
     list() { return STAFF.slice(); },
@@ -3726,6 +4179,35 @@ const admin = {
     targets: STAFF_TARGET
   },
   parties: { list: opts => partiesListChoVai(opts), managerOf: pk => staffById(state.partyManager[pk]) || null,
+    kinds: [["label", "Label", "Label"], ["artist", "Nghệ sĩ độc lập", "Independent artist"]],
+    /* Thêm đối tác mới: label hoặc nghệ sĩ, kèm hợp đồng (từ / đến / phần
+       đối tác hưởng), người phụ trách và tài khoản cổng nếu có email. */
+    create(o, by) {
+      const name = chuoi(o.name); if (!name) throw new Error("Thiếu tên đối tác");
+      const kind = o.kind === "artist" ? "artist" : "label";
+      if (LABELS.some(l => l.name.toLowerCase() === name.toLowerCase()) || ARTISTS.some(a => a.name.toLowerCase() === name.toLowerCase())) throw new Error("Đã có đối tác tên này");
+      const from = chuoi(o.from) || isoDate(ASOF), to = chuoi(o.to);
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(from) || (to && !/^\d{4}-\d{2}-\d{2}$/.test(to))) throw new Error("Ngày hợp đồng phải theo yyyy-mm-dd");
+      if (to && to <= from) throw new Error("Ngày hết hạn phải sau ngày ký");
+      const share = o.share != null && o.share !== "" ? +o.share / 100 : null;
+      if (share != null && !(share > 0 && share < 1)) throw new Error("Phần đối tác hưởng phải trong khoảng 1–99%");
+      const mgr = o.managerId || (vaiHienTai() === "sales" ? _me.id : null);
+      if (mgr && !(staffById(mgr) && staffById(mgr).role === "sales")) throw new Error("Người phụ trách phải thuộc Kinh doanh");
+      let rec, pk;
+      if (kind === "label") {
+        const id = LABELS.length; rec = { id, key: "L:" + id, clientId: "HTK-L" + String(id + 1).padStart(3, "0"), name, baseRate: share != null ? share : 0.7, isPublisher: false, parentId: o.parentId != null && LABELS[+o.parentId] ? +o.parentId : -1, kind: "label", them: true, addedAt: isoDate(ASOF) };
+        LABELS.push(rec); pk = rec.key;
+      } else {
+        const id = ARTISTS.length; rec = { id, key: "A:" + id, clientId: "HTK-A" + String(id + 1).padStart(4, "0"), name, labelId: o.labelId != null && LABELS[+o.labelId] ? +o.labelId : -1, writer: !!o.writer, indieRate: share != null ? share : 0.85, kind: "artist", them: true, addedAt: isoDate(ASOF) };
+        ARTISTS.push(rec); pk = rec.key;
+      }
+      state.extraParties.push(Object.assign({}, rec));
+      state.contracts[pk] = Object.assign({}, state.contracts[pk] || {}, { from, to: to || addDays(from, 730), share: share != null ? share : undefined, note: chuoi(o.note), signedBy: by || "" });
+      if (mgr) state.partyManager[pk] = mgr;
+      if (chuoi(o.email)) admin.accounts.add(chuoi(o.email), kind, pk);
+      audit.log("party.create", pk + " · " + name + " · " + kind + (mgr ? " · " + staffById(mgr).name : ""), by); store.save();
+      return { partyKey: pk, kind, name, clientId: rec.clientId, contractFrom: from, contractTo: to || addDays(from, 730), managerId: mgr || null };
+    },
     setManager(pk, staffId, by) { if (!staffById(staffId)) throw new Error("Không có nhân viên " + staffId); state.partyManager[pk] = staffId; audit.log("party.manager", partyName(pk) + " → " + staffById(staffId).name, by); store.save(); },
     signedAt: signedAtOf, contractEnd: contractEndOf },
   sales: { kpi: (staffId, pIdx) => salesKpiChoVai(staffId, pIdx) },
@@ -3895,8 +4377,8 @@ function scrub(payload) {
 }
 function partyClientIdOf(role, partyId) { return role === "label" ? LABELS[partyId].clientId : role === "artist" ? ARTISTS[partyId].clientId : "admin"; }
 function assertParty(role, partyId) {
-  if (role === "label") { if (!(partyId >= 0 && partyId < CFG.N_LABELS)) throw new Error("Không có quyền"); }
-  else if (role === "artist") { if (!(partyId >= 0 && partyId < CFG.N_ARTISTS)) throw new Error("Không có quyền"); }
+  if (role === "label") { if (!(partyId >= 0 && partyId < LABELS.length)) throw new Error("Không có quyền"); }
+  else if (role === "artist") { if (!(partyId >= 0 && partyId < ARTISTS.length)) throw new Error("Không có quyền"); }
   else throw new Error("Vai trò không hợp lệ ở cổng đối tác");
 }
 function inScope(role, partyId, stream, i) {
@@ -4164,10 +4646,10 @@ const api = {
   /* Bản phát hành: hồ sơ đã gửi (state.releases) và bản đã có trong danh mục. */
   releases(role, partyId) {
     assertParty(role, partyId);
-    const mine = state.releases.filter(r => releaseVisible(r, role, partyId));
+    const mine = state.releases.filter(r => releaseVisible(r, role, partyId)).map(r => Object.assign({}, r, { kiem: kiemHoSo(r) }));
     const cat = catalogueReleases(role, partyId, 40);
     return scrub({ submissions: mine, catalogue: cat.rows, catalogueTotal: cat.total,
-      statuses: RELEASE_STATUS.slice() });
+      statuses: RELEASE_STATUS.slice(), fields: admin.releases.fields });
   },
   submitRelease(role, partyId, payload) {
     assertParty(role, partyId);
@@ -4307,6 +4789,42 @@ const api = {
       assigneeName: t.assignee && staffById(t.assignee) ? staffById(t.assignee).name : null, assignee: undefined,
       dept: deptCua(t), deptLabel: TEN_BO_PHAN[deptCua(t)].vi, deptLabelEn: TEN_BO_PHAN[deptCua(t)].en }));
     return scrub({ rows, types: TICKET_TYPES, counts: { open: rows.filter(t => t.status !== "done").length, done: rows.filter(t => t.status === "done").length } });
+  },
+  /* Kiểm thử hồ sơ trước khi gửi: trả về lỗi chặn (nếu có) và bảng kiểm. */
+  checkRelease(role, partyId, payload) {
+    assertParty(role, partyId);
+    const artistId = role === "label" ? +(payload && payload.artistId) : partyId;
+    if (!ARTISTS[artistId] || (role === "label" && ARTISTS[artistId].labelId !== partyId)) return scrub({ ok: false, loi: "Chưa chọn nghệ sĩ chính thuộc label" });
+    try { const r = buildRelease(payload, artistId, "preview", role); releaseSeq--; return scrub({ ok: true, kiem: r.kiem, tracks: r.tracks.length }); }
+    catch (e) { return scrub({ ok: false, loi: e.message }); }
+  },
+  /* Label thêm nghệ sĩ vào roster của mình (chưa có bản ghi, có ngay hồ sơ
+     để gửi phát hành). Nghệ sĩ độc lập không có roster. */
+  addArtist(role, partyId, o) {
+    assertParty(role, partyId);
+    if (role !== "label") throw new Error("Chỉ label mới thêm được nghệ sĩ vào roster");
+    const name = chuoi(o && o.name); if (!name) throw new Error("Thiếu nghệ danh");
+    if (ARTISTS.some(a => a.name.toLowerCase() === name.toLowerCase())) throw new Error("Đã có nghệ sĩ tên này trong hệ thống");
+    const id = ARTISTS.length;
+    const rec = { id, key: "A:" + id, clientId: "HTK-A" + String(id + 1).padStart(4, "0"), name, labelId: partyId, writer: !!(o && o.writer), indieRate: 0.85, kind: "artist", them: true, addedAt: isoDate(ASOF),
+      realName: chuoi(o && o.realName), spotify: chuoi(o && o.spotify), apple: chuoi(o && o.apple) };
+    ARTISTS.push(rec); state.extraParties.push(Object.assign({}, rec));
+    if (chuoi(o && o.email)) { try { admin.accounts.add(chuoi(o.email), "artist", rec.key); } catch (e) { /* email trùng thì bỏ qua, nghệ sĩ vẫn được thêm */ } }
+    audit.log("roster.add", rec.key + " · " + name + " · " + partyName("L:" + partyId), partyClientId("L:" + partyId)); store.save();
+    return scrub({ id, clientId: rec.clientId, name });
+  },
+  /* Đối tác đề nghị chiến dịch: tạo chiến dịch ở trạng thái "yêu cầu" và
+     một ticket marketing vào hàng đợi Kinh doanh. */
+  requestCampaign(role, partyId, o) {
+    assertParty(role, partyId);
+    const i = +(o && o.trackId); if (!inScope(role, partyId, "rec", i)) throw new Error("Bài hát này không thuộc phạm vi của bạn");
+    if (!["smartlink", "pitch", "ads"].includes(o.kind)) throw new Error("Chưa chọn loại chiến dịch");
+    const start = chuoi(o.start) || addDays(isoDate(ASOF), 7), end = chuoi(o.end) || addDays(start, 30);
+    const c = admin.campaignCreate({ trackId: i, kind: o.kind, start, end, budget: o.budget, note: o.note, status: "requested" }, partyClientId(role === "label" ? "L:" + partyId : "A:" + partyId));
+    const pk = role === "label" ? "L:" + partyId : "A:" + partyId;
+    const t = createTicket({ type: "marketing", title: "Đề nghị chiến dịch · " + tTitle[i], body: (o.note || "Đề nghị chạy chiến dịch " + o.kind) + " · " + c.id, partyKey: pk, trackId: i, priority: "normal", assignee: null });
+    store.save();
+    return scrub({ id: c.id, ticketId: t.id, status: "requested", start, end });
   },
   createTicket(role, partyId, o) {
     assertParty(role, partyId);
