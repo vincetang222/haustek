@@ -252,36 +252,40 @@ function theDeXuat(pr, opts) {
   var dau = '<div class="bar" style="margin-bottom:10px">' + tagDx(pr.status) + tagKn(c.recommendation) + (c.grade ? tagHang(c.grade) : '') +
     '<span class="muted" style="font-size:12.5px">' + esc(song(pr, 'moTa')) + '</span></div>';
   var html = dau;
+  /* Bản tính có thể đã bị lược theo vai (kế toán, kinh doanh không thấy phần
+     Haustek giữ / ROI): ô nào không có số thì không vẽ. */
+  function neu(v, f) { return v == null ? '' : f(); }
   if (pr.type === 'advance') {
     html += '<div class="sig">' +
-      oSo(t('dxNet'), tien(c.monthlyNet), t('dxNetS').replace('{n}', c.periods)) +
-      oSo(t('dxGrowth'), c.growth == null ? '—' : (c.growth >= 0 ? '+' : '') + pct(c.growth), null, c.growth != null && c.growth < -0.2) +
-      oSo(t('dxCv'), pct(c.cv), null, c.cv > 0.45) +
-      oSo(t('dxConc'), pct(c.concentration), null, c.concentration > 0.6) +
-      oSo(t('dxProj'), tien(c.projected12)) +
-      oSo(t('dxMax'), tien(c.maxAdvance), null, c.amount > c.maxAdvance) +
+      neu(c.monthlyNet, function () { return oSo(t('dxNet'), tien(c.monthlyNet), t('dxNetS').replace('{n}', c.periods)); }) +
+      neu(c.cv, function () { return oSo(t('dxGrowth'), c.growth == null ? '—' : (c.growth >= 0 ? '+' : '') + pct(c.growth), null, c.growth != null && c.growth < -0.2); }) +
+      neu(c.cv, function () { return oSo(t('dxCv'), pct(c.cv), null, c.cv > 0.45); }) +
+      neu(c.concentration, function () { return oSo(t('dxConc'), pct(c.concentration), null, c.concentration > 0.6); }) +
+      neu(c.projected12, function () { return oSo(t('dxProj'), tien(c.projected12)); }) +
+      neu(c.maxAdvance, function () { return oSo(t('dxMax'), tien(c.maxAdvance), null, c.amount > c.maxAdvance); }) +
       '</div><h4 class="sec" style="margin-top:14px">' + esc(t('dxRoiH')) + '</h4><div class="sig">' +
-      oSo(t('dxRepay'), tien(c.repayment), pct(c.feePct) + ' ' + (HT.lang === 'en' ? 'fee' : 'phí ứng')) +
+      neu(c.repayment, function () { return oSo(t('dxRepay'), tien(c.repayment), pct(c.feePct) + ' ' + (HT.lang === 'en' ? 'fee' : 'phí ứng')); }) +
       oSo(t('dxRecoup'), c.recoupMonths == null ? '—' : c.recoupMonths + t('thang'), null, c.recoupMonths != null && c.recoupMonths > 12) +
-      oSo(t('dxFee'), tien(c.feeIncome)) +
-      oSo(t('dxRetained'), tien(c.retainedDuringRecoup), pct(c.margin) + ' × ' + tien(c.monthlyGross) + t('thang')) +
-      oSo(t('dxRoiFee'), c.roiFee == null ? '—' : pct(c.roiFee)) +
-      oSo(t('dxRoi'), pct(c.roi), c.roiAnnual != null && c.recoupMonths >= 6 ? pct(c.roiAnnual) + ' ' + t('dxRoiA') : null) +
+      neu(c.feeIncome, function () { return oSo(t('dxFee'), tien(c.feeIncome)); }) +
+      neu(c.retainedDuringRecoup, function () { return oSo(t('dxRetained'), tien(c.retainedDuringRecoup), pct(c.margin) + ' × ' + tien(c.monthlyGross) + t('thang')); }) +
+      neu(c.roiFee, function () { return oSo(t('dxRoiFee'), pct(c.roiFee)); }) +
+      neu(c.roi, function () { return oSo(t('dxRoi'), pct(c.roi), c.roiAnnual != null && c.recoupMonths >= 6 ? pct(c.roiAnnual) + ' ' + t('dxRoiA') : null); }) +
       '</div>';
   } else {
     html += '<div class="sig">' +
-      oSo(t('dxGross'), tien(c.monthlyGross), t('dxNetS').replace('{n}', c.periods)) +
+      neu(c.monthlyGross, function () { return oSo(t('dxGross'), tien(c.monthlyGross), t('dxNetS').replace('{n}', c.periods)); }) +
       oSo(t('dxGrowth'), c.growth == null ? '—' : (c.growth >= 0 ? '+' : '') + pct(c.growth)) +
       oSo(t('dxTerm'), c.months + t('thang')) +
-      oSo(t('dxFeeNow'), pct(c.currentFeePct)) +
+      neu(c.currentFeePct, function () { return oSo(t('dxFeeNow'), pct(c.currentFeePct)); }) +
       oSo(t('dxFeeNew'), pct(c.feePct), null, c.feePct < 0.12) +
-      oSo(t('dxEnd'), HT.fmt.date(c.contractEnd), c.renewalDue ? t('dxDue') : null, c.renewalDue) +
-      '</div><h4 class="sec" style="margin-top:14px">' + esc(t('dxProjGross')) + '</h4><div class="sig">' +
-      oSo(t('dxProjGross'), tien(c.projectedGross)) +
-      oSo(t('dxNow'), tien(c.retainedNow)) +
-      oSo(t('dxNew'), tien(c.retainedNew), null, c.delta < 0) +
-      oSo(t('dxDelta'), (c.delta >= 0 ? '+' : '−') + tien(Math.abs(c.delta))) +
-      '</div>';
+      neu(c.contractEnd, function () { return oSo(t('dxEnd'), HT.fmt.date(c.contractEnd), c.renewalDue ? t('dxDue') : null, c.renewalDue); }) +
+      '</div>' +
+      (c.projectedGross != null || c.retainedNow != null ? '<h4 class="sec" style="margin-top:14px">' + esc(t('dxProjGross')) + '</h4><div class="sig">' +
+        neu(c.projectedGross, function () { return oSo(t('dxProjGross'), tien(c.projectedGross)); }) +
+        neu(c.retainedNow, function () { return oSo(t('dxNow'), tien(c.retainedNow)); }) +
+        neu(c.retainedNew, function () { return oSo(t('dxNew'), tien(c.retainedNew), null, c.delta < 0); }) +
+        neu(c.delta, function () { return oSo(t('dxDelta'), (c.delta >= 0 ? '+' : '−') + tien(Math.abs(c.delta))); }) +
+        '</div>' : '');
   }
   if (c.reasons && c.reasons.length) html += '<h4 class="sec" style="margin-top:14px">' + esc(t('dxLyDo')) + '</h4><ul class="tl">' + c.reasons.map(function (r) { return '<li>' + esc(song(r, 'vi') === r.vi && HT.lang === 'en' ? r.en : r.vi) + '</li>'; }).join('') + '</ul>';
   if (c.series && c.series.length) html += '<h4 class="sec" style="margin-top:14px">' + esc(t('dxSeries')) + '</h4>' +

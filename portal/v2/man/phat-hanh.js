@@ -146,7 +146,9 @@ function moHoSo(c, id) {
   var A = c.A, t = c.t, r = A.releases.get(id);
   if (!r) return;
   var nut = '';
-  if (r.status === 'submitted') nut = '<button type="button" class="btn pri" data-tiep>' + HM.esc(t('tiepNhan')) + '</button>' +
+  var coXuLy = !!(A.quyen && A.quyen.nhom('vanHanh'));
+  if (!coXuLy) nut = '';
+  else if (r.status === 'submitted') nut = '<button type="button" class="btn pri" data-tiep>' + HM.esc(t('tiepNhan')) + '</button>' +
     '<button type="button" class="btn dang" data-tra>' + HM.esc(t('traLaiNut')) + '</button>';
   else if (r.status === 'received') nut = '<button type="button" class="btn pri" data-ma>' + HM.esc(t('capMa')) + '</button>' +
     '<button type="button" class="btn dang" data-tra>' + HM.esc(t('traLaiNut')) + '</button>';

@@ -30,7 +30,6 @@ function shortForm(id, streams) { return Math.round(streams * (0.003 + (HM.hashC
 
 HT.dangKy({
   id: 'theo-doi', nav: 'navTheoDoi', nhom: 'nhomVanHanh', icon: 'up',
-  vai: ['ops', 'sales', 'support', 'mgmt', 'accounting'],
 
   chu: {
     vi: {
@@ -168,9 +167,9 @@ function dungBang(root, c, d, pl) {
     veDong = function (r) {
       return '<td>' + HM.tenBia({ ten: HM.dai(r.title, 34), seed: r.clientId, phu: r.clientId + ' · ' + r.kind + ' · ' + HT.fmt.n(r.tracks) + ' ' + t('track') }) + '</td>' +
         '<td>' + (r.managerName ? HM.esc(r.managerName) : '<span class="nil">—</span>') + '</td>' +
-        '<td>' + HM.tag(r.classification, r.classification === 'A' ? 'ok' : r.classification === 'B' ? 'info' : '') + '</td>' +
-        '<td class="num">' + HM.esc(HT.fmt.n(r.streams)) + '</td>' +
-        '<td class="num band"><b>' + HM.esc(c.tien(r.revenueQ)) + '</b></td>' +
+        '<td>' + (r.classification ? HM.tag(r.classification, r.classification === 'A' ? 'ok' : r.classification === 'B' ? 'info' : '') : '<span class="nil">—</span>') + '</td>' +
+        '<td class="num">' + (r.streams == null ? '<span class="nil">—</span>' : HM.esc(HT.fmt.n(r.streams))) + '</td>' +
+        '<td class="num band"><b>' + (r.revenueQ == null ? '<span class="nil">—</span>' : HM.esc(c.tien(r.revenueQ))) + '</b></td>' +
         '<td class="num">' + (r.change == null ? '<span class="nil">—</span>' : '<span class="' + (r.change >= 0 ? 'pos' : 'neg') + '">' + HM.esc((r.change >= 0 ? '▲ ' : '▼ ') + HT.fmt.pct(Math.abs(r.change))) + '</span>') + '</td>' +
         '<td>' + nutSao('tk', r.id) + '</td>';
     };

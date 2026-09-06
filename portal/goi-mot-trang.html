@@ -3007,7 +3007,7 @@ const STAFF = [
   { id: "S07", email: "ketoan@haustek-group.com",   name: "Vũ Kế Toán",        role: "accounting", title: "Kế toán",               titleEn: "Accounting" }
 ];
 const STAFF_TARGET = { S03: 3600000, S04: 6800000 };   /* chỉ tiêu doanh thu gộp một quý, USD */
-let _me = STAFF[1];                                     /* nhân vật đang dùng cổng nội bộ (bản mẫu) */
+let _me = STAFF[0];                                     /* nhân vật đang dùng cổng nội bộ (bản mẫu) */
 const staffById = id => STAFF.find(s => s.id === id) || null;
 const staffByRole = role => STAFF.filter(s => s.role === role);
 /* Bên thụ hưởng chính: label (mọi cấp) và nghệ sĩ độc lập. Nghệ sĩ thuộc
@@ -4041,7 +4041,7 @@ function advanceOfferOf(partyKey) {
     example: vd ? { amount: vd.amount, repayment: vd.repayment, recoupMonths: vd.recoupMonths } : null, eligible,
     reason: eligible ? null : (c.grade === "C" ? { vi: "Thu nhập còn dao động hoặc chưa đủ kỳ có số; hãy đề nghị lại sau 3 kỳ.", en: "Earnings are still volatile or too few periods have figures; try again after three periods." } : { vi: "Thu nhập ròng 12 tháng dự kiến chưa đủ để tạm ứng.", en: "Projected 12-month net is not yet enough for an advance." }),
     note: "Số tối đa = " + Math.round(ADVANCE_CAP[c.grade] * 100) + "% thu nhập ròng 12 tháng dự kiến. Phí " + Math.round(ADVANCE_FEE * 100) + "% cộng vào khoản phải thu hồi; thu hồi từ phần bạn được hưởng mỗi kỳ cho đến khi đủ.",
-    noteEn: "Maximum = " + Math.round(ADVANCE_CAP[c.grade] * 100) + "% of projected 12-month net. A " + Math.round(ADVANCE_FEE * 100) + "% fee is added to the amount to recoup; recouped from your share each period until met." };
+    noteEn: "Maximum = " + Math.round(ADVANCE_CAP[c.grade] * 100) + "% of projected 12-month net. A " + Math.round(ADVANCE_FEE * 100) + "% advance charge is added to the amount to recoup; recouped from your share each period until met." };
 }
 function contractCalc(partyKey, terms) {
   terms = terms || {};
@@ -4073,7 +4073,7 @@ let proposalSeq = 0;
 function proposalId(now) { proposalSeq++; return "DX-" + String(now).slice(2, 4) + String(now).slice(5, 7) + "-" + String(proposalSeq).padStart(3, "0"); }
 function proposalsOf() { if (!Array.isArray(state.proposals)) state.proposals = []; return state.proposals; }
 function moTaDeXuat(pr, doiTac) {
-  if (pr.type === "advance") return { vi: "Tạm ứng " + fmt.usd0(pr.terms.amount) + " · phí ứng " + Math.round(pr.terms.feePct * 100) + "%", en: "Advance " + fmt.usd0(pr.terms.amount) + " · " + Math.round(pr.terms.feePct * 100) + "% fee" };
+  if (pr.type === "advance") return { vi: "Tạm ứng " + fmt.usd0(pr.terms.amount) + " · phí ứng " + Math.round(pr.terms.feePct * 100) + "%", en: "Advance " + fmt.usd0(pr.terms.amount) + " · " + Math.round(pr.terms.feePct * 100) + "% advance charge" };
   const huong = Math.round((1 - pr.terms.feePct) * 100);
   return doiTac
     ? { vi: "Hợp đồng " + pr.terms.months + " tháng · bạn hưởng " + huong + "%", en: "Contract " + pr.terms.months + " months · you keep " + huong + "%" }
@@ -4711,6 +4711,203 @@ if (!FRESH) { try { seedPartyManager(); seedWithdrawals(); seedTickets(); seedCl
 /* =====================================================================
    23. MẶT TIỀN CHO ADMIN — chỉ intranet.html được chạm
    ===================================================================== */
+/* =====================================================================
+   19k. PHÂN QUYỀN NỘI BỘ THEO VAI
+   ---------------------------------------------------------------------
+   Một ma trận duy nhất, ở phía "máy chủ": vai nào mở được màn nào
+   (QUYEN_MAN), gọi được nhóm hàm nào của mặt tiền admin (QUYEN_NHOM +
+   QUYEN_HAM), và số liệu nào bị lược khỏi gói trả về (đối tác, đề xuất,
+   bản tính ROI). Thanh điều hướng, chuông, tìm nhanh, bàn làm việc đều
+   đọc từ đây — không màn nào tự quyết mình cho ai xem.
+
+   Nguyên tắc: giám đốc thấy hết. Kế toán chỉ thấy tiền ra vào (thanh
+   toán, rút tiền, bảng kê, tạm ứng, sổ kế toán, đối soát kỳ) — không
+   thấy doanh số, chỉ tiêu, dự báo doanh thu, sổ đối tác. Kinh doanh chỉ
+   thấy đối tác mình phụ trách, chỉ tiêu của mình, đề xuất của mình.
+   Vận hành thấy phát hành, giao nhận, danh mục, báo cáo kỳ, mức trả —
+   không thấy ví, thanh toán, hợp đồng, ROI. Hỗ trợ thấy ticket, khiếu
+   nại, chất lượng, hồ sơ phát hành (đọc).
+   Mặt tiền admin trả lỗi "Không có quyền" khi gọi sai vai — giao diện có
+   giấu nút hay không thì máy chủ vẫn chặn.
+   ===================================================================== */
+const VAI_NB = ["mgmt", "accounting", "sales", "ops", "support"];
+const QUYEN_MAN = {
+  "ban-lam-viec": VAI_NB, "ho-tro": VAI_NB,
+  "tong-quan": ["mgmt"], "ty-le": ["mgmt"], "quan-tri": ["mgmt"],
+  "ke-toan": ["mgmt", "accounting"], "chi-tra": ["mgmt", "accounting"], "tam-ung": ["mgmt", "accounting"], "chia-se": ["mgmt", "accounting"],
+  "doi-chieu": ["mgmt", "ops", "accounting"],
+  "xet-duyet": ["mgmt", "accounting", "sales"], "doi-tac": ["mgmt", "sales"], "chien-dich": ["mgmt", "sales", "ops"],
+  "theo-doi": ["mgmt", "ops"], "nap-du-lieu": ["mgmt", "ops"], "khop-isrc": ["mgmt", "ops"], "giao-nhan": ["mgmt", "ops"], "sua-hang-loat": ["mgmt", "ops"],
+  "bang-gia": ["mgmt", "ops"], "muc-tra": ["mgmt", "ops"], "danh-muc": ["mgmt", "ops"], "nen-tang": ["mgmt", "ops"],
+  "chat-luong": ["mgmt", "ops", "support"], "phat-hanh": ["mgmt", "ops", "support"], "quyen": ["mgmt", "support", "ops"]
+};
+const QUYEN_NHOM = {
+  tong:      { vai: ["mgmt"],                        vi: "Số toàn công ty: dự báo doanh thu, chỉ tiêu, tỷ lệ chia, giải thích số", en: "Company-wide figures: revenue forecast, targets, split rates, number explanations" },
+  tien:      { vai: ["mgmt", "accounting"],          vi: "Tiền ra vào: ví, rút tiền, bảng kê, tạm ứng, tài khoản ngân hàng", en: "Money in and out: wallets, withdrawals, statements, advances, bank details" },
+  doiSoat:   { vai: ["mgmt", "ops", "accounting"],   vi: "Báo cáo kỳ, đối soát, xét duyệt kỳ, hàng đợi ISRC, tỷ giá", en: "Period reports, reconciliation, period approval, ISRC queue, FX" },
+  doiTac:    { vai: ["mgmt", "sales"],               vi: "Sổ đối tác đầy đủ (doanh thu quý, hợp đồng); kinh doanh chỉ tài khoản mình phụ trách", en: "Full partner book (quarter revenue, contracts); sales only their own accounts" },
+  deXuat:    { vai: ["mgmt", "accounting", "sales"], vi: "Đề xuất tạm ứng / hợp đồng; bản tính lược theo vai", en: "Advance / contract proposals; calculation trimmed per role" },
+  deXuatTao: { vai: ["mgmt", "sales"],               vi: "Tạo đề xuất", en: "Create proposals" },
+  vanHanh:   { vai: ["mgmt", "ops"],                 vi: "Phát hành, giao nhận, sửa hàng loạt, nạp báo cáo, mức trả nền tảng", en: "Releases, delivery, bulk edit, report loading, platform payout rates" },
+  danhMuc:   { vai: ["mgmt", "ops", "support"],      vi: "Danh mục, chất lượng lượt nghe, metadata, hồ sơ phát hành (đọc)", en: "Catalogue, stream quality, metadata, release files (read)" },
+  theoDoi:   { vai: ["mgmt", "ops"],                 vi: "Lượt nghe theo ngày, playlist toàn danh mục", en: "Daily streams and playlists across the catalogue" },
+  chienDich: { vai: ["mgmt", "sales", "ops"],        vi: "Chiến dịch quảng bá", en: "Promotion campaigns" },
+  chiaSe:    { vai: ["mgmt", "accounting"],          vi: "Chia sẻ tác quyền của mọi tài khoản", en: "Royalty splits across accounts" },
+  khieuNai:  { vai: ["mgmt", "support", "ops"],      vi: "Khiếu nại bản quyền, cài đặt video", en: "Rights claims, video settings" },
+  hoTro:     { vai: VAI_NB,                          vi: "Ticket hỗ trợ", en: "Support tickets" },
+  quanTri:   { vai: ["mgmt"],                        vi: "Tài khoản cổng, nhật ký, câu hỏi, dữ liệu", en: "Portal accounts, audit log, questions, data" }
+};
+/* thành viên của mặt tiền admin → nhóm; "a.b" cho hàm con; không có trong
+   bảng nghĩa là dùng chung (tra cứu tên, kỳ, bài hát…) */
+const QUYEN_HAM = {
+  forecast: "tong", forecastFor: "tong", rates: "tong", explain: "tong", explainFor: "tong", labelSlice: "tong", labelTree: "tong",
+  "parties.setManager": "tong",
+  agg: "doiSoat", grossRec: "doiSoat", grossPub: "doiSoat", grossRecByFeed: "doiSoat", grossOf: "doiSoat", splitRec: "doiSoat", splitDim: "doiSoat", splitStores: "doiSoat", mineOf: "doiSoat",
+  earnedByParty: "doiSoat", previewPayout: "doiSoat", payoutOf: "doiSoat", recon: "doiSoat", feedTotals: "doiSoat", approvalChecks: "doiSoat", canApprove: "doiSoat",
+  approve: "doiSoat", revoke: "doiSoat", queue: "doiSoat", missingFeeds: "doiSoat", "fx.lock": "doiSoat", audit: "doiSoat", "ingest.acceptVariance": "doiSoat",
+  wallet: "tien", credits: "tien", statementsOf: "tien", withdrawals: "tien", statements: "tien", bank: "tien", advances: "tien", advanceBalance: "tien", withdrawalQuote: "tien",
+  catalogueFor: "doiTac",
+  dailyTrends: "theoDoi", dailyTrendsFor: "theoDoi", playlists: "theoDoi", playlistsFor: "theoDoi",
+  campaigns: "chienDich", campaignsFor: "chienDich",
+  splits: "chiaSe", splitsFor: "chiaSe", setSplit: "chiaSe", removeSplit: "chiaSe", acceptSplit: "chiaSe",
+  quality: "danhMuc", qualityFor: "danhMuc", setAlertStatus: "danhMuc", metadataReport: "danhMuc", metadataReportFor: "danhMuc",
+  catalogue: "danhMuc", platformReport: "danhMuc", catalogueReleases: "danhMuc", releases: "danhMuc",
+  "releases.receive": "vanHanh", "releases.assignCodes": "vanHanh", "releases.publish": "vanHanh", "releases.returnFix": "vanHanh",
+  deliveries: "vanHanh", bulk: "vanHanh", ingest: "vanHanh", platformRates: "vanHanh", platformRatesFull: "vanHanh", setPlatformRate: "vanHanh", clearPlatformRate: "vanHanh", importPlatformRates: "vanHanh",
+  proposals: "deXuat", "proposals.proposeAdvance": "deXuatTao", "proposals.proposeContract": "deXuatTao", advanceCalc: "deXuat", contractCalc: "deXuat", partySeries: "deXuat", advanceOfferOf: "deXuat",
+  tickets: "hoTro", claims: "khieuNai", videoSettings: "khieuNai",
+  accounts: "quanTri", answers: "quanTri", reset: "quanTri", refresh: "quanTri", store: "quanTri"
+};
+function vaiHienTai() { return _me ? _me.role : null; }
+function coQuyenNhom(nhom, role) { role = role || vaiHienTai(); const g = QUYEN_NHOM[nhom]; return role === "mgmt" || !!(g && g.vai.includes(role)); }
+function manCoQuyen(id, role) { role = role || vaiHienTai(); const v = QUYEN_MAN[id]; return !v ? true : (role === "mgmt" || v.includes(role)); }
+function chanQuyen(ten, nhom) {
+  if (coQuyenNhom(nhom)) return;
+  const e = new Error("Không có quyền: " + ten + " (vai " + vaiHienTai() + " · cần " + QUYEN_NHOM[nhom].vai.join(" / ") + ")");
+  e.code = "NO_QUYEN"; e.nhom = nhom; throw e;
+}
+function bocHam(fn, ten, nhom) { return function () { chanQuyen(ten, nhom); return fn.apply(this, arguments); }; }
+function bocDoiTuong(obj, ten, nhom) {
+  const out = {};
+  Object.getOwnPropertyNames(obj).forEach(k => {
+    const d = Object.getOwnPropertyDescriptor(obj, k), n = QUYEN_HAM[ten + "." + k] || nhom;
+    if (d.get || d.set) { Object.defineProperty(out, k, d); return; }
+    out[k] = typeof d.value === "function" && n ? bocHam(d.value, ten + "." + k, n) : d.value;
+  });
+  return out;
+}
+/* Bọc toàn bộ mặt tiền: hàm có nhóm thì kiểm vai lúc gọi; đối tượng con có
+   nhóm (hoặc có hàm con được nêu) thì bọc từng hàm bên trong. */
+function boQuyen(a) {
+  const out = {};
+  Object.getOwnPropertyNames(a).forEach(k => {
+    const d = Object.getOwnPropertyDescriptor(a, k), n = QUYEN_HAM[k];
+    if (d.get || d.set) { Object.defineProperty(out, k, d); return; }
+    const v = d.value;
+    if (typeof v === "function") out[k] = n ? bocHam(v, k, n) : v;
+    else if (v && typeof v === "object" && !Array.isArray(v) && (n || Object.keys(QUYEN_HAM).some(x => x.startsWith(k + ".")))) out[k] = bocDoiTuong(v, k, n);
+    else out[k] = v;
+  });
+  return out;
+}
+/* ---- lược số liệu theo vai ---- */
+/* Bản tính ROI: giám đốc thấy hết; kế toán thấy số tiền ra vào nhưng không
+   thấy biên / phần Haustek giữ / ROI; kinh doanh thấy số của đối tác mình
+   và khuyến nghị, không thấy phí thu về. */
+const CALC_AN = {
+  accounting: ["roi", "roiAnnual", "roiFee", "margin", "marginNew", "monthlyKeep", "retainedDuringRecoup", "retainedNow", "retainedNew", "delta"],
+  sales: ["roi", "roiAnnual", "roiFee", "margin", "marginNew", "monthlyKeep", "retainedDuringRecoup", "retainedNow", "retainedNew", "delta", "feeIncome"],
+  ops: null, support: null
+};
+function seriesChoVai(ser, role) {
+  role = role || vaiHienTai();
+  if (role === "mgmt" || !Array.isArray(ser)) return ser;
+  return ser.map(x => { const y = Object.assign({}, x); delete y.keep; if (role === "sales") { /* kinh doanh vẫn thấy gộp của tài khoản mình */ } return y; });
+}
+function calcChoVai(calc, role) {
+  role = role || vaiHienTai();
+  if (!calc || role === "mgmt") return calc;
+  const an = CALC_AN[role];
+  if (an === null || an === undefined) chanQuyen("calc", "deXuat");
+  const out = {};
+  Object.keys(calc).forEach(k => { if (an.indexOf(k) < 0) out[k] = k === "series" ? seriesChoVai(calc[k], role) : calc[k]; });
+  return out;
+}
+function proposalChoVai(p, role) {
+  if (!p) return p;
+  role = role || vaiHienTai();
+  if (role === "mgmt") return p;
+  return Object.assign({}, p, { calc: calcChoVai(p.calc, role) });
+}
+function proposalsListChoVai(f) {
+  const role = vaiHienTai(); f = Object.assign({}, f || {});
+  if (role === "sales") f.by = _me.name;
+  return proposalsList(f).map(p => proposalChoVai(p, role));
+}
+function demDeXuat(ds) {
+  const c = { submitted: 0, checked: 0, returned: 0, approved: 0, rejected: 0, withdrawn: 0, pending: 0, approvedAdvance: 0, approvedContract: 0 };
+  ds.forEach(p => { c[p.status] = (c[p.status] || 0) + 1; if (["submitted", "checked", "returned"].includes(p.status)) c.pending++; if (p.status === "approved") { if (p.type === "advance") c.approvedAdvance = cents(c.approvedAdvance + p.terms.amount); else c.approvedContract++; } });
+  return c;
+}
+function proposalCountsChoVai() { return vaiHienTai() === "sales" ? demDeXuat(proposalsOf().filter(p => p.by === _me.name)) : proposalCounts(); }
+function proposalGetChoVai(id) {
+  const p = proposalsOf().find(x => x.id === id) || null;
+  if (!p) return null;
+  if (vaiHienTai() === "sales" && p.by !== _me.name) return null;
+  return proposalChoVai(Object.assign({ moTa: moTaDeXuat(p).vi, moTaEn: moTaDeXuat(p).en }, p));
+}
+/* Sổ đối tác: kinh doanh chỉ thấy tài khoản mình phụ trách; các vai khác chỉ
+   thấy tên, mã, người phụ trách, tình trạng — không doanh thu, không tỷ lệ,
+   kế toán giữ thông tin ngân hàng để chi trả. */
+const DOI_TAC_AN = { accounting: ["revenueQ", "revenuePrevQ", "streamsQ", "rate", "classification"], ops: ["revenueQ", "revenuePrevQ", "streamsQ", "rate", "classification", "bank"], support: ["revenueQ", "revenuePrevQ", "streamsQ", "rate", "classification", "bank"] };
+function partiesListChoVai(opts) {
+  const role = vaiHienTai(); opts = Object.assign({}, opts || {});
+  if (role === "sales") { opts.manager = _me.id; return partiesList(opts); }
+  const r = partiesList(opts), an = DOI_TAC_AN[role];
+  if (!an) return r;
+  return Object.assign({}, r, { rows: r.rows.map(x => { const y = Object.assign({}, x); an.forEach(k => { y[k] = null; }); return y; }) });
+}
+function salesKpiChoVai(staffId, pIdx) {
+  const role = vaiHienTai();
+  if (role === "sales" && staffId !== _me.id) { const e = new Error("Không có quyền: chỉ tiêu của người khác"); e.code = "NO_QUYEN"; throw e; }
+  if (role !== "mgmt" && role !== "sales") chanQuyen("sales.kpi", "tong");
+  return salesKpi(staffId, pIdx);
+}
+/* Chuông và tìm nhanh: chỉ đưa những mục dẫn tới màn vai đó mở được. */
+function notificationsChoVai() {
+  const r = notificationsOf("admin", 0), role = vaiHienTai();
+  const items = r.items.filter(n => !n.di || manCoQuyen(n.di, role));
+  return Object.assign({}, r, { items, unread: items.filter(n => !n.read).length });
+}
+function searchChoVai(q, limit) {
+  const r = searchAll("admin", 0, q, limit), role = vaiHienTai();
+  if (role === "mgmt") return r;
+  const docs = r.docs.filter(d => !d.di || manCoQuyen(d.di, role));
+  let parties = [];
+  if (role === "sales") parties = r.parties.filter(p => state.partyManager[p.key] === _me.id);
+  return { tracks: r.tracks, parties, docs };
+}
+/* Dự báo lượt nghe cho vận hành: không có tiền. */
+const KHOA_TIEN = /revenue|gross|net|mine|per1k|usd|fee|keep|margin|payout|rate/i;
+/* gỡ đệ quy mọi khoá mang tiền khỏi một gói (dự báo lượt nghe cho vận hành) */
+function boTien(v) {
+  if (Array.isArray(v)) return v.map(boTien);
+  if (v && typeof v === "object") { const o = {}; Object.keys(v).forEach(k => { if (!KHOA_TIEN.test(k)) o[k] = boTien(v[k]); }); return o; }
+  return v;
+}
+function forecastStreamsOf() {
+  const f = forecastOf("admin", 0);
+  return boTien({ asOf: f.asOf, openPeriod: f.openPeriod, days: f.days, last7: f.last7, prev7: f.prev7, growth7: f.growth7, last28: f.last28, prev28: f.prev28, growth28: f.growth28,
+    projected: { streams: f.projected.streams, monthToDate: f.projected.monthToDate }, tracks: f.tracks, topTracks: f.topTracks,
+    byPlatform: (f.byPlatform || []).map(x => ({ name: x.name, nameEn: x.nameEn, streams: x.streams, share: x.share })) });
+}
+const quyenXuat = {
+  vai: () => vaiHienTai(), vaiTatCa: VAI_NB.slice(),
+  man: id => manCoQuyen(id), nhom: g => coQuyenNhom(g),
+  bang: () => ({ man: QUYEN_MAN, nhom: QUYEN_NHOM }),
+  cua: role => ({ man: Object.keys(QUYEN_MAN).filter(id => manCoQuyen(id, role)), nhom: Object.keys(QUYEN_NHOM).filter(g => coQuyenNhom(g, role)) })
+};
+
 const admin = {
   cfg: CFG,
   get distributor() { return DISTRIBUTOR || KHONG_CO_BI_MAT; },
@@ -4856,10 +5053,10 @@ const admin = {
     setMe(id) { const s = staffById(id); if (s) _me = s; return _me; },
     targets: STAFF_TARGET
   },
-  parties: { list: partiesList, managerOf: pk => staffById(state.partyManager[pk]) || null,
+  parties: { list: opts => partiesListChoVai(opts), managerOf: pk => staffById(state.partyManager[pk]) || null,
     setManager(pk, staffId, by) { if (!staffById(staffId)) throw new Error("Không có nhân viên " + staffId); state.partyManager[pk] = staffId; audit.log("party.manager", partyName(pk) + " → " + staffById(staffId).name, by); store.save(); },
     signedAt: signedAtOf, contractEnd: contractEndOf },
-  sales: { kpi: salesKpi },
+  sales: { kpi: (staffId, pIdx) => salesKpiChoVai(staffId, pIdx) },
   wallet: walletOf, credits: creditsOf, statementsOf,
   withdrawals: {
     list(f) {
@@ -4899,6 +5096,7 @@ const admin = {
   },
   bank: { get: pk => state.bank[pk] || null, all: () => Object.assign({}, state.bank) },
   forecast: () => forecastOf("admin", 0),
+  forecastStreams: () => forecastStreamsOf(),
   forecastFor: (role, id) => forecastOf(role, id),
   platformRates, dailyStreams, asOf: () => isoDate(ASOF),
   dailyTrends: (days, top) => dailyTrends("admin", 0, days, top),
@@ -4915,13 +5113,14 @@ const admin = {
   setAlertStatus: (trackId, status, note, by) => setAlertStatus(trackId, status, note, by, "admin"),
   monetizationOf, metadataHealth: i => metadataHealth(i), metadataReport: () => metadataReport("admin", 0), metadataReportFor: (role, id) => metadataReport(role, id),
   explain: pk => explainPeriod("admin", 0, pk), explainFor: (role, id, pk) => explainPeriod(role, id, pk),
-  withdrawalQuote, notifications: () => notificationsOf("admin", 0), markNotifications: ids => markNotifications("admin", 0, ids),
-  search: (q, limit) => searchAll("admin", 0, q, limit), campaigns: () => campaignsOf("admin", 0), campaignsFor: (role, id) => campaignsOf(role, id),
+  withdrawalQuote, notifications: () => notificationsChoVai(), markNotifications: ids => markNotifications("admin", 0, ids),
+  search: (q, limit) => searchChoVai(q, limit), campaigns: () => campaignsOf("admin", 0), campaignsFor: (role, id) => campaignsOf(role, id),
   penaltyPerTrackUsd: PENALTY_USD,
   /* 19j */
   platformRatesFull, setPlatformRate, clearPlatformRate, importPlatformRates, vnRef: VN_REF_PER1K.slice(), advanceFee: ADVANCE_FEE,
-  advanceCalc, contractCalc, partySeries, advanceOfferOf,
-  proposals: { list: proposalsList, counts: proposalCounts, get: id => proposalsOf().find(p => p.id === id) || null,
+  advanceCalc: (pk, amount, feePct) => calcChoVai(advanceCalc(pk, amount, feePct)), contractCalc: (pk, terms) => calcChoVai(contractCalc(pk, terms)), partySeries: (pk, n) => seriesChoVai(partySeries(pk, n)), advanceOfferOf,
+  quyen: quyenXuat,
+  proposals: { list: f => proposalsListChoVai(f), counts: () => proposalCountsChoVai(), get: id => proposalGetChoVai(id),
     proposeAdvance, proposeContract, review: reviewProposal, flow: PROPOSAL_FLOW },
   tickets: {
     types: TICKET_TYPES, statuses: TICKET_STATUS,
@@ -5792,7 +5991,7 @@ const H = {
   bootMs: () => Math.round(performance.now() - T_BOOT),
   fmt, esc, vtable, barChart, cents,
   screens, registerScreen,
-  api, admin,
+  api, admin: boQuyen(admin),
   storage: { available: store.available, exportJSON: () => store.exportJSON(), importJSON: t => store.importJSON(t) },
 
   /* dashboard.html gọi hàm này ngay dòng đầu. Sau đó HAUSTEK.admin không
@@ -6427,6 +6626,9 @@ function chay(cauHinh) {
   function dungDuoc(m, c) {
     /* màn nội bộ khai vai: [ 'ops', 'sales', 'support', 'accounting', 'mgmt' ];
        không khai thì ai cũng thấy. mgmt thấy hết. */
+    /* Ma trận phân quyền nằm ở lõi (A.quyen.man): màn nào không được cấp cho vai
+       đang đăng nhập thì không có trên thanh điều hướng, không mở được qua #hash. */
+    if (c.A && c.A.quyen && typeof c.A.quyen.man === 'function' && !c.A.quyen.man(m.id)) return false;
     if (m.vai && c.A && c.A.staff && c.A.staff.me && c.A.staff.me.role !== 'mgmt' && m.vai.indexOf(c.A.staff.me.role) < 0) return false;
     if (!m.khaDung) return true;
     try { return !!m.khaDung(c); } catch (e) { return false; }
@@ -6472,6 +6674,8 @@ function chay(cauHinh) {
     if (!man) return;
     var c0 = ctx();
     if (!dungDuoc(man, c0)) man = MAN.filter(function (m) { return dungDuoc(m, c0); })[0] || man;
+    /* gõ #hash của màn bị cấm: về màn đầu tiên được phép và sửa luôn địa chỉ, không bắn hashchange */
+    if (man.id !== id) { try { history.replaceState(null, '', '#' + man.id); } catch (e) {} }
     manHienTai = man.id;
     var c = ctx();
 
@@ -8310,36 +8514,40 @@ function theDeXuat(pr, opts) {
   var dau = '<div class="bar" style="margin-bottom:10px">' + tagDx(pr.status) + tagKn(c.recommendation) + (c.grade ? tagHang(c.grade) : '') +
     '<span class="muted" style="font-size:12.5px">' + esc(song(pr, 'moTa')) + '</span></div>';
   var html = dau;
+  /* Bản tính có thể đã bị lược theo vai (kế toán, kinh doanh không thấy phần
+     Haustek giữ / ROI): ô nào không có số thì không vẽ. */
+  function neu(v, f) { return v == null ? '' : f(); }
   if (pr.type === 'advance') {
     html += '<div class="sig">' +
-      oSo(t('dxNet'), tien(c.monthlyNet), t('dxNetS').replace('{n}', c.periods)) +
-      oSo(t('dxGrowth'), c.growth == null ? '—' : (c.growth >= 0 ? '+' : '') + pct(c.growth), null, c.growth != null && c.growth < -0.2) +
-      oSo(t('dxCv'), pct(c.cv), null, c.cv > 0.45) +
-      oSo(t('dxConc'), pct(c.concentration), null, c.concentration > 0.6) +
-      oSo(t('dxProj'), tien(c.projected12)) +
-      oSo(t('dxMax'), tien(c.maxAdvance), null, c.amount > c.maxAdvance) +
+      neu(c.monthlyNet, function () { return oSo(t('dxNet'), tien(c.monthlyNet), t('dxNetS').replace('{n}', c.periods)); }) +
+      neu(c.cv, function () { return oSo(t('dxGrowth'), c.growth == null ? '—' : (c.growth >= 0 ? '+' : '') + pct(c.growth), null, c.growth != null && c.growth < -0.2); }) +
+      neu(c.cv, function () { return oSo(t('dxCv'), pct(c.cv), null, c.cv > 0.45); }) +
+      neu(c.concentration, function () { return oSo(t('dxConc'), pct(c.concentration), null, c.concentration > 0.6); }) +
+      neu(c.projected12, function () { return oSo(t('dxProj'), tien(c.projected12)); }) +
+      neu(c.maxAdvance, function () { return oSo(t('dxMax'), tien(c.maxAdvance), null, c.amount > c.maxAdvance); }) +
       '</div><h4 class="sec" style="margin-top:14px">' + esc(t('dxRoiH')) + '</h4><div class="sig">' +
-      oSo(t('dxRepay'), tien(c.repayment), pct(c.feePct) + ' ' + (HT.lang === 'en' ? 'fee' : 'phí ứng')) +
+      neu(c.repayment, function () { return oSo(t('dxRepay'), tien(c.repayment), pct(c.feePct) + ' ' + (HT.lang === 'en' ? 'fee' : 'phí ứng')); }) +
       oSo(t('dxRecoup'), c.recoupMonths == null ? '—' : c.recoupMonths + t('thang'), null, c.recoupMonths != null && c.recoupMonths > 12) +
-      oSo(t('dxFee'), tien(c.feeIncome)) +
-      oSo(t('dxRetained'), tien(c.retainedDuringRecoup), pct(c.margin) + ' × ' + tien(c.monthlyGross) + t('thang')) +
-      oSo(t('dxRoiFee'), c.roiFee == null ? '—' : pct(c.roiFee)) +
-      oSo(t('dxRoi'), pct(c.roi), c.roiAnnual != null && c.recoupMonths >= 6 ? pct(c.roiAnnual) + ' ' + t('dxRoiA') : null) +
+      neu(c.feeIncome, function () { return oSo(t('dxFee'), tien(c.feeIncome)); }) +
+      neu(c.retainedDuringRecoup, function () { return oSo(t('dxRetained'), tien(c.retainedDuringRecoup), pct(c.margin) + ' × ' + tien(c.monthlyGross) + t('thang')); }) +
+      neu(c.roiFee, function () { return oSo(t('dxRoiFee'), pct(c.roiFee)); }) +
+      neu(c.roi, function () { return oSo(t('dxRoi'), pct(c.roi), c.roiAnnual != null && c.recoupMonths >= 6 ? pct(c.roiAnnual) + ' ' + t('dxRoiA') : null); }) +
       '</div>';
   } else {
     html += '<div class="sig">' +
-      oSo(t('dxGross'), tien(c.monthlyGross), t('dxNetS').replace('{n}', c.periods)) +
+      neu(c.monthlyGross, function () { return oSo(t('dxGross'), tien(c.monthlyGross), t('dxNetS').replace('{n}', c.periods)); }) +
       oSo(t('dxGrowth'), c.growth == null ? '—' : (c.growth >= 0 ? '+' : '') + pct(c.growth)) +
       oSo(t('dxTerm'), c.months + t('thang')) +
-      oSo(t('dxFeeNow'), pct(c.currentFeePct)) +
+      neu(c.currentFeePct, function () { return oSo(t('dxFeeNow'), pct(c.currentFeePct)); }) +
       oSo(t('dxFeeNew'), pct(c.feePct), null, c.feePct < 0.12) +
-      oSo(t('dxEnd'), HT.fmt.date(c.contractEnd), c.renewalDue ? t('dxDue') : null, c.renewalDue) +
-      '</div><h4 class="sec" style="margin-top:14px">' + esc(t('dxProjGross')) + '</h4><div class="sig">' +
-      oSo(t('dxProjGross'), tien(c.projectedGross)) +
-      oSo(t('dxNow'), tien(c.retainedNow)) +
-      oSo(t('dxNew'), tien(c.retainedNew), null, c.delta < 0) +
-      oSo(t('dxDelta'), (c.delta >= 0 ? '+' : '−') + tien(Math.abs(c.delta))) +
-      '</div>';
+      neu(c.contractEnd, function () { return oSo(t('dxEnd'), HT.fmt.date(c.contractEnd), c.renewalDue ? t('dxDue') : null, c.renewalDue); }) +
+      '</div>' +
+      (c.projectedGross != null || c.retainedNow != null ? '<h4 class="sec" style="margin-top:14px">' + esc(t('dxProjGross')) + '</h4><div class="sig">' +
+        neu(c.projectedGross, function () { return oSo(t('dxProjGross'), tien(c.projectedGross)); }) +
+        neu(c.retainedNow, function () { return oSo(t('dxNow'), tien(c.retainedNow)); }) +
+        neu(c.retainedNew, function () { return oSo(t('dxNew'), tien(c.retainedNew), null, c.delta < 0); }) +
+        neu(c.delta, function () { return oSo(t('dxDelta'), (c.delta >= 0 ? '+' : '−') + tien(Math.abs(c.delta))); }) +
+        '</div>' : '');
   }
   if (c.reasons && c.reasons.length) html += '<h4 class="sec" style="margin-top:14px">' + esc(t('dxLyDo')) + '</h4><ul class="tl">' + c.reasons.map(function (r) { return '<li>' + esc(song(r, 'vi') === r.vi && HT.lang === 'en' ? r.en : r.vi) + '</li>'; }).join('') + '</ul>';
   if (c.series && c.series.length) html += '<h4 class="sec" style="margin-top:14px">' + esc(t('dxSeries')) + '</h4>' +
@@ -8606,6 +8814,9 @@ function bangKhieuNai(c, rows) {
     }).join('') + '</tbody></table></div>';
 }
 function nutLoi(c, ds) {
+  /* chỉ đưa lối tắt tới màn mà vai này mở được */
+  ds = ds.filter(function (x) { return !(c.A.quyen && typeof c.A.quyen.man === 'function') || c.A.quyen.man(x[0]); });
+  if (!ds.length) return '';
   return '<div class="btnrow" style="margin:0 0 16px">' + ds.map(function (x) {
     return '<button type="button" class="btn sm" data-di="' + x[0] + '">' + HM.icon(x[2] || 'right') + HM.esc(c.t(x[1])) + '</button>';
   }).join('') + '</div>';
@@ -8781,7 +8992,7 @@ function veVanHanh(c) {
   var kc = A.claims.counts();
   var rl = null; try { rl = A.releases.counts(); } catch (e) { rl = null; }
   var rlMo = rl ? Object.keys(rl).filter(function (k) { return k !== 'released' && k !== 'total' && typeof rl[k] === 'number'; }).reduce(function (a, k) { return a + rl[k]; }, 0) : 0;
-  var db = null; try { db = A.forecast(); } catch (e) { db = null; }
+  var db = null; try { db = A.forecastStreams(); } catch (e) { db = null; }
   var html = nutLoi(c, [['phat-hanh', 'moPhatHanh', 'disc'], ['giao-nhan', 'moGiaoNhan', 'swap'], ['sua-hang-loat', 'moSuaHl', 'list'], ['ho-tro', 'moHoTro', 'info']]);
   html += HM.so([
     { l: t('vhTicket'), v: HT.fmt.n(tk.length), lon: true, s: HT.fmt.n(tk.filter(function (x) { return quaHan(A, x); }).length) + ' ' + t('quaHan') },
@@ -8817,7 +9028,9 @@ function theDuBao(c, db) {
     h2: HM.esc(t('vhDuBao')), p: HM.esc(t('vhDuBaoMo')),
     hanhDong: '<button type="button" class="btn sm" data-di="nen-tang">' + HM.esc(t('moDuBao')) + '</button>',
     than: HM.so([
-      { l: t('dbDuKien').replace('{k}', db.openPeriod), v: HT.fmt.usd0(db.projected.revenue), s: HT.fmt.n(db.projected.streams) + ' ' + (vi ? 'lượt nghe' : 'streams') },
+      db.projected.revenue != null
+        ? { l: t('dbDuKien').replace('{k}', db.openPeriod), v: HT.fmt.usd0(db.projected.revenue), s: HT.fmt.n(db.projected.streams) + ' ' + (vi ? 'lượt nghe' : 'streams') }
+        : { l: t('dbDuKien').replace('{k}', db.openPeriod), v: HB.gonSo(db.projected.streams), s: vi ? 'lượt nghe dự kiến cả kỳ' : 'projected streams for the period' },
       { l: t('dbTang7'), v: HT.fmt.pct(db.growth7), mau: db.growth7 >= 0 ? HB.mau('ok') : HB.mau('no') },
       { l: t('dbTang28'), v: HT.fmt.pct(db.growth28), mau: db.growth28 >= 0 ? HB.mau('ok') : HB.mau('no') }
     ]) + '<div style="margin-top:14px">' + HB.o({ loai: 'duong', cao: 170, dinhDang: 'so', chuThich: false,
@@ -8858,7 +9071,8 @@ function veQuanLy(c) {
         return { ten: x.staff.name, gt: x.revenueQ, mau: x.targetPct >= 1 ? HB.mau('ok') : P[i % 8], phu: t('kdChiTieu') + ' ' + HT.fmt.usd0(x.target) + ' · ' + t('kdDat').replace('{p}', HT.fmt.pct(x.targetPct)) };
       }) }) +
       sales.map(function (x, i) {
-        return '<div class="hint" style="margin-top:6px"><b>' + HM.esc(x.staff.name) + '</b> · ' + HM.esc(HT.fmt.n(x.accounts) + ' ' + t('kdTk').toLowerCase() + ' · ' + HT.fmt.n((x.renewals || []).length) + ' ' + t('kdGiaHan').toLowerCase()) + '</div>' +
+        /* dòng dữ liệu (tên người) chứ không phải câu của giao diện — không dùng .hint */
+        return '<div class="muted" style="margin-top:6px;font-size:12.5px"><b style="color:var(--ink)">' + HM.esc(x.staff.name) + '</b> · ' + HM.esc(HT.fmt.n(x.accounts) + ' ' + t('kdTk').toLowerCase() + ' · ' + HT.fmt.n((x.renewals || []).length) + ' ' + t('kdGiaHan').toLowerCase()) + '</div>' +
           '<div class="meter"><i style="width:' + Math.min(100, x.targetPct * 100).toFixed(1) + '%;background:' + (x.targetPct >= 1 ? HB.mau('ok') : P[i % 8]) + '"></i></div>';
       }).join('')
     }) +
@@ -9470,7 +9684,6 @@ function shortForm(id, streams) { return Math.round(streams * (0.003 + (HM.hashC
 
 HT.dangKy({
   id: 'theo-doi', nav: 'navTheoDoi', nhom: 'nhomVanHanh', icon: 'up',
-  vai: ['ops', 'sales', 'support', 'mgmt', 'accounting'],
 
   chu: {
     vi: {
@@ -9608,9 +9821,9 @@ function dungBang(root, c, d, pl) {
     veDong = function (r) {
       return '<td>' + HM.tenBia({ ten: HM.dai(r.title, 34), seed: r.clientId, phu: r.clientId + ' · ' + r.kind + ' · ' + HT.fmt.n(r.tracks) + ' ' + t('track') }) + '</td>' +
         '<td>' + (r.managerName ? HM.esc(r.managerName) : '<span class="nil">—</span>') + '</td>' +
-        '<td>' + HM.tag(r.classification, r.classification === 'A' ? 'ok' : r.classification === 'B' ? 'info' : '') + '</td>' +
-        '<td class="num">' + HM.esc(HT.fmt.n(r.streams)) + '</td>' +
-        '<td class="num band"><b>' + HM.esc(c.tien(r.revenueQ)) + '</b></td>' +
+        '<td>' + (r.classification ? HM.tag(r.classification, r.classification === 'A' ? 'ok' : r.classification === 'B' ? 'info' : '') : '<span class="nil">—</span>') + '</td>' +
+        '<td class="num">' + (r.streams == null ? '<span class="nil">—</span>' : HM.esc(HT.fmt.n(r.streams))) + '</td>' +
+        '<td class="num band"><b>' + (r.revenueQ == null ? '<span class="nil">—</span>' : HM.esc(c.tien(r.revenueQ))) + '</b></td>' +
         '<td class="num">' + (r.change == null ? '<span class="nil">—</span>' : '<span class="' + (r.change >= 0 ? 'pos' : 'neg') + '">' + HM.esc((r.change >= 0 ? '▲ ' : '▼ ') + HT.fmt.pct(Math.abs(r.change))) + '</span>') + '</td>' +
         '<td>' + nutSao('tk', r.id) + '</td>';
     };
@@ -9679,7 +9892,6 @@ var LOC = { tab: 'tk', muc: 'all', tt: 'open', pk: null, tim: '', trang: 0 };
 
 HT.dangKy({
   id: 'chat-luong', nav: 'navChatLuong', nhom: 'nhomVanHanh', icon: 'alert',
-  vai: ['ops', 'sales', 'support', 'mgmt', 'accounting'],
   dem: function (c) { try { return c.A.quality().counts.flagged || null; } catch (e) { return null; } },
 
   chu: {
@@ -9818,7 +10030,6 @@ var LOC = { tim: '', loc: 'all', trang: 0 };
 
 HT.dangKy({
   id: 'chia-se', nav: 'navChiaSe', nhom: 'nhomTien', icon: 'swap',
-  vai: ['ops', 'sales', 'support', 'mgmt', 'accounting'],
   dem: function (c) { try { return c.A.splits().counts.invited || null; } catch (e) { return null; } },
 
   chu: {
@@ -9908,7 +10119,6 @@ var LOC = { loai: 'all', tt: 'all', tim: '', trang: 0 };
 
 HT.dangKy({
   id: 'chien-dich', nav: 'navChienDich', nhom: 'nhomDoiTac', icon: 'up',
-  vai: ['ops', 'sales', 'support', 'mgmt', 'accounting'],
 
   chu: {
     vi: {
@@ -9994,7 +10204,6 @@ function tx(k) { var d = (CHU && CHU[HT.lang]) || (CHU && CHU.vi) || {}; return 
 
 HT.dangKy({
   id: 'xet-duyet', nav: 'navXetDuyet', nhom: 'nhomTien', icon: 'check',
-  vai: ['ops', 'sales', 'support', 'mgmt', 'accounting'],
   dem: function (c) { try { var k = c.A.proposals.counts(), r = c.A.staff.me.role; if (r === 'accounting') return k.submitted ? '!' + k.submitted : ''; if (r === 'mgmt') return k.checked ? '!' + k.checked : (k.pending ? String(k.pending) : ''); return k.pending ? String(k.pending) : ''; } catch (e) { return ''; } },
 
   chu: {
@@ -10036,7 +10245,8 @@ HT.dangKy({
     var A = c.A, t = c.t, me = A.staff.me, vi = c.lang === 'vi';
     var all = A.proposals.list(), k = A.proposals.counts(), qq = LOC.tim.trim().toLowerCase();
     var choUng = all.filter(function (p) { return p.type === 'advance' && ['submitted', 'checked', 'returned'].indexOf(p.status) >= 0; });
-    var roiTb = choUng.length ? choUng.reduce(function (s, p) { return s + (p.calc.roi || 0); }, 0) / choUng.length : null;
+    var coRoi = choUng.filter(function (p) { return p.calc.roi != null; });
+    var roiTb = coRoi.length ? coRoi.reduce(function (s, p) { return s + p.calc.roi; }, 0) / coRoi.length : null;
     var rows = all.filter(function (p) {
       if (LOC.tab === 'cho' && ['submitted', 'checked', 'returned'].indexOf(p.status) < 0) return false;
       if (LOC.tab === 'xong' && ['approved', 'rejected', 'withdrawn'].indexOf(p.status) < 0) return false;
@@ -10047,7 +10257,7 @@ HT.dangKy({
     });
     var pt = HTM.phanTrang(rows, LOC);
     var html = HM.dau({ h1: HM.esc(t('h1')), mo: HM.esc(t('mo')),
-      nut: '<button type="button" class="btn" data-them-hd>' + HM.icon('file') + HM.esc(t('themHd')) + '</button><button type="button" class="btn pri" data-them-ung>' + HM.icon('cash') + HM.esc(t('themUng')) + '</button>' });
+      nut: A.quyen && A.quyen.nhom('deXuatTao') ? '<button type="button" class="btn" data-them-hd>' + HM.icon('file') + HM.esc(t('themHd')) + '</button><button type="button" class="btn pri" data-them-ung>' + HM.icon('cash') + HM.esc(t('themUng')) + '</button>' : '' });
     html += HM.so([
       { l: t('kCho'), v: HT.fmt.n(k.pending), lon: true, s: t('kChoS').replace('{a}', k.submitted).replace('{b}', k.checked) },
       { l: t('kUng'), v: c.tien2(choUng.reduce(function (s, p) { return s + p.terms.amount; }, 0)), s: t('kUngS') },
@@ -10211,7 +10421,6 @@ function(){
 
 HT.dangKy({
   id: 'muc-tra', nav: 'navMucTra', nhom: 'nhomTien', icon: 'chart',
-  vai: ['ops', 'mgmt', 'accounting'],
 
   chu: {
     vi: {
@@ -10242,7 +10451,8 @@ HT.dangKy({
     var A = c.A, t = c.t, P = HB.dayMau();
     var rows = A.platformRatesFull(), ov = rows.filter(function (r) { return r.source === 'override'; }).length;
     var f = null; try { f = A.forecast(); } catch (e) { f = null; }
-    var tron = f && f.byPlatform.length ? f.byPlatform.reduce(function (s, x) { return s + x.per1k * x.share; }, 0) : 0;
+    var tron = f && f.byPlatform.length ? f.byPlatform.reduce(function (s, x) { return s + x.per1k * x.share; }, 0)
+      : (rows.length ? rows.reduce(function (s, r) { return s + r.per1k; }, 0) / rows.length : 0);
     var html = HM.dau({ h1: HM.esc(t('h1')), mo: HM.esc(t('mo')) });
     html += HM.so([
       { l: t('kTron'), v: HT.fmt.usd(tron), lon: true, s: t('kTronS') },
@@ -11779,7 +11989,9 @@ function moHoSo(c, id) {
   var A = c.A, t = c.t, r = A.releases.get(id);
   if (!r) return;
   var nut = '';
-  if (r.status === 'submitted') nut = '<button type="button" class="btn pri" data-tiep>' + HM.esc(t('tiepNhan')) + '</button>' +
+  var coXuLy = !!(A.quyen && A.quyen.nhom('vanHanh'));
+  if (!coXuLy) nut = '';
+  else if (r.status === 'submitted') nut = '<button type="button" class="btn pri" data-tiep>' + HM.esc(t('tiepNhan')) + '</button>' +
     '<button type="button" class="btn dang" data-tra>' + HM.esc(t('traLaiNut')) + '</button>';
   else if (r.status === 'received') nut = '<button type="button" class="btn pri" data-ma>' + HM.esc(t('capMa')) + '</button>' +
     '<button type="button" class="btn dang" data-tra>' + HM.esc(t('traLaiNut')) + '</button>';
@@ -11876,7 +12088,6 @@ var KIEU_TT = { queued: 'info', sending: 'warn', done: 'ok', failed: 'no', cance
 
 HT.dangKy({
   id: 'giao-nhan', nav: 'navGiaoNhan', nhom: 'nhomVanHanh', icon: 'swap',
-  vai: ['ops', 'mgmt'],
   dem: function (c) { try { var n = c.A.deliveries.list().filter(function (x) { return x.status === 'queued' || x.status === 'sending'; }).length; return n ? String(n) : ''; } catch (e) { return ''; } },
 
   chu: {
@@ -12103,7 +12314,6 @@ var ICON = { lock: 'gear', price: 'cash', 'release-date': 'cal', 'track-price': 
 
 HT.dangKy({
   id: 'sua-hang-loat', nav: 'navSuaHl', nhom: 'nhomVanHanh', icon: 'list',
-  vai: ['ops', 'mgmt'],
   dem: function (c) { try { var n = c.A.bulk.list().filter(function (x) { return x.status === 'queued'; }).length; return n ? String(n) : ''; } catch (e) { return ''; } },
 
   chu: {
@@ -12356,7 +12566,6 @@ function dinhGia(v, tt) {
 
 HT.dangKy({
   id: 'bang-gia', nav: 'navBangGia', nhom: 'nhomVanHanh', icon: 'cash',
-  vai: ['ops', 'mgmt', 'accounting'],
 
   chu: {
     vi: {
@@ -14930,12 +15139,12 @@ function moBanGhi(c, i) {
       ? 'Tác quyền được chia theo bảng này, tách riêng khỏi doanh thu bản ghi và không đi qua label.'
       : 'Publishing follows this table, entirely separate from the recording revenue, and never passes through a label.') + '</div>';
 
+  var coTien = !!(A.quyen && A.quyen.nhom('tien'));
   HTS.moNgan(c, d, {
-    noiBo: true, tien: c.tien2, tien0: c.tien, tabDau: 'tien',
-    them: [
-      { k: 'tien', l: c.t('tabTien'), html: tienHtml, khiMo: function (panel) { HB.gan(panel); } },
+    noiBo: true, tien: c.tien2, tien0: c.tien, tabDau: coTien ? 'tien' : 'thongtin',
+    them: (coTien ? [{ k: 'tien', l: c.t('tabTien'), html: tienHtml, khiMo: function (panel) { HB.gan(panel); } }] : []).concat([
       { k: 'thongtin', l: c.t('tabTt'), html: ttHtml }
-    ]
+    ])
   });
 }
 
@@ -15147,7 +15356,6 @@ var KIEU_HANG = { A: 'ok', B: 'info', C: '' };
 
 HT.dangKy({
   id: 'doi-tac', nav: 'navDoiTac', nhom: 'nhomDoiTac', icon: 'user',
-  vai: ['sales', 'mgmt', 'ops', 'support', 'accounting'],
   dem: function (c) {
     try {
       var me = c.A.staff.me;
@@ -15271,8 +15479,8 @@ function veDanhSach(c, tatCa) {
   var sales = A.staff.byRole('sales').concat(A.staff.byRole('mgmt'));
   var html = '<div class="bar">' +
     '<div class="srch">' + HM.icon('tim') + '<input type="search" data-tim placeholder="' + HM.esc(t('tim')) + '" value="' + HM.esc(LOC.tim) + '"></div>' +
-    '<select class="in" data-nv style="width:auto;height:34px"><option value="">' + HM.esc(t('moiNv')) + '</option>' +
-      sales.map(function (s) { return '<option value="' + s.id + '"' + (LOC.nv === s.id ? ' selected' : '') + '>' + HM.esc(s.name) + '</option>'; }).join('') + '</select>' +
+    (A.staff.me.role === 'sales' ? '' : '<select class="in" data-nv style="width:auto;height:34px"><option value="">' + HM.esc(t('moiNv')) + '</option>' +
+      sales.map(function (s) { return '<option value="' + s.id + '"' + (LOC.nv === s.id ? ' selected' : '') + '>' + HM.esc(s.name) + '</option>'; }).join('') + '</select>') +
     '<select class="in" data-loai style="width:auto;height:34px"><option value="">' + HM.esc(t('moiLoai')) + '</option>' +
       ['label', 'sublabel', 'artist'].map(function (k) { return '<option value="' + k + '"' + (LOC.loai === k ? ' selected' : '') + '>' + HM.esc(t(k)) + '</option>'; }).join('') + '</select>' +
     '<select class="in" data-hang style="width:auto;height:34px"><option value="">' + HM.esc(t('moiHang')) + '</option>' +
@@ -15350,7 +15558,9 @@ function dungBang(root, c) {
    --------------------------------------------------------------------- */
 function veChiTieu(c) {
   var A = c.A, t = c.t, vi = c.lang === 'vi', P = HB.dayMau();
-  var ds = A.staff.byRole('sales').map(function (s) { return A.sales.kpi(s.id, c.ky.idx); });
+  /* kinh doanh chỉ thấy chỉ tiêu của chính mình; máy chủ cũng chặn số của người khác */
+  var me = A.staff.me;
+  var ds = (me.role === 'sales' ? [me] : A.staff.byRole('sales')).map(function (s) { return A.sales.kpi(s.id, c.ky.idx); });
   if (!ds.length) return HM.the({ than: HM.trong({ icon: 'user', tieuDe: t('khong'), moTa: '' }) });
   var q = ds[0].quarterLabel;
   var html = HM.the({
@@ -15399,7 +15609,7 @@ function moDoiTac(c, r) {
   var w = null; try { w = A.wallet(pk); } catch (e) { w = null; }
   var tk = []; try { tk = A.tickets.list({ status: 'open-all' }).filter(function (x) { return x.partyKey === pk; }); } catch (e) { tk = []; }
   var sales = A.staff.byRole('sales').concat(A.staff.byRole('mgmt'));
-  var lich = A.periods.map(function (p, i) { return A.agg(laNs ? 'artist' : 'label', id, i, 'rec').gross; });
+  var lich = []; try { lich = A.periods.map(function (p, i) { return A.agg(laNs ? 'artist' : 'label', id, i, 'rec').gross; }); } catch (e) { lich = []; }
   var ph = []; try { ph = A.catalogueFor(laNs ? 'artist' : 'label', id, { limit: 8, sort: 'revenue' }).rows; } catch (e) { ph = []; }
 
   c.nganTruot(
@@ -15409,9 +15619,11 @@ function moDoiTac(c, r) {
       { l: t('cBai'), v: HT.fmt.n(r.tracks) }
     ]) +
     HM.kv([
-      { t: t('dNv'), vHtml: true, v: '<select class="inline-sel" data-nv-moi>' + sales.map(function (s) {
-          return '<option value="' + s.id + '"' + (s.id === r.manager ? ' selected' : '') + '>' + HM.esc(s.name) + '</option>';
-        }).join('') + (r.manager ? '' : '<option value="" selected>—</option>') + '</select>' },
+      A.quyen && A.quyen.nhom('tong')
+        ? { t: t('dNv'), vHtml: true, v: '<select class="inline-sel" data-nv-moi>' + sales.map(function (s) {
+            return '<option value="' + s.id + '"' + (s.id === r.manager ? ' selected' : '') + '>' + HM.esc(s.name) + '</option>';
+          }).join('') + (r.manager ? '' : '<option value="" selected>—</option>') + '</select>' }
+        : { t: t('dNv'), v: r.managerName || '—' },
       { t: t('dHang'), v: r.classification + ' · ' + t('dHangMo') },
       r.parentId >= 0 && r.kind === 'sublabel' ? { t: t('dCha'), v: A.partyName('L:' + r.parentId) } : null,
       { t: t('dTyLe'), v: HT.fmt.pct(r.rate) },
@@ -15441,11 +15653,11 @@ function moDoiTac(c, r) {
       '<button type="button" class="btn sm pri" data-tao-tk>' + HM.icon('info') + HM.esc(t('taoTicket')) + '</button>' +
       '<button type="button" class="btn sm" data-di="ho-tro">' + HM.esc(t('moHoTro')) + '</button>' +
       (['sales', 'mgmt'].indexOf(me.role) >= 0 ? '<button type="button" class="btn sm" data-de-ung>' + HM.icon('cash') + HM.esc(t('deUng')) + '</button><button type="button" class="btn sm" data-de-hd>' + HM.icon('file') + HM.esc(t('deHd')) + '</button>' : '') + '</div>' +
-    '<h4 class="sec">' + HM.esc(t('dienBien')) + '</h4>' +
+    (lich.length ? '<h4 class="sec">' + HM.esc(t('dienBien')) + '</h4>' +
     HB.o({ loai: 'cot', cao: 150, anTruc: true, chuThich: false,
       truc: A.periods.map(function (p) { return p.label.slice(0, 2); }),
       tieuDeTip: function (i) { return (vi ? 'Kỳ ' : 'Period ') + A.periods[i].label; },
-      chuoi: [{ ten: t('cDtQ'), gt: lich, mau: P[0] }], noiBat: c.ky.idx }),
+      chuoi: [{ ten: t('cDtQ'), gt: lich, mau: P[0] }], noiBat: c.ky.idx }) : ''),
     { tieuDe: r.name, phu: r.clientId + ' · ' + t(r.kind),
       khiMo: function (dr) {
         HB.gan(dr);
@@ -15565,7 +15777,6 @@ function nhanKn(s) { return T('kn' + s.charAt(0).toUpperCase() + s.slice(1)); }
 
 HT.dangKy({
   id: 'ho-tro', nav: 'navHoTro', nhom: 'nhomDoiTac', icon: 'info',
-  vai: ['support', 'ops', 'accounting', 'mgmt', 'sales'],
   chu: CHU,
 
   dem: function (c) {
@@ -15576,15 +15787,17 @@ HT.dangKy({
 
   ve: function (root, c) {
     var A = c.A, t = c.t;
-    var dem = A.tickets.counts(), kn = A.claims.counts();
+    var coKn = !!(A.quyen && A.quyen.nhom('khieuNai'));
+    var dem = A.tickets.counts(), kn = coKn ? A.claims.counts() : { open: 0, disputed: 0, escalated: 0 };
+    if (!coKn && LOC.tab === 'khieunai') LOC.tab = 'ticket';
     var dangMo = dem.open + dem.in_progress + dem.waiting;
     var knMo = kn.open + kn.disputed + kn.escalated;
 
     var html = HM.dau({ h1: HM.esc(t('h1')), mo: HM.esc(t('mo')), nut: LOC.tab === 'khieunai' ? '' : '<button type="button" class="btn pri" data-tao>' + HM.icon('info') + HM.esc(t('taoTicket')) + '</button>' });
     html += HM.tabs([
       { k: 'ticket', l: t('tTicket'), icon: 'info', dem: dangMo },
-      { k: 'khieunai', l: t('tKn'), icon: 'alert', dem: knMo }
-    ], LOC.tab);
+      coKn ? { k: 'khieunai', l: t('tKn'), icon: 'alert', dem: knMo } : null
+    ].filter(Boolean), LOC.tab);
 
     var rows = [];
     if (LOC.tab === 'ticket') { rows = locTicket(c); html += veTicket(c, dem, rows); }
@@ -15944,7 +16157,6 @@ function tenNv(A, id) { var s = A.staff.get(id); return s ? s.name : (id || '');
 
 HT.dangKy({
   id: 'quyen', nav: 'navQuyen', nhom: 'nhomDoiTac', icon: 'alert',
-  vai: ['support', 'ops', 'mgmt'],
 
   chu: {
     vi: {
@@ -16406,7 +16618,8 @@ HT.dangKy({
   chu: {
     vi: {
       nhomHeThong: 'Quản trị', navQuanTri: 'Quản trị', h1: 'Quản trị',
-      tTk: 'Tài khoản', tNk: 'Nhật ký thao tác', tCh: 'Câu hỏi cần chốt', tDl: 'Dữ liệu bản mẫu', tBm: 'Phân quyền hai cổng',
+      tTk: 'Tài khoản', tNk: 'Nhật ký thao tác', tCh: 'Câu hỏi cần chốt', tDl: 'Dữ liệu bản mẫu', tBm: 'Phân quyền hai cổng', tPq: 'Phân quyền theo vai',
+      pqMo: 'Vai nào mở được màn nào và gọi được nhóm dữ liệu nào. Ma trận nằm ở lõi (máy chủ mẫu): thanh điều hướng, chuông, tìm nhanh và bàn làm việc đều đọc từ đây; gọi sai vai thì máy chủ trả lỗi "Không có quyền" dù giao diện có giấu nút hay không.', pqMan: 'Màn hình', pqNhom: 'Nhóm dữ liệu', pqVaiCua: 'Vai được cấp',
       soTk: 'Tài khoản', soHd: 'Đang hoạt động', soMoi: 'Đã mời, chưa đăng nhập',
       themTk: 'Cấp tài khoản', tim: 'Tìm theo email hoặc bên thụ hưởng…', moiVt: 'Tất cả vai trò',
       cEmail: 'Email', cVt: 'Vai trò', cBen: 'Gắn với bên thụ hưởng', cTt: 'Trạng thái', cNgay: 'Ngày cấp', cMfa: 'Xác thực 2 lớp',
@@ -16430,7 +16643,8 @@ HT.dangKy({
     },
     en: {
       nhomHeThong: 'System', navQuanTri: 'Administration', h1: 'Administration',
-      tTk: 'Accounts', tNk: 'Audit log', tCh: 'Open questions', tDl: 'Prototype data', tBm: 'The boundary',
+      tTk: 'Accounts', tNk: 'Audit log', tCh: 'Open questions', tDl: 'Prototype data', tBm: 'The boundary', tPq: 'Role permissions',
+      pqMo: 'Which role opens which screen and may call which data group. The matrix lives in the core (mock server): navigation, bell, quick search and desks all read it; a call from the wrong role gets "No permission" whether or not the UI hides the button.', pqMan: 'Screen', pqNhom: 'Data group', pqVaiCua: 'Granted roles',
       soTk: 'Accounts', soHd: 'Active', soMoi: 'Invited, not yet in',
       themTk: 'Create an account', tim: 'Search email or payee…', moiVt: 'All roles',
       cEmail: 'Email', cVt: 'Role', cBen: 'Bound to payee', cTt: 'Status', cNgay: 'Created', cMfa: 'Two-factor',
@@ -16472,7 +16686,8 @@ HT.dangKy({
       { k: 'nhatky', l: t('tNk'), icon: 'clock' },
       { k: 'cauhoi', l: t('tCh'), icon: 'ask', dem: A.questions.length },
       { k: 'dulieu', l: t('tDl'), icon: 'file' },
-      { k: 'bienmoi', l: t('tBm'), icon: 'alert' }
+      { k: 'bienmoi', l: t('tBm'), icon: 'alert' },
+      { k: 'phanquyen', l: t('tPq'), icon: 'user' }
     ], TAB);
 
     if (TAB === 'taikhoan') html += veTaiKhoan(c, tk);
@@ -16480,6 +16695,7 @@ HT.dangKy({
     if (TAB === 'cauhoi') html += veCauHoi(c);
     if (TAB === 'dulieu') html += veDuLieu(c);
     if (TAB === 'bienmoi') html += veBienMoi(c);
+    if (TAB === 'phanquyen') html += vePhanQuyen(c);
 
     root.innerHTML = html;
     HB.gan(root);
@@ -16769,6 +16985,28 @@ function veDuLieu(c) {
    TAB 5 — RANH GIỚI HAI CỬA
    Nói cho đúng cái bản mẫu chặn được và cái nó KHÔNG chặn được.
    ===================================================================== */
+function vePhanQuyen(c) {
+  var A = c.A, t = c.t, vi = c.lang === 'vi';
+  if (!A.quyen) return '';
+  var b = A.quyen.bang(), vai = A.quyen.vaiTatCa;
+  var tenVai = { mgmt: vi ? 'Giám đốc' : 'Director', accounting: vi ? 'Kế toán' : 'Accounting', sales: vi ? 'Kinh doanh' : 'Sales', ops: vi ? 'Vận hành' : 'Operations', support: vi ? 'Hỗ trợ' : 'Support' };
+  function tenMan(id) { var m = (HT.man || []).filter(function (x) { return x.id === id; })[0]; var d = m && m.chu && m.chu[c.lang]; return (d && m.nav && d[m.nav]) || id; }
+  var ids = (HT.man || []).map(function (m) { return m.id; }).filter(function (id) { return b.man[id]; });
+  var dau = '<thead><tr><th>' + HM.esc(t('pqMan')) + '</th>' + vai.map(function (v) { return '<th style="text-align:center">' + HM.esc(tenVai[v]) + '</th>'; }).join('') + '</tr></thead>';
+  var than = ids.map(function (id) {
+    return '<tr><td><div class="t-ttl">' + HM.esc(tenMan(id)) + '</div><div class="t-sub">' + HM.esc(id) + '</div></td>' +
+      vai.map(function (v) { var co = v === 'mgmt' || b.man[id].indexOf(v) >= 0; return '<td style="text-align:center">' + (co ? '<span class="ico ok">' + HM.icon('check') + '</span>' : '<span class="nil">·</span>') + '</td>'; }).join('') + '</tr>';
+  }).join('');
+  var nhom = Object.keys(b.nhom).map(function (g) {
+    var x = b.nhom[g];
+    return '<tr><td><div class="t-ttl">' + HM.esc(vi ? x.vi : x.en) + '</div><div class="t-sub">' + HM.esc(g) + '</div></td><td>' + x.vai.map(function (v) { return HM.tag(tenVai[v], v === 'mgmt' ? 'ok' : 'info'); }).join(' ') + '</td></tr>';
+  }).join('');
+  return HM.the({ h2: HM.esc(t('tPq')), p: HM.esc(t('pqMo')), thoBody: true,
+      than: '<div class="tw"><table class="t">' + dau + '<tbody>' + than + '</tbody></table></div>' }) +
+    HM.the({ h2: HM.esc(t('pqNhom')), thoBody: true,
+      than: '<div class="tw"><table class="t"><thead><tr><th>' + HM.esc(t('pqNhom')) + '</th><th>' + HM.esc(t('pqVaiCua')) + '</th></tr></thead><tbody>' + nhom + '</tbody></table></div>' });
+}
+
 function veBienMoi(c) {
   var t = c.t;
   return HM.ghi({ kieu: 'no',
@@ -20602,7 +20840,7 @@ HT.dangKy({
       dnH2: 'Request an advance', dnMo: 'Haustek can advance part of your next 12 months of earnings, based on net earnings in approved periods. The advance is recouped from your share each period.',
       dnNet: 'Net earnings / month', dnNetS: 'average over {n} approved periods', dnProj: 'Projected 12-month earnings', dnMax: 'You can request up to', dnMaxS: 'grade {g} · growth {t}', dnVd: 'Example: amount to recoup', dnVdS: 'for a {a} advance, cleared in about {m} months',
       dnChua: 'An advance is not available yet', dnNut: 'Request an advance', dnHoiMo: 'Up to {max}. Haustek accounting checks the figures and the director approves; you are notified of the outcome.', dnSo: 'Amount requested (USD)', dnMucDich: 'Purpose (production, promotion…)', dnGui: 'Send request', dnDaGui: 'Request {id} sent',
-      dnTinh: '{r} to recoup (including the {f} advance fee), cleared in about {m} months.', dnVuot: 'Above the maximum.', dnDangCho: 'You have a request in progress. Send a new one once it is decided.', dnDangUng: 'Your current advance must be recouped before a new request.',
+      dnTinh: '{r} to recoup (including the {f} advance charge), cleared in about {m} months.', dnVuot: 'Above the maximum.', dnDangCho: 'You have a request in progress. Send a new one once it is decided.', dnDangUng: 'Your current advance must be recouped before a new request.',
       dnDs: 'Requests sent', dnDsMo: 'Status moves as Haustek checks and approves. You can withdraw a pending request.', cDx: 'Id', cNoiDung: 'Terms', cTt: 'Status', cNgay: 'Updated', cThaoTac: 'Actions', dnRut: 'Withdraw', dnDaRut: 'Withdrew {id}', dnRutHoi: 'Withdraw request {id}?', dnRutMo: 'The request closes; you can send a new one later.'
     }
   },

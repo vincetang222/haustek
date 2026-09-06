@@ -16,7 +16,6 @@ var LOC = { tab: 'tk', muc: 'all', tt: 'open', pk: null, tim: '', trang: 0 };
 
 HT.dangKy({
   id: 'chat-luong', nav: 'navChatLuong', nhom: 'nhomVanHanh', icon: 'alert',
-  vai: ['ops', 'sales', 'support', 'mgmt', 'accounting'],
   dem: function (c) { try { return c.A.quality().counts.flagged || null; } catch (e) { return null; } },
 
   chu: {

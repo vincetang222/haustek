@@ -32,7 +32,6 @@ function tenNv(A, id) { var s = A.staff.get(id); return s ? s.name : (id || '');
 
 HT.dangKy({
   id: 'quyen', nav: 'navQuyen', nhom: 'nhomDoiTac', icon: 'alert',
-  vai: ['support', 'ops', 'mgmt'],
 
   chu: {
     vi: {

@@ -834,6 +834,82 @@ check("Mức trả nền tảng nhập tay đổi dự báo; xoá ghi đè thì 
   return "dự báo " + Math.round(f0) + " → " + Math.round(f1) + " → " + Math.round(f2);
 });
 
+/* ===================== VÒNG 8 · PHÂN QUYỀN NỘI BỘ THEO VAI ===================== */
+function nhu(id) { A.staff.setMe(id); return A.staff.me; }
+check("Kế toán: chỉ tiền ra vào — dự báo doanh thu, chỉ tiêu, doanh số đối tác bị chặn; rút tiền, bảng kê, tạm ứng vẫn dùng được", () => {
+  nhu("S07");
+  mustThrow(() => A.forecast(), "dự báo doanh thu");
+  mustThrow(() => A.sales.kpi("S03", 9), "chỉ tiêu kinh doanh");
+  mustThrow(() => A.rates.rateFor("L:0", approvedKey), "tỷ lệ chia");
+  const r = A.parties.list({}).rows[0];
+  must(r.revenueQ === null && r.rate === null && r.bank !== undefined, "sổ đối tác cho kế toán vẫn lộ doanh thu / tỷ lệ");
+  must(A.withdrawals.counts().requested >= 0, "kế toán không gọi được rút tiền");
+  must(Array.isArray(A.advances.list()), "kế toán không gọi được tạm ứng");
+  must(A.statements.list(approvedKey).total >= 0, "kế toán không gọi được bảng kê");
+  must(!A.quyen.man("tong-quan") && !A.quyen.man("doi-tac") && A.quyen.man("chi-tra") && A.quyen.man("xet-duyet"), "ma trận màn cho kế toán sai");
+  const p = A.proposals.list({ type: "advance" })[0];
+  must(p && p.calc.roi === undefined && p.calc.margin === undefined && p.calc.repayment > 0, "bản tính cho kế toán vẫn mang ROI / biên");
+  return "chặn dự báo, chỉ tiêu, tỷ lệ; sổ đối tác không doanh thu; bản tính không ROI";
+});
+check("Kinh doanh: chỉ đối tác mình phụ trách, chỉ tiêu và đề xuất của mình; ví, rút tiền, ROI bị chặn", () => {
+  const me = nhu("S03");
+  const rows = A.parties.list({}).rows;
+  must(rows.length > 0 && rows.every(r => r.manager === me.id), "kinh doanh thấy đối tác của người khác");
+  must(rows.every(r => r.revenueQ != null), "kinh doanh không thấy doanh thu quý của tài khoản mình");
+  const ds = A.proposals.list();
+  must(ds.length > 0 && ds.every(p => p.by === me.name), "kinh doanh thấy đề xuất của người khác");
+  must(ds.every(p => p.calc.roi === undefined && p.calc.feeIncome === undefined && p.calc.recommendation), "bản tính cho kinh doanh vẫn mang ROI / phí thu về");
+  const khac = A.staff.list().find(s => s.role === "sales" && s.id !== me.id);
+  mustThrow(() => A.sales.kpi(khac.id, 9), "chỉ tiêu của người khác");
+  must(A.sales.kpi(me.id, 9).accounts >= 0, "kinh doanh không xem được chỉ tiêu của mình");
+  mustThrow(() => A.wallet("L:0"), "ví đối tác");
+  mustThrow(() => A.withdrawals.counts(), "rút tiền");
+  mustThrow(() => A.parties.setManager("L:0", "S04", "x"), "đổi người phụ trách");
+  const tk = A.search("records", 20).parties;
+  must(tk.every(p => rows.some(r => r.partyKey === p.key)), "tìm nhanh trả đối tác ngoài phạm vi kinh doanh");
+  return rows.length + " đối tác của mình · " + ds.length + " đề xuất của mình · ví / rút / ROI bị chặn";
+});
+check("Vận hành: không có tiền — ví, bảng kê, dự báo doanh thu, hợp đồng bị chặn; dự báo lượt nghe không mang doanh thu", () => {
+  nhu("S02");
+  mustThrow(() => A.wallet("L:0"), "ví"); mustThrow(() => A.forecast(), "dự báo doanh thu");
+  mustThrow(() => A.proposals.list(), "đề xuất"); mustThrow(() => A.contractCalc("L:0", {}), "bản tính hợp đồng");
+  const fs = A.forecastStreams();
+  must(fs.projected.streams > 0 && fs.projected.revenue === undefined && JSON.stringify(fs).indexOf("revenue") < 0, "dự báo lượt nghe cho vận hành vẫn mang doanh thu");
+  must(A.agg("admin", 0, 0, "rec").gross >= 0 && Array.isArray(A.deliveries.list()), "vận hành mất báo cáo kỳ / giao nhận");
+  must(!A.quyen.man("chi-tra") && !A.quyen.man("doi-tac") && A.quyen.man("phat-hanh") && A.quyen.man("muc-tra"), "ma trận màn cho vận hành sai");
+  return "ví / dự báo / đề xuất chặn · dự báo lượt nghe sạch";
+});
+check("Hỗ trợ: đọc hồ sơ phát hành và chất lượng, không xử lý hồ sơ, không tạo đề xuất, không thấy đối tác trong tìm nhanh", () => {
+  nhu("S05");
+  must(A.releases.list().length >= 0 && A.quality().rows.length >= 0, "hỗ trợ mất quyền đọc");
+  const r = A.releases.list().find(x => x.status === "submitted");
+  if (r) mustThrow(() => A.releases.receive(r.id, "x"), "tiếp nhận hồ sơ");
+  mustThrow(() => A.proposals.proposeAdvance("L:0", { amount: 500 }, "x", "support"), "tạo đề xuất");
+  mustThrow(() => A.setPlatformRate("Spotify", 1, "", "x"), "mức trả");
+  const kq = A.search("night", 8);
+  must(kq.parties.length === 0 && kq.docs.every(d => A.quyen.man(d.di)), "tìm nhanh cho hỗ trợ lộ đối tác / hồ sơ ngoài quyền");
+  must(!A.quyen.man("danh-muc") && A.quyen.man("quyen") && A.quyen.man("ho-tro"), "ma trận màn cho hỗ trợ sai");
+  return "đọc được, không sửa; tìm nhanh không có đối tác";
+});
+check("Chuông và tìm nhanh chỉ dẫn tới màn mà vai đó mở được", () => {
+  const ra = [];
+  ["accounting", "sales", "ops", "support"].forEach(role => {
+    const st = A.staff.list().find(s => s.role === role); nhu(st.id);
+    const n = A.notifications().items, d = A.search("DX", 10).docs.concat(A.search("HT", 10).docs);
+    n.forEach(x => { if (x.di && !A.quyen.man(x.di)) ra.push(role + "→" + x.di); });
+    d.forEach(x => { if (x.di && !A.quyen.man(x.di)) ra.push(role + "→" + x.di); });
+  });
+  must(!ra.length, "mục dẫn sai vai: " + ra.join(", "));
+  return "4 vai · không mục nào dẫn tới màn bị cấm";
+});
+check("Giám đốc thấy hết: mọi màn, bản tính đầy đủ, dự báo doanh thu", () => {
+  nhu("S01");
+  const q = A.quyen.cua("mgmt");
+  must(q.man.length === Object.keys(A.quyen.bang().man).length, "giám đốc thiếu màn");
+  must(A.proposals.list({ type: "advance" })[0].calc.roi != null && A.forecast().projected.revenue > 0, "giám đốc mất bản tính / dự báo");
+  return q.man.length + " màn · bản tính đầy đủ";
+});
+
 check("lockdown() gỡ hẳn mặt tiền admin khỏi trang", () => {
   must(!!H.admin, "chưa lockdown mà admin đã mất");
   H.lockdown();

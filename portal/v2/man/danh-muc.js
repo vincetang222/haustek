@@ -400,12 +400,12 @@ function moBanGhi(c, i) {
       ? 'Tác quyền được chia theo bảng này, tách riêng khỏi doanh thu bản ghi và không đi qua label.'
       : 'Publishing follows this table, entirely separate from the recording revenue, and never passes through a label.') + '</div>';
 
+  var coTien = !!(A.quyen && A.quyen.nhom('tien'));
   HTS.moNgan(c, d, {
-    noiBo: true, tien: c.tien2, tien0: c.tien, tabDau: 'tien',
-    them: [
-      { k: 'tien', l: c.t('tabTien'), html: tienHtml, khiMo: function (panel) { HB.gan(panel); } },
+    noiBo: true, tien: c.tien2, tien0: c.tien, tabDau: coTien ? 'tien' : 'thongtin',
+    them: (coTien ? [{ k: 'tien', l: c.t('tabTien'), html: tienHtml, khiMo: function (panel) { HB.gan(panel); } }] : []).concat([
       { k: 'thongtin', l: c.t('tabTt'), html: ttHtml }
-    ]
+    ])
   });
 }
 

@@ -22,7 +22,8 @@ HT.dangKy({
   chu: {
     vi: {
       nhomHeThong: 'Quản trị', navQuanTri: 'Quản trị', h1: 'Quản trị',
-      tTk: 'Tài khoản', tNk: 'Nhật ký thao tác', tCh: 'Câu hỏi cần chốt', tDl: 'Dữ liệu bản mẫu', tBm: 'Phân quyền hai cổng',
+      tTk: 'Tài khoản', tNk: 'Nhật ký thao tác', tCh: 'Câu hỏi cần chốt', tDl: 'Dữ liệu bản mẫu', tBm: 'Phân quyền hai cổng', tPq: 'Phân quyền theo vai',
+      pqMo: 'Vai nào mở được màn nào và gọi được nhóm dữ liệu nào. Ma trận nằm ở lõi (máy chủ mẫu): thanh điều hướng, chuông, tìm nhanh và bàn làm việc đều đọc từ đây; gọi sai vai thì máy chủ trả lỗi "Không có quyền" dù giao diện có giấu nút hay không.', pqMan: 'Màn hình', pqNhom: 'Nhóm dữ liệu', pqVaiCua: 'Vai được cấp',
       soTk: 'Tài khoản', soHd: 'Đang hoạt động', soMoi: 'Đã mời, chưa đăng nhập',
       themTk: 'Cấp tài khoản', tim: 'Tìm theo email hoặc bên thụ hưởng…', moiVt: 'Tất cả vai trò',
       cEmail: 'Email', cVt: 'Vai trò', cBen: 'Gắn với bên thụ hưởng', cTt: 'Trạng thái', cNgay: 'Ngày cấp', cMfa: 'Xác thực 2 lớp',
@@ -46,7 +47,8 @@ HT.dangKy({
     },
     en: {
       nhomHeThong: 'System', navQuanTri: 'Administration', h1: 'Administration',
-      tTk: 'Accounts', tNk: 'Audit log', tCh: 'Open questions', tDl: 'Prototype data', tBm: 'The boundary',
+      tTk: 'Accounts', tNk: 'Audit log', tCh: 'Open questions', tDl: 'Prototype data', tBm: 'The boundary', tPq: 'Role permissions',
+      pqMo: 'Which role opens which screen and may call which data group. The matrix lives in the core (mock server): navigation, bell, quick search and desks all read it; a call from the wrong role gets "No permission" whether or not the UI hides the button.', pqMan: 'Screen', pqNhom: 'Data group', pqVaiCua: 'Granted roles',
       soTk: 'Accounts', soHd: 'Active', soMoi: 'Invited, not yet in',
       themTk: 'Create an account', tim: 'Search email or payee…', moiVt: 'All roles',
       cEmail: 'Email', cVt: 'Role', cBen: 'Bound to payee', cTt: 'Status', cNgay: 'Created', cMfa: 'Two-factor',
@@ -88,7 +90,8 @@ HT.dangKy({
       { k: 'nhatky', l: t('tNk'), icon: 'clock' },
       { k: 'cauhoi', l: t('tCh'), icon: 'ask', dem: A.questions.length },
       { k: 'dulieu', l: t('tDl'), icon: 'file' },
-      { k: 'bienmoi', l: t('tBm'), icon: 'alert' }
+      { k: 'bienmoi', l: t('tBm'), icon: 'alert' },
+      { k: 'phanquyen', l: t('tPq'), icon: 'user' }
     ], TAB);
 
     if (TAB === 'taikhoan') html += veTaiKhoan(c, tk);
@@ -96,6 +99,7 @@ HT.dangKy({
     if (TAB === 'cauhoi') html += veCauHoi(c);
     if (TAB === 'dulieu') html += veDuLieu(c);
     if (TAB === 'bienmoi') html += veBienMoi(c);
+    if (TAB === 'phanquyen') html += vePhanQuyen(c);
 
     root.innerHTML = html;
     HB.gan(root);
@@ -385,6 +389,28 @@ function veDuLieu(c) {
    TAB 5 — RANH GIỚI HAI CỬA
    Nói cho đúng cái bản mẫu chặn được và cái nó KHÔNG chặn được.
    ===================================================================== */
+function vePhanQuyen(c) {
+  var A = c.A, t = c.t, vi = c.lang === 'vi';
+  if (!A.quyen) return '';
+  var b = A.quyen.bang(), vai = A.quyen.vaiTatCa;
+  var tenVai = { mgmt: vi ? 'Giám đốc' : 'Director', accounting: vi ? 'Kế toán' : 'Accounting', sales: vi ? 'Kinh doanh' : 'Sales', ops: vi ? 'Vận hành' : 'Operations', support: vi ? 'Hỗ trợ' : 'Support' };
+  function tenMan(id) { var m = (HT.man || []).filter(function (x) { return x.id === id; })[0]; var d = m && m.chu && m.chu[c.lang]; return (d && m.nav && d[m.nav]) || id; }
+  var ids = (HT.man || []).map(function (m) { return m.id; }).filter(function (id) { return b.man[id]; });
+  var dau = '<thead><tr><th>' + HM.esc(t('pqMan')) + '</th>' + vai.map(function (v) { return '<th style="text-align:center">' + HM.esc(tenVai[v]) + '</th>'; }).join('') + '</tr></thead>';
+  var than = ids.map(function (id) {
+    return '<tr><td><div class="t-ttl">' + HM.esc(tenMan(id)) + '</div><div class="t-sub">' + HM.esc(id) + '</div></td>' +
+      vai.map(function (v) { var co = v === 'mgmt' || b.man[id].indexOf(v) >= 0; return '<td style="text-align:center">' + (co ? '<span class="ico ok">' + HM.icon('check') + '</span>' : '<span class="nil">·</span>') + '</td>'; }).join('') + '</tr>';
+  }).join('');
+  var nhom = Object.keys(b.nhom).map(function (g) {
+    var x = b.nhom[g];
+    return '<tr><td><div class="t-ttl">' + HM.esc(vi ? x.vi : x.en) + '</div><div class="t-sub">' + HM.esc(g) + '</div></td><td>' + x.vai.map(function (v) { return HM.tag(tenVai[v], v === 'mgmt' ? 'ok' : 'info'); }).join(' ') + '</td></tr>';
+  }).join('');
+  return HM.the({ h2: HM.esc(t('tPq')), p: HM.esc(t('pqMo')), thoBody: true,
+      than: '<div class="tw"><table class="t">' + dau + '<tbody>' + than + '</tbody></table></div>' }) +
+    HM.the({ h2: HM.esc(t('pqNhom')), thoBody: true,
+      than: '<div class="tw"><table class="t"><thead><tr><th>' + HM.esc(t('pqNhom')) + '</th><th>' + HM.esc(t('pqVaiCua')) + '</th></tr></thead><tbody>' + nhom + '</tbody></table></div>' });
+}
+
 function veBienMoi(c) {
   var t = c.t;
   return HM.ghi({ kieu: 'no',

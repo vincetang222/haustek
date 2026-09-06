@@ -232,6 +232,40 @@ Ba bài đầu cần Chromium ở `/opt/pw-browsers/chromium-1194/` và bộ fon
 `/tmp/fonts-local.css` (xem `test/README.md`) — thiếu font thì trang render bằng font
 dự phòng rộng hơn, và bài kiểm bố cục đo nhầm thứ.
 
+## Phân quyền theo vai (vòng 8)
+
+Ma trận nằm ở lõi (`haustek-core.js`, mục 19k) — phía "máy chủ" của bản mẫu —
+chứ không phải ở từng màn. Ba lớp, cùng một nguồn:
+
+- **Màn** (`QUYEN_MAN`): vai nào mở được màn nào. Thanh điều hướng, chuông,
+  tìm nhanh, lối tắt trên bàn làm việc đều đọc từ đây; màn bị cấm không mở
+  được qua `#hash`.
+- **Nhóm hàm** (`QUYEN_NHOM`, `QUYEN_HAM`): mặt tiền `HAUSTEK.admin` được bọc
+  lại, hàm gọi sai vai ném `Không có quyền` — giao diện có giấu nút hay
+  không thì máy chủ vẫn chặn.
+- **Lược số liệu**: sổ đối tác cho kế toán / vận hành / hỗ trợ không có doanh
+  thu, tỷ lệ (kế toán giữ tài khoản ngân hàng để chi trả); kinh doanh chỉ
+  thấy tài khoản mình phụ trách, chỉ tiêu và đề xuất của mình; bản tính đề
+  xuất bỏ ROI / biên / phần Haustek giữ với kế toán, bỏ thêm phí thu về với
+  kinh doanh; vận hành có `forecastStreams()` (lượt nghe, không tiền).
+
+| Màn | Giám đốc | Kế toán | Kinh doanh | Vận hành | Hỗ trợ |
+|---|:-:|:-:|:-:|:-:|:-:|
+| Bàn làm việc, Hỗ trợ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Tổng quan, Tỷ lệ chia, Quản trị | ✓ | | | | |
+| Kế toán, Thanh toán, Tạm ứng, Chia sẻ tác quyền | ✓ | ✓ | | | |
+| Đối soát & xét duyệt kỳ | ✓ | ✓ | | ✓ | |
+| Xét duyệt | ✓ | ✓ (kiểm số) | ✓ (đề xuất của mình) | | |
+| Đối tác | ✓ | | ✓ (của mình) | | |
+| Chiến dịch | ✓ | | ✓ | ✓ | |
+| Theo dõi, Nhập báo cáo, Khớp ISRC, Giao nhận, Sửa hàng loạt, Bảng giá, Mức trả, Danh mục, Nền tảng | ✓ | | | ✓ | |
+| Chất lượng lượt nghe, Phát hành (hỗ trợ chỉ đọc), Quản lý quyền | ✓ | | | ✓ | ✓ |
+
+Trang Quản trị có tab *Phân quyền theo vai* vẽ đúng ma trận này. Cổng đối
+tác đã phân quyền theo tài khoản từ vòng 1: label chỉ thấy label và nghệ sĩ
+của mình, label con chỉ thấy phần mình, nghệ sĩ chỉ thấy bài của mình; mọi
+gói trả về cho đối tác chỉ có số NET.
+
 ## Khung: chuông thông báo, tìm nhanh, bảng dữ liệu
 
 Thanh trên có **chuông** (sự kiện mới của chính người xem: bảng kê sẵn sàng,

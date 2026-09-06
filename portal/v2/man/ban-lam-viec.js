@@ -238,6 +238,9 @@ function bangKhieuNai(c, rows) {
     }).join('') + '</tbody></table></div>';
 }
 function nutLoi(c, ds) {
+  /* chỉ đưa lối tắt tới màn mà vai này mở được */
+  ds = ds.filter(function (x) { return !(c.A.quyen && typeof c.A.quyen.man === 'function') || c.A.quyen.man(x[0]); });
+  if (!ds.length) return '';
   return '<div class="btnrow" style="margin:0 0 16px">' + ds.map(function (x) {
     return '<button type="button" class="btn sm" data-di="' + x[0] + '">' + HM.icon(x[2] || 'right') + HM.esc(c.t(x[1])) + '</button>';
   }).join('') + '</div>';
@@ -413,7 +416,7 @@ function veVanHanh(c) {
   var kc = A.claims.counts();
   var rl = null; try { rl = A.releases.counts(); } catch (e) { rl = null; }
   var rlMo = rl ? Object.keys(rl).filter(function (k) { return k !== 'released' && k !== 'total' && typeof rl[k] === 'number'; }).reduce(function (a, k) { return a + rl[k]; }, 0) : 0;
-  var db = null; try { db = A.forecast(); } catch (e) { db = null; }
+  var db = null; try { db = A.forecastStreams(); } catch (e) { db = null; }
   var html = nutLoi(c, [['phat-hanh', 'moPhatHanh', 'disc'], ['giao-nhan', 'moGiaoNhan', 'swap'], ['sua-hang-loat', 'moSuaHl', 'list'], ['ho-tro', 'moHoTro', 'info']]);
   html += HM.so([
     { l: t('vhTicket'), v: HT.fmt.n(tk.length), lon: true, s: HT.fmt.n(tk.filter(function (x) { return quaHan(A, x); }).length) + ' ' + t('quaHan') },
@@ -449,7 +452,9 @@ function theDuBao(c, db) {
     h2: HM.esc(t('vhDuBao')), p: HM.esc(t('vhDuBaoMo')),
     hanhDong: '<button type="button" class="btn sm" data-di="nen-tang">' + HM.esc(t('moDuBao')) + '</button>',
     than: HM.so([
-      { l: t('dbDuKien').replace('{k}', db.openPeriod), v: HT.fmt.usd0(db.projected.revenue), s: HT.fmt.n(db.projected.streams) + ' ' + (vi ? 'lượt nghe' : 'streams') },
+      db.projected.revenue != null
+        ? { l: t('dbDuKien').replace('{k}', db.openPeriod), v: HT.fmt.usd0(db.projected.revenue), s: HT.fmt.n(db.projected.streams) + ' ' + (vi ? 'lượt nghe' : 'streams') }
+        : { l: t('dbDuKien').replace('{k}', db.openPeriod), v: HB.gonSo(db.projected.streams), s: vi ? 'lượt nghe dự kiến cả kỳ' : 'projected streams for the period' },
       { l: t('dbTang7'), v: HT.fmt.pct(db.growth7), mau: db.growth7 >= 0 ? HB.mau('ok') : HB.mau('no') },
       { l: t('dbTang28'), v: HT.fmt.pct(db.growth28), mau: db.growth28 >= 0 ? HB.mau('ok') : HB.mau('no') }
     ]) + '<div style="margin-top:14px">' + HB.o({ loai: 'duong', cao: 170, dinhDang: 'so', chuThich: false,
@@ -490,7 +495,8 @@ function veQuanLy(c) {
         return { ten: x.staff.name, gt: x.revenueQ, mau: x.targetPct >= 1 ? HB.mau('ok') : P[i % 8], phu: t('kdChiTieu') + ' ' + HT.fmt.usd0(x.target) + ' · ' + t('kdDat').replace('{p}', HT.fmt.pct(x.targetPct)) };
       }) }) +
       sales.map(function (x, i) {
-        return '<div class="hint" style="margin-top:6px"><b>' + HM.esc(x.staff.name) + '</b> · ' + HM.esc(HT.fmt.n(x.accounts) + ' ' + t('kdTk').toLowerCase() + ' · ' + HT.fmt.n((x.renewals || []).length) + ' ' + t('kdGiaHan').toLowerCase()) + '</div>' +
+        /* dòng dữ liệu (tên người) chứ không phải câu của giao diện — không dùng .hint */
+        return '<div class="muted" style="margin-top:6px;font-size:12.5px"><b style="color:var(--ink)">' + HM.esc(x.staff.name) + '</b> · ' + HM.esc(HT.fmt.n(x.accounts) + ' ' + t('kdTk').toLowerCase() + ' · ' + HT.fmt.n((x.renewals || []).length) + ' ' + t('kdGiaHan').toLowerCase()) + '</div>' +
           '<div class="meter"><i style="width:' + Math.min(100, x.targetPct * 100).toFixed(1) + '%;background:' + (x.targetPct >= 1 ? HB.mau('ok') : P[i % 8]) + '"></i></div>';
       }).join('')
     }) +

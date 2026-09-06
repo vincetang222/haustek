@@ -15,7 +15,6 @@ var KIEU_TT = { queued: 'info', sending: 'warn', done: 'ok', failed: 'no', cance
 
 HT.dangKy({
   id: 'giao-nhan', nav: 'navGiaoNhan', nhom: 'nhomVanHanh', icon: 'swap',
-  vai: ['ops', 'mgmt'],
   dem: function (c) { try { var n = c.A.deliveries.list().filter(function (x) { return x.status === 'queued' || x.status === 'sending'; }).length; return n ? String(n) : ''; } catch (e) { return ''; } },
 
   chu: {

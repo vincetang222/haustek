@@ -1647,7 +1647,7 @@ const STAFF = [
   { id: "S07", email: "ketoan@haustek-group.com",   name: "Vũ Kế Toán",        role: "accounting", title: "Kế toán",               titleEn: "Accounting" }
 ];
 const STAFF_TARGET = { S03: 3600000, S04: 6800000 };   /* chỉ tiêu doanh thu gộp một quý, USD */
-let _me = STAFF[1];                                     /* nhân vật đang dùng cổng nội bộ (bản mẫu) */
+let _me = STAFF[0];                                     /* nhân vật đang dùng cổng nội bộ (bản mẫu) */
 const staffById = id => STAFF.find(s => s.id === id) || null;
 const staffByRole = role => STAFF.filter(s => s.role === role);
 /* Bên thụ hưởng chính: label (mọi cấp) và nghệ sĩ độc lập. Nghệ sĩ thuộc
@@ -2681,7 +2681,7 @@ function advanceOfferOf(partyKey) {
     example: vd ? { amount: vd.amount, repayment: vd.repayment, recoupMonths: vd.recoupMonths } : null, eligible,
     reason: eligible ? null : (c.grade === "C" ? { vi: "Thu nhập còn dao động hoặc chưa đủ kỳ có số; hãy đề nghị lại sau 3 kỳ.", en: "Earnings are still volatile or too few periods have figures; try again after three periods." } : { vi: "Thu nhập ròng 12 tháng dự kiến chưa đủ để tạm ứng.", en: "Projected 12-month net is not yet enough for an advance." }),
     note: "Số tối đa = " + Math.round(ADVANCE_CAP[c.grade] * 100) + "% thu nhập ròng 12 tháng dự kiến. Phí " + Math.round(ADVANCE_FEE * 100) + "% cộng vào khoản phải thu hồi; thu hồi từ phần bạn được hưởng mỗi kỳ cho đến khi đủ.",
-    noteEn: "Maximum = " + Math.round(ADVANCE_CAP[c.grade] * 100) + "% of projected 12-month net. A " + Math.round(ADVANCE_FEE * 100) + "% fee is added to the amount to recoup; recouped from your share each period until met." };
+    noteEn: "Maximum = " + Math.round(ADVANCE_CAP[c.grade] * 100) + "% of projected 12-month net. A " + Math.round(ADVANCE_FEE * 100) + "% advance charge is added to the amount to recoup; recouped from your share each period until met." };
 }
 function contractCalc(partyKey, terms) {
   terms = terms || {};
@@ -2713,7 +2713,7 @@ let proposalSeq = 0;
 function proposalId(now) { proposalSeq++; return "DX-" + String(now).slice(2, 4) + String(now).slice(5, 7) + "-" + String(proposalSeq).padStart(3, "0"); }
 function proposalsOf() { if (!Array.isArray(state.proposals)) state.proposals = []; return state.proposals; }
 function moTaDeXuat(pr, doiTac) {
-  if (pr.type === "advance") return { vi: "Tạm ứng " + fmt.usd0(pr.terms.amount) + " · phí ứng " + Math.round(pr.terms.feePct * 100) + "%", en: "Advance " + fmt.usd0(pr.terms.amount) + " · " + Math.round(pr.terms.feePct * 100) + "% fee" };
+  if (pr.type === "advance") return { vi: "Tạm ứng " + fmt.usd0(pr.terms.amount) + " · phí ứng " + Math.round(pr.terms.feePct * 100) + "%", en: "Advance " + fmt.usd0(pr.terms.amount) + " · " + Math.round(pr.terms.feePct * 100) + "% advance charge" };
   const huong = Math.round((1 - pr.terms.feePct) * 100);
   return doiTac
     ? { vi: "Hợp đồng " + pr.terms.months + " tháng · bạn hưởng " + huong + "%", en: "Contract " + pr.terms.months + " months · you keep " + huong + "%" }
@@ -3351,6 +3351,203 @@ if (!FRESH) { try { seedPartyManager(); seedWithdrawals(); seedTickets(); seedCl
 /* =====================================================================
    23. MẶT TIỀN CHO ADMIN — chỉ intranet.html được chạm
    ===================================================================== */
+/* =====================================================================
+   19k. PHÂN QUYỀN NỘI BỘ THEO VAI
+   ---------------------------------------------------------------------
+   Một ma trận duy nhất, ở phía "máy chủ": vai nào mở được màn nào
+   (QUYEN_MAN), gọi được nhóm hàm nào của mặt tiền admin (QUYEN_NHOM +
+   QUYEN_HAM), và số liệu nào bị lược khỏi gói trả về (đối tác, đề xuất,
+   bản tính ROI). Thanh điều hướng, chuông, tìm nhanh, bàn làm việc đều
+   đọc từ đây — không màn nào tự quyết mình cho ai xem.
+
+   Nguyên tắc: giám đốc thấy hết. Kế toán chỉ thấy tiền ra vào (thanh
+   toán, rút tiền, bảng kê, tạm ứng, sổ kế toán, đối soát kỳ) — không
+   thấy doanh số, chỉ tiêu, dự báo doanh thu, sổ đối tác. Kinh doanh chỉ
+   thấy đối tác mình phụ trách, chỉ tiêu của mình, đề xuất của mình.
+   Vận hành thấy phát hành, giao nhận, danh mục, báo cáo kỳ, mức trả —
+   không thấy ví, thanh toán, hợp đồng, ROI. Hỗ trợ thấy ticket, khiếu
+   nại, chất lượng, hồ sơ phát hành (đọc).
+   Mặt tiền admin trả lỗi "Không có quyền" khi gọi sai vai — giao diện có
+   giấu nút hay không thì máy chủ vẫn chặn.
+   ===================================================================== */
+const VAI_NB = ["mgmt", "accounting", "sales", "ops", "support"];
+const QUYEN_MAN = {
+  "ban-lam-viec": VAI_NB, "ho-tro": VAI_NB,
+  "tong-quan": ["mgmt"], "ty-le": ["mgmt"], "quan-tri": ["mgmt"],
+  "ke-toan": ["mgmt", "accounting"], "chi-tra": ["mgmt", "accounting"], "tam-ung": ["mgmt", "accounting"], "chia-se": ["mgmt", "accounting"],
+  "doi-chieu": ["mgmt", "ops", "accounting"],
+  "xet-duyet": ["mgmt", "accounting", "sales"], "doi-tac": ["mgmt", "sales"], "chien-dich": ["mgmt", "sales", "ops"],
+  "theo-doi": ["mgmt", "ops"], "nap-du-lieu": ["mgmt", "ops"], "khop-isrc": ["mgmt", "ops"], "giao-nhan": ["mgmt", "ops"], "sua-hang-loat": ["mgmt", "ops"],
+  "bang-gia": ["mgmt", "ops"], "muc-tra": ["mgmt", "ops"], "danh-muc": ["mgmt", "ops"], "nen-tang": ["mgmt", "ops"],
+  "chat-luong": ["mgmt", "ops", "support"], "phat-hanh": ["mgmt", "ops", "support"], "quyen": ["mgmt", "support", "ops"]
+};
+const QUYEN_NHOM = {
+  tong:      { vai: ["mgmt"],                        vi: "Số toàn công ty: dự báo doanh thu, chỉ tiêu, tỷ lệ chia, giải thích số", en: "Company-wide figures: revenue forecast, targets, split rates, number explanations" },
+  tien:      { vai: ["mgmt", "accounting"],          vi: "Tiền ra vào: ví, rút tiền, bảng kê, tạm ứng, tài khoản ngân hàng", en: "Money in and out: wallets, withdrawals, statements, advances, bank details" },
+  doiSoat:   { vai: ["mgmt", "ops", "accounting"],   vi: "Báo cáo kỳ, đối soát, xét duyệt kỳ, hàng đợi ISRC, tỷ giá", en: "Period reports, reconciliation, period approval, ISRC queue, FX" },
+  doiTac:    { vai: ["mgmt", "sales"],               vi: "Sổ đối tác đầy đủ (doanh thu quý, hợp đồng); kinh doanh chỉ tài khoản mình phụ trách", en: "Full partner book (quarter revenue, contracts); sales only their own accounts" },
+  deXuat:    { vai: ["mgmt", "accounting", "sales"], vi: "Đề xuất tạm ứng / hợp đồng; bản tính lược theo vai", en: "Advance / contract proposals; calculation trimmed per role" },
+  deXuatTao: { vai: ["mgmt", "sales"],               vi: "Tạo đề xuất", en: "Create proposals" },
+  vanHanh:   { vai: ["mgmt", "ops"],                 vi: "Phát hành, giao nhận, sửa hàng loạt, nạp báo cáo, mức trả nền tảng", en: "Releases, delivery, bulk edit, report loading, platform payout rates" },
+  danhMuc:   { vai: ["mgmt", "ops", "support"],      vi: "Danh mục, chất lượng lượt nghe, metadata, hồ sơ phát hành (đọc)", en: "Catalogue, stream quality, metadata, release files (read)" },
+  theoDoi:   { vai: ["mgmt", "ops"],                 vi: "Lượt nghe theo ngày, playlist toàn danh mục", en: "Daily streams and playlists across the catalogue" },
+  chienDich: { vai: ["mgmt", "sales", "ops"],        vi: "Chiến dịch quảng bá", en: "Promotion campaigns" },
+  chiaSe:    { vai: ["mgmt", "accounting"],          vi: "Chia sẻ tác quyền của mọi tài khoản", en: "Royalty splits across accounts" },
+  khieuNai:  { vai: ["mgmt", "support", "ops"],      vi: "Khiếu nại bản quyền, cài đặt video", en: "Rights claims, video settings" },
+  hoTro:     { vai: VAI_NB,                          vi: "Ticket hỗ trợ", en: "Support tickets" },
+  quanTri:   { vai: ["mgmt"],                        vi: "Tài khoản cổng, nhật ký, câu hỏi, dữ liệu", en: "Portal accounts, audit log, questions, data" }
+};
+/* thành viên của mặt tiền admin → nhóm; "a.b" cho hàm con; không có trong
+   bảng nghĩa là dùng chung (tra cứu tên, kỳ, bài hát…) */
+const QUYEN_HAM = {
+  forecast: "tong", forecastFor: "tong", rates: "tong", explain: "tong", explainFor: "tong", labelSlice: "tong", labelTree: "tong",
+  "parties.setManager": "tong",
+  agg: "doiSoat", grossRec: "doiSoat", grossPub: "doiSoat", grossRecByFeed: "doiSoat", grossOf: "doiSoat", splitRec: "doiSoat", splitDim: "doiSoat", splitStores: "doiSoat", mineOf: "doiSoat",
+  earnedByParty: "doiSoat", previewPayout: "doiSoat", payoutOf: "doiSoat", recon: "doiSoat", feedTotals: "doiSoat", approvalChecks: "doiSoat", canApprove: "doiSoat",
+  approve: "doiSoat", revoke: "doiSoat", queue: "doiSoat", missingFeeds: "doiSoat", "fx.lock": "doiSoat", audit: "doiSoat", "ingest.acceptVariance": "doiSoat",
+  wallet: "tien", credits: "tien", statementsOf: "tien", withdrawals: "tien", statements: "tien", bank: "tien", advances: "tien", advanceBalance: "tien", withdrawalQuote: "tien",
+  catalogueFor: "doiTac",
+  dailyTrends: "theoDoi", dailyTrendsFor: "theoDoi", playlists: "theoDoi", playlistsFor: "theoDoi",
+  campaigns: "chienDich", campaignsFor: "chienDich",
+  splits: "chiaSe", splitsFor: "chiaSe", setSplit: "chiaSe", removeSplit: "chiaSe", acceptSplit: "chiaSe",
+  quality: "danhMuc", qualityFor: "danhMuc", setAlertStatus: "danhMuc", metadataReport: "danhMuc", metadataReportFor: "danhMuc",
+  catalogue: "danhMuc", platformReport: "danhMuc", catalogueReleases: "danhMuc", releases: "danhMuc",
+  "releases.receive": "vanHanh", "releases.assignCodes": "vanHanh", "releases.publish": "vanHanh", "releases.returnFix": "vanHanh",
+  deliveries: "vanHanh", bulk: "vanHanh", ingest: "vanHanh", platformRates: "vanHanh", platformRatesFull: "vanHanh", setPlatformRate: "vanHanh", clearPlatformRate: "vanHanh", importPlatformRates: "vanHanh",
+  proposals: "deXuat", "proposals.proposeAdvance": "deXuatTao", "proposals.proposeContract": "deXuatTao", advanceCalc: "deXuat", contractCalc: "deXuat", partySeries: "deXuat", advanceOfferOf: "deXuat",
+  tickets: "hoTro", claims: "khieuNai", videoSettings: "khieuNai",
+  accounts: "quanTri", answers: "quanTri", reset: "quanTri", refresh: "quanTri", store: "quanTri"
+};
+function vaiHienTai() { return _me ? _me.role : null; }
+function coQuyenNhom(nhom, role) { role = role || vaiHienTai(); const g = QUYEN_NHOM[nhom]; return role === "mgmt" || !!(g && g.vai.includes(role)); }
+function manCoQuyen(id, role) { role = role || vaiHienTai(); const v = QUYEN_MAN[id]; return !v ? true : (role === "mgmt" || v.includes(role)); }
+function chanQuyen(ten, nhom) {
+  if (coQuyenNhom(nhom)) return;
+  const e = new Error("Không có quyền: " + ten + " (vai " + vaiHienTai() + " · cần " + QUYEN_NHOM[nhom].vai.join(" / ") + ")");
+  e.code = "NO_QUYEN"; e.nhom = nhom; throw e;
+}
+function bocHam(fn, ten, nhom) { return function () { chanQuyen(ten, nhom); return fn.apply(this, arguments); }; }
+function bocDoiTuong(obj, ten, nhom) {
+  const out = {};
+  Object.getOwnPropertyNames(obj).forEach(k => {
+    const d = Object.getOwnPropertyDescriptor(obj, k), n = QUYEN_HAM[ten + "." + k] || nhom;
+    if (d.get || d.set) { Object.defineProperty(out, k, d); return; }
+    out[k] = typeof d.value === "function" && n ? bocHam(d.value, ten + "." + k, n) : d.value;
+  });
+  return out;
+}
+/* Bọc toàn bộ mặt tiền: hàm có nhóm thì kiểm vai lúc gọi; đối tượng con có
+   nhóm (hoặc có hàm con được nêu) thì bọc từng hàm bên trong. */
+function boQuyen(a) {
+  const out = {};
+  Object.getOwnPropertyNames(a).forEach(k => {
+    const d = Object.getOwnPropertyDescriptor(a, k), n = QUYEN_HAM[k];
+    if (d.get || d.set) { Object.defineProperty(out, k, d); return; }
+    const v = d.value;
+    if (typeof v === "function") out[k] = n ? bocHam(v, k, n) : v;
+    else if (v && typeof v === "object" && !Array.isArray(v) && (n || Object.keys(QUYEN_HAM).some(x => x.startsWith(k + ".")))) out[k] = bocDoiTuong(v, k, n);
+    else out[k] = v;
+  });
+  return out;
+}
+/* ---- lược số liệu theo vai ---- */
+/* Bản tính ROI: giám đốc thấy hết; kế toán thấy số tiền ra vào nhưng không
+   thấy biên / phần Haustek giữ / ROI; kinh doanh thấy số của đối tác mình
+   và khuyến nghị, không thấy phí thu về. */
+const CALC_AN = {
+  accounting: ["roi", "roiAnnual", "roiFee", "margin", "marginNew", "monthlyKeep", "retainedDuringRecoup", "retainedNow", "retainedNew", "delta"],
+  sales: ["roi", "roiAnnual", "roiFee", "margin", "marginNew", "monthlyKeep", "retainedDuringRecoup", "retainedNow", "retainedNew", "delta", "feeIncome"],
+  ops: null, support: null
+};
+function seriesChoVai(ser, role) {
+  role = role || vaiHienTai();
+  if (role === "mgmt" || !Array.isArray(ser)) return ser;
+  return ser.map(x => { const y = Object.assign({}, x); delete y.keep; if (role === "sales") { /* kinh doanh vẫn thấy gộp của tài khoản mình */ } return y; });
+}
+function calcChoVai(calc, role) {
+  role = role || vaiHienTai();
+  if (!calc || role === "mgmt") return calc;
+  const an = CALC_AN[role];
+  if (an === null || an === undefined) chanQuyen("calc", "deXuat");
+  const out = {};
+  Object.keys(calc).forEach(k => { if (an.indexOf(k) < 0) out[k] = k === "series" ? seriesChoVai(calc[k], role) : calc[k]; });
+  return out;
+}
+function proposalChoVai(p, role) {
+  if (!p) return p;
+  role = role || vaiHienTai();
+  if (role === "mgmt") return p;
+  return Object.assign({}, p, { calc: calcChoVai(p.calc, role) });
+}
+function proposalsListChoVai(f) {
+  const role = vaiHienTai(); f = Object.assign({}, f || {});
+  if (role === "sales") f.by = _me.name;
+  return proposalsList(f).map(p => proposalChoVai(p, role));
+}
+function demDeXuat(ds) {
+  const c = { submitted: 0, checked: 0, returned: 0, approved: 0, rejected: 0, withdrawn: 0, pending: 0, approvedAdvance: 0, approvedContract: 0 };
+  ds.forEach(p => { c[p.status] = (c[p.status] || 0) + 1; if (["submitted", "checked", "returned"].includes(p.status)) c.pending++; if (p.status === "approved") { if (p.type === "advance") c.approvedAdvance = cents(c.approvedAdvance + p.terms.amount); else c.approvedContract++; } });
+  return c;
+}
+function proposalCountsChoVai() { return vaiHienTai() === "sales" ? demDeXuat(proposalsOf().filter(p => p.by === _me.name)) : proposalCounts(); }
+function proposalGetChoVai(id) {
+  const p = proposalsOf().find(x => x.id === id) || null;
+  if (!p) return null;
+  if (vaiHienTai() === "sales" && p.by !== _me.name) return null;
+  return proposalChoVai(Object.assign({ moTa: moTaDeXuat(p).vi, moTaEn: moTaDeXuat(p).en }, p));
+}
+/* Sổ đối tác: kinh doanh chỉ thấy tài khoản mình phụ trách; các vai khác chỉ
+   thấy tên, mã, người phụ trách, tình trạng — không doanh thu, không tỷ lệ,
+   kế toán giữ thông tin ngân hàng để chi trả. */
+const DOI_TAC_AN = { accounting: ["revenueQ", "revenuePrevQ", "streamsQ", "rate", "classification"], ops: ["revenueQ", "revenuePrevQ", "streamsQ", "rate", "classification", "bank"], support: ["revenueQ", "revenuePrevQ", "streamsQ", "rate", "classification", "bank"] };
+function partiesListChoVai(opts) {
+  const role = vaiHienTai(); opts = Object.assign({}, opts || {});
+  if (role === "sales") { opts.manager = _me.id; return partiesList(opts); }
+  const r = partiesList(opts), an = DOI_TAC_AN[role];
+  if (!an) return r;
+  return Object.assign({}, r, { rows: r.rows.map(x => { const y = Object.assign({}, x); an.forEach(k => { y[k] = null; }); return y; }) });
+}
+function salesKpiChoVai(staffId, pIdx) {
+  const role = vaiHienTai();
+  if (role === "sales" && staffId !== _me.id) { const e = new Error("Không có quyền: chỉ tiêu của người khác"); e.code = "NO_QUYEN"; throw e; }
+  if (role !== "mgmt" && role !== "sales") chanQuyen("sales.kpi", "tong");
+  return salesKpi(staffId, pIdx);
+}
+/* Chuông và tìm nhanh: chỉ đưa những mục dẫn tới màn vai đó mở được. */
+function notificationsChoVai() {
+  const r = notificationsOf("admin", 0), role = vaiHienTai();
+  const items = r.items.filter(n => !n.di || manCoQuyen(n.di, role));
+  return Object.assign({}, r, { items, unread: items.filter(n => !n.read).length });
+}
+function searchChoVai(q, limit) {
+  const r = searchAll("admin", 0, q, limit), role = vaiHienTai();
+  if (role === "mgmt") return r;
+  const docs = r.docs.filter(d => !d.di || manCoQuyen(d.di, role));
+  let parties = [];
+  if (role === "sales") parties = r.parties.filter(p => state.partyManager[p.key] === _me.id);
+  return { tracks: r.tracks, parties, docs };
+}
+/* Dự báo lượt nghe cho vận hành: không có tiền. */
+const KHOA_TIEN = /revenue|gross|net|mine|per1k|usd|fee|keep|margin|payout|rate/i;
+/* gỡ đệ quy mọi khoá mang tiền khỏi một gói (dự báo lượt nghe cho vận hành) */
+function boTien(v) {
+  if (Array.isArray(v)) return v.map(boTien);
+  if (v && typeof v === "object") { const o = {}; Object.keys(v).forEach(k => { if (!KHOA_TIEN.test(k)) o[k] = boTien(v[k]); }); return o; }
+  return v;
+}
+function forecastStreamsOf() {
+  const f = forecastOf("admin", 0);
+  return boTien({ asOf: f.asOf, openPeriod: f.openPeriod, days: f.days, last7: f.last7, prev7: f.prev7, growth7: f.growth7, last28: f.last28, prev28: f.prev28, growth28: f.growth28,
+    projected: { streams: f.projected.streams, monthToDate: f.projected.monthToDate }, tracks: f.tracks, topTracks: f.topTracks,
+    byPlatform: (f.byPlatform || []).map(x => ({ name: x.name, nameEn: x.nameEn, streams: x.streams, share: x.share })) });
+}
+const quyenXuat = {
+  vai: () => vaiHienTai(), vaiTatCa: VAI_NB.slice(),
+  man: id => manCoQuyen(id), nhom: g => coQuyenNhom(g),
+  bang: () => ({ man: QUYEN_MAN, nhom: QUYEN_NHOM }),
+  cua: role => ({ man: Object.keys(QUYEN_MAN).filter(id => manCoQuyen(id, role)), nhom: Object.keys(QUYEN_NHOM).filter(g => coQuyenNhom(g, role)) })
+};
+
 const admin = {
   cfg: CFG,
   get distributor() { return DISTRIBUTOR || KHONG_CO_BI_MAT; },
@@ -3496,10 +3693,10 @@ const admin = {
     setMe(id) { const s = staffById(id); if (s) _me = s; return _me; },
     targets: STAFF_TARGET
   },
-  parties: { list: partiesList, managerOf: pk => staffById(state.partyManager[pk]) || null,
+  parties: { list: opts => partiesListChoVai(opts), managerOf: pk => staffById(state.partyManager[pk]) || null,
     setManager(pk, staffId, by) { if (!staffById(staffId)) throw new Error("Không có nhân viên " + staffId); state.partyManager[pk] = staffId; audit.log("party.manager", partyName(pk) + " → " + staffById(staffId).name, by); store.save(); },
     signedAt: signedAtOf, contractEnd: contractEndOf },
-  sales: { kpi: salesKpi },
+  sales: { kpi: (staffId, pIdx) => salesKpiChoVai(staffId, pIdx) },
   wallet: walletOf, credits: creditsOf, statementsOf,
   withdrawals: {
     list(f) {
@@ -3539,6 +3736,7 @@ const admin = {
   },
   bank: { get: pk => state.bank[pk] || null, all: () => Object.assign({}, state.bank) },
   forecast: () => forecastOf("admin", 0),
+  forecastStreams: () => forecastStreamsOf(),
   forecastFor: (role, id) => forecastOf(role, id),
   platformRates, dailyStreams, asOf: () => isoDate(ASOF),
   dailyTrends: (days, top) => dailyTrends("admin", 0, days, top),
@@ -3555,13 +3753,14 @@ const admin = {
   setAlertStatus: (trackId, status, note, by) => setAlertStatus(trackId, status, note, by, "admin"),
   monetizationOf, metadataHealth: i => metadataHealth(i), metadataReport: () => metadataReport("admin", 0), metadataReportFor: (role, id) => metadataReport(role, id),
   explain: pk => explainPeriod("admin", 0, pk), explainFor: (role, id, pk) => explainPeriod(role, id, pk),
-  withdrawalQuote, notifications: () => notificationsOf("admin", 0), markNotifications: ids => markNotifications("admin", 0, ids),
-  search: (q, limit) => searchAll("admin", 0, q, limit), campaigns: () => campaignsOf("admin", 0), campaignsFor: (role, id) => campaignsOf(role, id),
+  withdrawalQuote, notifications: () => notificationsChoVai(), markNotifications: ids => markNotifications("admin", 0, ids),
+  search: (q, limit) => searchChoVai(q, limit), campaigns: () => campaignsOf("admin", 0), campaignsFor: (role, id) => campaignsOf(role, id),
   penaltyPerTrackUsd: PENALTY_USD,
   /* 19j */
   platformRatesFull, setPlatformRate, clearPlatformRate, importPlatformRates, vnRef: VN_REF_PER1K.slice(), advanceFee: ADVANCE_FEE,
-  advanceCalc, contractCalc, partySeries, advanceOfferOf,
-  proposals: { list: proposalsList, counts: proposalCounts, get: id => proposalsOf().find(p => p.id === id) || null,
+  advanceCalc: (pk, amount, feePct) => calcChoVai(advanceCalc(pk, amount, feePct)), contractCalc: (pk, terms) => calcChoVai(contractCalc(pk, terms)), partySeries: (pk, n) => seriesChoVai(partySeries(pk, n)), advanceOfferOf,
+  quyen: quyenXuat,
+  proposals: { list: f => proposalsListChoVai(f), counts: () => proposalCountsChoVai(), get: id => proposalGetChoVai(id),
     proposeAdvance, proposeContract, review: reviewProposal, flow: PROPOSAL_FLOW },
   tickets: {
     types: TICKET_TYPES, statuses: TICKET_STATUS,
@@ -4432,7 +4631,7 @@ const H = {
   bootMs: () => Math.round(performance.now() - T_BOOT),
   fmt, esc, vtable, barChart, cents,
   screens, registerScreen,
-  api, admin,
+  api, admin: boQuyen(admin),
   storage: { available: store.available, exportJSON: () => store.exportJSON(), importJSON: t => store.importJSON(t) },
 
   /* dashboard.html gọi hàm này ngay dòng đầu. Sau đó HAUSTEK.admin không

@@ -14,7 +14,6 @@ var LOC = { tim: '', loc: 'all', trang: 0 };
 
 HT.dangKy({
   id: 'chia-se', nav: 'navChiaSe', nhom: 'nhomTien', icon: 'swap',
-  vai: ['ops', 'sales', 'support', 'mgmt', 'accounting'],
   dem: function (c) { try { return c.A.splits().counts.invited || null; } catch (e) { return null; } },
 
   chu: {

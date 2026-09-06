@@ -20,7 +20,6 @@ function tx(k) { var d = (CHU && CHU[HT.lang]) || (CHU && CHU.vi) || {}; return 
 
 HT.dangKy({
   id: 'xet-duyet', nav: 'navXetDuyet', nhom: 'nhomTien', icon: 'check',
-  vai: ['ops', 'sales', 'support', 'mgmt', 'accounting'],
   dem: function (c) { try { var k = c.A.proposals.counts(), r = c.A.staff.me.role; if (r === 'accounting') return k.submitted ? '!' + k.submitted : ''; if (r === 'mgmt') return k.checked ? '!' + k.checked : (k.pending ? String(k.pending) : ''); return k.pending ? String(k.pending) : ''; } catch (e) { return ''; } },
 
   chu: {
@@ -62,7 +61,8 @@ HT.dangKy({
     var A = c.A, t = c.t, me = A.staff.me, vi = c.lang === 'vi';
     var all = A.proposals.list(), k = A.proposals.counts(), qq = LOC.tim.trim().toLowerCase();
     var choUng = all.filter(function (p) { return p.type === 'advance' && ['submitted', 'checked', 'returned'].indexOf(p.status) >= 0; });
-    var roiTb = choUng.length ? choUng.reduce(function (s, p) { return s + (p.calc.roi || 0); }, 0) / choUng.length : null;
+    var coRoi = choUng.filter(function (p) { return p.calc.roi != null; });
+    var roiTb = coRoi.length ? coRoi.reduce(function (s, p) { return s + p.calc.roi; }, 0) / coRoi.length : null;
     var rows = all.filter(function (p) {
       if (LOC.tab === 'cho' && ['submitted', 'checked', 'returned'].indexOf(p.status) < 0) return false;
       if (LOC.tab === 'xong' && ['approved', 'rejected', 'withdrawn'].indexOf(p.status) < 0) return false;
@@ -73,7 +73,7 @@ HT.dangKy({
     });
     var pt = HTM.phanTrang(rows, LOC);
     var html = HM.dau({ h1: HM.esc(t('h1')), mo: HM.esc(t('mo')),
-      nut: '<button type="button" class="btn" data-them-hd>' + HM.icon('file') + HM.esc(t('themHd')) + '</button><button type="button" class="btn pri" data-them-ung>' + HM.icon('cash') + HM.esc(t('themUng')) + '</button>' });
+      nut: A.quyen && A.quyen.nhom('deXuatTao') ? '<button type="button" class="btn" data-them-hd>' + HM.icon('file') + HM.esc(t('themHd')) + '</button><button type="button" class="btn pri" data-them-ung>' + HM.icon('cash') + HM.esc(t('themUng')) + '</button>' : '' });
     html += HM.so([
       { l: t('kCho'), v: HT.fmt.n(k.pending), lon: true, s: t('kChoS').replace('{a}', k.submitted).replace('{b}', k.checked) },
       { l: t('kUng'), v: c.tien2(choUng.reduce(function (s, p) { return s + p.terms.amount; }, 0)), s: t('kUngS') },

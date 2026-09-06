@@ -17,7 +17,6 @@ var ICON = { lock: 'gear', price: 'cash', 'release-date': 'cal', 'track-price': 
 
 HT.dangKy({
   id: 'sua-hang-loat', nav: 'navSuaHl', nhom: 'nhomVanHanh', icon: 'list',
-  vai: ['ops', 'mgmt'],
   dem: function (c) { try { var n = c.A.bulk.list().filter(function (x) { return x.status === 'queued'; }).length; return n ? String(n) : ''; } catch (e) { return ''; } },
 
   chu: {

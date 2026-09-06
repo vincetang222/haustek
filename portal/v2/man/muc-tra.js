@@ -14,7 +14,6 @@
 
 HT.dangKy({
   id: 'muc-tra', nav: 'navMucTra', nhom: 'nhomTien', icon: 'chart',
-  vai: ['ops', 'mgmt', 'accounting'],
 
   chu: {
     vi: {
@@ -45,7 +44,8 @@ HT.dangKy({
     var A = c.A, t = c.t, P = HB.dayMau();
     var rows = A.platformRatesFull(), ov = rows.filter(function (r) { return r.source === 'override'; }).length;
     var f = null; try { f = A.forecast(); } catch (e) { f = null; }
-    var tron = f && f.byPlatform.length ? f.byPlatform.reduce(function (s, x) { return s + x.per1k * x.share; }, 0) : 0;
+    var tron = f && f.byPlatform.length ? f.byPlatform.reduce(function (s, x) { return s + x.per1k * x.share; }, 0)
+      : (rows.length ? rows.reduce(function (s, r) { return s + r.per1k; }, 0) / rows.length : 0);
     var html = HM.dau({ h1: HM.esc(t('h1')), mo: HM.esc(t('mo')) });
     html += HM.so([
       { l: t('kTron'), v: HT.fmt.usd(tron), lon: true, s: t('kTronS') },

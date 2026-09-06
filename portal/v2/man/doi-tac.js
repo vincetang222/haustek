@@ -18,7 +18,6 @@ var KIEU_HANG = { A: 'ok', B: 'info', C: '' };
 
 HT.dangKy({
   id: 'doi-tac', nav: 'navDoiTac', nhom: 'nhomDoiTac', icon: 'user',
-  vai: ['sales', 'mgmt', 'ops', 'support', 'accounting'],
   dem: function (c) {
     try {
       var me = c.A.staff.me;
@@ -142,8 +141,8 @@ function veDanhSach(c, tatCa) {
   var sales = A.staff.byRole('sales').concat(A.staff.byRole('mgmt'));
   var html = '<div class="bar">' +
     '<div class="srch">' + HM.icon('tim') + '<input type="search" data-tim placeholder="' + HM.esc(t('tim')) + '" value="' + HM.esc(LOC.tim) + '"></div>' +
-    '<select class="in" data-nv style="width:auto;height:34px"><option value="">' + HM.esc(t('moiNv')) + '</option>' +
-      sales.map(function (s) { return '<option value="' + s.id + '"' + (LOC.nv === s.id ? ' selected' : '') + '>' + HM.esc(s.name) + '</option>'; }).join('') + '</select>' +
+    (A.staff.me.role === 'sales' ? '' : '<select class="in" data-nv style="width:auto;height:34px"><option value="">' + HM.esc(t('moiNv')) + '</option>' +
+      sales.map(function (s) { return '<option value="' + s.id + '"' + (LOC.nv === s.id ? ' selected' : '') + '>' + HM.esc(s.name) + '</option>'; }).join('') + '</select>') +
     '<select class="in" data-loai style="width:auto;height:34px"><option value="">' + HM.esc(t('moiLoai')) + '</option>' +
       ['label', 'sublabel', 'artist'].map(function (k) { return '<option value="' + k + '"' + (LOC.loai === k ? ' selected' : '') + '>' + HM.esc(t(k)) + '</option>'; }).join('') + '</select>' +
     '<select class="in" data-hang style="width:auto;height:34px"><option value="">' + HM.esc(t('moiHang')) + '</option>' +
@@ -221,7 +220,9 @@ function dungBang(root, c) {
    --------------------------------------------------------------------- */
 function veChiTieu(c) {
   var A = c.A, t = c.t, vi = c.lang === 'vi', P = HB.dayMau();
-  var ds = A.staff.byRole('sales').map(function (s) { return A.sales.kpi(s.id, c.ky.idx); });
+  /* kinh doanh chỉ thấy chỉ tiêu của chính mình; máy chủ cũng chặn số của người khác */
+  var me = A.staff.me;
+  var ds = (me.role === 'sales' ? [me] : A.staff.byRole('sales')).map(function (s) { return A.sales.kpi(s.id, c.ky.idx); });
   if (!ds.length) return HM.the({ than: HM.trong({ icon: 'user', tieuDe: t('khong'), moTa: '' }) });
   var q = ds[0].quarterLabel;
   var html = HM.the({
@@ -270,7 +271,7 @@ function moDoiTac(c, r) {
   var w = null; try { w = A.wallet(pk); } catch (e) { w = null; }
   var tk = []; try { tk = A.tickets.list({ status: 'open-all' }).filter(function (x) { return x.partyKey === pk; }); } catch (e) { tk = []; }
   var sales = A.staff.byRole('sales').concat(A.staff.byRole('mgmt'));
-  var lich = A.periods.map(function (p, i) { return A.agg(laNs ? 'artist' : 'label', id, i, 'rec').gross; });
+  var lich = []; try { lich = A.periods.map(function (p, i) { return A.agg(laNs ? 'artist' : 'label', id, i, 'rec').gross; }); } catch (e) { lich = []; }
   var ph = []; try { ph = A.catalogueFor(laNs ? 'artist' : 'label', id, { limit: 8, sort: 'revenue' }).rows; } catch (e) { ph = []; }
 
   c.nganTruot(
@@ -280,9 +281,11 @@ function moDoiTac(c, r) {
       { l: t('cBai'), v: HT.fmt.n(r.tracks) }
     ]) +
     HM.kv([
-      { t: t('dNv'), vHtml: true, v: '<select class="inline-sel" data-nv-moi>' + sales.map(function (s) {
-          return '<option value="' + s.id + '"' + (s.id === r.manager ? ' selected' : '') + '>' + HM.esc(s.name) + '</option>';
-        }).join('') + (r.manager ? '' : '<option value="" selected>—</option>') + '</select>' },
+      A.quyen && A.quyen.nhom('tong')
+        ? { t: t('dNv'), vHtml: true, v: '<select class="inline-sel" data-nv-moi>' + sales.map(function (s) {
+            return '<option value="' + s.id + '"' + (s.id === r.manager ? ' selected' : '') + '>' + HM.esc(s.name) + '</option>';
+          }).join('') + (r.manager ? '' : '<option value="" selected>—</option>') + '</select>' }
+        : { t: t('dNv'), v: r.managerName || '—' },
       { t: t('dHang'), v: r.classification + ' · ' + t('dHangMo') },
       r.parentId >= 0 && r.kind === 'sublabel' ? { t: t('dCha'), v: A.partyName('L:' + r.parentId) } : null,
       { t: t('dTyLe'), v: HT.fmt.pct(r.rate) },
@@ -312,11 +315,11 @@ function moDoiTac(c, r) {
       '<button type="button" class="btn sm pri" data-tao-tk>' + HM.icon('info') + HM.esc(t('taoTicket')) + '</button>' +
       '<button type="button" class="btn sm" data-di="ho-tro">' + HM.esc(t('moHoTro')) + '</button>' +
       (['sales', 'mgmt'].indexOf(me.role) >= 0 ? '<button type="button" class="btn sm" data-de-ung>' + HM.icon('cash') + HM.esc(t('deUng')) + '</button><button type="button" class="btn sm" data-de-hd>' + HM.icon('file') + HM.esc(t('deHd')) + '</button>' : '') + '</div>' +
-    '<h4 class="sec">' + HM.esc(t('dienBien')) + '</h4>' +
+    (lich.length ? '<h4 class="sec">' + HM.esc(t('dienBien')) + '</h4>' +
     HB.o({ loai: 'cot', cao: 150, anTruc: true, chuThich: false,
       truc: A.periods.map(function (p) { return p.label.slice(0, 2); }),
       tieuDeTip: function (i) { return (vi ? 'Kỳ ' : 'Period ') + A.periods[i].label; },
-      chuoi: [{ ten: t('cDtQ'), gt: lich, mau: P[0] }], noiBat: c.ky.idx }),
+      chuoi: [{ ten: t('cDtQ'), gt: lich, mau: P[0] }], noiBat: c.ky.idx }) : ''),
     { tieuDe: r.name, phu: r.clientId + ' · ' + t(r.kind),
       khiMo: function (dr) {
         HB.gan(dr);

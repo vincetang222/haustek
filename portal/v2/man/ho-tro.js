@@ -93,7 +93,6 @@ function nhanKn(s) { return T('kn' + s.charAt(0).toUpperCase() + s.slice(1)); }
 
 HT.dangKy({
   id: 'ho-tro', nav: 'navHoTro', nhom: 'nhomDoiTac', icon: 'info',
-  vai: ['support', 'ops', 'accounting', 'mgmt', 'sales'],
   chu: CHU,
 
   dem: function (c) {
@@ -104,15 +103,17 @@ HT.dangKy({
 
   ve: function (root, c) {
     var A = c.A, t = c.t;
-    var dem = A.tickets.counts(), kn = A.claims.counts();
+    var coKn = !!(A.quyen && A.quyen.nhom('khieuNai'));
+    var dem = A.tickets.counts(), kn = coKn ? A.claims.counts() : { open: 0, disputed: 0, escalated: 0 };
+    if (!coKn && LOC.tab === 'khieunai') LOC.tab = 'ticket';
     var dangMo = dem.open + dem.in_progress + dem.waiting;
     var knMo = kn.open + kn.disputed + kn.escalated;
 
     var html = HM.dau({ h1: HM.esc(t('h1')), mo: HM.esc(t('mo')), nut: LOC.tab === 'khieunai' ? '' : '<button type="button" class="btn pri" data-tao>' + HM.icon('info') + HM.esc(t('taoTicket')) + '</button>' });
     html += HM.tabs([
       { k: 'ticket', l: t('tTicket'), icon: 'info', dem: dangMo },
-      { k: 'khieunai', l: t('tKn'), icon: 'alert', dem: knMo }
-    ], LOC.tab);
+      coKn ? { k: 'khieunai', l: t('tKn'), icon: 'alert', dem: knMo } : null
+    ].filter(Boolean), LOC.tab);
 
     var rows = [];
     if (LOC.tab === 'ticket') { rows = locTicket(c); html += veTicket(c, dem, rows); }

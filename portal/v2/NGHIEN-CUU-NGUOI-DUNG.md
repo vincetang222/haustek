@@ -346,3 +346,37 @@ duyệt bỏ cột Tuổi và nhãn hạng để vừa 1440px.
 Còn mở: thanh tab dưới cho điện thoại ở cổng đối tác; kéo thả sắp lại nhóm
 điều hướng; lưu bộ lọc bảng theo người dùng; tối giản thêm dải KPI ở các
 màn còn lặp số với viên lọc (Thanh toán, Bài hát của tôi).
+
+## Vòng 8 — phân quyền hẳn theo vai
+
+**Vấn đề người dùng nêu.** Mọi vai nội bộ đang gọi cùng một mặt tiền dữ
+liệu; thanh điều hướng chỉ khác nhau ở màn nào hiện. Cần: thông tin nhạy
+cảm (doanh số, dự báo doanh thu, biên, ROI, hợp đồng) chỉ giám đốc thấy;
+các vai còn lại chỉ thấy phần thuộc về mình và màn không thuộc về mình
+không có trên thanh điều hướng. Kế toán chỉ cần tiền ra vào (hoặc sắp ra
+vào). Label và nghệ sĩ cũng vậy.
+
+**Cách làm.** Một ma trận ở lõi (mục 19k): màn theo vai, nhóm hàm theo
+vai, và phép lược số liệu theo vai. Mặt tiền admin được bọc lại: hàm gọi
+sai vai ném "Không có quyền" — bảo vệ nằm ở máy chủ, không phải ở việc
+giấu nút. Chuông, tìm nhanh, lối tắt trên bàn làm việc chỉ dẫn tới màn vai
+đó mở được.
+
+| Vai | Thấy | Không thấy |
+|---|---|---|
+| Giám đốc | Tất cả, bản tính ROI đầy đủ | — |
+| Kế toán | Thanh toán, rút tiền, bảng kê, tạm ứng, sổ kế toán, đối soát kỳ, chia sẻ tác quyền, kiểm số đề xuất (số tiền, thời gian thu hồi) | Doanh số, chỉ tiêu, dự báo doanh thu, sổ đối tác, tỷ lệ chia, ROI / biên / phần Haustek giữ |
+| Kinh doanh | Đối tác mình phụ trách (doanh thu quý của tài khoản mình), chỉ tiêu của mình, đề xuất của mình với khuyến nghị và số của đối tác, chiến dịch | Đối tác của người khác, chỉ tiêu người khác, ví / rút tiền, ROI, phí thu về |
+| Vận hành | Phát hành, giao nhận, sửa hàng loạt, danh mục, nền tảng, nhập báo cáo, khớp ISRC, đối soát, mức trả, theo dõi lượt nghe, chất lượng, chiến dịch; dự báo lượt nghe (không tiền) | Ví, thanh toán, bảng kê, hợp đồng, đề xuất, ROI, dự báo doanh thu, sổ đối tác |
+| Hỗ trợ | Ticket, khiếu nại, chất lượng lượt nghe, hồ sơ phát hành (đọc), tra cứu bài hát | Sổ đối tác, danh mục có doanh thu, mọi số tiền, xử lý hồ sơ |
+| Label / nghệ sĩ | Chỉ tài khoản của mình, số NET (từ vòng 3) | Doanh thu gộp, phí Haustek, số của tài khoản khác |
+
+`test/api-guard.js` thêm 6 phép kiểm (62 phép): mỗi vai gọi thử hàm cấm
+phải bị chặn, hàm được phép phải chạy; sổ đối tác cho kế toán không có
+doanh thu; kinh doanh chỉ thấy đối tác và đề xuất của mình; dự báo lượt
+nghe cho vận hành không mang chữ "revenue"; chuông và tìm nhanh không dẫn
+tới màn bị cấm. Bộ quét DOM chạy theo năm vai nội bộ.
+
+**Còn mở.** Vai marketing riêng (hiện gộp trong vận hành / kinh doanh);
+quyền theo từng tài khoản đối tác cho hỗ trợ (chỉ tài khoản đang có ticket);
+nhật ký truy cập số liệu nhạy cảm; hai người duyệt cho khoản lớn.

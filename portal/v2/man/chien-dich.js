@@ -13,7 +13,6 @@ var LOC = { loai: 'all', tt: 'all', tim: '', trang: 0 };
 
 HT.dangKy({
   id: 'chien-dich', nav: 'navChienDich', nhom: 'nhomDoiTac', icon: 'up',
-  vai: ['ops', 'sales', 'support', 'mgmt', 'accounting'],
 
   chu: {
     vi: {

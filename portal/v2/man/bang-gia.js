@@ -42,7 +42,6 @@ function dinhGia(v, tt) {
 
 HT.dangKy({
   id: 'bang-gia', nav: 'navBangGia', nhom: 'nhomVanHanh', icon: 'cash',
-  vai: ['ops', 'mgmt', 'accounting'],
 
   chu: {
     vi: {
