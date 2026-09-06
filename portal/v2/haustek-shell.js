@@ -14,7 +14,6 @@
 
 var LS_THEME = 'haustek.theme';   /* auto | light | dark */
 var LS_LANG  = 'haustek.lang';    /* vi | en */
-var LS_GAP   = 'haustek.nav.gap'; /* nhóm điều hướng đang thu gọn, cách nhau bằng dấu phẩy */
 
 /* ---------------------------------------------------------------------
    Chế độ sáng/tối
@@ -196,9 +195,29 @@ function esc(s) {
    --------------------------------------------------------------------- */
 var MAN = [];
 function dangKy(def) {
-  if (!def || !def.id || typeof def.ve !== 'function')
+  /* Mục có `di` là LỐI TẮT: nó không phải một trang, chỉ là một dòng trên
+     thanh điều hướng trỏ sang trang khác kèm sẵn bộ lọc. Không có `ve`,
+     không vào danh sách trang, không mở được bằng #hash của chính nó.
+     Nhờ vậy "Hồ sơ phát hành" dùng lại y nguyên mã của trang Việc. */
+  if (!def || !def.id) throw new Error('Mục điều hướng phải có id');
+  if (!def.di && typeof def.ve !== 'function')
     throw new Error('Trang phải có id và hàm ve(root, ctx)');
   MAN.push(def);
+}
+/* #viec?dichVu=phat-hanh&tab=han-tiep-nhan → { dichVu:'phat-hanh', tab:'han-tiep-nhan' } */
+function docLoc(hash) {
+  var q = String(hash || '').split('?')[1] || '', ra = {};
+  q.split('&').forEach(function (c) {
+    if (!c) return;
+    var i = c.indexOf('='), k = i < 0 ? c : c.slice(0, i);
+    ra[decodeURIComponent(k)] = i < 0 ? '' : decodeURIComponent(c.slice(i + 1).replace(/\+/g, ' '));
+  });
+  return ra;
+}
+function hashLoc(id, loc) {
+  var q = Object.keys(loc || {}).filter(function (k) { return loc[k] != null && loc[k] !== ''; })
+    .map(function (k) { return encodeURIComponent(k) + '=' + encodeURIComponent(loc[k]); }).join('&');
+  return '#' + id + (q ? '?' + q : '');
 }
 
 /* ---------------------------------------------------------------------
@@ -450,7 +469,7 @@ function bang(o) {
    Khởi động một cửa (intranet hoặc cổng khách)
    --------------------------------------------------------------------- */
 function chay(cauHinh) {
-  /* cauHinh: { ten, phu, kyDanhSach(), kyMacDinh, doiKy, chanTrai, coTienTe } */
+  /* cauHinh: { ten, A, thongBao, danhDauDoc, tim, moBai, ghiChu, chanTrai } */
   /* Gọi lúc trình duyệt còn đang đọc phần đầu trang thì document.body chưa
      tồn tại. Ở bản nhiều file điều đó không xảy ra vì thẻ script nằm trong
      body; ở bản gói một trang thì có. Đợi rồi chạy lại, thay vì ném lỗi. */
@@ -458,9 +477,6 @@ function chay(cauHinh) {
     document.addEventListener('DOMContentLoaded', function () { chay(cauHinh); });
     return null;
   }
-  var kys = cauHinh.kyDanhSach();
-  var kyHienTai = cauHinh.kyMacDinh != null ? cauHinh.kyMacDinh
-                : (kys.length ? kys[kys.length - 1].k : null);
   var cur = 'USD';
   var manHienTai = null;
 
@@ -469,9 +485,10 @@ function chay(cauHinh) {
   function ctx() {
     var man = MAN.filter(function (m) { return m.id === manHienTai; })[0];
     return {
-      lang: lang, cur: cur, kyKey: kyHienTai,
-      ky: kys.filter(function (p) { return p.k === kyHienTai; })[0] || null,
-      kys: kys,
+      lang: lang, cur: cur,
+      /* Bộ lọc đọc thẳng từ địa chỉ. Trang không giữ trạng thái lọc riêng,
+         nên một đường dẫn dán cho đồng nghiệp mở ra đúng thứ mình đang xem. */
+      loc: docLoc(location.hash),
       fmt: fmt, esc: esc, icon: icon, CHU: CHU,
       tien: function (v) { return fmt.tien(v, cur); },
       tien2: function (v) { return fmt.tien2(v, cur); },
@@ -493,8 +510,17 @@ function chay(cauHinh) {
         if (man && man.chu && man.chu[lang] && man.chu[lang][k] != null) return man.chu[lang][k];
         return t(k);
       },
-      doiKy: function (k) { kyHienTai = k; if (cauHinh.doiKy) cauHinh.doiKy(k); ve(); },
-      di: function (id) { location.hash = '#' + id; },
+      /* c.di('viec') hoặc c.di('viec', { dichVu:'phat-hanh' }) */
+      di: function (id, loc) { location.hash = hashLoc(id, loc).slice(1) ? hashLoc(id, loc) : '#' + id; },
+      /* Đổi một phần bộ lọc, giữ nguyên phần còn lại và giữ nguyên trang. */
+      docLoc: function () { return docLoc(location.hash); },
+      datLoc: function (moi) {
+        var hien = docLoc(location.hash);
+        Object.keys(moi || {}).forEach(function (k) {
+          if (moi[k] == null || moi[k] === '') delete hien[k]; else hien[k] = moi[k];
+        });
+        location.hash = hashLoc(manHienTai, hien).slice(1);
+      },
       veLai: ve,
       thongBao: thongBao, hoiThoai: hoiThoai, xacNhan: xacNhan,
       nganTruot: nganTruot, dongNgan: dongNgan, bang: bang,
@@ -554,7 +580,6 @@ function chay(cauHinh) {
           '<div class="crumb" data-crumb></div>' +
           '<div class="sp"></div>' +
           '<div class="top-note" data-note></div>' +
-          '<select class="inline-sel" data-ky aria-label="Kỳ"></select>' +
           '<button type="button" class="top-ico" data-tim-nhanh>' + icon('tim') + '</button>' +
           '<button type="button" class="top-ico" data-chuong>' + icon('bell') + '<b class="badge" data-chuong-so hidden></b></button>' +
           oCaiDat(true) +
@@ -563,7 +588,6 @@ function chay(cauHinh) {
         '<div class="palette-bg" data-palette hidden><div class="palette" role="dialog" aria-modal="true">' +
           '<div class="pal-in">' + icon('tim') + '<input type="text" data-pal-in autocomplete="off" spellcheck="false"><kbd>Esc</kbd></div>' +
           '<div class="pal-kq" data-pal-kq></div></div></div>' +
-        '<div class="banner" data-banner></div>' +
         '<main data-main></main>' +
       '</div>';
 
@@ -600,53 +624,52 @@ function chay(cauHinh) {
      label). Trang khai khaDung(c) trả về false thì không hiện ở cột trái
      và gõ thẳng #hash cũng không mở được. */
   function dungDuoc(m, c) {
-    /* màn nội bộ khai vai: [ 'ops', 'sales', 'support', 'accounting', 'mgmt' ];
-       không khai thì ai cũng thấy. mgmt thấy hết. */
-    /* Ma trận phân quyền nằm ở lõi (A.quyen.man): màn nào không được cấp cho vai
-       đang đăng nhập thì không có trên thanh điều hướng, không mở được qua #hash. */
-    if (c.A && c.A.quyen && typeof c.A.quyen.man === 'function' && !c.A.quyen.man(m.id)) return false;
-    if (m.vai && c.A && c.A.staff && c.A.staff.me && c.A.staff.me.role !== 'mgmt' && m.vai.indexOf(c.A.staff.me.role) < 0) return false;
+    /* Trang tự khai `khaDung(c)`. Cổng đối tác dùng nó để chỉ hiện những
+       trang ứng với dịch vụ đối tác thật sự mua: một thương hiệu chỉ chạy
+       digital không phải nhìn trang Thanh toán trống trơn như hỏng.
+       Không hỏi lõi bất cứ ma trận quyền nào: hỏi một hàm không còn tồn
+       tại thì mọi trang biến mất mà không một lời báo lỗi nào. */
     if (!m.khaDung) return true;
     try { return !!m.khaDung(c); } catch (e) { return false; }
   }
   function veNav() {
-    var c = ctx(), nhom = [];
-    MAN.forEach(function (m) {
-      if (!dungDuoc(m, c)) return;
-      var g = nhom.filter(function (x) { return x.ten === (m.nhom || ''); })[0];
-      if (!g) { g = { ten: m.nhom || '', muc: [] }; nhom.push(g); }
-      g.muc.push(m);
-    });
-    /* Nhóm có thể thu gọn (nhớ trong trình duyệt); nhóm đang chứa màn mở thì
-       luôn mở. Nhóm thu gọn mà bên trong có việc cần xử lý thì mang chấm đỏ. */
-    var gap = String(docKho(LS_GAP, '') || '').split(',').filter(Boolean);
-    $('[data-nav]').innerHTML = nhom.map(function (g) {
-      var coMo = g.muc.some(function (m) { return m.id === manHienTai; });
-      var thu = !!g.ten && gap.indexOf(g.ten) >= 0 && !coMo, canhNhom = 0;
-      var muc = g.muc.map(function (m) {
-          var dem = '';
-          try { dem = m.dem ? (m.dem(c) || '') : ''; } catch (e) { dem = ''; }
-          var canh = dem && String(dem).indexOf('!') === 0;
-          if (canh) { dem = String(dem).slice(1); canhNhom++; }
-          return '<a href="#' + m.id + '" class="' + (m.id === manHienTai ? 'on' : '') + '">' +
-            icon(m.icon || 'grid') + '<span>' + esc(chuCua(m, m.nav || m.id)) + '</span>' +
-            (dem !== '' ? '<span class="c' + (canh ? ' alert' : '') + '">' + esc(dem) + '</span>' : '') +
-            '</a>';
-        }).join('');
-      return (g.ten ? '<button type="button" class="nav-grp' + (thu ? ' gap' : '') + '" data-grp="' + esc(g.ten) + '" aria-expanded="' + (thu ? 'false' : 'true') + '" title="' + esc(c.t('thuGon')) + '">' +
-          '<span>' + esc(chuNhom(g.ten)) + '</span>' + (thu && canhNhom ? '<i class="dot"></i>' : '') + icon('right') + '</button>' : '') +
-        '<div class="nav-items"' + (thu ? ' hidden' : '') + '>' + muc + '</div>';
+    /* Xếp phẳng. Sáu mục là hết. Nhóm thu gọn chỉ có nghĩa khi danh sách
+       dài tới mức phải giấu bớt, mà danh sách dài tới mức ấy là dấu hiệu
+       phần mềm đang làm quá phần việc của nó. */
+    var c = ctx();
+    $('[data-nav]').innerHTML = MAN.filter(function (m) { return dungDuoc(m, c); }).map(function (m) {
+      if (m.di) {
+        return '<a href="' + esc(hashLoc(m.di, m.loc)) + '" class="' + (m.di === manHienTai && khopLoc(m.loc) ? 'on' : '') + '">' +
+          icon(m.icon || 'grid') + '<span>' + esc(chuCua(m, m.nav || m.id)) + '</span></a>';
+      }
+      /* Huy hiệu: { n, muc } với muc là 'thuong' | 'hom-nay' | 'tre'.
+         Ba mức, ba lớp, không có mức thứ tư và không có màu đỏ báo động
+         cho một con số chỉ đang đếm việc. */
+      var d = null;
+      try { d = m.dem ? m.dem(c) : null; } catch (e) { d = null; }
+      if (typeof d === 'number') d = { n: d, muc: 'thuong' };
+      var hv = d && d.n > 0
+        ? '<span class="c' + (d.muc === 'tre' ? ' tre' : d.muc === 'hom-nay' ? ' hom-nay' : '') + '">' + esc(String(d.n)) + '</span>'
+        : '';
+      return '<a href="#' + m.id + '" class="' + (m.id === manHienTai ? 'on' : '') + '">' +
+        icon(m.icon || 'grid') + '<span>' + esc(chuCua(m, m.nav || m.id)) + '</span>' + hv + '</a>';
     }).join('');
+  }
+  /* Lối tắt sáng đèn khi bộ lọc trên địa chỉ đúng bằng bộ lọc của nó. */
+  function khopLoc(loc) {
+    if (!loc) return false;
+    var hien = docLoc(location.hash);
+    return Object.keys(loc).every(function (k) { return String(hien[k] || '') === String(loc[k]); });
   }
 
   function ve() {
-    /* Dựng lại danh sách kỳ mỗi lần vẽ, không nhớ từ lúc khởi động.
-       Nhãn trong ô chọn kỳ ("đã duyệt" / "chưa duyệt") là chữ giao diện và
-       phải đổi theo ngôn ngữ; nó cũng đổi khi người vận hành vừa duyệt xong
-       một kỳ. Nhớ một lần lúc khởi động là cả hai thứ đó đứng im. */
-    kys = cauHinh.kyDanhSach();
-    var id = (location.hash || '').replace('#', '') || (MAN[0] && MAN[0].id);
-    var man = MAN.filter(function (m) { return m.id === id; })[0] || MAN[0];
+    /* Địa chỉ mang được bộ lọc: #viec?dichVu=phat-hanh&tab=han-tiep-nhan.
+       Trang đọc bộ lọc qua c.loc, nên một lối tắt trên thanh điều hướng
+       không cần một dòng mã danh sách nào của riêng nó. */
+    var hash = location.hash || '';
+    var id = hash.replace('#', '').split('?')[0] || (MAN[0] && MAN[0].id);
+    var man = MAN.filter(function (m) { return m.id === id && !m.di; })[0]
+           || MAN.filter(function (m) { return !m.di; })[0];
     if (!man) return;
     var c0 = ctx();
     if (!dungDuoc(man, c0)) man = MAN.filter(function (m) { return dungDuoc(m, c0); })[0] || man;
@@ -669,13 +692,6 @@ function chay(cauHinh) {
     $('[data-pal-in]').setAttribute('placeholder', c.t('timGoiY'));
     _ntfCache = null; veChuong();
     $('[data-chan]').innerHTML = cauHinh.chanTrai ? cauHinh.chanTrai(c) : '';
-    $('[data-banner]').innerHTML = cauHinh.bieuNgu ? (cauHinh.bieuNgu(c) || '') : '';
-
-    var sel = $('[data-ky]');
-    sel.innerHTML = kys.map(function (p) {
-      return '<option value="' + esc(p.k) + '"' + (p.k === kyHienTai ? ' selected' : '') + '>' +
-        esc(c.t('period')) + ' ' + esc(p.label) + (p.nhan ? ' · ' + esc(p.nhan) : '') + '</option>';
-    }).reverse().join('');
 
     document.querySelectorAll('[data-th]').forEach(function (b) {
       b.classList.toggle('on', b.dataset.th === theme);
@@ -794,6 +810,23 @@ function chay(cauHinh) {
   }
 
   document.addEventListener('click', function (e) {
+    /* Uỷ nhiệm cho `data-di` gắn ở TẦNG DOCUMENT, đúng một lần, không gắn
+       vào <main>. Mỗi lần vẽ shell thay hẳn thẻ <main> để giết handler cũ;
+       gắn vào <main> thì mọi ô số, mọi thẻ bấm được sẽ chết im lặng ngay
+       sau lần điều hướng đầu tiên. Ở đây thì bấm bao nhiêu lần cũng chạy. */
+    var dd = e.target.closest('[data-di]');
+    if (dd) {
+      var dich = dd.getAttribute('data-di');
+      if (dich) {
+        e.preventDefault();
+        var loc = {};
+        Array.prototype.forEach.call(dd.attributes, function (a) {
+          if (a.name.indexOf('data-loc-') === 0) loc[a.name.slice(9)] = a.value;
+        });
+        location.hash = hashLoc(dich, loc).slice(1);
+        return;
+      }
+    }
     if (e.target.closest('[data-chuong]')) { moChuong($('[data-chuong-panel]').hidden); return; }
     if (!e.target.closest('[data-chuong-panel]')) moChuong(false);
     var nt = e.target.closest('[data-ntf]');
@@ -810,12 +843,6 @@ function chay(cauHinh) {
     if (pi) { chonPal(+pi.getAttribute('data-pal-i')); return; }
     if (e.target.closest('[data-palette]') && !e.target.closest('.palette')) { moPalette(false); return; }
     if (e.target.closest('[data-menu]')) { moMenu(!goc.classList.contains('menu-mo')); return; }
-    var gp = e.target.closest('[data-grp]');
-    if (gp) {
-      var tenG = gp.getAttribute('data-grp'), ds = String(docKho(LS_GAP, '') || '').split(',').filter(Boolean), i = ds.indexOf(tenG);
-      if (i >= 0) ds.splice(i, 1); else ds.push(tenG);
-      ghiKho(LS_GAP, ds.join(',')); veNav(); return;
-    }
     if (e.target.closest('[data-th-cycle]')) { theme = { auto: 'light', light: 'dark', dark: 'auto' }[theme] || 'auto'; ghiKho(LS_THEME, theme); apTheme(); return ve(); }
     if (e.target.closest('[data-menu-dong]') || e.target.closest('.nav a')) moMenu(false);
     var th = e.target.closest('[data-th]');
@@ -824,10 +851,6 @@ function chay(cauHinh) {
     if (l) { lang = l.dataset.l; ghiKho(LS_LANG, lang); return ve(); }
     var cu = e.target.closest('[data-c]');
     if (cu) { cur = cu.dataset.c; return ve(); }
-  });
-  document.addEventListener('change', function (e) {
-    var k = e.target.closest('[data-ky]');
-    if (k) { kyHienTai = k.value; if (cauHinh.doiKy) cauHinh.doiKy(kyHienTai); ve(); }
   });
   global.addEventListener('hashchange', function () { moMenu(false); ve(); });
   document.addEventListener('keydown', function (e) {

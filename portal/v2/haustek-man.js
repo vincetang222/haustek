@@ -35,17 +35,20 @@ function dau(o) {
 }
 
 /* ---- dải ô số ---- */
+/* Ô số. `di` biến ô thành một đường dẫn: bấm vào con số "4 việc quá hạn"
+   phải ra đúng bốn việc ấy, chứ không phải bắt người ta tự đi tìm. Sự kiện
+   do shell uỷ nhiệm ở tầng document, nên ô số sống qua mọi lần vẽ lại. */
 function so(list) {
-  return '<div class="kpis">' + list.map(function (k) {
-    return '<div class="kpi' + (k.lon ? ' hero' : '') + '"' +
+  return '<div class="kpis">' + list.filter(Boolean).map(function (k) {
+    var mo = k.di
+      ? ' data-di="' + esc(k.di) + '"' + Object.keys(k.loc || {}).map(function (x) {
+          return ' data-loc-' + esc(x) + '="' + esc(k.loc[x]) + '"'; }).join('') + ' role="link" tabindex="0"'
+      : '';
+    return '<div class="kpi' + (k.lon ? ' hero' : '') + (k.di ? ' bam' : '') + '"' + mo +
       (k.tip ? ' data-tip="' + esc(k.tip) + '"' : '') + '>' +
       '<div class="l">' + esc(k.l) + '</div>' +
-      /* số dài (từ 12 ký tự, cỡ hàng tỷ) hạ cỡ chữ một bậc để không tràn ô ở khung hẹp */
-      '<div class="v' + (!k.html && String(k.v == null ? '' : k.v).length >= 12 ? ' dai' : '') + '"' + (k.mau ? ' style="color:' + k.mau + '"' : '') + '>' + (k.html || esc(k.v)) + '</div>' +
+      '<div class="v' + (!k.html && String(k.v == null ? '' : k.v).length >= 12 ? ' dai' : '') + '">' + (k.html || esc(k.v)) + '</div>' +
       (k.s ? '<div class="s">' + (k.sHtml ? k.s : esc(k.s)) + '</div>' : '') +
-      /* chênh lệch so với kỳ trước: viên nhỏ xanh / đỏ; tia: đường bé 12 kỳ */
-      (k.d ? '<span class="d ' + (k.d.duong ? 'pos' : 'neg') + '">' + esc(k.d.chu) + '</span>' : '') +
-      (k.tia && k.tia.length > 1 && typeof HB !== 'undefined' ? '<div class="tia">' + HB.tia(k.tia, { rong: 160, cao: 26, mau: k.lon ? HB.mau('accent') : (k.tiaMau || null), vung: true }) + '</div>' : '') +
       '</div>';
   }).join('') + '</div>';
 }
@@ -75,9 +78,15 @@ function tabs(list, cur) {
 }
 
 /* ---- ô trống ---- */
+/* Hai trạng thái rỗng, hai nghĩa khác nhau.
+   trong({...})               — chưa có gì, mời thêm vào.
+   trong({ xong:true, diem })  — có, và đã xong hết. Đây là tin vui và phải
+   trông ra tin vui; `diem` là mấy con số để khoe: [{ n, l }]. */
 function trong(o) {
-  return '<div class="empty">' + icon(o.icon || 'empty') +
+  return '<div class="empty' + (o.xong ? ' xong' : '') + '">' + icon(o.icon || (o.xong ? 'check' : 'empty')) +
     '<b>' + esc(o.tieuDe) + '</b><span>' + (o.moTaHtml || esc(o.moTa || '')) + '</span>' +
+    (o.diem && o.diem.length ? '<div class="diem">' + o.diem.map(function (d) {
+      return '<span><b>' + esc(String(d.n)) + '</b>' + esc(d.l) + '</span>'; }).join('') + '</div>' : '') +
     (o.nut ? '<div class="btnrow">' + o.nut + '</div>' : '') + '</div>';
 }
 
@@ -360,12 +369,67 @@ function xepHang(rows, o) {
   }).join('') + '</ol>';
 }
 
+/* ---------------------------------------------------------------------
+   Biểu mẫu, phân trang, thanh tiến độ · gộp về từ haustek-them.js
+   --------------------------------------------------------------------- */
+/* Ô nhập nào không bắt buộc thì NÓI RÕ là không bắt buộc, thay vì đánh dấu
+   sao vào những ô bắt buộc rồi để người ta tự suy ra phần còn lại. */
+function form(fields) {
+  return '<div class="fldrow two-up">' + fields.filter(Boolean).map(function (f) {
+    var id = 'data-o="' + esc(f.k) + '"', req = f.req ? ' *' : '';
+    var kbb = !f.req && f.kbb !== false && f.kieu !== 'hidden' && f.kieu !== 'check'
+      ? ' <span class="kbb">(không bắt buộc)</span>' : '';
+    var than;
+    if (f.kieu === 'hidden') return '<input type="hidden" ' + id + ' value="' + esc(f.v == null ? '' : f.v) + '">';
+    if (f.kieu === 'select') than = '<select class="in" ' + id + '>' + (f.opts || []).map(function (x) {
+      return '<option value="' + esc(x[0]) + '"' + (String(x[0]) === String(f.v == null ? '' : f.v) ? ' selected' : '') + '>' + esc(x[1]) + '</option>'; }).join('') + '</select>';
+    else if (f.kieu === 'textarea') than = '<textarea class="in" ' + id + ' rows="' + (f.rows || 3) + '"' + (f.ph ? ' placeholder="' + esc(f.ph) + '"' : '') + '>' + esc(f.v == null ? '' : f.v) + '</textarea>';
+    else if (f.kieu === 'check') return '<div class="fgrp' + (f.rong ? ' span2' : '') + '"><label class="tickrow"><input type="checkbox" ' + id + (f.v ? ' checked' : '') + ' value="1"><span>' + esc(f.l) + '</span></label>' + (f.hint ? '<div class="fhint">' + esc(f.hint) + '</div>' : '') + '</div>';
+    else than = '<input class="in" ' + id + ' type="' + (f.kieu || 'text') + '" value="' + esc(f.v == null ? '' : f.v) + '"' + (f.ph ? ' placeholder="' + esc(f.ph) + '"' : '') + (f.min != null ? ' min="' + f.min + '"' : '') + (f.max != null ? ' max="' + f.max + '"' : '') + (f.list ? ' list="' + esc(f.list) + '"' : '') + '>';
+    return '<div class="fgrp' + (f.rong ? ' span2' : '') + '"><label class="fld">' + esc(f.l) + req + kbb + '</label>' + than + (f.hint ? '<div class="fhint">' + esc(f.hint) + '</div>' : '') + '</div>';
+  }).join('') + '</div>';
+}
+function hoiForm(c, o) {
+  return c.hoiThoai({ tieuDe: o.tieuDe, moTa: o.moTa ? esc(o.moTa) : '', than: form(o.fields) + (o.them || ''),
+    dong: o.dong, rong: o.rong !== false, khiMo: o.khiMo }).then(function (f) {
+    if (!f) return null;
+    var thieu = o.fields.filter(Boolean).filter(function (x) { return x.req && !String(f[x.k] == null ? '' : f[x.k]).trim(); });
+    /* Nói thiếu ô nào, không nói "biểu mẫu không hợp lệ" rồi để người ta dò. */
+    if (thieu.length) { c.thongBao('Còn thiếu: ' + thieu.map(function (x) { return x.l; }).join(', '), 'no'); return null; }
+    o.fields.filter(Boolean).forEach(function (x) { if (x.kieu === 'check') f[x.k] = f[x.k] === '1' || f[x.k] === 'on' || f[x.k] === true; });
+    return f;
+  });
+}
+function phanTrang(rows, st, co) {
+  co = co || 25;
+  var het = Math.max(0, Math.ceil(rows.length / co) - 1);
+  if (!(st.trang >= 0)) st.trang = 0;
+  if (st.trang > het) st.trang = het;
+  var a = st.trang * co;
+  return { page: rows.slice(a, a + co), chan: rows.length > co
+    ? '<div class="card-f"><div class="range">' + (a + 1) + '–' + Math.min(rows.length, a + co) + ' trong ' + rows.length + '</div>' +
+      '<div class="pager"><button type="button" class="pg" data-hm-tr="-1"' + (st.trang === 0 ? ' disabled' : '') + '>' + icon('left') + '</button>' +
+      '<span class="range">' + (st.trang + 1) + ' / ' + (het + 1) + '</span>' +
+      '<button type="button" class="pg" data-hm-tr="1"' + (a + co >= rows.length ? ' disabled' : '') + '>' + icon('right') + '</button></div></div>' : '' };
+}
+function ganTrang(root, st, veLai) {
+  bam(root, '[data-hm-tr]', function (el) { st.trang = (st.trang || 0) + (+el.getAttribute('data-hm-tr')); veLai(); });
+}
+/* Tiến độ. Phase 1 không có biểu đồ nào; mọi thứ "bao nhiêu phần trăm rồi"
+   đều là thanh này. */
+function thanh(xong, tong, nhan) {
+  var p = tong > 0 ? Math.round(xong / tong * 100) : 0;
+  return '<div class="meter" role="img" aria-label="' + esc((nhan || '') + ' ' + p + '%') + '">' +
+    '<i style="width:' + p + '%"></i></div>';
+}
+
 global.HM = {
   dau: dau, so: so, the: the, tabs: tabs, trong: trong, ghi: ghi, menu: menu, kv: kv,
   tag: tag, cham: cham, bam: bam, doi: doi, nhap: nhap, csv: csv,
   lech: lech, lechHtml: lechHtml, dai: dai, esc: esc, icon: icon,
   nho: nho, quenHet: quenHet, moc: moc,
-  bia: bia, hinh: hinh, tenBia: tenBia, xepHang: xepHang, hashChu: hashChu, oThanh: oThanh
+  bia: bia, hinh: hinh, tenBia: tenBia, xepHang: xepHang, hashChu: hashChu, oThanh: oThanh,
+  form: form, hoiForm: hoiForm, phanTrang: phanTrang, ganTrang: ganTrang, thanh: thanh
 };
 
 })(window);

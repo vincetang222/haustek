@@ -69,6 +69,9 @@
   /* Đỏ cảnh báo đặt trên nền khung tối cần sáng hơn --danger của vùng nội
      dung: #C8102E trên #0E1A24 chỉ đạt 3,0:1. */
   --danger-chrome: #FF8095;
+  /* Hổ phách của vùng nội dung (#A15F00) đặt lên nền khung tối chỉ đạt
+     2,1:1 — huy hiệu quá hạn đọc không ra. Nên khung có sắc riêng. */
+  --warn-chrome: #F0B357;
 
   /* Bóng hai lớp: một lớp tiếp xúc rất gần, một lớp toả rộng và mờ. Một
      bóng phẳng 1px khiến mọi thẻ trông như dán lên nền; hai lớp thì thẻ
@@ -238,15 +241,6 @@ ul,ol{list-style:none}
 .brand i{width:8px;height:8px;border-radius:50%;background:var(--danger-chrome);flex:none;display:block}
 .brand em{font-style:normal;color:var(--on-chrome-3);font-weight:500;letter-spacing:.06em;font-size:11px}
 .nav{padding:8px 0 16px;flex:1}
-/* Tên nhóm là nút thu gọn / mở; mũi tên xoay theo trạng thái. Nhóm thu gọn
-   mà có việc cần xử lý bên trong mang chấm đỏ để không "giấu" việc. */
-.nav-grp{display:flex;align-items:center;gap:6px;width:calc(100% - 16px);margin:10px 8px 2px;padding:5px 12px;
-  font-size:10.5px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--on-chrome-3);
-  border-radius:6px;text-align:left;transition:color .14s,background .14s}
-.nav-grp:hover{color:var(--on-chrome-2);background:rgba(255,255,255,.04)}
-.nav-grp svg{width:11px;height:11px;margin-left:auto;transform:rotate(90deg);transition:transform .16s;opacity:.6;stroke:currentColor;fill:none;stroke-width:2}
-.nav-grp.gap svg{transform:none}
-.nav-grp .dot{width:6px;height:6px;border-radius:50%;background:var(--danger-chrome);display:inline-block;flex:none}
 .nav a{display:flex;align-items:center;gap:11px;padding:7px 12px;margin:1px 8px;border-radius:7px;font-size:13px;
   color:var(--on-chrome-2);text-decoration:none;transition:background .14s,color .14s}
 .nav a:hover{background:rgba(255,255,255,.05);color:var(--on-chrome);text-decoration:none}
@@ -255,12 +249,22 @@ ul,ol{list-style:none}
 .nav a.on svg{opacity:1;stroke:var(--accent-3)}
 .nav a svg{width:16px;height:16px;flex:none;stroke:currentColor;fill:none;stroke-width:1.5;
   stroke-linecap:round;stroke-linejoin:round;opacity:.85}
-/* Số đếm: chữ mờ, không nền. Việc cần xử lý: chấm đỏ + số đậm. Hai mức
-   khác hẳn nhau về hình, không chỉ khác màu. */
+/* Huy hiệu ba mức, và chỉ ba.
+   .c          — đang có bấy nhiêu việc. Chữ xám, không nền, không màu.
+   .c.hom-nay  — trong đó có việc đến hạn hôm nay. Hổ phách, không chấm.
+   .c.tre      — có việc đã quá hạn. Hổ phách đậm, thêm chấm.
+
+   Không có mức thứ tư và không có màu đỏ. Một con số đang đếm việc không
+   phải một sự cố, và ba trong số bốn màu đỏ trên màn hình lúc chín giờ
+   sáng là lý do người ta thấy áp lực khi mở phần mềm ra.
+
+   Trạng thái nghỉ là IM LẶNG: n = 0 thì không vẽ gì cả. Huy hiệu không
+   bao giờ về được số không là huy hiệu không còn nghĩa gì. */
 .nav a .c{margin-left:auto;font-size:11.5px;color:var(--on-chrome-3);font-variant-numeric:tabular-nums;padding:0;flex:none}
 .nav a.on .c{color:var(--on-chrome-2)}
-.nav a .c.alert{color:var(--danger-chrome);font-weight:600;display:inline-flex;align-items:center;gap:6px}
-.nav a .c.alert::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--danger-chrome);flex:none}
+.nav a .c.hom-nay{color:var(--warn-chrome)}
+.nav a .c.tre{color:var(--warn-chrome);font-weight:600;display:inline-flex;align-items:center;gap:6px}
+.nav a .c.tre::before{content:"";width:5px;height:5px;border-radius:50%;background:var(--warn-chrome);flex:none}
 .side-foot{flex:none;padding:12px 20px 16px;border-top:1px solid var(--chrome-line);font-size:12px}
 .side-foot b{display:block;color:var(--on-chrome);font-weight:500}
 .side-foot span{color:var(--on-chrome-3);font-size:11.5px}
@@ -688,6 +692,19 @@ table.t input[type=checkbox]{width:15px;height:15px;accent-color:var(--accent);c
 .empty b{display:block;font-size:14.5px;font-weight:600;margin-bottom:5px}
 .empty span{display:block;font-size:13px;color:var(--ink-2);max-width:46ch;margin:0 auto}
 .empty .btnrow{justify-content:center;margin-top:14px}
+/* Hai trạng thái rỗng khác hẳn nhau về NGHĨA, nên phải khác hẳn nhau về
+   hình. Dùng chung một ô xám cho cả hai là cách chắc chắn nhất để biến
+   một buổi sáng làm hết việc thành cảm giác trống rỗng.
+   .empty        — chưa có gì ở đây. Vòng ngọc, chữ viết hướng tới tương
+                   lai: "sẽ hiện ở đây sau khi...", không phải "chưa có".
+   .empty.xong   — có, và đã làm xong hết. Vòng xanh tô đặc, dấu check,
+                   và LUÔN kèm một con số công sức. */
+.empty.xong svg{background:var(--ok);stroke:#fff;opacity:1}
+.empty.xong b{color:var(--ink)}
+.empty.xong .diem{display:inline-flex;gap:18px;margin-top:16px;padding:12px 20px;border-radius:10px;
+  background:var(--ok-lo);font-size:12.5px;color:var(--ink-2)}
+.empty.xong .diem b{display:inline;font-size:15px;color:var(--ok);margin:0 5px 0 0;
+  font-variant-numeric:tabular-nums}
 
 /* =====================================================================
    NGĂN TRƯỢT · HỘP THOẠI · THÔNG BÁO
@@ -1326,3 +1343,88 @@ details.hoc>div>.fldrow{margin-top:6px}
 /* số liệu: chữ số đều cột (tabular) ở mọi ô số và cột số */
 table.t td.num,table.t th.num,.page-kpi .v,.kpi .v,.kv dd,.mono{font-variant-numeric:tabular-nums}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+
+/* =====================================================================
+   V3 · SỔ THEO DÕI VÀ KÊNH THÔNG BÁO
+   ---------------------------------------------------------------------
+   Không có bảng màu biểu đồ, không có màu báo động cho việc đang chạy.
+   Một màu nhấn, mọi mức độ khẩn phân biệt bằng chữ và bằng thứ tự, chứ
+   không phải bằng sắc đỏ dội vào mắt người mở phần mềm lúc chín giờ sáng.
+   ===================================================================== */
+
+/* ---- ô số bấm được ---- */
+.kpi.bam{cursor:pointer;transition:background .14s}
+.kpi.bam:hover{background:var(--band)}
+.kpi.bam:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+
+/* ---- hàng đợi "cần bạn hôm nay" ---- */
+/* Một dòng là một câu tiếng Việt đọc được, kèm đúng một nút. Không phải
+   một hàng bảng bắt người ta tự ghép nghĩa từ sáu cột. */
+.hang{display:flex;flex-direction:column}
+.hang .d{display:flex;align-items:flex-start;gap:14px;padding:14px 18px;border-top:1px solid var(--line)}
+.hang .d:first-child{border-top:0}
+.hang .d:hover{background:var(--band)}
+.hang .d > .n{flex:none;width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  background:var(--accent-lo);color:var(--accent);font-size:11.5px;font-weight:600;margin-top:1px}
+.hang .d .c{flex:1;min-width:0;font-size:13.5px;line-height:1.5}
+.hang .d .c b{font-weight:600}
+.hang .d .c .khi{display:block;font-size:11.5px;color:var(--faint);margin-top:3px}
+.hang .d .btnrow{flex:none;align-self:center}
+.hang .d.tre > .n{background:var(--warn-lo);color:var(--warn)}
+
+/* ---- dòng thời gian hợp nhất ---- */
+/* Trái tim của trang đối tác: mọi thứ đã xảy ra giữa Haustek và họ, một
+   cột, theo thứ tự thời gian, không tab, không lọc bắt buộc. */
+.dt{position:relative;padding-left:26px}
+.dt::before{content:"";position:absolute;left:8px;top:6px;bottom:6px;width:1px;background:var(--line)}
+.dt .m{position:relative;padding:0 0 20px}
+.dt .m::before{content:"";position:absolute;left:-22px;top:5px;width:9px;height:9px;border-radius:50%;
+  background:var(--card);border:1.5px solid var(--line-2)}
+.dt .m.ta::before{border-color:var(--accent);background:var(--accent)}
+.dt .m .h{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;margin-bottom:3px}
+.dt .m .h b{font-size:13.5px;font-weight:600}
+.dt .m .h time{font-size:11.5px;color:var(--faint);font-variant-numeric:tabular-nums}
+.dt .m .h .ai{font-size:11.5px;color:var(--ink-2)}
+.dt .m p{font-size:13px;color:var(--ink-2);line-height:1.55;margin:2px 0 0;white-space:pre-wrap}
+.dt .m .rieng{display:inline-flex;align-items:center;gap:4px;font-size:10.5px;letter-spacing:.04em;
+  text-transform:uppercase;color:var(--faint);border:1px solid var(--line);border-radius:4px;padding:1px 5px}
+.dt .m .dax{font-size:11.5px;color:var(--accent);margin-top:5px;display:block}
+.dt .ngay{position:relative;margin:0 0 14px;font-size:11px;font-weight:600;letter-spacing:.06em;
+  text-transform:uppercase;color:var(--faint)}
+.dt .ngay::before{content:"";position:absolute;left:-22px;top:3px;width:9px;height:9px;border-radius:50%;
+  background:var(--bg);border:1px solid var(--line)}
+
+/* ---- ô soạn ghim dưới dòng thời gian ---- */
+/* Luôn hiện, không phải hộp thoại: ghi một cuộc gọi vừa xong phải mất
+   dưới mười lăm giây, mà mở hộp thoại đã hết ba giây rồi. */
+.soan{border-top:1px solid var(--line);background:var(--card);padding:12px 18px 14px;position:sticky;bottom:0}
+.soan .tabs{margin:0 0 10px}
+.soan textarea{width:100%;min-height:62px;resize:vertical}
+.soan .ft{display:flex;align-items:center;gap:10px;margin-top:9px;flex-wrap:wrap}
+.soan .ft .hint{font-size:11.5px;color:var(--faint);flex:1;min-width:0}
+
+/* ---- dải nhận diện đối tác ---- */
+.nhandien{display:flex;align-items:center;gap:16px;padding:16px 20px;background:var(--card);
+  border:1px solid var(--line);border-radius:var(--r);margin-bottom:14px}
+.nhandien .ten{min-width:0;flex:1}
+.nhandien .ten h1{margin:0;font-size:20px;line-height:1.25}
+.nhandien .ten .p{font-size:12.5px;color:var(--ink-2);margin-top:3px}
+.nhandien .btnrow{flex:none}
+
+/* ---- câu tóm tắt quan hệ, đặt TRÊN mọi con số ---- */
+.tomtat{font-size:14px;line-height:1.6;color:var(--ink);padding:14px 18px;background:var(--accent-lo);
+  border-radius:var(--r);margin-bottom:14px}
+.tomtat b{font-weight:600}
+
+/* ---- lưới hai cột của trang đối tác ---- */
+.doi-2{display:grid;gap:14px;grid-template-columns:1fr}
+@media (min-width:1200px){.doi-2{grid-template-columns:minmax(0,1fr) 320px;align-items:start}}
+
+/* ---- liên kết ra công cụ thật (OneRPM, Believe, YouTube CMS) ---- */
+/* Portal không chép số của họ về. Portal chỉ mở đúng chỗ cần mở. */
+.ngoai{display:flex;flex-direction:column;gap:2px}
+.ngoai a{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:7px;font-size:13px;text-decoration:none;color:var(--ink)}
+.ngoai a:hover{background:var(--band);text-decoration:none}
+.ngoai a svg{width:14px;height:14px;flex:none;stroke:var(--faint);fill:none;stroke-width:1.6}
+.ngoai a em{margin-left:auto;font-style:normal;font-size:11.5px;color:var(--faint);font-variant-numeric:tabular-nums}

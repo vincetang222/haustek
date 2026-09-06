@@ -4,141 +4,91 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<title>Haustek · Cổng báo cáo doanh thu</title>
+<title>Haustek · Cổng đối tác</title>
 <link rel="icon" href="../../favicon.svg">
 <!-- Bộ chữ nạp từ chính máy chủ này, không gọi ra fonts.googleapis.com.
      Thẻ <link rel=stylesheet> CHẶN việc chạy script cho tới khi tải xong,
-     mà mọi màn hình ở đây đều do script dựng ra — nên fonts.googleapis.com
+     mà mọi trang ở đây đều do script dựng ra — nên fonts.googleapis.com
      chậm hoặc bị chặn là trang đứng lại ở khoảng trắng, không báo lỗi gì. -->
 <link rel="stylesheet" href="fonts-nhung.css">
 <link rel="stylesheet" href="haustek-theme.css">
 </head>
 <body>
-<script src="../haustek-core.js"></script>
+<script src="../haustek-loi.js"></script>
 <script>
-/* Khoá cửa NGAY, trước khi nạp bất cứ màn hình nào. Sau dòng này
-   HAUSTEK.admin không còn tồn tại trong trang. */
+/* Lấy danh sách tài khoản mẫu TRƯỚC khi khoá cửa, rồi khoá NGAY, trước
+   khi nạp bất cứ trang nào. Sau dòng lockdown() thì HAUSTEK.admin không
+   còn tồn tại trong trang này, kể cả khi một trang nào đó gọi nhầm. */
+var TK = HAUSTEK.api.dangNhapMau();
 HAUSTEK.lockdown();
 </script>
 <script src="haustek-shell.js"></script>
-<script src="haustek-bieudo.js"></script>
 <script src="haustek-man.js"></script>
-<script src="haustek-taisan.js"></script>
-<script src="haustek-them.js"></script>
 <script src="haustek-hoso.js"></script>
 
-<script src="man/k-tong-quan.js"></script>
-<script src="man/k-ban-ghi.js"></script>
-<script src="man/k-danh-muc.js"></script>
-<script src="man/k-nen-tang.js"></script>
-<script src="man/k-du-bao.js"></script>
-<script src="man/k-xu-huong.js"></script>
-<script src="man/k-playlist.js"></script>
-<script src="man/k-chat-luong.js"></script>
-<script src="man/k-chia-se.js"></script>
-<script src="man/k-chien-dich.js"></script>
-<script src="man/k-phat-hanh.js"></script>
-<script src="man/k-nghe-si.js"></script>
-<script src="man/k-he-thong.js"></script>
-<script src="man/k-vi.js"></script>
-<script src="man/k-bang-ke.js"></script>
-<script src="man/k-tam-ung.js"></script>
-<script src="man/k-ho-tro.js"></script>
-<script src="man/k-tai-lieu.js"></script>
+<script src="man/k-trang-chu.js"></script>
+<script src="man/k-viec.js"></script>
+<script src="man/k-nhac.js"></script>
+<script src="man/k-thanh-toan.js"></script>
+<script src="man/k-trao-doi.js"></script>
+<script src="man/k-tai-khoan.js"></script>
 
 <script>
 "use strict";
 /* =====================================================================
-   CỔNG KHÁCH — chỉ có HAUSTEK.api.
+   CỔNG ĐỐI TÁC — chỉ có HAUSTEK.api.
+
    Ô chọn tài khoản ở chân cột trái là mô phỏng đăng nhập cho bản mẫu.
    Hệ thật không có nó: mỗi người chỉ vào được chính tài khoản của mình,
-   và phiên đăng nhập trên máy chủ mới là thứ quyết định partyId.
+   và phiên đăng nhập trên máy chủ mới là thứ quyết định doiTacId.
+
+   Điều hướng SINH TỪ DỊCH VỤ đối tác thật sự mua (mỗi trang tự khai
+   khaDung). Một thương hiệu chỉ chạy chiến dịch digital sẽ thấy bốn
+   trang, chứ không thấy một bức tường trang tiền trống trông như hỏng.
    ===================================================================== */
 var api = HAUSTEK.api;
-var TK = api.demoLogins().accounts.filter(function (a) { return a.status === 'active'; });
-/* Giữ lựa chọn qua lần nạp lại. Không giữ thì bấm đổi tài khoản xong
-   trang nạp lại và quay về tài khoản đầu — trông như nút hỏng. */
-var CHON = 'haustek.demo.tk';
-/* Xem với tư cách label con: label mẹ chọn một label con thì phiên chuyển
-   sang label con đó, còn tài khoản đăng nhập vẫn là label mẹ. Khoá này
-   chỉ là ý muốn của người dùng; quyền thật kiểm bằng api.delegations. */
-var XEM = 'haustek.demo.xemThay';
-function nhoLai() {
-  try { var v = +sessionStorage.getItem(CHON); return (v >= 0 && v < TK.length) ? v : 0; }
-  catch (e) { return 0; }
-}
-function xoaXem() { try { sessionStorage.removeItem(XEM); } catch (e) {} }
-var toi = TK[nhoLai()];
-var thay = null;                                        /* {labelId, name, clientId} khi đang xem thay */
-var phienCua = { role: toi.role, partyId: toi.partyId }; /* phiên thật sự dùng để gọi api */
-(function () {
-  var id = null;
-  try { id = sessionStorage.getItem(XEM); } catch (e) {}
-  if (id == null || id === '' || toi.role !== 'label') { xoaXem(); return; }
-  var uy = null;
-  try { uy = api.delegations(toi.role, toi.partyId); } catch (e) { uy = null; }
-  var lc = uy ? uy.viewAs.filter(function (x) { return String(x.labelId) === String(id); })[0] : null;
-  if (!lc) { xoaXem(); return; }
-  thay = { labelId: lc.labelId, name: lc.name, clientId: lc.clientId };
-  phienCua = { role: 'label', partyId: lc.labelId };
-})();
+var CHON = 'haustek.doi-tac-mau';
+/* Trang nội bộ "Xem cổng như đối tác này" ghi khoá này rồi mở cửa sau. */
+var NHU = 'haustek.xem-nhu';
 
-function nạpPhien() {
-  var s = api.session(phienCua.role, phienCua.partyId);
-  var p = api.periods(phienCua.role, phienCua.partyId);
-  return { me: s, kys: p.open, cho: p.waiting, kyTacQuyen: p.pubOpen, moiNhat: p.latest };
+function nhoLai() {
+  var id = null;
+  try { id = localStorage.getItem(NHU); if (id) localStorage.removeItem(NHU); } catch (e) {}
+  if (!id) { try { id = sessionStorage.getItem(CHON); } catch (e) {} }
+  var hit = TK.filter(function (t) { return t.doiTacId === id; })[0];
+  return hit || TK[0];
 }
-var PHIEN = nạpPhien();
+var toi = nhoLai();
+try { sessionStorage.setItem(CHON, toi.doiTacId); } catch (e) {}
+var PHIEN = api.phien(toi.doiTacId);
 
 HT.chay({
   ten: 'portal',
   api: api,
   phien: PHIEN,
-  thongBao: function () { return api.notifications(PHIEN.me.role, PHIEN.me.partyId); },
-  danhDauDoc: function (c, ids) { return api.markNotifications(PHIEN.me.role, PHIEN.me.partyId, ids); },
-  tim: function (c, q) { return api.search(PHIEN.me.role, PHIEN.me.partyId, q, 6); },
-  moBai: function (c, id) {
-    var me = PHIEN.me, la = me.role === 'label', hs = api.trackAsset(me.role, me.partyId, id);
-    HTS.moNgan(c, hs, { mineLabel: la ? HTS.t('label') : HTS.t('toi'), revenueLabel: la ? HTS.t('gop') : HTS.t('toi'), anMine: !la,
-      tien: HT.fmt.usd, tien0: HT.fmt.usd0, playlists: HTS.plCua(c, id), hoTro: true });
+  thongBao: function () {
+    var ds = api.chuaDoc(PHIEN.doiTacId, PHIEN.nguoiDungId) || [];
+    return { items: ds.map(function (d) {
+      return { id: d.thongBaoId, title: d.tieuDe, body: d.noiDung || '', di: 'k-trao-doi' };
+    }), unread: ds.length };
   },
-  moDoiTac: function (c) { location.hash = '#k-nghe-si'; },
-  coTienTe: false,
-  kyDanhSach: function () {
-    return PHIEN.kys.map(function (p) { return { k: p.k, label: p.label }; });
+  danhDauDoc: function (c, ids) {
+    (ids === 'all' ? (api.chuaDoc(PHIEN.doiTacId, PHIEN.nguoiDungId) || []).map(function (d) { return d.thongBaoId; }) : ids)
+      .forEach(function (id) { try { api.danhDauDaDoc(PHIEN.doiTacId, id, PHIEN.nguoiDungId); } catch (e) {} });
+    return true;
   },
-  kyMacDinh: PHIEN.moiNhat,
-  ghiChu: function () { return PHIEN.me.clientId; },
-  /* Biểu ngữ ngay trên nội dung trang khi đang xem thay một label con. */
-  bieuNgu: function (c) {
-    if (!thay) return '';
-    var vi = c.lang === 'vi';
-    return '<div class="viewas">' + HT.icon('layers') + '<span>' +
-      (vi ? 'Đang xem với tư cách label con <b>' + HT.esc(thay.name) + '</b> (' + HT.esc(thay.clientId) + '). Số liệu và bảng kê là của label con này.'
-          : 'Viewing as sub-label <b>' + HT.esc(thay.name) + '</b> (' + HT.esc(thay.clientId) + '). Figures and statements belong to this sub-label.') +
-      '</span><span class="sp"></span><button type="button" class="btn sm" data-thoi-xem>' +
-      HT.esc(vi ? 'Trở về ' + toi.name : 'Back to ' + toi.name) + '</button></div>';
-  },
-  chanTrai: function (c) {
-    var vi = c.lang === 'vi', me = PHIEN.me;
-    var opts = TK.map(function (a, i) {
-      return '<option value="' + i + '"' + (a === toi ? ' selected' : '') + '>' +
-        HT.esc(a.name) + '</option>';
+  ghiChu: function () { return PHIEN.ten; },
+  chanTrai: function () {
+    var opts = TK.map(function (t) {
+      return '<option value="' + HT.esc(t.doiTacId) + '"' + (t.doiTacId === toi.doiTacId ? ' selected' : '') + '>' +
+        HT.esc(t.ten) + '</option>';
     }).join('');
-    var vai = toi.role !== 'label'
-      ? (me.independent ? (vi ? 'Nghệ sĩ độc lập' : 'Independent artist') : (vi ? 'Nghệ sĩ' : 'Artist'))
-      : me.parentLabel ? (vi ? 'Label con của ' + me.parentLabel.name : 'Sub-label of ' + me.parentLabel.name)
-      : me.childLabels > 0 ? (vi ? 'Label mẹ · ' + me.childLabels + ' label con' : 'Parent label · ' + me.childLabels + ' sub-labels')
-      : 'Label';
-    return '<b>' + HT.esc(me.name) + '</b>' +
-      '<span>' + HT.esc(vai) + '</span>' +
-      (thay ? '<span style="display:block;margin-top:3px">' + HT.esc(vi ? 'đăng nhập: ' + toi.name : 'signed in as ' + toi.name) + '</span>' : '') +
+    var ns = PHIEN.nguoiPhuTrach;
+    return '<b>' + HT.esc(PHIEN.ten) + '</b>' +
+      '<span>' + HT.esc(ns ? 'Phụ trách: ' + ns.ten : 'Đối tác Haustek') + '</span>' +
       '<select class="inline-sel" data-ai style="margin-top:9px;width:100%">' + opts + '</select>' +
-      '<span style="display:block;margin-top:7px;line-height:1.5">' +
-      HT.esc(vi
-        ? 'Bản mẫu: đổi tài khoản để xem theo góc nhìn khác. Hệ thống thật không có ô chọn này.'
-        : 'Prototype only: switch accounts to see another view. The real system has no such control.') +
-      '</span>';
+      '<span style="display:block;margin-top:7px;line-height:1.5">' + HT.esc(
+        'Bản mẫu: đổi tài khoản để xem cổng của một đối tác khác. Hệ thống thật không có ô chọn này.') + '</span>';
   }
 });
 
@@ -146,32 +96,8 @@ document.addEventListener('change', function (e) {
   var s = e.target.closest('[data-ai]');
   if (!s) return;
   try { sessionStorage.setItem(CHON, s.value); } catch (err) {}
-  xoaXem();
-  location.hash = '#k-tong-quan';
+  location.hash = '#k-trang-chu';
   location.reload();
-});
-
-/* Bấm "Xem cổng của label này" ở bất kỳ đâu (cây label, ngăn trượt) và
-   "Trở về" trên biểu ngữ. Quyền kiểm ở api.canViewAs trước khi đổi phiên. */
-document.addEventListener('click', function (e) {
-  var x = e.target.closest('[data-xem-thay]');
-  if (x) {
-    var id = x.getAttribute('data-xem-thay'), ok = false;
-    try { ok = !!api.canViewAs(toi.role, toi.partyId, id); } catch (err) { ok = false; }
-    if (!ok) {
-      HT.thongBao(HT.lang === 'vi' ? 'Bạn không được uỷ quyền xem label này.' : 'You are not authorised to view this label.', 'no');
-      return;
-    }
-    try { sessionStorage.setItem(XEM, String(id)); } catch (err) {}
-    location.hash = '#k-tong-quan';
-    location.reload();
-    return;
-  }
-  if (e.target.closest('[data-thoi-xem]')) {
-    xoaXem();
-    location.hash = '#k-he-thong';
-    location.reload();
-  }
 });
 </script>
 </body>
