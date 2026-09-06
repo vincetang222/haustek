@@ -49,6 +49,10 @@ var ASOF = (function () { var d = new Date(); return new Date(d.getFullYear(), d
 function hash(i, k) { var x = Math.sin((i + 1) * 12.9898 + (k || 0) * 78.233) * 43758.5453; return x - Math.floor(x); }
 function chon(ds, i, k) { return ds[Math.floor(hash(i, k) * ds.length) % ds.length]; }
 function so(i, k, a, b) { return a + Math.floor(hash(i, k) * (b - a + 1)); }
+/* Giờ phải có hai chữ số. "2026-09-24 9:22" so chuỗi với "2026-09-24 17:05"
+   thì 9 giờ sáng đứng SAU 5 giờ chiều, và cả dòng thời gian đảo lộn mà
+   không ai thấy sai ở đâu, vì từng dòng một đều đúng. */
+function hai(n) { return (n < 10 ? "0" : "") + n; }
 
 function isoNgay(d) {
   var y = d.getFullYear(), m = String(d.getMonth() + 1).padStart(2, "0"), n = String(d.getDate()).padStart(2, "0");
@@ -326,7 +330,7 @@ function gieo() {
       s.nguoiDung.push({
         id: "U-" + String(++nd).padStart(4, "0"), email: lh2.email, doiTacId: dt.id, ten: lh2.ten,
         trangThai: tt, moiLuc: themNgay(dt.hopDong.tuNgay, 2) + " 09:00",
-        lanDangNhapCuoi: tt === "dang-dung" ? themNgay(homNay(), -so(ix, 61 + j, 0, 60)) + " " + so(ix, 62, 8, 21) + ":10" : null
+        lanDangNhapCuoi: tt === "dang-dung" ? themNgay(homNay(), -so(ix, 61 + j, 0, 60)) + " " + hai(so(ix, 62, 8, 21)) + ":10" : null
       });
     }
   });
@@ -395,7 +399,13 @@ function gieo() {
       var xongDen = trangThai === "xong" ? tenMoc.length : so(ix, 105, 1, tenMoc.length - 1);
       var buoc = dangMo ? 7 : Math.max(2, Math.round(keoDai / tenMoc.length));
       tenMoc.forEach(function (m, mi) {
-        moc.push({ id: "M" + mi, ten: m, han: themNgay(moLuc, (mi + 1) * buoc), xongLuc: mi < xongDen ? themNgay(moLuc, (mi + 1) * buoc - so(ix, 106 + mi, 0, 2)) + " 15:00" : null });
+        var hanM = themNgay(moLuc, (mi + 1) * buoc);
+        var xongM = mi < xongDen ? themNgay(moLuc, (mi + 1) * buoc - so(ix, 106 + mi, 0, 2)) : null;
+        /* Một mốc không thể đã xong vào ngày mai. Cộng thẳng ngày vào moLuc
+           thì việc mới mở sinh ra mốc "đã xong" nằm ở tuần sau, và dòng
+           thời gian có những việc chưa xảy ra. */
+        if (xongM && xongM > homNay()) xongM = null;
+        moc.push({ id: "M" + mi, ten: m, han: hanM, xongLuc: xongM ? xongM + " 15:00" : null });
       });
     }
     var buocTiepDs = BUOC_TIEP_MAU[dichVu] || BUOC_TIEP_MAU["ho-tro"];
@@ -413,14 +423,14 @@ function gieo() {
       tomTat: chon(["Đối tác đã thống nhất phạm vi qua điện thoại.", "Việc phát sinh từ đợt làm trước, giữ nguyên người phụ trách.", "Đối tác cần gấp, đã hẹn mốc bàn giao rõ ràng.", "Việc định kỳ hằng tháng, làm theo lịch đã chốt."], ix, 112),
       buocTiep: trangThai === "xong" ? null : { viec: chon(buocTiepDs, ix, 113), aiLam: trangThai === "cho-doi-tac" ? "doi-tac" : "haustek", hanNgay: themNgay(homNay(), so(ix, 114, -4, 12)) },
       canDoiTac: canDoiTac,
-      moLuc: moLuc + " " + so(ix, 115, 8, 17) + ":" + chon(["05", "20", "35", "50"], ix, 116),
+      moLuc: moLuc + " " + hai(so(ix, 115, 8, 17)) + ":" + chon(["05", "20", "35", "50"], ix, 116),
       hanPhanHoi: hanLamViec(moLuc, dv.camKetPhanHoi),
       hanGiao: hash(ix, 117) < 0.6 ? themNgay(moLuc, so(ix, 118, 14, 75)) : null,
       moc: moc, chiTiet: chiTiet, baoGia: null,
       banPhatHanhId: bph ? bph.id : null,
       hienChoDoiTac: true,
-      capNhatLuc: trangThai === "xong" ? themNgay(homNay(), -xongCach) + " " + so(ix, 120, 9, 17) + ":40" : themNgay(homNay(), -so(ix, 119, 0, 12)) + " " + so(ix, 120, 9, 17) + ":15",
-      xongLuc: trangThai === "xong" ? themNgay(homNay(), -xongCach) + " " + so(ix, 120, 9, 17) + ":40" : null
+      capNhatLuc: trangThai === "xong" ? themNgay(homNay(), -xongCach) + " " + hai(so(ix, 120, 9, 17)) + ":40" : themNgay(homNay(), -so(ix, 119, 0, 12)) + " " + hai(so(ix, 120, 9, 17)) + ":15",
+      xongLuc: trangThai === "xong" ? themNgay(homNay(), -xongCach) + " " + hai(so(ix, 120, 9, 17)) + ":40" : null
     };
     if (bph && dangMo) bph.viecId = v.id;
     s.viec.push(v);
@@ -509,7 +519,7 @@ function gieo() {
          Hôm nay báo "đội đã ghi 35 cuộc liên lạc" trong một buổi sáng. */
       var lucLl = themNgay(String(v.moLuc).slice(0, 10), so(vi, 171 + l, 1, 30));
       if (lucLl >= homNay()) lucLl = themNgay(homNay(), -so(vi, 181 + l, 1, 25));
-      themDong({ doiTacId: v.doiTacId, viecId: v.id, luc: lucLl + " " + so(vi, 172 + l, 9, 17) + ":" + chon(["05", "22", "40"], vi, 173 + l),
+      themDong({ doiTacId: v.doiTacId, viecId: v.id, luc: lucLl + " " + hai(so(vi, 172 + l, 9, 17)) + ":" + chon(["05", "22", "40"], vi, 173 + l),
         boi: { kieu: "nhanSu", id: nguoi.id, ten: nguoi.ten }, loai: "lien-lac",
         tieuDe: nguoi.ten.split(" ").pop() + " " + chon(["gọi điện", "nhắn Zalo", "gửi email", "gặp trực tiếp"], vi, 174 + l) + " · " + chon(LIEN_LAC_MAU, vi, 175 + l),
         noiDung: null, kenh: chon(["goi", "zalo", "email", "gap"], vi, 174 + l), ketQua: chon(["da-chot", "cho-doi-tac", "goi-lai"], vi, 176 + l), hienChoDoiTac: false });
@@ -554,7 +564,7 @@ function gieo() {
   for (var tb = 0; tb < CFG.N_THONG_BAO; tb++) {
     var mau = MAU_THONG_BAO[tb % MAU_THONG_BAO.length];
     var nguoiGui = s.nhanSu[(tb * 3) % s.nhanSu.length];
-    var luc = themNgay(homNay(), -so(tb, 190, 0, 360)) + " " + so(tb, 191, 9, 17) + ":" + chon(["05", "18", "32", "47"], tb, 192);
+    var luc = themNgay(homNay(), -so(tb, 190, 0, 360)) + " " + hai(so(tb, 191, 9, 17)) + ":" + chon(["05", "18", "32", "47"], tb, 192);
     var kieu = hash(tb, 193) < 0.55 ? "chon" : hash(tb, 193) < 0.85 ? "theo-dich-vu" : "tat-ca";
     var nhan = [];
     if (kieu === "chon") nhan = [dtHoatDong[(tb * 7) % dtHoatDong.length].id];
@@ -563,10 +573,37 @@ function gieo() {
       nhan = dtHoatDong.filter(function (d) { return d.dichVu.indexOf(dvChon) >= 0; }).map(function (d) { return d.id; });
     } else nhan = dtHoatDong.map(function (d) { return d.id; });
     if (!nhan.length) continue;
+    /* Điền ĐỦ mọi chỗ trống của mẫu. Bản trước cắt nội dung ở dấu "{" đầu
+       tiên rồi dán một câu chung vào, nên mọi thông báo đều đứt giữa chừng
+       kiểu "Hồ sơ" rồi nhảy sang một câu không liên quan. Một lá thư gửi
+       đối tác mà đứt giữa câu là thứ khách nhớ lâu hơn cả nội dung. */
+    var oMau = {
+      thang: String(ngay(luc).getMonth() + 1),
+      ma: "HSTK-" + so(tb, 195, 1000, 9999),
+      ten: chon(BAI_HAT, tb, 196),
+      ky: kyDs[kyDs.length - 1 - (tb % 3)],
+      soTien: tien0(so(tb, 199, 200, 7400)),
+      ngay: ngayVi(themNgay(String(luc).slice(0, 10), -so(tb, 200, 1, 5))),
+      tomTat: chon([
+        "Hai việc đang chạy đúng tiến độ, một việc chờ bạn duyệt bản dựng.",
+        "Hồ sơ phát hành đã qua kiểm metadata, đang chờ nền tảng nhận.",
+        "Chiến dịch tháng này đã lên lịch xong, bắt đầu chạy từ tuần sau."], tb, 201),
+      danhSach: chon([
+        "· Ảnh bìa 3000×3000\n· File WAV chất lượng gốc",
+        "· Mã ISRC cho hai track cuối\n· Tên người sáng tác đầy đủ",
+        "· Ngày phát hành mong muốn\n· Thông tin nhà xuất bản"], tb, 202),
+      duongDan: "· Spotify\n· Apple Music\n· YouTube Music",
+      chiTiet: chon([
+        "Giờ diễn lùi từ 20h sang 20h30, địa điểm giữ nguyên.",
+        "Đổi ngày sang cuối tuần kế tiếp theo đề nghị của địa điểm."], tb, 203)
+    };
+    function dienMau(chu) {
+      return String(chu).replace(/\{([a-zA-Z]+)\}/g, function (_, k) { return oMau[k] != null ? oMau[k] : ""; });
+    }
     var t2 = {
       id: "TB-" + String(++tbSeq).padStart(4, "0"),
-      tieuDe: mau.tieuDe.replace("{thang}", String(ngay(luc).getMonth() + 1)).replace("{ma}", "HSTK-" + so(tb, 195, 1000, 9999)).replace("{ten}", chon(BAI_HAT, tb, 196)).replace("{ky}", kyDs[kyDs.length - 1 - (tb % 3)]),
-      noiDung: mau.noiDung.split("{")[0].trim() + "\n\nHaustek gửi bạn cập nhật mới nhất. Chi tiết bạn xem trong mục Việc của tôi.",
+      tieuDe: dienMau(mau.tieuDe),
+      noiDung: dienMau(mau.noiDung),
       viecId: null, guiToi: { kieu: kieu, doiTacIds: nhan }, noiBo: false,
       nguoiGuiId: nguoiGui.id, nhap: false, guiLuc: luc, tepId: null
     };
@@ -595,12 +632,36 @@ function gieo() {
     var dt6 = dtSang[(gi * 7 + 3) % dtSang.length];
     var kenh6 = chon(["goi", "zalo", "goi", "gap"], gi, 210);
     themDong({ doiTacId: dt6.id, viecId: null,
-      luc: homNay() + " " + (8 + gi * 2) + ":" + chon(["05", "20", "35", "50"], gi, 211),
+      luc: homNay() + " " + hai(8 + gi * 2) + ":" + chon(["05", "20", "35", "50"], gi, 211),
       boi: { kieu: "nhanSu", id: ns6.id, ten: ns6.ten }, loai: "lien-lac",
       tieuDe: ns6.ten.split(" ").pop() + " " + ({ goi: "gọi điện", zalo: "nhắn Zalo", gap: "gặp trực tiếp" }[kenh6]) +
         " · " + chon(LIEN_LAC_MAU, gi, 212),
       noiDung: null, kenh: kenh6, ketQua: chon(["da-chot", "da-chot", "cho-doi-tac"], gi, 213), hienChoDoiTac: false });
   });
+
+  /* ---- nhật ký thao tác ----
+     Sổ nhật ký trống thì trang Nhật ký chỉ là một ô rỗng, và không ai biết
+     nó dùng để làm gì cho tới khi có sự cố cần tra. */
+  var NK_MAU = [
+    ["dich-vu.cam-ket", "phat-hanh", "còn 2 ngày làm việc", "S01"],
+    ["doi-tac.nguoi-phu-trach", null, "chuyển sang Phạm Thu Hà", "S01"],
+    ["nguoi-dung.moi", null, "", "S02"],
+    ["doi-tac.lien-he", null, "", "S03"],
+    ["nhan-su.sua", "S09", "Bùi Digital", "S01"],
+    ["doi-tac.them", null, "", "S04"],
+    ["doi-tac.lien-he", null, "", "S04"],
+    ["dich-vu.cam-ket", "su-kien", "còn 1 ngày làm việc", "S01"]
+  ];
+  NK_MAU.forEach(function (x, i) {
+    var dtn = dtHoatDong[(i * 5) % dtHoatDong.length];
+    s.nhatKy.push({
+      id: "NK-" + (i + 1),
+      luc: themNgay(homNay(), -so(i, 220, 0, 40)) + " " + hai(so(i, 221, 9, 17)) + ":" + chon(["08", "26", "41"], i, 222),
+      boiId: x[3], hanhDong: x[0], doiTuong: x[1] || dtn.id,
+      chiTiet: x[2] || dtn.ten
+    });
+  });
+  s.nhatKy.sort(function (a, b) { return a.luc < b.luc ? 1 : -1; });
 
   s.dong.sort(function (a, b) { return a.luc < b.luc ? 1 : a.luc > b.luc ? -1 : 0; });
   return s;
@@ -710,20 +771,34 @@ function viecCanToi(nhanSuId) {
     var kyNay = admin.bangKe.ky().slice(-1)[0];
     var thieu = admin.bangKe.thieu(kyNay);
     if (thieu.length) {
-      ra.push({ bac: 3, viecId: null, doiTacId: thieu[0].id, di: "thanh-toan", ngay: hn, doiTacTen: thieu[0].ten,
+      ra.push({ bac: 3, viecId: null, doiTacId: thieu[0].id, di: "thong-bao", loc: { tab: "bang-ke" }, ngay: hn, doiTacTen: thieu[0].ten,
         cau: "Kỳ " + kyNay + " còn <b>" + thieu.length + " đối tác</b> chưa có bảng kê. Tải từ OneRPM hoặc Believe rồi đưa lên đây.",
-        nut: { nhan: "Mở thanh toán", hanh: "di" } });
+        nut: { nhan: "Mở bảng kê", hanh: "di" } });
     }
     state.bangKe.filter(function (b) { return b.trangThai === "da-tai-len"; })
       .sort(function (a, b) { return a.taiLenLuc < b.taiLenLuc ? -1 : 1; }).slice(0, 4).forEach(function (b) {
         var dtb = dtCua(b.doiTacId);
-        ra.push({ bac: 4, viecId: null, doiTacId: b.doiTacId, di: "thanh-toan", ngay: String(b.taiLenLuc).slice(0, 10), doiTacTen: dtb ? dtb.ten : "",
+        ra.push({ bac: 4, viecId: null, doiTacId: b.doiTacId, di: "thong-bao", loc: { tab: "bang-ke" }, ngay: String(b.taiLenLuc).slice(0, 10), doiTacTen: dtb ? dtb.ten : "",
           cau: "Bảng kê kỳ " + b.ky + " của <b>" + (dtb ? dtb.ten : "") + "</b> đã lên " + cachNgay(b.taiLenLuc) + " ngày mà chưa đánh dấu đã chuyển khoản.",
           nut: { nhan: "Đánh dấu đã chuyển", hanh: "chuyen", id: b.id } });
       });
   }
   ra.sort(function (a, b) { return a.bac - b.bac || (a.ngay < b.ngay ? -1 : a.ngay > b.ngay ? 1 : a.doiTacTen.localeCompare(b.doiTacTen, "vi")); });
   return ra;
+}
+
+/* Câu cam kết mà ĐỐI TÁC đọc.
+
+   Khi còn hạn thì nói ngày. Khi đã quá hạn thì KHÔNG đếm ngược sự chậm
+   trễ của Haustek trước mặt họ, và cũng không im lặng giữ nguyên một ngày
+   đã trôi qua như thể không ai để ý. Nói thật việc đang ở đâu, kèm tên
+   người gọi được. Cùng sự thật đó, ở cổng nội bộ, là một dòng quá hạn
+   nằm trên đầu hàng đợi của người phụ trách, nơi có người xử lý được. */
+function camKetChoDoiTac(v) {
+  if (v.trangThai !== "moi") return null;
+  var ns = v.nguoiPhuTrachId ? nsCua(v.nguoiPhuTrachId) : null;
+  if (v.hanPhanHoi >= homNay()) return "Haustek phản hồi chậm nhất ngày " + ngayVi(v.hanPhanHoi) + ".";
+  return "Haustek đang xem việc này." + (ns ? " Người phụ trách là " + ns.ten + ", bạn gọi hoặc nhắn bất cứ lúc nào." : "");
 }
 
 /* Việc cần đối tác bấm là xong. Đúng danh sách này hiện ở cả hai cổng. */
@@ -865,7 +940,11 @@ var admin = {
         var ns = nsCua(dt.nguoiPhuTrachId);
         return Object.assign({}, dt, {
           nguoiPhuTrachTen: ns ? ns.ten : "", soViecDangMo: vt.dangMo.length, soViecDaXong: vt.daXong.length,
-          lienLacCuoi: ll || null, ngayImLang: ll ? cachNgay(ll.luc) : cachNgay(dt.taoLuc),
+          /* Chưa ghi liên lạc nào là CHƯA BIẾT, không phải "đã lâu lắm rồi".
+             Quy nó ra một con số ngày kể từ lúc ký hợp đồng thì đối tác mới
+             ký tuần trước lại nhảy lên đầu danh sách "lâu chưa có tin". */
+          lienLacCuoi: ll || null, chuaGhiLienLac: !ll,
+          ngayImLang: ll ? cachNgay(ll.luc) : null,
           conHan: cachNgay(homNay(), dt.hopDong.denNgay)
         });
       });
@@ -924,6 +1003,23 @@ var admin = {
       state.doiTac.push(dt);
       if (chuoi(o.email)) state.nguoiDung.push({ id: "U-" + String(state.nguoiDung.length + 1).padStart(4, "0"), email: chuoi(o.email), doiTacId: id, ten: dt.lienHe[0].ten, trangThai: "da-moi", moiLuc: bayGio(), lanDangNhapCuoi: null });
       nhatKy("doi-tac.them", id, dt.ten); doiState(); return dt;
+    },
+    themLienHe: function (id, o) {
+      var dt = dtCua(id); if (!dt) throw new Error("khong-thay-doi-tac");
+      if (!chuoi(o && o.ten)) throw new Error("thieu-ten");
+      var lh = { ten: chuoi(o.ten), vaiTro: chuoi(o.vaiTro) || "Liên hệ", dienThoai: chuoi(o.dienThoai),
+                 zalo: chuoi(o.zalo) || chuoi(o.dienThoai), email: chuoi(o.email),
+                 gioTienGoi: chuoi(o.gioTienGoi) || "Giờ nào cũng được",
+                 laChinh: !dt.lienHe.length };
+      dt.lienHe.push(lh); dt.capNhatLuc = bayGio();
+      nhatKy("doi-tac.lien-he", id, lh.ten); doiState(); return lh;
+    },
+    xoaLienHe: function (id, i) {
+      var dt = dtCua(id); if (!dt) throw new Error("khong-thay-doi-tac");
+      if (dt.lienHe.length <= 1) throw new Error("phai-con-mot-lien-he");
+      dt.lienHe.splice(i, 1);
+      if (!dt.lienHe.some(function (x) { return x.laChinh; })) dt.lienHe[0].laChinh = true;
+      doiState(); return dt.lienHe;
     },
     nguoiDung: function (id) {
       return state.nguoiDung.filter(function (u) { return u.doiTacId === id; })
@@ -1088,7 +1184,11 @@ var admin = {
         var nhan = (t.guiToi.doiTacIds || []);
         var doc = state.luotDoc.filter(function (l) { return l.thongBaoId === t.id; });
         var ns = nsCua(t.nguoiGuiId);
-        return Object.assign({}, t, { soNhan: nhan.length, soDoc: doc.length, nguoiGuiTen: ns ? ns.ten : "", chuaDoc: nhan.filter(function (id) { return !doc.some(function (l) { return l.doiTacId === id; }); }) });
+        /* Trả về TÊN đối tác chưa đọc, không phải mã. "DT-0007 chưa xem"
+           không giúp ai; "Cửa Bắc Tapes chưa xem" thì gọi được ngay. */
+        var chua = nhan.filter(function (id) { return !doc.some(function (l) { return l.doiTacId === id; }); })
+          .map(function (id) { var d = dtCua(id); return { id: id, ten: d ? d.ten : id }; });
+        return Object.assign({}, t, { soNhan: nhan.length, soDoc: doc.length, nguoiGuiTen: ns ? ns.ten : "", chuaDoc: chua });
       });
     },
     /* Xem trước bắt buộc khi gửi từ hai đối tác trở lên. */
@@ -1188,20 +1288,58 @@ var admin = {
       return b;
     },
     /* Nhận hồ sơ từ trang metadata công khai: giữ nguyên mã hồ sơ. */
+    /* Nhận đúng cái biểu mẫu công khai metadata.html xuất ra:
+         { submission_id, release: {...}, tracks: [...], submitter: {...} }
+       với khoá tiếng Việt không dấu (ten_ban_phat_hanh, ngay_phat_hanh...).
+
+       MÃ HỒ SƠ GIỮ NGUYÊN làm id của cả việc lẫn bản phát hành. Portal
+       KHÔNG sinh mã. Đối tác đã được đưa một mã lúc gửi biểu mẫu; sinh mã
+       thứ hai ở đây là biến một không gian mã thành hai, và từ đó mọi câu
+       "bạn cho mình xin mã hồ sơ" đều có hai câu trả lời đúng. */
     nhanHoSo: function (payload, doiTacId) {
       var dt = dtCua(doiTacId); if (!dt) throw new Error("thieu-doi-tac");
-      var ma = chuoi(payload && payload.submission_id) || chuoi(payload && payload.id);
+      if (!payload || typeof payload !== "object") throw new Error("ho-so-khong-doc-duoc");
+      var r = payload.release || payload;
+      var ma = chuoi(payload.submission_id) || chuoi(payload.id) || chuoi(r.submission_id);
       if (!ma) throw new Error("thieu-ma-ho-so");
       if (bphCua(ma)) throw new Error("ma-da-co");
-      var ten = chuoi(payload.ten || payload.title); if (!ten) throw new Error("thieu-ten");
+      var ten = chuoi(r.ten_ban_phat_hanh) || chuoi(r.ten) || chuoi(r.title);
+      if (!ten) throw new Error("thieu-ten");
+      var loaiVi = chuoi(r.loai_phat_hanh).toLowerCase();
+      var loai = loaiVi.indexOf("album") >= 0 ? "album" : loaiVi.indexOf("ep") >= 0 ? "ep" : "single";
+      var tr = (payload.tracks || payload.track || []).map(function (t, i) {
+        return {
+          thuTu: t.so_thu_tu || i + 1,
+          ten: chuoi(t.ten_track) || chuoi(t.ten) || ten,
+          isrc: chuoi(t.isrc),
+          featuring: chuoi(t.khach_moi) || chuoi(t.featuring),
+          nguoiSangTac: (t.nguoi_sang_tac || t.nguoiSangTac || []).map(function (w) {
+            return { ten: chuoi(w.ho_ten) || chuoi(w.ten), vaiTro: chuoi(w.vai_tro), tyLe: +w.ti_le || 0 };
+          })
+        };
+      });
+      if (!tr.length) tr = [{ thuTu: 1, ten: ten, isrc: "", featuring: "", nguoiSangTac: [] }];
       var b = {
-        id: ma, doiTacId: dt.id, viecId: null, ten: ten, phienBan: chuoi(payload.phienBan), loai: payload.loai || "single",
-        ngayPhatHanh: chuoi(payload.ngayPhatHanh) || themNgay(homNay(), 21), upc: chuoi(payload.upc), anhBia: chuoi(payload.anhBia),
-        trangThai: "da-gui", conThieu: payload.conThieu || [], track: payload.track || [{ thuTu: 1, ten: ten, isrc: "", featuring: "", nguoiSangTac: [] }],
-        duongDan: { spotify: "", apple: "", youtube: "" }, nenTang: "dang-xu-ly", nenTangCapNhatLuc: bayGio(), nenTangGhiChu: ""
+        id: ma, doiTacId: dt.id, viecId: null, ten: ten,
+        phienBan: chuoi(r.phien_ban) || chuoi(r.phienBan), loai: loai,
+        ngheSi: chuoi(r.nghe_si_chinh), nhan: chuoi(r.nhan_phat_hanh),
+        ngayPhatHanh: chuoi(r.ngay_phat_hanh) || chuoi(r.ngayPhatHanh) || themNgay(homNay(), 21),
+        upc: chuoi(r.upc), anhBia: chuoi(r.link_anh_bia) || chuoi(r.anhBia),
+        theLoai: chuoi(r.the_loai_chinh), pLine: chuoi(r.p_line), cLine: chuoi(r.c_line),
+        trangThai: "da-gui", conThieu: [],
+        track: tr,
+        duongDan: { spotify: "", apple: "", youtube: "" },
+        nenTang: "dang-xu-ly", nenTangCapNhatLuc: bayGio(), nenTangGhiChu: "",
+        nguoiGui: payload.submitter ? chuoi(payload.submitter.ho_ten) || chuoi(payload.submitter.s_name) : ""
       };
+      /* Thiếu gì thì nói ngay, đừng để tới lúc đẩy lên nền tảng mới biết. */
+      if (!b.upc) b.conThieu.push("Mã UPC");
+      if (!b.anhBia) b.conThieu.push("Ảnh bìa");
+      if (!tr.filter(function (t) { return t.isrc; }).length) b.conThieu.push("Mã ISRC cho track");
       state.banPhatHanh.push(b);
-      var v = admin.viec.them({ doiTacId: dt.id, dichVu: "phat-hanh", tieuDe: "Phát hành " + ten, id: ma, banPhatHanhId: ma, tomTat: "Hồ sơ nhận từ trang metadata." });
+      var v = admin.viec.them({ doiTacId: dt.id, dichVu: "phat-hanh", tieuDe: "Phát hành " + ten,
+        id: ma, banPhatHanhId: ma,
+        tomTat: "Hồ sơ nhận từ biểu mẫu công khai, mã " + ma + ". Giữ nguyên mã này ở mọi nơi." });
       b.viecId = v.id; CHI_MUC = null; doiState();
       return b;
     }
@@ -1233,9 +1371,30 @@ var admin = {
       nhatKy("dich-vu.cam-ket", dichVuId, "còn " + n + " ngày làm việc");
       doiState(); return dv;
     },
+    /* Câu này là LỜI HỨA công khai, và nó phải ra từ đúng MỘT chỗ: trang
+       Việc, biên nhận ở cổng đối tác, và ô sửa ở Quản trị đều đọc hàm này.
+       Viết lại câu ở ba nơi thì sớm muộn ba nơi hứa ba kiểu.
+
+       Mỗi mảng dịch vụ nhận một thứ khác nhau, nên câu mở đầu khác nhau:
+       phát hành nhận "hồ sơ", sự kiện nhận "yêu cầu đặt lịch". Dùng chung
+       một câu "sau khi nhận hồ sơ" cho cả mười mảng thì tám mảng đọc sai. */
     cauCongKhai: function (dichVuId) {
       var dv = dvCua(dichVuId);
-      return "Sau khi nhận hồ sơ, Haustek kiểm tra trong " + dv.camKetPhanHoi + " ngày làm việc và gọi hoặc nhắn cho bạn nếu cần bổ sung.";
+      var nhan = {
+        "phat-hanh": "Sau khi bạn gửi hồ sơ phát hành",
+        "label": "Sau khi bạn gửi yêu cầu về hợp tác label",
+        "su-kien": "Sau khi bạn gửi yêu cầu tổ chức sự kiện",
+        "san-xuat-nhac": "Sau khi bạn gửi yêu cầu sản xuất",
+        "booking": "Sau khi bạn gửi yêu cầu booking",
+        "chien-luoc": "Sau khi bạn gửi đề bài marketing",
+        "digital": "Sau khi bạn gửi yêu cầu chạy chiến dịch",
+        "mang-xa-hoi": "Sau khi bạn gửi yêu cầu về kênh mạng xã hội",
+        "content": "Sau khi bạn gửi đề bài nội dung",
+        "media": "Sau khi bạn gửi yêu cầu sản xuất media",
+        "ho-tro": "Sau khi bạn gửi câu hỏi"
+      }[dichVuId] || "Sau khi bạn gửi yêu cầu";
+      return nhan + ", Haustek trả lời trong " + dv.camKetPhanHoi +
+        " ngày làm việc và gọi hoặc nhắn cho bạn nếu cần trao đổi thêm.";
     }
   },
 
@@ -1321,7 +1480,7 @@ var api = {
         var ns = nsCua(v.nguoiPhuTrachId), dv = dvCua(v.dichVu);
         return { id: v.id, tieuDe: v.tieuDe, dichVu: v.dichVu, dichVuTen: dv.vi, trangThai: v.trangThai,
           nguoiPhuTrachTen: ns ? ns.ten : null, buocTiep: v.buocTiep ? v.buocTiep.viec : null,
-          camKet: v.trangThai === "moi" ? "Haustek phản hồi chậm nhất ngày " + ngayVi(v.hanPhanHoi) : null,
+          camKet: camKetChoDoiTac(v),
           capNhatLuc: v.capNhatLuc };
       }),
       ganDay: dongTheoDoiTac(doiTacId, { chiDoiTacThay: true }).slice(0, 6),
@@ -1340,7 +1499,7 @@ var api = {
         id: v.id, tieuDe: v.tieuDe, dichVu: v.dichVu, dichVuTen: dv.vi, trangThai: v.trangThai,
         nguoiPhuTrachTen: ns ? ns.ten : null, tomTat: v.tomTat,
         canBan: v.canDoiTac, moc: (v.moc || []).map(function (m) { return { ten: m.ten, xong: !!m.xongLuc }; }),
-        camKet: v.trangThai === "moi" ? "Haustek phản hồi chậm nhất ngày " + ngayVi(v.hanPhanHoi) : null,
+        camKet: camKetChoDoiTac(v),
         hanGiao: v.hanGiao, capNhatLuc: v.capNhatLuc, xongLuc: v.xongLuc,
         dong: (chiMuc().dongTheoViec[v.id] || []).filter(function (d) { return d.hienChoDoiTac; })
       };
@@ -1455,6 +1614,11 @@ var api = {
       return d.loai === "thong-bao" && nd && !state.luotDoc.some(function (l) { return l.thongBaoId === d.thongBaoId && l.nguoiDungId === nd.id; });
     });
   },
+  /* Cổng đối tác không có mặt tiền nội bộ, nên nó cần đúng những hàm hiển
+     thị này. Không đưa thì sáu trang tự viết lại sáu lần cách viết ngày,
+     và sớm muộn có trang viết khác. */
+  ngayVi: ngayVi, ngayGonVi: ngayGonVi, gioVi: gioVi, thuTrongTuan: thuTrongTuan,
+  cachNgay: cachNgay, homNay: homNay, tien0: tien0,
   camKet: function (dichVuId) { return admin.caiDat.cauCongKhai(dichVuId); },
   /* CHỈ DÙNG CHO BẢN MẪU. Hệ thật không có hàm này: phiên đăng nhập trên
      máy chủ mới là thứ quyết định doiTacId, và một người chỉ vào được

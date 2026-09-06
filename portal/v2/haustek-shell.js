@@ -91,6 +91,10 @@ var IC = {
   info:  '<circle cx="8" cy="8" r="6.4"/><path d="M8 7.4v4M8 4.9v.1"/>',
   clock: '<circle cx="8" cy="8" r="6.2"/><path d="M8 4.4V8l2.6 1.6"/>',
   cal:   '<rect x="2" y="3" width="12" height="11" rx="1.6"/><path d="M2 6.6h12M5.5 1.4v3M10.5 1.4v3"/>',
+  home:  '<path d="M2.2 6.6 8 2l5.8 4.6V13a1 1 0 0 1-1 1H3.2a1 1 0 0 1-1-1z"/><path d="M6.2 14V9.2h3.6V14"/>',
+  chat:  '<path d="M14 9.4a2 2 0 0 1-2 2H5.4L2 14V3.6a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2z"/>',
+  gui:   '<path d="M14.6 1.4 7.4 8.6M14.6 1.4l-4.6 13.2-2.6-6-6-2.6z"/>',
+  phone: '<path d="M14.6 11.5v2.2a1.5 1.5 0 0 1-1.6 1.5 14.6 14.6 0 0 1-6.4-2.3 14.4 14.4 0 0 1-4.4-4.4A14.6 14.6 0 0 1-.1 2.1 1.5 1.5 0 0 1 1.4.5h2.2a1.5 1.5 0 0 1 1.5 1.3c.1.7.3 1.4.5 2.1a1.5 1.5 0 0 1-.3 1.6l-.9.9a11.7 11.7 0 0 0 4.4 4.4l.9-.9a1.5 1.5 0 0 1 1.6-.3c.7.2 1.4.4 2.1.5a1.5 1.5 0 0 1 1.3 1.5z" transform="translate(0.6 0.4)"/>',
   swap:  '<path d="M3 5h10l-3-3M13 11H3l3 3"/>',
   disc:  '<circle cx="8" cy="8" r="6.2"/><circle cx="8" cy="8" r="1.7"/>',
   shop:  '<path d="M2.5 6h11l-1 7.6h-9zM5.6 6V4a2.4 2.4 0 0 1 4.8 0v2"/>',
@@ -550,20 +554,22 @@ function chay(cauHinh) {
      rộng), một trong cột điều hướng (điện thoại, thanh trên không còn chỗ).
      CSS quyết định cụm nào hiện; cả hai cùng bắt sự kiện qua data-th /
      data-l nên không cần biết mình đang ở đâu. */
+  /* Không có ô chọn tiền tệ. Portal không quy đổi gì cả: số tiền duy nhất
+     nó hiện là con số ghi trên bảng kê PDF, bằng đúng đơn vị ghi trên đó.
+     Một nút đổi USD sang VND ở đây là mời người dùng tin vào một con số
+     mà không chứng từ nào đỡ. */
   function oCaiDat(tren) {
-    return (cauHinh.coTienTe === false ? '' :
-        '<div class="seg" data-cur>' +
-          '<button type="button" data-c="USD" class="on">USD</button>' +
-          '<button type="button" data-c="VND">VND</button></div>') +
-      (tren ? '<button type="button" class="top-ico" data-th-cycle>' + icon('auto') + '</button>' :
+    return (tren ? '<button type="button" class="top-ico" data-th-cycle>' + icon('auto') + '</button>' :
       '<div class="seg" data-theme-sw>' +
         '<button type="button" data-th="auto" title="' + esc(t('themeAuto')) + '">' + icon('auto') + '</button>' +
         '<button type="button" data-th="light" title="' + esc(t('themeLight')) + '">' + icon('sun') + '</button>' +
         '<button type="button" data-th="dark" title="' + esc(t('themeDark')) + '">' + icon('moon') + '</button>' +
       '</div>') +
-      '<div class="seg" data-lang>' +
-        '<button type="button" data-l="vi">VI</button>' +
-        '<button type="button" data-l="en">EN</button></div>';
+      '';
+    /* Không có nút VI / EN. Phase 1 chỉ có tiếng Việt, và một cái nút bấm
+       vào thì nửa giao diện hiện ra khoá từ điển thô còn tệ hơn là không
+       có nút. Khung vẫn giữ nguyên cơ chế song ngữ để bật lại khi có bản
+       dịch thật. */
   }
   goc.innerHTML =
       '<aside class="side" data-side>' +
@@ -703,9 +709,6 @@ function chay(cauHinh) {
     });
     document.querySelectorAll('[data-l]').forEach(function (b) {
       b.classList.toggle('on', b.dataset.l === lang);
-    });
-    document.querySelectorAll('[data-c]').forEach(function (b) {
-      b.classList.toggle('on', b.dataset.c === cur);
     });
 
     veNav();
@@ -849,8 +852,6 @@ function chay(cauHinh) {
     if (th) { theme = th.dataset.th; ghiKho(LS_THEME, theme); apTheme(); return ve(); }
     var l = e.target.closest('[data-l]');
     if (l) { lang = l.dataset.l; ghiKho(LS_LANG, lang); return ve(); }
-    var cu = e.target.closest('[data-c]');
-    if (cu) { cur = cu.dataset.c; return ve(); }
   });
   global.addEventListener('hashchange', function () { moMenu(false); ve(); });
   document.addEventListener('keydown', function (e) {

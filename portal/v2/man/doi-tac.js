@@ -1,360 +1,374 @@
 /* =====================================================================
    NỘI BỘ · ĐỐI TÁC
    ---------------------------------------------------------------------
-   Sổ đối tác cho đội kinh doanh và quản lý: mọi label, label con và nghệ
-   sĩ đang ký với Haustek, ai phụ trách, xếp hạng theo doanh thu quý, hạn
-   hợp đồng, tình trạng tài khoản cổng. Tab thứ hai là chỉ tiêu kinh doanh
-   theo từng nhân viên: doanh thu gộp quý của các tài khoản họ phụ trách
-   so với chỉ tiêu. Số ở đây là số nội bộ (gộp), không phải số đối tác thấy.
+   Danh sách xếp theo "ai lâu nhất chưa có tin", vì đó là câu hỏi duy
+   nhất mà một danh sách đối tác trả lời được mà chỗ khác không trả lời
+   được. Xếp theo tên thì chỉ là một quyển danh bạ.
+
+   Trang một đối tác là trái tim của phần mềm này: một dòng thời gian
+   hợp nhất, mọi thứ đã xảy ra giữa Haustek và họ, theo thứ tự, không
+   tab, không lọc bắt buộc. Trên nó là MỘT ĐOẠN VĂN tiếng Việt kể lại
+   quan hệ, đặt trên mọi con số. Dưới nó là ô soạn luôn hiện.
+
+   Công tắc "Chỉ những dòng đối tác thấy" là một tính năng an toàn, không
+   phải một bộ lọc tiện tay: người viết ghi chú nội bộ phải nhìn tận mắt
+   được cái đối tác sẽ đọc, trước khi gõ thêm câu nào.
    ===================================================================== */
 "use strict";
 (function () {
 
-var LOC = { tab: 'ds', tim: '', nv: '', tt: '', loai: '', hang: '' };
-var TT = ['managed', 'renew', 'incomplete', 'never-logged', 'no-account', 'inactive'];
-var KIEU_TT = { managed: 'ok', renew: 'warn', inactive: '', incomplete: 'no', 'never-logged': 'info', 'no-account': '' };
-var CHU_TT = { managed: 'ttManaged', renew: 'ttRenew', inactive: 'ttInactive', incomplete: 'ttIncomplete', 'never-logged': 'ttNeverLogged', 'no-account': 'ttNoAccount' };
-var KIEU_HANG = { A: 'ok', B: 'info', C: '' };
+var e = function (x) { return HM.esc(x == null ? '' : String(x)); };
+var CHI_THAY = false;        /* công tắc "chỉ dòng đối tác thấy" */
+var SOAN = 'lien-lac';       /* tab ô soạn đang mở */
+/* Dòng thời gian mở ra HAI MƯƠI dòng. Đổ hết một lúc thì trang cao tám
+   nghìn điểm ảnh, và cái đáng đọc nhất (mấy dòng gần đây) chìm nghỉm
+   giữa lịch sử ba năm. Bấm là dài thêm. */
+var SO_DONG = 20;
+
+var SOAN_TAB = [
+  { k: 'lien-lac', l: 'Ghi liên lạc' },
+  { k: 'nhan',     l: 'Nhắn cho đối tác' },
+  { k: 'ghi-chu',  l: 'Ghi chú nội bộ' },
+  { k: 'tom-tat',  l: 'Sửa tóm tắt' }
+];
+var KENH = [['goi', 'Gọi điện'], ['zalo', 'Nhắn Zalo'], ['email', 'Gửi email'], ['gap', 'Gặp trực tiếp']];
+var KET_QUA = [['da-chot', 'Đã chốt'], ['cho-doi-tac', 'Chờ đối tác'], ['goi-lai', 'Cần gọi lại']];
+
+var TEN_LOAI = { 'ghi-chu': 'Ghi chú nội bộ', 'lien-lac': 'Liên lạc', 'tin-nhan': 'Tin nhắn',
+  'thong-bao': 'Thông báo', 'trang-thai': 'Trạng thái', 'moc': 'Mốc', 'bang-ke': 'Bảng kê', 'tep': 'Tệp' };
+
+var NGOAI = [
+  { k: 'onerpm',  ten: 'OneRPM',      url: 'https://app.onerpm.com' },
+  { k: 'believe', ten: 'Believe',     url: 'https://backstage.believe.com' },
+  { k: 'warner',  ten: 'Warner',      url: 'https://www.wmg.com' },
+  { k: 'ytcms',   ten: 'YouTube CMS', url: 'https://studio.youtube.com' }
+];
+
+function chonHtml(khoa, ds, gt) {
+  return '<select class="in" ' + khoa + '>' + ds.map(function (x) {
+    return '<option value="' + e(x[0]) + '"' + (x[0] === gt ? ' selected' : '') + '>' + e(x[1]) + '</option>';
+  }).join('') + '</select>';
+}
+
+/* =====================================================================
+   Câu tóm tắt quan hệ · sinh từ dữ liệu, đặt TRÊN mọi con số
+   ---------------------------------------------------------------------
+   Đây là thứ chủ sở hữu đọc đầu tiên mỗi lần mở một đối tác, nên nó phải
+   là một đoạn văn đọc được, không phải bốn ô số ghép lại.
+   ===================================================================== */
+function cauQuanHe(A, d) {
+  var cau = [];
+  /* Người đã tự viết tóm tắt thì không nhắc lại chuyện họ vừa viết. Hai câu
+     nói cùng một thứ nằm cạnh nhau đọc như phần mềm không nghe ai cả. */
+  if (!d.tomTat) {
+    var nam = A.cachNgay(d.hopDong.tuNgay);
+    var lauCau = nam >= 730 ? Math.round(nam / 365) + ' năm' : nam >= 60 ? Math.round(nam / 30) + ' tháng' : nam + ' ngày';
+    var dv = d.dichVu.map(function (x) { return A.dvCua(x).vi.toLowerCase(); });
+    cau.push('Đồng hành ' + lauCau + ', từ ' + A.ngayVi(d.hopDong.tuNgay) + '.');
+    if (dv.length === 1) cau.push('Haustek làm ' + dv[0] + ' cho họ.');
+    else if (dv.length) cau.push('Haustek làm ' + dv.slice(0, -1).join(', ') + ' và ' + dv[dv.length - 1] + ' cho họ.');
+  }
+
+  var mo = d.viecDangMo.length;
+  if (!mo) cau.push('Hiện không có việc nào đang chạy.');
+  else {
+    var gap = d.viecDangMo.filter(function (v) { return v.treHanPhanHoi || v.treBuocTiep; });
+    cau.push('Đang có ' + mo + ' việc chạy' + (gap.length ? ', trong đó ' + gap.length + ' việc đã quá hạn' : '') + '.');
+  }
+  var cho = d.canDoiTac.length;
+  if (cho) {
+    var g0 = d.canDoiTac[0];
+    cau.push('Haustek đang chờ họ ' + g0.viec.toLowerCase() + (cho > 1 ? ' và ' + (cho - 1) + ' việc nữa' : '') +
+      ', đã chờ ' + g0.soNgayCho + ' ngày.');
+  }
+  if (d.lienLacCuoi) {
+    cau.push('Lần cuối nói chuyện là ' + A.ngayVi(d.lienLacCuoi.luc) + ', ' + A.cachNgay(d.lienLacCuoi.luc) + ' ngày trước.');
+  } else {
+    cau.push('Chưa ai ghi lại cuộc liên lạc nào với họ.');
+  }
+  if (d.conHan != null && d.conHan < 0) cau.push('Hợp đồng đã hết hạn ' + A.ngayVi(d.hopDong.denNgay) + '.');
+  else if (d.conHan != null && d.conHan <= 60) cau.push('Hợp đồng còn ' + d.conHan + ' ngày.');
+  return cau.join(' ');
+}
+
+/* =====================================================================
+   Danh sách
+   ===================================================================== */
+function veDanhSach(root, c) {
+  var A = c.A, loc = c.loc;
+  var ds = A.doiTac.list({ q: loc.q, nguoiPhuTrachId: loc.nguoiPhuTrachId, dichVu: loc.dichVu });
+  /* Xếp theo lâu nhất chưa có tin. Một danh sách đối tác xếp theo tên chỉ
+     là quyển danh bạ; xếp thế này thì nó tự nói ra việc phải làm.
+     Người chưa ghi liên lạc nào xếp cuối: chưa biết thì chưa gấp bằng
+     biết là đã lâu. */
+  ds = ds.slice().sort(function (a, b) {
+    if (a.chuaGhiLienLac !== b.chuaGhiLienLac) return a.chuaGhiLienLac ? 1 : -1;
+    return (b.ngayImLang || 0) - (a.ngayImLang || 0);
+  });
+
+  var st = HM.nho(A, 'doi-tac.trang', function () { return { trang: 0 }; });
+  var tr = HM.phanTrang(ds, st, 20);
+
+  var boLoc = '<div class="fldrow" style="margin-bottom:12px">' +
+    '<input class="in" data-tim placeholder="Tìm theo tên đối tác" value="' + e(loc.q || '') + '" style="max-width:260px">' +
+    chonHtml('data-loc-nguoi style="max-width:210px"',
+      [['', 'Tất cả người phụ trách']].concat(A.nhanSu.list().map(function (n) { return [n.id, n.ten]; })), loc.nguoiPhuTrachId || '') +
+    chonHtml('data-loc-dv style="max-width:230px"',
+      [['', 'Tất cả dịch vụ']].concat(A.dichVu.filter(function (x) { return !x.kyThuat; }).map(function (x) { return [x.id, x.vi]; })), loc.dichVu || '') +
+    '</div>';
+
+  var dong = tr.page.map(function (d) {
+    var im = d.lienLacCuoi
+      ? 'Nói chuyện lần cuối ' + A.cachNgay(d.lienLacCuoi.luc) + ' ngày trước · ' + HM.dai(d.lienLacCuoi.tomTat || '', 62)
+      : 'Chưa ghi liên lạc nào';
+    return '<div class="d" data-mo="' + e(d.id) + '">' +
+      '<div class="c"><b>' + e(d.ten) + '</b> · ' + e(d.nguoiPhuTrachTen || 'chưa có người phụ trách') +
+      ' · ' + e(d.dichVu.map(function (x) { return A.dvCua(x).vi; }).join(', ')) +
+      '<span class="khi">' + e(im) +
+      (d.soViecDangMo ? ' · ' + d.soViecDangMo + ' việc đang chạy' : ' · không có việc đang chạy') + '</span></div>' +
+      '<div class="btnrow"><button type="button" class="btn sm" data-mo="' + e(d.id) + '">Mở</button></div>' +
+      '</div>';
+  }).join('');
+
+  root.innerHTML = HM.dau({
+    h1: 'Đối tác',
+    mo: 'Xếp theo ai lâu nhất chưa nhận được tin từ Haustek. Trên cùng là người nên gọi hôm nay.',
+    nut: '<button type="button" class="btn pri" data-them-dt>Thêm đối tác</button>'
+  }) + boLoc +
+    HM.the({ h2: ds.length + ' đối tác', thoBody: true,
+      than: ds.length ? '<div class="hang">' + dong + '</div>' + tr.chan
+        : HM.trong({ tieuDe: 'Không có đối tác nào khớp', moTa: 'Đổi từ khoá tìm hoặc bỏ bớt bộ lọc.' }) });
+
+  HM.bam(root, '[data-mo]', function (el) { c.datLoc({ id: el.getAttribute('data-mo') }); });
+  HM.ganTrang(root, st, c.veLai);
+  HM.nhap(root, '[data-tim]', function (el) { c.datLoc({ q: el.value.trim() }); }, 350);
+  HM.doi(root, '[data-loc-nguoi]', function (el) { c.datLoc({ nguoiPhuTrachId: el.value }); });
+  HM.doi(root, '[data-loc-dv]', function (el) { c.datLoc({ dichVu: el.value }); });
+  HM.bam(root, '[data-them-dt]', function () { themDoiTac(c); });
+}
+
+function themDoiTac(c) {
+  var A = c.A;
+  HM.hoiForm(c, {
+    tieuDe: 'Thêm đối tác',
+    moTa: 'Chỉ cần tên và người phụ trách. Những thứ còn lại điền dần khi biết.',
+    fields: [
+      { k: 'ten', l: 'Tên đối tác', req: true, rong: true },
+      { k: 'loai', l: 'Loại', kieu: 'select', opts: [['label', 'Label'], ['nghe-si', 'Nghệ sĩ'], ['thuong-hieu', 'Thương hiệu']] },
+      { k: 'nguoiPhuTrachId', l: 'Người phụ trách', kieu: 'select', opts: A.nhanSu.list().map(function (n) { return [n.id, n.ten]; }) },
+      { k: 'lienHeTen', l: 'Người liên hệ' },
+      { k: 'lienHeDienThoai', l: 'Điện thoại' }
+    ]
+  }).then(function (f) {
+    if (!f) return;
+    try {
+      var d = A.doiTac.them({ ten: f.ten, loai: f.loai, nguoiPhuTrachId: f.nguoiPhuTrachId, dichVu: [] });
+      if (f.lienHeTen) A.doiTac.themLienHe(d.id, { ten: f.lienHeTen, dienThoai: f.lienHeDienThoai });
+      c.thongBao('Đã thêm ' + d.ten + '.', 'ok');
+      c.datLoc({ id: d.id });
+    } catch (err) { c.thongBao(loiNguoi(err), 'warn'); }
+  });
+}
+
+/* Lỗi lõi ném ra là mã máy. Đổi sang câu người đọc được, và câu nào cũng
+   phải có bước tiếp theo, không phải chỉ nói cái gì sai. */
+function loiNguoi(err) {
+  var m = String(err && err.message || '');
+  return { 'thieu-ten': 'Cần điền tên đối tác trước đã.',
+    'chi-quan-ly': 'Việc này cần quyền quản lý. Nhờ giám đốc hoặc trưởng bộ phận làm giúp.',
+    'thieu-doi-tac': 'Chưa chọn đối tác nào.',
+    'thieu-noi-dung': 'Ô nội dung đang trống.',
+    'thieu-tom-tat': 'Ghi một dòng vừa chốt được gì thì mới lưu được.',
+    'email-khong-hop-le': 'Địa chỉ email chưa đúng dạng.',
+    'email-da-co': 'Email này đã có tài khoản rồi.'
+  }[m] || 'Chưa lưu được. Thử lại, nếu vẫn vậy thì báo người quản trị.';
+}
+
+/* =====================================================================
+   Trang một đối tác
+   ===================================================================== */
+function veMot(root, c, id) {
+  var A = c.A, d = A.doiTac.get(id);
+  if (!d) { root.innerHTML = HM.trong({ tieuDe: 'Không tìm thấy đối tác này', moTa: 'Có thể đường dẫn đã cũ.', nut: '<button type="button" class="btn" data-ve-ds>Về danh sách</button>' }); HM.bam(root, '[data-ve-ds]', function () { c.datLoc({ id: '' }); }); return; }
+
+  var ds = CHI_THAY ? A.dong.choDoiTac(id) : A.dong.theoDoiTac(id);
+  var hien = ds.slice(0, SO_DONG);
+
+  root.innerHTML =
+    '<div class="nhandien">' + HM.bia(d.id, d.ten, 'md') +
+      '<div class="ten"><h1>' + e(d.ten) + '</h1>' +
+        '<div class="p">' + e(({ label: 'Label', 'nghe-si': 'Nghệ sĩ', 'thuong-hieu': 'Thương hiệu' })[d.loai] || d.loai) +
+        ' · ' + e(d.dichVu.map(function (x) { return A.dvCua(x).vi; }).join(', ') || 'chưa gắn dịch vụ') +
+        ' · phụ trách: ' + e(d.nguoiPhuTrach ? d.nguoiPhuTrach.ten : 'chưa có') + '</div></div>' +
+      '<div class="btnrow">' +
+        '<button type="button" class="btn" data-ve-ds>Về danh sách</button>' +
+        '<button type="button" class="btn" data-xem-nhu="' + e(d.id) + '">Xem cổng như đối tác này</button>' +
+      '</div></div>' +
+
+    '<div class="tomtat">' + (d.tomTat ? e(d.tomTat) + ' ' : '') + e(cauQuanHe(A, d)) + '</div>' +
+
+    '<div class="doi-2"><div>' +
+      HM.so([
+        { l: 'Việc đang chạy', v: d.viecDangMo.length, di: 'viec', loc: { doiTacId: d.id, tab: 'tat-ca' },
+          s: d.viecDangMo.length ? d.viecDangMo.filter(function (v) { return v.treBuocTiep || v.treHanPhanHoi; }).length + ' việc quá hạn' : 'đã xong hết' },
+        { l: 'Đối tác cần làm', v: d.canDoiTac.length,
+          s: d.canDoiTac.length ? 'chờ ' + d.canDoiTac[0].soNgayCho + ' ngày' : 'không chờ gì' },
+        d.bangKe.length ? { l: 'Bảng kê gần nhất', v: A.tien0(d.bangKe[0].soTien),
+          s: 'kỳ ' + d.bangKe[0].ky + ' · theo bảng kê ' + d.bangKe[0].nguon +
+             (d.bangKe[0].ngayChuyen ? ' · đã chuyển ' + A.ngayGonVi(d.bangKe[0].ngayChuyen) : ' · chưa chuyển') } : null,
+        { l: 'Tệp đã gửi', v: d.tep.length, s: d.tep.length ? 'gần nhất ' + A.ngayGonVi(d.tep[0].taiLenLuc) : 'chưa gửi tệp nào' }
+      ]) +
+      HM.the({
+        h2: 'Dòng thời gian',
+        p: 'Mọi thứ đã xảy ra giữa Haustek và đối tác này, một cột, theo thứ tự thời gian.',
+        hanhDong: '<label class="tickrow" style="font-size:12.5px"><input type="checkbox" data-chi-thay' + (CHI_THAY ? ' checked' : '') +
+          '><span>Chỉ những dòng đối tác thấy</span></label>',
+        thoBody: true,
+        than: '<div class="card-b">' + (hien.length ? veDong(A, hien) :
+          HM.trong({ tieuDe: 'Chưa có dòng nào ở đây', moTa: 'Ghi một cuộc liên lạc bên dưới là dòng đầu tiên xuất hiện.' })) +
+          (ds.length > hien.length ? '<div class="btnrow" style="justify-content:center;margin-top:6px">' +
+            '<button type="button" class="btn" data-them-dong>Xem thêm ' + Math.min(40, ds.length - hien.length) + ' dòng nữa</button></div>' : '') +
+          '</div>' + veSoan(A, d),
+      }) +
+    '</div><div>' + veCotPhai(A, c, d) + '</div></div>';
+
+  ganMot(root, c, d);
+}
+
+/* Dòng thời gian, gom theo ngày. Dựng bằng một mảng rồi join: một đối tác
+   hai trăm dòng mà nối chuỗi trong vòng lặp thì trang giật thấy rõ. */
+function veDong(A, ds) {
+  var ra = ['<div class="dt">'], ngayTruoc = '';
+  for (var i = 0; i < ds.length; i++) {
+    var x = ds[i], ngay = String(x.luc).slice(0, 10);
+    if (ngay !== ngayTruoc) {
+      ngayTruoc = ngay;
+      var nhan = ngay === A.homNay() ? 'Hôm nay' : A.thuTrongTuan(ngay) + ', ' + A.ngayVi(ngay);
+      ra.push('<div class="ngay">' + e(nhan) + '</div>');
+    }
+    ra.push('<div class="m' + (x.hienChoDoiTac ? ' ta' : '') + '">' +
+      '<div class="h"><b>' + e(x.tieuDe) + '</b>' +
+        '<time>' + e(A.gioVi(x.luc)) + '</time>' +
+        '<span class="ai">' + e(TEN_LOAI[x.loai] || x.loai) + (x.boi && x.boi.ten ? ' · ' + e(x.boi.ten) : '') + '</span>' +
+        (x.hienChoDoiTac ? '' : '<span class="rieng">nội bộ</span>') +
+      '</div>' +
+      (x.noiDung ? '<p>' + e(x.noiDung) + '</p>' : '') +
+      (x.daXem ? '<span class="dax">' + e(x.daXem.ten + ' đã xem ' + A.ngayGonVi(x.daXem.luc)) + '</span>' : '') +
+      '</div>');
+  }
+  ra.push('</div>');
+  return ra.join('');
+}
+
+/* Ô soạn ghim dưới dòng thời gian, LUÔN hiện. Ghi một cuộc gọi vừa xong
+   phải mất vài giây; mở hộp thoại đã hết ba giây rồi. */
+function veSoan(A, d) {
+  var than, nut;
+  if (SOAN === 'lien-lac') {
+    than = '<div class="fldrow two-up">' +
+      '<div class="fgrp"><label class="fld">Kênh</label>' + chonHtml('data-kenh', KENH, 'goi') + '</div>' +
+      '<div class="fgrp"><label class="fld">Kết quả</label>' + chonHtml('data-ketqua', KET_QUA, 'da-chot') + '</div></div>' +
+      '<textarea class="in" data-noi rows="2" placeholder="Vừa gọi ai, chốt được gì."></textarea>';
+    nut = 'Ghi liên lạc';
+  } else if (SOAN === 'nhan') {
+    than = '<textarea class="in" data-noi rows="3" placeholder="Nội dung gửi cho ' + e(d.ten) + '."></textarea>';
+    nut = 'Gửi cho đối tác';
+  } else if (SOAN === 'ghi-chu') {
+    than = '<textarea class="in" data-noi rows="3" placeholder="Ghi cho đồng nghiệp đọc. Đối tác không bao giờ thấy dòng này."></textarea>';
+    nut = 'Lưu ghi chú';
+  } else {
+    than = '<textarea class="in" data-noi rows="3" placeholder="Một đoạn kể lại quan hệ với đối tác này.">' + e(d.tomTat || '') + '</textarea>';
+    nut = 'Lưu tóm tắt';
+  }
+  var hint = SOAN === 'nhan' ? 'Dòng này đối tác đọc được ngay ở cổng của họ.'
+    : SOAN === 'ghi-chu' ? 'Ghi chú nội bộ không có đường nào ra cổng đối tác.'
+    : SOAN === 'tom-tat' ? 'Tóm tắt hiện ở đầu trang này, chỉ nội bộ đọc.'
+    : 'Ghi lại để người sau không phải gọi lại hỏi cùng một câu.';
+  return '<div class="soan">' + HM.tabs(SOAN_TAB, SOAN) + than +
+    '<div class="ft"><span class="hint">' + e(hint) + '</span>' +
+    '<button type="button" class="btn pri" data-luu>' + e(nut) + '</button></div></div>';
+}
+
+function veCotPhai(A, c, d) {
+  var lh = (d.lienHe || []).map(function (x) {
+    return '<div class="d" style="padding:10px 0;border-top:1px solid var(--line)">' +
+      '<div class="c"><b>' + e(x.ten) + '</b>' + (x.laChinh ? ' ' + HM.tag('liên hệ chính', 'ok') : '') +
+      '<span class="khi">' + e(x.vaiTro || '') + (x.gioTienGoi ? ' · gọi được ' + e(x.gioTienGoi).toLowerCase() : '') + '</span>' +
+      '<span class="khi"><a href="tel:' + e(x.dienThoai) + '">' + e(x.dienThoai) + '</a>' +
+        (x.email ? ' · <a href="mailto:' + e(x.email) + '">' + e(x.email) + '</a>' : '') + '</span></div></div>';
+  }).join('');
+
+  var mn = d.maNgoai || {};
+  var ngoai = NGOAI.filter(function (n) { return mn[n.k]; }).map(function (n) {
+    return '<a href="' + e(n.url) + '" target="_blank" rel="noopener">' + HM.icon('out') +
+      '<span>' + e(n.ten) + '</span><em>' + e(mn[n.k]) + '</em></a>';
+  }).join('');
+
+  var viec = d.viecDangMo.slice(0, 8).map(function (v) {
+    return '<div class="d" data-viec="' + e(v.id) + '" style="padding:9px 0;border-top:1px solid var(--line);cursor:pointer">' +
+      '<div class="c">' + e(v.tieuDe) + '<span class="khi">' + e(v.dichVuTen) +
+      (v.buocTiep ? ' · ' + e(v.buocTiep.viec) : '') + '</span></div></div>';
+  }).join('');
+
+  return HM.the({ h2: 'Liên hệ', thoBody: true, than: '<div class="card-b" style="padding-top:2px">' +
+      (lh || '<p class="say">Chưa có liên hệ nào. Thêm một cái tên và một số điện thoại thì lần sau gọi được ngay.</p>') +
+      '<div class="btnrow" style="margin-top:12px"><button type="button" class="btn sm" data-them-lh>Thêm liên hệ</button></div></div>' }) +
+    (viec ? HM.the({ h2: 'Việc đang chạy', thoBody: true, than: '<div class="card-b" style="padding-top:2px">' + viec + '</div>' }) : '') +
+    (ngoai ? HM.the({ h2: 'Mở ở công cụ thật', p: 'Số liệu và tiền nằm ở đây, portal không chép về.', thoBody: true,
+      than: '<div class="card-b"><div class="ngoai">' + ngoai + '</div></div>' }) : '') +
+    HM.the({ h2: 'Hợp đồng', thoBody: true, than: '<div class="card-b">' + HM.kv([
+      ['Thời hạn', A.ngayVi(d.hopDong.tuNgay) + ' đến ' + A.ngayVi(d.hopDong.denNgay)],
+      ['Còn lại', d.conHan < 0 ? 'đã hết hạn' : d.conHan + ' ngày'],
+      ['Nhịp bảng kê', d.hopDong.nhipBaoCao === 'thang' ? 'hằng tháng' : 'hằng quý'],
+      ['Tài khoản nhận', d.nganHang ? d.nganHang.nganHang + ' ' + d.nganHang.soTaiKhoanMask : 'chưa khai']
+    ]) + '</div>' });
+}
+
+function ganMot(root, c, d) {
+  var A = c.A;
+  HM.bam(root, '[data-ve-ds]', function () { SO_DONG = 20; c.datLoc({ id: '' }); });
+  HM.bam(root, '[data-them-dong]', function () { SO_DONG += 30; c.veLai(); });
+  HM.bam(root, '[data-viec]', function (el) { c.di('viec', { id: el.getAttribute('data-viec') }); });
+  HM.doi(root, '[data-chi-thay]', function (el) { CHI_THAY = el.checked; c.veLai(); });
+  HM.bam(root, '.soan [data-tab]', function (el) { SOAN = el.getAttribute('data-tab'); c.veLai(); });
+  HM.bam(root, '[data-xem-nhu]', function (el) {
+    try { localStorage.setItem('haustek.xem-nhu', el.getAttribute('data-xem-nhu')); } catch (err) {}
+    window.open('khach.html#k-trang-chu', '_blank');
+  });
+  HM.bam(root, '[data-them-lh]', function () {
+    HM.hoiForm(c, { tieuDe: 'Thêm liên hệ', fields: [
+      { k: 'ten', l: 'Họ tên', req: true }, { k: 'vaiTro', l: 'Vai trò' },
+      { k: 'dienThoai', l: 'Điện thoại', req: true }, { k: 'email', l: 'Email' },
+      { k: 'gioTienGoi', l: 'Giờ tiện gọi', ph: 'Chiều 14h đến 17h' }
+    ] }).then(function (f) {
+      if (!f) return;
+      try { A.doiTac.themLienHe(d.id, f); c.thongBao('Đã thêm ' + f.ten + '.', 'ok'); c.veLai(); }
+      catch (err) { c.thongBao(loiNguoi(err), 'warn'); }
+    });
+  });
+  HM.bam(root, '[data-luu]', function () {
+    var o = root.querySelector('.soan [data-noi]');
+    var chu = o ? o.value.trim() : '';
+    if (!chu) { c.thongBao('Ô nội dung đang trống.', 'warn'); return; }
+    var k = root.querySelector('.soan [data-kenh]'), q = root.querySelector('.soan [data-ketqua]');
+    try {
+      if (SOAN === 'lien-lac') { A.dong.ghiLienLac({ doiTacId: d.id, tomTat: chu, kenh: k ? k.value : 'goi', ketQua: q ? q.value : 'da-chot' }); c.thongBao('Đã ghi liên lạc.', 'ok'); }
+      else if (SOAN === 'nhan') { A.dong.nhanChoDoiTac({ doiTacId: d.id, noiDung: chu }); c.thongBao('Đã gửi cho ' + d.ten + '.', 'ok'); }
+      else if (SOAN === 'ghi-chu') { A.dong.ghiChuNoiBo({ doiTacId: d.id, noiDung: chu }); c.thongBao('Đã lưu ghi chú nội bộ.', 'ok'); }
+      else { A.doiTac.suaTomTat(d.id, chu); c.thongBao('Đã lưu tóm tắt.', 'ok'); }
+      SO_DONG = 20;
+      c.veLai();
+    } catch (err) { c.thongBao(loiNguoi(err), 'warn'); }
+  });
+}
 
 HT.dangKy({
-  id: 'doi-tac', nav: 'navDoiTac', nhom: 'nhomDoiTac', icon: 'user',
-  dem: function (c) {
-    try {
-      var me = c.A.staff.me;
-      if (me.role !== 'sales') return '';
-      var n = c.A.parties.list({ manager: me.id, status: 'renew' }).rows.length;
-      return n ? String(n) : '';
-    } catch (e) { return ''; }
-  },
-
-  chu: {
-    vi: {
-      themDt: 'Thêm đối tác', fLoaiDt: 'Loại đối tác', fTenDt: 'Tên đối tác', fLabelMe: 'Thuộc label', fLabelMeHint: 'Nghệ sĩ độc lập thì để trống.', fTu: 'Ngày ký hợp đồng', fDen: 'Ngày hết hạn', fDenHint: 'Bỏ trống thì mặc định 2 năm.', fPhan: 'Phần đối tác hưởng (%)', fPhanHint: 'Bỏ trống thì dùng mức mặc định của loại đối tác.', fNvPt: 'Người phụ trách', fEmailDt: 'Email đăng nhập cổng', fEmailHint: 'Có email thì cấp luôn tài khoản cổng, trạng thái Đã mời.', fGhiDt: 'Ghi chú hợp đồng', daThemDt: 'Đã thêm {t} · {id}', khongLabel: 'Nghệ sĩ độc lập',
-      nhomDoiTac: 'Đối tác', navDoiTac: 'Đối tác', h1: 'Đối tác',
-      mo: 'Label, label con và nghệ sĩ đang ký với Haustek: người phụ trách, hạng, doanh thu quý, hạn hợp đồng, tài khoản cổng.',
-      kTong: 'Đối tác', kQuanLy: 'Đang quản lý', kGiaHan: 'Sắp hết hạn hợp đồng', kGiaHanS: 'trong 90 ngày',
-      kThieu: 'Thiếu hồ sơ', kChuaDn: 'Chưa đăng nhập', kChuaTk: 'Chưa có tài khoản cổng',
-      tabDs: 'Danh sách', tabKd: 'Chỉ tiêu kinh doanh',
-      tim: 'Tìm tên hoặc mã đối tác…', moiNv: 'Mọi người phụ trách', moiLoai: 'Mọi loại', moiHang: 'Mọi hạng', hangX: 'Hạng {c}',
-      label: 'Label', sublabel: 'Label con', artist: 'Nghệ sĩ', xuat: 'Xuất CSV',
-      ttManaged: 'Đang quản lý', ttRenew: 'Sắp hết hạn', ttInactive: 'Không hoạt động', ttIncomplete: 'Thiếu hồ sơ',
-      ttNeverLogged: 'Chưa đăng nhập', ttNoAccount: 'Chưa có tài khoản', ttAll: 'Tất cả',
-      bulkCsv: 'Xuất CSV dòng đã chọn', daXuat: 'Đã xuất {n} đối tác', cDoiTac: 'Đối tác', cNv: 'Người phụ trách', cHang: 'Hạng', cDtQ: 'Doanh thu gộp quý', cLuotQ: 'Lượt nghe quý', cBai: 'Bản ghi',
-      cHopDong: 'Hết hạn hợp đồng', cTk: 'Tài khoản cổng', cTt: 'Tình trạng',
-      conNgay: 'còn {n} ngày', daHet: 'đã hết hạn', chuaCoTk: 'chưa có', chuaDn: 'chưa đăng nhập', lanCuoi: 'lần cuối {d}',
-      labelCon: '{n} label con', khong: 'Không có đối tác nào khớp bộ lọc', khongMo: 'Đổi bộ lọc phía trên.',
-      /* ngăn */
-      dNv: 'Người phụ trách', dDoi: 'Đổi người phụ trách…', daDoi: 'Đã đổi người phụ trách',
-      dKy: 'Ký hợp đồng', dHet: 'Hết hạn hợp đồng', dTyLe: 'Tỷ lệ nghệ sĩ được hưởng', dHang: 'Xếp hạng',
-      dHangMo: 'A từ $150,000 gộp một quý · B từ $40,000 · C còn lại',
-      dTk: 'Tài khoản cổng', dNh: 'Tài khoản ngân hàng', coNh: 'đã khai', chuaNh: 'chưa khai',
-      dVi: 'Ví của đối tác', viKhaDung: 'Khả dụng', viCho: 'Đang xử lý', viDaRut: 'Đã rút',
-      dTicket: 'Ticket đang mở', khongTicket: 'Không có ticket nào đang mở', taoTicket: 'Tạo ticket hộ', moHoTro: 'Mở hỗ trợ', taoHoSo: 'Tạo hồ sơ phát hành hộ', deUng: 'Đề xuất tạm ứng', deHd: 'Đề xuất hợp đồng',
-      dCha: 'Thuộc label mẹ', dDtQ: 'Doanh thu gộp quý này', soQuyTruoc: 'so với quý trước', dienBien: 'Doanh thu gộp 12 kỳ gần nhất',
-      dPh: 'Bản phát hành', dPhMo: 'Bài hát có doanh thu cao nhất của đối tác. Bấm để mở hồ sơ.', dPhTrong: 'Đối tác chưa có bài hát nào trong danh mục.', xemDanhMuc: 'Mở danh mục',
-      /* chỉ tiêu */
-      kdTieuDe: 'Chỉ tiêu kinh doanh quý {q}',
-      kdMo: 'Doanh thu gộp quý của đối tác mỗi nhân viên phụ trách so với chỉ tiêu. Kỳ đang chọn quyết định quý.',
-      kdTk: 'Tài khoản phụ trách', kdLabel: 'label', kdNs: 'nghệ sĩ', kdDt: 'Doanh thu gộp quý', kdChiTieu: 'Chỉ tiêu quý',
-      kdDat: 'Đạt {p} chỉ tiêu', kdMoi: 'Tài khoản mới trong quý', kdGiaHan: 'Cần gia hạn', kdChuaDn: 'Chưa đăng nhập', kdChuaTk: 'Chưa có tài khoản',
-      kdTheoHang: 'Tài khoản theo hạng', kdTop: 'Đối tác lớn nhất', kdSoSanh: 'Doanh thu gộp quý so với chỉ tiêu', kdLoc: 'Xem danh sách của nhân viên này',
-      kdQuyTruoc: 'quý trước'
-    },
-    en: {
-      themDt: 'Add a partner', fLoaiDt: 'Partner type', fTenDt: 'Partner name', fLabelMe: 'Belongs to label', fLabelMeHint: 'Leave empty for an independent artist.', fTu: 'Contract signed', fDen: 'Contract ends', fDenHint: 'Defaults to 2 years when empty.', fPhan: 'Partner share (%)', fPhanHint: 'Leave empty for the default of this partner type.', fNvPt: 'Account manager', fEmailDt: 'Portal login email', fEmailHint: 'With an email the portal account is created right away as Invited.', fGhiDt: 'Contract note', daThemDt: 'Added {t} · {id}', khongLabel: 'Independent artist',
-      nhomDoiTac: 'Partners', navDoiTac: 'Partners', h1: 'Partners',
-      mo: 'Labels, sub-labels and artists signed with Haustek: manager, class, quarter revenue, contract end, portal account.',
-      kTong: 'Partners', kQuanLy: 'Managed', kGiaHan: 'Contracts ending', kGiaHanS: 'within 90 days',
-      kThieu: 'Incomplete', kChuaDn: 'Never logged in', kChuaTk: 'No portal account',
-      tabDs: 'Directory', tabKd: 'Sales targets',
-      tim: 'Search name or client ID…', moiNv: 'Any account manager', moiLoai: 'Any kind', moiHang: 'Any class', hangX: 'Class {c}',
-      label: 'Label', sublabel: 'Sub-label', artist: 'Artist', xuat: 'Export CSV',
-      ttManaged: 'Managed', ttRenew: 'Renewal due', ttInactive: 'Inactive', ttIncomplete: 'Incomplete',
-      ttNeverLogged: 'Never logged in', ttNoAccount: 'No account', ttAll: 'All',
-      bulkCsv: 'Export selected as CSV', daXuat: 'Exported {n} partners', cDoiTac: 'Partner', cNv: 'Account manager', cHang: 'Class', cDtQ: 'Quarter gross', cLuotQ: 'Quarter streams', cBai: 'Recordings',
-      cHopDong: 'Contract ends', cTk: 'Portal account', cTt: 'Status',
-      conNgay: '{n} days left', daHet: 'expired', chuaCoTk: 'none', chuaDn: 'never logged in', lanCuoi: 'last seen {d}',
-      labelCon: '{n} sub-labels', khong: 'No partner matches the filters', khongMo: 'Change the filters above.',
-      dNv: 'Account manager', dDoi: 'Change manager…', daDoi: 'Account manager changed',
-      dKy: 'Signed', dHet: 'Contract ends', dTyLe: 'Artist share rate', dHang: 'Classification',
-      dHangMo: 'A from $150,000 gross a quarter · B from $40,000 · C otherwise',
-      dTk: 'Portal account', dNh: 'Bank account', coNh: 'on file', chuaNh: 'missing',
-      dVi: 'Partner wallet', viKhaDung: 'Available', viCho: 'In progress', viDaRut: 'Withdrawn',
-      dTicket: 'Open tickets', khongTicket: 'No open ticket', taoTicket: 'Log a ticket', moHoTro: 'Open support', taoHoSo: 'Create a release', deUng: 'Propose advance', deHd: 'Propose contract',
-      dCha: 'Parent label', dDtQ: 'Gross this quarter', soQuyTruoc: 'vs previous quarter', dienBien: 'Gross, last 12 periods',
-      dPh: 'Releases', dPhMo: 'The partner’s highest-earning tracks. Open one for its record.', dPhTrong: 'This partner has no tracks in the catalogue yet.', xemDanhMuc: 'Open catalogue',
-      kdTieuDe: 'Sales targets, quarter {q}',
-      kdMo: 'Quarter gross per salesperson against target. The selected period sets the quarter.',
-      kdTk: 'Accounts managed', kdLabel: 'labels', kdNs: 'artists', kdDt: 'Quarter gross', kdChiTieu: 'Quarter target',
-      kdDat: '{p} of target', kdMoi: 'New accounts this quarter', kdGiaHan: 'Renewals due', kdChuaDn: 'Never logged in', kdChuaTk: 'No account',
-      kdTheoHang: 'Accounts by class', kdTop: 'Largest partners', kdSoSanh: 'Quarter gross against target', kdLoc: 'Show this person’s accounts',
-      kdQuyTruoc: 'previous quarter'
-    }
-  },
-
+  id: 'doi-tac', nav: 'Đối tác', icon: 'user',
+  chu: { vi: { nav: 'Đối tác' } },
   ve: function (root, c) {
-    var A = c.A, t = c.t, vi = c.lang === 'vi', P = HB.dayMau(), me = A.staff.me;
-    var tatCa = A.parties.list({});
-    var dem = tatCa.counts;
-
-    var html = HM.dau({
-      h1: HM.esc(t('h1')), mo: HM.esc(t('mo')),
-      nut: (A.quyen.nhom('doiTacTao') ? '<button type="button" class="btn pri" data-them-dt>' + HM.icon('user') + HM.esc(t('themDt')) + '</button>' : '') + (LOC.tab === 'ds' ? '<button type="button" class="btn" data-xuat>' + HM.icon('down2') + HM.esc(t('xuat')) + '</button>' : '')
-    });
-    html += HM.tabs([
-      { k: 'ds', l: t('tabDs'), icon: 'list' },
-      { k: 'kd', l: t('tabKd'), icon: 'up' }
-    ], LOC.tab);
-
-    if (LOC.tab === 'kd') html += veChiTieu(c);
-    else html += veDanhSach(c, tatCa);
-
-    root.innerHTML = html;
-    if (LOC.tab === 'ds') dungBang(root, c);
-    HB.gan(root);
-
-    HM.bam(root, '[data-tab]', function (el) { LOC.tab = el.getAttribute('data-tab'); c.veLai(); });
-    HM.bam(root, '[data-tt]', function (el) { LOC.tt = el.getAttribute('data-tt'); c.veLai(); });
-    HM.doi(root, '[data-nv]', function (el) { LOC.nv = el.value; c.veLai(); });
-    HM.doi(root, '[data-loai]', function (el) { LOC.loai = el.value; c.veLai(); });
-    HM.doi(root, '[data-hang]', function (el) { LOC.hang = el.value; c.veLai(); });
-    HM.nhap(root, '[data-tim]', function (el) { LOC.tim = el.value; c.veLai(); });
-    HM.bam(root, '[data-kd-loc]', function (el) { LOC.tab = 'ds'; LOC.nv = el.getAttribute('data-kd-loc'); LOC.tt = ''; c.veLai(); });
-    HM.bam(root, '[data-di]', function (el) { c.di(el.getAttribute('data-di')); });
-    HM.bam(root, '[data-them-dt]', function () {
-      var me = A.staff.me, sales = A.staff.byRole('sales').filter(function (x) { return x.active !== false; });
-      HTM.hoiForm(c, { tieuDe: t('themDt'), dong: t('themDt'), fields: [
-        { k: 'kind', l: t('fLoaiDt'), kieu: 'select', opts: A.parties.kinds.map(function (k) { return [k[0], vi ? k[1] : k[2]]; }), kbb: false }, { k: 'name', l: t('fTenDt'), req: true },
-        { k: 'labelId', l: t('fLabelMe'), kieu: 'select', opts: [['', t('khongLabel')]].concat(A.labels.map(function (l) { return [l.id, l.name + ' · ' + l.clientId]; })), hint: t('fLabelMeHint') },
-        { k: 'managerId', l: t('fNvPt'), kieu: 'select', opts: sales.map(function (x) { return [x.id, x.name]; }), v: me.role === 'sales' ? me.id : (sales[0] ? sales[0].id : ''), kbb: false },
-        { k: 'from', l: t('fTu'), kieu: 'date', v: new Date().toISOString().slice(0, 10), kbb: false }, { k: 'to', l: t('fDen'), kieu: 'date', hint: t('fDenHint') },
-        { k: 'share', l: t('fPhan'), kieu: 'number', min: 1, max: 99, step: 1, hint: t('fPhanHint') }, { k: 'email', l: t('fEmailDt'), kieu: 'email', hint: t('fEmailHint') },
-        { k: 'note', l: t('fGhiDt'), rong: true }
-      ] }).then(function (f) {
-        if (!f) return;
-        try { var r = A.parties.create(f, me.email); c.thongBao(t('daThemDt').replace('{t}', r.name).replace('{id}', r.clientId), 'ok'); HM.quenHet(); c.veLai(); } catch (e) { c.thongBao(e.message, 'no'); }
-      });
-    });
-    HM.bam(root, '[data-xuat]', function () {
-      var rows = A.parties.list({ q: LOC.tim, manager: LOC.nv, status: LOC.tt, kind: LOC.loai, classification: LOC.hang }).rows;
-      HM.csv('doi-tac.csv',
-        [vi ? 'Mã' : 'Client ID', vi ? 'Tên' : 'Name', vi ? 'Loại' : 'Kind', t('cNv'), t('cHang'), t('cDtQ') + ' USD', vi ? 'Quý trước USD' : 'Previous quarter USD',
-         t('cLuotQ'), t('cBai'), t('dKy'), t('cHopDong'), t('cTk'), t('cTt')],
-        rows.map(function (r) {
-          return [r.clientId, r.name, r.kind, r.managerName || '', r.classification, r.revenueQ.toFixed(2), r.revenuePrevQ.toFixed(2),
-                  r.streamsQ, r.tracks, r.signedAt || '', r.contractEnd || '', r.hasAccount ? (r.lastSeen || t('chuaDn')) : t('chuaCoTk'), t(CHU_TT[r.status])];
-        }));
-    });
+    var id = c.loc.id;
+    if (id) veMot(root, c, id); else veDanhSach(root, c);
   }
 });
-
-/* ---------------------------------------------------------------------
-   Tab danh sách: bộ lọc + bảng (bảng dựng sau khi gắn root, qua c.bang)
-   --------------------------------------------------------------------- */
-function veDanhSach(c, tatCa) {
-  var A = c.A, t = c.t, vi = c.lang === 'vi';
-  var dem = tatCa.counts;
-  var sales = A.staff.byRole('sales').concat(A.staff.byRole('mgmt'));
-  var html = '<div class="bar">' +
-    '<div class="srch">' + HM.icon('tim') + '<input type="search" data-tim placeholder="' + HM.esc(t('tim')) + '" value="' + HM.esc(LOC.tim) + '"></div>' +
-    (A.staff.me.role === 'sales' ? '' : '<select class="in" data-nv style="width:auto;height:34px"><option value="">' + HM.esc(t('moiNv')) + '</option>' +
-      sales.map(function (s) { return '<option value="' + s.id + '"' + (LOC.nv === s.id ? ' selected' : '') + '>' + HM.esc(s.name) + '</option>'; }).join('') + '</select>') +
-    '<select class="in" data-loai style="width:auto;height:34px"><option value="">' + HM.esc(t('moiLoai')) + '</option>' +
-      ['label', 'sublabel', 'artist'].map(function (k) { return '<option value="' + k + '"' + (LOC.loai === k ? ' selected' : '') + '>' + HM.esc(t(k)) + '</option>'; }).join('') + '</select>' +
-    '<select class="in" data-hang style="width:auto;height:34px"><option value="">' + HM.esc(t('moiHang')) + '</option>' +
-      ['A', 'B', 'C'].map(function (k) { return '<option value="' + k + '"' + (LOC.hang === k ? ' selected' : '') + '>' + HM.esc(t('hangX').replace('{c}', k)) + '</option>'; }).join('') + '</select>' +
-    '<div class="sp"></div>' +
-    '</div>';
-  html += '<div class="bar">' +
-    '<button type="button" class="pill' + (LOC.tt === '' ? ' on' : '') + '" data-tt="">' + HM.esc(t('ttAll')) + ' <b>' + HT.fmt.n(dem.all) + '</b></button>' +
-    TT.map(function (k) {
-      return '<button type="button" class="pill' + (LOC.tt === k ? ' on' : '') + '" data-tt="' + k + '">' + HM.esc(t(CHU_TT[k])) + ' <b>' + HT.fmt.n(dem[k] || 0) + '</b></button>';
-    }).join('') + '</div>';
-  html += HM.the({ thoBody: true, than: '<div data-bang></div>' });
-  return html;
-}
-
-function dungBang(root, c) {
-  var A = c.A, t = c.t, vi = c.lang === 'vi';
-  var host = root.querySelector('[data-bang]');
-  if (!host) return;
-  var kq = A.parties.list({ q: LOC.tim, manager: LOC.nv, status: LOC.tt, kind: LOC.loai, classification: LOC.hang });
-  var rows = kq.rows;
-  var maxDt = rows.reduce(function (m, r) { return r.revenueQ > m ? r.revenueQ : m; }, 0);
-  var b = c.bang({
-    host: host, dong: function () { return rows; }, sort: 'revenueQ', dir: -1, co: 25,
-    cot: [
-      { k: 'name', l: t('cDoiTac') },
-      { k: 'managerName', l: t('cNv'), w: '128px' },
-      { k: 'classification', l: t('cHang'), w: '58px' },
-      { k: 'revenueQ', l: t('cDtQ'), num: true, w: '128px' },
-      { k: 'streamsQ', l: t('cLuotQ'), num: true, w: '110px' },
-      { k: 'tracks', l: t('cBai'), num: true, w: '76px' },
-      { k: 'daysToEnd', l: t('cHopDong'), w: '124px' },
-      { k: 'lastSeen', l: t('cTk'), w: '128px' },
-      { k: 'status', l: t('cTt'), w: '118px' }
-    ],
-    veDong: function (r) {
-      var hd = r.contractEnd
-        ? '<div>' + HM.esc(HT.fmt.date(r.contractEnd)) + '</div><div class="t-sub" style="color:' +
-          (r.daysToEnd < 0 ? 'var(--danger)' : r.daysToEnd <= 90 ? 'var(--warn)' : 'inherit') + '">' +
-          HM.esc(r.daysToEnd < 0 ? t('daHet') : t('conNgay').replace('{n}', HT.fmt.n(r.daysToEnd))) + '</div>'
-        : '<span class="nil">—</span>';
-      var tk = !r.hasAccount ? HM.cham('off', t('chuaCoTk'))
-        : r.lastSeen ? HM.cham('ok', t('lanCuoi').replace('{d}', HT.fmt.date(r.lastSeen)))
-        : HM.cham('warn', t('chuaDn'));
-      return '<td style="min-width:220px">' + HM.tenBia({ ten: HM.dai(r.name, 34), seed: r.clientId, phuHtml: true,
-          phu: HM.tag(t(r.kind), r.kind === 'artist' ? 'link' : 'info') + ' ' + HM.esc(r.clientId) + (r.children ? ' · ' + HM.esc(t('labelCon').replace('{n}', r.children)) : '') }) + '</td>' +
-        '<td>' + (r.managerName ? HM.esc(r.managerName) : '<span class="nil">—</span>') + '</td>' +
-        '<td>' + HM.tag(r.classification, KIEU_HANG[r.classification] || '') + '</td>' +
-        '<td class="num band">' + HM.oThanh(r.revenueQ, maxDt, { chu: c.tien(r.revenueQ) }) + '<div class="t-sub">' + HM.lechHtml(r.revenueQ, r.revenuePrevQ) + '</div></td>' +
-        '<td class="num">' + HM.esc(HT.fmt.n(r.streamsQ)) + '</td>' +
-        '<td class="num">' + HM.esc(HT.fmt.n(r.tracks)) + '</td>' +
-        '<td>' + hd + '</td>' +
-        '<td>' + tk + '</td>' +
-        '<td>' + HM.tag(t(CHU_TT[r.status]), KIEU_TT[r.status]) + '</td>';
-    },
-    chon: function (r) { moDoiTac(c, r); },
-    rongTieuDe: t('khong'), rongMoTa: t('khongMo'),
-    /* bảng tự xử lý sắp xếp / trang / cỡ trang; sau mỗi lần vẽ lại chỉ cần gắn lại biểu đồ trong ô */
-    khiDoi: function () { HB.gan(host); },
-    khoa: function (r) { return r.partyKey; },
-    chonNhieu: { nut: [{ k: 'csv', l: t('bulkCsv'), pri: true }],
-      khi: function (k, rows) {
-        if (k !== 'csv') return;
-        HM.csv('doi-tac-da-chon.csv', [t('cDoiTac'), 'clientId', t('cNv'), t('cHang'), t('cDtQ'), t('cLuotQ'), t('cBai')], rows.map(function (r) {
-          return [r.name, r.clientId, r.managerName || '', r.classification, r.revenueQ, r.streamsQ, r.tracks];
-        }));
-        c.thongBao(t('daXuat').replace('{n}', rows.length), 'ok');
-      } }
-  });
-  b.ve(); HB.gan(host);
-}
-
-/* ---------------------------------------------------------------------
-   Tab chỉ tiêu kinh doanh: một thẻ cho mỗi nhân viên kinh doanh
-   --------------------------------------------------------------------- */
-function veChiTieu(c) {
-  var A = c.A, t = c.t, vi = c.lang === 'vi', P = HB.dayMau();
-  /* kinh doanh chỉ thấy chỉ tiêu của chính mình; máy chủ cũng chặn số của người khác */
-  var me = A.staff.me;
-  var ds = (me.role === 'sales' ? [me] : A.staff.byRole('sales')).map(function (s) { return A.sales.kpi(s.id, c.ky.idx); });
-  if (!ds.length) return HM.the({ than: HM.trong({ icon: 'user', tieuDe: t('khong'), moTa: '' }) });
-  var q = ds[0].quarterLabel;
-  var html = HM.the({
-    h2: HM.esc(t('kdTieuDe').replace('{q}', q)), p: HM.esc(t('kdMo')),
-    than: HB.o({ loai: 'thanh', tenTong: t('kdDt'), hang: ds.map(function (k, i) {
-      return { ten: k.staff.name, gt: k.revenueQ, mau: k.targetPct >= 1 ? HB.mau('ok') : P[i % 8],
-               phu: t('kdChiTieu') + ' ' + HT.fmt.usd0(k.target) + ' · ' + t('kdDat').replace('{p}', HT.fmt.pct(k.targetPct)) };
-    }) })
-  });
-  html += '<div class="grid g2">' + ds.map(function (k, i) {
-    var pct = Math.max(0, Math.min(100, k.targetPct * 100));
-    return HM.the({
-      h2: HM.esc(k.staff.name), p: HM.esc(vi ? k.staff.title : k.staff.titleEn),
-      hanhDong: '<button type="button" class="btn sm" data-kd-loc="' + k.staff.id + '">' + HM.esc(t('kdLoc')) + '</button>',
-      than: HM.so([
-        { l: t('kdDt'), v: HT.fmt.usd0(k.revenueQ), d: HM.lech(k.revenueQ, k.revenuePrevQ, t('kdQuyTruoc')), mau: k.targetPct >= 1 ? HB.mau('ok') : '' },
-        { l: t('kdTk'), v: HT.fmt.n(k.accounts), s: HT.fmt.n(k.labels) + ' ' + t('kdLabel') + ' · ' + HT.fmt.n(k.artists) + ' ' + t('kdNs') },
-        { l: t('kdChiTieu'), v: HT.fmt.usd0(k.target), s: t('kdDat').replace('{p}', HT.fmt.pct(k.targetPct)) }
-      ]) +
-      '<div class="meter" style="margin-top:12px"><i style="width:' + pct.toFixed(1) + '%;background:' + (k.targetPct >= 1 ? HB.mau('ok') : P[i % 8]) + '"></i></div>' +
-      '<div class="grid g2" style="margin:14px 0 0">' +
-        '<div><h4 class="sec" style="margin-top:0">' + HM.esc(t('kdTheoHang')) + '</h4>' +
-          HB.o({ loai: 'vong', cao: 150, dinhDang: 'so', tenTong: t('kdTk'), giua: { v: HT.fmt.n(k.accounts), l: t('kdTk').toLowerCase() },
-            phan: k.byClass.map(function (x, j) { return { ten: t('hangX').replace('{c}', x.c), gt: x.n, mau: P[j % 8] }; }) }) +
-        '</div>' +
-        '<div><h4 class="sec" style="margin-top:0">' + HM.esc(t('kdTop')) + '</h4>' +
-          HB.o({ loai: 'thanh', tenTong: t('kdDt'), hang: (k.top || []).slice(0, 5).map(function (x, j) { return { ten: x.name, gt: x.revenueQ, mau: P[j % 8], phu: x.clientId }; }) }) +
-        '</div></div>' +
-      HM.kv([
-        { t: t('kdMoi'), v: HT.fmt.n(k.newAccounts) },
-        { t: t('kdGiaHan'), v: HT.fmt.n((k.renewals || []).length), mau: (k.renewals || []).length ? 'neg' : '' },
-        { t: t('kdChuaDn'), v: HT.fmt.n(k.neverLogged) },
-        { t: t('kdChuaTk'), v: HT.fmt.n(k.noAccount) }
-      ])
-    });
-  }).join('') + '</div>';
-  return html;
-}
-
-/* ---------------------------------------------------------------------
-   Ngăn: một đối tác
-   --------------------------------------------------------------------- */
-function moDoiTac(c, r) {
-  var A = c.A, t = c.t, vi = c.lang === 'vi', P = HB.dayMau(), me = A.staff.me;
-  var pk = r.partyKey, id = +pk.slice(2), laNs = r.kind === 'artist';
-  var w = null; try { w = A.wallet(pk); } catch (e) { w = null; }
-  var tk = []; try { tk = A.tickets.list({ status: 'open-all' }).filter(function (x) { return x.partyKey === pk; }); } catch (e) { tk = []; }
-  var sales = A.staff.byRole('sales').concat(A.staff.byRole('mgmt'));
-  var lich = []; try { lich = A.periods.map(function (p, i) { return A.agg(laNs ? 'artist' : 'label', id, i, 'rec').gross; }); } catch (e) { lich = []; }
-  var ph = []; try { ph = A.catalogueFor(laNs ? 'artist' : 'label', id, { limit: 8, sort: 'revenue' }).rows; } catch (e) { ph = []; }
-
-  c.nganTruot(
-    HM.so([
-      { l: t('dDtQ'), v: c.tien(r.revenueQ), lon: true, d: HM.lech(r.revenueQ, r.revenuePrevQ, t('soQuyTruoc')) },
-      { l: t('cLuotQ'), v: HT.fmt.n(r.streamsQ) },
-      { l: t('cBai'), v: HT.fmt.n(r.tracks) }
-    ]) +
-    HM.kv([
-      A.quyen && A.quyen.nhom('tong')
-        ? { t: t('dNv'), vHtml: true, v: '<select class="inline-sel" data-nv-moi>' + sales.map(function (s) {
-            return '<option value="' + s.id + '"' + (s.id === r.manager ? ' selected' : '') + '>' + HM.esc(s.name) + '</option>';
-          }).join('') + (r.manager ? '' : '<option value="" selected>—</option>') + '</select>' }
-        : { t: t('dNv'), v: r.managerName || '—' },
-      { t: t('dHang'), v: r.classification + ' · ' + t('dHangMo') },
-      r.parentId >= 0 && r.kind === 'sublabel' ? { t: t('dCha'), v: A.partyName('L:' + r.parentId) } : null,
-      { t: t('dTyLe'), v: HT.fmt.pct(r.rate) },
-      { t: t('dKy'), v: r.signedAt ? HT.fmt.date(r.signedAt) : '—' },
-      { t: t('dHet'), v: r.contractEnd ? HT.fmt.date(r.contractEnd) + ' · ' + (r.daysToEnd < 0 ? t('daHet') : t('conNgay').replace('{n}', HT.fmt.n(r.daysToEnd))) : '—',
-        manh: r.daysToEnd != null && r.daysToEnd <= 90 },
-      { t: t('dTk'), v: r.hasAccount ? ((r.accounts || []).join(', ') || '1') + ' · ' + (r.lastSeen ? t('lanCuoi').replace('{d}', HT.fmt.date(r.lastSeen)) : t('chuaDn')) : t('chuaCoTk') },
-      { t: t('dNh'), v: r.bank ? t('coNh') : t('chuaNh'), mau: r.bank ? '' : 'neg' },
-      { t: t('cTt'), v: t(CHU_TT[r.status]) }
-    ]) +
-    (w ? '<h4 class="sec">' + HM.esc(t('dVi')) + '</h4>' + HM.so([
-      { l: t('viKhaDung'), v: HT.fmt.usd(w.available), mau: HB.mau('ok') },
-      { l: t('viCho'), v: HT.fmt.usd(w.pending) },
-      { l: t('viDaRut'), v: HT.fmt.usd(w.paid) }
-    ]) : '') +
-    '<h4 class="sec">' + HM.esc(t('dPh')) + '</h4>' +
-    (ph.length ? '<p class="hint" style="margin-top:0">' + HM.esc(t('dPhMo')) + '</p><div class="tw"><table class="t" style="min-width:0"><tbody>' + ph.map(function (x) {
-      return '<tr class="pick" data-bai="' + x.id + '"><td>' + HM.tenBia({ bia: x.id, ten: HM.dai(x.title, 28), phu: x.type + ' · ' + HT.fmt.date(x.releaseDate) }) + '</td>' +
-        '<td>' + HTS.tagGiaiDoan(x.stage) + '</td><td class="num">' + (x.revenue ? HM.esc(c.tien(x.revenue)) : '<span class="nil">—</span>') + '</td></tr>';
-    }).join('') + '</tbody></table></div>' : '<p class="say">' + HM.esc(t('dPhTrong')) + '</p>') +
-    '<h4 class="sec">' + HM.esc(t('dTicket')) + ' <span class="muted">(' + tk.length + ')</span></h4>' +
-    (tk.length ? '<div class="tw"><table class="t" style="min-width:0"><tbody>' + tk.slice(0, 6).map(function (x) {
-      return '<tr class="pick" data-tk="' + HM.esc(x.id) + '"><td><div class="t-ttl">' + HM.esc(HM.dai(x.title, 40)) + '</div><div class="t-sub">' + HM.esc(x.id) + '</div></td>' +
-        '<td>' + HM.tag(x.status, x.status === 'done' ? 'ok' : x.status === 'waiting' ? 'warn' : 'info') + '</td></tr>';
-    }).join('') + '</tbody></table></div>' : '<p class="say">' + HM.esc(t('khongTicket')) + '</p>') +
-    '<div class="btnrow" style="margin-top:10px">' +
-      '<button type="button" class="btn sm pri" data-tao-tk>' + HM.icon('info') + HM.esc(t('taoTicket')) + '</button>' +
-      '<button type="button" class="btn sm" data-di="ho-tro">' + HM.esc(t('moHoTro')) + '</button>' +
-      (A.quyen.nhom('phatHanhHo') ? '<button type="button" class="btn sm" data-ho-so>' + HM.icon('disc') + HM.esc(t('taoHoSo')) + '</button>' : '') +
-      (['sales', 'mgmt'].indexOf(me.role) >= 0 ? '<button type="button" class="btn sm" data-de-ung>' + HM.icon('cash') + HM.esc(t('deUng')) + '</button><button type="button" class="btn sm" data-de-hd>' + HM.icon('file') + HM.esc(t('deHd')) + '</button>' : '') + '</div>' +
-    (lich.length ? '<h4 class="sec">' + HM.esc(t('dienBien')) + '</h4>' +
-    HB.o({ loai: 'cot', cao: 150, anTruc: true, chuThich: false,
-      truc: A.periods.map(function (p) { return p.label.slice(0, 2); }),
-      tieuDeTip: function (i) { return (vi ? 'Kỳ ' : 'Period ') + A.periods[i].label; },
-      chuoi: [{ ten: t('cDtQ'), gt: lich, mau: P[0] }], noiBat: c.ky.idx }) : ''),
-    { tieuDe: r.name, phu: r.clientId + ' · ' + t(r.kind),
-      khiMo: function (dr) {
-        HB.gan(dr);
-        HM.doi(dr, '[data-nv-moi]', function (el) {
-          try { A.parties.setManager(pk, el.value, me.email); c.thongBao(t('daDoi'), 'ok'); c.veLai(); }
-          catch (e) { c.thongBao(e.message, 'no'); }
-        });
-        HM.bam(dr, '[data-tao-tk]', function () { if (HT.moTicketNoiBo) HT.moTicketNoiBo(c, { partyKey: pk, name: r.name, clientId: r.clientId }); });
-        HM.bam(dr, '[data-de-ung]', function () { if (HT.deXuatTamUng) HT.deXuatTamUng(c, pk); });
-        HM.bam(dr, '[data-ho-so]', function () { if (HT.taoHoSoHo) HT.taoHoSoHo(c, pk); });
-        HM.bam(dr, '[data-de-hd]', function () { if (HT.deXuatHopDong) HT.deXuatHopDong(c, pk); });
-        HM.bam(dr, '[data-di]', function (el) { c.di(el.getAttribute('data-di')); });
-        HM.bam(dr, '[data-tk]', function (el) { if (HT.hoTroMo) HT.hoTroMo(c, el.getAttribute('data-tk')); });
-        HM.bam(dr, '[data-bai]', function (el) {
-          var a; try { a = A.asset(+el.getAttribute('data-bai')); } catch (err) { return; }
-          HTS.moNgan(c, a, { noiBo: true, tien: c.tien2, tien0: c.tien, playlists: A.playlistsOf(+el.getAttribute('data-bai')) });
-        });
-      } });
-}
 
 })();

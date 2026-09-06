@@ -279,16 +279,26 @@ function lechHtml(nay, truoc, nhanTruoc) {
    hiện số cũ sau khi vừa thay đổi.
    --------------------------------------------------------------------- */
 var _nho = {}, _moc = null;
+/* Dấu mốc phải KHÔNG BIẾT GÌ về hình dạng state của lõi. Bản trước đọc
+   thẳng s.approved, s.queue, s.feeds... nên đổi lõi là khung chết ngay ở
+   dòng Object.keys, trước cả khi trang kịp vẽ ra chữ nào.
+
+   Ở đây chỉ hỏi một câu lõi nào cũng trả lời được: dữ liệu đã đổi bao
+   nhiêu lần rồi. Lõi khai `A.moc()` thì dùng; không khai thì đếm kích
+   thước các mảng cấp một, đủ để biết có gì vừa thêm hay vừa bớt. */
 function moc(A) {
-  if (!A || !A.state) return 'khach';
-  var s = A.state();
-  return [Object.keys(s.approved).length, s.queue.length, s.rates.length,
-          Object.keys(s.match).length, Object.keys(s.variance).length,
-          Object.keys(s.advances).length, s.publishedAt,
-          Object.keys(s.feeds).map(function (k) {
-            return Object.keys(s.feeds[k]).map(function (f) { return s.feeds[k][f].status[0]; }).join('');
-          }).join(''),
-          Object.keys(s.pub).map(function (k) { return s.pub[k].status[0]; }).join('')].join('|');
+  if (!A) return 'khach';
+  if (typeof A.moc === 'function') { try { return String(A.moc()); } catch (e) { return 'loi'; } }
+  if (typeof A.state !== 'function') return 'tinh';
+  var s;
+  try { s = A.state(); } catch (e) { return 'loi'; }
+  if (!s || typeof s !== 'object') return 'trong';
+  var ra = [];
+  Object.keys(s).sort().forEach(function (k) {
+    var v = s[k];
+    ra.push(k + ':' + (Array.isArray(v) ? v.length : v && typeof v === 'object' ? Object.keys(v).length : String(v).slice(0, 12)));
+  });
+  return ra.join('|');
 }
 function nho(A, key, fn) {
   var m = moc(A);

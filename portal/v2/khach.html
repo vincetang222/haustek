@@ -51,12 +51,20 @@ var CHON = 'haustek.doi-tac-mau';
 /* Trang nội bộ "Xem cổng như đối tác này" ghi khoá này rồi mở cửa sau. */
 var NHU = 'haustek.xem-nhu';
 
+/* Mặc định chọn đối tác dùng NHIỀU dịch vụ nhất, chỉ khi chưa ai chọn gì.
+   Danh sách xếp theo tên nên đối tác đầu bảng có thể chỉ mua một dịch vụ,
+   và người mở lần đầu sẽ thấy cổng mỏng nhất có thể rồi tưởng đó là tất
+   cả. Đây là lựa chọn mặc định của BẢN MẪU, không phải luật của hệ thật:
+   hệ thật lấy đối tác từ phiên đăng nhập. */
+function dayNhat(ds) {
+  return ds.slice().sort(function (a, b) { return (b.dichVu || []).length - (a.dichVu || []).length; })[0] || ds[0];
+}
 function nhoLai() {
   var id = null;
   try { id = localStorage.getItem(NHU); if (id) localStorage.removeItem(NHU); } catch (e) {}
   if (!id) { try { id = sessionStorage.getItem(CHON); } catch (e) {} }
   var hit = TK.filter(function (t) { return t.doiTacId === id; })[0];
-  return hit || TK[0];
+  return hit || dayNhat(TK);
 }
 var toi = nhoLai();
 try { sessionStorage.setItem(CHON, toi.doiTacId); } catch (e) {}
