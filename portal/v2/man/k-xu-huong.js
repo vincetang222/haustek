@@ -31,7 +31,7 @@ HT.dangKy({
   chu: {
     vi: {
       navXuHuong: 'Xu hướng ngày', h1: 'Xu hướng ngày',
-      mo: 'Lượt nghe theo ngày do nền tảng gửi về, xếp theo bài hát, bản phát hành, thị trường và nền tảng. Đây là số theo dõi xu hướng; tiền chỉ có khi kỳ được xét duyệt.',
+      mo: 'Lượt nghe theo ngày do nền tảng gửi, xếp theo bài, bản phát hành, thị trường, nền tảng. Tiền chỉ có khi kỳ được xét duyệt.',
       kTong: 'Lượt nghe {n} ngày', kyTruoc: '{n} ngày trước', kNgay: 'Trung bình mỗi ngày', kBai: 'Bài hát có lượt nghe', kBaiS: 'trong cửa sổ đang chọn',
       kNt: 'Nền tảng dẫn đầu', kTt: 'Thị trường dẫn đầu', cuaTong: 'của tổng',
       dienBien: 'Lượt nghe theo ngày', dienBienMo: 'Mỗi cột hoặc điểm là một ngày. Đổi cửa sổ và kiểu biểu đồ ở góc phải.',
@@ -46,7 +46,7 @@ HT.dangKy({
     },
     en: {
       navXuHuong: 'Daily trends', h1: 'Daily trends',
-      mo: 'Daily streams as reported by the platforms, grouped by track, release, market and platform. These track momentum; money only appears once a period is approved.',
+      mo: 'Daily streams from platforms by track, release, market and platform. Money appears only once a period is approved.',
       kTong: 'Streams, {n} days', kyTruoc: 'previous {n} days', kNgay: 'Average per day', kBai: 'Tracks with streams', kBaiS: 'in the selected window',
       kNt: 'Top platform', kTt: 'Top market', cuaTong: 'of total',
       dienBien: 'Streams per day', dienBienMo: 'One bar or point per day. Change the window and chart type on the right.',

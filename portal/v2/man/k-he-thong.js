@@ -27,7 +27,7 @@ HT.dangKy({
   chu: {
     vi: {
       navHeThong: 'Hệ thống label', h1: 'Hệ thống label',
-      mo: 'Toàn bộ label con và nghệ sĩ bên dưới, theo kỳ đã xét duyệt. Phần label được hưởng của mỗi bản ghi thuộc về label trực tiếp quản lý bản ghi đó; label mẹ theo dõi số liệu, không có dòng tiền đi qua label mẹ (câu hỏi cần chốt số 9).',
+      mo: 'Label con và nghệ sĩ bên dưới theo kỳ đã xét duyệt. Phần label của mỗi bản ghi thuộc label trực tiếp quản lý; label mẹ chỉ theo dõi (câu hỏi số 9).',
       kGop: 'Doanh thu toàn hệ thống', kTraNs: 'Thanh toán cho nghệ sĩ',
       kLabel: 'Phần label được hưởng toàn hệ thống', kLabelMe: 'trong đó label mẹ: {n}',
       kNs: 'Nghệ sĩ toàn hệ thống', kLabelCon: '{n} label con',
@@ -45,7 +45,7 @@ HT.dangKy({
       cLabel: 'Label', cNs: 'Nghệ sĩ', cBai: 'Bài hát có doanh thu / tổng', cLuot: 'Lượt nghe',
       cGop: 'Doanh thu', cNsHuong: 'Phần nghệ sĩ', cLabelHuong: 'Phần label', cTyLe: 'Tỷ lệ',
       tong: 'Tổng cộng toàn hệ thống',
-      ghiChu: 'Tỷ lệ là tỷ lệ nghệ sĩ được hưởng trên doanh thu, do từng label đặt riêng. Phần label của một label con thuộc về label con đó; label mẹ theo dõi số liệu, không được hưởng phần này.',
+      ghiChu: 'Tỷ lệ là phần nghệ sĩ hưởng trên doanh thu, do từng label đặt. Phần label của label con thuộc label con đó.',
       xuat: 'Xuất CSV',
       chuaMo: 'Kỳ này chưa chốt sổ', chuaMoMo: 'Số liệu hệ thống label chỉ hiển thị sau khi kỳ được xét duyệt.',
       nganNs: 'Nghệ sĩ của label con này trong kỳ', cMa: 'Mã', cTen: 'Nghệ sĩ',
@@ -53,7 +53,7 @@ HT.dangKy({
     },
     en: {
       navHeThong: 'Label network', h1: 'Label network',
-      mo: 'Every sub-label and the artists under it, for approved periods. The label share of each recording belongs to the label that directly manages it; the parent label sees the figures, no money passes through it (open question 9).',
+      mo: 'Sub-labels and their artists for approved periods. Each recording’s label share belongs to the managing label; the parent only sees it (question 9).',
       kGop: 'Network revenue', kTraNs: 'Paid to artists',
       kLabel: 'Label share across the network', kLabelMe: 'of which parent label: {n}',
       kNs: 'Artists across the network', kLabelCon: '{n} sub-labels',
@@ -71,7 +71,7 @@ HT.dangKy({
       cLabel: 'Label', cNs: 'Artists', cBai: 'Earning tracks / total', cLuot: 'Streams',
       cGop: 'Revenue', cNsHuong: 'Artist share', cLabelHuong: 'Label share', cTyLe: 'Rate',
       tong: 'Network total',
-      ghiChu: 'Rate is the artist share of revenue, set by each label. A sub-label’s label share belongs to that sub-label; the parent label sees the figure but does not receive it.',
+      ghiChu: 'Rate is the artist share set by each label. A sub-label’s label share belongs to that sub-label.',
       xuat: 'Export CSV',
       chuaMo: 'Period not closed', chuaMoMo: 'Label network figures appear once the period is approved.',
       nganNs: 'This sub-label’s artists this period', cMa: 'Code', cTen: 'Artist',

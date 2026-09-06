@@ -20,9 +20,9 @@ HT.dangKy({
   chu: {
     vi: {
       navGiaoNhan: 'Giao nhận nền tảng', h1: 'Giao nhận nền tảng',
-      mo: 'Gửi mới hoặc gửi lại danh mục tới từng nền tảng. Chọn đối tượng giao, chọn nền tảng, đặt tên yêu cầu để tra lại sau.',
+      mo: 'Gửi mới hoặc gửi lại danh mục tới nền tảng: chọn đối tượng, chọn nền tảng, đặt tên yêu cầu.',
       kCho: 'Đang chờ gửi', kGui: 'Đang gửi', kXong: 'Đã xong', kLoi: 'Lỗi', kBanGhi: 'bản ghi × nền tảng đang chờ',
-      taoMoi: 'Yêu cầu giao nhận mới', taoMoiMo: 'Mỗi yêu cầu gửi một tập bản ghi tới một hoặc nhiều nền tảng. Nền tảng xác nhận xong thì trạng thái từng bản ghi ở Danh mục tự cập nhật.',
+      taoMoi: 'Yêu cầu giao nhận mới', taoMoiMo: 'Mỗi yêu cầu gửi một tập bản ghi tới một hoặc nhiều nền tảng; nền tảng xác nhận thì trạng thái ở Danh mục tự cập nhật.',
       hTen: 'Tên yêu cầu', hTenMo: 'Ví dụ: Giao lại catalog Nightform sang Apple Music', hDoiTuong: 'Giao theo',
       producer: 'Theo label / nhà sản xuất', 'upc-list': 'Theo danh sách UPC', 'upc-file': 'Theo file UPC', albums: 'Chọn bản phát hành',
       hProducer: 'Mã đối tác (label hoặc nghệ sĩ)', hProducerMo: 'Toàn bộ bản ghi của đối tác này sẽ được giao.',
@@ -41,9 +41,9 @@ HT.dangKy({
     },
     en: {
       navGiaoNhan: 'Platform delivery', h1: 'Platform delivery',
-      mo: 'Deliver or redeliver catalogue to platforms. Pick what to deliver, pick the platforms, name the request so you can find it later.',
+      mo: 'Deliver or redeliver catalogue to platforms: pick what, pick where, name the request.',
       kCho: 'Queued', kGui: 'Sending', kXong: 'Done', kLoi: 'Failed', kBanGhi: 'recording × platform pending',
-      taoMoi: 'New delivery request', taoMoiMo: 'Each request sends a set of recordings to one or more platforms. Once the platform confirms, each recording’s status in the Catalogue updates itself.',
+      taoMoi: 'New delivery request', taoMoiMo: 'Each request sends a set of recordings to one or more platforms; on confirmation the Catalogue status updates itself.',
       hTen: 'Request name', hTenMo: 'e.g. Redeliver the Nightform catalogue to Apple Music', hDoiTuong: 'Deliver by',
       producer: 'By label / producer', 'upc-list': 'By UPC list', 'upc-file': 'By UPC file', albums: 'Pick releases',
       hProducer: 'Client ID (label or artist)', hProducerMo: 'Every recording of this partner will be delivered.',

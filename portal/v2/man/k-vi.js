@@ -20,7 +20,7 @@ HT.dangKy({
   chu: {
     vi: {
       navVi: 'Ví & rút tiền', h1: 'Ví & rút tiền',
-      mo: 'Phần bạn được hưởng của mỗi kỳ đã xét duyệt được ghi vào ví. Bạn rút về tài khoản ngân hàng đã khai khi số dư từ ngưỡng tối thiểu trở lên.',
+      mo: 'Phần bạn hưởng mỗi kỳ đã xét duyệt được ghi vào ví; rút về ngân hàng đã khai khi số dư đạt ngưỡng.',
       kKhaDung: 'Số dư khả dụng', kDang: 'Đang xử lý', kDaRut: 'Đã rút', kNguong: 'Ngưỡng rút tối thiểu',
       tongGhi: 'tổng đã ghi vào ví', yeuCau: 'yêu cầu', lan: 'lần chuyển khoản', theoKy: 'ghi vào ví theo kỳ',
       rut: 'Rút tiền', duoiNguong: 'Số dư khả dụng đang dưới ngưỡng rút tối thiểu {n}. Khoản này vẫn nằm trong ví và cộng dồn với kỳ sau.',
@@ -30,7 +30,7 @@ HT.dangKy({
       nhTen: 'Ngân hàng', nhSo: 'Số tài khoản', nhChu: 'Chủ tài khoản', nhSwift: 'Mã SWIFT', nhTien: 'Tiền tệ nhận', nhCapNhat: 'Cập nhật lần cuối',
       coCau: 'Cơ cấu ví', coCauMo: 'Toàn bộ số đã ghi vào ví, chia theo phần đã rút, đang xử lý và còn khả dụng.',
       nhip: 'Nhịp báo cáo', nhipMo: 'Tiền vào ví theo nhịp báo cáo của từng nhóm nền tảng, không theo một ngày cố định.',
-      nhipCau: 'Có báo cáo tới đâu, Haustek ghi vào ví tới đó. Vì vậy phần TikTok của một tháng thường về ví muộn hơn phần của các nền tảng khác.',
+      nhipCau: 'Có báo cáo tới đâu, ghi vào ví tới đó; phần TikTok của một tháng thường về muộn hơn.',
       kyTiep: 'Kỳ tiếp theo dự kiến ghi vào ví: {k}', khongKyTiep: 'Mọi kỳ đã có báo cáo đều đã ghi vào ví.',
       lichSu: 'Lịch sử rút tiền', lichSuMo: 'Mỗi yêu cầu rút tiền và trạng thái xử lý của Haustek.',
       cMa: 'Mã', cNgay: 'Ngày yêu cầu', cSoTien: 'Số tiền', cTt: 'Trạng thái', cNh: 'Tài khoản nhận',
@@ -49,7 +49,7 @@ HT.dangKy({
     },
     en: {
       navVi: 'Wallet & withdrawals', h1: 'Wallet & withdrawals',
-      mo: 'Your share of each approved period is credited to your wallet. Withdraw to your registered bank account once the balance reaches the minimum.',
+      mo: 'Your share of each approved period is credited to the wallet; withdraw to your bank once the balance reaches the minimum.',
       kKhaDung: 'Available balance', kDang: 'In progress', kDaRut: 'Withdrawn', kNguong: 'Minimum withdrawal',
       tongGhi: 'credited in total', yeuCau: 'requests', lan: 'transfers', theoKy: 'credited per period',
       rut: 'Withdraw', duoiNguong: 'Your available balance is below the {n} minimum. It stays in the wallet and adds up with the next period.',
@@ -58,7 +58,7 @@ HT.dangKy({
       nhTen: 'Bank', nhSo: 'Account number', nhChu: 'Account holder', nhSwift: 'SWIFT code', nhTien: 'Receiving currency', nhCapNhat: 'Last updated',
       coCau: 'Wallet breakdown', coCauMo: 'Everything credited so far, split into withdrawn, in progress and still available.',
       nhip: 'Reporting cadence', nhipMo: 'Money reaches the wallet on each platform group’s reporting cadence, not on a fixed day.',
-      nhipCau: 'Whatever has reported is credited; the rest follows when its report lands. That is why a month’s TikTok part usually arrives later than the other platforms.',
+      nhipCau: 'Whatever has reported is credited; a month’s TikTok part usually arrives later.',
       kyTiep: 'Next period expected in the wallet: {k}', khongKyTiep: 'Every reported period is already credited.',
       lichSu: 'Withdrawal history', lichSuMo: 'Each withdrawal request and where Haustek has taken it.',
       cMa: 'ID', cNgay: 'Requested', cSoTien: 'Amount', cTt: 'Status', cNh: 'To account',

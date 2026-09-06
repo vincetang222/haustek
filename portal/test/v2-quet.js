@@ -106,6 +106,7 @@ const RONG = (process.argv[3] || '1500').split(',').map(Number);
                     out.traniO.push((e.textContent || '').trim().slice(0, 24) + ' (+' + (e.scrollWidth - e.clientWidth) + 'px)');
                 });
               out.dai = main.textContent.length;
+              out.coTrong = !!main.querySelector('.empty');
               return out;
             });
             const nhan = m.id + (tb ? '/' + tb : '');
@@ -117,7 +118,7 @@ const RONG = (process.argv[3] || '1500').split(',').map(Number);
             if (r.chuHoa) loi.push('nhãn HOA×' + r.chuHoa);
             if (r.de && r.de.length) loi.push(r.de[0]);
             if (r.traniO.length) loi.push('tràn ô: ' + [...new Set(r.traniO)].slice(0, 2).join(' | '));
-            if (r.dai < 400) loi.push('quá ít nội dung (' + r.dai + ' ký tự)');
+            if (r.dai < 400 && !r.coTrong) loi.push('quá ít nội dung (' + r.dai + ' ký tự)');
             if (loi.length) { doi.push(nhan + ' → ' + loi.join(' · ')); hong++; }
           }
         }

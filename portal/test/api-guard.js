@@ -856,6 +856,7 @@ check("Kinh doanh: chỉ đối tác mình phụ trách, chỉ tiêu và đề x
   const rows = A.parties.list({}).rows;
   must(rows.length > 0 && rows.every(r => r.manager === me.id), "kinh doanh thấy đối tác của người khác");
   must(rows.every(r => r.revenueQ != null), "kinh doanh không thấy doanh thu quý của tài khoản mình");
+  must(A.parties.list({}).counts.all === rows.length, "ô đếm sổ đối tác cho kinh doanh vẫn đếm cả công ty");
   const ds = A.proposals.list();
   must(ds.length > 0 && ds.every(p => p.by === me.name), "kinh doanh thấy đề xuất của người khác");
   must(ds.every(p => p.calc.roi === undefined && p.calc.feeIncome === undefined && p.calc.recommendation), "bản tính cho kinh doanh vẫn mang ROI / phí thu về");
@@ -908,6 +909,61 @@ check("Giám đốc thấy hết: mọi màn, bản tính đầy đủ, dự bá
   must(q.man.length === Object.keys(A.quyen.bang().man).length, "giám đốc thiếu màn");
   must(A.proposals.list({ type: "advance" })[0].calc.roi != null && A.forecast().projected.revenue > 0, "giám đốc mất bản tính / dự báo");
   return q.man.length + " màn · bản tính đầy đủ";
+});
+
+/* ===================== VÒNG 9: TICKET THEO BỘ PHẬN · TẠO HỒ SƠ THAY ĐỐI TÁC ===================== */
+check("Ticket tự định tuyến theo loại: mỗi bộ phận chỉ thấy hàng đợi của mình hoặc việc được gán, giám đốc thấy hết", () => {
+  nhu("S01");
+  const tatCa = A.tickets.list({}).length;
+  const co = {};
+  ["S02", "S07", "S03", "S05"].forEach(id => {
+    const me = nhu(id);
+    const ds = A.tickets.list({});
+    const la = ds.filter(t => A.tickets.deptOf(t.type) !== me.role && t.assignee !== me.id);
+    must(!la.length, me.role + " thấy ticket của bộ phận khác: " + la.map(t => t.id).join(", "));
+    co[me.role] = ds.length;
+  });
+  must(tatCa > 0 && Object.values(co).some(n => n < tatCa), "hàng đợi bộ phận không hẹp hơn danh sách giám đốc");
+  A.tickets.types.forEach(x => must(A.tickets.depts[A.tickets.deptOf(x.id)], "loại " + x.id + " không thuộc bộ phận nào"));
+  return tatCa + " ticket · vận hành " + co.ops + " · kế toán " + co.accounting + " · kinh doanh " + co.sales + " · hỗ trợ " + co.support;
+});
+check("Đối tác gửi yêu cầu thanh toán: rơi vào hàng đợi kế toán, chưa gán ai, đối tác thấy bộ phận; chuyển bộ phận thì bỏ người phụ trách", () => {
+  const r = H.api.createTicket("label", L1.id, { type: "thanh-toan", title: "Hỏi khoản ghi vào ví", body: "Kỳ này khoản ghi vào ví thấp hơn bảng kê" });
+  const kh = H.api.tickets("label", L1.id).rows.find(t => t.id === r.id);
+  must(kh && kh.dept === "accounting" && kh.deptLabel === "Kế toán" && kh.deptLabelEn === "Accounting", "đối tác không thấy bộ phận xử lý");
+  must(kh.assigneeName === null && kh.assignee === undefined, "ticket mới đã có người phụ trách / lộ mã nhân viên");
+  nhu("S07"); must(A.tickets.list({}).some(t => t.id === r.id), "kế toán không thấy ticket thanh toán");
+  nhu("S02"); must(!A.tickets.list({}).some(t => t.id === r.id), "vận hành thấy ticket của kế toán");
+  nhu("S07"); A.tickets.assign(r.id, "S07", "kt@haustek-group.com");
+  const t = A.tickets.chuyen(r.id, "phat-hanh", "kt@haustek-group.com", "Thực ra là bài chưa lên nền tảng");
+  must(t.dept === "ops" && t.assignee === null, "chuyển bộ phận không bỏ người phụ trách");
+  must(!A.tickets.list({}).some(x => x.id === r.id), "kế toán vẫn thấy ticket đã chuyển đi");
+  nhu("S02"); must(A.tickets.list({}).some(x => x.id === r.id), "vận hành không nhận được ticket chuyển tới");
+  A.tickets.assign(r.id, "S02", "ops@haustek-group.com");
+  must(A.tickets.chuyen(r.id, "nen-tang", "ops@haustek-group.com").assignee === "S02", "đổi loại trong cùng bộ phận lại mất người phụ trách");
+  must(H.api.tickets("label", L1.id).rows.find(x => x.id === r.id).deptLabel === "Vận hành", "đối tác không thấy bộ phận mới");
+  mustThrow(() => A.tickets.chuyen(r.id, "khong-co", "x"), "loại không hợp lệ");
+  return r.id + " · kế toán → vận hành · người phụ trách được bỏ đúng lúc";
+});
+check("Tạo hồ sơ phát hành thay đối tác: hỗ trợ bị chặn, kinh doanh chỉ tài khoản mình, đối tác thấy hồ sơ do Haustek gửi", () => {
+  const hoSo = artistId => ({ artistId, title: "Đêm thử hộ", type: "single", releaseDate: "2026-11-01", tracks: [{ title: "Đêm", writers: [{ name: "x", role: "Composer", pct: 100 }] }] });
+  nhu("S05"); mustThrow(() => A.releases.createFor("L:" + L1.id, hoSo(A1.id), "s@x"), "hỗ trợ tạo hồ sơ");
+  const me = nhu("S03");
+  const cuaToi = A.parties.list({}).rows.map(r => r.partyKey);
+  const ngoai = A.labels.map(l => "L:" + l.id).concat(A.artists.map(a => "A:" + a.id)).find(k => cuaToi.indexOf(k) < 0);
+  mustThrow(() => A.releases.createFor(ngoai, hoSo(A1.id), me.email), "đối tác không do mình phụ trách");
+  const pk = cuaToi.find(k => k[0] === "A") || cuaToi[0];
+  const nsId = pk[0] === "A" ? +pk.slice(2) : A.artists.find(a => a.labelId === +pk.slice(2)).id;
+  const r = A.releases.createFor(pk, hoSo(nsId), me.email);
+  must(r.submittedRole === "staff" && r.status === "submitted" && r.artistId === nsId, "hồ sơ tạo thay không mang dấu nhân viên");
+  nhu("S02");
+  const ns = A.artists.find(a => a.id === nsId);
+  const nhinThay = H.api.releases("artist", ns.id).submissions.find(x => x.id === r.id);
+  must(nhinThay && nhinThay.submittedRole === "staff", "đối tác không thấy hồ sơ Haustek tạo thay");
+  const labelSai = A.labels.find(l => l.id !== ns.labelId);
+  mustThrow(() => A.releases.createFor("L:" + labelSai.id, hoSo(nsId), "ops@x"), "nghệ sĩ không thuộc label");
+  nhu("S01");
+  return r.id + " · " + ns.name + " · kinh doanh chỉ tài khoản mình · hỗ trợ bị chặn";
 });
 
 check("lockdown() gỡ hẳn mặt tiền admin khỏi trang", () => {

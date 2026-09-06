@@ -46,20 +46,20 @@ HT.dangKy({
   chu: {
     vi: {
       navBangGia: 'Bảng giá nền tảng', h1: 'Bảng giá nền tảng',
-      mo: 'Nhóm giá của các nền tảng bán tải về. Chọn một nhóm để xem giá album và giá track theo từng nền tảng và tiền tệ. Nền tảng streaming không dùng giá.',
+      mo: 'Nhóm giá album và track của các nền tảng bán tải về, theo từng nền tảng và tiền tệ.',
       chonNhom: 'Chọn nhóm giá', album: 'Giá album', track: 'Giá track',
       cNt: 'Nền tảng', khongBan: 'không bán', apDung: 'Áp dụng nhóm giá cho UPC', apDungMo: 'Sang trang Sửa hàng loạt, chọn đổi giá album hoặc đổi giá track và dán danh sách UPC.',
       soNt: 'Nền tảng bán tải về', soTien: 'Tiền tệ', nhomHienTai: 'Nhóm đang xem',
-      ghiChu: 'Bảng giá mẫu để thấy hình dạng. Hệ thống thật lấy giá từ hợp đồng với từng nền tảng và có lịch sử thay đổi theo ngày hiệu lực.',
+      ghiChu: 'Bảng giá mẫu. Hệ thống thật lấy giá từ hợp đồng với từng nền tảng, có lịch sử theo ngày hiệu lực.',
       soSanh: 'So sánh bốn nhóm giá', soSanhMo: 'Giá bằng USD của từng nhóm. Hai thước đo khác cỡ nên vẽ hai biểu đồ, không chồng lên nhau.'
     },
     en: {
       navBangGia: 'Store pricing', h1: 'Store pricing',
-      mo: 'Price tiers on download stores. Pick a tier to see album and track prices per store and currency. Streaming platforms do not use prices.',
+      mo: 'Album and track price tiers on download stores, per store and currency.',
       chonNhom: 'Pick a price tier', album: 'Album price', track: 'Track price',
       cNt: 'Store', khongBan: 'not sold', apDung: 'Apply tier to UPCs', apDungMo: 'Go to Bulk edit, choose album price or track price and paste the UPC list.',
       soNt: 'Download stores', soTien: 'Currencies', nhomHienTai: 'Tier shown',
-      ghiChu: 'Sample price grid to show the shape. The real system takes prices from each store agreement, with a dated change history.',
+      ghiChu: 'Sample grid. The real system takes prices from each store agreement, with a dated history.',
       soSanh: 'Compare the four tiers', soSanhMo: 'USD prices per tier. Two measures of different size, so two charts rather than one stacked bar.'
     }
   },

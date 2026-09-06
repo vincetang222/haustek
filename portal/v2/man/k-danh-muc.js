@@ -34,8 +34,8 @@ HT.dangKy({
   chu: {
     vi: {
       navDanhMuc: 'Danh mục', h1: 'Danh mục bài hát',
-      moLb: 'Toàn bộ bài hát của các nghệ sĩ thuộc label, kể cả bài chưa có doanh thu: đang ở bước nào của quy trình phát hành, đã lên nền tảng nào và còn thiếu gì.',
-      moNs: 'Toàn bộ bài hát của bạn, kể cả bài chưa có doanh thu: đang ở bước nào của quy trình phát hành, đã lên nền tảng nào và còn thiếu gì.',
+      moLb: 'Mọi bài của nghệ sĩ thuộc label, kể cả bài chưa có doanh thu: đang ở bước nào, lên nền tảng nào, thiếu gì.',
+      moNs: 'Mọi bài của bạn, kể cả bài chưa có doanh thu: đang ở bước nào, lên nền tảng nào, thiếu gì.',
       kTong: 'Bài hát', kLive: 'Đã lên đủ nền tảng', kProcessing: 'Đang xử lý', kIssue: 'Có vấn đề', kMissing: 'Còn thiếu thông tin',
       locAll: 'Tất cả', locLive: 'Đã lên đủ', locProcessing: 'Đang xử lý', locIssue: 'Có vấn đề', locMissing: 'Còn thiếu',
       tim: 'Tìm theo tên bài hát, mã ISRC hoặc nghệ sĩ…',
@@ -50,15 +50,15 @@ HT.dangKy({
       trong: 'Chưa có bài hát nào trong danh mục',
       trongMo: 'Khi Haustek tiếp nhận hồ sơ phát hành của bạn, bài hát sẽ xuất hiện ở đây.',
       loi: 'Chưa tải được danh mục',
-      ghiChu: 'Lượt nghe và doanh thu là số tích luỹ của các kỳ đã xét duyệt. Bấm một dòng để xem quy trình phát hành, nền tảng và số liệu theo tháng của bài hát đó.',
+      ghiChu: 'Lượt nghe và doanh thu tích luỹ các kỳ đã xét duyệt. Bấm một dòng để xem quy trình, nền tảng và số theo tháng.',
       phanLabel: 'Phần label được hưởng', thuNhap: 'Thu nhập của bạn', dangBang: 'Bảng', dangLuoi: 'Lưới bìa',
       csvLive: 'Nền tảng đã lên', csvTong: 'Tổng nền tảng', csvGoiY: 'Gợi ý', csvNgay: 'Ngày phát hành',
       daCat: 'Danh sách quá dài nên chỉ xuất {n} dòng đầu theo thứ tự đang sắp xếp. Bạn thu hẹp bộ lọc để xuất phần còn lại.'
     },
     en: {
       navDanhMuc: 'Catalogue', h1: 'Track catalogue',
-      moLb: 'Every track by artists on your label, earning or not: where it is in the release pipeline, which platforms it is on, and what is still missing.',
-      moNs: 'Every track of yours, earning or not: where it is in the release pipeline, which platforms it is on, and what is still missing.',
+      moLb: 'Every track by your artists, earning or not: pipeline step, platforms live, what is missing.',
+      moNs: 'Every track of yours, earning or not: pipeline step, platforms live, what is missing.',
       kTong: 'Tracks', kLive: 'Live everywhere', kProcessing: 'Processing', kIssue: 'Needs attention', kMissing: 'Missing info',
       locAll: 'All', locLive: 'Live', locProcessing: 'Processing', locIssue: 'Issues', locMissing: 'Missing',
       tim: 'Search title, ISRC, artist…',
@@ -73,7 +73,7 @@ HT.dangKy({
       trong: 'No tracks in your catalogue yet',
       trongMo: 'Tracks appear here once Haustek receives your release submission.',
       loi: 'The catalogue could not be loaded',
-      ghiChu: 'Streams and revenue are cumulative across approved periods. Open a row to see the track’s pipeline, platforms and monthly figures.',
+      ghiChu: 'Streams and revenue are cumulative over approved periods. Open a row for pipeline, platforms and monthly figures.',
       phanLabel: 'Label keeps', thuNhap: 'Yours', dangBang: 'Table', dangLuoi: 'Cover grid',
       csvLive: 'Platforms live', csvTong: 'Platforms total', csvGoiY: 'Suggestions', csvNgay: 'Release date',
       daCat: 'The list is long, so only the first {n} rows in the current order were exported. Narrow the filter to export the rest.'

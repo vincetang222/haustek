@@ -499,6 +499,19 @@ main{padding:22px 24px 56px;min-width:0;animation:page-in .24s ease-out}
 .page-kpi .l{font-size:11.5px;color:var(--ink-2);margin-bottom:2px;white-space:nowrap}
 .page-kpi .v{font-size:19px;font-weight:600;letter-spacing:-.015em;white-space:nowrap}
 .page-act{margin-left:auto;display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding-bottom:3px}
+/* dấu ? cạnh tiêu đề: chú thích ẩn, rê chuột hoặc bấm mới hiện */
+.help{width:18px;height:18px;border-radius:50%;display:inline-grid;place-items:center;color:var(--faint);border:1.5px solid currentColor;font:700 11px/1 var(--f);vertical-align:middle;margin-left:7px;flex:none;cursor:help;transition:color .12s,background .12s;padding:0}
+.page h1 .help{margin-left:9px;vertical-align:5px}
+.help:hover,.help.on,.help:focus-visible{color:var(--accent);background:var(--accent-lo);outline:0}
+.tipbox{position:fixed;z-index:96;max-width:340px;background:var(--chrome);color:var(--on-chrome);font-size:12.5px;line-height:1.55;padding:10px 13px;border-radius:9px;box-shadow:var(--shadow-2);animation:pop .12s ease-out;pointer-events:none}
+.tipbox b{color:#fff}
+/* giải thích dài gom lại: <details class="hoc"> */
+details.hoc{margin-top:4px}
+details.hoc>summary{cursor:pointer;font-size:13px;font-weight:600;color:var(--link);list-style:none;display:flex;align-items:center;gap:6px}
+details.hoc>summary::-webkit-details-marker{display:none}
+details.hoc>summary::before{content:"";width:6px;height:6px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:rotate(-45deg);transition:transform .15s;margin-left:2px}
+details.hoc[open]>summary::before{transform:rotate(45deg)}
+details.hoc>div{margin-top:10px}
 .page-kpis+.page-act{margin-left:0}
 
 /* =====================================================================
@@ -3092,9 +3105,11 @@ function partiesList(opts) {
   if (q) out = out.filter(r => r.name.toLowerCase().includes(q) || r.clientId.toLowerCase().includes(q));
   const key = opts.sort || "revenueQ", dir = opts.dir === 1 ? 1 : -1;
   out.sort((a, b) => { const A = a[key], B = b[key]; return typeof A === "string" ? A.localeCompare(B, "vi") * dir : ((A || 0) - (B || 0)) * dir; });
-  const counts = { all: rows.length };
-  ["managed", "renew", "inactive", "incomplete", "never-logged"].forEach(s => { counts[s] = rows.filter(r => r.status === s).length; });
-  counts["no-account"] = rows.filter(r => !r.hasAccount).length;
+  /* các ô đếm tính trong phạm vi người xem (kinh doanh: tài khoản mình phụ trách), không tính theo bộ lọc đang chọn */
+  const goc = opts.manager ? rows.filter(r => r.manager === opts.manager) : rows;
+  const counts = { all: goc.length };
+  ["managed", "renew", "inactive", "incomplete", "never-logged"].forEach(s => { counts[s] = goc.filter(r => r.status === s).length; });
+  counts["no-account"] = goc.filter(r => !r.hasAccount).length;
   if (opts.status === "no-account") out = out.filter(r => !r.hasAccount);
   return { total: out.length, counts, rows: out, homNay };
 }
@@ -4230,9 +4245,22 @@ const TICKET_TYPES = [
   { id: "marketing",  label: "Marketing",         labelEn: "Marketing" },
   { id: "quyen",      label: "Bản quyền",         labelEn: "Rights" },
   { id: "tai-khoan",  label: "Tài khoản",         labelEn: "Account" },
+  { id: "hop-dong",   label: "Hợp đồng & tạm ứng", labelEn: "Contract & advance" },
   { id: "khac",       label: "Khác",              labelEn: "Other" }
 ];
 const TICKET_STATUS = ["open", "in_progress", "waiting", "done"];
+/* Bộ phận xử lý theo loại yêu cầu: mỗi loại thuộc đúng một vai. Ticket
+   được định tuyến khi tạo; nhân viên có thể chuyển bộ phận. Vai ngoài giám
+   đốc chỉ thấy hàng đợi bộ phận mình và ticket được giao cho mình. */
+const BO_PHAN_TICKET = { "phat-hanh": "ops", "nen-tang": "ops", "thanh-toan": "accounting", "marketing": "sales", "hop-dong": "sales", "quyen": "support", "tai-khoan": "support", "khac": "support" };
+const TEN_BO_PHAN = { mgmt: { vi: "Ban giám đốc", en: "Management" }, ops: { vi: "Vận hành", en: "Operations" }, accounting: { vi: "Kế toán", en: "Accounting" }, sales: { vi: "Kinh doanh", en: "Sales" }, support: { vi: "Hỗ trợ", en: "Support" } };
+function boPhanCua(type) { return BO_PHAN_TICKET[type] || "support"; }
+function deptCua(t) { if (!t.dept) t.dept = boPhanCua(t.type); return t.dept; }
+function ticketsChoVai(ds) {
+  const role = vaiHienTai();
+  if (!role || role === "mgmt") return ds;
+  return ds.filter(t => deptCua(t) === role || (t.assignee && _me && t.assignee === _me.id));
+}
 let ticketSeq = 0;
 function ticketId(at) { ticketSeq++; return "HT-" + String(at).slice(2, 4) + String(at).slice(5, 7) + "-" + String(ticketSeq).padStart(3, "0"); }
 function slaDue(at, priority) { return addDays(String(at).slice(0, 10), priority === "urgent" ? 1 : priority === "high" ? 2 : priority === "low" ? 7 : 3) + " 17:00:00"; }
@@ -4245,6 +4273,7 @@ function createTicket(o) {
     createdAt: at, updatedAt: at, status: o.status || "open", priority: o.priority || "normal",
     assignee: o.assignee || null, dueAt: slaDue(at, o.priority || "normal"),
     messages: [{ at, by: o.createdBy || partyClientId(o.partyKey), who: o.who || "partner", text: String(o.body || "").trim() }] };
+  t.dept = boPhanCua(t.type);
   if (!t.title) throw new Error("Thiếu tiêu đề yêu cầu");
   state.tickets.unshift(t);
   return t;
@@ -4755,7 +4784,8 @@ const QUYEN_NHOM = {
   chiaSe:    { vai: ["mgmt", "accounting"],          vi: "Chia sẻ tác quyền của mọi tài khoản", en: "Royalty splits across accounts" },
   khieuNai:  { vai: ["mgmt", "support", "ops"],      vi: "Khiếu nại bản quyền, cài đặt video", en: "Rights claims, video settings" },
   hoTro:     { vai: VAI_NB,                          vi: "Ticket hỗ trợ", en: "Support tickets" },
-  quanTri:   { vai: ["mgmt"],                        vi: "Tài khoản cổng, nhật ký, câu hỏi, dữ liệu", en: "Portal accounts, audit log, questions, data" }
+  quanTri:   { vai: ["mgmt"],                        vi: "Tài khoản cổng, nhật ký, câu hỏi, dữ liệu", en: "Portal accounts, audit log, questions, data" },
+  phatHanhHo:{ vai: ["mgmt", "ops", "sales"],        vi: "Tạo hồ sơ phát hành thay đối tác (kinh doanh: đối tác mình phụ trách)", en: "Create a release on a partner’s behalf (sales: own accounts only)" }
 };
 /* thành viên của mặt tiền admin → nhóm; "a.b" cho hàm con; không có trong
    bảng nghĩa là dùng chung (tra cứu tên, kỳ, bài hát…) */
@@ -4772,7 +4802,7 @@ const QUYEN_HAM = {
   splits: "chiaSe", splitsFor: "chiaSe", setSplit: "chiaSe", removeSplit: "chiaSe", acceptSplit: "chiaSe",
   quality: "danhMuc", qualityFor: "danhMuc", setAlertStatus: "danhMuc", metadataReport: "danhMuc", metadataReportFor: "danhMuc",
   catalogue: "danhMuc", platformReport: "danhMuc", catalogueReleases: "danhMuc", releases: "danhMuc",
-  "releases.receive": "vanHanh", "releases.assignCodes": "vanHanh", "releases.publish": "vanHanh", "releases.returnFix": "vanHanh",
+  "releases.receive": "vanHanh", "releases.assignCodes": "vanHanh", "releases.publish": "vanHanh", "releases.returnFix": "vanHanh", "releases.createFor": "phatHanhHo",
   deliveries: "vanHanh", bulk: "vanHanh", ingest: "vanHanh", platformRates: "vanHanh", platformRatesFull: "vanHanh", setPlatformRate: "vanHanh", clearPlatformRate: "vanHanh", importPlatformRates: "vanHanh",
   proposals: "deXuat", "proposals.proposeAdvance": "deXuatTao", "proposals.proposeContract": "deXuatTao", advanceCalc: "deXuat", contractCalc: "deXuat", partySeries: "deXuat", advanceOfferOf: "deXuat",
   tickets: "hoTro", claims: "khieuNai", videoSettings: "khieuNai",
@@ -5010,6 +5040,21 @@ const admin = {
       return ds;
     },
     get(id) { return state.releases.find(r => r.id === id) || null; },
+    /* Nhân viên tạo hồ sơ phát hành thay đối tác (đối tác gửi file qua email,
+       gọi điện…). Cùng luật kiểm như hồ sơ đối tác tự gửi; ghi rõ người tạo là
+       nhân viên và đối tác thấy nhãn "Haustek tạo thay bạn" trên cổng. Kinh
+       doanh chỉ tạo cho đối tác mình phụ trách. */
+    createFor(partyKey, payload, by) {
+      if (vaiHienTai() === "sales" && state.partyManager[partyKey] !== _me.id) throw new Error("Không có quyền: đối tác này không do bạn phụ trách");
+      const isLabel = String(partyKey)[0] === "L", pid = +String(partyKey).slice(2);
+      const artistId = isLabel ? +(payload && payload.artistId) : pid;
+      if (!ARTISTS[artistId]) throw new Error("Chưa chọn nghệ sĩ chính");
+      if (isLabel && ARTISTS[artistId].labelId !== pid) throw new Error("Nghệ sĩ này không thuộc label");
+      const r = buildRelease(payload, artistId, by || (_me && _me.name) || "staff", "staff");
+      state.releases.unshift(r);
+      audit.log("release.create.staff", r.id + " · " + r.title + " · " + partyName(partyKey), by); store.save();
+      return r;
+    },
     counts() {
       const c = { submitted: 0, received: 0, coded: 0, released: 0, returned: 0 };
       state.releases.forEach(r => { c[r.status] = (c[r.status] || 0) + 1; });
@@ -5123,9 +5168,11 @@ const admin = {
   proposals: { list: f => proposalsListChoVai(f), counts: () => proposalCountsChoVai(), get: id => proposalGetChoVai(id),
     proposeAdvance, proposeContract, review: reviewProposal, flow: PROPOSAL_FLOW },
   tickets: {
-    types: TICKET_TYPES, statuses: TICKET_STATUS,
+    types: TICKET_TYPES, statuses: TICKET_STATUS, depts: TEN_BO_PHAN, deptOf: type => boPhanCua(type),
     list(f) {
-      let ds = state.tickets.slice();
+      let ds = ticketsChoVai(state.tickets.slice());
+      ds.forEach(deptCua);
+      if (f && f.dept) ds = ds.filter(t => t.dept === f.dept);
       if (f && f.status) ds = ds.filter(t => f.status === "open-all" ? t.status !== "done" : t.status === f.status);
       if (f && f.type) ds = ds.filter(t => t.type === f.type);
       if (f && f.assignee) ds = ds.filter(t => t.assignee === f.assignee);
@@ -5135,12 +5182,22 @@ const admin = {
     },
     get(id) { return state.tickets.find(t => t.id === id) || null; },
     counts(assignee) {
-      const ds = assignee ? state.tickets.filter(t => t.assignee === assignee) : state.tickets;
+      const ds = assignee ? state.tickets.filter(t => t.assignee === assignee) : ticketsChoVai(state.tickets);
       const now = nowISO();
       return { open: ds.filter(t => t.status === "open").length, in_progress: ds.filter(t => t.status === "in_progress").length, waiting: ds.filter(t => t.status === "waiting").length,
         done: ds.filter(t => t.status === "done").length, overdue: ds.filter(t => t.status !== "done" && t.dueAt < now).length, urgent: ds.filter(t => t.status !== "done" && t.priority === "urgent").length, total: ds.length };
     },
     create(o, by) { const t = createTicket(Object.assign({}, o, { createdBy: by, who: "staff", source: "staff" })); audit.log("ticket.create", t.id + " · " + t.party.name + " · " + t.title, by); store.save(); return t; },
+    /* chuyển bộ phận: đổi loại yêu cầu; sang bộ phận khác thì bỏ người phụ trách để hàng đợi mới nhận */
+    chuyen(id, type, by, note) {
+      const t = this.get(id); if (!t) throw new Error("Không tìm thấy " + id);
+      if (!TICKET_TYPES.some(x => x.id === type)) throw new Error("Loại yêu cầu không hợp lệ");
+      const tu = deptCua(t); t.type = type; t.dept = boPhanCua(type);
+      if (t.dept !== tu) t.assignee = null;
+      t.updatedAt = nowISO();
+      if (String(note || "").trim()) t.messages.push({ at: t.updatedAt, by, who: "staff", text: String(note).trim() });
+      audit.log("ticket.chuyen", t.id + " · " + TEN_BO_PHAN[tu].vi + " → " + TEN_BO_PHAN[t.dept].vi, by); store.save(); return t;
+    },
     assign(id, staffId, by) { const t = this.get(id); if (!t) throw new Error("Không tìm thấy " + id); if (!staffById(staffId)) throw new Error("Không có nhân viên " + staffId); t.assignee = staffId; t.updatedAt = nowISO(); if (t.status === "open") t.status = "in_progress"; audit.log("ticket.assign", t.id + " → " + staffById(staffId).name, by); store.save(); return t; },
     setStatus(id, status, by) { const t = this.get(id); if (!t) throw new Error("Không tìm thấy " + id); if (TICKET_STATUS.indexOf(status) < 0) throw new Error("Trạng thái không hợp lệ"); t.status = status; t.updatedAt = nowISO(); if (status === "done") t.closedAt = t.updatedAt; audit.log("ticket.status", t.id + " → " + status, by); store.save(); return t; },
     setPriority(id, priority, by) { const t = this.get(id); if (!t) throw new Error("Không tìm thấy " + id); t.priority = priority; t.dueAt = slaDue(t.createdAt, priority); t.updatedAt = nowISO(); audit.log("ticket.priority", t.id + " → " + priority, by); store.save(); return t; },
@@ -5620,7 +5677,8 @@ const api = {
     assertParty(role, partyId);
     const pk = role === "label" ? "L:" + partyId : "A:" + partyId;
     const rows = state.tickets.filter(t => t.partyKey === pk).map(t => Object.assign({}, t, {
-      assigneeName: t.assignee && staffById(t.assignee) ? staffById(t.assignee).name : null, assignee: undefined }));
+      assigneeName: t.assignee && staffById(t.assignee) ? staffById(t.assignee).name : null, assignee: undefined,
+      dept: deptCua(t), deptLabel: TEN_BO_PHAN[deptCua(t)].vi, deptLabelEn: TEN_BO_PHAN[deptCua(t)].en }));
     return scrub({ rows, types: TICKET_TYPES, counts: { open: rows.filter(t => t.status !== "done").length, done: rows.filter(t => t.status === "done").length } });
   },
   createTicket(role, partyId, o) {
@@ -5628,8 +5686,7 @@ const api = {
     const pk = role === "label" ? "L:" + partyId : "A:" + partyId;
     if (o && o.trackId != null && !inScope(role, partyId, "rec", +o.trackId)) throw new Error("Bài hát này không thuộc phạm vi của bạn");
     if (!o || !String(o.body || "").trim()) throw new Error("Bạn hãy mô tả yêu cầu");
-    const t = createTicket({ type: o.type, title: o.title, body: o.body, partyKey: pk, trackId: o.trackId, priority: o.priority === "high" ? "high" : "normal",
-      assignee: (o.type === "thanh-toan" ? staffByRole("accounting")[0] : o.type === "phat-hanh" ? staffByRole("ops")[0] : staffByRole("support")[0]).id });
+    const t = createTicket({ type: o.type, title: o.title, body: o.body, partyKey: pk, trackId: o.trackId, priority: o.priority === "high" ? "high" : "normal", assignee: null });
     audit.log("ticket.create", t.id + " · " + t.party.name + " · " + t.title, partyClientId(pk)); store.save();
     return scrub({ id: t.id, status: t.status, dueAt: t.dueAt });
   },
@@ -7570,9 +7627,15 @@ function dai(s, n) {
 /* ---- đầu trang ---- */
 /* o.nut: nút hành động chính của trang, đứng bên phải tiêu đề — một chỗ
    cho mọi màn, thay cho mỗi màn tự đặt nút một kiểu dưới dải ô số. */
+/* Câu giải thích không in ra nữa: một dấu ? cạnh tiêu đề, rê chuột hoặc
+   bấm để đọc. Chữ đã được màn hình escape sẵn nên đặt thẳng vào thuộc tính. */
+function giup(chu) {
+  if (!chu) return '';
+  var nhan = HT.lang === 'en' ? 'What is this?' : 'Giải thích';
+  return '<button type="button" class="help" data-giup="' + chu + '" aria-label="' + nhan + '" title="">?</button>';
+}
 function dau(o) {
-  return '<div class="page"><div><h1>' + (o.h1 || '') + '</h1>' +
-    (o.mo ? '<p>' + o.mo + '</p>' : '') + '</div>' +
+  return '<div class="page"><div><h1>' + (o.h1 || '') + giup(o.mo) + '</h1></div>' +
     (o.so && o.so.length ? '<div class="page-kpis">' + o.so.map(function (k) {
       return '<div class="page-kpi"><div class="l">' + esc(k.l) + '</div>' +
         '<div class="v"' + (k.mau ? ' style="color:' + k.mau + '"' : '') + '>' + esc(k.v) + '</div></div>';
@@ -7601,8 +7664,8 @@ function the(o) {
   return '<div class="card"' + (o.id ? ' id="' + esc(o.id) + '"' : '') + '>' +
     (o.dai ? '<div class="ribbon ' + o.dai.kieu + '">' + icon(o.dai.icon || 'info') +
       '<span>' + o.dai.chu + '</span></div>' : '') +
-    (o.h2 || o.hanhDong ? '<div class="card-h"><div style="min-width:0"><h2>' + (o.h2 || '') + '</h2>' +
-      (o.p ? '<p>' + o.p + '</p>' : '') + '</div><div class="sp"></div>' +
+    (o.h2 || o.hanhDong ? '<div class="card-h"><div style="min-width:0"><h2>' + (o.h2 || '') + giup(o.p) + '</h2>' +
+      '</div><div class="sp"></div>' +
       (o.hanhDong ? '<div class="btnrow">' + o.hanhDong + '</div>' : '') + '</div>' : '') +
     (o.thoBody ? o.than : '<div class="card-b">' + (o.than || '') + '</div>') +
     (o.chan ? '<div class="card-f">' + o.chan + '</div>' : '') + '</div>';
@@ -7648,6 +7711,28 @@ function menu(items, o) {
   return '<details class="menu"><summary class="btn sm ghost" aria-label="' + esc(o.nhan || (HT.lang === 'en' ? 'More' : 'Thêm')) + '" title="' + esc(o.nhan || (HT.lang === 'en' ? 'More' : 'Thêm')) + '">' + icon('more') + '</summary>' +
     '<div class="menu-list">' + ds.join('') + '</div></details>';
 }
+/* hộp chú thích nổi cho nút ? : rê chuột thì hiện, bấm thì ghim, Esc / bấm ngoài thì đóng */
+var _tip = null, _tipGhim = null;
+function tipBox() { if (!_tip) { _tip = document.createElement('div'); _tip.className = 'tipbox'; _tip.hidden = true; document.body.appendChild(_tip); } return _tip; }
+function tipHien(nut) {
+  var b = tipBox(); b.innerHTML = nut.getAttribute('data-giup') || ''; b.hidden = false;
+  var r = nut.getBoundingClientRect(); b.style.left = '0px'; b.style.top = '0px';
+  var w = b.offsetWidth, h = b.offsetHeight;
+  var left = Math.max(8, Math.min(r.left - 8, window.innerWidth - w - 8));
+  var top = r.bottom + 8; if (top + h > window.innerHeight - 8) top = Math.max(8, r.top - h - 8);
+  b.style.left = left + 'px'; b.style.top = top + 'px';
+}
+function tipAn() { if (_tip) _tip.hidden = true; if (_tipGhim) { _tipGhim.classList.remove('on'); _tipGhim = null; } }
+document.addEventListener('mouseover', function (e) { var n = e.target.closest && e.target.closest('.help'); if (n && !_tipGhim) tipHien(n); });
+document.addEventListener('mouseout', function (e) { var n = e.target.closest && e.target.closest('.help'); if (n && !_tipGhim) tipAn(); });
+document.addEventListener('focusin', function (e) { var n = e.target.closest && e.target.closest('.help'); if (n && !_tipGhim) tipHien(n); });
+document.addEventListener('focusout', function (e) { var n = e.target.closest && e.target.closest('.help'); if (n && !_tipGhim) tipAn(); });
+document.addEventListener('keydown', function (e) { if (e.key === 'Escape') tipAn(); });
+document.addEventListener('click', function (e) {
+  var n = e.target.closest && e.target.closest('.help');
+  if (n) { e.preventDefault(); if (_tipGhim === n) { tipAn(); } else { tipAn(); _tipGhim = n; n.classList.add('on'); tipHien(n); } return; }
+  if (_tipGhim && !(e.target.closest && e.target.closest('.tipbox'))) tipAn();
+});
 document.addEventListener('click', function (e) {
   var x = e.target.closest('[data-ghi-dong]');
   if (x) { try { localStorage.setItem('haustek.ghi.' + x.getAttribute('data-ghi-dong'), '1'); } catch (err) {} var n = x.closest('.note'); if (n) n.remove(); return; }
@@ -8611,7 +8696,7 @@ HT.dangKy({
   chu: {
     vi: {
       navBan: 'Bàn làm việc', h1: 'Bàn làm việc', homNay: 'Việc của bạn hôm nay, {d}.', nhanVien: 'Nhân viên', vaiTro: 'Vai',
-      dxCho: 'Chờ xét duyệt', dxChoMo: 'Tạm ứng và hợp đồng do kinh doanh hoặc đối tác đề xuất, kèm ROI và hạng rủi ro tính từ 12 kỳ thu nhập. Kế toán kiểm số trước, bạn duyệt sau.', dxChoS: '{a} tạm ứng chờ duyệt · {b} đã kiểm số', moXetDuyet: 'Mở xét duyệt', dxKhong: 'Không có đề xuất nào chờ duyệt', dxKhongMo: 'Đề xuất mới từ kinh doanh hoặc đối tác sẽ hiện ở đây.',
+      dxCho: 'Chờ xét duyệt', dxChoMo: 'Kinh doanh hoặc đối tác đề xuất, kế toán kiểm số, bạn duyệt. ROI và hạng rủi ro tính từ 12 kỳ.', dxChoS: '{a} tạm ứng chờ duyệt · {b} đã kiểm số', moXetDuyet: 'Mở xét duyệt', dxKhong: 'Không có đề xuất nào chờ duyệt', dxKhongMo: 'Đề xuất mới từ kinh doanh hoặc đối tác sẽ hiện ở đây.',
       dxToi: 'Đề xuất của tôi', dxToiMo: 'Tạm ứng và hợp đồng bạn đã đề xuất; trạng thái đổi khi kế toán kiểm số và giám đốc xét duyệt.', dxTaoUng: 'Đề xuất tạm ứng', dxTaoHd: 'Đề xuất hợp đồng', dxToiKhong: 'Bạn chưa có đề xuất nào', dxToiKhongMo: 'Bấm nút phía trên, hoặc mở ngăn một đối tác trong sổ đối tác.',
       dxKiem: 'Cần kiểm số', dxKiemMo: 'Đề xuất mới gửi. Đối chiếu thu nhập 12 kỳ với bảng kê và sổ tạm ứng, rồi bấm Đã kiểm để giám đốc xét duyệt.', dxKiemKhong: 'Không có đề xuất nào cần kiểm số', dxKiemKhongMo: 'Đề xuất đã kiểm chuyển sang chờ giám đốc duyệt.',
       dxNoiDung: 'Nội dung', dxThaoTac: 'Thao tác', dxRoi: 'ROI', dxThuHoi: 'thu hồi {n} tháng', dxTuDoiTac: 'từ cổng đối tác',
@@ -8657,7 +8742,7 @@ HT.dangKy({
     },
     en: {
       navBan: 'My desk', h1: 'My desk', homNay: 'Your work for today, {d}.', nhanVien: 'Staff', vaiTro: 'Role',
-      dxCho: 'Awaiting approval', dxChoMo: 'Advances and contracts proposed by sales or partners, with ROI and a risk grade from 12 periods of earnings. Accounting checks first, you approve.', dxChoS: '{a} in advances pending · {b} checked', moXetDuyet: 'Open approvals', dxKhong: 'Nothing awaiting approval', dxKhongMo: 'New proposals from sales or partners show up here.',
+      dxCho: 'Awaiting approval', dxChoMo: 'Sales or partners propose, accounting checks, you approve. ROI and risk grade from 12 periods.', dxChoS: '{a} in advances pending · {b} checked', moXetDuyet: 'Open approvals', dxKhong: 'Nothing awaiting approval', dxKhongMo: 'New proposals from sales or partners show up here.',
       dxToi: 'My proposals', dxToiMo: 'Advances and contracts you proposed; status moves as accounting checks and the director approves.', dxTaoUng: 'Propose advance', dxTaoHd: 'Propose contract', dxToiKhong: 'You have no proposals yet', dxToiKhongMo: 'Use the buttons above, or open a partner’s drawer in Partners.',
       dxKiem: 'Figures to check', dxKiemMo: 'Newly submitted proposals. Reconcile 12 periods of earnings against statements and the advance ledger, then mark Checked so the director can approve.', dxKiemKhong: 'No proposal needs a check', dxKiemKhongMo: 'Checked proposals move on to the director.',
       dxNoiDung: 'Terms', dxThaoTac: 'Actions', dxRoi: 'ROI', dxThuHoi: 'recoup {n} mo', dxTuDoiTac: 'from the partner portal',
@@ -8814,6 +8899,8 @@ function bangKhieuNai(c, rows) {
     }).join('') + '</tbody></table></div>';
 }
 function nutLoi(c, ds) {
+  /* Hàng lối tắt bỏ đi: thanh điều hướng theo vai đã đủ, thêm hàng nút chỉ rối. */
+  if (c) return '';
   /* chỉ đưa lối tắt tới màn mà vai này mở được */
   ds = ds.filter(function (x) { return !(c.A.quyen && typeof c.A.quyen.man === 'function') || c.A.quyen.man(x[0]); });
   if (!ds.length) return '';
@@ -9138,7 +9225,7 @@ HT.dangKy({
       soVoi: 'so với', khac: 'nền tảng khác', luotNghe: 'lượt nghe',
       /* góc nhìn A&R */
       doiTac: 'Đối tác dẫn đầu kỳ này',
-      doiTacMo: 'Label và nghệ sĩ độc lập xếp theo doanh thu gộp; nghệ sĩ thuộc label tính vào label. Bấm một dòng để xem chi tiết dòng tiền.',
+      doiTacMo: 'Label và nghệ sĩ độc lập theo doanh thu gộp; nghệ sĩ thuộc label tính vào label. Bấm một dòng để xem dòng tiền.',
       cDoiTac: 'Đối tác', cTyLe: 'Tỷ lệ nghệ sĩ', cHuong: 'Được hưởng', docLap: 'Nghệ sĩ độc lập',
       ungThu: 'Tạm ứng còn phải thu hồi',
       ungThuMo: 'Bình quân phần được hưởng của 3 kỳ đã xét duyệt gần nhất ({k}) cho biết còn bao nhiêu kỳ nữa thì thu hồi hết.',
@@ -9173,7 +9260,7 @@ HT.dangKy({
       dong: 'rows', tien: 'Amount', khong: 'Nothing on hold',
       soVoi: 'vs', khac: 'other stores', luotNghe: 'streams',
       doiTac: 'Top partners this period',
-      doiTacMo: 'Labels and independent artists by gross revenue; artists under a label count toward the label. Click a row for the money chain.',
+      doiTacMo: 'Labels and independent artists by gross; artists under a label count toward it. Click a row for the money chain.',
       cDoiTac: 'Partner', cTyLe: 'Artist rate', cHuong: 'Earned', docLap: 'Independent artist',
       ungThu: 'Advances outstanding',
       ungThuMo: 'Average earnings over the last 3 approved periods ({k}) give the number of periods left to clear.',
@@ -9688,7 +9775,7 @@ HT.dangKy({
   chu: {
     vi: {
       navTheoDoi: 'Theo dõi', h1: 'Theo dõi',
-      mo: 'Bài hát, tài khoản và bản phát hành đang lên trong cửa sổ ngày, từ lượt nghe nền tảng gửi về mỗi ngày. Đánh dấu sao để theo dõi riêng.',
+      mo: 'Bài hát, tài khoản và bản phát hành đang lên trong cửa sổ ngày, từ lượt nghe nền tảng gửi mỗi ngày. Đánh dấu sao để theo dõi.',
       canhBao: 'Danh sách yêu thích chỉ lưu trong trình duyệt này. Bạn lưu ra tệp định kỳ để không mất khi đổi máy.',
       luu: 'Lưu', khoiPhuc: 'Khôi phục', dong: 'Đóng',
       hoiLuu: 'Lưu danh sách yêu thích', hoiLuuMo: 'Sao chép nội dung dưới đây và cất vào tệp của bạn. Dán lại ở nút Khôi phục trên máy khác.',
@@ -9703,7 +9790,7 @@ HT.dangKy({
     },
     en: {
       navTheoDoi: 'Monitoring', h1: 'Monitoring',
-      mo: 'Tracks, accounts and releases on the rise within a day window, from the daily streams platforms send. Star items to follow them.',
+      mo: 'Tracks, accounts and releases on the rise in a day window, from daily platform streams. Star to follow.',
       canhBao: 'Favorites are only saved in this browser. Save them to a file regularly so they survive a change of machine.',
       luu: 'Save', khoiPhuc: 'Restore', dong: 'Close',
       hoiLuu: 'Save favorites', hoiLuuMo: 'Copy the text below into a file of yours. Paste it under Restore on another machine.',
@@ -9897,7 +9984,7 @@ HT.dangKy({
   chu: {
     vi: {
       navChatLuong: 'Chất lượng lượt nghe', h1: 'Chất lượng lượt nghe',
-      mo: 'Cảnh báo lượt nghe bất thường gom theo tài khoản, sổ phạt của nền tảng và sức khoẻ metadata toàn danh mục. Mỗi cảnh báo có bằng chứng và hai thao tác ghi nhật ký.',
+      mo: 'Cảnh báo lượt nghe bất thường theo tài khoản, sổ phạt của nền tảng và sức khoẻ metadata.',
       kCb: 'Cảnh báo', kCbS: '{a} nghiêm trọng · {b} cảnh báo · {c} theo dõi · {n} bài đã quét', kCo: 'Bài bị nền tảng gắn cờ', kCoS: 'phạt {p}/tháng đang treo', kGo: 'Lượt nghe bị gỡ', kTk: 'Tài khoản nhiều bài tăng đồng loạt', kTkS: 'kiểu tách nhỏ để lách ngưỡng', kMo: 'Đang mở', kMoS: '{n} đang khiếu nại', kMd: 'Điểm metadata trung bình', kMdS: '{n} bản ghi thiếu mã quan trọng',
       tabTk: 'Theo tài khoản', tabCb: 'Cảnh báo', tabMd: 'Sức khoẻ metadata',
       cTk: 'Tài khoản', cMau: 'Kiểu', cAlerts: 'Cảnh báo', cNt: 'Nghiêm trọng', cCo: 'Bị gắn cờ', cPhat: 'Phạt / tháng', cGo: 'Lượt bị gỡ', cMo: 'Đang mở',
@@ -9909,7 +9996,7 @@ HT.dangKy({
     },
     en: {
       navChatLuong: 'Stream quality', h1: 'Stream quality',
-      mo: 'Unusual-stream alerts grouped by account, the platform penalty ledger and catalogue-wide metadata health. Every alert carries evidence and two logged actions.',
+      mo: 'Unusual-stream alerts by account, the platform penalty ledger and metadata health.',
       kCb: 'Alerts', kCbS: '{a} critical · {b} warning · {c} watch · {n} tracks scanned', kCo: 'Flagged by platforms', kCoS: '{p}/month penalty exposure', kGo: 'Streams removed', kTk: 'Accounts with many small lifts', kTkS: 'spreading streams thin to dodge thresholds', kMo: 'Open', kMoS: '{n} disputed', kMd: 'Average metadata score', kMdS: '{n} recordings missing key identifiers',
       tabTk: 'By account', tabCb: 'Alerts', tabMd: 'Metadata health',
       cTk: 'Account', cMau: 'Pattern', cAlerts: 'Alerts', cNt: 'Critical', cCo: 'Flagged', cPhat: 'Penalty / month', cGo: 'Removed', cMo: 'Open',
@@ -10035,7 +10122,7 @@ HT.dangKy({
   chu: {
     vi: {
       navChiaSe: 'Chia sẻ tác quyền', h1: 'Chia sẻ tác quyền',
-      mo: 'Bài nào đang chia phần trăm cho ai, lời mời nào chưa được nhận, khoản thu hồi nào còn dở. Phần của người cộng tác đã nhận được tách khỏi số trả cho chủ bản ghi khi chi trả.',
+      mo: 'Bài nào chia phần trăm cho ai, lời mời chưa nhận, khoản thu hồi còn dở. Phần đã nhận tách khỏi số trả cho chủ bản ghi.',
       kBai: 'Bài có chia sẻ', kNg: 'Người cộng tác', kMoi: 'Lời mời chưa nhận', kMoiS: 'chưa được chia tiền', kDaChia: 'Đã chia cho người cộng tác', kDaChiaS: 'tích luỹ các kỳ đã xét duyệt', kThuHoi: 'Đang thu hồi',
       locAll: 'Tất cả', locMoi: 'Có lời mời chưa nhận', locThuHoi: 'Đang thu hồi', tim: 'Tìm bài, ISRC, tài khoản, email…',
       xacNhanThay: 'Xác nhận thay', hoiXn: 'Xác nhận thay {e}?', hoiXnMo: 'Chỉ làm khi người cộng tác đã gửi xác nhận bằng văn bản; hành động được ghi nhật ký.', daXn: 'Đã xác nhận cho {e}',
@@ -10043,7 +10130,7 @@ HT.dangKy({
     },
     en: {
       navChiaSe: 'Royalty splits', h1: 'Royalty splits',
-      mo: 'Which tracks share a percentage with whom, which invitations are pending, which recoupments are still running. Accepted collaborator shares are separated from the owner’s payout.',
+      mo: 'Who shares what on which track, pending invitations, running recoupments. Accepted shares are split out of the owner’s payout.',
       kBai: 'Tracks with splits', kNg: 'Collaborators', kMoi: 'Pending invitations', kMoiS: 'not paid yet', kDaChia: 'Paid to collaborators', kDaChiaS: 'across approved periods', kThuHoi: 'Recouping',
       locAll: 'All', locMoi: 'Pending invitations', locThuHoi: 'Recouping', tim: 'Search track, ISRC, account, email…',
       xacNhanThay: 'Accept on behalf', hoiXn: 'Accept on behalf of {e}?', hoiXnMo: 'Only when the collaborator has confirmed in writing; the action is logged.', daXn: 'Accepted for {e}',
@@ -10123,14 +10210,14 @@ HT.dangKy({
   chu: {
     vi: {
       navChienDich: 'Chiến dịch', h1: 'Chiến dịch quảng bá',
-      mo: 'Liên kết thông minh, pitch playlist và quảng cáo trả phí của mọi tài khoản. Mỗi dòng là một phễu kết quả; bấm để xem chi tiết.',
+      mo: 'Liên kết thông minh, pitch playlist, quảng cáo của mọi tài khoản. Bấm một dòng để xem chi tiết.',
       kDang: 'Đang chạy', kDangS: '{a} sắp chạy · {b} đã xong', kLuu: 'Lưu trước', kPitch: 'Playlist nhận', kPitchS: 'trong {n} lượt pitch', kChi: 'Đã chi quảng cáo', kChiS: '{n} lượt nghe quy được', kGia: 'Giá mỗi lượt nghe',
       loaiAll: 'Mọi loại', loaiSl: 'Liên kết thông minh', loaiPitch: 'Pitch playlist', loaiAds: 'Quảng cáo', ttAll: 'Mọi trạng thái', ttRunning: 'Đang chạy', ttPlanned: 'Sắp chạy', ttDone: 'Đã xong', tim: 'Tìm bài, tài khoản…',
       khong: 'Không có chiến dịch khớp bộ lọc', khongMo: 'Đổi bộ lọc phía trên.', chiTiet: 'Chiến dịch', dong: 'Đóng'
     },
     en: {
       navChienDich: 'Campaigns', h1: 'Promotion campaigns',
-      mo: 'Smart links, playlist pitching and paid ads across all accounts. Each row is a results funnel; click for detail.',
+      mo: 'Smart links, playlist pitching and paid ads across accounts. Open a row for detail.',
       kDang: 'Running', kDangS: '{a} planned · {b} done', kLuu: 'Pre-saves', kPitch: 'Playlists accepted', kPitchS: 'of {n} pitches', kChi: 'Ad spend', kChiS: '{n} attributed streams', kGia: 'Cost per stream',
       loaiAll: 'Any kind', loaiSl: 'Smart links', loaiPitch: 'Playlist pitching', loaiAds: 'Paid ads', ttAll: 'Any status', ttRunning: 'Running', ttPlanned: 'Planned', ttDone: 'Done', tim: 'Search track, account…',
       khong: 'No campaigns match the filters', khongMo: 'Change the filters above.', chiTiet: 'Campaign', dong: 'Close'
@@ -10209,7 +10296,7 @@ HT.dangKy({
   chu: {
     vi: {
       navXetDuyet: 'Xét duyệt', h1: 'Xét duyệt đề xuất',
-      mo: 'Tạm ứng và hợp đồng: kinh doanh hoặc đối tác đề xuất, kế toán kiểm số, giám đốc xét duyệt. Mỗi đề xuất có bản tính ROI và hạng rủi ro chụp lúc tạo.',
+      mo: 'Kinh doanh hoặc đối tác đề xuất, kế toán kiểm số, giám đốc duyệt. Mỗi đề xuất có bản tính ROI và hạng rủi ro lúc tạo.',
       kCho: 'Chờ xét duyệt', kChoS: '{a} chờ kiểm số · {b} đã kiểm', kUng: 'Tạm ứng đề xuất đang chờ', kUngS: 'tổng số tiền', kDuyet: 'Đã duyệt', kDuyetS: '{a} tạm ứng · {b} hợp đồng', kTuChoi: 'Từ chối / trả lại', kRoi: 'ROI trung bình', kRoiS: 'trên vốn ứng · các tạm ứng đang chờ',
       tabCho: 'Đang chờ', tabXong: 'Đã xử lý', tabToi: 'Của tôi',
       loaiAll: 'Mọi loại', loaiUng: 'Tạm ứng', loaiHd: 'Hợp đồng', tim: 'Tìm đối tác, mã đề xuất…',
@@ -10219,13 +10306,13 @@ HT.dangKy({
       hoiDuyet: 'Duyệt {id} cho {t}?', hoiDuyetUng: 'Khoản {a} cộng phí ứng {f} được ghi vào sổ tạm ứng của đối tác và thu hồi từ phần họ được hưởng mỗi kỳ.', hoiDuyetHd: 'Phí Haustek {f} áp cho đối tác từ kỳ mở tiếp theo, hạn {m} tháng; hợp đồng cũ hết hiệu lực.',
       hoiTuChoi: 'Từ chối {id}', hoiTraLai: 'Trả lại {id} để bổ sung', lyDo: 'Lý do (đối tác và người đề xuất đều thấy)', hoiKiem: 'Xác nhận đã kiểm số {id}', hoiKiemMo: 'Bạn đã đối chiếu thu nhập 12 kỳ với bảng kê và sổ tạm ứng.', ghiChu: 'Ghi chú',
       daDuyet: 'Đã duyệt {id}', daTuChoi: 'Đã từ chối {id}', daTraLai: 'Đã trả lại {id}', daKiem: 'Đã ghi kiểm số {id}', daRut: 'Đã rút {id}', daGuiLai: 'Đã gửi lại {id}',
-      khong: 'Không có đề xuất nào', khongMo: 'Đề xuất mới bấm ở góc phải, hoặc từ ngăn hồ sơ đối tác.',
+      khong: 'Không có đề xuất nào', khongMo: 'Đề xuất mới bấm ở góc phải, hoặc từ ngăn hồ sơ đối tác.', khongXong: 'Chưa có đề xuất nào đã xử lý', khongXongMo: 'Đề xuất đã duyệt, từ chối hay rút sẽ nằm ở đây. Việc đang chờ ở tab Đang chờ.', khongToi: 'Bạn chưa tạo đề xuất nào', khongToiMo: 'Đề xuất do bạn tạo, kể cả đã xử lý, sẽ nằm ở đây.', khongLoc: 'Không có đề xuất khớp bộ lọc', khongLocMo: 'Thử bỏ loại đang chọn hoặc xoá ô tìm.', veCho: 'Xem tab Đang chờ',
       fTk: 'Đối tác (tên hoặc mã)', fSo: 'Số tiền tạm ứng (USD)', fPhi: 'Phí ứng', fGhi: 'Mục đích / ghi chú', fHan: 'Kỳ hạn (tháng)', fPhiHd: 'Phí Haustek trên doanh thu gộp', fDocQuyen: 'Độc quyền', xemTinh: 'Bản tính theo số đang nhập', khongThayTk: 'Không tìm thấy đối tác “{q}”', daTao: 'Đã tạo đề xuất {id}',
       chiTiet: 'Đề xuất', cuaDoiTac: 'gửi từ cổng đối tác'
     },
     en: {
       navXetDuyet: 'Approvals', h1: 'Proposal approvals',
-      mo: 'Advances and contracts: sales or the partner proposes, accounting checks the figures, the director approves. Each proposal carries an ROI calculation and risk grade snapshotted at creation.',
+      mo: 'Sales or partners propose, accounting checks, the director approves. Each proposal carries ROI and risk grade at creation.',
       kCho: 'Awaiting approval', kChoS: '{a} awaiting check · {b} checked', kUng: 'Advances proposed, pending', kUngS: 'total amount', kDuyet: 'Approved', kDuyetS: '{a} advances · {b} contracts', kTuChoi: 'Rejected / returned', kRoi: 'Average ROI', kRoiS: 'on capital · pending advances',
       tabCho: 'Pending', tabXong: 'Handled', tabToi: 'Mine',
       loaiAll: 'Any kind', loaiUng: 'Advances', loaiHd: 'Contracts', tim: 'Search partner, proposal id…',
@@ -10235,7 +10322,7 @@ HT.dangKy({
       hoiDuyet: 'Approve {id} for {t}?', hoiDuyetUng: '{a} plus the {f} advance fee is booked to the partner’s advance ledger and recouped from their share each period.', hoiDuyetHd: 'Haustek fee {f} applies to the partner from the next open period for {m} months; the old contract ends.',
       hoiTuChoi: 'Reject {id}', hoiTraLai: 'Return {id} for changes', lyDo: 'Reason (visible to the partner and the proposer)', hoiKiem: 'Confirm figures checked for {id}', hoiKiemMo: 'You have reconciled 12 periods of earnings against statements and the advance ledger.', ghiChu: 'Note',
       daDuyet: 'Approved {id}', daTuChoi: 'Rejected {id}', daTraLai: 'Returned {id}', daKiem: 'Recorded check for {id}', daRut: 'Withdrew {id}', daGuiLai: 'Resubmitted {id}',
-      khong: 'No proposals', khongMo: 'Create one at the top right, or from a partner’s drawer.',
+      khong: 'No proposals', khongMo: 'Create one at the top right, or from a partner’s drawer.', khongXong: 'Nothing decided yet', khongXongMo: 'Approved, rejected and withdrawn proposals land here. Open items are under Pending.', khongToi: 'You have not created a proposal', khongToiMo: 'Proposals you create, including decided ones, land here.', khongLoc: 'No proposals match the filter', khongLocMo: 'Clear the type or the search box.', veCho: 'Go to Pending',
       fTk: 'Partner (name or id)', fSo: 'Advance amount (USD)', fPhi: 'Advance fee', fGhi: 'Purpose / note', fHan: 'Term (months)', fPhiHd: 'Haustek fee on gross revenue', fDocQuyen: 'Exclusive', xemTinh: 'Calculation for the figures entered', khongThayTk: 'No partner matching “{q}”', daTao: 'Created proposal {id}',
       chiTiet: 'Proposal', cuaDoiTac: 'sent from the partner portal'
     }
@@ -10270,7 +10357,7 @@ HT.dangKy({
       [['all', t('loaiAll')], ['advance', t('loaiUng')], ['contract', t('loaiHd')]].map(function (x) { return '<button type="button" class="pill' + (LOC.loai === x[0] ? ' on' : '') + '" data-loai="' + x[0] + '">' + HM.esc(x[1]) + '</button>'; }).join('') +
       '<div class="srch">' + HM.icon('tim') + '<input type="search" data-tim placeholder="' + HM.esc(t('tim')) + '" value="' + HM.esc(LOC.tim) + '"></div></div>';
     html += HM.the({ thoBody: true,
-      than: !rows.length ? HM.trong({ icon: 'check', tieuDe: t('khong'), moTa: t('khongMo') }) :
+      than: !rows.length ? trongTab(c, k, qq) :
         '<div class="tw"><table class="t"><thead><tr><th>' + HM.esc(t('cTk')) + '</th><th>' + HM.esc(t('cNoiDung')) + '</th><th class="num">' + HM.esc(t('cRoi')) + '</th><th>' + HM.esc(t('cKn')) + '</th><th>' + HM.esc(t('cTt')) + '</th><th>' + HM.esc(t('cThaoTac')) + '</th></tr></thead><tbody>' +
         pt.page.map(function (p) { return dongDx(c, p, me); }).join('') + '</tbody></table></div>' + pt.chan });
     root.innerHTML = html;
@@ -10285,6 +10372,14 @@ HT.dangKy({
   }
 });
 
+/* Ô trống nói đúng vì sao trống: tab đã xử lý / của tôi / bộ lọc, không dùng một câu chung. */
+function trongTab(c, k, qq) {
+  var t = tx, nutCho = k.pending ? '<button type="button" class="btn sm" data-tab="cho">' + HM.esc(t('veCho')) + ' (' + k.pending + ')</button>' : '';
+  if (LOC.loai !== 'all' || qq) return HM.trong({ icon: 'tim', tieuDe: t('khongLoc'), moTa: t('khongLocMo') });
+  if (LOC.tab === 'xong') return HM.trong({ icon: 'check', tieuDe: t('khongXong'), moTa: t('khongXongMo'), nut: nutCho });
+  if (LOC.tab === 'toi') return HM.trong({ icon: 'file', tieuDe: t('khongToi'), moTa: t('khongToiMo'), nut: nutCho });
+  return HM.trong({ icon: 'check', tieuDe: t('khong'), moTa: t('khongMo') });
+}
 function dongDx(c, p, me) {
   var t = tx, roi = p.type === 'advance' ? p.calc.roi : null;
   return '<tr class="pick" data-pr="' + HM.esc(p.id) + '"><td>' + HM.tenBia({ ten: p.party.name, seed: p.party.clientId, phu: p.id + ' · ' + p.ageDays + ' ' + t('ngay') }) + '</td>' +
@@ -10425,25 +10520,25 @@ HT.dangKy({
   chu: {
     vi: {
       navMucTra: 'Mức trả nền tảng', h1: 'Mức trả nền tảng',
-      mo: 'USD gộp trên 1.000 lượt nghe của từng nền tảng, dùng cho dự báo và giải thích số. Mặc định suy từ báo cáo 3 kỳ gần nhất; nhập số thật để ghi đè.',
+      mo: 'USD gộp trên 1.000 lượt của từng nền tảng, dùng cho dự báo. Mặc định suy từ 3 kỳ gần nhất; nhập số thật để ghi đè.',
       kTron: 'Mức trả trộn', kTronS: 'USD / 1.000 lượt, theo cơ cấu lượt nghe 3 kỳ', kGhiDe: 'Nền tảng đã nhập số thật', kGhiDeS: 'trong {n} nền tảng', kDuBao: 'Dự báo doanh thu kỳ mở', kDuBaoS: 'đổi theo mức trả ngay', kVn: 'Tham chiếu thị trường VN', kVnS: 'Spotify, USD / 1.000',
       cNt: 'Nền tảng', cSuy: 'Suy từ báo cáo', cVn: 'Tham chiếu VN', cDung: 'Đang dùng', cNguon: 'Nguồn', cNhap: 'Nhập số thật', cThaoTac: 'Thao tác',
       nguonSuy: 'báo cáo 3 kỳ', nguonNhap: 'nhập tay', luu: 'Lưu', bo: 'Bỏ ghi đè', daLuu: 'Đã lưu {n}: {v} USD / 1.000', daBo: 'Đã bỏ ghi đè {n}',
-      dan: 'Dán CSV', danMo: 'Mỗi dòng: tên nền tảng, USD trên 1.000 lượt (chấp nhận dấu phẩy thập phân, dấu ; hoặc tab). Ví dụ: Spotify,1.52', nhap: 'Nhập', daNhap: 'Đã nhập {a} nền tảng, bỏ qua {b} dòng',
+      dan: 'Dán CSV', danMo: 'Mỗi dòng: tên nền tảng, USD trên 1.000 lượt (nhận dấu phẩy, ; hoặc tab). Ví dụ: Spotify,1.52', nhap: 'Nhập', daNhap: 'Đã nhập {a} nền tảng, bỏ qua {b} dòng',
       soSanh: 'Suy từ báo cáo so với tham chiếu và số đang dùng', soSanhMo: 'USD / 1.000 lượt. Cột đỏ là nền tảng đang dùng số nhập tay.',
       ghiChu: 'Ghi chú (nguồn, kỳ báo cáo)', chua: 'chưa',
-      note: 'Mức trả thị trường Việt Nam thấp hơn Âu–Mỹ 2–3 lần vì giá thuê bao và CPM quảng cáo thấp; nền tảng nội địa (Zing MP3, NhacCuaTui) trả thấp nhất. Số ở đây là gộp về Haustek trước khi chia; đối tác thấy mức trả đã nhân với tỷ lệ của họ.'
+      note: 'Mức trả Việt Nam thấp hơn Âu–Mỹ 2–3 lần; nền tảng nội địa trả thấp nhất. Số ở đây là gộp về Haustek; đối tác thấy mức đã nhân tỷ lệ của họ.'
     },
     en: {
       navMucTra: 'Platform payout rates', h1: 'Platform payout rates',
-      mo: 'Gross USD per 1,000 streams per platform, used by forecasts and number explanations. Derived from the last three approved reports by default; enter real figures to override.',
+      mo: 'Gross USD per 1,000 streams per platform, used by forecasts. Derived from the last three reports; enter real figures to override.',
       kTron: 'Blended rate', kTronS: 'USD / 1,000 streams, weighted by 3-period stream mix', kGhiDe: 'Platforms with real figures', kGhiDeS: 'of {n} platforms', kDuBao: 'Open-period revenue forecast', kDuBaoS: 'moves with the rates', kVn: 'Vietnam market reference', kVnS: 'Spotify, USD / 1,000',
       cNt: 'Platform', cSuy: 'Derived from reports', cVn: 'VN reference', cDung: 'In use', cNguon: 'Source', cNhap: 'Enter real figure', cThaoTac: 'Actions',
       nguonSuy: '3-period reports', nguonNhap: 'entered', luu: 'Save', bo: 'Clear override', daLuu: 'Saved {n}: {v} USD / 1,000', daBo: 'Cleared override for {n}',
-      dan: 'Paste CSV', danMo: 'One line per platform: name, USD per 1,000 streams (decimal comma, ; or tab accepted). Example: Spotify,1.52', nhap: 'Import', daNhap: 'Imported {a} platforms, skipped {b} lines',
+      dan: 'Paste CSV', danMo: 'One line per platform: name, USD per 1,000 (comma, ; or tab). Example: Spotify,1.52', nhap: 'Import', daNhap: 'Imported {a} platforms, skipped {b} lines',
       soSanh: 'Derived vs reference vs in use', soSanhMo: 'USD / 1,000 streams. Red bars are platforms using entered figures.',
       ghiChu: 'Note (source, report period)', chua: 'none',
-      note: 'Vietnamese market rates are 2–3× below Europe/US because subscription prices and ad CPMs are low; domestic platforms (Zing MP3, NhacCuaTui) pay the least. Figures here are gross to Haustek before the split; partners see rates multiplied by their share.'
+      note: 'Vietnamese rates are 2–3× below Europe/US; domestic platforms pay least. Figures are gross to Haustek; partners see rates times their share.'
     }
   },
 
@@ -10521,14 +10616,14 @@ HT.dangKy({
   chu: {
     vi: {
       navNap: 'Nhập báo cáo', h1: 'Nhập báo cáo',
-      mo: 'Ba nguồn báo cáo doanh thu bản ghi và một dòng tiền tác quyền theo quý. Kỳ còn thiếu nguồn báo cáo thì chưa thể xét duyệt.',
+      mo: 'Ba nguồn báo cáo bản ghi và một dòng tác quyền theo quý. Thiếu nguồn thì kỳ chưa thể xét duyệt.',
       tLuoi: 'Bảng kỳ × nguồn', tLuong: 'Theo từng nguồn', tOng: 'Quy trình nhập báo cáo 8 bước', tSu: 'Lịch sử nhập báo cáo',
       nap: 'Nhập báo cáo', napLai: 'Nhập lại báo cáo', go: 'Gỡ báo cáo', daNap: 'đã nhập', thieu: 'chưa nhập',
       kyDuyet: 'đã xét duyệt', tenFile: 'Tên file', khiNao: 'Nhập lúc',
       tacQuyen: 'Tác quyền', quy: 'Quý',
       dongDuoc: 'Kỳ đủ nguồn báo cáo', chuaDu: 'Kỳ còn thiếu nguồn', tongTien: 'Doanh thu đã ghi sổ',
       hoiNap: 'Nhập báo cáo', hoiGo: 'Gỡ báo cáo khỏi kỳ',
-      hoiGoMo: 'Gỡ báo cáo là rút toàn bộ doanh thu của nguồn đó khỏi tổng của kỳ. Những dòng đã khớp thủ công từ danh sách chờ khớp vẫn còn, nhưng chưa tính vào tổng cho tới khi nhập lại báo cáo.',
+      hoiGoMo: 'Gỡ báo cáo rút toàn bộ doanh thu nguồn đó khỏi tổng kỳ. Dòng đã khớp tay vẫn còn nhưng chưa tính tới khi nhập lại.',
       khongSua: 'Kỳ đã xét duyệt. Muốn nhập lại báo cáo, cần huỷ xét duyệt trước.',
       chonKy: 'Chọn kỳ', chonLuong: 'Chọn nguồn',
       sinhDong: 'dòng mới vào danh sách chờ khớp ISRC',
@@ -10536,14 +10631,14 @@ HT.dangKy({
     },
     en: {
       navNap: 'Data loading', h1: 'Data loading',
-      mo: 'Three recording-revenue feeds plus a quarterly publishing stream. A period missing a feed is a period that cannot be approved.',
+      mo: 'Three recording feeds plus a quarterly publishing stream. A missing feed blocks approval.',
       tLuoi: 'Period × feed grid', tLuong: 'Feed by feed', tOng: 'The 8-step pipeline', tSu: 'Load history',
       nap: 'Load', napLai: 'Reload', go: 'Unload', daNap: 'loaded', thieu: 'not loaded',
       kyDuyet: 'approved', tenFile: 'File', khiNao: 'Loaded at',
       tacQuyen: 'Publishing', quy: 'Q',
       dongDuoc: 'Complete periods', chuaDu: 'Incomplete periods', tongTien: 'Revenue booked',
       hoiNap: 'Load a feed', hoiGo: 'Unload a feed',
-      hoiGoMo: 'Unloading takes all of that feed’s money back out of the period total. Rows matched by hand from the queue stay, but will not count towards the total until the feed is loaded again.',
+      hoiGoMo: 'Unloading removes that feed’s money from the period total. Hand-matched rows stay but do not count until reloaded.',
       khongSua: 'Period approved — revoke the approval before reloading.',
       chonKy: 'Period', chonLuong: 'Feed',
       sinhDong: 'new rows into the ISRC matching queue',
@@ -10949,9 +11044,9 @@ HT.dangKy({
       goiY: 'Bản ghi gợi ý', diem: 'điểm', khop: 'Khớp vào bản ghi này',
       deLaiNut: 'Tạm hoãn', traLai: 'Trả về danh sách chờ khớp',
       chonDong: 'Chọn một dòng bên trái',
-      chonDongMo: 'Mỗi dòng là một khoản tiền chưa xác định người thụ hưởng. Bấm vào một dòng để xem hệ thống gợi ý bản ghi nào và vì sao.',
+      chonDongMo: 'Mỗi dòng là một khoản tiền chưa có người thụ hưởng. Bấm để xem gợi ý bản ghi và lý do.',
       truyThu: 'Khoản truy thu',
-      truyThuMo: 'Kỳ của dòng này đã xét duyệt và đã thanh toán. Khớp bây giờ không sửa lại kỳ cũ: khoản tiền được ghi vào kỳ đang mở, kèm ghi chú truy thu từ kỳ nào.',
+      truyThuMo: 'Kỳ này đã xét duyệt và thanh toán. Khớp bây giờ không sửa kỳ cũ: tiền ghi vào kỳ đang mở, kèm ghi chú truy thu.',
       vaoKy: 'Sẽ ghi vào kỳ',
       khongCon: 'Không còn kỳ nào đang mở để ghi khoản truy thu.',
       xacKhop: 'Khớp dòng này vào bản ghi',
@@ -10972,9 +11067,9 @@ HT.dangKy({
       goiY: 'Suggested recordings', diem: 'score', khop: 'Match to this',
       deLaiNut: 'Park, pending partner', traLai: 'Return to queue',
       chonDong: 'Pick a row on the left',
-      chonDongMo: 'Each row is money with no owner. Open one to see what the system suggests and why.',
+      chonDongMo: 'Each row is money with no owner. Open one for the suggested recording and why.',
       truyThu: 'Back-claim',
-      truyThuMo: 'This row’s period is approved and paid. Matching now does NOT rewrite the old period — the money lands in the open period, labelled as a back-claim.',
+      truyThuMo: 'This period is approved and paid. Matching now does not rewrite it: the money lands in the open period as a back-claim.',
       vaoKy: 'Will be booked into',
       khongCon: 'No open period left to book a back-claim into.',
       xacKhop: 'Match this row to a recording',
@@ -11339,7 +11434,7 @@ HT.dangKy({
   chu: {
     vi: {
       navDoi: 'Đối soát & xét duyệt kỳ', h1: 'Đối soát & xét duyệt kỳ',
-      mo: 'Tổng trên file gốc phải bằng phần đã khớp cộng phần chưa khớp ISRC, chính xác tới từng xu. Kỳ chưa xét duyệt thì label và nghệ sĩ chưa xem được con số nào.',
+      mo: 'Tổng file gốc phải bằng phần đã khớp cộng phần chờ khớp, đến từng xu. Chưa xét duyệt thì đối tác chưa thấy số.',
       tDoi: 'Đối soát theo nguồn', tDk: 'Điều kiện xét duyệt', tTg: 'Tỷ giá', tXem: 'Xem trước thanh toán', tLs: 'Các kỳ',
       luong: 'Nguồn', ttFile: 'Tổng trên file gốc', daKhop: 'Đã khớp bản ghi',
       treo: 'Chưa khớp ISRC', lech: 'Chênh lệch', truyThu: 'Truy thu kỳ khác',
@@ -11351,12 +11446,12 @@ HT.dangKy({
       xemTruoc: 'Bảng thanh toán nếu xét duyệt kỳ ngay bây giờ',
       seChi: 'Sẽ thanh toán', donSang: 'Chuyển sang kỳ sau', thuTamUng: 'Thu hồi tạm ứng', giuLai: 'Giữ lại (điểm producer)',
       benNhan: 'bên thụ hưởng', boQua: 'Xét duyệt kèm ghi nhận ngoại lệ',
-      canhBoQua: 'Ngoại lệ sẽ được ghi vĩnh viễn vào hồ sơ xét duyệt kỳ, kèm tên người xét duyệt. Chỉ xét duyệt theo cách này khi biết chắc lý do và chấp nhận trách nhiệm.',
+      canhBoQua: 'Ngoại lệ ghi vĩnh viễn vào hồ sơ xét duyệt kèm tên người duyệt. Chỉ dùng khi chắc lý do.',
       lyDo: 'Lý do', nguoiDuyet: 'Người xét duyệt'
     },
     en: {
       navDoi: 'Reconcile & approve', h1: 'Reconcile & approve period',
-      mo: 'The source file total must equal matched plus held — to the cent. Until a period is approved, clients see nothing.',
+      mo: 'Source total must equal matched plus held, to the cent. Until approved, partners see nothing.',
       tDoi: 'Reconciliation by feed', tDk: 'Approval conditions', tTg: 'FX rate', tXem: 'Payout preview', tLs: 'All periods',
       luong: 'Feed', ttFile: 'Source file total', daKhop: 'Matched to recordings',
       treo: 'Held', lech: 'Variance', truyThu: 'Back-claims from other periods',
@@ -11368,7 +11463,7 @@ HT.dangKy({
       xemTruoc: 'Payout table if approved now',
       seChi: 'Payable', donSang: 'Carried to next period', thuTamUng: 'Recouped against advances', giuLai: 'Held (producer)',
       benNhan: 'payees', boQua: 'Approve, overriding unmet conditions',
-      canhBoQua: 'An override is written permanently into the approval record, with the name of whoever made it. Only do this knowing exactly why, and accepting the consequence.',
+      canhBoQua: 'The override is written permanently to the approval record with your name. Only when you are sure.',
       lyDo: 'Reason', nguoiDuyet: 'Approved by'
     }
   },
@@ -11867,7 +11962,7 @@ HT.dangKy({
   chu: {
     vi: {
       navPhatHanh: 'Phát hành', h1: 'Hồ sơ phát hành',
-      mo: 'Hồ sơ đối tác gửi lên để phát hành bản ghi mới: tiếp nhận, cấp mã ISRC/UPC, phân phối lên nền tảng. Bản ghi chỉ khớp được doanh thu khi đã có ISRC trong danh mục.',
+      mo: 'Hồ sơ phát hành mới: tiếp nhận, cấp ISRC/UPC, phân phối. Bản ghi chỉ khớp doanh thu khi đã có ISRC trong danh mục.',
       choTiep: 'Chờ tiếp nhận', choMa: 'Chờ cấp mã', choPh: 'Chờ phát hành', daPh: 'Đã phát hành', traLai: 'Trả lại bổ sung',
       locDang: 'Đang xử lý', locHet: 'Tất cả',
       tim: 'Tìm mã hồ sơ, tên bản phát hành, nghệ sĩ…',
@@ -11876,11 +11971,14 @@ HT.dangKy({
       tiepNhan: 'Tiếp nhận hồ sơ', capMa: 'Cấp mã ISRC/UPC', danhDau: 'Đánh dấu đã phát hành', traLaiNut: 'Trả lại để bổ sung',
       hoiTra: 'Cần đối tác bổ sung gì?', hoiTraMo: 'Ghi rõ từng thứ còn thiếu. Đối tác nhìn thấy nguyên văn ghi chú này trên cổng của họ.',
       hoiPh: 'Ngày phát hành thực tế', hoiPhMo: 'Ngày bản ghi lên các nền tảng. Mặc định là ngày đối tác mong muốn.',
-      hoiMa: 'Cấp mã cho hồ sơ này?', hoiMaMo: 'Track chưa có ISRC sẽ được cấp mã VN-HTK; bản phát hành chưa có UPC sẽ được cấp UPC. Mã đã cấp không thể thay đổi.',
-      hoiTiep: 'Tiếp nhận hồ sơ này?', hoiTiepMo: 'Tiếp nhận nghĩa là hồ sơ đã được kiểm tra và đủ thông tin để xử lý tiếp. Đối tác sẽ thấy trạng thái thay đổi ngay.',
+      hoiMa: 'Cấp mã cho hồ sơ này?', hoiMaMo: 'Track chưa có ISRC được cấp mã VN-HTK; bản phát hành chưa có UPC được cấp UPC. Mã đã cấp không đổi.',
+      hoiTiep: 'Tiếp nhận hồ sơ này?', hoiTiepMo: 'Tiếp nhận nghĩa là hồ sơ đã kiểm, đủ thông tin để xử lý tiếp. Đối tác thấy trạng thái ngay.',
       lichSu: 'Lịch sử hồ sơ', track: 'Danh sách track', sangTac: 'Sáng tác', producer: 'Producer',
       chuaCoMa: 'chưa có mã', quyTrinh: 'Sau khi phát hành',
-      quyTrinhMo: 'Bản ghi có ISRC trong danh mục thì doanh thu báo cáo về sẽ tự khớp theo mã. Bản ghi đã phát hành mà không có mã trong danh mục chắc chắn sẽ rơi vào danh sách chờ khớp ISRC.',
+      quyTrinhMo: 'Có ISRC trong danh mục thì doanh thu tự khớp theo mã; không có mã thì chắc chắn rơi vào hàng chờ khớp ISRC.',
+      taoHo: 'Tạo hồ sơ thay đối tác', taoHoMo: 'Đối tác gửi file qua email hoặc gọi điện: nhân viên nhập hồ sơ thay, đối tác thấy trên cổng với nhãn "Haustek tạo thay bạn".',
+      fDoiTac: 'Đối tác (tên hoặc mã)', fNs: 'Nghệ sĩ chính', fLoai: 'Loại', fTen: 'Tên bản phát hành', fPb: 'Phiên bản', fTl: 'Thể loại', fNn: 'Ngôn ngữ', fNgay: 'Ngày phát hành', fUpc: 'UPC (nếu có)', fBia: 'Link ảnh bìa', fGhi: 'Ghi chú', fTracks: 'Danh sách track', fTracksMo: 'Mỗi dòng một track: Tên | ISRC (nếu có) | Producer. Sáng tác mặc định 100% cho nghệ sĩ chính.',
+      khongThayDt: 'Không tìm thấy đối tác "{q}"', daTaoHo: 'Đã tạo hồ sơ {id} thay {t}', nhanStaff: 'Haustek tạo thay',
       guiBoi: 'Người gửi', ngayGui: 'Thời điểm gửi', ngayMong: 'Ngày phát hành mong muốn', ngayThuc: 'Ngày phát hành thực tế',
       theLoai: 'Thể loại', ngonNgu: 'Ngôn ngữ lời', anhBia: 'Ảnh bìa', ghiChu: 'Ghi chú của đối tác',
       daTiepNhan: 'Đã tiếp nhận hồ sơ', daCapMa: 'Đã cấp mã', daPhatHanh: 'Đã đánh dấu phát hành', daTraLai: 'Đã trả lại hồ sơ',
@@ -11888,7 +11986,7 @@ HT.dangKy({
     },
     en: {
       navPhatHanh: 'Releases', h1: 'Release submissions',
-      mo: 'Submissions from partners for new releases: receive, assign ISRC/UPC, deliver to platforms. A recording only matches revenue once its ISRC is in the catalogue.',
+      mo: 'New release submissions: receive, assign ISRC/UPC, deliver. A recording matches revenue only once its ISRC is in the catalogue.',
       choTiep: 'Awaiting receipt', choMa: 'Awaiting codes', choPh: 'Awaiting release', daPh: 'Released', traLai: 'Returned',
       locDang: 'In progress', locHet: 'All',
       tim: 'Search submission ID, title, artist…',
@@ -11897,11 +11995,14 @@ HT.dangKy({
       tiepNhan: 'Receive', capMa: 'Assign ISRC/UPC', danhDau: 'Mark as released', traLaiNut: 'Return for fixes',
       hoiTra: 'What does the partner need to add?', hoiTraMo: 'List each missing item. The partner sees this note verbatim on their portal.',
       hoiPh: 'Actual release date', hoiPhMo: 'The date the recording went live on platforms. Defaults to the requested date.',
-      hoiMa: 'Assign codes to this submission?', hoiMaMo: 'Tracks without an ISRC receive a VN-HTK code; a release without a UPC receives one. Assigned codes cannot change.',
-      hoiTiep: 'Receive this submission?', hoiTiepMo: 'Receiving means the submission has been checked and is complete enough to proceed. The partner sees the status change immediately.',
+      hoiMa: 'Assign codes to this submission?', hoiMaMo: 'Tracks without an ISRC get a VN-HTK code; a release without a UPC gets one. Codes cannot change.',
+      hoiTiep: 'Receive this submission?', hoiTiepMo: 'Receiving means the submission is checked and complete. The partner sees the status at once.',
       lichSu: 'Submission history', track: 'Tracks', sangTac: 'Writers', producer: 'Producer',
       chuaCoMa: 'no code yet', quyTrinh: 'After release',
-      quyTrinhMo: 'A recording whose ISRC is in the catalogue matches incoming revenue automatically. A release without a code in the catalogue is guaranteed to land in the ISRC matching queue.',
+      quyTrinhMo: 'With the ISRC in the catalogue revenue matches itself; without it the release lands in the ISRC queue.',
+      taoHo: 'Create for a partner', taoHoMo: 'When a partner sends files by email or phones in, staff enter the release; the partner sees it on the portal labelled "Created by Haustek for you".',
+      fDoiTac: 'Partner (name or id)', fNs: 'Main artist', fLoai: 'Type', fTen: 'Release title', fPb: 'Version', fTl: 'Genre', fNn: 'Language', fNgay: 'Release date', fUpc: 'UPC (if any)', fBia: 'Artwork link', fGhi: 'Note', fTracks: 'Track list', fTracksMo: 'One track per line: Title | ISRC (optional) | Producer. Writers default to 100% for the main artist.',
+      khongThayDt: 'No partner matching “{q}”', daTaoHo: 'Created {id} for {t}', nhanStaff: 'Created by Haustek',
       guiBoi: 'Submitted by', ngayGui: 'Submitted at', ngayMong: 'Requested release date', ngayThuc: 'Actual release date',
       theLoai: 'Genre', ngonNgu: 'Lyric language', anhBia: 'Artwork', ghiChu: 'Partner’s note',
       daTiepNhan: 'Submission received', daCapMa: 'Codes assigned', daPhatHanh: 'Marked as released', daTraLai: 'Submission returned',
@@ -11930,7 +12031,7 @@ HT.dangKy({
       return true;
     });
 
-    var html = HM.dau({ h1: HM.esc(t('h1')), mo: HM.esc(t('mo')) });
+    var html = HM.dau({ h1: HM.esc(t('h1')), mo: HM.esc(t('mo')), nut: A.quyen && A.quyen.nhom('phatHanhHo') ? '<button type="button" class="btn pri" data-tao-ho>' + HM.icon('up') + HM.esc(t('taoHo')) + '</button>' : '' });
     html += HM.so([
       { l: t('choTiep'), v: HT.fmt.n(dem.submitted), lon: true, mau: dem.submitted ? HB.mau('warn') : '' },
       { l: t('choMa'), v: HT.fmt.n(dem.received) },
@@ -11978,6 +12079,7 @@ HT.dangKy({
     HM.nhap(root, '[data-tk]', function (el) { LOC.tk = el.value; c.veLai(); });
     HM.bam(root, '[data-loc]', function (el) { LOC.loc = el.getAttribute('data-loc'); c.veLai(); });
     HM.bam(root, '[data-hs]', function (el) { moHoSo(c, el.getAttribute('data-hs')); });
+    HM.bam(root, '[data-tao-ho]', function () { taoHoSoHo(c, null); });
     HM.bam(root, '[data-xuat]', function () {
       HM.csv('ho-so-phat-hanh.csv', [t('cMa'), t('cTen'), c.lang === 'vi' ? 'Nghệ sĩ' : 'Artist', t('cLoai'), 'Track', t('cNgay'), t('cGui'), t('cTt'), t('cCapNhat')],
         rows.map(function (r) { return [r.id, r.title, r.artistName, r.type, r.tracks.length, r.releaseDate, r.submittedBy, NHAN[c.lang][r.status], r.updatedAt]; }));
@@ -12000,7 +12102,7 @@ function moHoSo(c, id) {
   c.nganTruot(
     '<div class="btnrow" style="margin-bottom:14px">' + HM.tag(NHAN[c.lang][r.status], KIEU[r.status]) + nut + '</div>' +
     HM.kv([
-      { t: t('guiBoi'), v: r.submittedBy + (r.submittedRole === 'label' ? (c.lang === 'vi' ? ' (label gửi thay nghệ sĩ)' : ' (label on behalf of the artist)') : '') },
+      { t: t('guiBoi'), v: r.submittedBy + (r.submittedRole === 'label' ? (c.lang === 'vi' ? ' (label gửi thay nghệ sĩ)' : ' (label on behalf of the artist)') : r.submittedRole === 'staff' ? ' (' + t('nhanStaff') + ')' : '') },
       { t: t('ngayGui'), v: HT.fmt.luc(r.createdAt) },
       { t: t('ngayMong'), v: HT.fmt.ngay(r.releaseDate) },
       r.releasedAt ? { t: t('ngayThuc'), v: HT.fmt.ngay(r.releasedAt), manh: true } : null,
@@ -12066,6 +12168,71 @@ function moHoSo(c, id) {
     } });
 }
 
+/* ---------------------------------------------------------------------
+   Tạo hồ sơ phát hành thay đối tác. Dùng từ tiêu đề màn Phát hành và từ
+   ngăn Đối tác (partyKey có sẵn). Tự chọn nghệ sĩ khi đối tác là nghệ sĩ;
+   label thì chọn nghệ sĩ thuộc label. Track nhập nhanh mỗi dòng một track.
+   --------------------------------------------------------------------- */
+var THE_LOAI_HO = ['Pop', 'Indie', 'R&B', 'Hip-hop', 'Electronic', 'Alternative', 'Ballad', 'Rock', 'Lo-fi', 'Folk', 'Khác'];
+function tx(c, k) { var m = HT.man.filter(function (x) { return x.id === 'phat-hanh'; })[0]; var d = m && m.chu && m.chu[c.lang]; return d && d[k] != null ? d[k] : k; }
+function taoHoSoHo(c, partyKey) {
+  var A = c.A, me = A.staff.me, t = function (k) { return tx(c, k); };
+  var ten = partyKey ? A.partyName(partyKey) : '';
+  function nsCua(pk) {
+    if (!pk) return [];
+    if (pk[0] === 'A') { var a = A.artists[+pk.slice(2)]; return a ? [a] : []; }
+    var id = +pk.slice(2); return A.artists.filter(function (a) { return a.labelId === id; });
+  }
+  function oNs(pk) {
+    var ds = nsCua(pk);
+    if (!ds.length) return '<p class="say">' + HM.esc(t('fDoiTac')) + '</p>';
+    if (pk[0] === 'A') return '<input type="hidden" data-o="artistId" value="' + ds[0].id + '"><div class="hint" style="margin:0">' + HM.esc(t('fNs') + ': ' + ds[0].name) + '</div>';
+    return '<label class="fld">' + HM.esc(t('fNs')) + ' *</label><select class="in" data-o="artistId">' + ds.map(function (a) { return '<option value="' + a.id + '">' + HM.esc(a.name + ' · ' + a.clientId) + '</option>'; }).join('') + '</select>';
+  }
+  var homNay = new Date(Date.now() + 21 * 864e5).toISOString().slice(0, 10);
+  var than = (partyKey ? '<input type="hidden" data-o="pk" value="' + HM.esc(partyKey) + '"><div class="bar" style="margin-bottom:10px">' + HM.hinh(ten, A.partyClientId(partyKey), 'sm') + '<b>' + HM.esc(ten) + '</b><span class="muted mono" style="font-size:12px">' + HM.esc(A.partyClientId(partyKey)) + '</span></div>'
+      : '<label class="fld">' + HM.esc(t('fDoiTac')) + ' *</label><input class="in" data-o="tk" list="ds-ho-dt" placeholder="Nightform Records · HTK-L001"><datalist id="ds-ho-dt">' + A.parties.list({}).rows.slice(0, 300).map(function (r) { return '<option value="' + HM.esc(r.clientId) + '">' + HM.esc(r.name) + '</option>'; }).join('') + '</datalist>') +
+    '<div data-ns style="margin-top:10px">' + oNs(partyKey) + '</div>' +
+    '<div class="fldrow two-up" style="margin-top:12px">' +
+      '<div><label class="fld">' + HM.esc(t('fTen')) + ' *</label><input class="in" data-o="title"></div>' +
+      '<div><label class="fld">' + HM.esc(t('fLoai')) + ' *</label><select class="in" data-o="type"><option value="single">Single</option><option value="ep">EP</option><option value="album">Album</option></select></div>' +
+      '<div><label class="fld">' + HM.esc(t('fTl')) + '</label><select class="in" data-o="genre">' + THE_LOAI_HO.map(function (g) { return '<option>' + HM.esc(g) + '</option>'; }).join('') + '</select></div>' +
+      '<div><label class="fld">' + HM.esc(t('fNn')) + '</label><select class="in" data-o="lang"><option value="vi">Tiếng Việt</option><option value="en">English</option><option value="instrumental">Instrumental</option></select></div>' +
+      '<div><label class="fld">' + HM.esc(t('fNgay')) + ' *</label><input class="in" data-o="releaseDate" type="date" value="' + homNay + '"></div>' +
+      '<div><label class="fld">' + HM.esc(t('fUpc')) + '</label><input class="in" data-o="upc" inputmode="numeric"></div>' +
+      '<div><label class="fld">' + HM.esc(t('fPb')) + '</label><input class="in" data-o="version" placeholder="Deluxe / Live / Remastered"></div>' +
+      '<div><label class="fld">' + HM.esc(t('fBia')) + '</label><input class="in" data-o="artwork" type="url" placeholder="https://drive.google.com/…"></div></div>' +
+    '<label class="fld" style="margin-top:12px">' + HM.esc(t('fTracks')) + ' *</label><textarea class="in mono" rows="4" data-o="tracks" placeholder="Đêm | VNHTK2600001 | Producer A\nSáng | | Producer B"></textarea><div class="hint" style="margin:4px 0 0">' + HM.esc(t('fTracksMo')) + '</div>' +
+    '<label class="fld" style="margin-top:12px">' + HM.esc(t('fGhi')) + '</label><input class="in" data-o="note">';
+  c.hoiThoai({ tieuDe: t('taoHo') + (ten ? ' · ' + ten : ''), moTa: HM.esc(t('taoHoMo')), than: than, dong: t('taoHo'), rong: true,
+    khiMo: function (bg) {
+      var tkIn = bg.querySelector('[data-o="tk"]'); if (!tkIn) return;
+      var hen = null;
+      tkIn.addEventListener('input', function () {
+        clearTimeout(hen);
+        hen = setTimeout(function () {
+          var r = A.parties.list({ q: tkIn.value }).rows[0];
+          bg.querySelector('[data-ns]').innerHTML = oNs(r ? r.partyKey : null);
+          if (r) bg.querySelector('[data-ns]').setAttribute('data-pk', r.partyKey);
+        }, 200);
+      });
+    } }).then(function (f) {
+    if (!f) return;
+    var pk = f.pk || (document.querySelector('[data-ns]') && document.querySelector('[data-ns]').getAttribute('data-pk'));
+    if (!pk) { var r = A.parties.list({ q: f.tk || '' }).rows[0]; if (!r) { c.thongBao(t('khongThayDt').replace('{q}', f.tk || ''), 'no'); return; } pk = r.partyKey; }
+    var nsList = nsCua(pk), ns = nsList.filter(function (a) { return String(a.id) === String(f.artistId); })[0] || nsList[0];
+    var tracks = String(f.tracks || '').split('\n').map(function (l) { return l.trim(); }).filter(Boolean).map(function (l) {
+      var p = l.split('|').map(function (x) { return x.trim(); });
+      return { title: p[0] || '', isrc: (p[1] || '').toUpperCase(), producer: p[2] || '', feat: '', writers: [{ name: ns ? ns.name : '', role: 'Composer', pct: 100 }] };
+    });
+    try {
+      var r2 = A.releases.createFor(pk, { artistId: ns ? ns.id : null, type: f.type, title: f.title, version: f.version, genre: f.genre, lang: f.lang, releaseDate: f.releaseDate, upc: f.upc, artwork: f.artwork, note: f.note, tracks: tracks }, me.name);
+      c.thongBao(t('daTaoHo').replace('{id}', r2.id).replace('{t}', A.partyName(pk)), 'ok'); c.dongNgan(); c.veLai();
+    } catch (e) { c.thongBao(e.message, 'no'); }
+  });
+}
+HT.taoHoSoHo = taoHoSoHo;
+
 })();
 
 },
@@ -12093,9 +12260,9 @@ HT.dangKy({
   chu: {
     vi: {
       navGiaoNhan: 'Giao nhận nền tảng', h1: 'Giao nhận nền tảng',
-      mo: 'Gửi mới hoặc gửi lại danh mục tới từng nền tảng. Chọn đối tượng giao, chọn nền tảng, đặt tên yêu cầu để tra lại sau.',
+      mo: 'Gửi mới hoặc gửi lại danh mục tới nền tảng: chọn đối tượng, chọn nền tảng, đặt tên yêu cầu.',
       kCho: 'Đang chờ gửi', kGui: 'Đang gửi', kXong: 'Đã xong', kLoi: 'Lỗi', kBanGhi: 'bản ghi × nền tảng đang chờ',
-      taoMoi: 'Yêu cầu giao nhận mới', taoMoiMo: 'Mỗi yêu cầu gửi một tập bản ghi tới một hoặc nhiều nền tảng. Nền tảng xác nhận xong thì trạng thái từng bản ghi ở Danh mục tự cập nhật.',
+      taoMoi: 'Yêu cầu giao nhận mới', taoMoiMo: 'Mỗi yêu cầu gửi một tập bản ghi tới một hoặc nhiều nền tảng; nền tảng xác nhận thì trạng thái ở Danh mục tự cập nhật.',
       hTen: 'Tên yêu cầu', hTenMo: 'Ví dụ: Giao lại catalog Nightform sang Apple Music', hDoiTuong: 'Giao theo',
       producer: 'Theo label / nhà sản xuất', 'upc-list': 'Theo danh sách UPC', 'upc-file': 'Theo file UPC', albums: 'Chọn bản phát hành',
       hProducer: 'Mã đối tác (label hoặc nghệ sĩ)', hProducerMo: 'Toàn bộ bản ghi của đối tác này sẽ được giao.',
@@ -12114,9 +12281,9 @@ HT.dangKy({
     },
     en: {
       navGiaoNhan: 'Platform delivery', h1: 'Platform delivery',
-      mo: 'Deliver or redeliver catalogue to platforms. Pick what to deliver, pick the platforms, name the request so you can find it later.',
+      mo: 'Deliver or redeliver catalogue to platforms: pick what, pick where, name the request.',
       kCho: 'Queued', kGui: 'Sending', kXong: 'Done', kLoi: 'Failed', kBanGhi: 'recording × platform pending',
-      taoMoi: 'New delivery request', taoMoiMo: 'Each request sends a set of recordings to one or more platforms. Once the platform confirms, each recording’s status in the Catalogue updates itself.',
+      taoMoi: 'New delivery request', taoMoiMo: 'Each request sends a set of recordings to one or more platforms; on confirmation the Catalogue status updates itself.',
       hTen: 'Request name', hTenMo: 'e.g. Redeliver the Nightform catalogue to Apple Music', hDoiTuong: 'Deliver by',
       producer: 'By label / producer', 'upc-list': 'By UPC list', 'upc-file': 'By UPC file', albums: 'Pick releases',
       hProducer: 'Client ID (label or artist)', hProducerMo: 'Every recording of this partner will be delivered.',
@@ -12319,7 +12486,7 @@ HT.dangKy({
   chu: {
     vi: {
       navSuaHl: 'Sửa hàng loạt', h1: 'Sửa hàng loạt',
-      mo: 'Khoá hoặc mở khoá, đổi giá album, đổi ngày phát hành số, đổi giá track cho nhiều bản phát hành cùng lúc, theo danh sách UPC.',
+      mo: 'Khoá / mở khoá, đổi giá album, ngày phát hành số, giá track cho nhiều bản phát hành theo danh sách UPC.',
       kCho: 'Chờ áp dụng', kXong: 'Đã áp dụng', kUpc: 'UPC đang chờ', kTong: 'Tổng yêu cầu',
       congCu: 'Công cụ', chonCongCu: 'Chọn thao tác',
       lock: 'Khoá / mở khoá bản phát hành', price: 'Đổi giá album', 'release-date': 'Đổi ngày phát hành số', 'track-price': 'Đổi giá track',
@@ -12342,7 +12509,7 @@ HT.dangKy({
     },
     en: {
       navSuaHl: 'Bulk edit', h1: 'Bulk edit',
-      mo: 'Lock or unlock, change album price, digital release date or track price across many releases at once, by UPC list.',
+      mo: 'Lock or unlock, change album price, release date or track price across releases by UPC list.',
       kCho: 'Queued', kXong: 'Applied', kUpc: 'UPCs waiting', kTong: 'Requests',
       congCu: 'Tools', chonCongCu: 'Choose an action',
       lock: 'Lock or unlock releases', price: 'Change album price', 'release-date': 'Change digital release date', 'track-price': 'Change track price',
@@ -12570,20 +12737,20 @@ HT.dangKy({
   chu: {
     vi: {
       navBangGia: 'Bảng giá nền tảng', h1: 'Bảng giá nền tảng',
-      mo: 'Nhóm giá của các nền tảng bán tải về. Chọn một nhóm để xem giá album và giá track theo từng nền tảng và tiền tệ. Nền tảng streaming không dùng giá.',
+      mo: 'Nhóm giá album và track của các nền tảng bán tải về, theo từng nền tảng và tiền tệ.',
       chonNhom: 'Chọn nhóm giá', album: 'Giá album', track: 'Giá track',
       cNt: 'Nền tảng', khongBan: 'không bán', apDung: 'Áp dụng nhóm giá cho UPC', apDungMo: 'Sang trang Sửa hàng loạt, chọn đổi giá album hoặc đổi giá track và dán danh sách UPC.',
       soNt: 'Nền tảng bán tải về', soTien: 'Tiền tệ', nhomHienTai: 'Nhóm đang xem',
-      ghiChu: 'Bảng giá mẫu để thấy hình dạng. Hệ thống thật lấy giá từ hợp đồng với từng nền tảng và có lịch sử thay đổi theo ngày hiệu lực.',
+      ghiChu: 'Bảng giá mẫu. Hệ thống thật lấy giá từ hợp đồng với từng nền tảng, có lịch sử theo ngày hiệu lực.',
       soSanh: 'So sánh bốn nhóm giá', soSanhMo: 'Giá bằng USD của từng nhóm. Hai thước đo khác cỡ nên vẽ hai biểu đồ, không chồng lên nhau.'
     },
     en: {
       navBangGia: 'Store pricing', h1: 'Store pricing',
-      mo: 'Price tiers on download stores. Pick a tier to see album and track prices per store and currency. Streaming platforms do not use prices.',
+      mo: 'Album and track price tiers on download stores, per store and currency.',
       chonNhom: 'Pick a price tier', album: 'Album price', track: 'Track price',
       cNt: 'Store', khongBan: 'not sold', apDung: 'Apply tier to UPCs', apDungMo: 'Go to Bulk edit, choose album price or track price and paste the UPC list.',
       soNt: 'Download stores', soTien: 'Currencies', nhomHienTai: 'Tier shown',
-      ghiChu: 'Sample price grid to show the shape. The real system takes prices from each store agreement, with a dated change history.',
+      ghiChu: 'Sample grid. The real system takes prices from each store agreement, with a dated history.',
       soSanh: 'Compare the four tiers', soSanhMo: 'USD prices per tier. Two measures of different size, so two charts rather than one stacked bar.'
     }
   },
@@ -12681,7 +12848,7 @@ HT.dangKy({
   chu: {
     vi: {
       nhomTien: 'Tài chính', navKeToan: 'Kế toán', h1: 'Kế toán',
-      mo: 'Doanh thu kỳ này được ghi nhận vào những tài khoản nào, bên nào đang nợ bên nào, và phần nào chưa xác định người thụ hưởng.',
+      mo: 'Doanh thu kỳ ghi vào tài khoản nào, bên nào nợ bên nào, phần nào chưa có người thụ hưởng.',
       tBut: 'Bút toán kỳ', tCn: 'Công nợ bên thụ hưởng', tUng: 'Tạm ứng phải thu',
       tGhi: 'Ghi nhận doanh thu 12 kỳ', tThue: 'Thuế và khấu trừ',
       no: 'Nợ', co: 'Có', tk: 'TK', dienGiai: 'Diễn giải', soTien: 'Số tiền',
@@ -12700,14 +12867,14 @@ HT.dangKy({
       tatCa: 'Tất cả', coChi: 'Có thanh toán kỳ này', duoiNguong: 'Dưới ngưỡng, chuyển kỳ sau', dangTru: 'Đang thu hồi tạm ứng',
       xuat: 'Xuất CSV', tongCong: 'Tổng cộng',
       ungGoc: 'Số đã tạm ứng', ungDaThu: 'Đã thu hồi', ungConLai: 'Còn phải thu hồi', ungKy: 'Số kỳ còn lại',
-      giaiThichUng: 'Tạm ứng là khoản Haustek đã trả trước cho đối tác. Khoản này là tài sản (phải thu), không phải chi phí, và chỉ tất toán khi bên thụ hưởng có đủ doanh thu để thu hồi.',
+      giaiThichUng: 'Tạm ứng là khoản Haustek trả trước: tài sản phải thu, không phải chi phí; tất toán khi đối tác đủ doanh thu thu hồi.',
       chuaLam: 'Bản mẫu chưa mô hình hoá',
       dtGop: 'Doanh thu gộp', dtPhi: 'Doanh thu phí dịch vụ Haustek', dtPhaiTra: 'Phải trả các bên',
       bienPhi: 'Tỷ lệ phí trên doanh thu gộp'
     },
     en: {
       nhomTien: 'Money', navKeToan: 'Accounting', h1: 'Accounting',
-      mo: 'What the period’s revenue was booked as, who owes whom, and which part has no owner yet.',
+      mo: 'What the period’s revenue was booked as, who owes whom, and what has no owner yet.',
       tBut: 'Period journal', tCn: 'Payee ledger', tUng: 'Advances receivable',
       tGhi: '12-period recognition', tThue: 'Tax & withholding',
       no: 'Dr', co: 'Cr', tk: 'A/C', dienGiai: 'Narrative', soTien: 'Amount',
@@ -12726,7 +12893,7 @@ HT.dangKy({
       tatCa: 'All', coChi: 'Paid this period', duoiNguong: 'Below threshold', dangTru: 'Recouping',
       xuat: 'Export CSV', tongCong: 'Total',
       ungGoc: 'Advanced', ungDaThu: 'Recouped', ungConLai: 'Outstanding', ungKy: 'Periods left',
-      giaiThichUng: 'An advance is money Haustek already paid. It is an asset (receivable), not a cost — and it only clears when the payee earns enough to offset it.',
+      giaiThichUng: 'An advance is money paid up front: a receivable, not a cost; it clears when the payee earns enough.',
       chuaLam: 'Not modelled in the prototype',
       dtGop: 'Gross revenue', dtPhi: 'Haustek fee revenue', dtPhaiTra: 'Payable to parties',
       bienPhi: 'Fee as share of gross'
@@ -13513,25 +13680,25 @@ HT.dangKy({
       cBen: 'Bên thụ hưởng', cLoai: 'Loại', cKiem: 'Được hưởng', cDon: 'Chuyển từ kỳ trước',
       cThu: 'Thu hồi tạm ứng', cChi: 'Sẽ thanh toán', cCon: 'Chuyển sang kỳ sau', cUng: 'Tạm ứng còn phải thu hồi',
       xuat: 'Xuất danh sách chuyển khoản', tong: 'Tổng cộng',
-      nguong: 'Ngưỡng thanh toán tối thiểu', nguongMo: 'Khoản dưới ngưỡng không mất đi, mà được chuyển sang kỳ sau và cộng vào số thanh toán của kỳ đó. Ngưỡng tồn tại vì phí chuyển khoản quốc tế có thể bằng hoặc vượt cả một khoản nhỏ.',
+      nguong: 'Ngưỡng thanh toán tối thiểu', nguongMo: 'Khoản dưới ngưỡng không mất: chuyển sang kỳ sau và cộng vào lần thanh toán đó. Ngưỡng có vì phí chuyển khoản quốc tế.',
       khongAi: 'Không có bên thụ hưởng nào khớp bộ lọc',
       chiTiet: 'Chi tiết dòng tiền: từ doanh thu đến số thanh toán',
       tabKy: 'Thanh toán theo kỳ', tabRut: 'Yêu cầu rút tiền', tabBk: 'Bảng kê PDF',
       rTong: 'Đang chờ chuyển khoản', rTongS: 'yêu cầu chờ xử lý', rXuLy: 'Đang chuyển khoản', rDaChuyen: 'Đã chuyển khoản', rTuChoi: 'Từ chối hoặc huỷ',
-      rMo: 'Đối tác gửi yêu cầu rút tiền từ ví trên cổng của họ. Kế toán tiếp nhận, chuyển khoản rồi ghi số tham chiếu; đối tác thấy trạng thái ngay trên cổng.',
+      rMo: 'Đối tác gửi yêu cầu rút từ ví; kế toán chuyển khoản, ghi số tham chiếu; đối tác thấy trạng thái ngay.',
       rTim: 'Tìm mã yêu cầu, tên hoặc mã đối tác…', rTatCa: 'Tất cả',
       requested: 'Chờ xử lý', processing: 'Đang chuyển', paid: 'Đã chuyển', rejected: 'Từ chối', cancelled: 'Đã huỷ',
       rcDoiTac: 'Đối tác', rcSoTien: 'Số tiền', rcNgay: 'Ngày yêu cầu', rcNh: 'Tài khoản nhận', rcTt: 'Trạng thái', rcThaoTac: 'Thao tác',
       tiepNhan: 'Tiếp nhận', daChuyen: 'Đã chuyển khoản', tuChoi: 'Từ chối', taoHo: 'Tạo yêu cầu hộ đối tác',
       hoiChuyen: 'Xác nhận đã chuyển khoản', hoiChuyenMo: 'Ghi số tham chiếu lệnh chuyển khoản. Đối tác thấy số này trên cổng của họ.', hThamChieu: 'Số tham chiếu lệnh chuyển khoản',
       hoiTuChoi: 'Từ chối yêu cầu rút tiền', hoiTuChoiMo: 'Số tiền quay lại số dư khả dụng của đối tác. Lý do hiện trên cổng đối tác.', hLyDo: 'Lý do từ chối',
-      hoiTaoHo: 'Tạo yêu cầu rút tiền hộ đối tác', hoiTaoHoMo: 'Dùng khi đối tác gọi điện hoặc gửi email. Số tiền phải từ ngưỡng tối thiểu tới số dư khả dụng và đối tác đã khai tài khoản ngân hàng.',
+      hoiTaoHo: 'Tạo yêu cầu rút tiền hộ đối tác', hoiTaoHoMo: 'Dùng khi đối tác gọi điện hoặc email. Số tiền từ ngưỡng tối thiểu đến số dư khả dụng; đối tác đã khai ngân hàng.',
       hDoiTac: 'Mã đối tác', hSoTien: 'Số tiền (USD)', hGhi: 'Ghi chú',
       daTiepNhan: 'Đã tiếp nhận yêu cầu', daGhiChuyen: 'Đã ghi chuyển khoản', daTuChoi: 'Đã từ chối yêu cầu', daTaoHo: 'Đã tạo yêu cầu',
       khongRut: 'Không có yêu cầu nào', khongRutMo: 'Đổi bộ lọc phía trên, hoặc tạo yêu cầu hộ đối tác.',
       lichSu: 'Lịch sử', viDoiTac: 'Ví của đối tác', viKhaDung: 'Khả dụng', viCho: 'Đang xử lý', viDaRut: 'Đã rút',
       thamChieu: 'Số tham chiếu', lyDo: 'Lý do', ghiChu: 'Ghi chú', khongGhi: 'không có', chuyenLuc: 'Chuyển khoản lúc', nguoiTao: 'Người tạo',
-      bkMo: 'Mỗi bên thụ hưởng của kỳ đã xét duyệt nhận một bảng kê PDF do Haustek lập, ghi đầy đủ căn cứ tính và các khoản khấu trừ. Đối tác tải ở trang Bảng kê trên cổng của họ.',
+      bkMo: 'Mỗi bên thụ hưởng của kỳ đã xét duyệt có một bảng kê PDF do Haustek lập; đối tác tải ở trang Bảng kê.',
       bkDaDinh: 'Đã đính kèm', bkThieu: 'Còn thiếu', bkTong: 'Bên thụ hưởng', bkDinhHet: 'Đính kèm tất cả (bản mẫu)', bkDinh: 'Đính kèm', bkGo: 'Gỡ', bkTim: 'Tìm bên thụ hưởng…',
       cGhiVi: 'Ghi vào ví', cPdf: 'Bảng kê PDF',
       hoiDinh: 'Đính kèm bảng kê PDF', hoiDinhMo: 'Bản mẫu chỉ ghi tên tệp; hệ thống thật tải tệp lên kho tài liệu và đối tác nhận thông báo.', hTep: 'Tên tệp PDF',
@@ -13551,25 +13718,25 @@ HT.dangKy({
       cBen: 'Payee', cLoai: 'Kind', cKiem: 'Earned', cDon: 'Carried in',
       cThu: 'Recouped', cChi: 'Payable', cCon: 'Carried out', cUng: 'Advance left',
       xuat: 'Export transfer list', tong: 'Total',
-      nguong: 'Payout threshold', nguongMo: 'Below the threshold nothing is lost — it carries forward and is added to the next period. The threshold exists because international transfer fees eat a small amount whole.',
+      nguong: 'Payout threshold', nguongMo: 'Below the threshold nothing is lost: it carries to the next period. The threshold exists because of transfer fees.',
       khongAi: 'No payee matches the filters',
       chiTiet: 'Payee money chain',
       tabKy: 'Payouts by period', tabRut: 'Withdrawal requests', tabBk: 'PDF statements',
       rTong: 'Waiting to be transferred', rTongS: 'requests waiting', rXuLy: 'Being transferred', rDaChuyen: 'Transferred', rTuChoi: 'Rejected or cancelled',
-      rMo: 'Partners request withdrawals from their wallet on the portal. Accounting accepts, transfers and records the reference; the partner sees the status on the portal at once.',
+      rMo: 'Partners request withdrawals from their wallet; accounting transfers and records the reference; status shows at once.',
       rTim: 'Search request ID, partner name or client ID…', rTatCa: 'All',
       requested: 'Requested', processing: 'Processing', paid: 'Paid', rejected: 'Rejected', cancelled: 'Cancelled',
       rcDoiTac: 'Partner', rcSoTien: 'Amount', rcNgay: 'Requested', rcNh: 'Payout account', rcTt: 'Status', rcThaoTac: 'Actions',
       tiepNhan: 'Accept', daChuyen: 'Mark transferred', tuChoi: 'Reject', taoHo: 'Log a request for a partner',
       hoiChuyen: 'Confirm the transfer', hoiChuyenMo: 'Record the bank transfer reference. The partner sees it on their portal.', hThamChieu: 'Transfer reference',
       hoiTuChoi: 'Reject the withdrawal', hoiTuChoiMo: 'The amount returns to the partner’s available balance. The reason is shown on their portal.', hLyDo: 'Reason',
-      hoiTaoHo: 'Log a withdrawal for a partner', hoiTaoHoMo: 'For partners who phone or email. The amount must be between the minimum and the available balance, and the partner needs a bank account on file.',
+      hoiTaoHo: 'Log a withdrawal for a partner', hoiTaoHoMo: 'For partners who phone or email. Amount between the minimum and the balance; bank account on file.',
       hDoiTac: 'Client ID', hSoTien: 'Amount (USD)', hGhi: 'Note',
       daTiepNhan: 'Request accepted', daGhiChuyen: 'Transfer recorded', daTuChoi: 'Request rejected', daTaoHo: 'Request logged',
       khongRut: 'No requests', khongRutMo: 'Change the filters above, or log one for a partner.',
       lichSu: 'History', viDoiTac: 'Partner wallet', viKhaDung: 'Available', viCho: 'In progress', viDaRut: 'Withdrawn',
       thamChieu: 'Reference', lyDo: 'Reason', ghiChu: 'Note', khongGhi: 'none', chuyenLuc: 'Transferred at', nguoiTao: 'Created by',
-      bkMo: 'Every payee of an approved period gets a PDF statement prepared by Haustek with the full basis of calculation and every deduction. Partners download it on their Statement page.',
+      bkMo: 'Every payee of an approved period gets a PDF statement from Haustek; partners download it on their Statement page.',
       bkDaDinh: 'Attached', bkThieu: 'Missing', bkTong: 'Payees', bkDinhHet: 'Attach all (prototype)', bkDinh: 'Attach', bkGo: 'Remove', bkTim: 'Search payee…',
       cGhiVi: 'Credited', cPdf: 'PDF statement',
       hoiDinh: 'Attach a PDF statement', hoiDinhMo: 'The prototype records the file name; the real system uploads the file and notifies the partner.', hTep: 'PDF file name',
@@ -14057,8 +14224,8 @@ HT.dangKy({
       khong: 'Chưa có khoản tạm ứng nào',
       khongMo: 'Thêm một khoản tạm ứng để theo dõi tiến độ thu hồi qua từng kỳ thanh toán.',
       hoiTen: 'Bên thụ hưởng', hoiSo: 'Số tiền tạm ứng (USD)', hoiGhi: 'Ghi chú',
-      canhSua: 'Thay đổi số tiền tạm ứng không tính lại các kỳ đã xét duyệt. Phần đã thu hồi ở những kỳ đó giữ nguyên, chỉ số còn phải thu hồi thay đổi theo.',
-      canhXoa: 'Xoá tạm ứng đồng nghĩa với việc coi như bên này chưa từng nhận khoản trả trước. Phần đã thu hồi ở các kỳ đã xét duyệt vẫn nằm trong bảng thanh toán của những kỳ đó và không được hoàn lại.',
+      canhSua: 'Đổi số tạm ứng không tính lại kỳ đã xét duyệt: phần đã thu hồi giữ nguyên, chỉ số còn phải thu hồi đổi.',
+      canhXoa: 'Xoá tạm ứng coi như chưa từng trả trước. Phần đã thu hồi ở kỳ đã duyệt vẫn nằm trong thanh toán các kỳ đó, không hoàn lại.',
       chonBen: 'Chọn bên thụ hưởng', goTen: 'Nhập tên hoặc mã để tìm',
       xuat: 'Xuất CSV', khongTim: 'Không tìm thấy bên thụ hưởng nào'
     },
@@ -14074,8 +14241,8 @@ HT.dangKy({
       khong: 'No advances yet',
       khongMo: 'Add one to see how it is offset period by period against payouts.',
       hoiTen: 'Payee', hoiSo: 'Amount advanced (USD)', hoiGhi: 'Note',
-      canhSua: 'Changing the advanced amount does NOT rewrite approved periods. What was already recouped there stays; only the outstanding balance changes.',
-      canhXoa: 'Deleting treats this payee as never having received money up front. Amounts already recouped in approved periods remain in those payout records — they are not refunded.',
+      canhSua: 'Changing the amount does not rewrite approved periods: recouped amounts stay, only the balance changes.',
+      canhXoa: 'Deleting treats the payee as never advanced. Amounts recouped in approved periods stay in those payouts; nothing is refunded.',
       chonBen: 'Pick a payee', goTen: 'Type a name or code to search',
       xuat: 'Export CSV', khongTim: 'No payee found'
     }
@@ -14424,7 +14591,7 @@ HT.dangKy({
       cNguoi: 'Người thiết lập', cGhi: 'Ghi chú', cDang: 'Đang áp dụng cho kỳ',
       tim: 'Tìm theo tên hoặc mã…', tatCa: 'Mọi loại', chiDoi: 'Chỉ bên thụ hưởng đã đổi tỷ lệ',
       hoiTyLe: 'Tỷ lệ bên thụ hưởng được hưởng (%)', hoiTu: 'Hiệu lực từ kỳ', hoiGhi: 'Ghi chú (số phụ lục hợp đồng, ngày ký)',
-      chiKyMo: 'Chỉ thiết lập được cho kỳ chưa xét duyệt. Kỳ đã xét duyệt là kỳ đã thanh toán; đặt tỷ lệ lùi vào kỳ đó là sửa lại số tiền đã chuyển đi.',
+      chiKyMo: 'Chỉ chọn được kỳ chưa xét duyệt. Kỳ đã duyệt là kỳ đã thanh toán; đặt lùi vào đó là sửa tiền đã chuyển.',
       anhHuong: 'Ảnh hưởng nếu áp dụng từ kỳ đang xem',
       anhHuongMo: 'Ước tính trên số liệu của kỳ đang xem. Không ghi gì vào sổ, chỉ để thấy mức ảnh hưởng.',
       truoc: 'Theo tỷ lệ hiện tại', sau: 'Theo tỷ lệ mới', chenh: 'Chênh lệch',
@@ -14442,7 +14609,7 @@ HT.dangKy({
       cNguoi: 'Set by', cGhi: 'Note', cDang: 'Applies to selected period',
       tim: 'Search name or code…', tatCa: 'All kinds', chiDoi: 'Only payees that changed',
       hoiTyLe: 'Payee share (%)', hoiTu: 'Effective from period', hoiGhi: 'Note (contract annex number, signature date)',
-      chiKyMo: 'Only an unapproved period can be chosen. An approved period is a paid period — backdating a rate into it rewrites money already sent.',
+      chiKyMo: 'Only an unapproved period. An approved period is paid; backdating into it rewrites money already sent.',
       anhHuong: 'If applied from the selected period',
       anhHuongMo: 'Estimated on the selected period’s figures. Nothing is written — this only shows the size.',
       truoc: 'At the current rate', sau: 'At the new rate', chenh: 'Difference',
@@ -14770,7 +14937,7 @@ HT.dangKy({
   chu: {
     vi: {
       nhomDuLieu: 'Danh mục', navDanhMuc: 'Danh mục', h1: 'Danh mục bản ghi',
-      mo: 'Toàn bộ bản ghi Haustek đang phân phối. Bấm vào một dòng để xem dòng tiền, quy trình phát hành và số liệu theo nền tảng của bản ghi đó.',
+      mo: 'Mọi bản ghi Haustek đang phân phối. Bấm một dòng để xem dòng tiền, quy trình và số theo nền tảng.',
       tong: 'Tổng bản ghi', coTien: 'Có doanh thu kỳ này', nghesi: 'Nghệ sĩ', labelKho: 'Label',
       vanDe: 'Có vấn đề', thieu: 'Còn thiếu thông tin',
       tim: 'Tìm theo ISRC, tên bản ghi, nghệ sĩ…',
@@ -14784,13 +14951,13 @@ HT.dangKy({
       ctGop: 'Doanh thu gộp kỳ này', ctChuoi: 'Chi tiết dòng tiền của bản ghi',
       ctKy: 'Doanh thu 12 kỳ', ctCh: 'Theo nền tảng', ctLt: 'Theo thị trường',
       ctTt: 'Mã và chủ sở hữu', ctSt: 'Tỷ lệ chia tác quyền', ctLuong: 'Theo nguồn báo cáo',
-      maPhuMo: 'Bản ghi này có hai mã ISRC. Báo cáo về theo từng mã riêng nên phải gộp lại. Nếu không gộp, một bản ghi sẽ tách thành hai dòng rời, mỗi dòng chỉ có một nửa doanh thu. Đây là câu hỏi cần chốt số 2.',
+      maPhuMo: 'Bản ghi có hai mã ISRC; báo cáo về theo từng mã nên phải gộp, không thì tách thành hai dòng mỗi dòng nửa doanh thu (câu hỏi số 2).',
       chuaNhap: 'chưa nhập báo cáo cho kỳ này',
       xuat: 'Xuất CSV', hienThi: 'Đang hiển thị'
     },
     en: {
       nhomDuLieu: 'Data', navDanhMuc: 'Catalogue', h1: 'Recording catalogue',
-      mo: 'Every recording Haustek distributes. Open a row to see its money, its release pipeline and its per-platform figures.',
+      mo: 'Every recording Haustek distributes. Open a row for money, pipeline and per-platform figures.',
       tong: 'Recordings', coTien: 'Earning this period', nghesi: 'Artists', labelKho: 'Labels',
       vanDe: 'Needs attention', thieu: 'Missing details',
       tim: 'Search ISRC, title, artist…',
@@ -14804,7 +14971,7 @@ HT.dangKy({
       ctGop: 'Gross this period', ctChuoi: 'Where this track’s money went',
       ctKy: 'Revenue, 12 periods', ctCh: 'By platform', ctLt: 'By territory',
       ctTt: 'Codes and ownership', ctSt: 'Writer split', ctLuong: 'By data feed',
-      maPhuMo: 'This track carries two ISRCs. Reports arrive against each code separately and must be merged — unmerged, one track shows as two disconnected rows, each with half the money. This is open question 2.',
+      maPhuMo: 'Two ISRCs on one track; reports arrive per code and must be merged or the track splits into two half-revenue rows (question 2).',
       chuaNhap: 'not loaded for this period',
       xuat: 'Export CSV', hienThi: 'Showing'
     }
@@ -15185,14 +15352,14 @@ HT.dangKy({
       thieuNguon: 'Chưa nhập báo cáo: {n}. Nền tảng thuộc nguồn đó đang bằng 0 trong mọi bảng của kỳ này.',
       moNhap: 'Mở trang nhập báo cáo',
       dienBien: 'Diễn biến theo nền tảng',
-      dienBienMo: 'Năm nền tảng lớn nhất theo thước đo đang chọn; phần còn lại gộp vào Nền tảng khác. Cột nét đứt là kỳ chưa xét duyệt, số liệu còn thay đổi.',
+      dienBienMo: 'Năm nền tảng lớn nhất theo thước đo đang chọn, còn lại gộp vào Nền tảng khác. Cột nét đứt là kỳ chưa xét duyệt.',
       tyTrong: 'Tỷ trọng kỳ', tyTrongMo: 'Chín nền tảng của kỳ {k} theo thước đo đang chọn.',
       moiLuot: 'Lượt nghe trên mỗi đô la',
       moiLuotMo: 'Doanh thu gộp trên 1.000 lượt nghe của kỳ {k}. Nền tảng đứng cuối trả ít nhất cho mỗi lượt nghe.',
       donVi: '{c} trên 1.000 lượt nghe', binhQuan: 'so với bình quân kỳ',
       bang: 'Bảng theo tháng',
       bangMo: 'Mỗi cột là một kỳ báo cáo. Cột cộng dọc bằng đúng doanh thu gộp của kỳ đó ở trang Tổng quan.',
-      ghiChu: 'Kỳ chưa xét duyệt hiện số đã nhập tới thời điểm này. Kỳ chưa nhập báo cáo TikTok thì cột TikTok bằng 0: đó là do chưa nhập báo cáo, không phải nền tảng không có doanh thu.',
+      ghiChu: 'Kỳ chưa xét duyệt hiện số đã nhập tới nay. Chưa nhập TikTok thì cột TikTok bằng 0 vì thiếu báo cáo, không phải không có doanh thu.',
       chuaNhap: 'chưa nhập báo cáo cho kỳ này', khongLuot: 'chưa có lượt nghe',
       luotNghe: 'lượt nghe', khac: 'Nền tảng khác', xuat: 'Xuất CSV'
     },
@@ -15205,14 +15372,14 @@ HT.dangKy({
       thieuNguon: 'Not loaded yet: {n}. Platforms on that feed show 0 in every table for this period.',
       moNhap: 'Open data loading',
       dienBien: 'Trend by platform',
-      dienBienMo: 'The five largest platforms for the chosen measure; the rest is folded into Other platforms. Dashed columns are unapproved periods, still moving.',
+      dienBienMo: 'Top five platforms for the chosen measure, the rest folded into Other. Dashed columns are unapproved periods.',
       tyTrong: 'Share this period', tyTrongMo: 'All nine platforms for {k}, by the chosen measure.',
       moiLuot: 'Streams per dollar',
       moiLuotMo: 'Gross revenue per 1,000 streams for {k}. The platform at the bottom pays the least per stream.',
       donVi: '{c} per 1,000 streams', binhQuan: 'of the period average',
       bang: 'By month',
       bangMo: 'Each column is a reporting period. Columns add up to that period’s gross on the Overview page.',
-      ghiChu: 'Unapproved periods show what has been loaded so far. A period without the TikTok feed shows 0 for TikTok: the feed is missing, the platform did not earn nothing.',
+      ghiChu: 'Unapproved periods show what is loaded so far. Without the TikTok feed the TikTok column is 0: missing feed, not zero earnings.',
       chuaNhap: 'not loaded for this period', khongLuot: 'no streams yet',
       luotNghe: 'streams', khac: 'Other platforms', xuat: 'Export CSV'
     }
@@ -15368,7 +15535,7 @@ HT.dangKy({
   chu: {
     vi: {
       nhomDoiTac: 'Đối tác', navDoiTac: 'Đối tác', h1: 'Đối tác',
-      mo: 'Mọi label, label con và nghệ sĩ đang ký với Haustek: ai phụ trách, xếp hạng, doanh thu gộp quý, hạn hợp đồng và tình trạng tài khoản cổng.',
+      mo: 'Label, label con và nghệ sĩ đang ký với Haustek: người phụ trách, hạng, doanh thu quý, hạn hợp đồng, tài khoản cổng.',
       kTong: 'Đối tác', kQuanLy: 'Đang quản lý', kGiaHan: 'Sắp hết hạn hợp đồng', kGiaHanS: 'trong 90 ngày',
       kThieu: 'Thiếu hồ sơ', kChuaDn: 'Chưa đăng nhập', kChuaTk: 'Chưa có tài khoản cổng',
       tabDs: 'Danh sách', tabKd: 'Chỉ tiêu kinh doanh',
@@ -15386,12 +15553,12 @@ HT.dangKy({
       dHangMo: 'A từ $150,000 gộp một quý · B từ $40,000 · C còn lại',
       dTk: 'Tài khoản cổng', dNh: 'Tài khoản ngân hàng', coNh: 'đã khai', chuaNh: 'chưa khai',
       dVi: 'Ví của đối tác', viKhaDung: 'Khả dụng', viCho: 'Đang xử lý', viDaRut: 'Đã rút',
-      dTicket: 'Ticket đang mở', khongTicket: 'Không có ticket nào đang mở', taoTicket: 'Tạo ticket hộ', moHoTro: 'Mở hỗ trợ', deUng: 'Đề xuất tạm ứng', deHd: 'Đề xuất hợp đồng',
+      dTicket: 'Ticket đang mở', khongTicket: 'Không có ticket nào đang mở', taoTicket: 'Tạo ticket hộ', moHoTro: 'Mở hỗ trợ', taoHoSo: 'Tạo hồ sơ phát hành hộ', deUng: 'Đề xuất tạm ứng', deHd: 'Đề xuất hợp đồng',
       dCha: 'Thuộc label mẹ', dDtQ: 'Doanh thu gộp quý này', soQuyTruoc: 'so với quý trước', dienBien: 'Doanh thu gộp 12 kỳ gần nhất',
       dPh: 'Bản phát hành', dPhMo: 'Bài hát có doanh thu cao nhất của đối tác. Bấm để mở hồ sơ.', dPhTrong: 'Đối tác chưa có bài hát nào trong danh mục.', xemDanhMuc: 'Mở danh mục',
       /* chỉ tiêu */
       kdTieuDe: 'Chỉ tiêu kinh doanh quý {q}',
-      kdMo: 'Doanh thu gộp quý của các đối tác do từng nhân viên kinh doanh phụ trách, so với chỉ tiêu quý. Kỳ đang chọn quyết định quý.',
+      kdMo: 'Doanh thu gộp quý của đối tác mỗi nhân viên phụ trách so với chỉ tiêu. Kỳ đang chọn quyết định quý.',
       kdTk: 'Tài khoản phụ trách', kdLabel: 'label', kdNs: 'nghệ sĩ', kdDt: 'Doanh thu gộp quý', kdChiTieu: 'Chỉ tiêu quý',
       kdDat: 'Đạt {p} chỉ tiêu', kdMoi: 'Tài khoản mới trong quý', kdGiaHan: 'Cần gia hạn', kdChuaDn: 'Chưa đăng nhập', kdChuaTk: 'Chưa có tài khoản',
       kdTheoHang: 'Tài khoản theo hạng', kdTop: 'Đối tác lớn nhất', kdSoSanh: 'Doanh thu gộp quý so với chỉ tiêu', kdLoc: 'Xem danh sách của nhân viên này',
@@ -15399,7 +15566,7 @@ HT.dangKy({
     },
     en: {
       nhomDoiTac: 'Partners', navDoiTac: 'Partners', h1: 'Partners',
-      mo: 'Every label, sub-label and artist signed with Haustek: account manager, classification, quarterly gross, contract end and portal account status.',
+      mo: 'Labels, sub-labels and artists signed with Haustek: manager, class, quarter revenue, contract end, portal account.',
       kTong: 'Partners', kQuanLy: 'Managed', kGiaHan: 'Contracts ending', kGiaHanS: 'within 90 days',
       kThieu: 'Incomplete', kChuaDn: 'Never logged in', kChuaTk: 'No portal account',
       tabDs: 'Directory', tabKd: 'Sales targets',
@@ -15416,11 +15583,11 @@ HT.dangKy({
       dHangMo: 'A from $150,000 gross a quarter · B from $40,000 · C otherwise',
       dTk: 'Portal account', dNh: 'Bank account', coNh: 'on file', chuaNh: 'missing',
       dVi: 'Partner wallet', viKhaDung: 'Available', viCho: 'In progress', viDaRut: 'Withdrawn',
-      dTicket: 'Open tickets', khongTicket: 'No open ticket', taoTicket: 'Log a ticket', moHoTro: 'Open support', deUng: 'Propose advance', deHd: 'Propose contract',
+      dTicket: 'Open tickets', khongTicket: 'No open ticket', taoTicket: 'Log a ticket', moHoTro: 'Open support', taoHoSo: 'Create a release', deUng: 'Propose advance', deHd: 'Propose contract',
       dCha: 'Parent label', dDtQ: 'Gross this quarter', soQuyTruoc: 'vs previous quarter', dienBien: 'Gross, last 12 periods',
       dPh: 'Releases', dPhMo: 'The partner’s highest-earning tracks. Open one for its record.', dPhTrong: 'This partner has no tracks in the catalogue yet.', xemDanhMuc: 'Open catalogue',
       kdTieuDe: 'Sales targets, quarter {q}',
-      kdMo: 'Quarterly gross of the partners each salesperson manages, against the quarterly target. The selected period sets the quarter.',
+      kdMo: 'Quarter gross per salesperson against target. The selected period sets the quarter.',
       kdTk: 'Accounts managed', kdLabel: 'labels', kdNs: 'artists', kdDt: 'Quarter gross', kdChiTieu: 'Quarter target',
       kdDat: '{p} of target', kdMoi: 'New accounts this quarter', kdGiaHan: 'Renewals due', kdChuaDn: 'Never logged in', kdChuaTk: 'No account',
       kdTheoHang: 'Accounts by class', kdTop: 'Largest partners', kdSoSanh: 'Quarter gross against target', kdLoc: 'Show this person’s accounts',
@@ -15652,6 +15819,7 @@ function moDoiTac(c, r) {
     '<div class="btnrow" style="margin-top:10px">' +
       '<button type="button" class="btn sm pri" data-tao-tk>' + HM.icon('info') + HM.esc(t('taoTicket')) + '</button>' +
       '<button type="button" class="btn sm" data-di="ho-tro">' + HM.esc(t('moHoTro')) + '</button>' +
+      (A.quyen.nhom('phatHanhHo') ? '<button type="button" class="btn sm" data-ho-so>' + HM.icon('disc') + HM.esc(t('taoHoSo')) + '</button>' : '') +
       (['sales', 'mgmt'].indexOf(me.role) >= 0 ? '<button type="button" class="btn sm" data-de-ung>' + HM.icon('cash') + HM.esc(t('deUng')) + '</button><button type="button" class="btn sm" data-de-hd>' + HM.icon('file') + HM.esc(t('deHd')) + '</button>' : '') + '</div>' +
     (lich.length ? '<h4 class="sec">' + HM.esc(t('dienBien')) + '</h4>' +
     HB.o({ loai: 'cot', cao: 150, anTruc: true, chuThich: false,
@@ -15667,6 +15835,7 @@ function moDoiTac(c, r) {
         });
         HM.bam(dr, '[data-tao-tk]', function () { if (HT.moTicketNoiBo) HT.moTicketNoiBo(c, { partyKey: pk, name: r.name, clientId: r.clientId }); });
         HM.bam(dr, '[data-de-ung]', function () { if (HT.deXuatTamUng) HT.deXuatTamUng(c, pk); });
+        HM.bam(dr, '[data-ho-so]', function () { if (HT.taoHoSoHo) HT.taoHoSoHo(c, pk); });
         HM.bam(dr, '[data-de-hd]', function () { if (HT.deXuatHopDong) HT.deXuatHopDong(c, pk); });
         HM.bam(dr, '[data-di]', function (el) { c.di(el.getAttribute('data-di')); });
         HM.bam(dr, '[data-tk]', function (el) { if (HT.hoTroMo) HT.hoTroMo(c, el.getAttribute('data-tk')); });
@@ -15716,7 +15885,7 @@ var CHU = {
     knOpen: 'Mới', knDisputed: 'Đang tranh chấp', knEscalated: 'Đã leo thang', knResolved: 'Đã giải quyết', knReleased: 'Đã nhả',
     tim: 'Tìm mã ticket, tiêu đề, đối tác…',
     moiLoai: 'Mọi loại', moiTt: 'Mọi trạng thái', dangMoHet: 'Đang mở (tất cả)', moiNv: 'Mọi người phụ trách', chuaGan: 'chưa gán', moiUu: 'Mọi ưu tiên',
-    chiToi: 'Chỉ của tôi', taoTicket: 'Tạo ticket hộ đối tác', xuat: 'Xuất CSV',
+    chiToi: 'Chỉ của tôi', hangDoi: 'Hàng đợi bộ phận {b}', dBoPhan: 'Bộ phận', chuyenBp: 'Chuyển bộ phận…', daChuyen: 'Đã chuyển bộ phận', taoTicket: 'Tạo ticket hộ đối tác', xuat: 'Xuất CSV',
     cMa: 'Mã', cUu: 'Ưu tiên', cLoai: 'Loại', cTieuDe: 'Tiêu đề', cBai: 'Bài hát', cNv: 'Người phụ trách', cHan: 'Hạn', cCapNhat: 'Cập nhật', cTt: 'Trạng thái',
     khong: 'Không có ticket nào', khongMo: 'Đổi bộ lọc phía trên, hoặc tạo ticket hộ đối tác.',
     quaHan: 'quá hạn', dDoiTac: 'Đối tác', dNguoiTao: 'Người tạo', nguonPortal: 'gửi từ cổng đối tác', nguonStaff: 'nhân viên tạo hộ',
@@ -15743,7 +15912,7 @@ var CHU = {
     knOpen: 'New', knDisputed: 'Disputed', knEscalated: 'Escalated', knResolved: 'Resolved', knReleased: 'Released',
     tim: 'Search ticket ID, title, partner…',
     moiLoai: 'All types', moiTt: 'All statuses', dangMoHet: 'Open (all)', moiNv: 'All assignees', chuaGan: 'unassigned', moiUu: 'All priorities',
-    chiToi: 'Mine only', taoTicket: 'Log a ticket for a partner', xuat: 'Export CSV',
+    chiToi: 'Mine only', hangDoi: '{b} queue', dBoPhan: 'Department', chuyenBp: 'Transfer to…', daChuyen: 'Transferred', taoTicket: 'Log a ticket for a partner', xuat: 'Export CSV',
     cMa: 'ID', cUu: 'Priority', cLoai: 'Type', cTieuDe: 'Title', cBai: 'Track', cNv: 'Assignee', cHan: 'Due', cCapNhat: 'Updated', cTt: 'Status',
     khong: 'No tickets', khongMo: 'Change the filters above, or log a ticket for a partner.',
     quaHan: 'overdue', dDoiTac: 'Partner', dNguoiTao: 'Created by', nguonPortal: 'from the partner portal', nguonStaff: 'logged by staff',
@@ -15786,14 +15955,15 @@ HT.dangKy({
   },
 
   ve: function (root, c) {
-    var A = c.A, t = c.t;
+    var A = c.A, t = c.t, me = A.staff.me;
     var coKn = !!(A.quyen && A.quyen.nhom('khieuNai'));
     var dem = A.tickets.counts(), kn = coKn ? A.claims.counts() : { open: 0, disputed: 0, escalated: 0 };
     if (!coKn && LOC.tab === 'khieunai') LOC.tab = 'ticket';
     var dangMo = dem.open + dem.in_progress + dem.waiting;
     var knMo = kn.open + kn.disputed + kn.escalated;
 
-    var html = HM.dau({ h1: HM.esc(t('h1')), mo: HM.esc(t('mo')), nut: LOC.tab === 'khieunai' ? '' : '<button type="button" class="btn pri" data-tao>' + HM.icon('info') + HM.esc(t('taoTicket')) + '</button>' });
+    var bp = A.tickets.depts[me.role];
+    var html = HM.dau({ h1: HM.esc(t('h1')) + (me.role !== 'mgmt' && bp ? ' <span>' + HM.esc(c.lang === 'en' ? bp.en : bp.vi) + '</span>' : ''), mo: HM.esc(t('mo')), nut: LOC.tab === 'khieunai' ? '' : '<button type="button" class="btn pri" data-tao>' + HM.icon('info') + HM.esc(t('taoTicket')) + '</button>' });
     html += HM.tabs([
       { k: 'ticket', l: t('tTicket'), icon: 'info', dem: dangMo },
       coKn ? { k: 'khieunai', l: t('tKn'), icon: 'alert', dem: knMo } : null
@@ -15876,7 +16046,7 @@ function veTicket(c, dem, rows) {
 
   html += '<div class="bar">' +
     '<div class="srch">' + HM.icon('tim') + '<input type="search" data-tim value="' + HM.esc(LOC.tim) + '" placeholder="' + HM.esc(t('tim')) + '"></div>' +
-    sel('data-loai', LOC.loai, [['', t('moiLoai')]].concat(A.tickets.types.map(function (x) { return [x.id, c.song(x, 'label')]; }))) +
+    sel('data-loai', LOC.loai, [['', t('moiLoai')]].concat(A.tickets.types.filter(function (x) { return me.role === 'mgmt' || A.tickets.deptOf(x.id) === me.role; }).map(function (x) { return [x.id, c.song(x, 'label')]; }))) +
     sel('data-tt', LOC.tt, [['open-all', t('dangMoHet')]].concat(TT.map(function (s) { return [s, t(s)]; })).concat([['', t('moiTt')]])) +
     (LOC.toi ? '' : sel('data-nv', LOC.nv, [['', t('moiNv')], ['-', t('chuaGan')]].concat(A.staff.list().map(function (s) { return [s.id, s.name]; })))) +
     sel('data-uu', LOC.uu, [['', t('moiUu')]].concat(UU.map(function (p) { return [p, t(p)]; }))) +
@@ -15994,6 +16164,7 @@ function moTicket(c, id) {
       { t: T('dNguoiTao'), v: tk.createdBy + ' · ' + (tk.source === 'portal' ? T('nguonPortal') : T('nguonStaff')) },
       { t: T('dTaoLuc'), v: HT.fmt.luc(tk.createdAt) },
       { t: T('cHan'), v: HT.fmt.luc(tk.dueAt) + (qh ? ' · ' + T('quaHan') : ''), mau: qh ? 'neg' : '' },
+      { t: T('dBoPhan'), v: (function () { var d = A.tickets.depts[tk.dept || A.tickets.deptOf(tk.type)]; return d ? (HT.lang === 'en' ? d.en : d.vi) : '—'; })() },
       { t: T('cNv'), v: nv || T('chuaGan') },
       { t: T('cCapNhat'), v: HT.fmt.luc(tk.updatedAt) },
       tk.closedAt ? { t: T('dDong'), v: HT.fmt.luc(tk.closedAt) } : null
@@ -16004,6 +16175,7 @@ function moTicket(c, id) {
       selNho('data-gan', T('ganCho'), A.staff.list().filter(function (s) { return s.id !== tk.assignee; }).map(function (s) { return [s.id, s.name + ' · ' + c.song(s, 'title')]; })) +
       selNho('data-doitt', T('doiTt'), TT.filter(function (s) { return s !== tk.status; }).map(function (s) { return [s, T(s)]; })) +
       selNho('data-doiuu', T('doiUu'), UU.filter(function (p) { return p !== tk.priority; }).map(function (p) { return [p, T(p)]; })) +
+      selNho('data-chuyen', T('chuyenBp'), A.tickets.types.filter(function (x) { return x.id !== tk.type; }).map(function (x) { var d = A.tickets.depts[A.tickets.deptOf(x.id)]; return [x.id, c.song(x, 'label') + ' · ' + (HT.lang === 'en' ? d.en : d.vi)]; })) +
     '</div>' +
     '<h4 class="sec">' + HM.esc(T('luongTin')) + ' (' + tk.messages.length + ')</h4>' +
     '<div>' + tin + '</div>' +
@@ -16017,6 +16189,7 @@ function moTicket(c, id) {
         catch (e) { c.thongBao(e.message, 'no'); }
       };
       HM.bam(dr, '[data-nhan]', function () { lam(function () { A.tickets.assign(id, me.id, me.email); }, T('daNhan') + ' · ' + id); });
+      HM.doi(dr, '[data-chuyen]', function (el) { if (!el.value) return; lam(function () { A.tickets.chuyen(id, el.value, me.email); }, T('daChuyen') + ' · ' + id); });
       HM.doi(dr, '[data-gan]', function (el) {
         if (!el.value) return;
         var ten = tenNv(A, el.value);
@@ -16161,7 +16334,7 @@ HT.dangKy({
   chu: {
     vi: {
       nhomDoiTac: 'Đối tác', navQuyen: 'Quản lý quyền', h1: 'Quản lý quyền',
-      mo: 'Xung đột Content ID và khiếu nại trên nền tảng đối với bản ghi trong danh mục, và cài đặt video theo tài khoản.',
+      mo: 'Xung đột Content ID, khiếu nại trên nền tảng và cài đặt video theo tài khoản.',
       tabKn: 'Xung đột và khiếu nại', tabVideo: 'Cài đặt video',
       kDangMo: 'Đang mở', kDangMoS: 'mới · tranh chấp · đã chuyển lên', kXem: 'Lượt xem/ngày đang tranh chấp',
       kHetHan: 'Sắp hết hạn tranh chấp', kHetHanS: 'trong 7 ngày', kXong: 'Đã giải quyết 30 ngày', kXongS: 'đã giải quyết hoặc đã nhả',
@@ -16197,7 +16370,7 @@ HT.dangKy({
     },
     en: {
       nhomDoiTac: 'Partners', navQuyen: 'Rights manager', h1: 'Rights manager',
-      mo: 'Content ID conflicts and platform claims on catalogue recordings, plus per-account video settings.',
+      mo: 'Content ID conflicts, platform claims and per-account video settings.',
       tabKn: 'Conflicts and claims', tabVideo: 'Video settings',
       kDangMo: 'Open', kDangMoS: 'new · disputed · escalated', kXem: 'Daily views in dispute',
       kHetHan: 'Disputes expiring', kHetHanS: 'within 7 days', kXong: 'Closed in 30 days', kXongS: 'resolved or released',
@@ -16619,51 +16792,51 @@ HT.dangKy({
     vi: {
       nhomHeThong: 'Quản trị', navQuanTri: 'Quản trị', h1: 'Quản trị',
       tTk: 'Tài khoản', tNk: 'Nhật ký thao tác', tCh: 'Câu hỏi cần chốt', tDl: 'Dữ liệu bản mẫu', tBm: 'Phân quyền hai cổng', tPq: 'Phân quyền theo vai',
-      pqMo: 'Vai nào mở được màn nào và gọi được nhóm dữ liệu nào. Ma trận nằm ở lõi (máy chủ mẫu): thanh điều hướng, chuông, tìm nhanh và bàn làm việc đều đọc từ đây; gọi sai vai thì máy chủ trả lỗi "Không có quyền" dù giao diện có giấu nút hay không.', pqMan: 'Màn hình', pqNhom: 'Nhóm dữ liệu', pqVaiCua: 'Vai được cấp',
+      pqMo: 'Vai nào mở màn nào, gọi nhóm dữ liệu nào. Ma trận ở lõi; gọi sai vai thì máy chủ trả lỗi dù giao diện có giấu nút hay không.', pqMan: 'Màn hình', pqNhom: 'Nhóm dữ liệu', pqVaiCua: 'Vai được cấp',
       soTk: 'Tài khoản', soHd: 'Đang hoạt động', soMoi: 'Đã mời, chưa đăng nhập',
       themTk: 'Cấp tài khoản', tim: 'Tìm theo email hoặc bên thụ hưởng…', moiVt: 'Tất cả vai trò',
       cEmail: 'Email', cVt: 'Vai trò', cBen: 'Gắn với bên thụ hưởng', cTt: 'Trạng thái', cNgay: 'Ngày cấp', cMfa: 'Xác thực 2 lớp',
       hd: 'đang hoạt động', moi: 'đã mời', khoa: 'đã khoá',
       khoaLai: 'Khoá tài khoản', moLai: 'Mở lại tài khoản', xoaTk: 'Xoá tài khoản',
       hoiEmail: 'Email', hoiVt: 'Vai trò', hoiBen: 'Gắn với bên thụ hưởng',
-      canhQuyen: 'Quyền truy cập gắn với mã số, không bao giờ gắn với tên hiển thị. Với những tên như "nae & de\'lay", "ling:chi", "HƯƠNGMYBÔNG", sai một ký tự là nghệ sĩ mất tiền hoặc xem được dữ liệu của người khác.',
+      canhQuyen: 'Quyền gắn với mã số, không gắn với tên hiển thị: sai một ký tự tên là nghệ sĩ mất tiền hoặc thấy dữ liệu người khác.',
       labelConCua: 'Label con của', labelCon: 'label con',
       cauTruc: 'Cấu trúc label',
       cauTrucMo: 'Label mẹ và các label con đã ký riêng. Mỗi label con là một tài khoản riêng với roster riêng và tỷ lệ riêng.',
       ngheSi: 'nghệ sĩ', banGhi: 'bản ghi', chuaTk: 'chưa có tài khoản', xemCauHoi: 'Xem câu hỏi cần chốt',
-      ghiQ9: 'Label mẹ được uỷ quyền xem toàn bộ số liệu của label con; không có dòng tiền đi qua label mẹ (câu hỏi cần chốt số 9).',
+      ghiQ9: 'Label mẹ được uỷ quyền xem toàn bộ số của label con; không có dòng tiền qua label mẹ (câu hỏi số 9).',
       nkTim: 'Lọc theo thao tác…', nkHet: 'Tất cả',
       chTraLoi: 'Câu trả lời', chDoan: 'Giả định hiện tại của bản mẫu', chViSao: 'Vì sao câu này quan trọng',
       chLuu: 'Lưu câu trả lời', chXuat: 'Xuất toàn bộ câu trả lời',
       chMau: 'File mẫu cần cung cấp',
       dlXuat: 'Xuất trạng thái ra JSON', dlNhap: 'Nhập trạng thái từ file JSON',
       dlXoa: 'Xoá toàn bộ và dựng lại từ đầu',
-      dlCanh: 'Xoá toàn bộ sẽ mất mọi quyết định đã thực hiện trong bản mẫu: kỳ đã xét duyệt, dòng đã khớp, tỷ lệ, tạm ứng, tài khoản. Danh mục và doanh thu sẽ được sinh lại y hệt nhờ giá trị gốc cố định.',
+      dlCanh: 'Xoá toàn bộ sẽ mất mọi quyết định trong bản mẫu: kỳ đã duyệt, dòng đã khớp, tỷ lệ, tạm ứng, tài khoản. Danh mục và doanh thu sinh lại y hệt.',
       bmChay: 'Chạy phép thử phân quyền'
     },
     en: {
       nhomHeThong: 'System', navQuanTri: 'Administration', h1: 'Administration',
       tTk: 'Accounts', tNk: 'Audit log', tCh: 'Open questions', tDl: 'Prototype data', tBm: 'The boundary', tPq: 'Role permissions',
-      pqMo: 'Which role opens which screen and may call which data group. The matrix lives in the core (mock server): navigation, bell, quick search and desks all read it; a call from the wrong role gets "No permission" whether or not the UI hides the button.', pqMan: 'Screen', pqNhom: 'Data group', pqVaiCua: 'Granted roles',
+      pqMo: 'Which role opens which screen and data group. The matrix lives in the core; a wrong-role call is refused whether or not the button is hidden.', pqMan: 'Screen', pqNhom: 'Data group', pqVaiCua: 'Granted roles',
       soTk: 'Accounts', soHd: 'Active', soMoi: 'Invited, not yet in',
       themTk: 'Create an account', tim: 'Search email or payee…', moiVt: 'All roles',
       cEmail: 'Email', cVt: 'Role', cBen: 'Bound to payee', cTt: 'Status', cNgay: 'Created', cMfa: 'Two-factor',
       hd: 'active', moi: 'invited', khoa: 'suspended',
       khoaLai: 'Suspend', moLai: 'Reactivate', xoaTk: 'Delete account',
       hoiEmail: 'Email', hoiVt: 'Role', hoiBen: 'Bound to payee',
-      canhQuyen: 'Access binds to the ID, never to the display name. "nae & de\'lay", "ling:chi", "HƯƠNGMYBÔNG" — one wrong character and an artist loses money or sees someone else’s data.',
+      canhQuyen: 'Access binds to the ID, never the display name: one wrong character and an artist loses money or sees someone else’s data.',
       labelConCua: 'Sub-label of', labelCon: 'sub-labels',
       cauTruc: 'Label structure',
       cauTrucMo: 'Parent labels and the sub-labels signed under them. Each sub-label is its own account with its own roster and rate.',
       ngheSi: 'artists', banGhi: 'recordings', chuaTk: 'no account yet', xemCauHoi: 'Open questions',
-      ghiQ9: 'A parent label is delegated to see everything about its sub-labels; no money flows through the parent (open question 9).',
+      ghiQ9: 'A parent label may see everything about its sub-labels; no money flows through it (question 9).',
       nkTim: 'Filter by action…', nkHet: 'All',
       chTraLoi: 'Your answer', chDoan: 'What the prototype assumes', chViSao: 'Why this matters',
       chLuu: 'Save answer', chXuat: 'Export all answers',
       chMau: 'Sample files still needed',
       dlXuat: 'Export state as JSON', dlNhap: 'Import from JSON',
       dlXoa: 'Wipe and rebuild from scratch',
-      dlCanh: 'Wiping drops every decision made in the prototype: approved periods, matched rows, rates, advances, accounts. Catalogue and revenue regenerate identically from the fixed seed.',
+      dlCanh: 'Wiping drops every decision: approved periods, matched rows, rates, advances, accounts. Catalogue and revenue regenerate identically.',
       bmChay: 'Run the boundary probes'
     }
   },
@@ -17274,7 +17447,7 @@ HT.dangKy({
       hdThanhToan: 'Bên thanh toán', hdThanhToanV: 'Haustek thanh toán trực tiếp cho bạn theo tỷ lệ này',
       hdNguong: 'Ngưỡng rút tiền tối thiểu', hdProducer: 'Bài hát có điểm producer', hdProducerMo: 'điểm producer được khấu trừ từ phần của bạn',
       hdLichSu: 'Lịch sử tỷ lệ', hdKy: 'Từ kỳ',
-      hdGiaDinh: 'Bản mẫu giả định Haustek thanh toán trực tiếp cho từng nghệ sĩ theo tỷ lệ do label đặt. Nếu thực tế label tự chia cho nghệ sĩ thì trang này sẽ thay đổi (câu hỏi cần chốt số 8).',
+      hdGiaDinh: 'Bản mẫu giả định Haustek trả thẳng cho nghệ sĩ theo tỷ lệ label đặt; nếu label tự chia thì trang này đổi (câu hỏi số 8).',
       hdLabelMe: 'Label mẹ', hdLabelCon: 'Label con', hdLabelConV: '{n} label con', xemHeThong: 'xem trang Hệ thống label',
       hdNhip: 'Nhịp báo cáo của nền tảng',
       moLabel: 'Label · {n} bài hát đã gửi tới nền tảng', moLabelCon: 'Label con của {p} · {n} bài hát đã gửi tới nền tảng',
@@ -17284,9 +17457,9 @@ HT.dangKy({
       khongTq: 'Bạn chưa có bài hát nào đăng ký phần sáng tác',
       kyCoTq: 'Các kỳ đã có báo cáo tác quyền', kyCoTqMo: 'Chọn một kỳ để xem số liệu của kỳ đó.',
       soSangTac: 'Bài hát bạn có phần sáng tác', nhipTq: 'Chu kỳ báo cáo tác quyền',
-      nhipTq1: 'Các tổ chức quản lý tác quyền (VCPMC ở Việt Nam, The MLC ở Mỹ, ASCAP, PRS, GEMA và các tổ chức khác) chốt sổ theo <b>quý</b>, không theo tháng.',
-      nhipTq2: 'Các tổ chức này báo cáo <b>trễ một đến hai quý</b> so với thời điểm bài hát thực tế được nghe. Vì vậy tác quyền của một bài hát được nghe hôm nay thường khoảng nửa năm sau mới có trong báo cáo.',
-      nhipTq3: 'Do đó phần lớn các kỳ <b>không có báo cáo tác quyền nào</b>. Đây là điều bình thường, không có nghĩa là bài hát của bạn không có doanh thu.',
+      nhipTq1: 'Tổ chức tác quyền (VCPMC, The MLC, ASCAP, PRS, GEMA…) chốt sổ theo <b>quý</b>, không theo tháng.',
+      nhipTq2: 'Họ báo cáo <b>trễ một đến hai quý</b>, nên tác quyền của bài nghe hôm nay thường nửa năm sau mới có.',
+      nhipTq3: 'Vì vậy phần lớn kỳ <b>không có báo cáo tác quyền</b>. Bình thường, không phải bài không có doanh thu.',
       tongTq: 'Tổng tác quyền của các kỳ đã có báo cáo',
       chuaTq: 'Chưa có kỳ nào có báo cáo tác quyền đã xét duyệt.'
     },
@@ -17324,7 +17497,7 @@ HT.dangKy({
       hdThanhToan: 'Paid by', hdThanhToanV: 'Haustek pays you directly at this rate',
       hdNguong: 'Minimum withdrawal', hdProducer: 'Tracks with producer points', hdProducerMo: 'producer points come off your share',
       hdLichSu: 'Rate history', hdKy: 'From',
-      hdGiaDinh: 'The prototype assumes Haustek pays each artist directly at the rate the label set. If the label pays its artists itself, this page changes (open question 8).',
+      hdGiaDinh: 'The prototype assumes Haustek pays artists directly at the label’s rate; if the label pays them itself, this page changes (question 8).',
       hdLabelMe: 'Parent label', hdLabelCon: 'Sub-labels', hdLabelConV: '{n} sub-labels', xemHeThong: 'see the Label network page',
       hdNhip: 'Platform reporting cadence',
       moLabel: 'Label · {n} tracks delivered to platforms', moLabelCon: 'Sub-label of {p} · {n} tracks delivered to platforms',
@@ -17334,9 +17507,9 @@ HT.dangKy({
       khongTq: 'No registered writer share yet',
       kyCoTq: 'Periods with a publishing report', kyCoTqMo: 'Open one to see its figures.',
       soSangTac: 'Works you co-wrote', nhipTq: 'How publishing arrives',
-      nhipTq1: 'Collecting societies (VCPMC in Vietnam, The MLC in the US, ASCAP, PRS, GEMA and others) settle <b>quarterly</b>, not monthly.',
-      nhipTq2: 'They report <b>one to two quarters late</b> relative to when the music actually played, so publishing on a track played today usually arrives about six months later.',
-      nhipTq3: 'That is why most periods simply have <b>no report at all</b>. That is normal, and not a sign that your works earned nothing.',
+      nhipTq1: 'Collecting societies (VCPMC, The MLC, ASCAP, PRS, GEMA…) settle <b>quarterly</b>, not monthly.',
+      nhipTq2: 'They report <b>one to two quarters late</b>, so publishing on a play today usually arrives about six months later.',
+      nhipTq3: 'So most periods have <b>no publishing report</b>. Normal, not a sign your works earned nothing.',
       tongTq: 'Publishing across reported periods',
       chuaTq: 'No period has an approved publishing report yet.'
     }
@@ -17779,12 +17952,12 @@ HT.dangKy({
       trong: 'Kỳ này chưa có bài hát nào của bạn có doanh thu',
       xuat: 'Tải danh sách (CSV)', hienThi: 'Đang hiển thị',
       tqTrong: 'Kỳ này chưa có báo cáo tác quyền',
-      tqTrongMo: 'Tác quyền được chốt theo quý, và các tổ chức quản lý tác quyền thường báo cáo trễ một đến hai quý. Phần lớn các kỳ không có báo cáo tác quyền, đây là điều bình thường.',
+      tqTrongMo: 'Tác quyền chốt theo quý và về trễ một đến hai quý, nên nhiều kỳ không có báo cáo. Đây là bình thường.',
       tqCo: 'Các kỳ đã có báo cáo tác quyền', soSangTac: 'Bài hát bạn có phần sáng tác',
       tqGiaiThich: 'Tác quyền khác doanh thu bản ghi như thế nào',
-      tqG1: 'Doanh thu bản ghi được trả cho <b>bản thu</b>: người tạo ra bản thu đó được nhận. Khoản này được thanh toán hằng tháng qua các nền tảng.',
-      tqG2: 'Tác quyền được trả cho <b>bài hát</b>: người viết giai điệu và lời được nhận, kể cả khi người khác trình bày. Khoản này được thanh toán theo quý qua các tổ chức quản lý tác quyền.',
-      tqG3: 'Hai dòng tiền này độc lập với nhau. Một bài hát có thể có doanh thu ở dòng này mà chưa có ở dòng kia, và ngược lại.',
+      tqG1: 'Doanh thu bản ghi trả cho <b>bản thu</b>: ai tạo bản thu thì nhận, hằng tháng qua nền tảng.',
+      tqG2: 'Tác quyền trả cho <b>bài hát</b>: người viết giai điệu và lời nhận, kể cả khi người khác hát; theo quý qua tổ chức tác quyền.',
+      tqG3: 'Hai dòng tiền độc lập: một bài có thể có dòng này mà chưa có dòng kia.',
       xemHoSo: 'Xem quy trình phát hành và nền tảng'
     },
     en: {
@@ -17803,12 +17976,12 @@ HT.dangKy({
       trong: 'None of your tracks earned this period',
       xuat: 'Download list (CSV)', hienThi: 'Showing',
       tqTrong: 'No publishing report for this period',
-      tqTrongMo: 'Publishing settles quarterly and societies usually report one to two quarters late. Most periods have no report at all — that is normal.',
+      tqTrongMo: 'Publishing settles quarterly and arrives one to two quarters late, so many periods have no report. That is normal.',
       tqCo: 'Periods with a publishing report', soSangTac: 'Works you co-wrote',
       tqGiaiThich: 'How publishing differs from recording revenue',
-      tqG1: 'Recording revenue pays for the <b>master</b> — whoever made that recording is paid. It arrives monthly through the platforms.',
-      tqG2: 'Publishing pays for the <b>song</b> — whoever wrote the melody and lyric is paid, even when someone else sings it. It arrives quarterly through collecting societies.',
-      tqG3: 'The two streams are independent. A track can be earning in one and not yet in the other, and the other way round.',
+      tqG1: 'Recording revenue pays for the <b>master</b>: whoever made the recording is paid, monthly via platforms.',
+      tqG2: 'Publishing pays for the <b>song</b>: whoever wrote it is paid, even when someone else sings it; quarterly via societies.',
+      tqG3: 'The two are independent: a track can be earning in one and not yet the other.',
       xemHoSo: 'Pipeline and platforms'
     }
   },
@@ -18058,8 +18231,8 @@ HT.dangKy({
   chu: {
     vi: {
       navDanhMuc: 'Danh mục', h1: 'Danh mục bài hát',
-      moLb: 'Toàn bộ bài hát của các nghệ sĩ thuộc label, kể cả bài chưa có doanh thu: đang ở bước nào của quy trình phát hành, đã lên nền tảng nào và còn thiếu gì.',
-      moNs: 'Toàn bộ bài hát của bạn, kể cả bài chưa có doanh thu: đang ở bước nào của quy trình phát hành, đã lên nền tảng nào và còn thiếu gì.',
+      moLb: 'Mọi bài của nghệ sĩ thuộc label, kể cả bài chưa có doanh thu: đang ở bước nào, lên nền tảng nào, thiếu gì.',
+      moNs: 'Mọi bài của bạn, kể cả bài chưa có doanh thu: đang ở bước nào, lên nền tảng nào, thiếu gì.',
       kTong: 'Bài hát', kLive: 'Đã lên đủ nền tảng', kProcessing: 'Đang xử lý', kIssue: 'Có vấn đề', kMissing: 'Còn thiếu thông tin',
       locAll: 'Tất cả', locLive: 'Đã lên đủ', locProcessing: 'Đang xử lý', locIssue: 'Có vấn đề', locMissing: 'Còn thiếu',
       tim: 'Tìm theo tên bài hát, mã ISRC hoặc nghệ sĩ…',
@@ -18074,15 +18247,15 @@ HT.dangKy({
       trong: 'Chưa có bài hát nào trong danh mục',
       trongMo: 'Khi Haustek tiếp nhận hồ sơ phát hành của bạn, bài hát sẽ xuất hiện ở đây.',
       loi: 'Chưa tải được danh mục',
-      ghiChu: 'Lượt nghe và doanh thu là số tích luỹ của các kỳ đã xét duyệt. Bấm một dòng để xem quy trình phát hành, nền tảng và số liệu theo tháng của bài hát đó.',
+      ghiChu: 'Lượt nghe và doanh thu tích luỹ các kỳ đã xét duyệt. Bấm một dòng để xem quy trình, nền tảng và số theo tháng.',
       phanLabel: 'Phần label được hưởng', thuNhap: 'Thu nhập của bạn', dangBang: 'Bảng', dangLuoi: 'Lưới bìa',
       csvLive: 'Nền tảng đã lên', csvTong: 'Tổng nền tảng', csvGoiY: 'Gợi ý', csvNgay: 'Ngày phát hành',
       daCat: 'Danh sách quá dài nên chỉ xuất {n} dòng đầu theo thứ tự đang sắp xếp. Bạn thu hẹp bộ lọc để xuất phần còn lại.'
     },
     en: {
       navDanhMuc: 'Catalogue', h1: 'Track catalogue',
-      moLb: 'Every track by artists on your label, earning or not: where it is in the release pipeline, which platforms it is on, and what is still missing.',
-      moNs: 'Every track of yours, earning or not: where it is in the release pipeline, which platforms it is on, and what is still missing.',
+      moLb: 'Every track by your artists, earning or not: pipeline step, platforms live, what is missing.',
+      moNs: 'Every track of yours, earning or not: pipeline step, platforms live, what is missing.',
       kTong: 'Tracks', kLive: 'Live everywhere', kProcessing: 'Processing', kIssue: 'Needs attention', kMissing: 'Missing info',
       locAll: 'All', locLive: 'Live', locProcessing: 'Processing', locIssue: 'Issues', locMissing: 'Missing',
       tim: 'Search title, ISRC, artist…',
@@ -18097,7 +18270,7 @@ HT.dangKy({
       trong: 'No tracks in your catalogue yet',
       trongMo: 'Tracks appear here once Haustek receives your release submission.',
       loi: 'The catalogue could not be loaded',
-      ghiChu: 'Streams and revenue are cumulative across approved periods. Open a row to see the track’s pipeline, platforms and monthly figures.',
+      ghiChu: 'Streams and revenue are cumulative over approved periods. Open a row for pipeline, platforms and monthly figures.',
       phanLabel: 'Label keeps', thuNhap: 'Yours', dangBang: 'Table', dangLuoi: 'Cover grid',
       csvLive: 'Platforms live', csvTong: 'Platforms total', csvGoiY: 'Suggestions', csvNgay: 'Release date',
       daCat: 'The list is long, so only the first {n} rows in the current order were exported. Narrow the filter to export the rest.'
@@ -18312,12 +18485,12 @@ HT.dangKy({
   chu: {
     vi: {
       navNenTang: 'Nền tảng', h1: 'Nền tảng',
-      moLb: 'Từng nền tảng mang về bao nhiêu lượt nghe và bao nhiêu tiền mỗi kỳ, tính trên toàn bộ bài hát của các nghệ sĩ thuộc label.',
+      moLb: 'Từng nền tảng mang về bao nhiêu lượt nghe và tiền mỗi kỳ, trên mọi bài của nghệ sĩ thuộc label.',
       moNs: 'Từng nền tảng mang về bao nhiêu lượt nghe và bao nhiêu tiền mỗi kỳ, tính trên toàn bộ bài hát của bạn.',
       danDau: 'Nền tảng dẫn đầu', luotKy: 'Lượt nghe', gopKy: 'Doanh thu',
       phanLabel: 'Phần label được hưởng', thuNhap: 'Thu nhập của bạn',
       dienBien: 'Diễn biến theo nền tảng',
-      dienBienMo: 'Mỗi cột là một kỳ đã xét duyệt, chồng theo nền tảng. Năm nền tảng lớn nhất hiện riêng, phần còn lại gom vào "Nền tảng khác".',
+      dienBienMo: 'Mỗi cột một kỳ đã xét duyệt, chồng theo nền tảng; năm nền tảng lớn nhất hiện riêng, còn lại gom vào Nền tảng khác.',
       tyTrong: 'Tỷ trọng kỳ {k}',
       tyTrongMo: 'Theo {m}, tính trên tổng của kỳ. Dòng nhỏ dưới tên là mức thay đổi so với kỳ trước.',
       bangThang: 'Bảng theo tháng', bangThangMo: 'Từng nền tảng theo từng kỳ đã xét duyệt, theo {m}.',
@@ -18325,17 +18498,17 @@ HT.dangKy({
       xuat: 'Xuất CSV', nenTangKhac: 'Nền tảng khác', ky: 'Kỳ',
       chuaKy: 'Chưa có kỳ nào đã xét duyệt',
       chuaKyMo: 'Số liệu theo nền tảng chỉ hiển thị sau khi Haustek xét duyệt kỳ đầu tiên có doanh thu của bạn.',
-      tacQuyen: 'Trang này chỉ nói về doanh thu bản ghi. Tác quyền được các tổ chức quản lý tác quyền báo cáo theo quý và không tách theo nền tảng, nên không có ở đây.',
+      tacQuyen: 'Chỉ doanh thu bản ghi. Tác quyền báo cáo theo quý và không tách theo nền tảng nên không có ở đây.',
       kyKhac: 'Kỳ đang chọn ({a}) chưa có trong báo cáo theo nền tảng, nên các ô số ở trên là của kỳ {b}.'
     },
     en: {
       navNenTang: 'Platforms', h1: 'Platforms',
-      moLb: 'How many streams and how much money each platform brought in per period, across every track by artists on your label.',
+      moLb: 'Streams and money per platform per period, across every track by your artists.',
       moNs: 'How many streams and how much money each platform brought in per period, across every track of yours.',
       danDau: 'Top platform', luotKy: 'Streams', gopKy: 'Revenue',
       phanLabel: 'Label keeps', thuNhap: 'Yours',
       dienBien: 'Platforms across periods',
-      dienBienMo: 'One column per approved period, stacked by platform. The five largest platforms are shown on their own; the rest are folded into “Other platforms”.',
+      dienBienMo: 'One column per approved period, stacked by platform; top five shown, the rest folded into Other.',
       tyTrong: 'Share in {k}',
       tyTrongMo: 'By {m}, as a share of the period total. The small line under each name is the change from the previous period.',
       bangThang: 'Month by month', bangThangMo: 'Every platform, every approved period, by {m}.',
@@ -18343,7 +18516,7 @@ HT.dangKy({
       xuat: 'Export CSV', nenTangKhac: 'Other platforms', ky: 'Period',
       chuaKy: 'No approved period yet',
       chuaKyMo: 'Per-platform figures appear once Haustek approves your first earning period.',
-      tacQuyen: 'This page covers recording revenue only. Publishing is reported quarterly by collecting societies and is not split by platform, so it is not shown here.',
+      tacQuyen: 'Recording revenue only. Publishing is quarterly and not split by platform, so it is not here.',
       kyKhac: 'The selected period ({a}) is not in the platform report yet, so the figures above are for {b}.'
     }
   },
@@ -18484,7 +18657,7 @@ HT.dangKy({
   chu: {
     vi: {
       navDuBao: 'Dự báo', h1: 'Dự báo',
-      mo: 'Lượt nghe mỗi ngày của các bài đã lên nền tảng, nhân với mức trả trung bình của từng nền tảng. Đây là ước tính cho kỳ đang mở; số thật chỉ có khi nền tảng gửi báo cáo.',
+      mo: 'Lượt nghe mỗi ngày nhân với mức trả trung bình từng nền tảng. Ước tính cho kỳ đang mở; số thật có khi nền tảng báo cáo.',
       kDuKien: 'Dự kiến kỳ {k}', kToiNay: 'Đã đạt tới hôm nay', k7: '7 ngày qua', k28: '28 ngày qua',
       phanLabel: 'phần label', luot: 'lượt nghe', truoc7: '7 ngày trước', truoc28: '28 ngày trước',
       ngay: 'ngày {a}/{b} của kỳ',
@@ -18497,13 +18670,13 @@ HT.dangKy({
       cBai: 'Bài hát', cNs: 'Nghệ sĩ', cLuot7: 'Lượt nghe 7 ngày', cTang: 'Tăng trưởng', cTien7: 'Dự kiến tiền 7 ngày',
       kyToi: 'Kỳ tới {k}', kyToiMo: 'Ước theo mức 7 ngày qua, điều chỉnh theo xu hướng 28 ngày, cho đủ số ngày của kỳ tới.',
       kyToiLuot: 'Lượt nghe dự kiến', kyToiTien: 'Thu nhập dự kiến', kyToiDt: 'Doanh thu dự kiến', kyToiLabel: 'Phần label dự kiến',
-      phuongPhap: 'Phương pháp', canhBao: 'Đây là ước tính', canhBaoMo: 'Nền tảng có thể điều chỉnh lượt nghe (lọc gian lận, đổi mức trả) trước khi báo cáo. Số ghi vào ví là số trong báo cáo đã xét duyệt, không phải số ở trang này.',
+      phuongPhap: 'Phương pháp', canhBao: 'Đây là ước tính', canhBaoMo: 'Nền tảng có thể điều chỉnh lượt nghe trước khi báo cáo. Số ghi vào ví là số trong báo cáo đã xét duyệt.',
       baiDem: '{n} bài hát đang có lượt nghe được tính vào dự báo.',
       trong: 'Chưa có cơ sở để dự báo', trongMo: 'Cần ít nhất một kỳ đã xét duyệt để biết mức trả của từng nền tảng. Dự báo sẽ có sau kỳ đầu tiên.'
     },
     en: {
       navDuBao: 'Forecast', h1: 'Forecast',
-      mo: 'Daily streams of tracks live on platforms, multiplied by each platform’s average payout. An estimate for the open period; actual figures arrive with the platforms’ reports.',
+      mo: 'Daily streams times each platform’s average payout. An estimate for the open period; actual figures come with reports.',
       kDuKien: 'Projected for {k}', kToiNay: 'Month to date', k7: 'Last 7 days', k28: 'Last 28 days',
       phanLabel: 'label keeps', luot: 'streams', truoc7: 'previous 7 days', truoc28: 'previous 28 days',
       ngay: 'day {a} of {b}',
@@ -18516,7 +18689,7 @@ HT.dangKy({
       cBai: 'Track', cNs: 'Artist', cLuot7: 'Streams, 7 days', cTang: 'Growth', cTien7: 'Projected, 7 days',
       kyToi: 'Next period {k}', kyToiMo: 'Based on the last 7 days, adjusted by the 28-day trend, over the full length of the next period.',
       kyToiLuot: 'Projected streams', kyToiTien: 'Projected income', kyToiDt: 'Projected revenue', kyToiLabel: 'Projected label share',
-      phuongPhap: 'Method', canhBao: 'This is an estimate', canhBaoMo: 'Platforms may adjust streams (fraud filtering, rate changes) before reporting. What is credited to your wallet is the approved report, not this page.',
+      phuongPhap: 'Method', canhBao: 'This is an estimate', canhBaoMo: 'Platforms may adjust streams before reporting. What reaches your wallet is the approved report.',
       baiDem: '{n} tracks with streams are counted in the forecast.',
       trong: 'Nothing to forecast from yet', trongMo: 'At least one approved period is needed to know each platform’s payout. The forecast appears after the first one.'
     }
@@ -18717,7 +18890,7 @@ HT.dangKy({
   chu: {
     vi: {
       navXuHuong: 'Xu hướng ngày', h1: 'Xu hướng ngày',
-      mo: 'Lượt nghe theo ngày do nền tảng gửi về, xếp theo bài hát, bản phát hành, thị trường và nền tảng. Đây là số theo dõi xu hướng; tiền chỉ có khi kỳ được xét duyệt.',
+      mo: 'Lượt nghe theo ngày do nền tảng gửi, xếp theo bài, bản phát hành, thị trường, nền tảng. Tiền chỉ có khi kỳ được xét duyệt.',
       kTong: 'Lượt nghe {n} ngày', kyTruoc: '{n} ngày trước', kNgay: 'Trung bình mỗi ngày', kBai: 'Bài hát có lượt nghe', kBaiS: 'trong cửa sổ đang chọn',
       kNt: 'Nền tảng dẫn đầu', kTt: 'Thị trường dẫn đầu', cuaTong: 'của tổng',
       dienBien: 'Lượt nghe theo ngày', dienBienMo: 'Mỗi cột hoặc điểm là một ngày. Đổi cửa sổ và kiểu biểu đồ ở góc phải.',
@@ -18732,7 +18905,7 @@ HT.dangKy({
     },
     en: {
       navXuHuong: 'Daily trends', h1: 'Daily trends',
-      mo: 'Daily streams as reported by the platforms, grouped by track, release, market and platform. These track momentum; money only appears once a period is approved.',
+      mo: 'Daily streams from platforms by track, release, market and platform. Money appears only once a period is approved.',
       kTong: 'Streams, {n} days', kyTruoc: 'previous {n} days', kNgay: 'Average per day', kBai: 'Tracks with streams', kBaiS: 'in the selected window',
       kNt: 'Top platform', kTt: 'Top market', cuaTong: 'of total',
       dienBien: 'Streams per day', dienBienMo: 'One bar or point per day. Change the window and chart type on the right.',
@@ -18866,7 +19039,7 @@ HT.dangKy({
   chu: {
     vi: {
       navPlaylist: 'Playlist & bảng xếp hạng', h1: 'Playlist & bảng xếp hạng',
-      mo: 'Bài hát của bạn đang có mặt ở playlist và bảng xếp hạng nào trên từng nền tảng, vị trí bao nhiêu và từ ngày nào. Nền tảng cập nhật mỗi ngày.',
+      mo: 'Bài của bạn đang ở playlist và bảng xếp hạng nào, vị trí bao nhiêu, từ ngày nào. Cập nhật mỗi ngày.',
       kDangCo: 'Vị trí đang có', kDangCoS: 'trên {n} playlist và bảng xếp hạng', kMoi: 'Mới trong 30 ngày', kBxh: 'Vị trí trên bảng xếp hạng', kReach: 'Người theo dõi tiếp cận', kReachS: 'tổng người theo dõi các playlist đang có mặt', kRoi: 'Đã rời',
       top: 'Playlist mang về nhiều lượt nghe nhất', topMo: 'Ước tính lượt nghe 7 ngày từ từng playlist, theo vị trí và số người theo dõi.',
       theoLoai: 'Theo loại', bienTap: 'Playlist biên tập', thuatToan: 'Playlist thuật toán', bxh: 'Bảng xếp hạng', theoNt: 'Theo nền tảng', viTri: 'vị trí',
@@ -18880,7 +19053,7 @@ HT.dangKy({
     },
     en: {
       navPlaylist: 'Playlists & charts', h1: 'Playlists & charts',
-      mo: 'Which playlists and charts your tracks are on, per platform, at what position and since when. Platforms update daily.',
+      mo: 'Which playlists and charts your tracks are on, position and since when. Updated daily.',
       kDangCo: 'Current placements', kDangCoS: 'across {n} playlists and charts', kMoi: 'New in 30 days', kBxh: 'Chart positions', kReach: 'Follower reach', kReachS: 'followers of the playlists you are on', kRoi: 'Removed',
       top: 'Playlists driving the most streams', topMo: 'Estimated 7-day streams from each playlist, by position and follower count.',
       theoLoai: 'By kind', bienTap: 'Editorial playlists', thuatToan: 'Algorithmic playlists', bxh: 'Charts', theoNt: 'By platform', viTri: 'placements',
@@ -19056,26 +19229,26 @@ HT.dangKy({
   chu: {
     vi: {
       navChatLuong: 'Chất lượng lượt nghe', h1: 'Chất lượng lượt nghe',
-      mo: 'Tín hiệu bất thường tính từ lượt nghe theo ngày, bài bị nền tảng gắn cờ, và sức khoẻ metadata của từng bài. Xem sớm để không bị gỡ lượt nghe hay giữ tiền.',
+      mo: 'Tín hiệu bất thường từ lượt nghe ngày, bài bị nền tảng gắn cờ và sức khoẻ metadata. Xem sớm để không bị gỡ lượt nghe hay giữ tiền.',
       kCb: 'Cảnh báo', kCbS: '{a} nghiêm trọng · {b} cảnh báo · {c} theo dõi', kCo: 'Bài bị nền tảng gắn cờ', kCoS: 'phạt {p}/tháng nếu không khiếu nại', kGo: 'Lượt nghe bị gỡ khỏi báo cáo',
       kKn: 'Đang khiếu nại', kKnS: 'trong {n} cảnh báo đang mở', kMd: 'Điểm metadata trung bình', kMdS: '{a} bài A · {b} bài B · {c} bài C', kChan: 'Bị giữ lại trước khi giao', kChanS: 'thiếu ISWC hoặc IPI',
       tabCb: 'Cảnh báo lượt nghe', tabMd: 'Sức khoẻ metadata',
       mucAll: 'Mọi mức', mucCritical: 'Nghiêm trọng', mucWarn: 'Cảnh báo', mucWatch: 'Theo dõi', ttAll: 'Mọi trạng thái', ttOpen: 'Đang mở', ttDisputed: 'Đang khiếu nại', ttResolved: 'Đã gỡ',
       tim: 'Tìm bài hát, ISRC…', khieuNai: 'Khiếu nại',
       khong: 'Không có cảnh báo nào khớp bộ lọc', khongMo: 'Đổi bộ lọc phía trên.', trong: 'Không có tín hiệu bất thường', trongMo: 'Lượt nghe của bạn đang trong mức bình thường của ngành (nền gian lận 1–3%).',
-      hoiKn: 'Khiếu nại cảnh báo cho “{t}”', hoiKnMo: 'Ghi rõ nguồn lượt nghe (chiến dịch quảng cáo, playlist, sự kiện) để Haustek gửi kèm cho nền tảng. Mỗi cảnh báo chỉ khiếu nại một lần.', hoiKnNote: 'Lý do và bằng chứng', gui: 'Gửi khiếu nại', daKn: 'Đã ghi nhận khiếu nại',
+      hoiKn: 'Khiếu nại cảnh báo cho “{t}”', hoiKnMo: 'Ghi rõ nguồn lượt nghe (quảng cáo, playlist, sự kiện) để Haustek gửi nền tảng. Mỗi cảnh báo khiếu nại một lần.', hoiKnNote: 'Lý do và bằng chứng', gui: 'Gửi khiếu nại', daKn: 'Đã ghi nhận khiếu nại',
       mdThieu: 'Mục còn thiếu nhiều nhất', mdThieuMo: 'Số bài thiếu từng mục; cột đỏ là mã quan trọng.', mdBang: 'Bài chưa đạt điểm A', mdBangMo: 'Bấm một bài để xem từng mục và cách sửa.', mdDu: 'Toàn bộ bài đạt điểm A', mdDuMo: 'Metadata đầy đủ, không có gì phải sửa.'
     },
     en: {
       navChatLuong: 'Stream quality', h1: 'Stream quality',
-      mo: 'Unusual signals computed from daily streams, tracks flagged by platforms, and the metadata health of each track. See it early, before streams are removed or money is held.',
+      mo: 'Unusual signals from daily streams, platform-flagged tracks and metadata health. Catch it before streams are removed or money held.',
       kCb: 'Alerts', kCbS: '{a} critical · {b} warning · {c} watch', kCo: 'Flagged by platforms', kCoS: '{p}/month penalty unless disputed', kGo: 'Streams removed from reports',
       kKn: 'Disputed', kKnS: 'of {n} open alerts', kMd: 'Average metadata score', kMdS: '{a} tracks A · {b} B · {c} C', kChan: 'Held before delivery', kChanS: 'missing ISWC or IPI',
       tabCb: 'Stream alerts', tabMd: 'Metadata health',
       mucAll: 'Any level', mucCritical: 'Critical', mucWarn: 'Warning', mucWatch: 'Watch', ttAll: 'Any status', ttOpen: 'Open', ttDisputed: 'Disputed', ttResolved: 'Cleared',
       tim: 'Search track, ISRC…', khieuNai: 'Dispute',
       khong: 'No alerts match the filters', khongMo: 'Change the filters above.', trong: 'No unusual signals', trongMo: 'Your streams sit within the industry’s normal range (baseline fraud 1–3%).',
-      hoiKn: 'Dispute the alert for “{t}”', hoiKnMo: 'Describe the source of the streams (ad campaign, playlist, event) so Haustek can pass it to the platform. Each alert can be disputed once.', hoiKnNote: 'Reason and evidence', gui: 'Send dispute', daKn: 'Dispute recorded',
+      hoiKn: 'Dispute the alert for “{t}”', hoiKnMo: 'Describe where the streams came from (ads, playlist, event) for Haustek to pass on. One dispute per alert.', hoiKnNote: 'Reason and evidence', gui: 'Send dispute', daKn: 'Dispute recorded',
       mdThieu: 'Most common gaps', mdThieuMo: 'Tracks missing each item; red bars are key identifiers.', mdBang: 'Tracks below grade A', mdBangMo: 'Click a track to see each item and how to fix it.', mdDu: 'Every track scores A', mdDuMo: 'Metadata is complete; nothing to fix.'
     }
   },
@@ -19183,24 +19356,24 @@ HT.dangKy({
   chu: {
     vi: {
       navChiaSe: 'Chia sẻ tác quyền', h1: 'Chia sẻ tác quyền',
-      mo: 'Chia phần trăm số tiền của một bài cho producer, nghệ sĩ khách, đồng sáng tác hay kỹ sư. Người cộng tác chỉ thấy phần của họ; có ngưỡng thu hồi thì bạn nhận trước cho đến khi đủ.',
+      mo: 'Chia phần trăm tiền của một bài cho producer, nghệ sĩ khách, đồng sáng tác, kỹ sư. Họ chỉ thấy phần của họ; có ngưỡng thu hồi thì bạn nhận trước.',
       kBai: 'Bài có chia sẻ', kNg: 'Người cộng tác', kMoi: 'Lời mời chưa nhận', kMoiS: 'chưa được chia tiền cho tới khi nhận', kDaChia: 'Đã chia cho người cộng tác', kDaChiaS: 'tích luỹ các kỳ đã xét duyệt', kThuHoi: 'Đang thu hồi', kThuHoiS: 'bạn nhận trước cho tới khi đủ',
       locAll: 'Tất cả', locMoi: 'Có lời mời chưa nhận', locThuHoi: 'Đang thu hồi', tim: 'Tìm bài hát, ISRC, email…',
       themMoi: 'Thêm chia sẻ cho bài khác', them: 'Thêm người', bo: 'Bỏ',
       khong: 'Không có bài nào khớp', khongMo: 'Đổi bộ lọc hoặc thêm chia sẻ cho một bài.', trong: 'Chưa có bài nào được chia sẻ', trongMo: 'Bấm “Thêm chia sẻ cho bài khác”, nhập ISRC và người cộng tác.',
-      hoiThem: 'Thêm người cộng tác', hoiThemMo: 'Người được mời sẽ nhận email; phần chia có hiệu lực từ kỳ tiếp theo sau khi họ nhận. Tổng phần chia không vượt 100%.',
+      hoiThem: 'Thêm người cộng tác', hoiThemMo: 'Người được mời nhận email; phần chia áp từ kỳ sau khi họ nhận. Tổng không quá 100%.',
       fIsrc: 'ISRC hoặc tên bài hát', fTen: 'Tên người cộng tác', fEmail: 'Email', fVai: 'Vai trò', fPct: 'Phần trăm trên số tiền của bạn', fRecoup: 'Ngưỡng thu hồi (USD, để 0 nếu không)', gui: 'Gửi lời mời',
       daThem: 'Đã gửi lời mời cho {e}', daBo: 'Đã bỏ {e} khỏi bài', khongThayBai: 'Không tìm thấy bài hát khớp “{q}” trong danh mục của bạn',
       hoiBo: 'Bỏ {e} khỏi “{t}”?', hoiBoMo: 'Phần chia dừng từ kỳ tiếp theo; các kỳ đã chia không đổi.'
     },
     en: {
       navChiaSe: 'Royalty splits', h1: 'Royalty splits',
-      mo: 'Share a percentage of a track’s earnings with a producer, featured artist, co-writer or engineer. Collaborators only see their share; with a recoupment amount you are paid first until it is met.',
+      mo: 'Share a track’s earnings with a producer, featured artist, co-writer or engineer. They see only their share; with recoupment you are paid first.',
       kBai: 'Tracks with splits', kNg: 'Collaborators', kMoi: 'Pending invitations', kMoiS: 'not paid until accepted', kDaChia: 'Paid to collaborators', kDaChiaS: 'across approved periods', kThuHoi: 'Recouping', kThuHoiS: 'you are paid first until met',
       locAll: 'All', locMoi: 'Pending invitations', locThuHoi: 'Recouping', tim: 'Search track, ISRC, email…',
       themMoi: 'Add a split on another track', them: 'Add person', bo: 'Remove',
       khong: 'No tracks match', khongMo: 'Change the filter or add a split on a track.', trong: 'No splits yet', trongMo: 'Click “Add a split on another track”, enter the ISRC and the collaborator.',
-      hoiThem: 'Add collaborator', hoiThemMo: 'The invitee receives an email; the split applies from the next period after acceptance. Shares cannot exceed 100% in total.',
+      hoiThem: 'Add collaborator', hoiThemMo: 'The invitee gets an email; the split applies from the next period after acceptance. Total cannot exceed 100%.',
       fIsrc: 'ISRC or track title', fTen: 'Collaborator name', fEmail: 'Email', fVai: 'Role', fPct: 'Percentage of your earnings', fRecoup: 'Recoupment amount (USD, 0 for none)', gui: 'Send invitation',
       daThem: 'Invitation sent to {e}', daBo: 'Removed {e} from the track', khongThayBai: 'No track matching “{q}” in your catalogue',
       hoiBo: 'Remove {e} from “{t}”?', hoiBoMo: 'The split stops from the next period; already-paid periods do not change.'
@@ -19318,7 +19491,7 @@ HT.dangKy({
   chu: {
     vi: {
       navChienDich: 'Chiến dịch', h1: 'Chiến dịch quảng bá',
-      mo: 'Liên kết thông minh có pre-save, pitch playlist biên tập và quảng cáo trả phí cho bài của bạn. Mỗi dòng là một phễu kết quả.',
+      mo: 'Liên kết thông minh có pre-save, pitch playlist và quảng cáo cho bài của bạn. Mỗi dòng là một phễu kết quả.',
       kDang: 'Đang chạy', kDangS: '{a} sắp chạy · {b} đã xong', kLuu: 'Lưu trước (pre-save)', kLuuS: 'từ liên kết thông minh', kPitch: 'Playlist nhận', kPitchS: 'trong {n} lượt pitch', kChi: 'Đã chi quảng cáo', kChiS: '{n} lượt nghe quy được', kGia: 'Giá mỗi lượt nghe', kGiaS: 'bình quân quảng cáo',
       loaiAll: 'Mọi loại', loaiSl: 'Liên kết thông minh', loaiPitch: 'Pitch playlist', loaiAds: 'Quảng cáo', ttAll: 'Mọi trạng thái', ttRunning: 'Đang chạy', ttPlanned: 'Sắp chạy', ttDone: 'Đã xong',
       yeuCau: 'Yêu cầu chiến dịch mới', trong: 'Chưa có chiến dịch nào', trongMo: 'Gửi yêu cầu marketing để đội Haustek dựng liên kết thông minh, pitch playlist hoặc chạy quảng cáo.', khong: 'Không có chiến dịch khớp bộ lọc', khongMo: 'Đổi bộ lọc phía trên.',
@@ -19326,7 +19499,7 @@ HT.dangKy({
     },
     en: {
       navChienDich: 'Campaigns', h1: 'Promotion campaigns',
-      mo: 'Smart links with pre-save, editorial playlist pitching and paid ads for your tracks. Each row is a results funnel.',
+      mo: 'Smart links with pre-save, playlist pitching and paid ads for your tracks. Each row is a results funnel.',
       kDang: 'Running', kDangS: '{a} planned · {b} done', kLuu: 'Pre-saves', kLuuS: 'from smart links', kPitch: 'Playlists accepted', kPitchS: 'of {n} pitches', kChi: 'Ad spend', kChiS: '{n} attributed streams', kGia: 'Cost per stream', kGiaS: 'average across ads',
       loaiAll: 'Any kind', loaiSl: 'Smart links', loaiPitch: 'Playlist pitching', loaiAds: 'Paid ads', ttAll: 'Any status', ttRunning: 'Running', ttPlanned: 'Planned', ttDone: 'Done',
       yeuCau: 'Request a campaign', trong: 'No campaigns yet', trongMo: 'Send a marketing request and the Haustek team sets up smart links, pitching or ads.', khong: 'No campaigns match the filters', khongMo: 'Change the filters above.',
@@ -19406,7 +19579,7 @@ HT.dangKy({
       navPh: 'Phát hành', h1: 'Phát hành',
       mo: 'Bản phát hành đã có trong danh mục, hồ sơ đang xử lý, và gửi hồ sơ phát hành mới.',
       dangXuLy: 'Hồ sơ đang xử lý', canBoSung: 'Cần bổ sung', daPh: 'Đã phát hành', trongDm: 'Trong danh mục',
-      gui: 'Gửi hồ sơ phát hành', hoSo: 'Hồ sơ đã gửi', hoSoMo: 'Bấm một hồ sơ để xem chi tiết và lịch sử xử lý.',
+      gui: 'Gửi hồ sơ phát hành', haustekTao: 'Haustek tạo thay bạn', hoSo: 'Hồ sơ đã gửi', hoSoMo: 'Bấm một hồ sơ để xem chi tiết và lịch sử xử lý.',
       danhMuc: 'Bản phát hành trong danh mục', danhMucMo: 'Suy ra từ các bài hát đã gửi tới nền tảng. Bản phát hành có doanh thu ở kỳ đã xét duyệt được đánh dấu.',
       cMa: 'Mã hồ sơ', cTen: 'Bản phát hành', cLoai: 'Loại', cNgay: 'Ngày phát hành mong muốn', cTt: 'Trạng thái', cCapNhat: 'Cập nhật lần cuối',
       cKy: 'Kỳ phát hành', cTrack: 'Track', cDt: 'Doanh thu các kỳ đã xét duyệt', coDt: 'đã có', chuaDt: 'chưa có',
@@ -19415,7 +19588,7 @@ HT.dangKy({
       b1: 'Đã gửi', b1m: 'Hồ sơ đã vào danh sách chờ xử lý của Haustek. Bạn chưa cần làm gì thêm.',
       b2: 'Đã tiếp nhận', b2m: 'Haustek đã kiểm tra đủ thông tin. Nếu thiếu, hồ sơ được trả lại kèm ghi chú cần bổ sung.',
       b3: 'Đã cấp mã', b3m: 'Track được cấp ISRC, bản phát hành được cấp UPC. Đây là các mã dùng để khớp doanh thu về sau.',
-      b4: 'Đã phát hành', b4m: 'Bản ghi đã phát hành trên các nền tảng. Doanh thu bắt đầu về từ kỳ kế tiếp và hiển thị trong trang Bài hát của bạn.',
+      b4: 'Đã phát hành', b4m: 'Đã phát hành trên nền tảng. Doanh thu về từ kỳ kế tiếp, trong trang Bài hát của bạn.',
       lichSu: 'Lịch sử xử lý', track: 'Danh sách track', chuaCoMa: 'chưa có mã',
       ghiChuTra: 'Haustek cần bạn bổ sung',
       formNs: 'Nghệ sĩ chính', formLoai: 'Loại phát hành', formTen: 'Tên bản phát hành', formPb: 'Phiên bản',
@@ -19423,7 +19596,7 @@ HT.dangKy({
       formBia: 'Đường dẫn ảnh bìa', formGhi: 'Ghi chú cho bộ phận phát hành', formTracks: 'Danh sách track',
       themTrack: 'Thêm track', xoaTrack: 'Xoá track', trTen: 'Tên track', trFeat: 'Nghệ sĩ khách mời (feat.)', trIsrc: 'ISRC (nếu đã có)',
       trProducer: 'Producer', trSangTac: 'Người sáng tác và tỷ lệ', themNguoi: 'Thêm người sáng tác', tenThat: 'Họ tên theo giấy tờ', vaiTro: 'Vai trò', tiLe: 'Tỷ lệ %',
-      formMo: 'Đây là bản rút gọn của hồ sơ metadata trên trang chủ, gồm đúng các trường bắt buộc. Hồ sơ đã gửi không thể sửa; nếu cần sửa, Haustek sẽ trả lại để bạn gửi lại.',
+      formMo: 'Bản rút gọn của hồ sơ metadata, chỉ các trường bắt buộc. Gửi rồi không sửa; cần sửa thì Haustek trả lại.',
       daGui: 'Đã gửi hồ sơ', formDay: 'Mở hồ sơ metadata đầy đủ trên trang chủ',
       tongTiLe: 'Tổng tỷ lệ sáng tác phải bằng 100%'
     },
@@ -19431,7 +19604,7 @@ HT.dangKy({
       navPh: 'Releases', h1: 'Releases',
       mo: 'Releases already in the catalogue, submissions in progress, and submitting a new release.',
       dangXuLy: 'In progress', canBoSung: 'Needs fixes', daPh: 'Released', trongDm: 'In the catalogue',
-      gui: 'Submit a release', hoSo: 'Submissions', hoSoMo: 'Open a submission for details and its history.',
+      gui: 'Submit a release', haustekTao: 'Created by Haustek for you', hoSo: 'Submissions', hoSoMo: 'Open a submission for details and its history.',
       danhMuc: 'Releases in the catalogue', danhMucMo: 'Derived from the tracks delivered to platforms. Releases earning in an approved period are marked.',
       cMa: 'Submission', cTen: 'Release', cLoai: 'Type', cNgay: 'Requested date', cTt: 'Status', cCapNhat: 'Updated',
       cKy: 'Release period', cTrack: 'Tracks', cDt: 'Revenue across approved periods', coDt: 'earning', chuaDt: 'none yet',
@@ -19440,7 +19613,7 @@ HT.dangKy({
       b1: 'Submitted', b1m: 'The submission is in Haustek’s queue. Nothing else is needed from you.',
       b2: 'Received', b2m: 'Haustek has checked the submission. If something is missing it is returned with a note.',
       b3: 'Codes assigned', b3m: 'Tracks receive ISRCs and the release a UPC. These codes match revenue later.',
-      b4: 'Released', b4m: 'The recording is live on platforms. Revenue arrives from the following period and appears under My tracks.',
+      b4: 'Released', b4m: 'Live on platforms. Revenue arrives from the next period under My tracks.',
       lichSu: 'History', track: 'Tracks', chuaCoMa: 'no code yet',
       ghiChuTra: 'Haustek needs you to add',
       formNs: 'Main artist', formLoai: 'Release type', formTen: 'Release title', formPb: 'Version',
@@ -19448,7 +19621,7 @@ HT.dangKy({
       formBia: 'Artwork link', formGhi: 'Note for the release team', formTracks: 'Tracks',
       themTrack: 'Add track', xoaTrack: 'Remove', trTen: 'Track title', trFeat: 'Featuring', trIsrc: 'ISRC (if you have one)',
       trProducer: 'Producer', trSangTac: 'Writers and splits', themNguoi: 'Add writer', tenThat: 'Legal name', vaiTro: 'Role', tiLe: 'Share %',
-      formMo: 'A short form of the homepage metadata form, with the required fields only. A submission cannot be edited after sending; Haustek returns it if changes are needed.',
+      formMo: 'The short metadata form, required fields only. Cannot be edited after sending; Haustek returns it if needed.',
       daGui: 'Submission sent', formDay: 'Full form on the homepage',
       tongTiLe: 'Writer shares must add up to 100%'
     }
@@ -19488,7 +19661,7 @@ HT.dangKy({
         hs.map(function (x) {
           return '<tr class="pick" data-hs="' + HM.esc(x.id) + '">' +
             '<td class="mono">' + HM.esc(x.id) + '</td>' +
-            '<td>' + HM.tenBia({ bia: x.id, ten: x.title, phu: x.artistName + ' · ' + x.tracks.length + ' track' }) + '</td>' +
+            '<td>' + HM.tenBia({ bia: x.id, ten: x.title, phu: x.artistName + ' · ' + x.tracks.length + ' track' + (x.submittedRole === 'staff' ? ' · ' + t('haustekTao') : '') }) + '</td>' +
             '<td>' + HM.esc(x.type === 'single' ? 'Single' : x.type === 'ep' ? 'EP' : 'Album') + '</td>' +
             '<td class="mono">' + HM.esc(HT.fmt.ngay(x.releaseDate)) + '</td>' +
             '<td>' + HM.tag(NHAN[c.lang][x.status], KIEU[x.status]) + '</td>' +
@@ -19691,7 +19864,7 @@ HT.dangKy({
       topNs: 'Nghệ sĩ mang về doanh thu nhiều nhất kỳ này', topNsMo: 'Theo doanh thu. Bấm một dòng trong bảng để xem chi tiết.',
       khongCo: 'Không có nghệ sĩ nào khớp với từ khoá', khongCoMo: 'Thử tìm bằng mã đối tác của nghệ sĩ.',
       chuaMo: 'Kỳ này chưa chốt sổ', chuaMoMo: 'Số liệu theo nghệ sĩ chỉ hiển thị sau khi kỳ được xét duyệt.',
-      ghiChu: 'Phần nghệ sĩ là số Haustek thanh toán thẳng cho nghệ sĩ theo tỷ lệ label đã đặt; phần label là phần còn lại. Phần nghệ sĩ, phần label và điểm producer cộng lại bằng doanh thu.',
+      ghiChu: 'Phần nghệ sĩ là số Haustek trả thẳng cho nghệ sĩ theo tỷ lệ label đặt; phần label là phần còn lại.',
       xuat: 'Xuất CSV', hienThi: 'Hiển thị',
       chiTiet: 'Bài hát của nghệ sĩ này trong kỳ', khongBai: 'Kỳ này nghệ sĩ chưa có bài hát nào phát sinh doanh thu.',
       diemProducer: 'Điểm producer'
@@ -19707,7 +19880,7 @@ HT.dangKy({
       topNs: 'Top artists this period', topNsMo: 'By revenue. Open a row in the table for details.',
       khongCo: 'No artist matches', khongCoMo: 'Try the artist’s client ID.',
       chuaMo: 'Period not closed', chuaMoMo: 'Per-artist figures appear once the period is approved.',
-      ghiChu: 'The artist share is what Haustek pays the artist directly at the rate the label set; the label share is the remainder. Artist share, label share and producer points add back to revenue.',
+      ghiChu: 'Artist share is paid directly by Haustek at the rate the label set; label share is the remainder.',
       xuat: 'Export CSV', hienThi: 'Showing',
       chiTiet: 'This artist’s tracks this period', khongBai: 'No track by this artist earned this period.',
       diemProducer: 'Producer points'
@@ -19867,7 +20040,7 @@ HT.dangKy({
   chu: {
     vi: {
       navHeThong: 'Hệ thống label', h1: 'Hệ thống label',
-      mo: 'Toàn bộ label con và nghệ sĩ bên dưới, theo kỳ đã xét duyệt. Phần label được hưởng của mỗi bản ghi thuộc về label trực tiếp quản lý bản ghi đó; label mẹ theo dõi số liệu, không có dòng tiền đi qua label mẹ (câu hỏi cần chốt số 9).',
+      mo: 'Label con và nghệ sĩ bên dưới theo kỳ đã xét duyệt. Phần label của mỗi bản ghi thuộc label trực tiếp quản lý; label mẹ chỉ theo dõi (câu hỏi số 9).',
       kGop: 'Doanh thu toàn hệ thống', kTraNs: 'Thanh toán cho nghệ sĩ',
       kLabel: 'Phần label được hưởng toàn hệ thống', kLabelMe: 'trong đó label mẹ: {n}',
       kNs: 'Nghệ sĩ toàn hệ thống', kLabelCon: '{n} label con',
@@ -19885,7 +20058,7 @@ HT.dangKy({
       cLabel: 'Label', cNs: 'Nghệ sĩ', cBai: 'Bài hát có doanh thu / tổng', cLuot: 'Lượt nghe',
       cGop: 'Doanh thu', cNsHuong: 'Phần nghệ sĩ', cLabelHuong: 'Phần label', cTyLe: 'Tỷ lệ',
       tong: 'Tổng cộng toàn hệ thống',
-      ghiChu: 'Tỷ lệ là tỷ lệ nghệ sĩ được hưởng trên doanh thu, do từng label đặt riêng. Phần label của một label con thuộc về label con đó; label mẹ theo dõi số liệu, không được hưởng phần này.',
+      ghiChu: 'Tỷ lệ là phần nghệ sĩ hưởng trên doanh thu, do từng label đặt. Phần label của label con thuộc label con đó.',
       xuat: 'Xuất CSV',
       chuaMo: 'Kỳ này chưa chốt sổ', chuaMoMo: 'Số liệu hệ thống label chỉ hiển thị sau khi kỳ được xét duyệt.',
       nganNs: 'Nghệ sĩ của label con này trong kỳ', cMa: 'Mã', cTen: 'Nghệ sĩ',
@@ -19893,7 +20066,7 @@ HT.dangKy({
     },
     en: {
       navHeThong: 'Label network', h1: 'Label network',
-      mo: 'Every sub-label and the artists under it, for approved periods. The label share of each recording belongs to the label that directly manages it; the parent label sees the figures, no money passes through it (open question 9).',
+      mo: 'Sub-labels and their artists for approved periods. Each recording’s label share belongs to the managing label; the parent only sees it (question 9).',
       kGop: 'Network revenue', kTraNs: 'Paid to artists',
       kLabel: 'Label share across the network', kLabelMe: 'of which parent label: {n}',
       kNs: 'Artists across the network', kLabelCon: '{n} sub-labels',
@@ -19911,7 +20084,7 @@ HT.dangKy({
       cLabel: 'Label', cNs: 'Artists', cBai: 'Earning tracks / total', cLuot: 'Streams',
       cGop: 'Revenue', cNsHuong: 'Artist share', cLabelHuong: 'Label share', cTyLe: 'Rate',
       tong: 'Network total',
-      ghiChu: 'Rate is the artist share of revenue, set by each label. A sub-label’s label share belongs to that sub-label; the parent label sees the figure but does not receive it.',
+      ghiChu: 'Rate is the artist share set by each label. A sub-label’s label share belongs to that sub-label.',
       xuat: 'Export CSV',
       chuaMo: 'Period not closed', chuaMoMo: 'Label network figures appear once the period is approved.',
       nganNs: 'This sub-label’s artists this period', cMa: 'Code', cTen: 'Artist',
@@ -20147,7 +20320,7 @@ HT.dangKy({
   chu: {
     vi: {
       navVi: 'Ví & rút tiền', h1: 'Ví & rút tiền',
-      mo: 'Phần bạn được hưởng của mỗi kỳ đã xét duyệt được ghi vào ví. Bạn rút về tài khoản ngân hàng đã khai khi số dư từ ngưỡng tối thiểu trở lên.',
+      mo: 'Phần bạn hưởng mỗi kỳ đã xét duyệt được ghi vào ví; rút về ngân hàng đã khai khi số dư đạt ngưỡng.',
       kKhaDung: 'Số dư khả dụng', kDang: 'Đang xử lý', kDaRut: 'Đã rút', kNguong: 'Ngưỡng rút tối thiểu',
       tongGhi: 'tổng đã ghi vào ví', yeuCau: 'yêu cầu', lan: 'lần chuyển khoản', theoKy: 'ghi vào ví theo kỳ',
       rut: 'Rút tiền', duoiNguong: 'Số dư khả dụng đang dưới ngưỡng rút tối thiểu {n}. Khoản này vẫn nằm trong ví và cộng dồn với kỳ sau.',
@@ -20157,7 +20330,7 @@ HT.dangKy({
       nhTen: 'Ngân hàng', nhSo: 'Số tài khoản', nhChu: 'Chủ tài khoản', nhSwift: 'Mã SWIFT', nhTien: 'Tiền tệ nhận', nhCapNhat: 'Cập nhật lần cuối',
       coCau: 'Cơ cấu ví', coCauMo: 'Toàn bộ số đã ghi vào ví, chia theo phần đã rút, đang xử lý và còn khả dụng.',
       nhip: 'Nhịp báo cáo', nhipMo: 'Tiền vào ví theo nhịp báo cáo của từng nhóm nền tảng, không theo một ngày cố định.',
-      nhipCau: 'Có báo cáo tới đâu, Haustek ghi vào ví tới đó. Vì vậy phần TikTok của một tháng thường về ví muộn hơn phần của các nền tảng khác.',
+      nhipCau: 'Có báo cáo tới đâu, ghi vào ví tới đó; phần TikTok của một tháng thường về muộn hơn.',
       kyTiep: 'Kỳ tiếp theo dự kiến ghi vào ví: {k}', khongKyTiep: 'Mọi kỳ đã có báo cáo đều đã ghi vào ví.',
       lichSu: 'Lịch sử rút tiền', lichSuMo: 'Mỗi yêu cầu rút tiền và trạng thái xử lý của Haustek.',
       cMa: 'Mã', cNgay: 'Ngày yêu cầu', cSoTien: 'Số tiền', cTt: 'Trạng thái', cNh: 'Tài khoản nhận',
@@ -20176,7 +20349,7 @@ HT.dangKy({
     },
     en: {
       navVi: 'Wallet & withdrawals', h1: 'Wallet & withdrawals',
-      mo: 'Your share of each approved period is credited to your wallet. Withdraw to your registered bank account once the balance reaches the minimum.',
+      mo: 'Your share of each approved period is credited to the wallet; withdraw to your bank once the balance reaches the minimum.',
       kKhaDung: 'Available balance', kDang: 'In progress', kDaRut: 'Withdrawn', kNguong: 'Minimum withdrawal',
       tongGhi: 'credited in total', yeuCau: 'requests', lan: 'transfers', theoKy: 'credited per period',
       rut: 'Withdraw', duoiNguong: 'Your available balance is below the {n} minimum. It stays in the wallet and adds up with the next period.',
@@ -20185,7 +20358,7 @@ HT.dangKy({
       nhTen: 'Bank', nhSo: 'Account number', nhChu: 'Account holder', nhSwift: 'SWIFT code', nhTien: 'Receiving currency', nhCapNhat: 'Last updated',
       coCau: 'Wallet breakdown', coCauMo: 'Everything credited so far, split into withdrawn, in progress and still available.',
       nhip: 'Reporting cadence', nhipMo: 'Money reaches the wallet on each platform group’s reporting cadence, not on a fixed day.',
-      nhipCau: 'Whatever has reported is credited; the rest follows when its report lands. That is why a month’s TikTok part usually arrives later than the other platforms.',
+      nhipCau: 'Whatever has reported is credited; a month’s TikTok part usually arrives later.',
       kyTiep: 'Next period expected in the wallet: {k}', khongKyTiep: 'Every reported period is already credited.',
       lichSu: 'Withdrawal history', lichSuMo: 'Each withdrawal request and where Haustek has taken it.',
       cMa: 'ID', cNgay: 'Requested', cSoTien: 'Amount', cTt: 'Status', cNh: 'To account',
@@ -20460,10 +20633,10 @@ HT.dangKy({
       soBai: 'Số bài hát có doanh thu', soLuot: 'Tổng lượt nghe',
       inRa: 'In bảng kê', taiVe: 'Tải CSV',
       chuaMo: 'Kỳ này chưa chốt sổ',
-      chuaMoMo: 'Bảng kê chỉ được lập sau khi kỳ chốt sổ. Chốt sổ nghĩa là Haustek đã nhận đủ báo cáo của tất cả các nền tảng và đối soát khớp đến từng xu.',
+      chuaMoMo: 'Bảng kê chỉ có sau khi kỳ chốt sổ, tức Haustek đã nhận đủ báo cáo và đối soát khớp đến từng xu.',
       dieuKhoan: 'Căn cứ tính',
       luuY: 'Lưu ý',
-      luuYNoiDung: 'Số liệu trong bảng kê này là số trước thuế. Bảng kê PDF do Haustek gửi riêng từng kỳ ghi đầy đủ căn cứ tính và các khoản khấu trừ theo hợp đồng; khi có, bạn tải ở thẻ Bảng kê PDF phía trên.',
+      luuYNoiDung: 'Số trước thuế. Bảng kê PDF Haustek gửi từng kỳ ghi đủ căn cứ tính và khấu trừ theo hợp đồng; có thì tải ở thẻ Bảng kê PDF.',
       khongTq: 'Kỳ này không có báo cáo tác quyền',
       cacKy: 'Các kỳ đã chốt sổ', xemKy: 'Xem'
     },
@@ -20482,10 +20655,10 @@ HT.dangKy({
       soBai: 'Earning tracks', soLuot: 'Total streams',
       inRa: 'Print statement', taiVe: 'Download CSV',
       chuaMo: 'Period not open',
-      chuaMoMo: 'A statement exists only after the period is closed. Closed means every platform has reported and reconciliation balances to the cent.',
+      chuaMoMo: 'A statement exists only after the period closes: every platform reported and reconciliation balances to the cent.',
       dieuKhoan: 'Basis of calculation',
       luuY: 'Note',
-      luuYNoiDung: 'Figures here are before tax. The PDF statement Haustek sends each period carries the full basis of calculation and every contractual deduction; once ready it is in the PDF statement card above.',
+      luuYNoiDung: 'Figures before tax. The PDF statement Haustek sends each period carries the full basis and contractual deductions; download it above once ready.',
       khongTq: 'No publishing report this period',
       cacKy: 'Closed periods', xemKy: 'Open'
     }
@@ -20799,9 +20972,9 @@ HT.dangKy({
       tienDo: 'Tiến độ khấu trừ', quaCacKy: 'Khấu trừ qua từng kỳ',
       quaCacKyMo: 'Mỗi kỳ bạn được hưởng bao nhiêu thì khấu trừ bấy nhiêu, cho đến khi hết. Kỳ chưa chốt sổ để trống.',
       giaiThich: 'Tạm ứng là gì và được khấu trừ như thế nào',
-      gt1: 'Tạm ứng là khoản tiền Haustek thanh toán trước cho bạn, thường để sản xuất sản phẩm hoặc quảng bá. Đây không phải quà tặng, cũng không phải khoản vay có lãi, mà là thu nhập tương lai của bạn được nhận sớm.',
-      gt2: 'Từ thời điểm đó, mỗi kỳ bạn được hưởng bao nhiêu thì khoản tạm ứng giảm bấy nhiêu. Trong những kỳ đó bạn <b>vẫn có thu nhập</b>, nhưng thu nhập này được khấu trừ vào phần đã nhận trước, nên chưa có khoản thanh toán thêm.',
-      gt3: 'Khi khoản tạm ứng về 0, từ kỳ tiếp theo việc thanh toán trở lại bình thường. Ngay trong kỳ khấu trừ hết, phần vượt quá cũng được thanh toán, không phải chờ.',
+      gt1: 'Tạm ứng là tiền Haustek trả trước cho bạn, thường để sản xuất hoặc quảng bá: không phải quà, không phải vay có lãi, mà là thu nhập tương lai nhận sớm.',
+      gt2: 'Từ đó, mỗi kỳ bạn được hưởng bao nhiêu thì tạm ứng giảm bấy nhiêu. Bạn <b>vẫn có thu nhập</b>, chỉ là nó khấu trừ vào phần đã nhận.',
+      gt3: 'Khi tạm ứng về 0, thanh toán trở lại bình thường; phần vượt ngay trong kỳ đó cũng được trả.',
       gt4: 'Khoản tạm ứng được khấu trừ trên cả doanh thu bản ghi và tác quyền cộng lại, không tách riêng từng dòng tiền.',
       khongCo: 'Bạn không có khoản tạm ứng nào',
       khongCoMo: 'Toàn bộ phần bạn được hưởng mỗi kỳ được đưa vào đợt thanh toán, không bị khấu trừ.',
@@ -20811,7 +20984,7 @@ HT.dangKy({
       chuaTruMo: 'Kể từ khi nhận khoản tạm ứng, bạn chưa có doanh thu ở kỳ đã chốt sổ nào.',
       xong: 'Đã khấu trừ xong', xongMo: 'Khoản tạm ứng của bạn đã được khấu trừ hết. Từ kỳ sau, việc thanh toán trở lại bình thường.',
       chuaMo: 'Kỳ này chưa chốt sổ',
-      dnH2: 'Đề nghị tạm ứng', dnMo: 'Haustek có thể tạm ứng trước một phần thu nhập 12 tháng tới của bạn, tính từ thu nhập ròng các kỳ đã xét duyệt. Khoản ứng được khấu trừ dần từ phần bạn được hưởng mỗi kỳ.',
+      dnH2: 'Đề nghị tạm ứng', dnMo: 'Haustek có thể ứng trước một phần thu nhập 12 tháng tới, tính từ thu nhập ròng các kỳ đã xét duyệt, khấu trừ dần mỗi kỳ.',
       dnNet: 'Thu nhập ròng / tháng', dnNetS: 'trung bình {n} kỳ đã xét duyệt', dnProj: 'Thu nhập 12 tháng dự kiến', dnMax: 'Có thể tạm ứng tới', dnMaxS: 'hạng {g} · tăng trưởng {t}', dnVd: 'Ví dụ: phải khấu trừ', dnVdS: 'nếu ứng {a}, hết sau khoảng {m} tháng',
       dnChua: 'Chưa thể đề nghị tạm ứng', dnNut: 'Đề nghị tạm ứng', dnHoiMo: 'Tối đa {max}. Kế toán Haustek kiểm số, giám đốc xét duyệt; bạn nhận thông báo khi có kết quả.', dnSo: 'Số tiền đề nghị (USD)', dnMucDich: 'Mục đích (sản xuất, quảng bá…)', dnGui: 'Gửi đề nghị', dnDaGui: 'Đã gửi đề nghị {id}',
       dnTinh: 'Phải khấu trừ {r} (gồm phí ứng {f}), dự kiến hết sau khoảng {m} tháng.', dnVuot: 'Vượt mức tối đa.', dnDangCho: 'Bạn có đề nghị đang chờ xử lý. Gửi đề nghị mới sau khi có kết quả.', dnDangUng: 'Khấu trừ hết khoản hiện tại rồi mới đề nghị khoản mới.',
@@ -20825,9 +20998,9 @@ HT.dangKy({
       tienDo: 'Progress', quaCacKy: 'Offset period by period',
       quaCacKyMo: 'Whatever you earn in a period is offset that period, until it clears. Unclosed periods have no bar.',
       giaiThich: 'How an advance works',
-      gt1: 'An advance is money Haustek pays you up front, usually to make a record or run a campaign. It is not a gift and not an interest-bearing loan — it is your own future income, received early.',
-      gt2: 'From then on, whatever you earn each period shortens the advance by that much. In those periods you are <b>still earning</b> — the money is simply repaying what you already received.',
-      gt3: 'Once the advance reaches zero, transfers resume normally. Anything above it in the very period that clears it is transferred too, not held back.',
+      gt1: 'An advance is money paid up front, usually for production or promotion: not a gift, not a loan with interest, but your future income received early.',
+      gt2: 'From then on each period’s earnings shorten the advance. You are <b>still earning</b>; it is repaying what you already received.',
+      gt3: 'Once the advance reaches zero, transfers resume; anything above it in that same period is paid too.',
       gt4: 'The advance is offset against recording and publishing combined, not stream by stream.',
       khongCo: 'You have no advance',
       khongCoMo: 'Everything you earn each period goes straight into the payout run, with nothing deducted.',
@@ -20837,7 +21010,7 @@ HT.dangKy({
       chuaTruMo: 'You have earned nothing in a closed period since the advance was recorded.',
       xong: 'Fully repaid', xongMo: 'Your advance is fully offset. Transfers resume from the next period.',
       chuaMo: 'Period not open',
-      dnH2: 'Request an advance', dnMo: 'Haustek can advance part of your next 12 months of earnings, based on net earnings in approved periods. The advance is recouped from your share each period.',
+      dnH2: 'Request an advance', dnMo: 'Haustek can advance part of your next 12 months, based on net earnings in approved periods, recouped each period.',
       dnNet: 'Net earnings / month', dnNetS: 'average over {n} approved periods', dnProj: 'Projected 12-month earnings', dnMax: 'You can request up to', dnMaxS: 'grade {g} · growth {t}', dnVd: 'Example: amount to recoup', dnVdS: 'for a {a} advance, cleared in about {m} months',
       dnChua: 'An advance is not available yet', dnNut: 'Request an advance', dnHoiMo: 'Up to {max}. Haustek accounting checks the figures and the director approves; you are notified of the outcome.', dnSo: 'Amount requested (USD)', dnMucDich: 'Purpose (production, promotion…)', dnGui: 'Send request', dnDaGui: 'Request {id} sent',
       dnTinh: '{r} to recoup (including the {f} advance charge), cleared in about {m} months.', dnVuot: 'Above the maximum.', dnDangCho: 'You have a request in progress. Send a new one once it is decided.', dnDangUng: 'Your current advance must be recouped before a new request.',
@@ -21063,11 +21236,10 @@ function hoiDeNghi(c, o) {
 function veGiaiThich(c) {
   var t = c.t;
   return HM.the({
-    h2: HM.esc(t('giaiThich')),
-    than: '<p class="say">' + t('gt1') + '</p>' +
+    than: '<details class="hoc"><summary>' + HM.esc(t('giaiThich')) + '</summary><div><p class="say">' + t('gt1') + '</p>' +
       '<p class="say">' + t('gt2') + '</p>' +
       '<p class="say">' + t('gt3') + '</p>' +
-      '<p class="say">' + t('gt4') + '</p>'
+      '<p class="say">' + t('gt4') + '</p></div></details>'
   });
 }
 
@@ -21101,11 +21273,11 @@ HT.dangKy({
   chu: {
     vi: {
       navHoTro: 'Hỗ trợ', h1: 'Hỗ trợ',
-      mo: 'Yêu cầu bạn đã gửi cho Haustek, ai đang phụ trách và đã xử lý tới đâu. Khiếu nại bản quyền Haustek đang xử lý thay bạn cũng ở đây.',
+      mo: 'Yêu cầu bạn đã gửi, bộ phận và người phụ trách, tiến độ. Khiếu nại bản quyền Haustek xử lý thay bạn cũng ở đây.',
       kMo: 'Yêu cầu đang mở', kXong: 'Đã xong', kKn: 'Khiếu nại bản quyền đang xử lý', kHan: 'Hạn xử lý gần nhất',
       choNt: 'chờ nền tảng phản hồi', tongKn: 'tổng số khiếu nại đã ghi nhận', khongHan: 'không có yêu cầu nào đang mở',
       tabMo: 'Đang mở', tabXong: 'Đã xong', guiMoi: 'Gửi yêu cầu mới',
-      cMa: 'Mã', cLoai: 'Loại', cTieuDe: 'Tiêu đề', cBai: 'Bài hát', cTt: 'Trạng thái', cPhuTrach: 'Người phụ trách', cHan: 'Hạn xử lý', cCapNhat: 'Cập nhật',
+      cMa: 'Mã', cLoai: 'Loại', cTieuDe: 'Tiêu đề', cBai: 'Bài hát', cTt: 'Trạng thái', cBoPhan: 'Bộ phận', cPhuTrach: 'Người phụ trách', cHan: 'Hạn xử lý', cCapNhat: 'Cập nhật',
       ttOpen: 'Đã gửi', ttDoing: 'Đang xử lý', ttWaiting: 'Chờ nền tảng phản hồi', ttDone: 'Đã xong',
       utLow: 'Thấp', utNormal: 'Bình thường', utHigh: 'Cao', utUrgent: 'Khẩn',
       quaHan: 'quá hạn', chuaGiao: 'Chưa phân công',
@@ -21114,7 +21286,7 @@ HT.dangKy({
       theoLoai: 'Yêu cầu theo loại', theoLoaiMo: 'Tính trên toàn bộ yêu cầu bạn đã gửi.',
       theoTt: 'Theo trạng thái',
       knTieuDe: 'Khiếu nại bản quyền đang xử lý',
-      knMo: 'Haustek theo dõi Content ID và khiếu nại trên các nền tảng; mỗi dòng dưới đây là một việc Haustek đang xử lý thay bạn. Bạn không cần làm gì thêm trừ khi Haustek hỏi.',
+      knMo: 'Haustek theo dõi Content ID và khiếu nại trên nền tảng; mỗi dòng là một việc Haustek đang xử lý thay bạn.',
       knTrong: 'Không có khiếu nại bản quyền nào đang xử lý trên bài hát của bạn.',
       knDaXong: 'khiếu nại đã giải quyết hoặc đã nhả claim',
       /* ngăn chi tiết */
@@ -21130,11 +21302,11 @@ HT.dangKy({
     },
     en: {
       navHoTro: 'Support', h1: 'Support',
-      mo: 'Requests you have sent Haustek, who is handling each one and how far it has got. Rights claims Haustek is handling for you are here too.',
+      mo: 'Your requests, the department handling each one and progress. Rights claims Haustek handles for you are here too.',
       kMo: 'Open requests', kXong: 'Done', kKn: 'Rights claims in progress', kHan: 'Nearest due date',
       choNt: 'waiting on a platform', tongKn: 'claims logged in total', khongHan: 'no open request',
       tabMo: 'Open', tabXong: 'Done', guiMoi: 'New request',
-      cMa: 'ID', cLoai: 'Type', cTieuDe: 'Title', cBai: 'Track', cTt: 'Status', cPhuTrach: 'Handled by', cHan: 'Due', cCapNhat: 'Updated',
+      cMa: 'ID', cLoai: 'Type', cTieuDe: 'Title', cBai: 'Track', cTt: 'Status', cBoPhan: 'Department', cPhuTrach: 'Handled by', cHan: 'Due', cCapNhat: 'Updated',
       ttOpen: 'Sent', ttDoing: 'In progress', ttWaiting: 'Waiting on the platform', ttDone: 'Done',
       utLow: 'Low', utNormal: 'Normal', utHigh: 'High', utUrgent: 'Urgent',
       quaHan: 'overdue', chuaGiao: 'Not assigned yet',
@@ -21143,7 +21315,7 @@ HT.dangKy({
       theoLoai: 'Requests by type', theoLoaiMo: 'Across every request you have sent.',
       theoTt: 'By status',
       knTieuDe: 'Rights claims in progress',
-      knMo: 'Haustek watches Content ID and claims on the platforms; each row is something Haustek is handling for you. Nothing is needed from you unless Haustek asks.',
+      knMo: 'Haustek watches Content ID and platform claims; each row is something handled for you.',
       knTrong: 'No rights claim is in progress on your tracks.',
       knDaXong: 'claims resolved or released',
       luong: 'Conversation', traLoi: 'Reply to Haustek', guiTra: 'Send reply', daGuiTra: 'Reply sent',
@@ -21199,7 +21371,7 @@ HT.dangKy({
               (x.track ? '<div class="t-sub">' + HM.esc(x.track.title) + ' · ' + HM.esc(x.track.isrc) + '</div>' : '') + '</td>' +
             '<td>' + HM.tag(t(CHU_TT[x.status] || x.status), KIEU_TT[x.status] || '') +
               (x.priority === 'high' || x.priority === 'urgent' ? ' ' + HM.tag(t(CHU_UT[x.priority]), KIEU_UT[x.priority]) : '') + '</td>' +
-            '<td>' + (x.assigneeName ? HM.esc(x.assigneeName) : '<span class="muted">' + HM.esc(t('chuaGiao')) + '</span>') + '</td>' +
+            '<td>' + (x.assigneeName ? HM.esc(x.assigneeName) : '<span class="muted">' + HM.esc(t('chuaGiao')) + '</span>') + '<div class="t-sub" style="font-family:var(--f)">' + HM.esc(c.lang === 'en' ? x.deptLabelEn : x.deptLabel) + '</div></td>' +
             '<td class="mono' + (qua ? '' : ' muted') + '"' + (qua ? ' style="color:var(--danger)"' : '') + '>' + HM.esc(HT.fmt.ngay(x.dueAt)) + (qua ? '<div class="t-sub" style="color:var(--danger)">' + HM.esc(t('quaHan')) + '</div>' : '') + '</td>' +
             '<td class="mono muted">' + HM.esc(HT.fmt.luc(x.updatedAt)) + '</td></tr>';
         }).join('') + '</tbody></table></div>'
@@ -21289,6 +21461,7 @@ function moChiTiet(c, id) {
     HM.kv([
       { t: t('cLoai'), v: ty ? c.song(ty, 'label') : x.type },
       x.track ? { t: t('cBai'), v: x.track.title + ' · ' + x.track.isrc, manh: true } : null,
+      { t: t('cBoPhan'), v: c.lang === 'en' ? x.deptLabelEn : x.deptLabel },
       { t: t('cPhuTrach'), v: x.assigneeName || t('chuaGiao') },
       { t: t('cHan'), v: HT.fmt.luc(x.dueAt) },
       { t: t('taoLuc'), v: HT.fmt.luc(x.createdAt) },
@@ -21429,26 +21602,26 @@ HT.dangKy({
       cKy: 'Kỳ', cChot: 'Chốt sổ', cVe: 'Thu nhập của bạn', cChi: 'Đã thanh toán', cTai: '',
       xem: 'Mở bảng kê', tai: 'Tải CSV', taiHet: 'Tải tất cả các kỳ (CSV)',
       chuaCo: 'Chưa có kỳ nào chốt sổ',
-      chuaCoMo: 'Bảng kê sẽ xuất hiện ở đây ngay khi một kỳ chốt sổ. Một kỳ chỉ chốt sổ sau khi Haustek đối soát xong với tất cả các nền tảng.',
+      chuaCoMo: 'Bảng kê xuất hiện ngay khi kỳ chốt sổ, tức Haustek đối soát xong với mọi nền tảng.',
       choKy: 'Đang chờ chốt sổ', choKyMo: 'Các kỳ này đã nhận được báo cáo nhưng chưa đối soát xong, nên chưa chốt sổ.',
       hdTrong: 'Chưa có chứng từ nào ở đây',
-      hdTrongMo: 'Hợp đồng, phụ lục và chứng từ chuyển tiền chưa được đưa lên cổng, hiện vẫn được gửi qua email. Nếu cần bản nào, bạn vui lòng gửi mã đối tác về ops@haustek-group.com.',
+      hdTrongMo: 'Hợp đồng, phụ lục và chứng từ chuyển tiền hiện gửi qua email. Cần bản nào, gửi mã đối tác về ops@haustek-group.com.',
       hoi1: 'Vì sao thu nhập kỳ này của tôi thấp hơn kỳ trước?',
-      dap1: 'Có ba lý do thường gặp nhất, theo thứ tự. Một: bài hát mới đã qua giai đoạn cao điểm, doanh thu một bài hát thường cao nhất trong 1–2 kỳ đầu rồi giảm dần. Hai: có nền tảng báo cáo trễ, phần đó được ghi nhận ở kỳ sau chứ không mất. Ba: bạn đang trong giai đoạn khấu trừ tạm ứng, nên vẫn có thu nhập nhưng chưa có khoản thanh toán.',
+      dap1: 'Ba lý do thường gặp: bài mới đã qua đỉnh (cao nhất 1–2 kỳ đầu); một nền tảng báo cáo trễ, tiền về kỳ sau; bạn đang khấu trừ tạm ứng.',
       hoi2: 'Bài hát của tôi có hàng triệu lượt nghe, vì sao doanh thu lại thấp?',
-      dap2: 'Mỗi lượt nghe được trả rất ít, và mức trả chênh lệch nhiều giữa các nền tảng và các thị trường. Một lượt nghe ở Mỹ được trả gấp nhiều lần một lượt nghe ở Việt Nam. Khi mở một bài hát, phần "Thu nhập theo thị trường" cho thấy chênh lệch đó bằng số liệu thực tế của chính bài hát đó.',
+      dap2: 'Mỗi lượt nghe được trả rất ít và chênh nhiều giữa nền tảng, thị trường. Mở một bài, phần Thu nhập theo thị trường cho thấy chênh lệch đó.',
       hoi3: 'Khi nào tôi nhận được tiền tác quyền?',
-      dap3: 'Tác quyền được chốt theo quý, không theo tháng, và các tổ chức quản lý tác quyền thường báo cáo trễ một đến hai quý. Vì vậy tab Tác quyền trống ở nhiều kỳ là bình thường, không có nghĩa là bài hát của bạn không có doanh thu. Kỳ nào có báo cáo, cổng đều ghi rõ.',
+      dap3: 'Tác quyền chốt theo quý và về trễ một đến hai quý, nên tab Tác quyền trống ở nhiều kỳ là bình thường. Kỳ nào có báo cáo, cổng ghi rõ.',
       hoi4: 'Vì sao có kỳ tôi không nhận được thanh toán?',
-      dap4: 'Có hai khả năng. Một là thu nhập kỳ đó dưới ngưỡng thanh toán tối thiểu nên được chuyển sang kỳ sau, không mất. Hai là bạn đang trong giai đoạn khấu trừ tạm ứng. Trang Tạm ứng cho biết bạn thuộc trường hợp nào.',
+      dap4: 'Hoặc thu nhập dưới ngưỡng thanh toán nên chuyển sang kỳ sau, hoặc bạn đang khấu trừ tạm ứng. Trang Tạm ứng cho biết trường hợp nào.',
       hoi5: 'Số trên bảng kê có phải là số tôi thực nhận vào tài khoản không?',
-      dap5: 'Không hoàn toàn. Đó là số trước thuế và trước phí chuyển khoản. Phần chênh lệch được ghi trên chứng từ của từng lần chuyển tiền.',
+      dap5: 'Chưa hẳn: đó là số trước thuế và phí chuyển khoản. Chênh lệch ghi trên chứng từ từng lần chuyển.',
       hoi6: 'Danh sách có bài hát không phải của tôi, hoặc thiếu bài hát của tôi thì phải làm gì?',
-      dap6: 'Bạn gửi mã ISRC của bài hát đó cùng mã đối tác của bạn về ops@haustek-group.com. Đây là lỗi khớp danh mục và có thể sửa được, nhưng bắt buộc phải có mã ISRC vì tên bài hát trùng nhau rất nhiều.',
+      dap6: 'Gửi mã ISRC của bài cùng mã đối tác về ops@haustek-group.com. Lỗi khớp danh mục sửa được, nhưng cần ISRC vì tên bài trùng nhiều.',
       hoi7: 'Vì sao kỳ gần nhất vẫn chưa chốt sổ?',
-      dap7: 'Một kỳ chỉ chốt sổ khi đã nhận đủ ba nguồn báo cáo doanh thu và tổng trên hệ thống khớp với tổng trên file gốc đến từng xu. Chốt sổ sớm khi còn thiếu một nguồn sẽ đưa cho bạn một con số thiếu nhưng trông vẫn như đầy đủ.',
+      dap7: 'Kỳ chỉ chốt khi đủ ba nguồn báo cáo và tổng khớp file gốc đến từng xu. Chốt sớm sẽ đưa bạn một con số thiếu mà trông như đủ.',
       lienHe: 'Liên hệ hỗ trợ',
-      lienHeMo: 'Khi gửi email, bạn kèm đủ ba thông tin sau để Haustek tra đúng dòng trong vài phút: mã đối tác, kỳ báo cáo và mã ISRC của bài hát cần kiểm tra.'
+      lienHeMo: 'Kèm mã đối tác, kỳ báo cáo và ISRC của bài cần kiểm để Haustek tra đúng dòng trong vài phút.'
     },
     en: {
       navTl: 'Documents', h1: 'Documents',
@@ -21457,26 +21630,26 @@ HT.dangKy({
       cKy: 'Period', cChot: 'Closed', cVe: 'Yours', cChi: 'Paid', cTai: '',
       xem: 'Open', tai: 'Download CSV', taiHet: 'Download all (CSV)',
       chuaCo: 'No period is closed yet',
-      chuaCoMo: 'A statement appears here as soon as a period closes. A period closes only after reconciliation with every platform.',
+      chuaCoMo: 'A statement appears as soon as a period closes, after reconciliation with every platform.',
       choKy: 'Waiting to close', choKyMo: 'Data has arrived for these periods but reconciliation is not finished, so they are not open.',
       hdTrong: 'No vouchers here yet',
-      hdTrongMo: 'Contracts, annexes and transfer vouchers are not on the portal yet; they still go by email. If you need a copy, send your client ID to ops@haustek-group.com.',
+      hdTrongMo: 'Contracts, annexes and transfer vouchers still go by email. Send your client ID to ops@haustek-group.com for a copy.',
       hoi1: 'Why is this period lower than the last?',
-      dap1: 'Three usual reasons, in order. One: a release losing momentum — a track usually peaks in its first one or two periods then tapers. Two: a platform reported late; that money arrives next period rather than being lost. Three: you are in the advance-recoupment phase, so you are still earning but nothing is transferred yet.',
+      dap1: 'Three usual reasons: the release passed its peak (first one or two periods); a platform reported late, money comes next period; you are recouping an advance.',
       hoi2: 'I see millions of streams — why so little money?',
-      dap2: 'A stream pays very little, and the rate varies widely by platform and by country. One stream in the US pays many times one in Vietnam. Open a track: the “from where” breakdown shows that gap in that track’s own real figures.',
+      dap2: 'A stream pays very little and varies widely by platform and country. Open a track: the by-market breakdown shows the gap.',
       hoi3: 'When do I see publishing money?',
-      dap3: 'Publishing settles quarterly, not monthly, and collecting societies usually report one to two quarters late. An empty publishing tab for a period is normal — it does not mean your tracks earned nothing. When a report exists, the portal says so.',
+      dap3: 'Publishing settles quarterly and arrives one to two quarters late, so an empty publishing tab is normal. The portal says when a report exists.',
       hoi4: 'Why did I get no transfer some periods?',
-      dap4: 'Two possibilities. Either the amount was below the minimum payout threshold and carried forward — nothing is lost. Or you are recouping an advance. The Advance page tells you which.',
+      dap4: 'Either the amount was below the payout threshold and carried forward, or you are recouping an advance. The Advance page tells you which.',
       hoi5: 'Is the statement figure what lands in my account?',
-      dap5: 'Not quite. It is before tax and before transfer fees. The difference is itemised on each transfer voucher.',
+      dap5: 'Not quite: it is before tax and transfer fees. The difference is itemised on each voucher.',
       hoi6: 'I see a track that is not mine, or one of mine is missing?',
-      dap6: 'Send that track’s ISRC with your client ID to ops@haustek-group.com. This is a catalogue matching error and it is fixable — but the ISRC is essential, because titles repeat constantly.',
+      dap6: 'Send the track’s ISRC with your client ID to ops@haustek-group.com. Matching errors are fixable, but the ISRC is essential.',
       hoi7: 'Why is the most recent period not open?',
-      dap7: 'A period opens only when all three revenue sources have arrived and the system total matches the source files to the cent. Opening a period that is missing a source hands you an incomplete figure that looks complete.',
+      dap7: 'A period closes only when all three sources arrived and totals match to the cent. Closing early would hand you a figure that looks complete but is not.',
       lienHe: 'Need help',
-      lienHeMo: 'Include these three and the exact row is found in minutes: your client ID, the reporting period, and the ISRC of the track in question.'
+      lienHeMo: 'Include your client ID, the period and the track’s ISRC so the exact row is found in minutes.'
     }
   },
 

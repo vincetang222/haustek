@@ -1732,9 +1732,11 @@ function partiesList(opts) {
   if (q) out = out.filter(r => r.name.toLowerCase().includes(q) || r.clientId.toLowerCase().includes(q));
   const key = opts.sort || "revenueQ", dir = opts.dir === 1 ? 1 : -1;
   out.sort((a, b) => { const A = a[key], B = b[key]; return typeof A === "string" ? A.localeCompare(B, "vi") * dir : ((A || 0) - (B || 0)) * dir; });
-  const counts = { all: rows.length };
-  ["managed", "renew", "inactive", "incomplete", "never-logged"].forEach(s => { counts[s] = rows.filter(r => r.status === s).length; });
-  counts["no-account"] = rows.filter(r => !r.hasAccount).length;
+  /* các ô đếm tính trong phạm vi người xem (kinh doanh: tài khoản mình phụ trách), không tính theo bộ lọc đang chọn */
+  const goc = opts.manager ? rows.filter(r => r.manager === opts.manager) : rows;
+  const counts = { all: goc.length };
+  ["managed", "renew", "inactive", "incomplete", "never-logged"].forEach(s => { counts[s] = goc.filter(r => r.status === s).length; });
+  counts["no-account"] = goc.filter(r => !r.hasAccount).length;
   if (opts.status === "no-account") out = out.filter(r => !r.hasAccount);
   return { total: out.length, counts, rows: out, homNay };
 }
@@ -2870,9 +2872,22 @@ const TICKET_TYPES = [
   { id: "marketing",  label: "Marketing",         labelEn: "Marketing" },
   { id: "quyen",      label: "Bản quyền",         labelEn: "Rights" },
   { id: "tai-khoan",  label: "Tài khoản",         labelEn: "Account" },
+  { id: "hop-dong",   label: "Hợp đồng & tạm ứng", labelEn: "Contract & advance" },
   { id: "khac",       label: "Khác",              labelEn: "Other" }
 ];
 const TICKET_STATUS = ["open", "in_progress", "waiting", "done"];
+/* Bộ phận xử lý theo loại yêu cầu: mỗi loại thuộc đúng một vai. Ticket
+   được định tuyến khi tạo; nhân viên có thể chuyển bộ phận. Vai ngoài giám
+   đốc chỉ thấy hàng đợi bộ phận mình và ticket được giao cho mình. */
+const BO_PHAN_TICKET = { "phat-hanh": "ops", "nen-tang": "ops", "thanh-toan": "accounting", "marketing": "sales", "hop-dong": "sales", "quyen": "support", "tai-khoan": "support", "khac": "support" };
+const TEN_BO_PHAN = { mgmt: { vi: "Ban giám đốc", en: "Management" }, ops: { vi: "Vận hành", en: "Operations" }, accounting: { vi: "Kế toán", en: "Accounting" }, sales: { vi: "Kinh doanh", en: "Sales" }, support: { vi: "Hỗ trợ", en: "Support" } };
+function boPhanCua(type) { return BO_PHAN_TICKET[type] || "support"; }
+function deptCua(t) { if (!t.dept) t.dept = boPhanCua(t.type); return t.dept; }
+function ticketsChoVai(ds) {
+  const role = vaiHienTai();
+  if (!role || role === "mgmt") return ds;
+  return ds.filter(t => deptCua(t) === role || (t.assignee && _me && t.assignee === _me.id));
+}
 let ticketSeq = 0;
 function ticketId(at) { ticketSeq++; return "HT-" + String(at).slice(2, 4) + String(at).slice(5, 7) + "-" + String(ticketSeq).padStart(3, "0"); }
 function slaDue(at, priority) { return addDays(String(at).slice(0, 10), priority === "urgent" ? 1 : priority === "high" ? 2 : priority === "low" ? 7 : 3) + " 17:00:00"; }
@@ -2885,6 +2900,7 @@ function createTicket(o) {
     createdAt: at, updatedAt: at, status: o.status || "open", priority: o.priority || "normal",
     assignee: o.assignee || null, dueAt: slaDue(at, o.priority || "normal"),
     messages: [{ at, by: o.createdBy || partyClientId(o.partyKey), who: o.who || "partner", text: String(o.body || "").trim() }] };
+  t.dept = boPhanCua(t.type);
   if (!t.title) throw new Error("Thiếu tiêu đề yêu cầu");
   state.tickets.unshift(t);
   return t;
@@ -3395,7 +3411,8 @@ const QUYEN_NHOM = {
   chiaSe:    { vai: ["mgmt", "accounting"],          vi: "Chia sẻ tác quyền của mọi tài khoản", en: "Royalty splits across accounts" },
   khieuNai:  { vai: ["mgmt", "support", "ops"],      vi: "Khiếu nại bản quyền, cài đặt video", en: "Rights claims, video settings" },
   hoTro:     { vai: VAI_NB,                          vi: "Ticket hỗ trợ", en: "Support tickets" },
-  quanTri:   { vai: ["mgmt"],                        vi: "Tài khoản cổng, nhật ký, câu hỏi, dữ liệu", en: "Portal accounts, audit log, questions, data" }
+  quanTri:   { vai: ["mgmt"],                        vi: "Tài khoản cổng, nhật ký, câu hỏi, dữ liệu", en: "Portal accounts, audit log, questions, data" },
+  phatHanhHo:{ vai: ["mgmt", "ops", "sales"],        vi: "Tạo hồ sơ phát hành thay đối tác (kinh doanh: đối tác mình phụ trách)", en: "Create a release on a partner’s behalf (sales: own accounts only)" }
 };
 /* thành viên của mặt tiền admin → nhóm; "a.b" cho hàm con; không có trong
    bảng nghĩa là dùng chung (tra cứu tên, kỳ, bài hát…) */
@@ -3412,7 +3429,7 @@ const QUYEN_HAM = {
   splits: "chiaSe", splitsFor: "chiaSe", setSplit: "chiaSe", removeSplit: "chiaSe", acceptSplit: "chiaSe",
   quality: "danhMuc", qualityFor: "danhMuc", setAlertStatus: "danhMuc", metadataReport: "danhMuc", metadataReportFor: "danhMuc",
   catalogue: "danhMuc", platformReport: "danhMuc", catalogueReleases: "danhMuc", releases: "danhMuc",
-  "releases.receive": "vanHanh", "releases.assignCodes": "vanHanh", "releases.publish": "vanHanh", "releases.returnFix": "vanHanh",
+  "releases.receive": "vanHanh", "releases.assignCodes": "vanHanh", "releases.publish": "vanHanh", "releases.returnFix": "vanHanh", "releases.createFor": "phatHanhHo",
   deliveries: "vanHanh", bulk: "vanHanh", ingest: "vanHanh", platformRates: "vanHanh", platformRatesFull: "vanHanh", setPlatformRate: "vanHanh", clearPlatformRate: "vanHanh", importPlatformRates: "vanHanh",
   proposals: "deXuat", "proposals.proposeAdvance": "deXuatTao", "proposals.proposeContract": "deXuatTao", advanceCalc: "deXuat", contractCalc: "deXuat", partySeries: "deXuat", advanceOfferOf: "deXuat",
   tickets: "hoTro", claims: "khieuNai", videoSettings: "khieuNai",
@@ -3650,6 +3667,21 @@ const admin = {
       return ds;
     },
     get(id) { return state.releases.find(r => r.id === id) || null; },
+    /* Nhân viên tạo hồ sơ phát hành thay đối tác (đối tác gửi file qua email,
+       gọi điện…). Cùng luật kiểm như hồ sơ đối tác tự gửi; ghi rõ người tạo là
+       nhân viên và đối tác thấy nhãn "Haustek tạo thay bạn" trên cổng. Kinh
+       doanh chỉ tạo cho đối tác mình phụ trách. */
+    createFor(partyKey, payload, by) {
+      if (vaiHienTai() === "sales" && state.partyManager[partyKey] !== _me.id) throw new Error("Không có quyền: đối tác này không do bạn phụ trách");
+      const isLabel = String(partyKey)[0] === "L", pid = +String(partyKey).slice(2);
+      const artistId = isLabel ? +(payload && payload.artistId) : pid;
+      if (!ARTISTS[artistId]) throw new Error("Chưa chọn nghệ sĩ chính");
+      if (isLabel && ARTISTS[artistId].labelId !== pid) throw new Error("Nghệ sĩ này không thuộc label");
+      const r = buildRelease(payload, artistId, by || (_me && _me.name) || "staff", "staff");
+      state.releases.unshift(r);
+      audit.log("release.create.staff", r.id + " · " + r.title + " · " + partyName(partyKey), by); store.save();
+      return r;
+    },
     counts() {
       const c = { submitted: 0, received: 0, coded: 0, released: 0, returned: 0 };
       state.releases.forEach(r => { c[r.status] = (c[r.status] || 0) + 1; });
@@ -3763,9 +3795,11 @@ const admin = {
   proposals: { list: f => proposalsListChoVai(f), counts: () => proposalCountsChoVai(), get: id => proposalGetChoVai(id),
     proposeAdvance, proposeContract, review: reviewProposal, flow: PROPOSAL_FLOW },
   tickets: {
-    types: TICKET_TYPES, statuses: TICKET_STATUS,
+    types: TICKET_TYPES, statuses: TICKET_STATUS, depts: TEN_BO_PHAN, deptOf: type => boPhanCua(type),
     list(f) {
-      let ds = state.tickets.slice();
+      let ds = ticketsChoVai(state.tickets.slice());
+      ds.forEach(deptCua);
+      if (f && f.dept) ds = ds.filter(t => t.dept === f.dept);
       if (f && f.status) ds = ds.filter(t => f.status === "open-all" ? t.status !== "done" : t.status === f.status);
       if (f && f.type) ds = ds.filter(t => t.type === f.type);
       if (f && f.assignee) ds = ds.filter(t => t.assignee === f.assignee);
@@ -3775,12 +3809,22 @@ const admin = {
     },
     get(id) { return state.tickets.find(t => t.id === id) || null; },
     counts(assignee) {
-      const ds = assignee ? state.tickets.filter(t => t.assignee === assignee) : state.tickets;
+      const ds = assignee ? state.tickets.filter(t => t.assignee === assignee) : ticketsChoVai(state.tickets);
       const now = nowISO();
       return { open: ds.filter(t => t.status === "open").length, in_progress: ds.filter(t => t.status === "in_progress").length, waiting: ds.filter(t => t.status === "waiting").length,
         done: ds.filter(t => t.status === "done").length, overdue: ds.filter(t => t.status !== "done" && t.dueAt < now).length, urgent: ds.filter(t => t.status !== "done" && t.priority === "urgent").length, total: ds.length };
     },
     create(o, by) { const t = createTicket(Object.assign({}, o, { createdBy: by, who: "staff", source: "staff" })); audit.log("ticket.create", t.id + " · " + t.party.name + " · " + t.title, by); store.save(); return t; },
+    /* chuyển bộ phận: đổi loại yêu cầu; sang bộ phận khác thì bỏ người phụ trách để hàng đợi mới nhận */
+    chuyen(id, type, by, note) {
+      const t = this.get(id); if (!t) throw new Error("Không tìm thấy " + id);
+      if (!TICKET_TYPES.some(x => x.id === type)) throw new Error("Loại yêu cầu không hợp lệ");
+      const tu = deptCua(t); t.type = type; t.dept = boPhanCua(type);
+      if (t.dept !== tu) t.assignee = null;
+      t.updatedAt = nowISO();
+      if (String(note || "").trim()) t.messages.push({ at: t.updatedAt, by, who: "staff", text: String(note).trim() });
+      audit.log("ticket.chuyen", t.id + " · " + TEN_BO_PHAN[tu].vi + " → " + TEN_BO_PHAN[t.dept].vi, by); store.save(); return t;
+    },
     assign(id, staffId, by) { const t = this.get(id); if (!t) throw new Error("Không tìm thấy " + id); if (!staffById(staffId)) throw new Error("Không có nhân viên " + staffId); t.assignee = staffId; t.updatedAt = nowISO(); if (t.status === "open") t.status = "in_progress"; audit.log("ticket.assign", t.id + " → " + staffById(staffId).name, by); store.save(); return t; },
     setStatus(id, status, by) { const t = this.get(id); if (!t) throw new Error("Không tìm thấy " + id); if (TICKET_STATUS.indexOf(status) < 0) throw new Error("Trạng thái không hợp lệ"); t.status = status; t.updatedAt = nowISO(); if (status === "done") t.closedAt = t.updatedAt; audit.log("ticket.status", t.id + " → " + status, by); store.save(); return t; },
     setPriority(id, priority, by) { const t = this.get(id); if (!t) throw new Error("Không tìm thấy " + id); t.priority = priority; t.dueAt = slaDue(t.createdAt, priority); t.updatedAt = nowISO(); audit.log("ticket.priority", t.id + " → " + priority, by); store.save(); return t; },
@@ -4260,7 +4304,8 @@ const api = {
     assertParty(role, partyId);
     const pk = role === "label" ? "L:" + partyId : "A:" + partyId;
     const rows = state.tickets.filter(t => t.partyKey === pk).map(t => Object.assign({}, t, {
-      assigneeName: t.assignee && staffById(t.assignee) ? staffById(t.assignee).name : null, assignee: undefined }));
+      assigneeName: t.assignee && staffById(t.assignee) ? staffById(t.assignee).name : null, assignee: undefined,
+      dept: deptCua(t), deptLabel: TEN_BO_PHAN[deptCua(t)].vi, deptLabelEn: TEN_BO_PHAN[deptCua(t)].en }));
     return scrub({ rows, types: TICKET_TYPES, counts: { open: rows.filter(t => t.status !== "done").length, done: rows.filter(t => t.status === "done").length } });
   },
   createTicket(role, partyId, o) {
@@ -4268,8 +4313,7 @@ const api = {
     const pk = role === "label" ? "L:" + partyId : "A:" + partyId;
     if (o && o.trackId != null && !inScope(role, partyId, "rec", +o.trackId)) throw new Error("Bài hát này không thuộc phạm vi của bạn");
     if (!o || !String(o.body || "").trim()) throw new Error("Bạn hãy mô tả yêu cầu");
-    const t = createTicket({ type: o.type, title: o.title, body: o.body, partyKey: pk, trackId: o.trackId, priority: o.priority === "high" ? "high" : "normal",
-      assignee: (o.type === "thanh-toan" ? staffByRole("accounting")[0] : o.type === "phat-hanh" ? staffByRole("ops")[0] : staffByRole("support")[0]).id });
+    const t = createTicket({ type: o.type, title: o.title, body: o.body, partyKey: pk, trackId: o.trackId, priority: o.priority === "high" ? "high" : "normal", assignee: null });
     audit.log("ticket.create", t.id + " · " + t.party.name + " · " + t.title, partyClientId(pk)); store.save();
     return scrub({ id: t.id, status: t.status, dueAt: t.dueAt });
   },

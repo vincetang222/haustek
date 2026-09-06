@@ -22,7 +22,7 @@ HT.dangKy({
   chu: {
     vi: {
       navSuaHl: 'Sửa hàng loạt', h1: 'Sửa hàng loạt',
-      mo: 'Khoá hoặc mở khoá, đổi giá album, đổi ngày phát hành số, đổi giá track cho nhiều bản phát hành cùng lúc, theo danh sách UPC.',
+      mo: 'Khoá / mở khoá, đổi giá album, ngày phát hành số, giá track cho nhiều bản phát hành theo danh sách UPC.',
       kCho: 'Chờ áp dụng', kXong: 'Đã áp dụng', kUpc: 'UPC đang chờ', kTong: 'Tổng yêu cầu',
       congCu: 'Công cụ', chonCongCu: 'Chọn thao tác',
       lock: 'Khoá / mở khoá bản phát hành', price: 'Đổi giá album', 'release-date': 'Đổi ngày phát hành số', 'track-price': 'Đổi giá track',
@@ -45,7 +45,7 @@ HT.dangKy({
     },
     en: {
       navSuaHl: 'Bulk edit', h1: 'Bulk edit',
-      mo: 'Lock or unlock, change album price, digital release date or track price across many releases at once, by UPC list.',
+      mo: 'Lock or unlock, change album price, release date or track price across releases by UPC list.',
       kCho: 'Queued', kXong: 'Applied', kUpc: 'UPCs waiting', kTong: 'Requests',
       congCu: 'Tools', chonCongCu: 'Choose an action',
       lock: 'Lock or unlock releases', price: 'Change album price', 'release-date': 'Change digital release date', 'track-price': 'Change track price',

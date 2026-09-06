@@ -18,25 +18,25 @@ HT.dangKy({
   chu: {
     vi: {
       navMucTra: 'Mức trả nền tảng', h1: 'Mức trả nền tảng',
-      mo: 'USD gộp trên 1.000 lượt nghe của từng nền tảng, dùng cho dự báo và giải thích số. Mặc định suy từ báo cáo 3 kỳ gần nhất; nhập số thật để ghi đè.',
+      mo: 'USD gộp trên 1.000 lượt của từng nền tảng, dùng cho dự báo. Mặc định suy từ 3 kỳ gần nhất; nhập số thật để ghi đè.',
       kTron: 'Mức trả trộn', kTronS: 'USD / 1.000 lượt, theo cơ cấu lượt nghe 3 kỳ', kGhiDe: 'Nền tảng đã nhập số thật', kGhiDeS: 'trong {n} nền tảng', kDuBao: 'Dự báo doanh thu kỳ mở', kDuBaoS: 'đổi theo mức trả ngay', kVn: 'Tham chiếu thị trường VN', kVnS: 'Spotify, USD / 1.000',
       cNt: 'Nền tảng', cSuy: 'Suy từ báo cáo', cVn: 'Tham chiếu VN', cDung: 'Đang dùng', cNguon: 'Nguồn', cNhap: 'Nhập số thật', cThaoTac: 'Thao tác',
       nguonSuy: 'báo cáo 3 kỳ', nguonNhap: 'nhập tay', luu: 'Lưu', bo: 'Bỏ ghi đè', daLuu: 'Đã lưu {n}: {v} USD / 1.000', daBo: 'Đã bỏ ghi đè {n}',
-      dan: 'Dán CSV', danMo: 'Mỗi dòng: tên nền tảng, USD trên 1.000 lượt (chấp nhận dấu phẩy thập phân, dấu ; hoặc tab). Ví dụ: Spotify,1.52', nhap: 'Nhập', daNhap: 'Đã nhập {a} nền tảng, bỏ qua {b} dòng',
+      dan: 'Dán CSV', danMo: 'Mỗi dòng: tên nền tảng, USD trên 1.000 lượt (nhận dấu phẩy, ; hoặc tab). Ví dụ: Spotify,1.52', nhap: 'Nhập', daNhap: 'Đã nhập {a} nền tảng, bỏ qua {b} dòng',
       soSanh: 'Suy từ báo cáo so với tham chiếu và số đang dùng', soSanhMo: 'USD / 1.000 lượt. Cột đỏ là nền tảng đang dùng số nhập tay.',
       ghiChu: 'Ghi chú (nguồn, kỳ báo cáo)', chua: 'chưa',
-      note: 'Mức trả thị trường Việt Nam thấp hơn Âu–Mỹ 2–3 lần vì giá thuê bao và CPM quảng cáo thấp; nền tảng nội địa (Zing MP3, NhacCuaTui) trả thấp nhất. Số ở đây là gộp về Haustek trước khi chia; đối tác thấy mức trả đã nhân với tỷ lệ của họ.'
+      note: 'Mức trả Việt Nam thấp hơn Âu–Mỹ 2–3 lần; nền tảng nội địa trả thấp nhất. Số ở đây là gộp về Haustek; đối tác thấy mức đã nhân tỷ lệ của họ.'
     },
     en: {
       navMucTra: 'Platform payout rates', h1: 'Platform payout rates',
-      mo: 'Gross USD per 1,000 streams per platform, used by forecasts and number explanations. Derived from the last three approved reports by default; enter real figures to override.',
+      mo: 'Gross USD per 1,000 streams per platform, used by forecasts. Derived from the last three reports; enter real figures to override.',
       kTron: 'Blended rate', kTronS: 'USD / 1,000 streams, weighted by 3-period stream mix', kGhiDe: 'Platforms with real figures', kGhiDeS: 'of {n} platforms', kDuBao: 'Open-period revenue forecast', kDuBaoS: 'moves with the rates', kVn: 'Vietnam market reference', kVnS: 'Spotify, USD / 1,000',
       cNt: 'Platform', cSuy: 'Derived from reports', cVn: 'VN reference', cDung: 'In use', cNguon: 'Source', cNhap: 'Enter real figure', cThaoTac: 'Actions',
       nguonSuy: '3-period reports', nguonNhap: 'entered', luu: 'Save', bo: 'Clear override', daLuu: 'Saved {n}: {v} USD / 1,000', daBo: 'Cleared override for {n}',
-      dan: 'Paste CSV', danMo: 'One line per platform: name, USD per 1,000 streams (decimal comma, ; or tab accepted). Example: Spotify,1.52', nhap: 'Import', daNhap: 'Imported {a} platforms, skipped {b} lines',
+      dan: 'Paste CSV', danMo: 'One line per platform: name, USD per 1,000 (comma, ; or tab). Example: Spotify,1.52', nhap: 'Import', daNhap: 'Imported {a} platforms, skipped {b} lines',
       soSanh: 'Derived vs reference vs in use', soSanhMo: 'USD / 1,000 streams. Red bars are platforms using entered figures.',
       ghiChu: 'Note (source, report period)', chua: 'none',
-      note: 'Vietnamese market rates are 2–3× below Europe/US because subscription prices and ad CPMs are low; domestic platforms (Zing MP3, NhacCuaTui) pay the least. Figures here are gross to Haustek before the split; partners see rates multiplied by their share.'
+      note: 'Vietnamese rates are 2–3× below Europe/US; domestic platforms pay least. Figures are gross to Haustek; partners see rates times their share.'
     }
   },
 

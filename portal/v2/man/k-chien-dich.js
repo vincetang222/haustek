@@ -25,7 +25,7 @@ HT.dangKy({
   chu: {
     vi: {
       navChienDich: 'Chiến dịch', h1: 'Chiến dịch quảng bá',
-      mo: 'Liên kết thông minh có pre-save, pitch playlist biên tập và quảng cáo trả phí cho bài của bạn. Mỗi dòng là một phễu kết quả.',
+      mo: 'Liên kết thông minh có pre-save, pitch playlist và quảng cáo cho bài của bạn. Mỗi dòng là một phễu kết quả.',
       kDang: 'Đang chạy', kDangS: '{a} sắp chạy · {b} đã xong', kLuu: 'Lưu trước (pre-save)', kLuuS: 'từ liên kết thông minh', kPitch: 'Playlist nhận', kPitchS: 'trong {n} lượt pitch', kChi: 'Đã chi quảng cáo', kChiS: '{n} lượt nghe quy được', kGia: 'Giá mỗi lượt nghe', kGiaS: 'bình quân quảng cáo',
       loaiAll: 'Mọi loại', loaiSl: 'Liên kết thông minh', loaiPitch: 'Pitch playlist', loaiAds: 'Quảng cáo', ttAll: 'Mọi trạng thái', ttRunning: 'Đang chạy', ttPlanned: 'Sắp chạy', ttDone: 'Đã xong',
       yeuCau: 'Yêu cầu chiến dịch mới', trong: 'Chưa có chiến dịch nào', trongMo: 'Gửi yêu cầu marketing để đội Haustek dựng liên kết thông minh, pitch playlist hoặc chạy quảng cáo.', khong: 'Không có chiến dịch khớp bộ lọc', khongMo: 'Đổi bộ lọc phía trên.',
@@ -33,7 +33,7 @@ HT.dangKy({
     },
     en: {
       navChienDich: 'Campaigns', h1: 'Promotion campaigns',
-      mo: 'Smart links with pre-save, editorial playlist pitching and paid ads for your tracks. Each row is a results funnel.',
+      mo: 'Smart links with pre-save, playlist pitching and paid ads for your tracks. Each row is a results funnel.',
       kDang: 'Running', kDangS: '{a} planned · {b} done', kLuu: 'Pre-saves', kLuuS: 'from smart links', kPitch: 'Playlists accepted', kPitchS: 'of {n} pitches', kChi: 'Ad spend', kChiS: '{n} attributed streams', kGia: 'Cost per stream', kGiaS: 'average across ads',
       loaiAll: 'Any kind', loaiSl: 'Smart links', loaiPitch: 'Playlist pitching', loaiAds: 'Paid ads', ttAll: 'Any status', ttRunning: 'Running', ttPlanned: 'Planned', ttDone: 'Done',
       yeuCau: 'Request a campaign', trong: 'No campaigns yet', trongMo: 'Send a marketing request and the Haustek team sets up smart links, pitching or ads.', khong: 'No campaigns match the filters', khongMo: 'Change the filters above.',

@@ -25,11 +25,11 @@ HT.dangKy({
   chu: {
     vi: {
       navHoTro: 'Hỗ trợ', h1: 'Hỗ trợ',
-      mo: 'Yêu cầu bạn đã gửi cho Haustek, ai đang phụ trách và đã xử lý tới đâu. Khiếu nại bản quyền Haustek đang xử lý thay bạn cũng ở đây.',
+      mo: 'Yêu cầu bạn đã gửi, bộ phận và người phụ trách, tiến độ. Khiếu nại bản quyền Haustek xử lý thay bạn cũng ở đây.',
       kMo: 'Yêu cầu đang mở', kXong: 'Đã xong', kKn: 'Khiếu nại bản quyền đang xử lý', kHan: 'Hạn xử lý gần nhất',
       choNt: 'chờ nền tảng phản hồi', tongKn: 'tổng số khiếu nại đã ghi nhận', khongHan: 'không có yêu cầu nào đang mở',
       tabMo: 'Đang mở', tabXong: 'Đã xong', guiMoi: 'Gửi yêu cầu mới',
-      cMa: 'Mã', cLoai: 'Loại', cTieuDe: 'Tiêu đề', cBai: 'Bài hát', cTt: 'Trạng thái', cPhuTrach: 'Người phụ trách', cHan: 'Hạn xử lý', cCapNhat: 'Cập nhật',
+      cMa: 'Mã', cLoai: 'Loại', cTieuDe: 'Tiêu đề', cBai: 'Bài hát', cTt: 'Trạng thái', cBoPhan: 'Bộ phận', cPhuTrach: 'Người phụ trách', cHan: 'Hạn xử lý', cCapNhat: 'Cập nhật',
       ttOpen: 'Đã gửi', ttDoing: 'Đang xử lý', ttWaiting: 'Chờ nền tảng phản hồi', ttDone: 'Đã xong',
       utLow: 'Thấp', utNormal: 'Bình thường', utHigh: 'Cao', utUrgent: 'Khẩn',
       quaHan: 'quá hạn', chuaGiao: 'Chưa phân công',
@@ -38,7 +38,7 @@ HT.dangKy({
       theoLoai: 'Yêu cầu theo loại', theoLoaiMo: 'Tính trên toàn bộ yêu cầu bạn đã gửi.',
       theoTt: 'Theo trạng thái',
       knTieuDe: 'Khiếu nại bản quyền đang xử lý',
-      knMo: 'Haustek theo dõi Content ID và khiếu nại trên các nền tảng; mỗi dòng dưới đây là một việc Haustek đang xử lý thay bạn. Bạn không cần làm gì thêm trừ khi Haustek hỏi.',
+      knMo: 'Haustek theo dõi Content ID và khiếu nại trên nền tảng; mỗi dòng là một việc Haustek đang xử lý thay bạn.',
       knTrong: 'Không có khiếu nại bản quyền nào đang xử lý trên bài hát của bạn.',
       knDaXong: 'khiếu nại đã giải quyết hoặc đã nhả claim',
       /* ngăn chi tiết */
@@ -54,11 +54,11 @@ HT.dangKy({
     },
     en: {
       navHoTro: 'Support', h1: 'Support',
-      mo: 'Requests you have sent Haustek, who is handling each one and how far it has got. Rights claims Haustek is handling for you are here too.',
+      mo: 'Your requests, the department handling each one and progress. Rights claims Haustek handles for you are here too.',
       kMo: 'Open requests', kXong: 'Done', kKn: 'Rights claims in progress', kHan: 'Nearest due date',
       choNt: 'waiting on a platform', tongKn: 'claims logged in total', khongHan: 'no open request',
       tabMo: 'Open', tabXong: 'Done', guiMoi: 'New request',
-      cMa: 'ID', cLoai: 'Type', cTieuDe: 'Title', cBai: 'Track', cTt: 'Status', cPhuTrach: 'Handled by', cHan: 'Due', cCapNhat: 'Updated',
+      cMa: 'ID', cLoai: 'Type', cTieuDe: 'Title', cBai: 'Track', cTt: 'Status', cBoPhan: 'Department', cPhuTrach: 'Handled by', cHan: 'Due', cCapNhat: 'Updated',
       ttOpen: 'Sent', ttDoing: 'In progress', ttWaiting: 'Waiting on the platform', ttDone: 'Done',
       utLow: 'Low', utNormal: 'Normal', utHigh: 'High', utUrgent: 'Urgent',
       quaHan: 'overdue', chuaGiao: 'Not assigned yet',
@@ -67,7 +67,7 @@ HT.dangKy({
       theoLoai: 'Requests by type', theoLoaiMo: 'Across every request you have sent.',
       theoTt: 'By status',
       knTieuDe: 'Rights claims in progress',
-      knMo: 'Haustek watches Content ID and claims on the platforms; each row is something Haustek is handling for you. Nothing is needed from you unless Haustek asks.',
+      knMo: 'Haustek watches Content ID and platform claims; each row is something handled for you.',
       knTrong: 'No rights claim is in progress on your tracks.',
       knDaXong: 'claims resolved or released',
       luong: 'Conversation', traLoi: 'Reply to Haustek', guiTra: 'Send reply', daGuiTra: 'Reply sent',
@@ -123,7 +123,7 @@ HT.dangKy({
               (x.track ? '<div class="t-sub">' + HM.esc(x.track.title) + ' · ' + HM.esc(x.track.isrc) + '</div>' : '') + '</td>' +
             '<td>' + HM.tag(t(CHU_TT[x.status] || x.status), KIEU_TT[x.status] || '') +
               (x.priority === 'high' || x.priority === 'urgent' ? ' ' + HM.tag(t(CHU_UT[x.priority]), KIEU_UT[x.priority]) : '') + '</td>' +
-            '<td>' + (x.assigneeName ? HM.esc(x.assigneeName) : '<span class="muted">' + HM.esc(t('chuaGiao')) + '</span>') + '</td>' +
+            '<td>' + (x.assigneeName ? HM.esc(x.assigneeName) : '<span class="muted">' + HM.esc(t('chuaGiao')) + '</span>') + '<div class="t-sub" style="font-family:var(--f)">' + HM.esc(c.lang === 'en' ? x.deptLabelEn : x.deptLabel) + '</div></td>' +
             '<td class="mono' + (qua ? '' : ' muted') + '"' + (qua ? ' style="color:var(--danger)"' : '') + '>' + HM.esc(HT.fmt.ngay(x.dueAt)) + (qua ? '<div class="t-sub" style="color:var(--danger)">' + HM.esc(t('quaHan')) + '</div>' : '') + '</td>' +
             '<td class="mono muted">' + HM.esc(HT.fmt.luc(x.updatedAt)) + '</td></tr>';
         }).join('') + '</tbody></table></div>'
@@ -213,6 +213,7 @@ function moChiTiet(c, id) {
     HM.kv([
       { t: t('cLoai'), v: ty ? c.song(ty, 'label') : x.type },
       x.track ? { t: t('cBai'), v: x.track.title + ' · ' + x.track.isrc, manh: true } : null,
+      { t: t('cBoPhan'), v: c.lang === 'en' ? x.deptLabelEn : x.deptLabel },
       { t: t('cPhuTrach'), v: x.assigneeName || t('chuaGiao') },
       { t: t('cHan'), v: HT.fmt.luc(x.dueAt) },
       { t: t('taoLuc'), v: HT.fmt.luc(x.createdAt) },

@@ -36,7 +36,7 @@ HT.dangKy({
   chu: {
     vi: {
       nhomDoiTac: 'Đối tác', navQuyen: 'Quản lý quyền', h1: 'Quản lý quyền',
-      mo: 'Xung đột Content ID và khiếu nại trên nền tảng đối với bản ghi trong danh mục, và cài đặt video theo tài khoản.',
+      mo: 'Xung đột Content ID, khiếu nại trên nền tảng và cài đặt video theo tài khoản.',
       tabKn: 'Xung đột và khiếu nại', tabVideo: 'Cài đặt video',
       kDangMo: 'Đang mở', kDangMoS: 'mới · tranh chấp · đã chuyển lên', kXem: 'Lượt xem/ngày đang tranh chấp',
       kHetHan: 'Sắp hết hạn tranh chấp', kHetHanS: 'trong 7 ngày', kXong: 'Đã giải quyết 30 ngày', kXongS: 'đã giải quyết hoặc đã nhả',
@@ -72,7 +72,7 @@ HT.dangKy({
     },
     en: {
       nhomDoiTac: 'Partners', navQuyen: 'Rights manager', h1: 'Rights manager',
-      mo: 'Content ID conflicts and platform claims on catalogue recordings, plus per-account video settings.',
+      mo: 'Content ID conflicts, platform claims and per-account video settings.',
       tabKn: 'Conflicts and claims', tabVideo: 'Video settings',
       kDangMo: 'Open', kDangMoS: 'new · disputed · escalated', kXem: 'Daily views in dispute',
       kHetHan: 'Disputes expiring', kHetHanS: 'within 7 days', kXong: 'Closed in 30 days', kXongS: 'resolved or released',

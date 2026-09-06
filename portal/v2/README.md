@@ -266,6 +266,33 @@ tác đã phân quyền theo tài khoản từ vòng 1: label chỉ thấy label
 của mình, label con chỉ thấy phần mình, nghệ sĩ chỉ thấy bài của mình; mọi
 gói trả về cho đối tác chỉ có số NET.
 
+## Ticket theo bộ phận, tạo hồ sơ thay đối tác, chú thích dấu ? (vòng 9)
+
+**Ticket theo bộ phận.** Mỗi loại yêu cầu thuộc một bộ phận, gắn với vai
+nội bộ (`BO_PHAN_TICKET` ở lõi): phát hành, nền tảng → vận hành; thanh toán →
+kế toán; marketing, hợp đồng → kinh doanh; quyền, tài khoản, khác → hỗ trợ.
+Đối tác gửi yêu cầu thì ticket rơi thẳng vào hàng đợi bộ phận, chưa gán ai;
+trang Hỗ trợ của từng vai chỉ hiện hàng đợi của bộ phận mình và việc được
+gán đích danh (giám đốc thấy hết). Ngăn ticket có ô *Chuyển bộ phận*: đổi loại
+yêu cầu, sang bộ phận khác thì bỏ người phụ trách để hàng đợi mới nhận, có ghi
+nhật ký. Cổng đối tác hiện bộ phận đang xử lý ở bảng và ngăn ticket.
+
+**Nhân viên tạo hồ sơ phát hành thay đối tác.** Trang Phát hành có nút *Tạo hồ
+sơ thay đối tác* (giám đốc, vận hành, kinh doanh); ngăn Đối tác cũng có nút
+*Tạo hồ sơ phát hành* mở sẵn tài khoản đó. Hộp thoại chọn tài khoản, nghệ sĩ
+chính (label thì chọn trong roster), thông tin bản phát hành và danh sách
+track (mỗi dòng `Tên | ISRC | Producer`). Lõi: `releases.createFor(partyKey,
+payload, by)` — kinh doanh chỉ tạo cho tài khoản mình phụ trách, hỗ trợ bị
+chặn; hồ sơ mang `submittedRole: "staff"`, đi đúng quy trình tiếp nhận → cấp
+mã → phát hành, và đối tác thấy hồ sơ với nhãn *Haustek tạo thay*.
+
+**Chú thích dấu ?.** Câu giải thích không in dưới tiêu đề nữa: `HM.dau({mo})`
+và `HM.the({p})` vẽ một nút `?` cạnh tiêu đề (thuộc tính `data-giup`), rê
+chuột hoặc bấm để đọc, bấm thì ghim, Esc / bấm ngoài thì đóng. Giải thích dài
+(ví dụ cách khấu trừ tạm ứng) gom vào `<details class="hoc">`. 93 chuỗi giải
+thích tiếng Việt / tiếng Anh được viết lại ngắn gọn; hàng lối tắt trên bàn làm
+việc bỏ vì trùng thanh điều hướng.
+
 ## Khung: chuông thông báo, tìm nhanh, bảng dữ liệu
 
 Thanh trên có **chuông** (sự kiện mới của chính người xem: bảng kê sẵn sàng,

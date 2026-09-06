@@ -21,7 +21,7 @@ HT.dangKy({
   chu: {
     vi: {
       navChatLuong: 'Chất lượng lượt nghe', h1: 'Chất lượng lượt nghe',
-      mo: 'Cảnh báo lượt nghe bất thường gom theo tài khoản, sổ phạt của nền tảng và sức khoẻ metadata toàn danh mục. Mỗi cảnh báo có bằng chứng và hai thao tác ghi nhật ký.',
+      mo: 'Cảnh báo lượt nghe bất thường theo tài khoản, sổ phạt của nền tảng và sức khoẻ metadata.',
       kCb: 'Cảnh báo', kCbS: '{a} nghiêm trọng · {b} cảnh báo · {c} theo dõi · {n} bài đã quét', kCo: 'Bài bị nền tảng gắn cờ', kCoS: 'phạt {p}/tháng đang treo', kGo: 'Lượt nghe bị gỡ', kTk: 'Tài khoản nhiều bài tăng đồng loạt', kTkS: 'kiểu tách nhỏ để lách ngưỡng', kMo: 'Đang mở', kMoS: '{n} đang khiếu nại', kMd: 'Điểm metadata trung bình', kMdS: '{n} bản ghi thiếu mã quan trọng',
       tabTk: 'Theo tài khoản', tabCb: 'Cảnh báo', tabMd: 'Sức khoẻ metadata',
       cTk: 'Tài khoản', cMau: 'Kiểu', cAlerts: 'Cảnh báo', cNt: 'Nghiêm trọng', cCo: 'Bị gắn cờ', cPhat: 'Phạt / tháng', cGo: 'Lượt bị gỡ', cMo: 'Đang mở',
@@ -33,7 +33,7 @@ HT.dangKy({
     },
     en: {
       navChatLuong: 'Stream quality', h1: 'Stream quality',
-      mo: 'Unusual-stream alerts grouped by account, the platform penalty ledger and catalogue-wide metadata health. Every alert carries evidence and two logged actions.',
+      mo: 'Unusual-stream alerts by account, the platform penalty ledger and metadata health.',
       kCb: 'Alerts', kCbS: '{a} critical · {b} warning · {c} watch · {n} tracks scanned', kCo: 'Flagged by platforms', kCoS: '{p}/month penalty exposure', kGo: 'Streams removed', kTk: 'Accounts with many small lifts', kTkS: 'spreading streams thin to dodge thresholds', kMo: 'Open', kMoS: '{n} disputed', kMd: 'Average metadata score', kMdS: '{n} recordings missing key identifiers',
       tabTk: 'By account', tabCb: 'Alerts', tabMd: 'Metadata health',
       cTk: 'Account', cMau: 'Pattern', cAlerts: 'Alerts', cNt: 'Critical', cCo: 'Flagged', cPhat: 'Penalty / month', cGo: 'Removed', cMo: 'Open',

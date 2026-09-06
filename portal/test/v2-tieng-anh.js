@@ -23,7 +23,7 @@ const CHO = 'main .card-h p, main .kpi .l, main .kpi .s, main th, ' +
   'main .tabs button, main .page h1, main .page p, main .page-kpi .l, main .say, main .hint, ' +
   'main .check b, main .check span, main .note b, main .note p, main .empty b, main .empty span, ' +
   'main .card-f, main dl.kv dt, main h4.sec, main .stat b, main label.fld, main .wf .lbl, main .wf .nt, ' +
-  '.nav a span, .nav-grp, .top-note';
+  '.nav a span, .nav-grp, .top-note, main .help';
 
 (async () => {
   const b = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium-1194/chrome-linux/chrome' });
@@ -48,7 +48,7 @@ const CHO = 'main .card-h p, main .kpi .l, main .kpi .s, main th, ' +
           const VN = /[ăâđêôơưĂÂĐÊÔƠƯáàảãạấầẩẫậắằẳẵặéèẻẽẹếềểễệíìỉĩịóòỏõọốồổỗộớờởỡợúùủũụứừửữựýỳỷỹỵ]/;
           const out = [];
           document.querySelectorAll(sel).forEach(e => {
-            const t = (e.textContent || '').trim();
+            const t = (e.getAttribute && e.getAttribute('data-giup') ? e.getAttribute('data-giup') : (e.textContent || '')).replace(/<[^>]+>/g, '').trim();
             if (!t || t.length < 3) return;
             /* Tên nghệ sĩ, tên label, tên bài là DỮ LIỆU tiếng Việt và phải
                giữ nguyên ở chế độ EN. Trong câu giải thích chúng luôn nằm

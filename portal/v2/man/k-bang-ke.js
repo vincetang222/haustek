@@ -34,10 +34,10 @@ HT.dangKy({
       soBai: 'Số bài hát có doanh thu', soLuot: 'Tổng lượt nghe',
       inRa: 'In bảng kê', taiVe: 'Tải CSV',
       chuaMo: 'Kỳ này chưa chốt sổ',
-      chuaMoMo: 'Bảng kê chỉ được lập sau khi kỳ chốt sổ. Chốt sổ nghĩa là Haustek đã nhận đủ báo cáo của tất cả các nền tảng và đối soát khớp đến từng xu.',
+      chuaMoMo: 'Bảng kê chỉ có sau khi kỳ chốt sổ, tức Haustek đã nhận đủ báo cáo và đối soát khớp đến từng xu.',
       dieuKhoan: 'Căn cứ tính',
       luuY: 'Lưu ý',
-      luuYNoiDung: 'Số liệu trong bảng kê này là số trước thuế. Bảng kê PDF do Haustek gửi riêng từng kỳ ghi đầy đủ căn cứ tính và các khoản khấu trừ theo hợp đồng; khi có, bạn tải ở thẻ Bảng kê PDF phía trên.',
+      luuYNoiDung: 'Số trước thuế. Bảng kê PDF Haustek gửi từng kỳ ghi đủ căn cứ tính và khấu trừ theo hợp đồng; có thì tải ở thẻ Bảng kê PDF.',
       khongTq: 'Kỳ này không có báo cáo tác quyền',
       cacKy: 'Các kỳ đã chốt sổ', xemKy: 'Xem'
     },
@@ -56,10 +56,10 @@ HT.dangKy({
       soBai: 'Earning tracks', soLuot: 'Total streams',
       inRa: 'Print statement', taiVe: 'Download CSV',
       chuaMo: 'Period not open',
-      chuaMoMo: 'A statement exists only after the period is closed. Closed means every platform has reported and reconciliation balances to the cent.',
+      chuaMoMo: 'A statement exists only after the period closes: every platform reported and reconciliation balances to the cent.',
       dieuKhoan: 'Basis of calculation',
       luuY: 'Note',
-      luuYNoiDung: 'Figures here are before tax. The PDF statement Haustek sends each period carries the full basis of calculation and every contractual deduction; once ready it is in the PDF statement card above.',
+      luuYNoiDung: 'Figures before tax. The PDF statement Haustek sends each period carries the full basis and contractual deductions; download it above once ready.',
       khongTq: 'No publishing report this period',
       cacKy: 'Closed periods', xemKy: 'Open'
     }

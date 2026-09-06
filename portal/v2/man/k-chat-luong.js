@@ -35,26 +35,26 @@ HT.dangKy({
   chu: {
     vi: {
       navChatLuong: 'Chất lượng lượt nghe', h1: 'Chất lượng lượt nghe',
-      mo: 'Tín hiệu bất thường tính từ lượt nghe theo ngày, bài bị nền tảng gắn cờ, và sức khoẻ metadata của từng bài. Xem sớm để không bị gỡ lượt nghe hay giữ tiền.',
+      mo: 'Tín hiệu bất thường từ lượt nghe ngày, bài bị nền tảng gắn cờ và sức khoẻ metadata. Xem sớm để không bị gỡ lượt nghe hay giữ tiền.',
       kCb: 'Cảnh báo', kCbS: '{a} nghiêm trọng · {b} cảnh báo · {c} theo dõi', kCo: 'Bài bị nền tảng gắn cờ', kCoS: 'phạt {p}/tháng nếu không khiếu nại', kGo: 'Lượt nghe bị gỡ khỏi báo cáo',
       kKn: 'Đang khiếu nại', kKnS: 'trong {n} cảnh báo đang mở', kMd: 'Điểm metadata trung bình', kMdS: '{a} bài A · {b} bài B · {c} bài C', kChan: 'Bị giữ lại trước khi giao', kChanS: 'thiếu ISWC hoặc IPI',
       tabCb: 'Cảnh báo lượt nghe', tabMd: 'Sức khoẻ metadata',
       mucAll: 'Mọi mức', mucCritical: 'Nghiêm trọng', mucWarn: 'Cảnh báo', mucWatch: 'Theo dõi', ttAll: 'Mọi trạng thái', ttOpen: 'Đang mở', ttDisputed: 'Đang khiếu nại', ttResolved: 'Đã gỡ',
       tim: 'Tìm bài hát, ISRC…', khieuNai: 'Khiếu nại',
       khong: 'Không có cảnh báo nào khớp bộ lọc', khongMo: 'Đổi bộ lọc phía trên.', trong: 'Không có tín hiệu bất thường', trongMo: 'Lượt nghe của bạn đang trong mức bình thường của ngành (nền gian lận 1–3%).',
-      hoiKn: 'Khiếu nại cảnh báo cho “{t}”', hoiKnMo: 'Ghi rõ nguồn lượt nghe (chiến dịch quảng cáo, playlist, sự kiện) để Haustek gửi kèm cho nền tảng. Mỗi cảnh báo chỉ khiếu nại một lần.', hoiKnNote: 'Lý do và bằng chứng', gui: 'Gửi khiếu nại', daKn: 'Đã ghi nhận khiếu nại',
+      hoiKn: 'Khiếu nại cảnh báo cho “{t}”', hoiKnMo: 'Ghi rõ nguồn lượt nghe (quảng cáo, playlist, sự kiện) để Haustek gửi nền tảng. Mỗi cảnh báo khiếu nại một lần.', hoiKnNote: 'Lý do và bằng chứng', gui: 'Gửi khiếu nại', daKn: 'Đã ghi nhận khiếu nại',
       mdThieu: 'Mục còn thiếu nhiều nhất', mdThieuMo: 'Số bài thiếu từng mục; cột đỏ là mã quan trọng.', mdBang: 'Bài chưa đạt điểm A', mdBangMo: 'Bấm một bài để xem từng mục và cách sửa.', mdDu: 'Toàn bộ bài đạt điểm A', mdDuMo: 'Metadata đầy đủ, không có gì phải sửa.'
     },
     en: {
       navChatLuong: 'Stream quality', h1: 'Stream quality',
-      mo: 'Unusual signals computed from daily streams, tracks flagged by platforms, and the metadata health of each track. See it early, before streams are removed or money is held.',
+      mo: 'Unusual signals from daily streams, platform-flagged tracks and metadata health. Catch it before streams are removed or money held.',
       kCb: 'Alerts', kCbS: '{a} critical · {b} warning · {c} watch', kCo: 'Flagged by platforms', kCoS: '{p}/month penalty unless disputed', kGo: 'Streams removed from reports',
       kKn: 'Disputed', kKnS: 'of {n} open alerts', kMd: 'Average metadata score', kMdS: '{a} tracks A · {b} B · {c} C', kChan: 'Held before delivery', kChanS: 'missing ISWC or IPI',
       tabCb: 'Stream alerts', tabMd: 'Metadata health',
       mucAll: 'Any level', mucCritical: 'Critical', mucWarn: 'Warning', mucWatch: 'Watch', ttAll: 'Any status', ttOpen: 'Open', ttDisputed: 'Disputed', ttResolved: 'Cleared',
       tim: 'Search track, ISRC…', khieuNai: 'Dispute',
       khong: 'No alerts match the filters', khongMo: 'Change the filters above.', trong: 'No unusual signals', trongMo: 'Your streams sit within the industry’s normal range (baseline fraud 1–3%).',
-      hoiKn: 'Dispute the alert for “{t}”', hoiKnMo: 'Describe the source of the streams (ad campaign, playlist, event) so Haustek can pass it to the platform. Each alert can be disputed once.', hoiKnNote: 'Reason and evidence', gui: 'Send dispute', daKn: 'Dispute recorded',
+      hoiKn: 'Dispute the alert for “{t}”', hoiKnMo: 'Describe where the streams came from (ads, playlist, event) for Haustek to pass on. One dispute per alert.', hoiKnNote: 'Reason and evidence', gui: 'Send dispute', daKn: 'Dispute recorded',
       mdThieu: 'Most common gaps', mdThieuMo: 'Tracks missing each item; red bars are key identifiers.', mdBang: 'Tracks below grade A', mdBangMo: 'Click a track to see each item and how to fix it.', mdDu: 'Every track scores A', mdDuMo: 'Metadata is complete; nothing to fix.'
     }
   },

@@ -42,7 +42,7 @@ HT.dangKy({
   chu: {
     vi: {
       nhomTien: 'Tài chính', navKeToan: 'Kế toán', h1: 'Kế toán',
-      mo: 'Doanh thu kỳ này được ghi nhận vào những tài khoản nào, bên nào đang nợ bên nào, và phần nào chưa xác định người thụ hưởng.',
+      mo: 'Doanh thu kỳ ghi vào tài khoản nào, bên nào nợ bên nào, phần nào chưa có người thụ hưởng.',
       tBut: 'Bút toán kỳ', tCn: 'Công nợ bên thụ hưởng', tUng: 'Tạm ứng phải thu',
       tGhi: 'Ghi nhận doanh thu 12 kỳ', tThue: 'Thuế và khấu trừ',
       no: 'Nợ', co: 'Có', tk: 'TK', dienGiai: 'Diễn giải', soTien: 'Số tiền',
@@ -61,14 +61,14 @@ HT.dangKy({
       tatCa: 'Tất cả', coChi: 'Có thanh toán kỳ này', duoiNguong: 'Dưới ngưỡng, chuyển kỳ sau', dangTru: 'Đang thu hồi tạm ứng',
       xuat: 'Xuất CSV', tongCong: 'Tổng cộng',
       ungGoc: 'Số đã tạm ứng', ungDaThu: 'Đã thu hồi', ungConLai: 'Còn phải thu hồi', ungKy: 'Số kỳ còn lại',
-      giaiThichUng: 'Tạm ứng là khoản Haustek đã trả trước cho đối tác. Khoản này là tài sản (phải thu), không phải chi phí, và chỉ tất toán khi bên thụ hưởng có đủ doanh thu để thu hồi.',
+      giaiThichUng: 'Tạm ứng là khoản Haustek trả trước: tài sản phải thu, không phải chi phí; tất toán khi đối tác đủ doanh thu thu hồi.',
       chuaLam: 'Bản mẫu chưa mô hình hoá',
       dtGop: 'Doanh thu gộp', dtPhi: 'Doanh thu phí dịch vụ Haustek', dtPhaiTra: 'Phải trả các bên',
       bienPhi: 'Tỷ lệ phí trên doanh thu gộp'
     },
     en: {
       nhomTien: 'Money', navKeToan: 'Accounting', h1: 'Accounting',
-      mo: 'What the period’s revenue was booked as, who owes whom, and which part has no owner yet.',
+      mo: 'What the period’s revenue was booked as, who owes whom, and what has no owner yet.',
       tBut: 'Period journal', tCn: 'Payee ledger', tUng: 'Advances receivable',
       tGhi: '12-period recognition', tThue: 'Tax & withholding',
       no: 'Dr', co: 'Cr', tk: 'A/C', dienGiai: 'Narrative', soTien: 'Amount',
@@ -87,7 +87,7 @@ HT.dangKy({
       tatCa: 'All', coChi: 'Paid this period', duoiNguong: 'Below threshold', dangTru: 'Recouping',
       xuat: 'Export CSV', tongCong: 'Total',
       ungGoc: 'Advanced', ungDaThu: 'Recouped', ungConLai: 'Outstanding', ungKy: 'Periods left',
-      giaiThichUng: 'An advance is money Haustek already paid. It is an asset (receivable), not a cost — and it only clears when the payee earns enough to offset it.',
+      giaiThichUng: 'An advance is money paid up front: a receivable, not a cost; it clears when the payee earns enough.',
       chuaLam: 'Not modelled in the prototype',
       dtGop: 'Gross revenue', dtPhi: 'Haustek fee revenue', dtPhaiTra: 'Payable to parties',
       bienPhi: 'Fee as share of gross'

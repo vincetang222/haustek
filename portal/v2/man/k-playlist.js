@@ -27,7 +27,7 @@ HT.dangKy({
   chu: {
     vi: {
       navPlaylist: 'Playlist & bảng xếp hạng', h1: 'Playlist & bảng xếp hạng',
-      mo: 'Bài hát của bạn đang có mặt ở playlist và bảng xếp hạng nào trên từng nền tảng, vị trí bao nhiêu và từ ngày nào. Nền tảng cập nhật mỗi ngày.',
+      mo: 'Bài của bạn đang ở playlist và bảng xếp hạng nào, vị trí bao nhiêu, từ ngày nào. Cập nhật mỗi ngày.',
       kDangCo: 'Vị trí đang có', kDangCoS: 'trên {n} playlist và bảng xếp hạng', kMoi: 'Mới trong 30 ngày', kBxh: 'Vị trí trên bảng xếp hạng', kReach: 'Người theo dõi tiếp cận', kReachS: 'tổng người theo dõi các playlist đang có mặt', kRoi: 'Đã rời',
       top: 'Playlist mang về nhiều lượt nghe nhất', topMo: 'Ước tính lượt nghe 7 ngày từ từng playlist, theo vị trí và số người theo dõi.',
       theoLoai: 'Theo loại', bienTap: 'Playlist biên tập', thuatToan: 'Playlist thuật toán', bxh: 'Bảng xếp hạng', theoNt: 'Theo nền tảng', viTri: 'vị trí',
@@ -41,7 +41,7 @@ HT.dangKy({
     },
     en: {
       navPlaylist: 'Playlists & charts', h1: 'Playlists & charts',
-      mo: 'Which playlists and charts your tracks are on, per platform, at what position and since when. Platforms update daily.',
+      mo: 'Which playlists and charts your tracks are on, position and since when. Updated daily.',
       kDangCo: 'Current placements', kDangCoS: 'across {n} playlists and charts', kMoi: 'New in 30 days', kBxh: 'Chart positions', kReach: 'Follower reach', kReachS: 'followers of the playlists you are on', kRoi: 'Removed',
       top: 'Playlists driving the most streams', topMo: 'Estimated 7-day streams from each playlist, by position and follower count.',
       theoLoai: 'By kind', bienTap: 'Editorial playlists', thuatToan: 'Algorithmic playlists', bxh: 'Charts', theoNt: 'By platform', viTri: 'placements',

@@ -21,7 +21,7 @@ HT.dangKy({
   chu: {
     vi: {
       navDoi: 'Đối soát & xét duyệt kỳ', h1: 'Đối soát & xét duyệt kỳ',
-      mo: 'Tổng trên file gốc phải bằng phần đã khớp cộng phần chưa khớp ISRC, chính xác tới từng xu. Kỳ chưa xét duyệt thì label và nghệ sĩ chưa xem được con số nào.',
+      mo: 'Tổng file gốc phải bằng phần đã khớp cộng phần chờ khớp, đến từng xu. Chưa xét duyệt thì đối tác chưa thấy số.',
       tDoi: 'Đối soát theo nguồn', tDk: 'Điều kiện xét duyệt', tTg: 'Tỷ giá', tXem: 'Xem trước thanh toán', tLs: 'Các kỳ',
       luong: 'Nguồn', ttFile: 'Tổng trên file gốc', daKhop: 'Đã khớp bản ghi',
       treo: 'Chưa khớp ISRC', lech: 'Chênh lệch', truyThu: 'Truy thu kỳ khác',
@@ -33,12 +33,12 @@ HT.dangKy({
       xemTruoc: 'Bảng thanh toán nếu xét duyệt kỳ ngay bây giờ',
       seChi: 'Sẽ thanh toán', donSang: 'Chuyển sang kỳ sau', thuTamUng: 'Thu hồi tạm ứng', giuLai: 'Giữ lại (điểm producer)',
       benNhan: 'bên thụ hưởng', boQua: 'Xét duyệt kèm ghi nhận ngoại lệ',
-      canhBoQua: 'Ngoại lệ sẽ được ghi vĩnh viễn vào hồ sơ xét duyệt kỳ, kèm tên người xét duyệt. Chỉ xét duyệt theo cách này khi biết chắc lý do và chấp nhận trách nhiệm.',
+      canhBoQua: 'Ngoại lệ ghi vĩnh viễn vào hồ sơ xét duyệt kèm tên người duyệt. Chỉ dùng khi chắc lý do.',
       lyDo: 'Lý do', nguoiDuyet: 'Người xét duyệt'
     },
     en: {
       navDoi: 'Reconcile & approve', h1: 'Reconcile & approve period',
-      mo: 'The source file total must equal matched plus held — to the cent. Until a period is approved, clients see nothing.',
+      mo: 'Source total must equal matched plus held, to the cent. Until approved, partners see nothing.',
       tDoi: 'Reconciliation by feed', tDk: 'Approval conditions', tTg: 'FX rate', tXem: 'Payout preview', tLs: 'All periods',
       luong: 'Feed', ttFile: 'Source file total', daKhop: 'Matched to recordings',
       treo: 'Held', lech: 'Variance', truyThu: 'Back-claims from other periods',
@@ -50,7 +50,7 @@ HT.dangKy({
       xemTruoc: 'Payout table if approved now',
       seChi: 'Payable', donSang: 'Carried to next period', thuTamUng: 'Recouped against advances', giuLai: 'Held (producer)',
       benNhan: 'payees', boQua: 'Approve, overriding unmet conditions',
-      canhBoQua: 'An override is written permanently into the approval record, with the name of whoever made it. Only do this knowing exactly why, and accepting the consequence.',
+      canhBoQua: 'The override is written permanently to the approval record with your name. Only when you are sure.',
       lyDo: 'Reason', nguoiDuyet: 'Approved by'
     }
   },

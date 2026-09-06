@@ -36,7 +36,7 @@ HT.dangKy({
       soVoi: 'so với', khac: 'nền tảng khác', luotNghe: 'lượt nghe',
       /* góc nhìn A&R */
       doiTac: 'Đối tác dẫn đầu kỳ này',
-      doiTacMo: 'Label và nghệ sĩ độc lập xếp theo doanh thu gộp; nghệ sĩ thuộc label tính vào label. Bấm một dòng để xem chi tiết dòng tiền.',
+      doiTacMo: 'Label và nghệ sĩ độc lập theo doanh thu gộp; nghệ sĩ thuộc label tính vào label. Bấm một dòng để xem dòng tiền.',
       cDoiTac: 'Đối tác', cTyLe: 'Tỷ lệ nghệ sĩ', cHuong: 'Được hưởng', docLap: 'Nghệ sĩ độc lập',
       ungThu: 'Tạm ứng còn phải thu hồi',
       ungThuMo: 'Bình quân phần được hưởng của 3 kỳ đã xét duyệt gần nhất ({k}) cho biết còn bao nhiêu kỳ nữa thì thu hồi hết.',
@@ -71,7 +71,7 @@ HT.dangKy({
       dong: 'rows', tien: 'Amount', khong: 'Nothing on hold',
       soVoi: 'vs', khac: 'other stores', luotNghe: 'streams',
       doiTac: 'Top partners this period',
-      doiTacMo: 'Labels and independent artists by gross revenue; artists under a label count toward the label. Click a row for the money chain.',
+      doiTacMo: 'Labels and independent artists by gross; artists under a label count toward it. Click a row for the money chain.',
       cDoiTac: 'Partner', cTyLe: 'Artist rate', cHuong: 'Earned', docLap: 'Independent artist',
       ungThu: 'Advances outstanding',
       ungThuMo: 'Average earnings over the last 3 approved periods ({k}) give the number of periods left to clear.',

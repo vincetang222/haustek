@@ -17,14 +17,14 @@ HT.dangKy({
   chu: {
     vi: {
       navChienDich: 'Chiến dịch', h1: 'Chiến dịch quảng bá',
-      mo: 'Liên kết thông minh, pitch playlist và quảng cáo trả phí của mọi tài khoản. Mỗi dòng là một phễu kết quả; bấm để xem chi tiết.',
+      mo: 'Liên kết thông minh, pitch playlist, quảng cáo của mọi tài khoản. Bấm một dòng để xem chi tiết.',
       kDang: 'Đang chạy', kDangS: '{a} sắp chạy · {b} đã xong', kLuu: 'Lưu trước', kPitch: 'Playlist nhận', kPitchS: 'trong {n} lượt pitch', kChi: 'Đã chi quảng cáo', kChiS: '{n} lượt nghe quy được', kGia: 'Giá mỗi lượt nghe',
       loaiAll: 'Mọi loại', loaiSl: 'Liên kết thông minh', loaiPitch: 'Pitch playlist', loaiAds: 'Quảng cáo', ttAll: 'Mọi trạng thái', ttRunning: 'Đang chạy', ttPlanned: 'Sắp chạy', ttDone: 'Đã xong', tim: 'Tìm bài, tài khoản…',
       khong: 'Không có chiến dịch khớp bộ lọc', khongMo: 'Đổi bộ lọc phía trên.', chiTiet: 'Chiến dịch', dong: 'Đóng'
     },
     en: {
       navChienDich: 'Campaigns', h1: 'Promotion campaigns',
-      mo: 'Smart links, playlist pitching and paid ads across all accounts. Each row is a results funnel; click for detail.',
+      mo: 'Smart links, playlist pitching and paid ads across accounts. Open a row for detail.',
       kDang: 'Running', kDangS: '{a} planned · {b} done', kLuu: 'Pre-saves', kPitch: 'Playlists accepted', kPitchS: 'of {n} pitches', kChi: 'Ad spend', kChiS: '{n} attributed streams', kGia: 'Cost per stream',
       loaiAll: 'Any kind', loaiSl: 'Smart links', loaiPitch: 'Playlist pitching', loaiAds: 'Paid ads', ttAll: 'Any status', ttRunning: 'Running', ttPlanned: 'Planned', ttDone: 'Done', tim: 'Search track, account…',
       khong: 'No campaigns match the filters', khongMo: 'Change the filters above.', chiTiet: 'Campaign', dong: 'Close'

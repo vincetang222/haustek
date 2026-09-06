@@ -18,9 +18,15 @@ function dai(s, n) {
 /* ---- đầu trang ---- */
 /* o.nut: nút hành động chính của trang, đứng bên phải tiêu đề — một chỗ
    cho mọi màn, thay cho mỗi màn tự đặt nút một kiểu dưới dải ô số. */
+/* Câu giải thích không in ra nữa: một dấu ? cạnh tiêu đề, rê chuột hoặc
+   bấm để đọc. Chữ đã được màn hình escape sẵn nên đặt thẳng vào thuộc tính. */
+function giup(chu) {
+  if (!chu) return '';
+  var nhan = HT.lang === 'en' ? 'What is this?' : 'Giải thích';
+  return '<button type="button" class="help" data-giup="' + chu + '" aria-label="' + nhan + '" title="">?</button>';
+}
 function dau(o) {
-  return '<div class="page"><div><h1>' + (o.h1 || '') + '</h1>' +
-    (o.mo ? '<p>' + o.mo + '</p>' : '') + '</div>' +
+  return '<div class="page"><div><h1>' + (o.h1 || '') + giup(o.mo) + '</h1></div>' +
     (o.so && o.so.length ? '<div class="page-kpis">' + o.so.map(function (k) {
       return '<div class="page-kpi"><div class="l">' + esc(k.l) + '</div>' +
         '<div class="v"' + (k.mau ? ' style="color:' + k.mau + '"' : '') + '>' + esc(k.v) + '</div></div>';
@@ -49,8 +55,8 @@ function the(o) {
   return '<div class="card"' + (o.id ? ' id="' + esc(o.id) + '"' : '') + '>' +
     (o.dai ? '<div class="ribbon ' + o.dai.kieu + '">' + icon(o.dai.icon || 'info') +
       '<span>' + o.dai.chu + '</span></div>' : '') +
-    (o.h2 || o.hanhDong ? '<div class="card-h"><div style="min-width:0"><h2>' + (o.h2 || '') + '</h2>' +
-      (o.p ? '<p>' + o.p + '</p>' : '') + '</div><div class="sp"></div>' +
+    (o.h2 || o.hanhDong ? '<div class="card-h"><div style="min-width:0"><h2>' + (o.h2 || '') + giup(o.p) + '</h2>' +
+      '</div><div class="sp"></div>' +
       (o.hanhDong ? '<div class="btnrow">' + o.hanhDong + '</div>' : '') + '</div>' : '') +
     (o.thoBody ? o.than : '<div class="card-b">' + (o.than || '') + '</div>') +
     (o.chan ? '<div class="card-f">' + o.chan + '</div>' : '') + '</div>';
@@ -96,6 +102,28 @@ function menu(items, o) {
   return '<details class="menu"><summary class="btn sm ghost" aria-label="' + esc(o.nhan || (HT.lang === 'en' ? 'More' : 'Thêm')) + '" title="' + esc(o.nhan || (HT.lang === 'en' ? 'More' : 'Thêm')) + '">' + icon('more') + '</summary>' +
     '<div class="menu-list">' + ds.join('') + '</div></details>';
 }
+/* hộp chú thích nổi cho nút ? : rê chuột thì hiện, bấm thì ghim, Esc / bấm ngoài thì đóng */
+var _tip = null, _tipGhim = null;
+function tipBox() { if (!_tip) { _tip = document.createElement('div'); _tip.className = 'tipbox'; _tip.hidden = true; document.body.appendChild(_tip); } return _tip; }
+function tipHien(nut) {
+  var b = tipBox(); b.innerHTML = nut.getAttribute('data-giup') || ''; b.hidden = false;
+  var r = nut.getBoundingClientRect(); b.style.left = '0px'; b.style.top = '0px';
+  var w = b.offsetWidth, h = b.offsetHeight;
+  var left = Math.max(8, Math.min(r.left - 8, window.innerWidth - w - 8));
+  var top = r.bottom + 8; if (top + h > window.innerHeight - 8) top = Math.max(8, r.top - h - 8);
+  b.style.left = left + 'px'; b.style.top = top + 'px';
+}
+function tipAn() { if (_tip) _tip.hidden = true; if (_tipGhim) { _tipGhim.classList.remove('on'); _tipGhim = null; } }
+document.addEventListener('mouseover', function (e) { var n = e.target.closest && e.target.closest('.help'); if (n && !_tipGhim) tipHien(n); });
+document.addEventListener('mouseout', function (e) { var n = e.target.closest && e.target.closest('.help'); if (n && !_tipGhim) tipAn(); });
+document.addEventListener('focusin', function (e) { var n = e.target.closest && e.target.closest('.help'); if (n && !_tipGhim) tipHien(n); });
+document.addEventListener('focusout', function (e) { var n = e.target.closest && e.target.closest('.help'); if (n && !_tipGhim) tipAn(); });
+document.addEventListener('keydown', function (e) { if (e.key === 'Escape') tipAn(); });
+document.addEventListener('click', function (e) {
+  var n = e.target.closest && e.target.closest('.help');
+  if (n) { e.preventDefault(); if (_tipGhim === n) { tipAn(); } else { tipAn(); _tipGhim = n; n.classList.add('on'); tipHien(n); } return; }
+  if (_tipGhim && !(e.target.closest && e.target.closest('.tipbox'))) tipAn();
+});
 document.addEventListener('click', function (e) {
   var x = e.target.closest('[data-ghi-dong]');
   if (x) { try { localStorage.setItem('haustek.ghi.' + x.getAttribute('data-ghi-dong'), '1'); } catch (err) {} var n = x.closest('.note'); if (n) n.remove(); return; }

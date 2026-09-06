@@ -24,7 +24,7 @@ HT.dangKy({
   chu: {
     vi: {
       navPhatHanh: 'Phát hành', h1: 'Hồ sơ phát hành',
-      mo: 'Hồ sơ đối tác gửi lên để phát hành bản ghi mới: tiếp nhận, cấp mã ISRC/UPC, phân phối lên nền tảng. Bản ghi chỉ khớp được doanh thu khi đã có ISRC trong danh mục.',
+      mo: 'Hồ sơ phát hành mới: tiếp nhận, cấp ISRC/UPC, phân phối. Bản ghi chỉ khớp doanh thu khi đã có ISRC trong danh mục.',
       choTiep: 'Chờ tiếp nhận', choMa: 'Chờ cấp mã', choPh: 'Chờ phát hành', daPh: 'Đã phát hành', traLai: 'Trả lại bổ sung',
       locDang: 'Đang xử lý', locHet: 'Tất cả',
       tim: 'Tìm mã hồ sơ, tên bản phát hành, nghệ sĩ…',
@@ -33,11 +33,14 @@ HT.dangKy({
       tiepNhan: 'Tiếp nhận hồ sơ', capMa: 'Cấp mã ISRC/UPC', danhDau: 'Đánh dấu đã phát hành', traLaiNut: 'Trả lại để bổ sung',
       hoiTra: 'Cần đối tác bổ sung gì?', hoiTraMo: 'Ghi rõ từng thứ còn thiếu. Đối tác nhìn thấy nguyên văn ghi chú này trên cổng của họ.',
       hoiPh: 'Ngày phát hành thực tế', hoiPhMo: 'Ngày bản ghi lên các nền tảng. Mặc định là ngày đối tác mong muốn.',
-      hoiMa: 'Cấp mã cho hồ sơ này?', hoiMaMo: 'Track chưa có ISRC sẽ được cấp mã VN-HTK; bản phát hành chưa có UPC sẽ được cấp UPC. Mã đã cấp không thể thay đổi.',
-      hoiTiep: 'Tiếp nhận hồ sơ này?', hoiTiepMo: 'Tiếp nhận nghĩa là hồ sơ đã được kiểm tra và đủ thông tin để xử lý tiếp. Đối tác sẽ thấy trạng thái thay đổi ngay.',
+      hoiMa: 'Cấp mã cho hồ sơ này?', hoiMaMo: 'Track chưa có ISRC được cấp mã VN-HTK; bản phát hành chưa có UPC được cấp UPC. Mã đã cấp không đổi.',
+      hoiTiep: 'Tiếp nhận hồ sơ này?', hoiTiepMo: 'Tiếp nhận nghĩa là hồ sơ đã kiểm, đủ thông tin để xử lý tiếp. Đối tác thấy trạng thái ngay.',
       lichSu: 'Lịch sử hồ sơ', track: 'Danh sách track', sangTac: 'Sáng tác', producer: 'Producer',
       chuaCoMa: 'chưa có mã', quyTrinh: 'Sau khi phát hành',
-      quyTrinhMo: 'Bản ghi có ISRC trong danh mục thì doanh thu báo cáo về sẽ tự khớp theo mã. Bản ghi đã phát hành mà không có mã trong danh mục chắc chắn sẽ rơi vào danh sách chờ khớp ISRC.',
+      quyTrinhMo: 'Có ISRC trong danh mục thì doanh thu tự khớp theo mã; không có mã thì chắc chắn rơi vào hàng chờ khớp ISRC.',
+      taoHo: 'Tạo hồ sơ thay đối tác', taoHoMo: 'Đối tác gửi file qua email hoặc gọi điện: nhân viên nhập hồ sơ thay, đối tác thấy trên cổng với nhãn "Haustek tạo thay bạn".',
+      fDoiTac: 'Đối tác (tên hoặc mã)', fNs: 'Nghệ sĩ chính', fLoai: 'Loại', fTen: 'Tên bản phát hành', fPb: 'Phiên bản', fTl: 'Thể loại', fNn: 'Ngôn ngữ', fNgay: 'Ngày phát hành', fUpc: 'UPC (nếu có)', fBia: 'Link ảnh bìa', fGhi: 'Ghi chú', fTracks: 'Danh sách track', fTracksMo: 'Mỗi dòng một track: Tên | ISRC (nếu có) | Producer. Sáng tác mặc định 100% cho nghệ sĩ chính.',
+      khongThayDt: 'Không tìm thấy đối tác "{q}"', daTaoHo: 'Đã tạo hồ sơ {id} thay {t}', nhanStaff: 'Haustek tạo thay',
       guiBoi: 'Người gửi', ngayGui: 'Thời điểm gửi', ngayMong: 'Ngày phát hành mong muốn', ngayThuc: 'Ngày phát hành thực tế',
       theLoai: 'Thể loại', ngonNgu: 'Ngôn ngữ lời', anhBia: 'Ảnh bìa', ghiChu: 'Ghi chú của đối tác',
       daTiepNhan: 'Đã tiếp nhận hồ sơ', daCapMa: 'Đã cấp mã', daPhatHanh: 'Đã đánh dấu phát hành', daTraLai: 'Đã trả lại hồ sơ',
@@ -45,7 +48,7 @@ HT.dangKy({
     },
     en: {
       navPhatHanh: 'Releases', h1: 'Release submissions',
-      mo: 'Submissions from partners for new releases: receive, assign ISRC/UPC, deliver to platforms. A recording only matches revenue once its ISRC is in the catalogue.',
+      mo: 'New release submissions: receive, assign ISRC/UPC, deliver. A recording matches revenue only once its ISRC is in the catalogue.',
       choTiep: 'Awaiting receipt', choMa: 'Awaiting codes', choPh: 'Awaiting release', daPh: 'Released', traLai: 'Returned',
       locDang: 'In progress', locHet: 'All',
       tim: 'Search submission ID, title, artist…',
@@ -54,11 +57,14 @@ HT.dangKy({
       tiepNhan: 'Receive', capMa: 'Assign ISRC/UPC', danhDau: 'Mark as released', traLaiNut: 'Return for fixes',
       hoiTra: 'What does the partner need to add?', hoiTraMo: 'List each missing item. The partner sees this note verbatim on their portal.',
       hoiPh: 'Actual release date', hoiPhMo: 'The date the recording went live on platforms. Defaults to the requested date.',
-      hoiMa: 'Assign codes to this submission?', hoiMaMo: 'Tracks without an ISRC receive a VN-HTK code; a release without a UPC receives one. Assigned codes cannot change.',
-      hoiTiep: 'Receive this submission?', hoiTiepMo: 'Receiving means the submission has been checked and is complete enough to proceed. The partner sees the status change immediately.',
+      hoiMa: 'Assign codes to this submission?', hoiMaMo: 'Tracks without an ISRC get a VN-HTK code; a release without a UPC gets one. Codes cannot change.',
+      hoiTiep: 'Receive this submission?', hoiTiepMo: 'Receiving means the submission is checked and complete. The partner sees the status at once.',
       lichSu: 'Submission history', track: 'Tracks', sangTac: 'Writers', producer: 'Producer',
       chuaCoMa: 'no code yet', quyTrinh: 'After release',
-      quyTrinhMo: 'A recording whose ISRC is in the catalogue matches incoming revenue automatically. A release without a code in the catalogue is guaranteed to land in the ISRC matching queue.',
+      quyTrinhMo: 'With the ISRC in the catalogue revenue matches itself; without it the release lands in the ISRC queue.',
+      taoHo: 'Create for a partner', taoHoMo: 'When a partner sends files by email or phones in, staff enter the release; the partner sees it on the portal labelled "Created by Haustek for you".',
+      fDoiTac: 'Partner (name or id)', fNs: 'Main artist', fLoai: 'Type', fTen: 'Release title', fPb: 'Version', fTl: 'Genre', fNn: 'Language', fNgay: 'Release date', fUpc: 'UPC (if any)', fBia: 'Artwork link', fGhi: 'Note', fTracks: 'Track list', fTracksMo: 'One track per line: Title | ISRC (optional) | Producer. Writers default to 100% for the main artist.',
+      khongThayDt: 'No partner matching “{q}”', daTaoHo: 'Created {id} for {t}', nhanStaff: 'Created by Haustek',
       guiBoi: 'Submitted by', ngayGui: 'Submitted at', ngayMong: 'Requested release date', ngayThuc: 'Actual release date',
       theLoai: 'Genre', ngonNgu: 'Lyric language', anhBia: 'Artwork', ghiChu: 'Partner’s note',
       daTiepNhan: 'Submission received', daCapMa: 'Codes assigned', daPhatHanh: 'Marked as released', daTraLai: 'Submission returned',
@@ -87,7 +93,7 @@ HT.dangKy({
       return true;
     });
 
-    var html = HM.dau({ h1: HM.esc(t('h1')), mo: HM.esc(t('mo')) });
+    var html = HM.dau({ h1: HM.esc(t('h1')), mo: HM.esc(t('mo')), nut: A.quyen && A.quyen.nhom('phatHanhHo') ? '<button type="button" class="btn pri" data-tao-ho>' + HM.icon('up') + HM.esc(t('taoHo')) + '</button>' : '' });
     html += HM.so([
       { l: t('choTiep'), v: HT.fmt.n(dem.submitted), lon: true, mau: dem.submitted ? HB.mau('warn') : '' },
       { l: t('choMa'), v: HT.fmt.n(dem.received) },
@@ -135,6 +141,7 @@ HT.dangKy({
     HM.nhap(root, '[data-tk]', function (el) { LOC.tk = el.value; c.veLai(); });
     HM.bam(root, '[data-loc]', function (el) { LOC.loc = el.getAttribute('data-loc'); c.veLai(); });
     HM.bam(root, '[data-hs]', function (el) { moHoSo(c, el.getAttribute('data-hs')); });
+    HM.bam(root, '[data-tao-ho]', function () { taoHoSoHo(c, null); });
     HM.bam(root, '[data-xuat]', function () {
       HM.csv('ho-so-phat-hanh.csv', [t('cMa'), t('cTen'), c.lang === 'vi' ? 'Nghệ sĩ' : 'Artist', t('cLoai'), 'Track', t('cNgay'), t('cGui'), t('cTt'), t('cCapNhat')],
         rows.map(function (r) { return [r.id, r.title, r.artistName, r.type, r.tracks.length, r.releaseDate, r.submittedBy, NHAN[c.lang][r.status], r.updatedAt]; }));
@@ -157,7 +164,7 @@ function moHoSo(c, id) {
   c.nganTruot(
     '<div class="btnrow" style="margin-bottom:14px">' + HM.tag(NHAN[c.lang][r.status], KIEU[r.status]) + nut + '</div>' +
     HM.kv([
-      { t: t('guiBoi'), v: r.submittedBy + (r.submittedRole === 'label' ? (c.lang === 'vi' ? ' (label gửi thay nghệ sĩ)' : ' (label on behalf of the artist)') : '') },
+      { t: t('guiBoi'), v: r.submittedBy + (r.submittedRole === 'label' ? (c.lang === 'vi' ? ' (label gửi thay nghệ sĩ)' : ' (label on behalf of the artist)') : r.submittedRole === 'staff' ? ' (' + t('nhanStaff') + ')' : '') },
       { t: t('ngayGui'), v: HT.fmt.luc(r.createdAt) },
       { t: t('ngayMong'), v: HT.fmt.ngay(r.releaseDate) },
       r.releasedAt ? { t: t('ngayThuc'), v: HT.fmt.ngay(r.releasedAt), manh: true } : null,
@@ -222,5 +229,70 @@ function moHoSo(c, id) {
       });
     } });
 }
+
+/* ---------------------------------------------------------------------
+   Tạo hồ sơ phát hành thay đối tác. Dùng từ tiêu đề màn Phát hành và từ
+   ngăn Đối tác (partyKey có sẵn). Tự chọn nghệ sĩ khi đối tác là nghệ sĩ;
+   label thì chọn nghệ sĩ thuộc label. Track nhập nhanh mỗi dòng một track.
+   --------------------------------------------------------------------- */
+var THE_LOAI_HO = ['Pop', 'Indie', 'R&B', 'Hip-hop', 'Electronic', 'Alternative', 'Ballad', 'Rock', 'Lo-fi', 'Folk', 'Khác'];
+function tx(c, k) { var m = HT.man.filter(function (x) { return x.id === 'phat-hanh'; })[0]; var d = m && m.chu && m.chu[c.lang]; return d && d[k] != null ? d[k] : k; }
+function taoHoSoHo(c, partyKey) {
+  var A = c.A, me = A.staff.me, t = function (k) { return tx(c, k); };
+  var ten = partyKey ? A.partyName(partyKey) : '';
+  function nsCua(pk) {
+    if (!pk) return [];
+    if (pk[0] === 'A') { var a = A.artists[+pk.slice(2)]; return a ? [a] : []; }
+    var id = +pk.slice(2); return A.artists.filter(function (a) { return a.labelId === id; });
+  }
+  function oNs(pk) {
+    var ds = nsCua(pk);
+    if (!ds.length) return '<p class="say">' + HM.esc(t('fDoiTac')) + '</p>';
+    if (pk[0] === 'A') return '<input type="hidden" data-o="artistId" value="' + ds[0].id + '"><div class="hint" style="margin:0">' + HM.esc(t('fNs') + ': ' + ds[0].name) + '</div>';
+    return '<label class="fld">' + HM.esc(t('fNs')) + ' *</label><select class="in" data-o="artistId">' + ds.map(function (a) { return '<option value="' + a.id + '">' + HM.esc(a.name + ' · ' + a.clientId) + '</option>'; }).join('') + '</select>';
+  }
+  var homNay = new Date(Date.now() + 21 * 864e5).toISOString().slice(0, 10);
+  var than = (partyKey ? '<input type="hidden" data-o="pk" value="' + HM.esc(partyKey) + '"><div class="bar" style="margin-bottom:10px">' + HM.hinh(ten, A.partyClientId(partyKey), 'sm') + '<b>' + HM.esc(ten) + '</b><span class="muted mono" style="font-size:12px">' + HM.esc(A.partyClientId(partyKey)) + '</span></div>'
+      : '<label class="fld">' + HM.esc(t('fDoiTac')) + ' *</label><input class="in" data-o="tk" list="ds-ho-dt" placeholder="Nightform Records · HTK-L001"><datalist id="ds-ho-dt">' + A.parties.list({}).rows.slice(0, 300).map(function (r) { return '<option value="' + HM.esc(r.clientId) + '">' + HM.esc(r.name) + '</option>'; }).join('') + '</datalist>') +
+    '<div data-ns style="margin-top:10px">' + oNs(partyKey) + '</div>' +
+    '<div class="fldrow two-up" style="margin-top:12px">' +
+      '<div><label class="fld">' + HM.esc(t('fTen')) + ' *</label><input class="in" data-o="title"></div>' +
+      '<div><label class="fld">' + HM.esc(t('fLoai')) + ' *</label><select class="in" data-o="type"><option value="single">Single</option><option value="ep">EP</option><option value="album">Album</option></select></div>' +
+      '<div><label class="fld">' + HM.esc(t('fTl')) + '</label><select class="in" data-o="genre">' + THE_LOAI_HO.map(function (g) { return '<option>' + HM.esc(g) + '</option>'; }).join('') + '</select></div>' +
+      '<div><label class="fld">' + HM.esc(t('fNn')) + '</label><select class="in" data-o="lang"><option value="vi">Tiếng Việt</option><option value="en">English</option><option value="instrumental">Instrumental</option></select></div>' +
+      '<div><label class="fld">' + HM.esc(t('fNgay')) + ' *</label><input class="in" data-o="releaseDate" type="date" value="' + homNay + '"></div>' +
+      '<div><label class="fld">' + HM.esc(t('fUpc')) + '</label><input class="in" data-o="upc" inputmode="numeric"></div>' +
+      '<div><label class="fld">' + HM.esc(t('fPb')) + '</label><input class="in" data-o="version" placeholder="Deluxe / Live / Remastered"></div>' +
+      '<div><label class="fld">' + HM.esc(t('fBia')) + '</label><input class="in" data-o="artwork" type="url" placeholder="https://drive.google.com/…"></div></div>' +
+    '<label class="fld" style="margin-top:12px">' + HM.esc(t('fTracks')) + ' *</label><textarea class="in mono" rows="4" data-o="tracks" placeholder="Đêm | VNHTK2600001 | Producer A\nSáng | | Producer B"></textarea><div class="hint" style="margin:4px 0 0">' + HM.esc(t('fTracksMo')) + '</div>' +
+    '<label class="fld" style="margin-top:12px">' + HM.esc(t('fGhi')) + '</label><input class="in" data-o="note">';
+  c.hoiThoai({ tieuDe: t('taoHo') + (ten ? ' · ' + ten : ''), moTa: HM.esc(t('taoHoMo')), than: than, dong: t('taoHo'), rong: true,
+    khiMo: function (bg) {
+      var tkIn = bg.querySelector('[data-o="tk"]'); if (!tkIn) return;
+      var hen = null;
+      tkIn.addEventListener('input', function () {
+        clearTimeout(hen);
+        hen = setTimeout(function () {
+          var r = A.parties.list({ q: tkIn.value }).rows[0];
+          bg.querySelector('[data-ns]').innerHTML = oNs(r ? r.partyKey : null);
+          if (r) bg.querySelector('[data-ns]').setAttribute('data-pk', r.partyKey);
+        }, 200);
+      });
+    } }).then(function (f) {
+    if (!f) return;
+    var pk = f.pk || (document.querySelector('[data-ns]') && document.querySelector('[data-ns]').getAttribute('data-pk'));
+    if (!pk) { var r = A.parties.list({ q: f.tk || '' }).rows[0]; if (!r) { c.thongBao(t('khongThayDt').replace('{q}', f.tk || ''), 'no'); return; } pk = r.partyKey; }
+    var nsList = nsCua(pk), ns = nsList.filter(function (a) { return String(a.id) === String(f.artistId); })[0] || nsList[0];
+    var tracks = String(f.tracks || '').split('\n').map(function (l) { return l.trim(); }).filter(Boolean).map(function (l) {
+      var p = l.split('|').map(function (x) { return x.trim(); });
+      return { title: p[0] || '', isrc: (p[1] || '').toUpperCase(), producer: p[2] || '', feat: '', writers: [{ name: ns ? ns.name : '', role: 'Composer', pct: 100 }] };
+    });
+    try {
+      var r2 = A.releases.createFor(pk, { artistId: ns ? ns.id : null, type: f.type, title: f.title, version: f.version, genre: f.genre, lang: f.lang, releaseDate: f.releaseDate, upc: f.upc, artwork: f.artwork, note: f.note, tracks: tracks }, me.name);
+      c.thongBao(t('daTaoHo').replace('{id}', r2.id).replace('{t}', A.partyName(pk)), 'ok'); c.dongNgan(); c.veLai();
+    } catch (e) { c.thongBao(e.message, 'no'); }
+  });
+}
+HT.taoHoSoHo = taoHoSoHo;
 
 })();

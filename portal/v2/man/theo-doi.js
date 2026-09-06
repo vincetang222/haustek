@@ -34,7 +34,7 @@ HT.dangKy({
   chu: {
     vi: {
       navTheoDoi: 'Theo dõi', h1: 'Theo dõi',
-      mo: 'Bài hát, tài khoản và bản phát hành đang lên trong cửa sổ ngày, từ lượt nghe nền tảng gửi về mỗi ngày. Đánh dấu sao để theo dõi riêng.',
+      mo: 'Bài hát, tài khoản và bản phát hành đang lên trong cửa sổ ngày, từ lượt nghe nền tảng gửi mỗi ngày. Đánh dấu sao để theo dõi.',
       canhBao: 'Danh sách yêu thích chỉ lưu trong trình duyệt này. Bạn lưu ra tệp định kỳ để không mất khi đổi máy.',
       luu: 'Lưu', khoiPhuc: 'Khôi phục', dong: 'Đóng',
       hoiLuu: 'Lưu danh sách yêu thích', hoiLuuMo: 'Sao chép nội dung dưới đây và cất vào tệp của bạn. Dán lại ở nút Khôi phục trên máy khác.',
@@ -49,7 +49,7 @@ HT.dangKy({
     },
     en: {
       navTheoDoi: 'Monitoring', h1: 'Monitoring',
-      mo: 'Tracks, accounts and releases on the rise within a day window, from the daily streams platforms send. Star items to follow them.',
+      mo: 'Tracks, accounts and releases on the rise in a day window, from daily platform streams. Star to follow.',
       canhBao: 'Favorites are only saved in this browser. Save them to a file regularly so they survive a change of machine.',
       luu: 'Save', khoiPhuc: 'Restore', dong: 'Close',
       hoiLuu: 'Save favorites', hoiLuuMo: 'Copy the text below into a file of yours. Paste it under Restore on another machine.',

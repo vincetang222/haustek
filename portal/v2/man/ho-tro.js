@@ -32,7 +32,7 @@ var CHU = {
     knOpen: 'Mới', knDisputed: 'Đang tranh chấp', knEscalated: 'Đã leo thang', knResolved: 'Đã giải quyết', knReleased: 'Đã nhả',
     tim: 'Tìm mã ticket, tiêu đề, đối tác…',
     moiLoai: 'Mọi loại', moiTt: 'Mọi trạng thái', dangMoHet: 'Đang mở (tất cả)', moiNv: 'Mọi người phụ trách', chuaGan: 'chưa gán', moiUu: 'Mọi ưu tiên',
-    chiToi: 'Chỉ của tôi', taoTicket: 'Tạo ticket hộ đối tác', xuat: 'Xuất CSV',
+    chiToi: 'Chỉ của tôi', hangDoi: 'Hàng đợi bộ phận {b}', dBoPhan: 'Bộ phận', chuyenBp: 'Chuyển bộ phận…', daChuyen: 'Đã chuyển bộ phận', taoTicket: 'Tạo ticket hộ đối tác', xuat: 'Xuất CSV',
     cMa: 'Mã', cUu: 'Ưu tiên', cLoai: 'Loại', cTieuDe: 'Tiêu đề', cBai: 'Bài hát', cNv: 'Người phụ trách', cHan: 'Hạn', cCapNhat: 'Cập nhật', cTt: 'Trạng thái',
     khong: 'Không có ticket nào', khongMo: 'Đổi bộ lọc phía trên, hoặc tạo ticket hộ đối tác.',
     quaHan: 'quá hạn', dDoiTac: 'Đối tác', dNguoiTao: 'Người tạo', nguonPortal: 'gửi từ cổng đối tác', nguonStaff: 'nhân viên tạo hộ',
@@ -59,7 +59,7 @@ var CHU = {
     knOpen: 'New', knDisputed: 'Disputed', knEscalated: 'Escalated', knResolved: 'Resolved', knReleased: 'Released',
     tim: 'Search ticket ID, title, partner…',
     moiLoai: 'All types', moiTt: 'All statuses', dangMoHet: 'Open (all)', moiNv: 'All assignees', chuaGan: 'unassigned', moiUu: 'All priorities',
-    chiToi: 'Mine only', taoTicket: 'Log a ticket for a partner', xuat: 'Export CSV',
+    chiToi: 'Mine only', hangDoi: '{b} queue', dBoPhan: 'Department', chuyenBp: 'Transfer to…', daChuyen: 'Transferred', taoTicket: 'Log a ticket for a partner', xuat: 'Export CSV',
     cMa: 'ID', cUu: 'Priority', cLoai: 'Type', cTieuDe: 'Title', cBai: 'Track', cNv: 'Assignee', cHan: 'Due', cCapNhat: 'Updated', cTt: 'Status',
     khong: 'No tickets', khongMo: 'Change the filters above, or log a ticket for a partner.',
     quaHan: 'overdue', dDoiTac: 'Partner', dNguoiTao: 'Created by', nguonPortal: 'from the partner portal', nguonStaff: 'logged by staff',
@@ -102,14 +102,15 @@ HT.dangKy({
   },
 
   ve: function (root, c) {
-    var A = c.A, t = c.t;
+    var A = c.A, t = c.t, me = A.staff.me;
     var coKn = !!(A.quyen && A.quyen.nhom('khieuNai'));
     var dem = A.tickets.counts(), kn = coKn ? A.claims.counts() : { open: 0, disputed: 0, escalated: 0 };
     if (!coKn && LOC.tab === 'khieunai') LOC.tab = 'ticket';
     var dangMo = dem.open + dem.in_progress + dem.waiting;
     var knMo = kn.open + kn.disputed + kn.escalated;
 
-    var html = HM.dau({ h1: HM.esc(t('h1')), mo: HM.esc(t('mo')), nut: LOC.tab === 'khieunai' ? '' : '<button type="button" class="btn pri" data-tao>' + HM.icon('info') + HM.esc(t('taoTicket')) + '</button>' });
+    var bp = A.tickets.depts[me.role];
+    var html = HM.dau({ h1: HM.esc(t('h1')) + (me.role !== 'mgmt' && bp ? ' <span>' + HM.esc(c.lang === 'en' ? bp.en : bp.vi) + '</span>' : ''), mo: HM.esc(t('mo')), nut: LOC.tab === 'khieunai' ? '' : '<button type="button" class="btn pri" data-tao>' + HM.icon('info') + HM.esc(t('taoTicket')) + '</button>' });
     html += HM.tabs([
       { k: 'ticket', l: t('tTicket'), icon: 'info', dem: dangMo },
       coKn ? { k: 'khieunai', l: t('tKn'), icon: 'alert', dem: knMo } : null
@@ -192,7 +193,7 @@ function veTicket(c, dem, rows) {
 
   html += '<div class="bar">' +
     '<div class="srch">' + HM.icon('tim') + '<input type="search" data-tim value="' + HM.esc(LOC.tim) + '" placeholder="' + HM.esc(t('tim')) + '"></div>' +
-    sel('data-loai', LOC.loai, [['', t('moiLoai')]].concat(A.tickets.types.map(function (x) { return [x.id, c.song(x, 'label')]; }))) +
+    sel('data-loai', LOC.loai, [['', t('moiLoai')]].concat(A.tickets.types.filter(function (x) { return me.role === 'mgmt' || A.tickets.deptOf(x.id) === me.role; }).map(function (x) { return [x.id, c.song(x, 'label')]; }))) +
     sel('data-tt', LOC.tt, [['open-all', t('dangMoHet')]].concat(TT.map(function (s) { return [s, t(s)]; })).concat([['', t('moiTt')]])) +
     (LOC.toi ? '' : sel('data-nv', LOC.nv, [['', t('moiNv')], ['-', t('chuaGan')]].concat(A.staff.list().map(function (s) { return [s.id, s.name]; })))) +
     sel('data-uu', LOC.uu, [['', t('moiUu')]].concat(UU.map(function (p) { return [p, t(p)]; }))) +
@@ -310,6 +311,7 @@ function moTicket(c, id) {
       { t: T('dNguoiTao'), v: tk.createdBy + ' · ' + (tk.source === 'portal' ? T('nguonPortal') : T('nguonStaff')) },
       { t: T('dTaoLuc'), v: HT.fmt.luc(tk.createdAt) },
       { t: T('cHan'), v: HT.fmt.luc(tk.dueAt) + (qh ? ' · ' + T('quaHan') : ''), mau: qh ? 'neg' : '' },
+      { t: T('dBoPhan'), v: (function () { var d = A.tickets.depts[tk.dept || A.tickets.deptOf(tk.type)]; return d ? (HT.lang === 'en' ? d.en : d.vi) : '—'; })() },
       { t: T('cNv'), v: nv || T('chuaGan') },
       { t: T('cCapNhat'), v: HT.fmt.luc(tk.updatedAt) },
       tk.closedAt ? { t: T('dDong'), v: HT.fmt.luc(tk.closedAt) } : null
@@ -320,6 +322,7 @@ function moTicket(c, id) {
       selNho('data-gan', T('ganCho'), A.staff.list().filter(function (s) { return s.id !== tk.assignee; }).map(function (s) { return [s.id, s.name + ' · ' + c.song(s, 'title')]; })) +
       selNho('data-doitt', T('doiTt'), TT.filter(function (s) { return s !== tk.status; }).map(function (s) { return [s, T(s)]; })) +
       selNho('data-doiuu', T('doiUu'), UU.filter(function (p) { return p !== tk.priority; }).map(function (p) { return [p, T(p)]; })) +
+      selNho('data-chuyen', T('chuyenBp'), A.tickets.types.filter(function (x) { return x.id !== tk.type; }).map(function (x) { var d = A.tickets.depts[A.tickets.deptOf(x.id)]; return [x.id, c.song(x, 'label') + ' · ' + (HT.lang === 'en' ? d.en : d.vi)]; })) +
     '</div>' +
     '<h4 class="sec">' + HM.esc(T('luongTin')) + ' (' + tk.messages.length + ')</h4>' +
     '<div>' + tin + '</div>' +
@@ -333,6 +336,7 @@ function moTicket(c, id) {
         catch (e) { c.thongBao(e.message, 'no'); }
       };
       HM.bam(dr, '[data-nhan]', function () { lam(function () { A.tickets.assign(id, me.id, me.email); }, T('daNhan') + ' · ' + id); });
+      HM.doi(dr, '[data-chuyen]', function (el) { if (!el.value) return; lam(function () { A.tickets.chuyen(id, el.value, me.email); }, T('daChuyen') + ' · ' + id); });
       HM.doi(dr, '[data-gan]', function (el) {
         if (!el.value) return;
         var ten = tenNv(A, el.value);

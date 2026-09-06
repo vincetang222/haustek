@@ -19,7 +19,7 @@ HT.dangKy({
   chu: {
     vi: {
       navChiaSe: 'Chia sẻ tác quyền', h1: 'Chia sẻ tác quyền',
-      mo: 'Bài nào đang chia phần trăm cho ai, lời mời nào chưa được nhận, khoản thu hồi nào còn dở. Phần của người cộng tác đã nhận được tách khỏi số trả cho chủ bản ghi khi chi trả.',
+      mo: 'Bài nào chia phần trăm cho ai, lời mời chưa nhận, khoản thu hồi còn dở. Phần đã nhận tách khỏi số trả cho chủ bản ghi.',
       kBai: 'Bài có chia sẻ', kNg: 'Người cộng tác', kMoi: 'Lời mời chưa nhận', kMoiS: 'chưa được chia tiền', kDaChia: 'Đã chia cho người cộng tác', kDaChiaS: 'tích luỹ các kỳ đã xét duyệt', kThuHoi: 'Đang thu hồi',
       locAll: 'Tất cả', locMoi: 'Có lời mời chưa nhận', locThuHoi: 'Đang thu hồi', tim: 'Tìm bài, ISRC, tài khoản, email…',
       xacNhanThay: 'Xác nhận thay', hoiXn: 'Xác nhận thay {e}?', hoiXnMo: 'Chỉ làm khi người cộng tác đã gửi xác nhận bằng văn bản; hành động được ghi nhật ký.', daXn: 'Đã xác nhận cho {e}',
@@ -27,7 +27,7 @@ HT.dangKy({
     },
     en: {
       navChiaSe: 'Royalty splits', h1: 'Royalty splits',
-      mo: 'Which tracks share a percentage with whom, which invitations are pending, which recoupments are still running. Accepted collaborator shares are separated from the owner’s payout.',
+      mo: 'Who shares what on which track, pending invitations, running recoupments. Accepted shares are split out of the owner’s payout.',
       kBai: 'Tracks with splits', kNg: 'Collaborators', kMoi: 'Pending invitations', kMoiS: 'not paid yet', kDaChia: 'Paid to collaborators', kDaChiaS: 'across approved periods', kThuHoi: 'Recouping',
       locAll: 'All', locMoi: 'Pending invitations', locThuHoi: 'Recouping', tim: 'Search track, ISRC, account, email…',
       xacNhanThay: 'Accept on behalf', hoiXn: 'Accept on behalf of {e}?', hoiXnMo: 'Only when the collaborator has confirmed in writing; the action is logged.', daXn: 'Accepted for {e}',

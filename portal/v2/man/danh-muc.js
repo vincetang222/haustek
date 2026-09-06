@@ -31,7 +31,7 @@ HT.dangKy({
   chu: {
     vi: {
       nhomDuLieu: 'Danh mục', navDanhMuc: 'Danh mục', h1: 'Danh mục bản ghi',
-      mo: 'Toàn bộ bản ghi Haustek đang phân phối. Bấm vào một dòng để xem dòng tiền, quy trình phát hành và số liệu theo nền tảng của bản ghi đó.',
+      mo: 'Mọi bản ghi Haustek đang phân phối. Bấm một dòng để xem dòng tiền, quy trình và số theo nền tảng.',
       tong: 'Tổng bản ghi', coTien: 'Có doanh thu kỳ này', nghesi: 'Nghệ sĩ', labelKho: 'Label',
       vanDe: 'Có vấn đề', thieu: 'Còn thiếu thông tin',
       tim: 'Tìm theo ISRC, tên bản ghi, nghệ sĩ…',
@@ -45,13 +45,13 @@ HT.dangKy({
       ctGop: 'Doanh thu gộp kỳ này', ctChuoi: 'Chi tiết dòng tiền của bản ghi',
       ctKy: 'Doanh thu 12 kỳ', ctCh: 'Theo nền tảng', ctLt: 'Theo thị trường',
       ctTt: 'Mã và chủ sở hữu', ctSt: 'Tỷ lệ chia tác quyền', ctLuong: 'Theo nguồn báo cáo',
-      maPhuMo: 'Bản ghi này có hai mã ISRC. Báo cáo về theo từng mã riêng nên phải gộp lại. Nếu không gộp, một bản ghi sẽ tách thành hai dòng rời, mỗi dòng chỉ có một nửa doanh thu. Đây là câu hỏi cần chốt số 2.',
+      maPhuMo: 'Bản ghi có hai mã ISRC; báo cáo về theo từng mã nên phải gộp, không thì tách thành hai dòng mỗi dòng nửa doanh thu (câu hỏi số 2).',
       chuaNhap: 'chưa nhập báo cáo cho kỳ này',
       xuat: 'Xuất CSV', hienThi: 'Đang hiển thị'
     },
     en: {
       nhomDuLieu: 'Data', navDanhMuc: 'Catalogue', h1: 'Recording catalogue',
-      mo: 'Every recording Haustek distributes. Open a row to see its money, its release pipeline and its per-platform figures.',
+      mo: 'Every recording Haustek distributes. Open a row for money, pipeline and per-platform figures.',
       tong: 'Recordings', coTien: 'Earning this period', nghesi: 'Artists', labelKho: 'Labels',
       vanDe: 'Needs attention', thieu: 'Missing details',
       tim: 'Search ISRC, title, artist…',
@@ -65,7 +65,7 @@ HT.dangKy({
       ctGop: 'Gross this period', ctChuoi: 'Where this track’s money went',
       ctKy: 'Revenue, 12 periods', ctCh: 'By platform', ctLt: 'By territory',
       ctTt: 'Codes and ownership', ctSt: 'Writer split', ctLuong: 'By data feed',
-      maPhuMo: 'This track carries two ISRCs. Reports arrive against each code separately and must be merged — unmerged, one track shows as two disconnected rows, each with half the money. This is open question 2.',
+      maPhuMo: 'Two ISRCs on one track; reports arrive per code and must be merged or the track splits into two half-revenue rows (question 2).',
       chuaNhap: 'not loaded for this period',
       xuat: 'Export CSV', hienThi: 'Showing'
     }

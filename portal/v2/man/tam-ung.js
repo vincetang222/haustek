@@ -30,8 +30,8 @@ HT.dangKy({
       khong: 'Chưa có khoản tạm ứng nào',
       khongMo: 'Thêm một khoản tạm ứng để theo dõi tiến độ thu hồi qua từng kỳ thanh toán.',
       hoiTen: 'Bên thụ hưởng', hoiSo: 'Số tiền tạm ứng (USD)', hoiGhi: 'Ghi chú',
-      canhSua: 'Thay đổi số tiền tạm ứng không tính lại các kỳ đã xét duyệt. Phần đã thu hồi ở những kỳ đó giữ nguyên, chỉ số còn phải thu hồi thay đổi theo.',
-      canhXoa: 'Xoá tạm ứng đồng nghĩa với việc coi như bên này chưa từng nhận khoản trả trước. Phần đã thu hồi ở các kỳ đã xét duyệt vẫn nằm trong bảng thanh toán của những kỳ đó và không được hoàn lại.',
+      canhSua: 'Đổi số tạm ứng không tính lại kỳ đã xét duyệt: phần đã thu hồi giữ nguyên, chỉ số còn phải thu hồi đổi.',
+      canhXoa: 'Xoá tạm ứng coi như chưa từng trả trước. Phần đã thu hồi ở kỳ đã duyệt vẫn nằm trong thanh toán các kỳ đó, không hoàn lại.',
       chonBen: 'Chọn bên thụ hưởng', goTen: 'Nhập tên hoặc mã để tìm',
       xuat: 'Xuất CSV', khongTim: 'Không tìm thấy bên thụ hưởng nào'
     },
@@ -47,8 +47,8 @@ HT.dangKy({
       khong: 'No advances yet',
       khongMo: 'Add one to see how it is offset period by period against payouts.',
       hoiTen: 'Payee', hoiSo: 'Amount advanced (USD)', hoiGhi: 'Note',
-      canhSua: 'Changing the advanced amount does NOT rewrite approved periods. What was already recouped there stays; only the outstanding balance changes.',
-      canhXoa: 'Deleting treats this payee as never having received money up front. Amounts already recouped in approved periods remain in those payout records — they are not refunded.',
+      canhSua: 'Changing the amount does not rewrite approved periods: recouped amounts stay, only the balance changes.',
+      canhXoa: 'Deleting treats the payee as never advanced. Amounts recouped in approved periods stay in those payouts; nothing is refunded.',
       chonBen: 'Pick a payee', goTen: 'Type a name or code to search',
       xuat: 'Export CSV', khongTim: 'No payee found'
     }

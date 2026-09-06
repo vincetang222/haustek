@@ -358,6 +358,19 @@ main{padding:22px 24px 56px;min-width:0;animation:page-in .24s ease-out}
 .page-kpi .l{font-size:11.5px;color:var(--ink-2);margin-bottom:2px;white-space:nowrap}
 .page-kpi .v{font-size:19px;font-weight:600;letter-spacing:-.015em;white-space:nowrap}
 .page-act{margin-left:auto;display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding-bottom:3px}
+/* dấu ? cạnh tiêu đề: chú thích ẩn, rê chuột hoặc bấm mới hiện */
+.help{width:18px;height:18px;border-radius:50%;display:inline-grid;place-items:center;color:var(--faint);border:1.5px solid currentColor;font:700 11px/1 var(--f);vertical-align:middle;margin-left:7px;flex:none;cursor:help;transition:color .12s,background .12s;padding:0}
+.page h1 .help{margin-left:9px;vertical-align:5px}
+.help:hover,.help.on,.help:focus-visible{color:var(--accent);background:var(--accent-lo);outline:0}
+.tipbox{position:fixed;z-index:96;max-width:340px;background:var(--chrome);color:var(--on-chrome);font-size:12.5px;line-height:1.55;padding:10px 13px;border-radius:9px;box-shadow:var(--shadow-2);animation:pop .12s ease-out;pointer-events:none}
+.tipbox b{color:#fff}
+/* giải thích dài gom lại: <details class="hoc"> */
+details.hoc{margin-top:4px}
+details.hoc>summary{cursor:pointer;font-size:13px;font-weight:600;color:var(--link);list-style:none;display:flex;align-items:center;gap:6px}
+details.hoc>summary::-webkit-details-marker{display:none}
+details.hoc>summary::before{content:"";width:6px;height:6px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:rotate(-45deg);transition:transform .15s;margin-left:2px}
+details.hoc[open]>summary::before{transform:rotate(45deg)}
+details.hoc>div{margin-top:10px}
 .page-kpis+.page-act{margin-left:0}
 
 /* =====================================================================

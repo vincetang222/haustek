@@ -380,3 +380,46 @@ tới màn bị cấm. Bộ quét DOM chạy theo năm vai nội bộ.
 **Còn mở.** Vai marketing riêng (hiện gộp trong vận hành / kinh doanh);
 quyền theo từng tài khoản đối tác cho hỗ trợ (chỉ tài khoản đang có ticket);
 nhật ký truy cập số liệu nhạy cảm; hai người duyệt cho khoản lớn.
+
+## Vòng 9 — ticket theo bộ phận, tạo hồ sơ thay đối tác, gọn chữ
+
+**Câu hỏi 1: có nên chia loại ticket theo bộ phận, gắn vào vai không?** Nên.
+Một hàng đợi chung khiến mọi vai thấy mọi yêu cầu và ai cũng phải đọc để biết
+việc có phải của mình không. Cách làm: mỗi *loại yêu cầu* thuộc một bộ phận,
+bộ phận trùng với vai nội bộ, ticket tự định tuyến lúc tạo.
+
+| Loại yêu cầu | Bộ phận (vai) |
+|---|---|
+| Phát hành, Nền tảng | Vận hành |
+| Thanh toán | Kế toán |
+| Marketing, Hợp đồng | Kinh doanh |
+| Quyền, Tài khoản, Khác | Hỗ trợ |
+
+Hỗ trợ vẫn là bộ phận "cửa trước": loại *Khác* rơi về đây, và họ chuyển bộ
+phận khi đọc xong. Chuyển bộ phận = đổi loại yêu cầu; sang bộ phận khác thì
+người phụ trách được bỏ để hàng đợi mới tự nhận, tránh ticket "treo" ở người
+cũ. Giám đốc thấy mọi hàng đợi. Đối tác thấy *bộ phận* đang xử lý thay vì tên
+nhân viên khi chưa gán.
+
+**Câu hỏi 2: nhân viên muốn tải bài hát lên tài khoản của khách thì làm sao?**
+Không đăng nhập thay khách. Nhân viên tạo *hồ sơ phát hành thay đối tác* ngay
+ở cổng nội bộ: từ trang Phát hành (nút trên tiêu đề) hoặc từ ngăn Đối tác
+(đã chọn sẵn tài khoản). Hồ sơ gắn vào tài khoản đối tác, mang dấu nhân viên
+tạo, đi đúng quy trình tiếp nhận → cấp mã → phát hành như hồ sơ khách tự
+gửi; khách thấy hồ sơ trong trang Phát hành với nhãn *Haustek tạo thay*.
+Quyền: giám đốc, vận hành, kinh doanh (chỉ tài khoản mình phụ trách); hỗ trợ
+không tạo được. Nhật ký ghi `release.create.staff`.
+
+**Chữ và giao diện.** Câu giải thích dưới tiêu đề trang và thẻ thay bằng một
+nút `?` cạnh tiêu đề; 93 chuỗi giải thích viết lại ngắn (một câu, nói việc
+cần làm trước). Giải thích dài gom vào mục "Tìm hiểu thêm" thu gọn. Hàng lối
+tắt trên bàn làm việc bỏ vì trùng thanh điều hướng.
+
+`test/api-guard.js` thêm 3 phép kiểm (65 phép): mỗi bộ phận chỉ thấy hàng
+đợi của mình hoặc việc được gán; ticket đối tác gửi rơi đúng hàng đợi, chưa
+gán ai, đối tác thấy bộ phận; chuyển bộ phận bỏ người phụ trách; tạo hồ sơ
+thay đối tác chặn hỗ trợ, kinh doanh chỉ tài khoản mình, đối tác thấy hồ sơ.
+
+**Còn mở.** Bộ phận marketing riêng (hiện gắn với kinh doanh); tự gán theo
+vòng trong bộ phận; SLA riêng từng bộ phận; nhân viên tải tệp âm thanh thật
+thay khách (bản mẫu chỉ nhận metadata).

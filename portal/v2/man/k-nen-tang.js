@@ -22,12 +22,12 @@ HT.dangKy({
   chu: {
     vi: {
       navNenTang: 'Nền tảng', h1: 'Nền tảng',
-      moLb: 'Từng nền tảng mang về bao nhiêu lượt nghe và bao nhiêu tiền mỗi kỳ, tính trên toàn bộ bài hát của các nghệ sĩ thuộc label.',
+      moLb: 'Từng nền tảng mang về bao nhiêu lượt nghe và tiền mỗi kỳ, trên mọi bài của nghệ sĩ thuộc label.',
       moNs: 'Từng nền tảng mang về bao nhiêu lượt nghe và bao nhiêu tiền mỗi kỳ, tính trên toàn bộ bài hát của bạn.',
       danDau: 'Nền tảng dẫn đầu', luotKy: 'Lượt nghe', gopKy: 'Doanh thu',
       phanLabel: 'Phần label được hưởng', thuNhap: 'Thu nhập của bạn',
       dienBien: 'Diễn biến theo nền tảng',
-      dienBienMo: 'Mỗi cột là một kỳ đã xét duyệt, chồng theo nền tảng. Năm nền tảng lớn nhất hiện riêng, phần còn lại gom vào "Nền tảng khác".',
+      dienBienMo: 'Mỗi cột một kỳ đã xét duyệt, chồng theo nền tảng; năm nền tảng lớn nhất hiện riêng, còn lại gom vào Nền tảng khác.',
       tyTrong: 'Tỷ trọng kỳ {k}',
       tyTrongMo: 'Theo {m}, tính trên tổng của kỳ. Dòng nhỏ dưới tên là mức thay đổi so với kỳ trước.',
       bangThang: 'Bảng theo tháng', bangThangMo: 'Từng nền tảng theo từng kỳ đã xét duyệt, theo {m}.',
@@ -35,17 +35,17 @@ HT.dangKy({
       xuat: 'Xuất CSV', nenTangKhac: 'Nền tảng khác', ky: 'Kỳ',
       chuaKy: 'Chưa có kỳ nào đã xét duyệt',
       chuaKyMo: 'Số liệu theo nền tảng chỉ hiển thị sau khi Haustek xét duyệt kỳ đầu tiên có doanh thu của bạn.',
-      tacQuyen: 'Trang này chỉ nói về doanh thu bản ghi. Tác quyền được các tổ chức quản lý tác quyền báo cáo theo quý và không tách theo nền tảng, nên không có ở đây.',
+      tacQuyen: 'Chỉ doanh thu bản ghi. Tác quyền báo cáo theo quý và không tách theo nền tảng nên không có ở đây.',
       kyKhac: 'Kỳ đang chọn ({a}) chưa có trong báo cáo theo nền tảng, nên các ô số ở trên là của kỳ {b}.'
     },
     en: {
       navNenTang: 'Platforms', h1: 'Platforms',
-      moLb: 'How many streams and how much money each platform brought in per period, across every track by artists on your label.',
+      moLb: 'Streams and money per platform per period, across every track by your artists.',
       moNs: 'How many streams and how much money each platform brought in per period, across every track of yours.',
       danDau: 'Top platform', luotKy: 'Streams', gopKy: 'Revenue',
       phanLabel: 'Label keeps', thuNhap: 'Yours',
       dienBien: 'Platforms across periods',
-      dienBienMo: 'One column per approved period, stacked by platform. The five largest platforms are shown on their own; the rest are folded into “Other platforms”.',
+      dienBienMo: 'One column per approved period, stacked by platform; top five shown, the rest folded into Other.',
       tyTrong: 'Share in {k}',
       tyTrongMo: 'By {m}, as a share of the period total. The small line under each name is the change from the previous period.',
       bangThang: 'Month by month', bangThangMo: 'Every platform, every approved period, by {m}.',
@@ -53,7 +53,7 @@ HT.dangKy({
       xuat: 'Export CSV', nenTangKhac: 'Other platforms', ky: 'Period',
       chuaKy: 'No approved period yet',
       chuaKyMo: 'Per-platform figures appear once Haustek approves your first earning period.',
-      tacQuyen: 'This page covers recording revenue only. Publishing is reported quarterly by collecting societies and is not split by platform, so it is not shown here.',
+      tacQuyen: 'Recording revenue only. Publishing is quarterly and not split by platform, so it is not here.',
       kyKhac: 'The selected period ({a}) is not in the platform report yet, so the figures above are for {b}.'
     }
   },

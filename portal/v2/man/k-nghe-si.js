@@ -29,7 +29,7 @@ HT.dangKy({
       topNs: 'Nghệ sĩ mang về doanh thu nhiều nhất kỳ này', topNsMo: 'Theo doanh thu. Bấm một dòng trong bảng để xem chi tiết.',
       khongCo: 'Không có nghệ sĩ nào khớp với từ khoá', khongCoMo: 'Thử tìm bằng mã đối tác của nghệ sĩ.',
       chuaMo: 'Kỳ này chưa chốt sổ', chuaMoMo: 'Số liệu theo nghệ sĩ chỉ hiển thị sau khi kỳ được xét duyệt.',
-      ghiChu: 'Phần nghệ sĩ là số Haustek thanh toán thẳng cho nghệ sĩ theo tỷ lệ label đã đặt; phần label là phần còn lại. Phần nghệ sĩ, phần label và điểm producer cộng lại bằng doanh thu.',
+      ghiChu: 'Phần nghệ sĩ là số Haustek trả thẳng cho nghệ sĩ theo tỷ lệ label đặt; phần label là phần còn lại.',
       xuat: 'Xuất CSV', hienThi: 'Hiển thị',
       chiTiet: 'Bài hát của nghệ sĩ này trong kỳ', khongBai: 'Kỳ này nghệ sĩ chưa có bài hát nào phát sinh doanh thu.',
       diemProducer: 'Điểm producer'
@@ -45,7 +45,7 @@ HT.dangKy({
       topNs: 'Top artists this period', topNsMo: 'By revenue. Open a row in the table for details.',
       khongCo: 'No artist matches', khongCoMo: 'Try the artist’s client ID.',
       chuaMo: 'Period not closed', chuaMoMo: 'Per-artist figures appear once the period is approved.',
-      ghiChu: 'The artist share is what Haustek pays the artist directly at the rate the label set; the label share is the remainder. Artist share, label share and producer points add back to revenue.',
+      ghiChu: 'Artist share is paid directly by Haustek at the rate the label set; label share is the remainder.',
       xuat: 'Export CSV', hienThi: 'Showing',
       chiTiet: 'This artist’s tracks this period', khongBai: 'No track by this artist earned this period.',
       diemProducer: 'Producer points'

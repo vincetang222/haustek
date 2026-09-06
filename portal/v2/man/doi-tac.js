@@ -30,7 +30,7 @@ HT.dangKy({
   chu: {
     vi: {
       nhomDoiTac: 'Đối tác', navDoiTac: 'Đối tác', h1: 'Đối tác',
-      mo: 'Mọi label, label con và nghệ sĩ đang ký với Haustek: ai phụ trách, xếp hạng, doanh thu gộp quý, hạn hợp đồng và tình trạng tài khoản cổng.',
+      mo: 'Label, label con và nghệ sĩ đang ký với Haustek: người phụ trách, hạng, doanh thu quý, hạn hợp đồng, tài khoản cổng.',
       kTong: 'Đối tác', kQuanLy: 'Đang quản lý', kGiaHan: 'Sắp hết hạn hợp đồng', kGiaHanS: 'trong 90 ngày',
       kThieu: 'Thiếu hồ sơ', kChuaDn: 'Chưa đăng nhập', kChuaTk: 'Chưa có tài khoản cổng',
       tabDs: 'Danh sách', tabKd: 'Chỉ tiêu kinh doanh',
@@ -48,12 +48,12 @@ HT.dangKy({
       dHangMo: 'A từ $150,000 gộp một quý · B từ $40,000 · C còn lại',
       dTk: 'Tài khoản cổng', dNh: 'Tài khoản ngân hàng', coNh: 'đã khai', chuaNh: 'chưa khai',
       dVi: 'Ví của đối tác', viKhaDung: 'Khả dụng', viCho: 'Đang xử lý', viDaRut: 'Đã rút',
-      dTicket: 'Ticket đang mở', khongTicket: 'Không có ticket nào đang mở', taoTicket: 'Tạo ticket hộ', moHoTro: 'Mở hỗ trợ', deUng: 'Đề xuất tạm ứng', deHd: 'Đề xuất hợp đồng',
+      dTicket: 'Ticket đang mở', khongTicket: 'Không có ticket nào đang mở', taoTicket: 'Tạo ticket hộ', moHoTro: 'Mở hỗ trợ', taoHoSo: 'Tạo hồ sơ phát hành hộ', deUng: 'Đề xuất tạm ứng', deHd: 'Đề xuất hợp đồng',
       dCha: 'Thuộc label mẹ', dDtQ: 'Doanh thu gộp quý này', soQuyTruoc: 'so với quý trước', dienBien: 'Doanh thu gộp 12 kỳ gần nhất',
       dPh: 'Bản phát hành', dPhMo: 'Bài hát có doanh thu cao nhất của đối tác. Bấm để mở hồ sơ.', dPhTrong: 'Đối tác chưa có bài hát nào trong danh mục.', xemDanhMuc: 'Mở danh mục',
       /* chỉ tiêu */
       kdTieuDe: 'Chỉ tiêu kinh doanh quý {q}',
-      kdMo: 'Doanh thu gộp quý của các đối tác do từng nhân viên kinh doanh phụ trách, so với chỉ tiêu quý. Kỳ đang chọn quyết định quý.',
+      kdMo: 'Doanh thu gộp quý của đối tác mỗi nhân viên phụ trách so với chỉ tiêu. Kỳ đang chọn quyết định quý.',
       kdTk: 'Tài khoản phụ trách', kdLabel: 'label', kdNs: 'nghệ sĩ', kdDt: 'Doanh thu gộp quý', kdChiTieu: 'Chỉ tiêu quý',
       kdDat: 'Đạt {p} chỉ tiêu', kdMoi: 'Tài khoản mới trong quý', kdGiaHan: 'Cần gia hạn', kdChuaDn: 'Chưa đăng nhập', kdChuaTk: 'Chưa có tài khoản',
       kdTheoHang: 'Tài khoản theo hạng', kdTop: 'Đối tác lớn nhất', kdSoSanh: 'Doanh thu gộp quý so với chỉ tiêu', kdLoc: 'Xem danh sách của nhân viên này',
@@ -61,7 +61,7 @@ HT.dangKy({
     },
     en: {
       nhomDoiTac: 'Partners', navDoiTac: 'Partners', h1: 'Partners',
-      mo: 'Every label, sub-label and artist signed with Haustek: account manager, classification, quarterly gross, contract end and portal account status.',
+      mo: 'Labels, sub-labels and artists signed with Haustek: manager, class, quarter revenue, contract end, portal account.',
       kTong: 'Partners', kQuanLy: 'Managed', kGiaHan: 'Contracts ending', kGiaHanS: 'within 90 days',
       kThieu: 'Incomplete', kChuaDn: 'Never logged in', kChuaTk: 'No portal account',
       tabDs: 'Directory', tabKd: 'Sales targets',
@@ -78,11 +78,11 @@ HT.dangKy({
       dHangMo: 'A from $150,000 gross a quarter · B from $40,000 · C otherwise',
       dTk: 'Portal account', dNh: 'Bank account', coNh: 'on file', chuaNh: 'missing',
       dVi: 'Partner wallet', viKhaDung: 'Available', viCho: 'In progress', viDaRut: 'Withdrawn',
-      dTicket: 'Open tickets', khongTicket: 'No open ticket', taoTicket: 'Log a ticket', moHoTro: 'Open support', deUng: 'Propose advance', deHd: 'Propose contract',
+      dTicket: 'Open tickets', khongTicket: 'No open ticket', taoTicket: 'Log a ticket', moHoTro: 'Open support', taoHoSo: 'Create a release', deUng: 'Propose advance', deHd: 'Propose contract',
       dCha: 'Parent label', dDtQ: 'Gross this quarter', soQuyTruoc: 'vs previous quarter', dienBien: 'Gross, last 12 periods',
       dPh: 'Releases', dPhMo: 'The partner’s highest-earning tracks. Open one for its record.', dPhTrong: 'This partner has no tracks in the catalogue yet.', xemDanhMuc: 'Open catalogue',
       kdTieuDe: 'Sales targets, quarter {q}',
-      kdMo: 'Quarterly gross of the partners each salesperson manages, against the quarterly target. The selected period sets the quarter.',
+      kdMo: 'Quarter gross per salesperson against target. The selected period sets the quarter.',
       kdTk: 'Accounts managed', kdLabel: 'labels', kdNs: 'artists', kdDt: 'Quarter gross', kdChiTieu: 'Quarter target',
       kdDat: '{p} of target', kdMoi: 'New accounts this quarter', kdGiaHan: 'Renewals due', kdChuaDn: 'Never logged in', kdChuaTk: 'No account',
       kdTheoHang: 'Accounts by class', kdTop: 'Largest partners', kdSoSanh: 'Quarter gross against target', kdLoc: 'Show this person’s accounts',
@@ -314,6 +314,7 @@ function moDoiTac(c, r) {
     '<div class="btnrow" style="margin-top:10px">' +
       '<button type="button" class="btn sm pri" data-tao-tk>' + HM.icon('info') + HM.esc(t('taoTicket')) + '</button>' +
       '<button type="button" class="btn sm" data-di="ho-tro">' + HM.esc(t('moHoTro')) + '</button>' +
+      (A.quyen.nhom('phatHanhHo') ? '<button type="button" class="btn sm" data-ho-so>' + HM.icon('disc') + HM.esc(t('taoHoSo')) + '</button>' : '') +
       (['sales', 'mgmt'].indexOf(me.role) >= 0 ? '<button type="button" class="btn sm" data-de-ung>' + HM.icon('cash') + HM.esc(t('deUng')) + '</button><button type="button" class="btn sm" data-de-hd>' + HM.icon('file') + HM.esc(t('deHd')) + '</button>' : '') + '</div>' +
     (lich.length ? '<h4 class="sec">' + HM.esc(t('dienBien')) + '</h4>' +
     HB.o({ loai: 'cot', cao: 150, anTruc: true, chuThich: false,
@@ -329,6 +330,7 @@ function moDoiTac(c, r) {
         });
         HM.bam(dr, '[data-tao-tk]', function () { if (HT.moTicketNoiBo) HT.moTicketNoiBo(c, { partyKey: pk, name: r.name, clientId: r.clientId }); });
         HM.bam(dr, '[data-de-ung]', function () { if (HT.deXuatTamUng) HT.deXuatTamUng(c, pk); });
+        HM.bam(dr, '[data-ho-so]', function () { if (HT.taoHoSoHo) HT.taoHoSoHo(c, pk); });
         HM.bam(dr, '[data-de-hd]', function () { if (HT.deXuatHopDong) HT.deXuatHopDong(c, pk); });
         HM.bam(dr, '[data-di]', function (el) { c.di(el.getAttribute('data-di')); });
         HM.bam(dr, '[data-tk]', function (el) { if (HT.hoTroMo) HT.hoTroMo(c, el.getAttribute('data-tk')); });

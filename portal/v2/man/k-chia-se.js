@@ -26,24 +26,24 @@ HT.dangKy({
   chu: {
     vi: {
       navChiaSe: 'Chia sẻ tác quyền', h1: 'Chia sẻ tác quyền',
-      mo: 'Chia phần trăm số tiền của một bài cho producer, nghệ sĩ khách, đồng sáng tác hay kỹ sư. Người cộng tác chỉ thấy phần của họ; có ngưỡng thu hồi thì bạn nhận trước cho đến khi đủ.',
+      mo: 'Chia phần trăm tiền của một bài cho producer, nghệ sĩ khách, đồng sáng tác, kỹ sư. Họ chỉ thấy phần của họ; có ngưỡng thu hồi thì bạn nhận trước.',
       kBai: 'Bài có chia sẻ', kNg: 'Người cộng tác', kMoi: 'Lời mời chưa nhận', kMoiS: 'chưa được chia tiền cho tới khi nhận', kDaChia: 'Đã chia cho người cộng tác', kDaChiaS: 'tích luỹ các kỳ đã xét duyệt', kThuHoi: 'Đang thu hồi', kThuHoiS: 'bạn nhận trước cho tới khi đủ',
       locAll: 'Tất cả', locMoi: 'Có lời mời chưa nhận', locThuHoi: 'Đang thu hồi', tim: 'Tìm bài hát, ISRC, email…',
       themMoi: 'Thêm chia sẻ cho bài khác', them: 'Thêm người', bo: 'Bỏ',
       khong: 'Không có bài nào khớp', khongMo: 'Đổi bộ lọc hoặc thêm chia sẻ cho một bài.', trong: 'Chưa có bài nào được chia sẻ', trongMo: 'Bấm “Thêm chia sẻ cho bài khác”, nhập ISRC và người cộng tác.',
-      hoiThem: 'Thêm người cộng tác', hoiThemMo: 'Người được mời sẽ nhận email; phần chia có hiệu lực từ kỳ tiếp theo sau khi họ nhận. Tổng phần chia không vượt 100%.',
+      hoiThem: 'Thêm người cộng tác', hoiThemMo: 'Người được mời nhận email; phần chia áp từ kỳ sau khi họ nhận. Tổng không quá 100%.',
       fIsrc: 'ISRC hoặc tên bài hát', fTen: 'Tên người cộng tác', fEmail: 'Email', fVai: 'Vai trò', fPct: 'Phần trăm trên số tiền của bạn', fRecoup: 'Ngưỡng thu hồi (USD, để 0 nếu không)', gui: 'Gửi lời mời',
       daThem: 'Đã gửi lời mời cho {e}', daBo: 'Đã bỏ {e} khỏi bài', khongThayBai: 'Không tìm thấy bài hát khớp “{q}” trong danh mục của bạn',
       hoiBo: 'Bỏ {e} khỏi “{t}”?', hoiBoMo: 'Phần chia dừng từ kỳ tiếp theo; các kỳ đã chia không đổi.'
     },
     en: {
       navChiaSe: 'Royalty splits', h1: 'Royalty splits',
-      mo: 'Share a percentage of a track’s earnings with a producer, featured artist, co-writer or engineer. Collaborators only see their share; with a recoupment amount you are paid first until it is met.',
+      mo: 'Share a track’s earnings with a producer, featured artist, co-writer or engineer. They see only their share; with recoupment you are paid first.',
       kBai: 'Tracks with splits', kNg: 'Collaborators', kMoi: 'Pending invitations', kMoiS: 'not paid until accepted', kDaChia: 'Paid to collaborators', kDaChiaS: 'across approved periods', kThuHoi: 'Recouping', kThuHoiS: 'you are paid first until met',
       locAll: 'All', locMoi: 'Pending invitations', locThuHoi: 'Recouping', tim: 'Search track, ISRC, email…',
       themMoi: 'Add a split on another track', them: 'Add person', bo: 'Remove',
       khong: 'No tracks match', khongMo: 'Change the filter or add a split on a track.', trong: 'No splits yet', trongMo: 'Click “Add a split on another track”, enter the ISRC and the collaborator.',
-      hoiThem: 'Add collaborator', hoiThemMo: 'The invitee receives an email; the split applies from the next period after acceptance. Shares cannot exceed 100% in total.',
+      hoiThem: 'Add collaborator', hoiThemMo: 'The invitee gets an email; the split applies from the next period after acceptance. Total cannot exceed 100%.',
       fIsrc: 'ISRC or track title', fTen: 'Collaborator name', fEmail: 'Email', fVai: 'Role', fPct: 'Percentage of your earnings', fRecoup: 'Recoupment amount (USD, 0 for none)', gui: 'Send invitation',
       daThem: 'Invitation sent to {e}', daBo: 'Removed {e} from the track', khongThayBai: 'No track matching “{q}” in your catalogue',
       hoiBo: 'Remove {e} from “{t}”?', hoiBoMo: 'The split stops from the next period; already-paid periods do not change.'

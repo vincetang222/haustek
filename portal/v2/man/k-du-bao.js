@@ -16,7 +16,7 @@ HT.dangKy({
   chu: {
     vi: {
       navDuBao: 'Dự báo', h1: 'Dự báo',
-      mo: 'Lượt nghe mỗi ngày của các bài đã lên nền tảng, nhân với mức trả trung bình của từng nền tảng. Đây là ước tính cho kỳ đang mở; số thật chỉ có khi nền tảng gửi báo cáo.',
+      mo: 'Lượt nghe mỗi ngày nhân với mức trả trung bình từng nền tảng. Ước tính cho kỳ đang mở; số thật có khi nền tảng báo cáo.',
       kDuKien: 'Dự kiến kỳ {k}', kToiNay: 'Đã đạt tới hôm nay', k7: '7 ngày qua', k28: '28 ngày qua',
       phanLabel: 'phần label', luot: 'lượt nghe', truoc7: '7 ngày trước', truoc28: '28 ngày trước',
       ngay: 'ngày {a}/{b} của kỳ',
@@ -29,13 +29,13 @@ HT.dangKy({
       cBai: 'Bài hát', cNs: 'Nghệ sĩ', cLuot7: 'Lượt nghe 7 ngày', cTang: 'Tăng trưởng', cTien7: 'Dự kiến tiền 7 ngày',
       kyToi: 'Kỳ tới {k}', kyToiMo: 'Ước theo mức 7 ngày qua, điều chỉnh theo xu hướng 28 ngày, cho đủ số ngày của kỳ tới.',
       kyToiLuot: 'Lượt nghe dự kiến', kyToiTien: 'Thu nhập dự kiến', kyToiDt: 'Doanh thu dự kiến', kyToiLabel: 'Phần label dự kiến',
-      phuongPhap: 'Phương pháp', canhBao: 'Đây là ước tính', canhBaoMo: 'Nền tảng có thể điều chỉnh lượt nghe (lọc gian lận, đổi mức trả) trước khi báo cáo. Số ghi vào ví là số trong báo cáo đã xét duyệt, không phải số ở trang này.',
+      phuongPhap: 'Phương pháp', canhBao: 'Đây là ước tính', canhBaoMo: 'Nền tảng có thể điều chỉnh lượt nghe trước khi báo cáo. Số ghi vào ví là số trong báo cáo đã xét duyệt.',
       baiDem: '{n} bài hát đang có lượt nghe được tính vào dự báo.',
       trong: 'Chưa có cơ sở để dự báo', trongMo: 'Cần ít nhất một kỳ đã xét duyệt để biết mức trả của từng nền tảng. Dự báo sẽ có sau kỳ đầu tiên.'
     },
     en: {
       navDuBao: 'Forecast', h1: 'Forecast',
-      mo: 'Daily streams of tracks live on platforms, multiplied by each platform’s average payout. An estimate for the open period; actual figures arrive with the platforms’ reports.',
+      mo: 'Daily streams times each platform’s average payout. An estimate for the open period; actual figures come with reports.',
       kDuKien: 'Projected for {k}', kToiNay: 'Month to date', k7: 'Last 7 days', k28: 'Last 28 days',
       phanLabel: 'label keeps', luot: 'streams', truoc7: 'previous 7 days', truoc28: 'previous 28 days',
       ngay: 'day {a} of {b}',
@@ -48,7 +48,7 @@ HT.dangKy({
       cBai: 'Track', cNs: 'Artist', cLuot7: 'Streams, 7 days', cTang: 'Growth', cTien7: 'Projected, 7 days',
       kyToi: 'Next period {k}', kyToiMo: 'Based on the last 7 days, adjusted by the 28-day trend, over the full length of the next period.',
       kyToiLuot: 'Projected streams', kyToiTien: 'Projected income', kyToiDt: 'Projected revenue', kyToiLabel: 'Projected label share',
-      phuongPhap: 'Method', canhBao: 'This is an estimate', canhBaoMo: 'Platforms may adjust streams (fraud filtering, rate changes) before reporting. What is credited to your wallet is the approved report, not this page.',
+      phuongPhap: 'Method', canhBao: 'This is an estimate', canhBaoMo: 'Platforms may adjust streams before reporting. What reaches your wallet is the approved report.',
       baiDem: '{n} tracks with streams are counted in the forecast.',
       trong: 'Nothing to forecast from yet', trongMo: 'At least one approved period is needed to know each platform’s payout. The forecast appears after the first one.'
     }

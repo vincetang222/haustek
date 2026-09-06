@@ -25,9 +25,9 @@ HT.dangKy({
       tienDo: 'Tiến độ khấu trừ', quaCacKy: 'Khấu trừ qua từng kỳ',
       quaCacKyMo: 'Mỗi kỳ bạn được hưởng bao nhiêu thì khấu trừ bấy nhiêu, cho đến khi hết. Kỳ chưa chốt sổ để trống.',
       giaiThich: 'Tạm ứng là gì và được khấu trừ như thế nào',
-      gt1: 'Tạm ứng là khoản tiền Haustek thanh toán trước cho bạn, thường để sản xuất sản phẩm hoặc quảng bá. Đây không phải quà tặng, cũng không phải khoản vay có lãi, mà là thu nhập tương lai của bạn được nhận sớm.',
-      gt2: 'Từ thời điểm đó, mỗi kỳ bạn được hưởng bao nhiêu thì khoản tạm ứng giảm bấy nhiêu. Trong những kỳ đó bạn <b>vẫn có thu nhập</b>, nhưng thu nhập này được khấu trừ vào phần đã nhận trước, nên chưa có khoản thanh toán thêm.',
-      gt3: 'Khi khoản tạm ứng về 0, từ kỳ tiếp theo việc thanh toán trở lại bình thường. Ngay trong kỳ khấu trừ hết, phần vượt quá cũng được thanh toán, không phải chờ.',
+      gt1: 'Tạm ứng là tiền Haustek trả trước cho bạn, thường để sản xuất hoặc quảng bá: không phải quà, không phải vay có lãi, mà là thu nhập tương lai nhận sớm.',
+      gt2: 'Từ đó, mỗi kỳ bạn được hưởng bao nhiêu thì tạm ứng giảm bấy nhiêu. Bạn <b>vẫn có thu nhập</b>, chỉ là nó khấu trừ vào phần đã nhận.',
+      gt3: 'Khi tạm ứng về 0, thanh toán trở lại bình thường; phần vượt ngay trong kỳ đó cũng được trả.',
       gt4: 'Khoản tạm ứng được khấu trừ trên cả doanh thu bản ghi và tác quyền cộng lại, không tách riêng từng dòng tiền.',
       khongCo: 'Bạn không có khoản tạm ứng nào',
       khongCoMo: 'Toàn bộ phần bạn được hưởng mỗi kỳ được đưa vào đợt thanh toán, không bị khấu trừ.',
@@ -37,7 +37,7 @@ HT.dangKy({
       chuaTruMo: 'Kể từ khi nhận khoản tạm ứng, bạn chưa có doanh thu ở kỳ đã chốt sổ nào.',
       xong: 'Đã khấu trừ xong', xongMo: 'Khoản tạm ứng của bạn đã được khấu trừ hết. Từ kỳ sau, việc thanh toán trở lại bình thường.',
       chuaMo: 'Kỳ này chưa chốt sổ',
-      dnH2: 'Đề nghị tạm ứng', dnMo: 'Haustek có thể tạm ứng trước một phần thu nhập 12 tháng tới của bạn, tính từ thu nhập ròng các kỳ đã xét duyệt. Khoản ứng được khấu trừ dần từ phần bạn được hưởng mỗi kỳ.',
+      dnH2: 'Đề nghị tạm ứng', dnMo: 'Haustek có thể ứng trước một phần thu nhập 12 tháng tới, tính từ thu nhập ròng các kỳ đã xét duyệt, khấu trừ dần mỗi kỳ.',
       dnNet: 'Thu nhập ròng / tháng', dnNetS: 'trung bình {n} kỳ đã xét duyệt', dnProj: 'Thu nhập 12 tháng dự kiến', dnMax: 'Có thể tạm ứng tới', dnMaxS: 'hạng {g} · tăng trưởng {t}', dnVd: 'Ví dụ: phải khấu trừ', dnVdS: 'nếu ứng {a}, hết sau khoảng {m} tháng',
       dnChua: 'Chưa thể đề nghị tạm ứng', dnNut: 'Đề nghị tạm ứng', dnHoiMo: 'Tối đa {max}. Kế toán Haustek kiểm số, giám đốc xét duyệt; bạn nhận thông báo khi có kết quả.', dnSo: 'Số tiền đề nghị (USD)', dnMucDich: 'Mục đích (sản xuất, quảng bá…)', dnGui: 'Gửi đề nghị', dnDaGui: 'Đã gửi đề nghị {id}',
       dnTinh: 'Phải khấu trừ {r} (gồm phí ứng {f}), dự kiến hết sau khoảng {m} tháng.', dnVuot: 'Vượt mức tối đa.', dnDangCho: 'Bạn có đề nghị đang chờ xử lý. Gửi đề nghị mới sau khi có kết quả.', dnDangUng: 'Khấu trừ hết khoản hiện tại rồi mới đề nghị khoản mới.',
@@ -51,9 +51,9 @@ HT.dangKy({
       tienDo: 'Progress', quaCacKy: 'Offset period by period',
       quaCacKyMo: 'Whatever you earn in a period is offset that period, until it clears. Unclosed periods have no bar.',
       giaiThich: 'How an advance works',
-      gt1: 'An advance is money Haustek pays you up front, usually to make a record or run a campaign. It is not a gift and not an interest-bearing loan — it is your own future income, received early.',
-      gt2: 'From then on, whatever you earn each period shortens the advance by that much. In those periods you are <b>still earning</b> — the money is simply repaying what you already received.',
-      gt3: 'Once the advance reaches zero, transfers resume normally. Anything above it in the very period that clears it is transferred too, not held back.',
+      gt1: 'An advance is money paid up front, usually for production or promotion: not a gift, not a loan with interest, but your future income received early.',
+      gt2: 'From then on each period’s earnings shorten the advance. You are <b>still earning</b>; it is repaying what you already received.',
+      gt3: 'Once the advance reaches zero, transfers resume; anything above it in that same period is paid too.',
       gt4: 'The advance is offset against recording and publishing combined, not stream by stream.',
       khongCo: 'You have no advance',
       khongCoMo: 'Everything you earn each period goes straight into the payout run, with nothing deducted.',
@@ -63,7 +63,7 @@ HT.dangKy({
       chuaTruMo: 'You have earned nothing in a closed period since the advance was recorded.',
       xong: 'Fully repaid', xongMo: 'Your advance is fully offset. Transfers resume from the next period.',
       chuaMo: 'Period not open',
-      dnH2: 'Request an advance', dnMo: 'Haustek can advance part of your next 12 months of earnings, based on net earnings in approved periods. The advance is recouped from your share each period.',
+      dnH2: 'Request an advance', dnMo: 'Haustek can advance part of your next 12 months, based on net earnings in approved periods, recouped each period.',
       dnNet: 'Net earnings / month', dnNetS: 'average over {n} approved periods', dnProj: 'Projected 12-month earnings', dnMax: 'You can request up to', dnMaxS: 'grade {g} · growth {t}', dnVd: 'Example: amount to recoup', dnVdS: 'for a {a} advance, cleared in about {m} months',
       dnChua: 'An advance is not available yet', dnNut: 'Request an advance', dnHoiMo: 'Up to {max}. Haustek accounting checks the figures and the director approves; you are notified of the outcome.', dnSo: 'Amount requested (USD)', dnMucDich: 'Purpose (production, promotion…)', dnGui: 'Send request', dnDaGui: 'Request {id} sent',
       dnTinh: '{r} to recoup (including the {f} advance charge), cleared in about {m} months.', dnVuot: 'Above the maximum.', dnDangCho: 'You have a request in progress. Send a new one once it is decided.', dnDangUng: 'Your current advance must be recouped before a new request.',
@@ -289,10 +289,9 @@ function hoiDeNghi(c, o) {
 function veGiaiThich(c) {
   var t = c.t;
   return HM.the({
-    h2: HM.esc(t('giaiThich')),
-    than: '<p class="say">' + t('gt1') + '</p>' +
+    than: '<details class="hoc"><summary>' + HM.esc(t('giaiThich')) + '</summary><div><p class="say">' + t('gt1') + '</p>' +
       '<p class="say">' + t('gt2') + '</p>' +
       '<p class="say">' + t('gt3') + '</p>' +
-      '<p class="say">' + t('gt4') + '</p>'
+      '<p class="say">' + t('gt4') + '</p></div></details>'
   });
 }

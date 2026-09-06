@@ -46,12 +46,12 @@ HT.dangKy({
       trong: 'Kỳ này chưa có bài hát nào của bạn có doanh thu',
       xuat: 'Tải danh sách (CSV)', hienThi: 'Đang hiển thị',
       tqTrong: 'Kỳ này chưa có báo cáo tác quyền',
-      tqTrongMo: 'Tác quyền được chốt theo quý, và các tổ chức quản lý tác quyền thường báo cáo trễ một đến hai quý. Phần lớn các kỳ không có báo cáo tác quyền, đây là điều bình thường.',
+      tqTrongMo: 'Tác quyền chốt theo quý và về trễ một đến hai quý, nên nhiều kỳ không có báo cáo. Đây là bình thường.',
       tqCo: 'Các kỳ đã có báo cáo tác quyền', soSangTac: 'Bài hát bạn có phần sáng tác',
       tqGiaiThich: 'Tác quyền khác doanh thu bản ghi như thế nào',
-      tqG1: 'Doanh thu bản ghi được trả cho <b>bản thu</b>: người tạo ra bản thu đó được nhận. Khoản này được thanh toán hằng tháng qua các nền tảng.',
-      tqG2: 'Tác quyền được trả cho <b>bài hát</b>: người viết giai điệu và lời được nhận, kể cả khi người khác trình bày. Khoản này được thanh toán theo quý qua các tổ chức quản lý tác quyền.',
-      tqG3: 'Hai dòng tiền này độc lập với nhau. Một bài hát có thể có doanh thu ở dòng này mà chưa có ở dòng kia, và ngược lại.',
+      tqG1: 'Doanh thu bản ghi trả cho <b>bản thu</b>: ai tạo bản thu thì nhận, hằng tháng qua nền tảng.',
+      tqG2: 'Tác quyền trả cho <b>bài hát</b>: người viết giai điệu và lời nhận, kể cả khi người khác hát; theo quý qua tổ chức tác quyền.',
+      tqG3: 'Hai dòng tiền độc lập: một bài có thể có dòng này mà chưa có dòng kia.',
       xemHoSo: 'Xem quy trình phát hành và nền tảng'
     },
     en: {
@@ -70,12 +70,12 @@ HT.dangKy({
       trong: 'None of your tracks earned this period',
       xuat: 'Download list (CSV)', hienThi: 'Showing',
       tqTrong: 'No publishing report for this period',
-      tqTrongMo: 'Publishing settles quarterly and societies usually report one to two quarters late. Most periods have no report at all — that is normal.',
+      tqTrongMo: 'Publishing settles quarterly and arrives one to two quarters late, so many periods have no report. That is normal.',
       tqCo: 'Periods with a publishing report', soSangTac: 'Works you co-wrote',
       tqGiaiThich: 'How publishing differs from recording revenue',
-      tqG1: 'Recording revenue pays for the <b>master</b> — whoever made that recording is paid. It arrives monthly through the platforms.',
-      tqG2: 'Publishing pays for the <b>song</b> — whoever wrote the melody and lyric is paid, even when someone else sings it. It arrives quarterly through collecting societies.',
-      tqG3: 'The two streams are independent. A track can be earning in one and not yet in the other, and the other way round.',
+      tqG1: 'Recording revenue pays for the <b>master</b>: whoever made the recording is paid, monthly via platforms.',
+      tqG2: 'Publishing pays for the <b>song</b>: whoever wrote it is paid, even when someone else sings it; quarterly via societies.',
+      tqG3: 'The two are independent: a track can be earning in one and not yet the other.',
       xemHoSo: 'Pipeline and platforms'
     }
   },

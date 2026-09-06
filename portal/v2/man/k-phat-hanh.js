@@ -26,7 +26,7 @@ HT.dangKy({
       navPh: 'Phát hành', h1: 'Phát hành',
       mo: 'Bản phát hành đã có trong danh mục, hồ sơ đang xử lý, và gửi hồ sơ phát hành mới.',
       dangXuLy: 'Hồ sơ đang xử lý', canBoSung: 'Cần bổ sung', daPh: 'Đã phát hành', trongDm: 'Trong danh mục',
-      gui: 'Gửi hồ sơ phát hành', hoSo: 'Hồ sơ đã gửi', hoSoMo: 'Bấm một hồ sơ để xem chi tiết và lịch sử xử lý.',
+      gui: 'Gửi hồ sơ phát hành', haustekTao: 'Haustek tạo thay bạn', hoSo: 'Hồ sơ đã gửi', hoSoMo: 'Bấm một hồ sơ để xem chi tiết và lịch sử xử lý.',
       danhMuc: 'Bản phát hành trong danh mục', danhMucMo: 'Suy ra từ các bài hát đã gửi tới nền tảng. Bản phát hành có doanh thu ở kỳ đã xét duyệt được đánh dấu.',
       cMa: 'Mã hồ sơ', cTen: 'Bản phát hành', cLoai: 'Loại', cNgay: 'Ngày phát hành mong muốn', cTt: 'Trạng thái', cCapNhat: 'Cập nhật lần cuối',
       cKy: 'Kỳ phát hành', cTrack: 'Track', cDt: 'Doanh thu các kỳ đã xét duyệt', coDt: 'đã có', chuaDt: 'chưa có',
@@ -35,7 +35,7 @@ HT.dangKy({
       b1: 'Đã gửi', b1m: 'Hồ sơ đã vào danh sách chờ xử lý của Haustek. Bạn chưa cần làm gì thêm.',
       b2: 'Đã tiếp nhận', b2m: 'Haustek đã kiểm tra đủ thông tin. Nếu thiếu, hồ sơ được trả lại kèm ghi chú cần bổ sung.',
       b3: 'Đã cấp mã', b3m: 'Track được cấp ISRC, bản phát hành được cấp UPC. Đây là các mã dùng để khớp doanh thu về sau.',
-      b4: 'Đã phát hành', b4m: 'Bản ghi đã phát hành trên các nền tảng. Doanh thu bắt đầu về từ kỳ kế tiếp và hiển thị trong trang Bài hát của bạn.',
+      b4: 'Đã phát hành', b4m: 'Đã phát hành trên nền tảng. Doanh thu về từ kỳ kế tiếp, trong trang Bài hát của bạn.',
       lichSu: 'Lịch sử xử lý', track: 'Danh sách track', chuaCoMa: 'chưa có mã',
       ghiChuTra: 'Haustek cần bạn bổ sung',
       formNs: 'Nghệ sĩ chính', formLoai: 'Loại phát hành', formTen: 'Tên bản phát hành', formPb: 'Phiên bản',
@@ -43,7 +43,7 @@ HT.dangKy({
       formBia: 'Đường dẫn ảnh bìa', formGhi: 'Ghi chú cho bộ phận phát hành', formTracks: 'Danh sách track',
       themTrack: 'Thêm track', xoaTrack: 'Xoá track', trTen: 'Tên track', trFeat: 'Nghệ sĩ khách mời (feat.)', trIsrc: 'ISRC (nếu đã có)',
       trProducer: 'Producer', trSangTac: 'Người sáng tác và tỷ lệ', themNguoi: 'Thêm người sáng tác', tenThat: 'Họ tên theo giấy tờ', vaiTro: 'Vai trò', tiLe: 'Tỷ lệ %',
-      formMo: 'Đây là bản rút gọn của hồ sơ metadata trên trang chủ, gồm đúng các trường bắt buộc. Hồ sơ đã gửi không thể sửa; nếu cần sửa, Haustek sẽ trả lại để bạn gửi lại.',
+      formMo: 'Bản rút gọn của hồ sơ metadata, chỉ các trường bắt buộc. Gửi rồi không sửa; cần sửa thì Haustek trả lại.',
       daGui: 'Đã gửi hồ sơ', formDay: 'Mở hồ sơ metadata đầy đủ trên trang chủ',
       tongTiLe: 'Tổng tỷ lệ sáng tác phải bằng 100%'
     },
@@ -51,7 +51,7 @@ HT.dangKy({
       navPh: 'Releases', h1: 'Releases',
       mo: 'Releases already in the catalogue, submissions in progress, and submitting a new release.',
       dangXuLy: 'In progress', canBoSung: 'Needs fixes', daPh: 'Released', trongDm: 'In the catalogue',
-      gui: 'Submit a release', hoSo: 'Submissions', hoSoMo: 'Open a submission for details and its history.',
+      gui: 'Submit a release', haustekTao: 'Created by Haustek for you', hoSo: 'Submissions', hoSoMo: 'Open a submission for details and its history.',
       danhMuc: 'Releases in the catalogue', danhMucMo: 'Derived from the tracks delivered to platforms. Releases earning in an approved period are marked.',
       cMa: 'Submission', cTen: 'Release', cLoai: 'Type', cNgay: 'Requested date', cTt: 'Status', cCapNhat: 'Updated',
       cKy: 'Release period', cTrack: 'Tracks', cDt: 'Revenue across approved periods', coDt: 'earning', chuaDt: 'none yet',
@@ -60,7 +60,7 @@ HT.dangKy({
       b1: 'Submitted', b1m: 'The submission is in Haustek’s queue. Nothing else is needed from you.',
       b2: 'Received', b2m: 'Haustek has checked the submission. If something is missing it is returned with a note.',
       b3: 'Codes assigned', b3m: 'Tracks receive ISRCs and the release a UPC. These codes match revenue later.',
-      b4: 'Released', b4m: 'The recording is live on platforms. Revenue arrives from the following period and appears under My tracks.',
+      b4: 'Released', b4m: 'Live on platforms. Revenue arrives from the next period under My tracks.',
       lichSu: 'History', track: 'Tracks', chuaCoMa: 'no code yet',
       ghiChuTra: 'Haustek needs you to add',
       formNs: 'Main artist', formLoai: 'Release type', formTen: 'Release title', formPb: 'Version',
@@ -68,7 +68,7 @@ HT.dangKy({
       formBia: 'Artwork link', formGhi: 'Note for the release team', formTracks: 'Tracks',
       themTrack: 'Add track', xoaTrack: 'Remove', trTen: 'Track title', trFeat: 'Featuring', trIsrc: 'ISRC (if you have one)',
       trProducer: 'Producer', trSangTac: 'Writers and splits', themNguoi: 'Add writer', tenThat: 'Legal name', vaiTro: 'Role', tiLe: 'Share %',
-      formMo: 'A short form of the homepage metadata form, with the required fields only. A submission cannot be edited after sending; Haustek returns it if changes are needed.',
+      formMo: 'The short metadata form, required fields only. Cannot be edited after sending; Haustek returns it if needed.',
       daGui: 'Submission sent', formDay: 'Full form on the homepage',
       tongTiLe: 'Writer shares must add up to 100%'
     }
@@ -108,7 +108,7 @@ HT.dangKy({
         hs.map(function (x) {
           return '<tr class="pick" data-hs="' + HM.esc(x.id) + '">' +
             '<td class="mono">' + HM.esc(x.id) + '</td>' +
-            '<td>' + HM.tenBia({ bia: x.id, ten: x.title, phu: x.artistName + ' · ' + x.tracks.length + ' track' }) + '</td>' +
+            '<td>' + HM.tenBia({ bia: x.id, ten: x.title, phu: x.artistName + ' · ' + x.tracks.length + ' track' + (x.submittedRole === 'staff' ? ' · ' + t('haustekTao') : '') }) + '</td>' +
             '<td>' + HM.esc(x.type === 'single' ? 'Single' : x.type === 'ep' ? 'EP' : 'Album') + '</td>' +
             '<td class="mono">' + HM.esc(HT.fmt.ngay(x.releaseDate)) + '</td>' +
             '<td>' + HM.tag(NHAN[c.lang][x.status], KIEU[x.status]) + '</td>' +

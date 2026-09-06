@@ -25,7 +25,7 @@ HT.dangKy({
   chu: {
     vi: {
       navXetDuyet: 'Xét duyệt', h1: 'Xét duyệt đề xuất',
-      mo: 'Tạm ứng và hợp đồng: kinh doanh hoặc đối tác đề xuất, kế toán kiểm số, giám đốc xét duyệt. Mỗi đề xuất có bản tính ROI và hạng rủi ro chụp lúc tạo.',
+      mo: 'Kinh doanh hoặc đối tác đề xuất, kế toán kiểm số, giám đốc duyệt. Mỗi đề xuất có bản tính ROI và hạng rủi ro lúc tạo.',
       kCho: 'Chờ xét duyệt', kChoS: '{a} chờ kiểm số · {b} đã kiểm', kUng: 'Tạm ứng đề xuất đang chờ', kUngS: 'tổng số tiền', kDuyet: 'Đã duyệt', kDuyetS: '{a} tạm ứng · {b} hợp đồng', kTuChoi: 'Từ chối / trả lại', kRoi: 'ROI trung bình', kRoiS: 'trên vốn ứng · các tạm ứng đang chờ',
       tabCho: 'Đang chờ', tabXong: 'Đã xử lý', tabToi: 'Của tôi',
       loaiAll: 'Mọi loại', loaiUng: 'Tạm ứng', loaiHd: 'Hợp đồng', tim: 'Tìm đối tác, mã đề xuất…',
@@ -35,13 +35,13 @@ HT.dangKy({
       hoiDuyet: 'Duyệt {id} cho {t}?', hoiDuyetUng: 'Khoản {a} cộng phí ứng {f} được ghi vào sổ tạm ứng của đối tác và thu hồi từ phần họ được hưởng mỗi kỳ.', hoiDuyetHd: 'Phí Haustek {f} áp cho đối tác từ kỳ mở tiếp theo, hạn {m} tháng; hợp đồng cũ hết hiệu lực.',
       hoiTuChoi: 'Từ chối {id}', hoiTraLai: 'Trả lại {id} để bổ sung', lyDo: 'Lý do (đối tác và người đề xuất đều thấy)', hoiKiem: 'Xác nhận đã kiểm số {id}', hoiKiemMo: 'Bạn đã đối chiếu thu nhập 12 kỳ với bảng kê và sổ tạm ứng.', ghiChu: 'Ghi chú',
       daDuyet: 'Đã duyệt {id}', daTuChoi: 'Đã từ chối {id}', daTraLai: 'Đã trả lại {id}', daKiem: 'Đã ghi kiểm số {id}', daRut: 'Đã rút {id}', daGuiLai: 'Đã gửi lại {id}',
-      khong: 'Không có đề xuất nào', khongMo: 'Đề xuất mới bấm ở góc phải, hoặc từ ngăn hồ sơ đối tác.',
+      khong: 'Không có đề xuất nào', khongMo: 'Đề xuất mới bấm ở góc phải, hoặc từ ngăn hồ sơ đối tác.', khongXong: 'Chưa có đề xuất nào đã xử lý', khongXongMo: 'Đề xuất đã duyệt, từ chối hay rút sẽ nằm ở đây. Việc đang chờ ở tab Đang chờ.', khongToi: 'Bạn chưa tạo đề xuất nào', khongToiMo: 'Đề xuất do bạn tạo, kể cả đã xử lý, sẽ nằm ở đây.', khongLoc: 'Không có đề xuất khớp bộ lọc', khongLocMo: 'Thử bỏ loại đang chọn hoặc xoá ô tìm.', veCho: 'Xem tab Đang chờ',
       fTk: 'Đối tác (tên hoặc mã)', fSo: 'Số tiền tạm ứng (USD)', fPhi: 'Phí ứng', fGhi: 'Mục đích / ghi chú', fHan: 'Kỳ hạn (tháng)', fPhiHd: 'Phí Haustek trên doanh thu gộp', fDocQuyen: 'Độc quyền', xemTinh: 'Bản tính theo số đang nhập', khongThayTk: 'Không tìm thấy đối tác “{q}”', daTao: 'Đã tạo đề xuất {id}',
       chiTiet: 'Đề xuất', cuaDoiTac: 'gửi từ cổng đối tác'
     },
     en: {
       navXetDuyet: 'Approvals', h1: 'Proposal approvals',
-      mo: 'Advances and contracts: sales or the partner proposes, accounting checks the figures, the director approves. Each proposal carries an ROI calculation and risk grade snapshotted at creation.',
+      mo: 'Sales or partners propose, accounting checks, the director approves. Each proposal carries ROI and risk grade at creation.',
       kCho: 'Awaiting approval', kChoS: '{a} awaiting check · {b} checked', kUng: 'Advances proposed, pending', kUngS: 'total amount', kDuyet: 'Approved', kDuyetS: '{a} advances · {b} contracts', kTuChoi: 'Rejected / returned', kRoi: 'Average ROI', kRoiS: 'on capital · pending advances',
       tabCho: 'Pending', tabXong: 'Handled', tabToi: 'Mine',
       loaiAll: 'Any kind', loaiUng: 'Advances', loaiHd: 'Contracts', tim: 'Search partner, proposal id…',
@@ -51,7 +51,7 @@ HT.dangKy({
       hoiDuyet: 'Approve {id} for {t}?', hoiDuyetUng: '{a} plus the {f} advance fee is booked to the partner’s advance ledger and recouped from their share each period.', hoiDuyetHd: 'Haustek fee {f} applies to the partner from the next open period for {m} months; the old contract ends.',
       hoiTuChoi: 'Reject {id}', hoiTraLai: 'Return {id} for changes', lyDo: 'Reason (visible to the partner and the proposer)', hoiKiem: 'Confirm figures checked for {id}', hoiKiemMo: 'You have reconciled 12 periods of earnings against statements and the advance ledger.', ghiChu: 'Note',
       daDuyet: 'Approved {id}', daTuChoi: 'Rejected {id}', daTraLai: 'Returned {id}', daKiem: 'Recorded check for {id}', daRut: 'Withdrew {id}', daGuiLai: 'Resubmitted {id}',
-      khong: 'No proposals', khongMo: 'Create one at the top right, or from a partner’s drawer.',
+      khong: 'No proposals', khongMo: 'Create one at the top right, or from a partner’s drawer.', khongXong: 'Nothing decided yet', khongXongMo: 'Approved, rejected and withdrawn proposals land here. Open items are under Pending.', khongToi: 'You have not created a proposal', khongToiMo: 'Proposals you create, including decided ones, land here.', khongLoc: 'No proposals match the filter', khongLocMo: 'Clear the type or the search box.', veCho: 'Go to Pending',
       fTk: 'Partner (name or id)', fSo: 'Advance amount (USD)', fPhi: 'Advance fee', fGhi: 'Purpose / note', fHan: 'Term (months)', fPhiHd: 'Haustek fee on gross revenue', fDocQuyen: 'Exclusive', xemTinh: 'Calculation for the figures entered', khongThayTk: 'No partner matching “{q}”', daTao: 'Created proposal {id}',
       chiTiet: 'Proposal', cuaDoiTac: 'sent from the partner portal'
     }
@@ -86,7 +86,7 @@ HT.dangKy({
       [['all', t('loaiAll')], ['advance', t('loaiUng')], ['contract', t('loaiHd')]].map(function (x) { return '<button type="button" class="pill' + (LOC.loai === x[0] ? ' on' : '') + '" data-loai="' + x[0] + '">' + HM.esc(x[1]) + '</button>'; }).join('') +
       '<div class="srch">' + HM.icon('tim') + '<input type="search" data-tim placeholder="' + HM.esc(t('tim')) + '" value="' + HM.esc(LOC.tim) + '"></div></div>';
     html += HM.the({ thoBody: true,
-      than: !rows.length ? HM.trong({ icon: 'check', tieuDe: t('khong'), moTa: t('khongMo') }) :
+      than: !rows.length ? trongTab(c, k, qq) :
         '<div class="tw"><table class="t"><thead><tr><th>' + HM.esc(t('cTk')) + '</th><th>' + HM.esc(t('cNoiDung')) + '</th><th class="num">' + HM.esc(t('cRoi')) + '</th><th>' + HM.esc(t('cKn')) + '</th><th>' + HM.esc(t('cTt')) + '</th><th>' + HM.esc(t('cThaoTac')) + '</th></tr></thead><tbody>' +
         pt.page.map(function (p) { return dongDx(c, p, me); }).join('') + '</tbody></table></div>' + pt.chan });
     root.innerHTML = html;
@@ -101,6 +101,14 @@ HT.dangKy({
   }
 });
 
+/* Ô trống nói đúng vì sao trống: tab đã xử lý / của tôi / bộ lọc, không dùng một câu chung. */
+function trongTab(c, k, qq) {
+  var t = tx, nutCho = k.pending ? '<button type="button" class="btn sm" data-tab="cho">' + HM.esc(t('veCho')) + ' (' + k.pending + ')</button>' : '';
+  if (LOC.loai !== 'all' || qq) return HM.trong({ icon: 'tim', tieuDe: t('khongLoc'), moTa: t('khongLocMo') });
+  if (LOC.tab === 'xong') return HM.trong({ icon: 'check', tieuDe: t('khongXong'), moTa: t('khongXongMo'), nut: nutCho });
+  if (LOC.tab === 'toi') return HM.trong({ icon: 'file', tieuDe: t('khongToi'), moTa: t('khongToiMo'), nut: nutCho });
+  return HM.trong({ icon: 'check', tieuDe: t('khong'), moTa: t('khongMo') });
+}
 function dongDx(c, p, me) {
   var t = tx, roi = p.type === 'advance' ? p.calc.roi : null;
   return '<tr class="pick" data-pr="' + HM.esc(p.id) + '"><td>' + HM.tenBia({ ten: p.party.name, seed: p.party.clientId, phu: p.id + ' · ' + p.ageDays + ' ' + t('ngay') }) + '</td>' +

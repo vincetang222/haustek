@@ -35,7 +35,7 @@ HT.dangKy({
   chu: {
     vi: {
       navBan: 'Bàn làm việc', h1: 'Bàn làm việc', homNay: 'Việc của bạn hôm nay, {d}.', nhanVien: 'Nhân viên', vaiTro: 'Vai',
-      dxCho: 'Chờ xét duyệt', dxChoMo: 'Tạm ứng và hợp đồng do kinh doanh hoặc đối tác đề xuất, kèm ROI và hạng rủi ro tính từ 12 kỳ thu nhập. Kế toán kiểm số trước, bạn duyệt sau.', dxChoS: '{a} tạm ứng chờ duyệt · {b} đã kiểm số', moXetDuyet: 'Mở xét duyệt', dxKhong: 'Không có đề xuất nào chờ duyệt', dxKhongMo: 'Đề xuất mới từ kinh doanh hoặc đối tác sẽ hiện ở đây.',
+      dxCho: 'Chờ xét duyệt', dxChoMo: 'Kinh doanh hoặc đối tác đề xuất, kế toán kiểm số, bạn duyệt. ROI và hạng rủi ro tính từ 12 kỳ.', dxChoS: '{a} tạm ứng chờ duyệt · {b} đã kiểm số', moXetDuyet: 'Mở xét duyệt', dxKhong: 'Không có đề xuất nào chờ duyệt', dxKhongMo: 'Đề xuất mới từ kinh doanh hoặc đối tác sẽ hiện ở đây.',
       dxToi: 'Đề xuất của tôi', dxToiMo: 'Tạm ứng và hợp đồng bạn đã đề xuất; trạng thái đổi khi kế toán kiểm số và giám đốc xét duyệt.', dxTaoUng: 'Đề xuất tạm ứng', dxTaoHd: 'Đề xuất hợp đồng', dxToiKhong: 'Bạn chưa có đề xuất nào', dxToiKhongMo: 'Bấm nút phía trên, hoặc mở ngăn một đối tác trong sổ đối tác.',
       dxKiem: 'Cần kiểm số', dxKiemMo: 'Đề xuất mới gửi. Đối chiếu thu nhập 12 kỳ với bảng kê và sổ tạm ứng, rồi bấm Đã kiểm để giám đốc xét duyệt.', dxKiemKhong: 'Không có đề xuất nào cần kiểm số', dxKiemKhongMo: 'Đề xuất đã kiểm chuyển sang chờ giám đốc duyệt.',
       dxNoiDung: 'Nội dung', dxThaoTac: 'Thao tác', dxRoi: 'ROI', dxThuHoi: 'thu hồi {n} tháng', dxTuDoiTac: 'từ cổng đối tác',
@@ -81,7 +81,7 @@ HT.dangKy({
     },
     en: {
       navBan: 'My desk', h1: 'My desk', homNay: 'Your work for today, {d}.', nhanVien: 'Staff', vaiTro: 'Role',
-      dxCho: 'Awaiting approval', dxChoMo: 'Advances and contracts proposed by sales or partners, with ROI and a risk grade from 12 periods of earnings. Accounting checks first, you approve.', dxChoS: '{a} in advances pending · {b} checked', moXetDuyet: 'Open approvals', dxKhong: 'Nothing awaiting approval', dxKhongMo: 'New proposals from sales or partners show up here.',
+      dxCho: 'Awaiting approval', dxChoMo: 'Sales or partners propose, accounting checks, you approve. ROI and risk grade from 12 periods.', dxChoS: '{a} in advances pending · {b} checked', moXetDuyet: 'Open approvals', dxKhong: 'Nothing awaiting approval', dxKhongMo: 'New proposals from sales or partners show up here.',
       dxToi: 'My proposals', dxToiMo: 'Advances and contracts you proposed; status moves as accounting checks and the director approves.', dxTaoUng: 'Propose advance', dxTaoHd: 'Propose contract', dxToiKhong: 'You have no proposals yet', dxToiKhongMo: 'Use the buttons above, or open a partner’s drawer in Partners.',
       dxKiem: 'Figures to check', dxKiemMo: 'Newly submitted proposals. Reconcile 12 periods of earnings against statements and the advance ledger, then mark Checked so the director can approve.', dxKiemKhong: 'No proposal needs a check', dxKiemKhongMo: 'Checked proposals move on to the director.',
       dxNoiDung: 'Terms', dxThaoTac: 'Actions', dxRoi: 'ROI', dxThuHoi: 'recoup {n} mo', dxTuDoiTac: 'from the partner portal',
@@ -238,6 +238,8 @@ function bangKhieuNai(c, rows) {
     }).join('') + '</tbody></table></div>';
 }
 function nutLoi(c, ds) {
+  /* Hàng lối tắt bỏ đi: thanh điều hướng theo vai đã đủ, thêm hàng nút chỉ rối. */
+  if (c) return '';
   /* chỉ đưa lối tắt tới màn mà vai này mở được */
   ds = ds.filter(function (x) { return !(c.A.quyen && typeof c.A.quyen.man === 'function') || c.A.quyen.man(x[0]); });
   if (!ds.length) return '';
