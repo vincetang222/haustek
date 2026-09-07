@@ -42,11 +42,9 @@ const RONG = (process.argv[3] || '1500').split(',').map(Number);
     for (const theme of ['light', 'dark']) {
       await bamHien(p, '[data-th="' + theme + '"]');
       await p.waitForTimeout(200);
-      /* Phase 1 chỉ có tiếng Việt và cổng không còn nút VI / EN, nên chỉ
-         quét một ngôn ngữ. Giữ vòng lặp để bật lại khi có bản dịch thật. */
-      for (const lang of ['vi']) {
-        const nutLang = await p.$('[data-l="' + lang + '"]');
-        if (nutLang) { await bamHien(p, '[data-l="' + lang + '"]'); await p.waitForTimeout(150); }
+      for (const lang of ['vi', 'en']) {
+        await bamHien(p, '[data-l="' + lang + '"]');
+        await p.waitForTimeout(150);
         const doi = [];
         for (const m of man) {
           await p.evaluate(id => { location.hash = '#' + id; }, m.id);
@@ -108,12 +106,7 @@ const RONG = (process.argv[3] || '1500').split(',').map(Number);
                     out.traniO.push((e.textContent || '').trim().slice(0, 24) + ' (+' + (e.scrollWidth - e.clientWidth) + 'px)');
                 });
               out.dai = main.textContent.length;
-              /* Trang "quá ít nội dung" chỉ đáng báo khi nó KHÔNG có gì cả.
-                 Một thẻ trạng thái rỗng có chủ ý, hay một danh sách đúng
-                 một dòng, đều là kết quả đúng: từ vòng 11 các trang viết
-                 thành câu chứ không thành bảng mười cột, nên chữ ít đi là
-                 chuyện bình thường. */
-              out.coTrong = !!main.querySelector('.empty, .hang .d, table.t tbody tr, .dt .m');
+              out.coTrong = !!main.querySelector('.empty');
               return out;
             });
             const nhan = m.id + (tb ? '/' + tb : '');

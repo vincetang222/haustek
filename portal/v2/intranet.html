@@ -4,73 +4,113 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<title>Haustek · Cổng nội bộ</title>
+<title>Haustek · Cổng vận hành nội bộ</title>
 <link rel="icon" href="../../favicon.svg">
 <!-- Bộ chữ nạp từ chính máy chủ này, không gọi ra fonts.googleapis.com.
      Thẻ <link rel=stylesheet> CHẶN việc chạy script cho tới khi tải xong,
-     mà mọi trang ở đây đều do script dựng ra — nên fonts.googleapis.com
+     mà mọi màn hình ở đây đều do script dựng ra — nên fonts.googleapis.com
      chậm hoặc bị chặn là trang đứng lại ở khoảng trắng, không báo lỗi gì. -->
 <link rel="stylesheet" href="fonts-nhung.css">
 <link rel="stylesheet" href="haustek-theme.css">
 </head>
 <body>
-<script src="../haustek-loi.js"></script>
+<script src="../haustek-core.js"></script>
 <script src="haustek-shell.js"></script>
+<script src="haustek-bieudo.js"></script>
 <script src="haustek-man.js"></script>
+<script src="haustek-taisan.js"></script>
+<script src="haustek-them.js"></script>
 <script src="haustek-hoso.js"></script>
 
-<script src="man/hom-nay.js"></script>
-<script src="man/viec.js"></script>
+<script src="man/ban-lam-viec.js"></script>
+<script src="man/tong-quan.js"></script>
+<script src="man/theo-doi.js"></script>
+<script src="man/chat-luong.js"></script>
+<script src="man/chia-se.js"></script>
+<script src="man/chien-dich.js"></script>
+<script src="man/xet-duyet.js"></script>
+<script src="man/muc-tra.js"></script>
+<script src="man/nap-du-lieu.js"></script>
+<script src="man/khop-isrc.js"></script>
+<script src="man/doi-chieu.js"></script>
+<script src="man/phat-hanh.js"></script>
+<script src="man/giao-nhan.js"></script>
+<script src="man/sua-hang-loat.js"></script>
+<script src="man/bang-gia.js"></script>
+<script src="man/ke-toan.js"></script>
+<script src="man/chi-tra.js"></script>
+<script src="man/tam-ung.js"></script>
+<script src="man/ty-le.js"></script>
+<script src="man/danh-muc.js"></script>
+<script src="man/nen-tang.js"></script>
 <script src="man/doi-tac.js"></script>
-<script src="man/thong-bao.js"></script>
+<script src="man/ho-tro.js"></script>
+<script src="man/quyen.js"></script>
 <script src="man/quan-tri.js"></script>
+<script src="man/to-chuc.js"></script>
 
 <script>
 "use strict";
 /* =====================================================================
    CỬA NỘI BỘ — giữ nguyên HAUSTEK.admin, không khoá cửa.
-
-   Portal là SỔ THEO DÕI VIỆC và KÊNH THÔNG BÁO. Việc thật diễn ra ở
-   OneRPM, Believe, Warner và YouTube CMS. Ở đây không có tỷ giá, không có
-   doanh thu, không có biểu đồ: mọi con số tiền đều là con số ghi trên
-   bảng kê PDF mà kế toán đã tải lên, kèm nguồn.
+   Hai bí mật kinh doanh nạp ở đây, không nằm trong file lõi mà cổng
+   khách cũng tải về.
    ===================================================================== */
 var A = HAUSTEK.admin;
-try { var NV = sessionStorage.getItem('haustek.nv'); if (NV) A.nhanSu.datToi(NV); } catch (e) {}
+try { var NV = sessionStorage.getItem('haustek.demo.nv'); if (NV) A.staff.setMe(NV); } catch (e) {}
+A.provideSecrets({
+  code: 'DIST-1',
+  name: 'Đối tác phân phối chính (tên thật điền khi triển khai)',
+  grossRate: 0.86,
+  contact: 'nội bộ · không hiển thị cho đối tác'
+});
+HT.setFx(A.fx.get().rate);
 
 HT.chay({
   ten: 'internal',
   A: A,
   /* chuông và tìm nhanh trên thanh trên: lõi tính, khung vẽ */
-  thongBao: function () { return A.chuong(); },
-  danhDauDoc: function () { return true; },
-  tim: function (c, q) {
-    var kq = A.timKiem(q, 5);
-    return kq.doiTac.map(function (d) { return { title: d.ten, sub: 'Đối tác', di: 'doi-tac' }; })
-      .concat(kq.viec.map(function (v) { return { title: v.tieuDe, sub: v.doiTacTen + ' · việc', di: 'viec' }; }))
-      .concat(kq.banPhatHanh.map(function (b) { return { title: b.ten, sub: 'Bản phát hành', di: 'viec' }; }));
+  thongBao: function () { return A.notifications(); },
+  danhDauDoc: function (c, ids) { return A.markNotifications(ids); },
+  tim: function (c, q) { return A.search(q, 6); },
+  moBai: function (c, id) { var a = A.asset(id); HTS.moNgan(c, a, { noiBo: true, tien: c.tien2, tien0: c.tien, playlists: A.playlistsOf(id) }); },
+  moDoiTac: function (c) { location.hash = '#doi-tac'; },
+  kyDanhSach: function () {
+    return A.periods.map(function (p) {
+      /* Nhãn này hiện trong ô chọn kỳ ở thanh trên, nên nó là CHỮ GIAO
+         DIỆN và phải đổi theo ngôn ngữ. HT.lang là nguồn duy nhất. */
+      var en = HT.lang === 'en';
+      return { k: p.k, label: p.label, idx: p.idx,
+               nhan: A.isApproved(p.k) ? (en ? 'approved' : 'đã xét duyệt')
+                                       : (en ? 'not approved' : 'chưa xét duyệt') };
+    });
   },
-  ghiChu: function () {
-    var hn = A.homNayCua(A.nhanSu.toi.id);
-    return A.thuTrongTuan(hn.ngay) + ', ' + A.ngayVi(hn.ngay);
+  kyMacDinh: A.periods[A.periods.length - 1].k,
+  ghiChu: function (c) {
+    var f = A.fx.get();
+    var khoa = f.locked[c.kyKey];
+    return '1 USD = ' + HT.fmt.n(khoa ? khoa.rate : f.rate) + ' ₫'
+      + (khoa ? '' : (c.lang === 'vi' ? ' · chưa chốt tỷ giá' : ' · not locked'));
   },
-  chanTrai: function () {
-    var me = A.nhanSu.toi;
-    return '<b>' + HT.esc(me.ten) + '</b><span>' + HT.esc(me.chucDanh) + '</span>' +
-      '<select class="inline-sel" data-nv style="margin-top:9px;width:100%">' + A.nhanSu.list().map(function (s) {
-        return '<option value="' + s.id + '"' + (s.id === me.id ? ' selected' : '') + '>' +
-          HT.esc(s.ten + ' · ' + s.chucDanh) + '</option>';
+  chanTrai: function (c) {
+    var me = A.staff.me;
+    return '<b>' + HT.esc(me.email) + '</b><span>' + HT.esc(c.lang === 'vi' ? me.title : me.titleEn) + '</span>' +
+      '<select class="inline-sel" data-nv style="margin-top:9px;width:100%">' + A.staff.list().map(function (s) {
+        return '<option value="' + s.id + '"' + (s.id === me.id ? ' selected' : '') + '>' + HT.esc(s.name + ' · ' + (c.lang === 'vi' ? s.title : s.titleEn)) + '</option>';
       }).join('') + '</select>' +
-      '<span style="display:block;margin-top:7px;line-height:1.5">' + HT.esc(
-        'Bản mẫu: đổi người để xem trang Hôm nay của từng vị trí. Hệ thống thật lấy người dùng từ tài khoản đăng nhập.') + '</span>';
+      '<span style="display:block;margin-top:7px;line-height:1.5">' + HT.esc(c.lang === 'vi'
+        ? 'Bản mẫu: đổi nhân viên để xem bàn làm việc theo vai. Hệ thống thật lấy vai từ tài khoản đăng nhập.'
+        : 'Prototype: switch staff to see each role’s desk. The real system takes the role from the login.') + '</span>';
   }
 });
-/* Đổi người: nhớ qua lần nạp lại, rồi nạp lại cho sạch trạng thái. */
+/* Nhân vật nhân viên: giữ qua lần nạp lại. Đặt TRƯỚC khi vẽ (HT.chay đã vẽ
+   một lần; đổi xong thì nạp lại trang cho gọn, y như đổi tài khoản ở cổng
+   đối tác). */
 document.addEventListener('change', function (e) {
   var s = e.target.closest('[data-nv]');
   if (!s) return;
-  try { sessionStorage.setItem('haustek.nv', s.value); } catch (err) {}
-  location.hash = '#hom-nay';
+  try { sessionStorage.setItem('haustek.demo.nv', s.value); } catch (err) {}
+  location.hash = '#ban-lam-viec';
   location.reload();
 });
 </script>
