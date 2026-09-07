@@ -331,6 +331,8 @@ h1{
   font-family:var(--disp);font-weight:800;font-stretch:118%;
   font-size:clamp(52px,13.2vw,192px);line-height:.92;letter-spacing:-.035em;
 }
+/* chỉ tồn tại trong khoảnh khắc đo cỡ chữ lúc mở trang — xem heroFitBoot */
+.hero h1.fitting{visibility:hidden}
 .hero-row{display:flex;align-items:flex-end;justify-content:space-between;gap:36px;flex-wrap:wrap;margin-top:34px}
 .hero-sub{color:var(--concrete);font-size:14.5px;max-width:480px;text-wrap:pretty}
 .hero-sub strong{color:var(--paper);font-weight:500}
@@ -365,6 +367,47 @@ h1{
   .hero-stats{grid-template-columns:repeat(4,1fr)}
   .hs{border-bottom:0;border-right:1px solid rgba(240,240,242,.09);padding:24px 22px}
   .hs:last-child{border-right:0}
+}
+
+/* =========================================================
+   MÀN HÌNH THẤP — nhường chỗ cho tiêu đề
+   Hero phải lọt đúng một màn. Ngoài tiêu đề còn có dòng nhãn, dòng phụ,
+   nút nghe thử và dải 4 con số — cộng lại khoảng 340px cố định. Trên
+   laptop 13" hay điện thoại nhỏ (chiều cao khả dụng 650–780px) thì phần
+   cố định đó ăn gần hết màn, khiến hàm fitHero phải bóp tiêu đề xuống
+   còn một nửa — mất hẳn khí chất của trang.
+   Cách xử lý: màn càng thấp thì các phần phụ càng co lại, để tiêu đề
+   giữ được cỡ. Không đụng gì tới màn cao.
+   ========================================================= */
+@media(max-height:900px){
+  .hero-kicker{margin-bottom:13px}
+  .hero-row{margin-top:20px;gap:24px}
+  .hero-inner{padding-bottom:16px}
+  .playwheel{width:104px;height:104px}
+  .playwheel button{inset:18px}
+  .playwheel .ringtext text{font-size:9px;letter-spacing:.28em}
+  .hero-stats{margin-bottom:14px}
+  .hs{padding:13px 16px}
+  .hs b{font-size:clamp(24px,5vw,42px)}
+  .hs span{font-size:9px;margin-top:4px}
+}
+@media(max-height:700px){
+  .hero-kicker{margin-bottom:9px}
+  .hero-row{margin-top:14px}
+  .hero-inner{padding-bottom:10px}
+  .playwheel{width:84px;height:84px}
+  .playwheel button{inset:14px}
+  .playwheel .ringtext text{font-size:7.5px;letter-spacing:.22em}
+  .hero-stats{margin-bottom:10px}
+  .hs{padding:9px 14px}
+  .hs b{font-size:clamp(20px,4.2vw,32px)}
+  .hero-sub{font-size:13px}
+}
+/* Điện thoại nhỏ: dòng phụ và nút nghe thử đang xuống hai hàng, tốn thêm
+   gần 90px. Cho nằm cạnh nhau. */
+@media(max-width:520px) and (max-height:900px){
+  .hero-row{flex-wrap:nowrap;align-items:center}
+  .hero-sub{flex:1;min-width:0}
 }
 
 /* ================= MARQUEE ================= */
@@ -568,14 +611,18 @@ a.row:hover .ttl{color:var(--accent)}
   overflow-wrap:anywhere;
 }
 .mail-giant:hover{color:var(--red)}
+/* Các nhãn nền tảng ở khối liên hệ — là <span>, không phải link (xem ghi
+   chú trong HTML). Bỏ hết hiệu ứng di chuột và con trỏ bàn tay để không
+   gợi ý sai rằng bấm được. */
 .store-links{display:flex;flex-wrap:wrap;gap:8px}
-.store-links a{
+.store-links a,.store-links span{
   font-family:var(--mono);font-size:11px;letter-spacing:.1em;color:var(--concrete);text-transform:uppercase;
   padding:11px 18px;border-radius:100px;
   background:rgba(240,240,242,.035);border:1px solid rgba(240,240,242,.1);
   backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
   transition:all .25s;
 }
+.store-links span{cursor:default}
 .store-links a:hover{color:var(--paper);border-color:var(--line-2);background:rgba(240,240,242,.09);transform:translateY(-2px)}
 
 /* ================= FOOTER ================= */
@@ -1097,22 +1144,29 @@ l-1242 0 -30 29 -29 29 0 745 c0 768 1 796 40 817 12 6 374 10 984 10 929 0
   <p class="kicker rv"><i>●</i><span data-i18n="ct_k">Liên hệ</span></p>
   <h2 class="rv" data-i18n="ct_h"><span class="ln">Bạn có bản nhạc?</span> <span class="ln"><em>Chúng tôi có sân khấu.</em></span></h2>
   <a class="mail-giant rv" href="mailto:mgmt@haustek-group.com">mgmt@haustek<span style="color:var(--red)">-</span>group.com</a>
-  <div class="store-links rv">
-    <a href="https://fanlink.to/HASpotify" target="_blank" rel="noopener">Spotify ↗</a>
-    <a href="https://fanlink.to/HAAppleMusic" target="_blank" rel="noopener">Apple Music ↗</a>
-    <a href="https://www.tiktok.com/search?q=haustek" target="_blank" rel="noopener">TikTok ↗</a>
-    <a href="https://fanlink.to/HAYouTube" target="_blank" rel="noopener">YouTube ↗</a>
-    <a href="https://fanlink.to/HASoundcloud" target="_blank" rel="noopener">SoundCloud ↗</a>
-    <a href="https://fanlink.to/HABeatport" target="_blank" rel="noopener">Beatport ↗</a>
-    <a href="https://fanlink.to/HATidal" target="_blank" rel="noopener">TIDAL ↗</a>
-    <a href="https://fanlink.to/HADeezer" target="_blank" rel="noopener">Deezer ↗</a>
-    <a href="https://www.nhaccuatui.com/" target="_blank" rel="noopener">NhacCuaTui ↗</a>
-    <a href="https://zingmp3.vn/" target="_blank" rel="noopener">Zing MP3 ↗</a>
-    <a href="https://www.facebook.com/haustek.agency" target="_blank" rel="noopener">Facebook ↗</a>
-    <a href="https://www.instagram.com/haustek.agency" target="_blank" rel="noopener">Instagram ↗</a>
-    <!-- TODO: thêm 2 nút dưới đây khi có link thật, đúng khuôn mẫu các nút trên —
-         <a href="LINK_SNAPCHAT" target="_blank" rel="noopener">Snapchat ↗</a>
-         <a href="LINK_ALIVE" target="_blank" rel="noopener">Alive ↗</a> -->
+  <div class="store-links rv" aria-label="Các nền tảng phát hành nhạc Haustek">
+    <!-- Trước đây mỗi nền tảng là một link đi qua fanlink.to. Đã bỏ toàn bộ
+         hyperlink: dịch vụ rút gọn link đó chèn quảng cáo cá độ vào trang
+         trung gian, tức là người bấm từ trang Haustek bị đẩy sang nội dung
+         không kiểm soát được — rủi ro uy tín, và ở Việt Nam quảng cáo cờ bạc
+         còn là nội dung bị cấm.
+         Giờ đây chỉ còn nhãn tĩnh, vẫn nói được "nhạc Haustek có mặt ở đâu"
+         mà không dẫn người dùng đi đâu cả.
+         KHI CÓ LINK CHÍNH THỨC (trỏ THẲNG tới trang trên nền tảng, không qua
+         dịch vụ rút gọn nào), đổi <span> thành:
+         <a href="URL_THẬT" target="_blank" rel="noopener noreferrer">Tên ↗</a> -->
+    <span>Spotify</span>
+    <span>Apple Music</span>
+    <span>TikTok</span>
+    <span>YouTube</span>
+    <span>SoundCloud</span>
+    <span>Beatport</span>
+    <span>TIDAL</span>
+    <span>Deezer</span>
+    <span>NhacCuaTui</span>
+    <span>Zing MP3</span>
+    <span>Facebook</span>
+    <span>Instagram</span>
   </div>
 </section>
 
@@ -1279,11 +1333,12 @@ l-1242 0 -30 29 -29 29 0 745 c0 768 1 796 40 817 12 6 374 10 984 10 929 0
   <div class="foot-row">
     <p>© 2026 Haustek · Việt Nam · Since 2017</p>
     <div class="fsoc">
-      <a href="https://www.facebook.com/haustek.agency" target="_blank" rel="noopener">FB</a>
-      <a href="https://www.instagram.com/haustek.agency" target="_blank" rel="noopener">IG</a>
-      <a href="https://www.tiktok.com/search?q=haustek" target="_blank" rel="noopener">TIKTOK</a>
-      <a href="https://fanlink.to/HASpotify" target="_blank" rel="noopener">SPOTIFY</a>
-      <a href="https://fanlink.to/HAYouTube" target="_blank" rel="noopener">YT</a>
+      <!-- Chỉ giữ những link trỏ THẲNG tới trang chính thức. Hai link
+           Spotify và YouTube trước đây đi qua fanlink.to nên đã bỏ, cùng
+           lý do với khối liên hệ ở trên. -->
+      <a href="https://www.facebook.com/haustek.agency" target="_blank" rel="noopener noreferrer">FB</a>
+      <a href="https://www.instagram.com/haustek.agency" target="_blank" rel="noopener noreferrer">IG</a>
+      <a href="https://www.tiktok.com/search?q=haustek" target="_blank" rel="noopener noreferrer">TIKTOK</a>
     </div>
   </div>
 </footer>
@@ -1556,11 +1611,27 @@ langBtn.addEventListener('click',()=>setLang(lang==="vi"?"en":"vi"));
 
 /* ================= khớp hero vào đúng một màn hình =================
    Cỡ chữ h1 tính bằng vw chỉ đúng với một độ dài chữ — đổi sang EN
-   ("Made in Vietnam.") là tràn dòng, tràn màn. Hàm này đo thật:
-   (1) co chữ để dòng dài nhất vừa chiều ngang, không cho gãy dòng;
-   (2) nếu tổng chiều cao hero (chữ + hàng phụ + dải số) vẫn vượt
-   viewport thì co tiếp tới khi lọt. Chạy khi font tải xong, khi đổi
-   ngôn ngữ, khi xoay máy / đổi cỡ cửa sổ. */
+   ("Made in Vietnam.") là tràn dòng, tràn màn. Hàm này đo thật rồi co lại.
+
+   Ba lỗi của bản trước, đã sửa:
+
+   (1) CO QUÁ TAY. Vòng lặp cũ nhân 0.95 cho tới khi vừa, mỗi bước 5% mà
+       chiều cao hero còn gồm nhiều phần không co theo chữ (kicker, dòng
+       phụ, dải số, padding). Kết quả ở 390px: chữ bị co từ 52px xuống
+       42px, nhỏ hơn mức cần thiết gần 20%. Giờ tính thẳng tỉ lệ dựa trên
+       phần chiều cao thật sự dành cho h1, rồi mới tinh chỉnh vài bước nhỏ.
+
+   (2) NHẢY CỠ KHI FONT VỀ. Hàm chạy ngay lúc dựng trang, lúc đó Archivo
+       chưa tải xong nên đo bằng font dự phòng — bề rộng chữ khác hẳn.
+       Khi Archivo về, hàm chạy lại và chữ đổi cỡ ngay trước mắt người
+       xem. Giờ h1 được giấu tới khi đo xong bằng đúng font thật (có hẹn
+       giờ 1.2 giây phòng khi font không về, không bao giờ để trang trống).
+
+   (3) ĐỔI CỠ KHI CUỘN TRÊN ĐIỆN THOẠI. Chrome/Safari trên điện thoại thu
+       thanh địa chỉ lại khi cuộn xuống, innerHeight tăng vài chục pixel
+       và bắn ra sự kiện resize — hàm chạy lại, chữ to lên; cuộn ngược thì
+       nhỏ lại. Giờ chỉ đo lại khi bề ngang đổi, hoặc chiều cao đổi trên
+       140px (xoay máy), còn thanh địa chỉ trượt thì bỏ qua. */
 function fitHero(){
   const hero=document.querySelector('.hero'),h1=hero&&hero.querySelector('h1');
   if(!h1)return;
@@ -1568,19 +1639,65 @@ function fitHero(){
   const rows=[...h1.querySelectorAll('.row')];
   rows.forEach(r=>{r.style.whiteSpace='nowrap';r.style.display='inline-block';});
   let fs=parseFloat(getComputedStyle(h1).fontSize);
+  const base=fs;
+
+  /* bước 1 — vừa chiều ngang: không cho dòng nào gãy */
   const maxW=h1.clientWidth;
   const wide=Math.max(...rows.map(r=>r.scrollWidth),1);
   if(wide>maxW){fs=fs*maxW/wide*.985;h1.style.fontSize=fs+'px';}
-  let guard=0;
-  while(hero.scrollHeight>innerHeight+2&&fs>30&&guard++<24){
-    fs*=.95;h1.style.fontSize=fs+'px';
+
+  /* bước 2 — vừa chiều cao: tính tỉ lệ từ đúng phần h1 chiếm chỗ,
+     thay vì mò từng 5% một.
+     Sàn co là 68% cỡ CSS, không phải một con số tuyệt đối: thà để hero
+     cao hơn màn hình vài chục pixel còn hơn hiện ra một tiêu đề bé tí
+     lạc lõng với phần còn lại của trang. Các quy tắc @media theo chiều
+     cao ở phần CSS đã thu gọn những thứ xung quanh nên hiếm khi phải
+     chạm tới sàn này. */
+  const FLOOR=base*0.68;
+  const over=hero.scrollHeight-innerHeight;
+  if(over>2){
+    const hH=h1.getBoundingClientRect().height;
+    const avail=hH-over;
+    fs=avail>0 ? Math.max(FLOOR, fs*(avail/hH)*.995) : FLOOR;
+    h1.style.fontSize=fs+'px';
   }
+  /* bước 3 — tinh chỉnh nốt phần dôi ra do làm tròn dòng chữ */
+  let guard=0;
+  while(hero.scrollHeight>innerHeight+2&&fs>FLOOR&&guard++<10){
+    fs=Math.max(FLOOR,fs*.978);h1.style.fontSize=fs+'px';
+  }
+  if(fs>=base-0.5)h1.style.fontSize='';   /* không cần can thiệp thì trả về cho CSS */
 }
-if(document.fonts&&document.fonts.ready)document.fonts.ready.then(fitHero);
-addEventListener('load',fitHero);
-let fitTm=null;
-addEventListener('resize',()=>{clearTimeout(fitTm);fitTm=setTimeout(fitHero,120);});
-fitHero();
+
+/* Giấu h1 tới khi đo xong bằng đúng font thật — tránh cảnh chữ hiện ra
+   một cỡ rồi nhảy sang cỡ khác. Class do chính JS thêm vào, nên máy nào
+   tắt JS vẫn thấy chữ bình thường. */
+(function heroFitBoot(){
+  const h1=document.querySelector('.hero h1');
+  if(!h1)return;
+  h1.classList.add('fitting');
+  let shown=false;
+  const reveal=()=>{ if(shown)return; shown=true; h1.classList.remove('fitting'); };
+  fitHero();                                   /* đo tạm bằng font dự phòng */
+  const done=()=>{ fitHero(); reveal(); };
+  if(document.fonts&&document.fonts.load){
+    Promise.all([
+      document.fonts.load('800 120px Archivo'),
+      document.fonts.load('italic 800 120px Archivo')
+    ]).then(done).catch(done);
+  }else{ done(); }
+  setTimeout(reveal,1200);                     /* phòng khi font không về */
+  addEventListener('load',()=>{fitHero();reveal();});
+
+  /* chỉ đo lại khi kích thước đổi thật, không phải khi thanh địa chỉ trượt */
+  let lw=innerWidth, lh=innerHeight, tm=null;
+  addEventListener('resize',()=>{
+    const dw=innerWidth!==lw, dh=Math.abs(innerHeight-lh)>140;
+    if(!dw&&!dh)return;
+    lw=innerWidth; lh=innerHeight;
+    clearTimeout(tm); tm=setTimeout(fitHero,120);
+  });
+})();
 
 /* ================= Bảng điều hướng (hamburger) =================
    Trước đây trang có 2 "màn" (home/events) chuyển qua lại bằng hash router.
