@@ -73,7 +73,8 @@ HT.dangKy({
     });
     var pt = HTM.phanTrang(rows, LOC);
     var html = HM.dau({ h1: HM.esc(t('h1')), mo: HM.esc(t('mo')),
-      nut: A.quyen && A.quyen.nhom('deXuatTao') ? '<button type="button" class="btn" data-them-hd>' + HM.icon('file') + HM.esc(t('themHd')) + '</button><button type="button" class="btn pri" data-them-ung>' + HM.icon('cash') + HM.esc(t('themUng')) + '</button>' : '' });
+      nut: (A.quyen && A.quyen.man('roi') ? '<button type="button" class="btn ghost" data-di="roi">' + HM.icon('chart') + HM.esc(c.lang === 'en' ? 'Deal ROI' : 'Tính ROI') + '</button>' : '') +
+        (A.quyen && A.quyen.nhom('deXuatTao') ? '<button type="button" class="btn" data-them-hd>' + HM.icon('file') + HM.esc(t('themHd')) + '</button><button type="button" class="btn pri" data-them-ung>' + HM.icon('cash') + HM.esc(t('themUng')) + '</button>' : '') });
     html += HM.so([
       { l: t('kCho'), v: HT.fmt.n(k.pending), lon: true, s: t('kChoS').replace('{a}', k.submitted).replace('{b}', k.checked) },
       { l: t('kUng'), v: c.tien2(choUng.reduce(function (s, p) { return s + p.terms.amount; }, 0)), s: t('kUngS') },
@@ -91,6 +92,7 @@ HT.dangKy({
         pt.page.map(function (p) { return dongDx(c, p, me); }).join('') + '</tbody></table></div>' + pt.chan });
     root.innerHTML = html;
     HTM.ganTrang(root, LOC, c.veLai);
+    HM.bam(root, '[data-di]', function (el) { c.di(el.getAttribute('data-di')); });
     HM.bam(root, '[data-tab]', function (el) { LOC.tab = el.getAttribute('data-tab'); LOC.trang = 0; c.veLai(); });
     HM.bam(root, '[data-loai]', function (el) { LOC.loai = el.getAttribute('data-loai'); LOC.trang = 0; c.veLai(); });
     HM.nhap(root, '[data-tim]', function (el) { LOC.tim = el.value; LOC.trang = 0; c.veLai(); var i = root.querySelector('[data-tim]'); if (i) { i.focus(); i.setSelectionRange(i.value.length, i.value.length); } });

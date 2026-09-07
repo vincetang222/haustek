@@ -42,7 +42,7 @@ gọi `HAUSTEK.lockdown()` **trước khi** chạy bất cứ trang nào, và kh
 > `localStorage` thì trang nào cùng gốc cũng đọc được. Xem tab **Quản trị → Ranh giới
 > hai cổng** để biết cái gì thật sự chặn được và cái gì không.
 
-## Hai mươi lăm trang nội bộ
+## Hai mươi sáu trang nội bộ
 
 | Trang | File | Trả lời câu gì |
 |---|---|---|
@@ -69,6 +69,7 @@ gọi `HAUSTEK.lockdown()` **trước khi** chạy bất cứ trang nào, và kh
 | Chia sẻ tác quyền | `man/chia-se.js` | Splits của mọi tài khoản: ai được chia bao nhiêu, lời mời chưa nhận, thu hồi còn dở; xác nhận thay có nhật ký |
 | Chiến dịch | `man/chien-dich.js` | Liên kết thông minh / pre-save, pitch playlist, quảng cáo trả phí của mọi tài khoản, phễu kết quả và chi tiết |
 | Xét duyệt | `man/xet-duyet.js` | Đề xuất tạm ứng và hợp đồng: kinh doanh hoặc đối tác đề xuất, kế toán kiểm số, giám đốc duyệt / từ chối / trả lại. Mỗi đề xuất chụp bản tính lúc tạo: thu nhập ròng 12 kỳ, tăng trưởng, độ dao động, tập trung bài đầu, mức ứng tối đa theo hạng rủi ro, khoản thu hồi, thời gian thu hồi, phí ứng thu về, phần Haustek giữ trong thời gian thu hồi, ROI; hợp đồng so phần Haustek giữ theo phí hiện tại và phí đề xuất. Duyệt xong tự ghi sổ tạm ứng hoặc áp phí mới từ kỳ mở kế tiếp |
+| Tính ROI | `man/roi.js` | Dựng lại bảng tính ROI_Haustek.xlsx: nhập doanh thu danh mục mỗi tháng, khoản ứng (tiền mặt cộng ngân sách truyền thông và sản xuất nếu thu hồi được), tỷ lệ nghệ sĩ hưởng, phần vẫn trả nghệ sĩ trong lúc thu hồi, kỳ hạn, độc quyền, phí môi giới, chi phí bản phát hành. Ra: hoa hồng Haustek mỗi tháng (ô D3), phần giữ lại để thu hồi (G3), số tháng thu hồi (I3), hoa hồng cả kỳ hạn (D5), ROI kỳ hạn (J5), ROI mỗi năm (K5), ROI sau chi phí (J12), phần chưa thu hồi khi hết hạn và ROI thực. Bốn kịch bản: danh mục nền và ba mốc thưởng. Số nhập tay nên chạy được cho đối tác chưa có trên hệ thống; có sẵn thì bấm *Lấy số từ đối tác* |
 | Mức trả nền tảng | `man/muc-tra.js` | USD gộp trên 1.000 lượt của từng nền tảng, suy từ báo cáo 3 kỳ và hiệu chỉnh theo thị trường Việt Nam; nhập số thật từng nền tảng hoặc dán CSV để ghi đè, dự báo và giải thích số đổi theo ngay |
 | Quản trị | `man/quan-tri.js` | Tài khoản, nhật ký, câu hỏi treo, dữ liệu, ranh giới |
 
@@ -256,6 +257,7 @@ chứ không phải ở từng màn. Ba lớp, cùng một nguồn:
 | Kế toán, Thanh toán, Tạm ứng, Chia sẻ tác quyền | ✓ | ✓ | | | |
 | Đối soát & xét duyệt kỳ | ✓ | ✓ | | ✓ | |
 | Xét duyệt | ✓ | ✓ (kiểm số) | ✓ (đề xuất của mình) | | |
+| Tính ROI hợp đồng | ✓ | ✓ | ✓ | | |
 | Đối tác | ✓ | | ✓ (của mình) | | |
 | Chiến dịch | ✓ | | ✓ | ✓ | |
 | Theo dõi, Nhập báo cáo, Khớp ISRC, Giao nhận, Sửa hàng loạt, Bảng giá, Mức trả, Danh mục, Nền tảng | ✓ | | | ✓ | |
@@ -339,6 +341,28 @@ skills): một màu nhấn, một dải xám lạnh, viền mảnh thay bóng, �
 hộp riêng, chữ số tabular, nhãn viết thường, huy hiệu chỉ cho trạng thái
 thật, mỗi màn một nút chính; form dài chia bước, ghi "không bắt buộc" thay
 vì rải dấu sao; ô trống nói việc kế tiếp.
+
+## Bảng tính ROI hợp đồng (vòng 12)
+
+Trang **Tính ROI** dựng lại `ROI_Haustek.xlsx` cho ba vai có quyền đề xuất:
+kinh doanh, kế toán, giám đốc. Số nhập tay nên chạy được cho một hồ sơ đang
+chào, chưa cần đối tác có trên hệ thống.
+
+Bốn chỗ bảng tính gốc tính lệch, ở đây tính lại: số tháng thu hồi (ô `I3`
+rút gọn ra `−B3/G3` nên luôn âm), tổng chi phí (ô `J11` nhân vào một ô trống
+không nhãn nên luôn bằng 0, kéo theo "ROI sau chi phí" luôn bằng ROI), "net"
+không nhất quán giữa sheet Catalog và ba sheet Trigger, và không sheet nào
+kiểm khoản ứng có thu hồi kịp trong kỳ hạn hay không. Chi tiết từng ô, kèm
+lý do và cách sửa bảng gốc: [`ROI-BANG-TINH.md`](ROI-BANG-TINH.md).
+
+Trang này và trang Xét duyệt đều đo *lãi trên vốn* nên cùng lấy 0 làm mốc
+hoà vốn, nhưng quy về năm theo hai mẫu số khác nhau (kỳ hạn với thời gian
+thu hồi), nên **con số mỗi năm của hai bên không so thẳng được**. Trang có
+một thẻ nhắc lại điều đó.
+
+Cổng đối tác không có và không nên có: bảng tính này đọc ra phần Haustek
+giữ lại, phí môi giới và biên lợi nhuận. Đối tác muốn biết mình ứng được bao
+nhiêu thì vẫn dùng `k-tam-ung`, chạy trên `advanceOfferOf()` đã lược sạch.
 
 ## Khung: chuông thông báo, tìm nhanh, bảng dữ liệu
 

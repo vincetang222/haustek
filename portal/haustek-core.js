@@ -764,6 +764,13 @@ function partyName(key) {
   const id = +key.slice(2);
   return key[0] === "L" ? (LABELS[id] ? LABELS[id].name : key) : (ARTISTS[id] ? ARTISTS[id].name : key);
 }
+/* partyName() trả lại chính cái khoá khi không tra được, nên nó không dùng
+   làm phép kiểm "có đối tác này không" được. Đây mới là phép kiểm đó. */
+function coDoiTac(key) {
+  if (typeof key !== "string" || !/^[LA]:\d+$/.test(key)) return false;
+  const id = +key.slice(2);
+  return key[0] === "L" ? !!LABELS[id] : !!ARTISTS[id];
+}
 function partyClientId(key) {
   if (key === "P:*") return "—";
   const id = +key.slice(2);
@@ -1762,7 +1769,7 @@ const TAI_SAN = [
   { id: "ticket",         vi: "Ticket hỗ trợ",     en: "Support tickets", man: "ho-tro", dem: () => state.tickets.length, gan: id => state.tickets.filter(t => t.assignee === id).length },
   { id: "khieuNai",       vi: "Khiếu nại bản quyền", en: "Rights claims", man: "quyen", dem: () => state.claims.length, gan: id => state.claims.filter(c => c.assignee === id).length }
 ];
-const MAN_TAT_CA = ["ban-lam-viec", "to-chuc", "ho-tro", "tong-quan", "theo-doi", "chat-luong", "nap-du-lieu", "khop-isrc", "doi-chieu", "phat-hanh", "giao-nhan", "sua-hang-loat", "bang-gia", "chien-dich", "quyen", "muc-tra", "chia-se", "xet-duyet", "nen-tang", "ke-toan", "chi-tra", "tam-ung", "ty-le", "doi-tac", "danh-muc", "quan-tri"];
+const MAN_TAT_CA = ["ban-lam-viec", "to-chuc", "ho-tro", "tong-quan", "theo-doi", "chat-luong", "nap-du-lieu", "khop-isrc", "doi-chieu", "phat-hanh", "giao-nhan", "sua-hang-loat", "bang-gia", "chien-dich", "quyen", "muc-tra", "chia-se", "xet-duyet", "roi", "nen-tang", "ke-toan", "chi-tra", "tam-ung", "ty-le", "doi-tac", "danh-muc", "quan-tri"];
 const NHOM_TAT_CA = ["tong", "tien", "doiSoat", "doiTac", "doiTacTao", "deXuat", "deXuatTao", "vanHanh", "danhMuc", "theoDoi", "chienDich", "chiaSe", "khieuNai", "hoTro", "quanTri", "phatHanhHo", "nhanSu", "toChuc"];
 const doiTacSapHetHan = me => partiesList({ status: "renew", manager: me && me.role === "sales" && !laTruong(me) ? me.id : undefined }).total;
 const TO_CHUC = [
@@ -1795,7 +1802,7 @@ const TO_CHUC = [
   { id: "kinh-doanh", vai: "sales", vi: "Kinh doanh", en: "Sales",
     chucNang: { vi: ["Tìm và ký đối tác mới, chăm sóc tài khoản đang có", "Đề xuất tạm ứng, hợp đồng, gia hạn", "Chiến dịch quảng bá cùng đối tác", "Tạo hồ sơ phát hành thay đối tác mình phụ trách"],
                 en: ["Sign new partners, look after existing accounts", "Propose advances, contracts and renewals", "Promotion campaigns with partners", "Create release files for managed partners"] },
-    man: ["ban-lam-viec", "to-chuc", "ho-tro", "xet-duyet", "doi-tac", "chien-dich"],
+    man: ["ban-lam-viec", "to-chuc", "ho-tro", "xet-duyet", "roi", "doi-tac", "chien-dich"],
     nhom: ["doiTac", "doiTacTao", "deXuat", "deXuatTao", "chienDich", "hoTro", "phatHanhHo", "toChuc"],
     taiSan: ["taiKhoanDoiTac", "hopDong", "chienDich"],
     to: [
@@ -1810,7 +1817,7 @@ const TO_CHUC = [
   { id: "tai-chinh", vai: "accounting", vi: "Tài chính", en: "Finance",
     chucNang: { vi: ["Chi trả theo kỳ, xử lý rút tiền, bảng kê PDF", "Sổ tạm ứng và thu hồi", "Kiểm số đề xuất trước khi giám đốc duyệt", "Sổ kế toán, thuế khấu trừ, bút toán điều chỉnh"],
                 en: ["Period payouts, withdrawals, PDF statements", "Advance ledger and recoupment", "Check proposal figures before management approval", "Ledger, withholding tax, adjustments"] },
-    man: ["ban-lam-viec", "to-chuc", "ho-tro", "ke-toan", "chi-tra", "tam-ung", "chia-se", "doi-chieu", "xet-duyet"],
+    man: ["ban-lam-viec", "to-chuc", "ho-tro", "ke-toan", "chi-tra", "tam-ung", "chia-se", "doi-chieu", "xet-duyet", "roi"],
     nhom: ["tien", "doiSoat", "deXuat", "chiaSe", "hoTro", "toChuc"],
     taiSan: ["vi", "tamUng", "bangKe"],
     to: [
@@ -2966,6 +2973,179 @@ function contractCalc(partyKey, terms) {
     retainedNow, retainedNew, delta: cents(retainedNew - retainedNow), marginNew: feePct,
     contractEnd: end, daysToEnd, renewalDue: daysToEnd <= 180, recommendation, reasons, series: ser };
 }
+/* =====================================================================
+   19k. ROI HỢP ĐỒNG THEO BẢNG TÍNH CỦA HAUSTEK
+   ---------------------------------------------------------------------
+   Nguồn: file ROI_Haustek.xlsx (Catalog ROI + Trigger 1/2/3 + Mail Merge).
+   Bảng tính dựng một thương vụ mua danh mục: Haustek ứng trước một khoản,
+   thu lại bằng hai đường — phần hoa hồng của Haustek trên doanh thu tháng
+   (chạy suốt kỳ hạn) và phần của nghệ sĩ giữ lại để thu hồi khoản ứng
+   (chạy đến khi hết nợ). Kèm tối đa ba mốc thưởng: nghệ sĩ đạt mốc doanh
+   thu thì được ứng thêm, kỳ hạn còn lại ngắn đi.
+
+   Ô trong bảng tính gốc ghi trong ngoặc để đối chiếu:
+     A3 doanh thu tháng · B3 khoản ứng · C2 tỷ lệ nghệ sĩ hưởng
+     E2 tỷ lệ vẫn trả nghệ sĩ trong lúc thu hồi · J3 kỳ hạn · K3 độc quyền
+     D3 phần Haustek · G3 phần thu hồi được mỗi tháng · I3 số tháng thu hồi
+     D5 hoa hồng cả kỳ hạn · J5 ROI kỳ hạn · K5 ROI năm · J12 ROI sau chi phí
+
+   Bốn chỗ bảng tính tính sai, ở đây tính lại (xem VAN-PHONG / tài liệu):
+     · I3 =(H3/G3)-1 rút gọn ra −B3/G3 nên luôn âm; đúng phải là B3/G3.
+     · J11 =J9*J6*J7 lấy J6 là ô trống không nhãn, nên tổng chi phí luôn 0
+       và "ROI sau chi phí" luôn bằng ROI. Ở đây: số bản × giờ × đơn giá.
+     · D7 ở sheet Catalog không trừ chi phí, ở ba sheet Trigger thì có.
+     · Không đâu kiểm khoản ứng có thu hồi kịp trong kỳ hạn hay không; hết
+       kỳ hạn mà chưa thu hồi xong thì phần còn lại là lỗ, ROI đang thừa.
+   ===================================================================== */
+const ROI_MAC_DINH = { artistShare: 0.74, passThrough: 0, termMonths: 60, exclusivityMonths: 36, findersFeePct: 0 };
+const ROI_NGUONG = { roiTerm: 1, recoupMonths: 24 };   /* ngưỡng đạt: hoa hồng cả kỳ hạn ≥ khoản ứng, thu hồi trong 24 tháng */
+
+function roiSo(v, m) { const n = +v; return isFinite(n) ? n : m; }
+function roiTy(v, m) { return Math.max(0, Math.min(1, roiSo(v, m))); }
+function roiThang(v, m) { return Math.max(0, Math.round(roiSo(v, m))); }
+
+function dealRoiCalc(d) {
+  d = d || {};
+  const monthlyIncome = Math.max(0, cents(roiSo(d.monthlyIncome, 0)));               /* A3 */
+  const cashAdvance   = Math.max(0, cents(roiSo(d.cashAdvance, roiSo(d.advance, 0))));
+  const marketing     = Math.max(0, cents(roiSo(d.marketing, 0)));                   /* Mail Merge Q */
+  const production    = Math.max(0, cents(roiSo(d.production, 0)));                  /* Mail Merge R */
+  const recoupBudgets = d.recoupBudgets !== false;
+  const advance       = cents(cashAdvance + (recoupBudgets ? marketing + production : 0));   /* B3 */
+  const artistShare   = roiTy(d.artistShare, ROI_MAC_DINH.artistShare);              /* C2 */
+  const passThrough   = roiTy(d.passThrough, ROI_MAC_DINH.passThrough);              /* E2 */
+  const termMonths    = Math.max(1, roiThang(d.termMonths, ROI_MAC_DINH.termMonths));/* J3 */
+  const exclusivityMonths = roiThang(d.exclusivityMonths, ROI_MAC_DINH.exclusivityMonths); /* K3 */
+  const findersFeePct = roiTy(d.findersFeePct, 0);                                   /* K10 */
+  const releases      = Math.max(0, roiThang(d.releases, 0));
+  const hoursPerRelease = Math.max(0, roiSo(d.hoursPerRelease, 0));
+  const costPerHour   = Math.max(0, cents(roiSo(d.costPerHour, 0)));
+
+  const companyMonthly     = cents(monthlyIncome * (1 - artistShare));               /* D3 */
+  const artistMonthly      = cents(monthlyIncome - companyMonthly);                  /* D4 */
+  const passThroughMonthly = cents(artistMonthly * passThrough);                     /* E3 = F3 */
+  const recoupableMonthly  = cents(artistMonthly - passThroughMonthly);              /* G3 */
+  const balanceMonth1      = cents(recoupableMonthly - advance);                     /* H3 */
+  const recoupableYearly   = cents(recoupableMonthly * 12);                          /* G7 */
+
+  /* I3 — số tháng thu hồi, dương, và số tháng tròn để nói với người đọc */
+  const recoupMonths = recoupableMonthly > 0 && advance > 0 ? Math.round(advance / recoupableMonthly * 10) / 10 : null;
+  const recoupWhole  = recoupMonths == null ? null : Math.ceil(advance / recoupableMonthly);
+
+  const totalOverTerm = cents(companyMonthly * termMonths);                          /* D5 */
+  const findersFee    = cents(findersFeePct * companyMonthly * termMonths);          /* J10 */
+  const totalCost     = cents(releases * hoursPerRelease * costPerHour);             /* J11 sửa lại */
+  const netForCompany = cents(totalOverTerm - totalCost - findersFee);               /* D7 = J12 × B3 */
+
+  const roiTerm            = advance > 0 ? totalOverTerm / advance : null;           /* J5 */
+  const roiYearly          = roiTerm == null ? null : roiTerm / termMonths * 12;     /* K5 */
+  const roiAfterCosts      = advance > 0 ? netForCompany / advance : null;           /* J12 */
+  const roiAfterCostsYearly= roiAfterCosts == null ? null : roiAfterCosts / termMonths * 12;
+
+  /* Bảng tính dừng ở J12. Thêm: hết kỳ hạn còn nợ bao nhiêu, và ROI thực
+     sau khi trừ phần đó. */
+  const recouped  = cents(Math.min(advance, recoupableMonthly * termMonths));
+  const shortfall = cents(advance - recouped);
+  const roiNet    = advance > 0 ? (netForCompany - shortfall) / advance : null;
+  const roiNetYearly = roiNet == null ? null : roiNet / termMonths * 12;
+
+  /* Tháng hoà vốn: tháng đầu tiên tiền về (hoa hồng + thu hồi) vượt khoản ứng */
+  let paybackMonth = null, cum = 0;
+  const perMonth = cents(companyMonthly + recoupableMonthly);
+  if (perMonth > 0) { const m = Math.ceil(advance / perMonth); paybackMonth = m <= termMonths ? m : null; }
+
+  /* Đường thu hồi để vẽ: mỗi tháng một điểm, tối đa 72 điểm */
+  const buoc = Math.max(1, Math.ceil(termMonths / 72));
+  const series = [];
+  for (let m = 0; m <= termMonths; m += buoc) {
+    const thuHoi = Math.min(advance, cents(recoupableMonthly * m));
+    series.push({ month: m, conNo: cents(advance - thuHoi), hoaHong: cents(companyMonthly * m), veTong: cents(thuHoi + companyMonthly * m) });
+  }
+  if (series[series.length - 1].month !== termMonths) {
+    const thuHoi = Math.min(advance, cents(recoupableMonthly * termMonths));
+    series.push({ month: termMonths, conNo: cents(advance - thuHoi), hoaHong: totalOverTerm, veTong: cents(thuHoi + totalOverTerm) });
+  }
+
+  const nguongRoi = roiSo(d.nguongRoi, ROI_NGUONG.roiTerm);
+  const nguongThuHoi = roiThang(d.nguongThuHoi, ROI_NGUONG.recoupMonths);
+  const dat = {
+    thuHoiTrongKyHan:   recoupMonths != null && recoupMonths <= termMonths,
+    thuHoiTrongDocQuyen: exclusivityMonths <= 0 ? null : (recoupMonths != null && recoupMonths <= exclusivityMonths),
+    thuHoiDungHan:      recoupMonths != null && recoupMonths <= nguongThuHoi,
+    roiDatNguong:       roiAfterCosts != null && roiAfterCosts >= nguongRoi,
+    thuHoiHet:          shortfall <= 0
+  };
+  const reasons = [];
+  if (advance <= 0) reasons.push({ vi: "Chưa nhập khoản ứng", en: "No advance entered" });
+  if (monthlyIncome <= 0) reasons.push({ vi: "Chưa nhập doanh thu tháng của danh mục", en: "No monthly catalogue income entered" });
+  if (recoupMonths == null && advance > 0 && monthlyIncome > 0) reasons.push({ vi: "Tỷ lệ vẫn trả nghệ sĩ đang là 100%: không còn gì để thu hồi", en: "Flow-through is 100%: nothing left to recoup from" });
+  if (dat.thuHoiHet === false) reasons.push({ vi: "Hết kỳ hạn còn " + fmt.usd0(shortfall) + " chưa thu hồi", en: fmt.usd0(shortfall) + " still unrecouped at the end of the term" });
+  else if (dat.thuHoiTrongDocQuyen === false) reasons.push({ vi: "Thu hồi mất " + recoupMonths + " tháng, dài hơn " + exclusivityMonths + " tháng độc quyền", en: "Recoupment takes " + recoupMonths + " months, beyond the " + exclusivityMonths + "-month exclusivity" });
+  else if (dat.thuHoiDungHan === false) reasons.push({ vi: "Thu hồi mất " + recoupMonths + " tháng, quá mức " + nguongThuHoi + " tháng", en: "Recoupment takes " + recoupMonths + " months, over the " + nguongThuHoi + "-month target" });
+  if (roiAfterCosts != null && !dat.roiDatNguong) reasons.push({ vi: "ROI cả kỳ hạn " + roiAfterCosts.toFixed(2) + "×, dưới mức " + nguongRoi.toFixed(2) + "×", en: "ROI over the term is " + roiAfterCosts.toFixed(2) + "×, below the " + nguongRoi.toFixed(2) + "× target" });
+  const recommendation = advance <= 0 || monthlyIncome <= 0 ? "incomplete"
+    : !reasons.length ? "approve"
+    : (dat.thuHoiHet && roiAfterCosts != null && roiAfterCosts >= nguongRoi * 0.7 && dat.thuHoiTrongKyHan) ? "review" : "decline";
+
+  return { monthlyIncome, cashAdvance, marketing, production, recoupBudgets, advance, artistShare, passThrough,
+    termMonths, exclusivityMonths, findersFeePct, releases, hoursPerRelease, costPerHour,
+    companyMonthly, artistMonthly, passThroughMonthly, recoupableMonthly, recoupableYearly, balanceMonth1,
+    recoupMonths, recoupWhole, totalOverTerm, findersFee, totalCost, netForCompany,
+    roiTerm: roiTerm == null ? null : Math.round(roiTerm * 1e4) / 1e4,
+    roiYearly: roiYearly == null ? null : Math.round(roiYearly * 1e4) / 1e4,
+    roiAfterCosts: roiAfterCosts == null ? null : Math.round(roiAfterCosts * 1e4) / 1e4,
+    roiAfterCostsYearly: roiAfterCostsYearly == null ? null : Math.round(roiAfterCostsYearly * 1e4) / 1e4,
+    recouped, shortfall,
+    roiNet: roiNet == null ? null : Math.round(roiNet * 1e4) / 1e4,
+    roiNetYearly: roiNetYearly == null ? null : Math.round(roiNetYearly * 1e4) / 1e4,
+    paybackMonth, nguongRoi, nguongThuHoi, dat, reasons, recommendation, series };
+}
+
+/* Bốn kịch bản như bốn sheet: danh mục nền, rồi ba mốc thưởng. Mỗi mốc đạt
+   thì ứng thêm, doanh thu tháng lên mức của mốc, và kỳ hạn cùng độc quyền
+   còn lại trừ đi số tháng đã trôi (bảng tính ghi tay =57-18, =33-18). */
+function dealRoiScenarios(d) {
+  d = d || {};
+  const nen = dealRoiCalc(d);
+  const ra = [{ id: "catalog", vi: "Danh mục", en: "Catalogue", troi: 0, calc: nen }];
+  let troi = 0;
+  (Array.isArray(d.triggers) ? d.triggers : []).slice(0, 3).forEach((t, i) => {
+    t = t || {};
+    const reach = Math.max(0, cents(roiSo(t.reach, 0)));
+    const heSo  = Math.max(0, roiSo(t.multiplier, 0));
+    const trong = roiThang(t.withinMonths, 0);
+    troi += trong;
+    const ung = t.advance != null && t.advance !== "" ? Math.max(0, cents(roiSo(t.advance, 0))) : cents(reach * heSo);
+    const con = d.termMonths == null ? ROI_MAC_DINH.termMonths : roiThang(d.termMonths, ROI_MAC_DINH.termMonths);
+    const conDq = d.exclusivityMonths == null ? ROI_MAC_DINH.exclusivityMonths : roiThang(d.exclusivityMonths, ROI_MAC_DINH.exclusivityMonths);
+    const calc = dealRoiCalc(Object.assign({}, d, { monthlyIncome: reach || nen.monthlyIncome, cashAdvance: ung, advance: ung,
+      marketing: 0, production: 0, termMonths: Math.max(1, con - troi), exclusivityMonths: Math.max(0, conDq - troi), triggers: null }));
+    ra.push({ id: "trigger" + (i + 1), vi: "Mốc thưởng " + (i + 1), en: "Trigger " + (i + 1), reach, multiplier: heSo, withinMonths: trong, troi, calc });
+  });
+  const ungTong = ra.reduce((s, x) => s + x.calc.advance, 0);
+  const veTong  = ra.reduce((s, x) => s + x.calc.netForCompany, 0);
+  const thieu   = ra.reduce((s, x) => s + x.calc.shortfall, 0);
+  return { rows: ra, tong: { advance: cents(ungTong), netForCompany: cents(veTong), shortfall: cents(thieu),
+    roi: ungTong > 0 ? Math.round((veTong - thieu) / ungTong * 1e4) / 1e4 : null } };
+}
+
+/* Nối bảng tính với một đối tác đang có trên hệ thống: lấy doanh thu gộp
+   trung bình và tỷ lệ nghệ sĩ đang hưởng làm số mặc định, khỏi gõ tay. */
+function dealRoiTuDoiTac(partyKey) {
+  if (!coDoiTac(partyKey)) return null;
+  const ser = partySeries(partyKey, 12), coSo = ser.filter(x => x.gross > 0);
+  if (!coSo.length) return { partyKey, name: partyName(partyKey), monthlyIncome: 0, artistShare: null, periods: 0 };
+  const monthlyGross = cents(thongKe(coSo.map(x => x.gross)).mean);
+  const monthlyKeep  = cents(thongKe(coSo.map(x => x.keep)).mean);
+  const ct = state.contracts && state.contracts[partyKey];
+  const phi = ct && ct.feePct != null ? ct.feePct : (monthlyGross > 0 ? monthlyKeep / monthlyGross : CFG.HAUSTEK_FEE);
+  const adv = state.advances && state.advances[partyKey];
+  return { partyKey, name: partyName(partyKey), clientId: partyClientId(partyKey), periods: coSo.length,
+    monthlyIncome: monthlyGross, artistShare: Math.round((1 - phi) * 1e4) / 1e4,
+    advanceOpen: adv ? advanceBalance(partyKey) : 0,
+    termMonths: ct && ct.months ? ct.months : null, series: ser };
+}
+
 let proposalSeq = 0;
 function proposalId(now) { proposalSeq++; return "DX-" + String(now).slice(2, 4) + String(now).slice(5, 7) + "-" + String(proposalSeq).padStart(3, "0"); }
 function proposalsOf() { if (!Array.isArray(state.proposals)) state.proposals = []; return state.proposals; }
@@ -2977,7 +3157,7 @@ function moTaDeXuat(pr, doiTac) {
     : { vi: "Hợp đồng " + pr.terms.months + " tháng · phí Haustek " + Math.round(pr.terms.feePct * 100) + "%", en: "Contract " + pr.terms.months + " months · Haustek fee " + Math.round(pr.terms.feePct * 100) + "%" };
 }
 function proposeAdvance(partyKey, d, by, byRole) {
-  if (!partyName(partyKey)) throw new Error("Không có đối tác " + partyKey);
+  if (!coDoiTac(partyKey)) throw new Error("Không có đối tác " + partyKey);
   const amount = Math.round((+d.amount || 0) * 100) / 100;
   if (!(amount >= 100)) throw new Error("Số tiền tạm ứng tối thiểu " + fmt.usd0(100));
   const feePct = d.feePct == null ? ADVANCE_FEE : Math.max(0, Math.min(0.5, +d.feePct));
@@ -2993,7 +3173,7 @@ function proposeAdvance(partyKey, d, by, byRole) {
   return pr;
 }
 function proposeContract(partyKey, d, by, byRole) {
-  if (!partyName(partyKey)) throw new Error("Không có đối tác " + partyKey);
+  if (!coDoiTac(partyKey)) throw new Error("Không có đối tác " + partyKey);
   const calc = contractCalc(partyKey, d);
   const dup = proposalsOf().find(p => p.partyKey === partyKey && p.type === "contract" && ["submitted", "checked", "returned"].includes(p.status));
   if (dup) throw new Error("Đối tác đã có đề xuất hợp đồng " + dup.id + " đang xử lý");
@@ -3649,7 +3829,7 @@ const NHOM_MO = {
   doiSoat:   { vi: "Báo cáo kỳ, đối soát, xét duyệt kỳ, hàng đợi ISRC, tỷ giá", en: "Period reports, reconciliation, period approval, ISRC queue, FX" },
   doiTac:    { vi: "Sổ đối tác đầy đủ (doanh thu quý, hợp đồng); chuyên viên chỉ tài khoản mình, trưởng bộ phận cả bộ phận", en: "Full partner ledger; specialists see own accounts, heads see the whole department" },
   doiTacTao: { vi: "Thêm đối tác mới (label, nghệ sĩ) và hợp đồng", en: "Add new partners (labels, artists) and contracts" },
-  deXuat:    { vi: "Đề xuất tạm ứng / hợp đồng; bản tính lược theo vai", en: "Advance / contract proposals; calculation trimmed per role" },
+  deXuat:    { vi: "Đề xuất tạm ứng / hợp đồng; bảng tính ROI hợp đồng; bản tính lược theo vai", en: "Advance / contract proposals; deal ROI calculator; calculation trimmed per role" },
   deXuatTao: { vi: "Tạo đề xuất", en: "Create proposals" },
   vanHanh:   { vi: "Phát hành, giao nhận, sửa hàng loạt, nạp báo cáo, mức trả, nền tảng, bảng giá", en: "Releases, deliveries, bulk edits, report ingest, rates, platforms, pricing" },
   danhMuc:   { vi: "Danh mục, chất lượng lượt nghe, metadata, hồ sơ phát hành (đọc)", en: "Catalogue, stream quality, metadata, release files (read)" },
@@ -3691,6 +3871,7 @@ const QUYEN_HAM = {
   "releases.receive": "vanHanh", "releases.assignCodes": "vanHanh", "releases.publish": "vanHanh", "releases.returnFix": "vanHanh", "releases.createFor": "phatHanhHo",
   deliveries: "vanHanh", bulk: "vanHanh", ingest: "vanHanh", platformRates: "vanHanh", platformRatesFull: "vanHanh", setPlatformRate: "vanHanh", clearPlatformRate: "vanHanh", importPlatformRates: "vanHanh",
   proposals: "deXuat", "proposals.proposeAdvance": "deXuatTao", "proposals.proposeContract": "deXuatTao", advanceCalc: "deXuat", contractCalc: "deXuat", partySeries: "deXuat", advanceOfferOf: "deXuat",
+  roi: "deXuat",
   tickets: "hoTro", claims: "khieuNai", videoSettings: "khieuNai",
   accounts: "quanTri", answers: "quanTri", reset: "quanTri", refresh: "quanTri", store: "quanTri",
   "parties.create": "doiTacTao", platforms: "vanHanh", campaignCreate: "chienDich", campaignSetStatus: "chienDich", claimCreate: "khieuNai", ledger: "tien", pricing: "vanHanh",
@@ -4273,6 +4454,9 @@ const admin = {
   /* 19j */
   platformRatesFull, setPlatformRate, clearPlatformRate, importPlatformRates, vnRef: VN_REF_PER1K.slice(), advanceFee: ADVANCE_FEE,
   advanceCalc: (pk, amount, feePct) => calcChoVai(advanceCalc(pk, amount, feePct)), contractCalc: (pk, terms) => calcChoVai(contractCalc(pk, terms)), partySeries: (pk, n) => seriesChoVai(partySeries(pk, n)), advanceOfferOf,
+  /* 19k · bảng tính ROI hợp đồng: số do người dùng gõ vào, không lấy từ sổ,
+     nên kinh doanh và kế toán đều xem được đầy đủ. */
+  roi: { tinh: dealRoiCalc, kichBan: dealRoiScenarios, tuDoiTac: dealRoiTuDoiTac, macDinh: ROI_MAC_DINH, nguong: ROI_NGUONG },
   quyen: quyenXuat,
   proposals: { list: f => proposalsListChoVai(f), counts: () => proposalCountsChoVai(), get: id => proposalGetChoVai(id),
     proposeAdvance, proposeContract, review: reviewProposal, flow: PROPOSAL_FLOW },

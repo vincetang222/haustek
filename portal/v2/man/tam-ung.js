@@ -103,7 +103,8 @@ HT.dangKy({
         { l: t('tongUng'), v: c.tien(tongGoc) },
         { l: t('conLai'), v: c.tien(A.advances.total()) },
         { l: t('soBen'), v: HT.fmt.n(conNo.length) }
-      ]
+      ],
+      nut: A.quyen && A.quyen.man('roi') ? '<button type="button" class="btn ghost" data-di="roi">' + HM.icon('chart') + HM.esc(c.lang === 'en' ? 'Deal ROI' : 'Tính ROI') + '</button>' : ''
     });
 
     html += HM.so([
@@ -201,6 +202,8 @@ HT.dangKy({
     });
     b.ve();
     HB.gan(root);
+
+    HM.bam(root, '[data-di]', function (el) { c.di(el.getAttribute('data-di')); });
 
     HM.bam(root, '[data-nhom]', function (el) { LOC.nhom = el.getAttribute('data-nhom'); c.veLai(); });
     HM.nhap(root, '[data-tim]', function (el) { LOC.tim = el.value; c.veLai(); });

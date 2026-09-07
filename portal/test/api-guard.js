@@ -1057,6 +1057,31 @@ check("Hồ sơ phát hành đầy đủ: bảng kiểm tách bắt buộc / khu
   return r.id + " · kiểm " + k1.kiem.batBuoc + " mục bắt buộc, " + (k1.kiem.tong - k1.kiem.batBuoc) + " khuyến nghị";
 });
 
+check("Bảng tính ROI hợp đồng: ba vai có quyền đề xuất dùng được, vận hành và hỗ trợ bị chặn, cổng đối tác không có", () => {
+  /* Số ở màn này do người dùng gõ vào chứ không lấy từ sổ, nên kinh doanh và
+     kế toán xem đầy đủ — khác advanceCalc, vốn lược roi / margin theo vai. */
+  const mau = { monthlyIncome: 3300, cashAdvance: 50000, artistShare: 0.74, termMonths: 60, exclusivityMonths: 36 };
+  ["S01", "S03", "S07"].forEach(id => {
+    const me = nhu(id);
+    const k = A.roi.tinh(mau);
+    must(Math.abs(k.roiTerm - 1.0296) < 1e-4 && Math.abs(k.companyMonthly - 858) < 0.005, "vai " + me.role + " không ra đúng số của bảng tính");
+    must(A.quyen.man("roi"), "vai " + me.role + " không mở được màn ROI");
+  });
+  ["S02", "S05"].forEach(id => {
+    const me = nhu(id);
+    mustThrow(() => A.roi.tinh(mau), "bảng tính ROI với vai " + me.role);
+    must(!A.quyen.man("roi"), "vai " + me.role + " vẫn mở được màn ROI");
+  });
+  nhu("S01");
+  must(H.api.roi === undefined && !Object.keys(H.api).includes("roi"), "cổng đối tác lộ bảng tính ROI");
+  /* khoá đối tác sai không được đi lọt: partyName() trả lại chính cái khoá */
+  must(A.roi.tuDoiTac("A:khong-co-that") === null && A.roi.tuDoiTac("A:" + A.artists[0].id) !== null, "khoá đối tác sai vẫn ra kết quả");
+  mustThrow(() => A.proposals.proposeAdvance("L:khong-co-that", { amount: 1000 }, "X", "sales"), "đề xuất tạm ứng cho đối tác không có thật");
+  const k = A.roi.tinh({ monthlyIncome: 600, cashAdvance: 50000, artistShare: 0.74, termMonths: 24, exclusivityMonths: 12 });
+  must(k.shortfall > 0 && k.roiNet < k.roiTerm && k.recommendation === "decline", "hết kỳ hạn còn nợ mà vẫn kết luận đạt");
+  return "3 vai dùng được · 2 vai bị chặn · api không có · ROI 1,0296 khớp ô J5";
+});
+
 check("lockdown() gỡ hẳn mặt tiền admin khỏi trang", () => {
   must(!!H.admin, "chưa lockdown mà admin đã mất");
   H.lockdown();

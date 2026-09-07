@@ -24,7 +24,11 @@ var DANG_TREO = [];    /* các biểu đồ đang gắn trên trang, để vẽ 
    Màu — đọc từ biến CSS mỗi lần vẽ, không nhớ lại.
    Nhớ lại là sai ngay lần đầu người dùng bấm nút đổi sáng/tối.
    --------------------------------------------------------------------- */
+/* Bí danh: 'no' là tên trạng thái dùng khắp các màn, nhưng token màu tên là
+   --danger. Không đổi tên ở đây thì mọi HB.mau('no') rơi về xám #888. */
+var MAU_BI_DANH = { no: 'danger', xau: 'danger' };
 function mau(ten) {
+  ten = MAU_BI_DANH[ten] || ten;
   return getComputedStyle(document.documentElement).getPropertyValue('--' + ten).trim() || '#888';
 }
 function dayMau() {

@@ -1468,6 +1468,23 @@ details.hoc>div>.fldrow{margin-top:6px}
 table.t td.num,table.t th.num,.page-kpi .v,.kpi .v,.kv dd,.mono{font-variant-numeric:tabular-nums}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 
+/* ---- Tính ROI hợp đồng ---- */
+/* Ô nhập có đuôi đơn vị ($, %, tháng) nằm trong khung, canh phải, để mắt
+   đọc con số trước rồi mới tới đơn vị. */
+.roi-in{position:relative;display:flex;align-items:center}
+.roi-in input{width:100%}
+.roi-in.co-hau input{padding-right:52px}
+.roi-in .hau{position:absolute;right:11px;font-size:12px;color:var(--faint);
+  pointer-events:none;font-variant-numeric:tabular-nums;max-width:44px;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:right}
+.roi-moc{margin-top:12px;padding-top:12px;border-top:1px dashed var(--line)}
+.roi-moc:first-child{margin-top:0;padding-top:0;border-top:0}
+.roi-moc-t{font-size:12px;font-weight:600;color:var(--ink-2);margin-bottom:8px}
+.roi-chia{height:1px;background:var(--line);margin:12px 0}
+.say-list{margin:0;padding-left:18px;font-size:12.5px;color:var(--ink-2);line-height:1.6}
+.say-list li+li{margin-top:7px}
+table.t tr.sum td{background:var(--fill);border-top:1px solid var(--line-2)}
+
 
 
 /* ---- ô chọn cửa, chỉ có ở bản gói một trang ---- */
@@ -2244,6 +2261,13 @@ function partyName(key) {
   if (key === "P:*") return "Điểm producer, chưa xác định người thụ hưởng";
   const id = +key.slice(2);
   return key[0] === "L" ? (LABELS[id] ? LABELS[id].name : key) : (ARTISTS[id] ? ARTISTS[id].name : key);
+}
+/* partyName() trả lại chính cái khoá khi không tra được, nên nó không dùng
+   làm phép kiểm "có đối tác này không" được. Đây mới là phép kiểm đó. */
+function coDoiTac(key) {
+  if (typeof key !== "string" || !/^[LA]:\d+$/.test(key)) return false;
+  const id = +key.slice(2);
+  return key[0] === "L" ? !!LABELS[id] : !!ARTISTS[id];
 }
 function partyClientId(key) {
   if (key === "P:*") return "—";
@@ -3243,7 +3267,7 @@ const TAI_SAN = [
   { id: "ticket",         vi: "Ticket hỗ trợ",     en: "Support tickets", man: "ho-tro", dem: () => state.tickets.length, gan: id => state.tickets.filter(t => t.assignee === id).length },
   { id: "khieuNai",       vi: "Khiếu nại bản quyền", en: "Rights claims", man: "quyen", dem: () => state.claims.length, gan: id => state.claims.filter(c => c.assignee === id).length }
 ];
-const MAN_TAT_CA = ["ban-lam-viec", "to-chuc", "ho-tro", "tong-quan", "theo-doi", "chat-luong", "nap-du-lieu", "khop-isrc", "doi-chieu", "phat-hanh", "giao-nhan", "sua-hang-loat", "bang-gia", "chien-dich", "quyen", "muc-tra", "chia-se", "xet-duyet", "nen-tang", "ke-toan", "chi-tra", "tam-ung", "ty-le", "doi-tac", "danh-muc", "quan-tri"];
+const MAN_TAT_CA = ["ban-lam-viec", "to-chuc", "ho-tro", "tong-quan", "theo-doi", "chat-luong", "nap-du-lieu", "khop-isrc", "doi-chieu", "phat-hanh", "giao-nhan", "sua-hang-loat", "bang-gia", "chien-dich", "quyen", "muc-tra", "chia-se", "xet-duyet", "roi", "nen-tang", "ke-toan", "chi-tra", "tam-ung", "ty-le", "doi-tac", "danh-muc", "quan-tri"];
 const NHOM_TAT_CA = ["tong", "tien", "doiSoat", "doiTac", "doiTacTao", "deXuat", "deXuatTao", "vanHanh", "danhMuc", "theoDoi", "chienDich", "chiaSe", "khieuNai", "hoTro", "quanTri", "phatHanhHo", "nhanSu", "toChuc"];
 const doiTacSapHetHan = me => partiesList({ status: "renew", manager: me && me.role === "sales" && !laTruong(me) ? me.id : undefined }).total;
 const TO_CHUC = [
@@ -3276,7 +3300,7 @@ const TO_CHUC = [
   { id: "kinh-doanh", vai: "sales", vi: "Kinh doanh", en: "Sales",
     chucNang: { vi: ["Tìm và ký đối tác mới, chăm sóc tài khoản đang có", "Đề xuất tạm ứng, hợp đồng, gia hạn", "Chiến dịch quảng bá cùng đối tác", "Tạo hồ sơ phát hành thay đối tác mình phụ trách"],
                 en: ["Sign new partners, look after existing accounts", "Propose advances, contracts and renewals", "Promotion campaigns with partners", "Create release files for managed partners"] },
-    man: ["ban-lam-viec", "to-chuc", "ho-tro", "xet-duyet", "doi-tac", "chien-dich"],
+    man: ["ban-lam-viec", "to-chuc", "ho-tro", "xet-duyet", "roi", "doi-tac", "chien-dich"],
     nhom: ["doiTac", "doiTacTao", "deXuat", "deXuatTao", "chienDich", "hoTro", "phatHanhHo", "toChuc"],
     taiSan: ["taiKhoanDoiTac", "hopDong", "chienDich"],
     to: [
@@ -3291,7 +3315,7 @@ const TO_CHUC = [
   { id: "tai-chinh", vai: "accounting", vi: "Tài chính", en: "Finance",
     chucNang: { vi: ["Chi trả theo kỳ, xử lý rút tiền, bảng kê PDF", "Sổ tạm ứng và thu hồi", "Kiểm số đề xuất trước khi giám đốc duyệt", "Sổ kế toán, thuế khấu trừ, bút toán điều chỉnh"],
                 en: ["Period payouts, withdrawals, PDF statements", "Advance ledger and recoupment", "Check proposal figures before management approval", "Ledger, withholding tax, adjustments"] },
-    man: ["ban-lam-viec", "to-chuc", "ho-tro", "ke-toan", "chi-tra", "tam-ung", "chia-se", "doi-chieu", "xet-duyet"],
+    man: ["ban-lam-viec", "to-chuc", "ho-tro", "ke-toan", "chi-tra", "tam-ung", "chia-se", "doi-chieu", "xet-duyet", "roi"],
     nhom: ["tien", "doiSoat", "deXuat", "chiaSe", "hoTro", "toChuc"],
     taiSan: ["vi", "tamUng", "bangKe"],
     to: [
@@ -4447,6 +4471,179 @@ function contractCalc(partyKey, terms) {
     retainedNow, retainedNew, delta: cents(retainedNew - retainedNow), marginNew: feePct,
     contractEnd: end, daysToEnd, renewalDue: daysToEnd <= 180, recommendation, reasons, series: ser };
 }
+/* =====================================================================
+   19k. ROI HỢP ĐỒNG THEO BẢNG TÍNH CỦA HAUSTEK
+   ---------------------------------------------------------------------
+   Nguồn: file ROI_Haustek.xlsx (Catalog ROI + Trigger 1/2/3 + Mail Merge).
+   Bảng tính dựng một thương vụ mua danh mục: Haustek ứng trước một khoản,
+   thu lại bằng hai đường — phần hoa hồng của Haustek trên doanh thu tháng
+   (chạy suốt kỳ hạn) và phần của nghệ sĩ giữ lại để thu hồi khoản ứng
+   (chạy đến khi hết nợ). Kèm tối đa ba mốc thưởng: nghệ sĩ đạt mốc doanh
+   thu thì được ứng thêm, kỳ hạn còn lại ngắn đi.
+
+   Ô trong bảng tính gốc ghi trong ngoặc để đối chiếu:
+     A3 doanh thu tháng · B3 khoản ứng · C2 tỷ lệ nghệ sĩ hưởng
+     E2 tỷ lệ vẫn trả nghệ sĩ trong lúc thu hồi · J3 kỳ hạn · K3 độc quyền
+     D3 phần Haustek · G3 phần thu hồi được mỗi tháng · I3 số tháng thu hồi
+     D5 hoa hồng cả kỳ hạn · J5 ROI kỳ hạn · K5 ROI năm · J12 ROI sau chi phí
+
+   Bốn chỗ bảng tính tính sai, ở đây tính lại (xem VAN-PHONG / tài liệu):
+     · I3 =(H3/G3)-1 rút gọn ra −B3/G3 nên luôn âm; đúng phải là B3/G3.
+     · J11 =J9*J6*J7 lấy J6 là ô trống không nhãn, nên tổng chi phí luôn 0
+       và "ROI sau chi phí" luôn bằng ROI. Ở đây: số bản × giờ × đơn giá.
+     · D7 ở sheet Catalog không trừ chi phí, ở ba sheet Trigger thì có.
+     · Không đâu kiểm khoản ứng có thu hồi kịp trong kỳ hạn hay không; hết
+       kỳ hạn mà chưa thu hồi xong thì phần còn lại là lỗ, ROI đang thừa.
+   ===================================================================== */
+const ROI_MAC_DINH = { artistShare: 0.74, passThrough: 0, termMonths: 60, exclusivityMonths: 36, findersFeePct: 0 };
+const ROI_NGUONG = { roiTerm: 1, recoupMonths: 24 };   /* ngưỡng đạt: hoa hồng cả kỳ hạn ≥ khoản ứng, thu hồi trong 24 tháng */
+
+function roiSo(v, m) { const n = +v; return isFinite(n) ? n : m; }
+function roiTy(v, m) { return Math.max(0, Math.min(1, roiSo(v, m))); }
+function roiThang(v, m) { return Math.max(0, Math.round(roiSo(v, m))); }
+
+function dealRoiCalc(d) {
+  d = d || {};
+  const monthlyIncome = Math.max(0, cents(roiSo(d.monthlyIncome, 0)));               /* A3 */
+  const cashAdvance   = Math.max(0, cents(roiSo(d.cashAdvance, roiSo(d.advance, 0))));
+  const marketing     = Math.max(0, cents(roiSo(d.marketing, 0)));                   /* Mail Merge Q */
+  const production    = Math.max(0, cents(roiSo(d.production, 0)));                  /* Mail Merge R */
+  const recoupBudgets = d.recoupBudgets !== false;
+  const advance       = cents(cashAdvance + (recoupBudgets ? marketing + production : 0));   /* B3 */
+  const artistShare   = roiTy(d.artistShare, ROI_MAC_DINH.artistShare);              /* C2 */
+  const passThrough   = roiTy(d.passThrough, ROI_MAC_DINH.passThrough);              /* E2 */
+  const termMonths    = Math.max(1, roiThang(d.termMonths, ROI_MAC_DINH.termMonths));/* J3 */
+  const exclusivityMonths = roiThang(d.exclusivityMonths, ROI_MAC_DINH.exclusivityMonths); /* K3 */
+  const findersFeePct = roiTy(d.findersFeePct, 0);                                   /* K10 */
+  const releases      = Math.max(0, roiThang(d.releases, 0));
+  const hoursPerRelease = Math.max(0, roiSo(d.hoursPerRelease, 0));
+  const costPerHour   = Math.max(0, cents(roiSo(d.costPerHour, 0)));
+
+  const companyMonthly     = cents(monthlyIncome * (1 - artistShare));               /* D3 */
+  const artistMonthly      = cents(monthlyIncome - companyMonthly);                  /* D4 */
+  const passThroughMonthly = cents(artistMonthly * passThrough);                     /* E3 = F3 */
+  const recoupableMonthly  = cents(artistMonthly - passThroughMonthly);              /* G3 */
+  const balanceMonth1      = cents(recoupableMonthly - advance);                     /* H3 */
+  const recoupableYearly   = cents(recoupableMonthly * 12);                          /* G7 */
+
+  /* I3 — số tháng thu hồi, dương, và số tháng tròn để nói với người đọc */
+  const recoupMonths = recoupableMonthly > 0 && advance > 0 ? Math.round(advance / recoupableMonthly * 10) / 10 : null;
+  const recoupWhole  = recoupMonths == null ? null : Math.ceil(advance / recoupableMonthly);
+
+  const totalOverTerm = cents(companyMonthly * termMonths);                          /* D5 */
+  const findersFee    = cents(findersFeePct * companyMonthly * termMonths);          /* J10 */
+  const totalCost     = cents(releases * hoursPerRelease * costPerHour);             /* J11 sửa lại */
+  const netForCompany = cents(totalOverTerm - totalCost - findersFee);               /* D7 = J12 × B3 */
+
+  const roiTerm            = advance > 0 ? totalOverTerm / advance : null;           /* J5 */
+  const roiYearly          = roiTerm == null ? null : roiTerm / termMonths * 12;     /* K5 */
+  const roiAfterCosts      = advance > 0 ? netForCompany / advance : null;           /* J12 */
+  const roiAfterCostsYearly= roiAfterCosts == null ? null : roiAfterCosts / termMonths * 12;
+
+  /* Bảng tính dừng ở J12. Thêm: hết kỳ hạn còn nợ bao nhiêu, và ROI thực
+     sau khi trừ phần đó. */
+  const recouped  = cents(Math.min(advance, recoupableMonthly * termMonths));
+  const shortfall = cents(advance - recouped);
+  const roiNet    = advance > 0 ? (netForCompany - shortfall) / advance : null;
+  const roiNetYearly = roiNet == null ? null : roiNet / termMonths * 12;
+
+  /* Tháng hoà vốn: tháng đầu tiên tiền về (hoa hồng + thu hồi) vượt khoản ứng */
+  let paybackMonth = null, cum = 0;
+  const perMonth = cents(companyMonthly + recoupableMonthly);
+  if (perMonth > 0) { const m = Math.ceil(advance / perMonth); paybackMonth = m <= termMonths ? m : null; }
+
+  /* Đường thu hồi để vẽ: mỗi tháng một điểm, tối đa 72 điểm */
+  const buoc = Math.max(1, Math.ceil(termMonths / 72));
+  const series = [];
+  for (let m = 0; m <= termMonths; m += buoc) {
+    const thuHoi = Math.min(advance, cents(recoupableMonthly * m));
+    series.push({ month: m, conNo: cents(advance - thuHoi), hoaHong: cents(companyMonthly * m), veTong: cents(thuHoi + companyMonthly * m) });
+  }
+  if (series[series.length - 1].month !== termMonths) {
+    const thuHoi = Math.min(advance, cents(recoupableMonthly * termMonths));
+    series.push({ month: termMonths, conNo: cents(advance - thuHoi), hoaHong: totalOverTerm, veTong: cents(thuHoi + totalOverTerm) });
+  }
+
+  const nguongRoi = roiSo(d.nguongRoi, ROI_NGUONG.roiTerm);
+  const nguongThuHoi = roiThang(d.nguongThuHoi, ROI_NGUONG.recoupMonths);
+  const dat = {
+    thuHoiTrongKyHan:   recoupMonths != null && recoupMonths <= termMonths,
+    thuHoiTrongDocQuyen: exclusivityMonths <= 0 ? null : (recoupMonths != null && recoupMonths <= exclusivityMonths),
+    thuHoiDungHan:      recoupMonths != null && recoupMonths <= nguongThuHoi,
+    roiDatNguong:       roiAfterCosts != null && roiAfterCosts >= nguongRoi,
+    thuHoiHet:          shortfall <= 0
+  };
+  const reasons = [];
+  if (advance <= 0) reasons.push({ vi: "Chưa nhập khoản ứng", en: "No advance entered" });
+  if (monthlyIncome <= 0) reasons.push({ vi: "Chưa nhập doanh thu tháng của danh mục", en: "No monthly catalogue income entered" });
+  if (recoupMonths == null && advance > 0 && monthlyIncome > 0) reasons.push({ vi: "Tỷ lệ vẫn trả nghệ sĩ đang là 100%: không còn gì để thu hồi", en: "Flow-through is 100%: nothing left to recoup from" });
+  if (dat.thuHoiHet === false) reasons.push({ vi: "Hết kỳ hạn còn " + fmt.usd0(shortfall) + " chưa thu hồi", en: fmt.usd0(shortfall) + " still unrecouped at the end of the term" });
+  else if (dat.thuHoiTrongDocQuyen === false) reasons.push({ vi: "Thu hồi mất " + recoupMonths + " tháng, dài hơn " + exclusivityMonths + " tháng độc quyền", en: "Recoupment takes " + recoupMonths + " months, beyond the " + exclusivityMonths + "-month exclusivity" });
+  else if (dat.thuHoiDungHan === false) reasons.push({ vi: "Thu hồi mất " + recoupMonths + " tháng, quá mức " + nguongThuHoi + " tháng", en: "Recoupment takes " + recoupMonths + " months, over the " + nguongThuHoi + "-month target" });
+  if (roiAfterCosts != null && !dat.roiDatNguong) reasons.push({ vi: "ROI cả kỳ hạn " + roiAfterCosts.toFixed(2) + "×, dưới mức " + nguongRoi.toFixed(2) + "×", en: "ROI over the term is " + roiAfterCosts.toFixed(2) + "×, below the " + nguongRoi.toFixed(2) + "× target" });
+  const recommendation = advance <= 0 || monthlyIncome <= 0 ? "incomplete"
+    : !reasons.length ? "approve"
+    : (dat.thuHoiHet && roiAfterCosts != null && roiAfterCosts >= nguongRoi * 0.7 && dat.thuHoiTrongKyHan) ? "review" : "decline";
+
+  return { monthlyIncome, cashAdvance, marketing, production, recoupBudgets, advance, artistShare, passThrough,
+    termMonths, exclusivityMonths, findersFeePct, releases, hoursPerRelease, costPerHour,
+    companyMonthly, artistMonthly, passThroughMonthly, recoupableMonthly, recoupableYearly, balanceMonth1,
+    recoupMonths, recoupWhole, totalOverTerm, findersFee, totalCost, netForCompany,
+    roiTerm: roiTerm == null ? null : Math.round(roiTerm * 1e4) / 1e4,
+    roiYearly: roiYearly == null ? null : Math.round(roiYearly * 1e4) / 1e4,
+    roiAfterCosts: roiAfterCosts == null ? null : Math.round(roiAfterCosts * 1e4) / 1e4,
+    roiAfterCostsYearly: roiAfterCostsYearly == null ? null : Math.round(roiAfterCostsYearly * 1e4) / 1e4,
+    recouped, shortfall,
+    roiNet: roiNet == null ? null : Math.round(roiNet * 1e4) / 1e4,
+    roiNetYearly: roiNetYearly == null ? null : Math.round(roiNetYearly * 1e4) / 1e4,
+    paybackMonth, nguongRoi, nguongThuHoi, dat, reasons, recommendation, series };
+}
+
+/* Bốn kịch bản như bốn sheet: danh mục nền, rồi ba mốc thưởng. Mỗi mốc đạt
+   thì ứng thêm, doanh thu tháng lên mức của mốc, và kỳ hạn cùng độc quyền
+   còn lại trừ đi số tháng đã trôi (bảng tính ghi tay =57-18, =33-18). */
+function dealRoiScenarios(d) {
+  d = d || {};
+  const nen = dealRoiCalc(d);
+  const ra = [{ id: "catalog", vi: "Danh mục", en: "Catalogue", troi: 0, calc: nen }];
+  let troi = 0;
+  (Array.isArray(d.triggers) ? d.triggers : []).slice(0, 3).forEach((t, i) => {
+    t = t || {};
+    const reach = Math.max(0, cents(roiSo(t.reach, 0)));
+    const heSo  = Math.max(0, roiSo(t.multiplier, 0));
+    const trong = roiThang(t.withinMonths, 0);
+    troi += trong;
+    const ung = t.advance != null && t.advance !== "" ? Math.max(0, cents(roiSo(t.advance, 0))) : cents(reach * heSo);
+    const con = d.termMonths == null ? ROI_MAC_DINH.termMonths : roiThang(d.termMonths, ROI_MAC_DINH.termMonths);
+    const conDq = d.exclusivityMonths == null ? ROI_MAC_DINH.exclusivityMonths : roiThang(d.exclusivityMonths, ROI_MAC_DINH.exclusivityMonths);
+    const calc = dealRoiCalc(Object.assign({}, d, { monthlyIncome: reach || nen.monthlyIncome, cashAdvance: ung, advance: ung,
+      marketing: 0, production: 0, termMonths: Math.max(1, con - troi), exclusivityMonths: Math.max(0, conDq - troi), triggers: null }));
+    ra.push({ id: "trigger" + (i + 1), vi: "Mốc thưởng " + (i + 1), en: "Trigger " + (i + 1), reach, multiplier: heSo, withinMonths: trong, troi, calc });
+  });
+  const ungTong = ra.reduce((s, x) => s + x.calc.advance, 0);
+  const veTong  = ra.reduce((s, x) => s + x.calc.netForCompany, 0);
+  const thieu   = ra.reduce((s, x) => s + x.calc.shortfall, 0);
+  return { rows: ra, tong: { advance: cents(ungTong), netForCompany: cents(veTong), shortfall: cents(thieu),
+    roi: ungTong > 0 ? Math.round((veTong - thieu) / ungTong * 1e4) / 1e4 : null } };
+}
+
+/* Nối bảng tính với một đối tác đang có trên hệ thống: lấy doanh thu gộp
+   trung bình và tỷ lệ nghệ sĩ đang hưởng làm số mặc định, khỏi gõ tay. */
+function dealRoiTuDoiTac(partyKey) {
+  if (!coDoiTac(partyKey)) return null;
+  const ser = partySeries(partyKey, 12), coSo = ser.filter(x => x.gross > 0);
+  if (!coSo.length) return { partyKey, name: partyName(partyKey), monthlyIncome: 0, artistShare: null, periods: 0 };
+  const monthlyGross = cents(thongKe(coSo.map(x => x.gross)).mean);
+  const monthlyKeep  = cents(thongKe(coSo.map(x => x.keep)).mean);
+  const ct = state.contracts && state.contracts[partyKey];
+  const phi = ct && ct.feePct != null ? ct.feePct : (monthlyGross > 0 ? monthlyKeep / monthlyGross : CFG.HAUSTEK_FEE);
+  const adv = state.advances && state.advances[partyKey];
+  return { partyKey, name: partyName(partyKey), clientId: partyClientId(partyKey), periods: coSo.length,
+    monthlyIncome: monthlyGross, artistShare: Math.round((1 - phi) * 1e4) / 1e4,
+    advanceOpen: adv ? advanceBalance(partyKey) : 0,
+    termMonths: ct && ct.months ? ct.months : null, series: ser };
+}
+
 let proposalSeq = 0;
 function proposalId(now) { proposalSeq++; return "DX-" + String(now).slice(2, 4) + String(now).slice(5, 7) + "-" + String(proposalSeq).padStart(3, "0"); }
 function proposalsOf() { if (!Array.isArray(state.proposals)) state.proposals = []; return state.proposals; }
@@ -4458,7 +4655,7 @@ function moTaDeXuat(pr, doiTac) {
     : { vi: "Hợp đồng " + pr.terms.months + " tháng · phí Haustek " + Math.round(pr.terms.feePct * 100) + "%", en: "Contract " + pr.terms.months + " months · Haustek fee " + Math.round(pr.terms.feePct * 100) + "%" };
 }
 function proposeAdvance(partyKey, d, by, byRole) {
-  if (!partyName(partyKey)) throw new Error("Không có đối tác " + partyKey);
+  if (!coDoiTac(partyKey)) throw new Error("Không có đối tác " + partyKey);
   const amount = Math.round((+d.amount || 0) * 100) / 100;
   if (!(amount >= 100)) throw new Error("Số tiền tạm ứng tối thiểu " + fmt.usd0(100));
   const feePct = d.feePct == null ? ADVANCE_FEE : Math.max(0, Math.min(0.5, +d.feePct));
@@ -4474,7 +4671,7 @@ function proposeAdvance(partyKey, d, by, byRole) {
   return pr;
 }
 function proposeContract(partyKey, d, by, byRole) {
-  if (!partyName(partyKey)) throw new Error("Không có đối tác " + partyKey);
+  if (!coDoiTac(partyKey)) throw new Error("Không có đối tác " + partyKey);
   const calc = contractCalc(partyKey, d);
   const dup = proposalsOf().find(p => p.partyKey === partyKey && p.type === "contract" && ["submitted", "checked", "returned"].includes(p.status));
   if (dup) throw new Error("Đối tác đã có đề xuất hợp đồng " + dup.id + " đang xử lý");
@@ -5130,7 +5327,7 @@ const NHOM_MO = {
   doiSoat:   { vi: "Báo cáo kỳ, đối soát, xét duyệt kỳ, hàng đợi ISRC, tỷ giá", en: "Period reports, reconciliation, period approval, ISRC queue, FX" },
   doiTac:    { vi: "Sổ đối tác đầy đủ (doanh thu quý, hợp đồng); chuyên viên chỉ tài khoản mình, trưởng bộ phận cả bộ phận", en: "Full partner ledger; specialists see own accounts, heads see the whole department" },
   doiTacTao: { vi: "Thêm đối tác mới (label, nghệ sĩ) và hợp đồng", en: "Add new partners (labels, artists) and contracts" },
-  deXuat:    { vi: "Đề xuất tạm ứng / hợp đồng; bản tính lược theo vai", en: "Advance / contract proposals; calculation trimmed per role" },
+  deXuat:    { vi: "Đề xuất tạm ứng / hợp đồng; bảng tính ROI hợp đồng; bản tính lược theo vai", en: "Advance / contract proposals; deal ROI calculator; calculation trimmed per role" },
   deXuatTao: { vi: "Tạo đề xuất", en: "Create proposals" },
   vanHanh:   { vi: "Phát hành, giao nhận, sửa hàng loạt, nạp báo cáo, mức trả, nền tảng, bảng giá", en: "Releases, deliveries, bulk edits, report ingest, rates, platforms, pricing" },
   danhMuc:   { vi: "Danh mục, chất lượng lượt nghe, metadata, hồ sơ phát hành (đọc)", en: "Catalogue, stream quality, metadata, release files (read)" },
@@ -5172,6 +5369,7 @@ const QUYEN_HAM = {
   "releases.receive": "vanHanh", "releases.assignCodes": "vanHanh", "releases.publish": "vanHanh", "releases.returnFix": "vanHanh", "releases.createFor": "phatHanhHo",
   deliveries: "vanHanh", bulk: "vanHanh", ingest: "vanHanh", platformRates: "vanHanh", platformRatesFull: "vanHanh", setPlatformRate: "vanHanh", clearPlatformRate: "vanHanh", importPlatformRates: "vanHanh",
   proposals: "deXuat", "proposals.proposeAdvance": "deXuatTao", "proposals.proposeContract": "deXuatTao", advanceCalc: "deXuat", contractCalc: "deXuat", partySeries: "deXuat", advanceOfferOf: "deXuat",
+  roi: "deXuat",
   tickets: "hoTro", claims: "khieuNai", videoSettings: "khieuNai",
   accounts: "quanTri", answers: "quanTri", reset: "quanTri", refresh: "quanTri", store: "quanTri",
   "parties.create": "doiTacTao", platforms: "vanHanh", campaignCreate: "chienDich", campaignSetStatus: "chienDich", claimCreate: "khieuNai", ledger: "tien", pricing: "vanHanh",
@@ -5754,6 +5952,9 @@ const admin = {
   /* 19j */
   platformRatesFull, setPlatformRate, clearPlatformRate, importPlatformRates, vnRef: VN_REF_PER1K.slice(), advanceFee: ADVANCE_FEE,
   advanceCalc: (pk, amount, feePct) => calcChoVai(advanceCalc(pk, amount, feePct)), contractCalc: (pk, terms) => calcChoVai(contractCalc(pk, terms)), partySeries: (pk, n) => seriesChoVai(partySeries(pk, n)), advanceOfferOf,
+  /* 19k · bảng tính ROI hợp đồng: số do người dùng gõ vào, không lấy từ sổ,
+     nên kinh doanh và kế toán đều xem được đầy đủ. */
+  roi: { tinh: dealRoiCalc, kichBan: dealRoiScenarios, tuDoiTac: dealRoiTuDoiTac, macDinh: ROI_MAC_DINH, nguong: ROI_NGUONG },
   quyen: quyenXuat,
   proposals: { list: f => proposalsListChoVai(f), counts: () => proposalCountsChoVai(), get: id => proposalGetChoVai(id),
     proposeAdvance, proposeContract, review: reviewProposal, flow: PROPOSAL_FLOW },
@@ -7606,7 +7807,11 @@ var DANG_TREO = [];    /* các biểu đồ đang gắn trên trang, để vẽ 
    Màu — đọc từ biến CSS mỗi lần vẽ, không nhớ lại.
    Nhớ lại là sai ngay lần đầu người dùng bấm nút đổi sáng/tối.
    --------------------------------------------------------------------- */
+/* Bí danh: 'no' là tên trạng thái dùng khắp các màn, nhưng token màu tên là
+   --danger. Không đổi tên ở đây thì mọi HB.mau('no') rơi về xám #888. */
+var MAU_BI_DANH = { no: 'danger', xau: 'danger' };
 function mau(ten) {
+  ten = MAU_BI_DANH[ten] || ten;
   return getComputedStyle(document.documentElement).getPropertyValue('--' + ten).trim() || '#888';
 }
 function dayMau() {
@@ -11469,7 +11674,8 @@ HT.dangKy({
     });
     var pt = HTM.phanTrang(rows, LOC);
     var html = HM.dau({ h1: HM.esc(t('h1')), mo: HM.esc(t('mo')),
-      nut: A.quyen && A.quyen.nhom('deXuatTao') ? '<button type="button" class="btn" data-them-hd>' + HM.icon('file') + HM.esc(t('themHd')) + '</button><button type="button" class="btn pri" data-them-ung>' + HM.icon('cash') + HM.esc(t('themUng')) + '</button>' : '' });
+      nut: (A.quyen && A.quyen.man('roi') ? '<button type="button" class="btn ghost" data-di="roi">' + HM.icon('chart') + HM.esc(c.lang === 'en' ? 'Deal ROI' : 'Tính ROI') + '</button>' : '') +
+        (A.quyen && A.quyen.nhom('deXuatTao') ? '<button type="button" class="btn" data-them-hd>' + HM.icon('file') + HM.esc(t('themHd')) + '</button><button type="button" class="btn pri" data-them-ung>' + HM.icon('cash') + HM.esc(t('themUng')) + '</button>' : '') });
     html += HM.so([
       { l: t('kCho'), v: HT.fmt.n(k.pending), lon: true, s: t('kChoS').replace('{a}', k.submitted).replace('{b}', k.checked) },
       { l: t('kUng'), v: c.tien2(choUng.reduce(function (s, p) { return s + p.terms.amount; }, 0)), s: t('kUngS') },
@@ -11487,6 +11693,7 @@ HT.dangKy({
         pt.page.map(function (p) { return dongDx(c, p, me); }).join('') + '</tbody></table></div>' + pt.chan });
     root.innerHTML = html;
     HTM.ganTrang(root, LOC, c.veLai);
+    HM.bam(root, '[data-di]', function (el) { c.di(el.getAttribute('data-di')); });
     HM.bam(root, '[data-tab]', function (el) { LOC.tab = el.getAttribute('data-tab'); LOC.trang = 0; c.veLai(); });
     HM.bam(root, '[data-loai]', function (el) { LOC.loai = el.getAttribute('data-loai'); LOC.trang = 0; c.veLai(); });
     HM.nhap(root, '[data-tim]', function (el) { LOC.tim = el.value; LOC.trang = 0; c.veLai(); var i = root.querySelector('[data-tim]'); if (i) { i.focus(); i.setSelectionRange(i.value.length, i.value.length); } });
@@ -11619,6 +11826,326 @@ HT.nutDeXuat = function (c, p) { return nutDx(c, p, c.A.staff.me); };
 HT.xuLyDeXuat = function (c, act, id) { thaoTac(c, act, id); };
 HT.moDeXuat = function (c, id) { moDx(c, id); };
 (function () { for (var i = 0; i < HT.man.length; i++) if (HT.man[i].id === 'xet-duyet') CHU = HT.man[i].chu; })();
+
+})();
+
+},
+/* ---- man/roi.js ---- */
+function(){
+/* =====================================================================
+   NỘI BỘ · TÍNH ROI HỢP ĐỒNG
+   ---------------------------------------------------------------------
+   Bản dựng lại của file ROI_Haustek.xlsx cho ba vai có quyền đề xuất:
+   kinh doanh dựng thương vụ, kế toán kiểm số, giám đốc quyết. Số nhập tay
+   nên chưa cần đối tác đã có trên hệ thống — vẫn tính được cho một hồ sơ
+   mới đang chào. Có đối tác rồi thì bấm "Lấy số từ đối tác" để điền sẵn
+   doanh thu tháng và tỷ lệ đang hưởng.
+
+   Bốn kịch bản đúng như bốn sheet: danh mục nền và ba mốc thưởng. Mỗi ô
+   kết quả ghi kèm ô Excel tương ứng để đối chiếu.
+   ===================================================================== */
+"use strict";
+(function () {
+
+var KHO = 'haustek.roi.v1';
+var IN = {
+  monthlyIncome: 3300, cashAdvance: 50000, marketing: 0, production: 0, recoupBudgets: true,
+  artistShare: 74, passThrough: 0, termMonths: 60, exclusivityMonths: 36,
+  findersFeePct: 0, releases: 0, hoursPerRelease: 0, costPerHour: 0,
+  nguongRoi: 1, nguongThuHoi: 24, moc: false,
+  t1r: '', t1x: '', t1m: '', t2r: '', t2x: '', t2m: '', t3r: '', t3x: '', t3m: ''
+};
+try { var luu = JSON.parse(localStorage.getItem(KHO) || 'null'); if (luu) Object.keys(IN).forEach(function (k) { if (luu[k] != null) IN[k] = luu[k]; }); } catch (e) {}
+function ghiKho() { try { localStorage.setItem(KHO, JSON.stringify(IN)); } catch (e) {} }
+
+/* Đọc lại MỌI ô nhập chứ không chỉ ô vừa gõ: HM.nhap dùng chung một đồng hồ
+   hoãn cho cả trang, gõ nhanh qua vài ô thì chỉ ô cuối gọi được hàm. Quét lại
+   cả trang thì mất bao nhiêu ô cũng không sao. */
+function thuSo(root) {
+  var ds = root.querySelectorAll('[data-r]');
+  for (var i = 0; i < ds.length; i++) {
+    var el = ds[i], k = el.getAttribute('data-r');
+    if (el.type === 'checkbox') IN[k] = el.checked;
+    else IN[k] = el.value === '' ? '' : +el.value;
+  }
+  ghiKho();
+}
+
+function soVao() {
+  var d = { monthlyIncome: +IN.monthlyIncome || 0, cashAdvance: +IN.cashAdvance || 0,
+    marketing: +IN.marketing || 0, production: +IN.production || 0, recoupBudgets: !!IN.recoupBudgets,
+    artistShare: (+IN.artistShare || 0) / 100, passThrough: (+IN.passThrough || 0) / 100,
+    termMonths: +IN.termMonths || 1, exclusivityMonths: +IN.exclusivityMonths || 0,
+    findersFeePct: (+IN.findersFeePct || 0) / 100, releases: +IN.releases || 0,
+    hoursPerRelease: +IN.hoursPerRelease || 0, costPerHour: +IN.costPerHour || 0,
+    nguongRoi: +IN.nguongRoi || 0, nguongThuHoi: +IN.nguongThuHoi || 0 };
+  d.triggers = [1, 2, 3].map(function (i) {
+    return { reach: +IN['t' + i + 'r'] || 0, multiplier: +IN['t' + i + 'x'] || 0, withinMonths: +IN['t' + i + 'm'] || 0 };
+  }).filter(function (t) { return t.reach > 0 && t.multiplier > 0; });
+  return d;
+}
+
+/* một ô nhập; hau = đuôi (%, tháng, giờ…) */
+function o(k, nhan, opt) {
+  opt = opt || {};
+  var v = IN[k] == null ? '' : IN[k];
+  return '<div class="fgrp' + (opt.rong ? ' span2' : '') + '"><label class="fld" for="roi-' + k + '">' + HM.esc(nhan) + '</label>' +
+    '<div class="roi-in' + (opt.hau ? ' co-hau' : '') + '"><input class="in mono" id="roi-' + k + '" data-r="' + k + '" type="number" inputmode="decimal"' +
+    (opt.min != null ? ' min="' + opt.min + '"' : ' min="0"') + (opt.max != null ? ' max="' + opt.max + '"' : '') +
+    ' step="' + (opt.step || 'any') + '" value="' + HM.esc(String(v)) + '">' +
+    (opt.hau ? '<span class="hau">' + HM.esc(opt.hau) + '</span>' : '') + '</div>' +
+    (opt.hint ? '<div class="fhint">' + HM.esc(opt.hint) + '</div>' : '') + '</div>';
+}
+function tick(k, nhan, hint) {
+  return '<div class="fgrp span2"><label class="tickrow"><input type="checkbox" data-r="' + k + '" value="1"' + (IN[k] ? ' checked' : '') + '><span>' + HM.esc(nhan) + '</span></label>' +
+    (hint ? '<div class="fhint">' + HM.esc(hint) + '</div>' : '') + '</div>';
+}
+
+HT.dangKy({
+  id: 'roi', nav: 'navRoi', nhom: 'nhomTien', icon: 'chart',
+  vai: ['sales', 'accounting', 'mgmt'],
+
+  chu: {
+    vi: {
+      navRoi: 'Tính ROI', h1: 'Tính ROI hợp đồng',
+      mo: 'Nhập điều khoản một thương vụ mua danh mục, xem Haustek thu về bao nhiêu và trong bao lâu. Số nhập tay, chưa cần đối tác có trên hệ thống.',
+      dieuKhoan: 'Điều khoản thương vụ', dieuKhoanP: 'Đúng các ô đầu vào của bảng tính: doanh thu tháng, khoản ứng, tỷ lệ chia, kỳ hạn, độc quyền.',
+      lDoanhThu: 'Doanh thu danh mục mỗi tháng', lUngTien: 'Ứng tiền mặt', lMkt: 'Ngân sách truyền thông', lSx: 'Ngân sách sản xuất',
+      lNganSachThuHoi: 'Hai ngân sách trên cũng thu hồi được', hNganSach: 'Bỏ dấu nếu Haustek chịu, không tính vào khoản phải thu hồi.',
+      lTyLe: 'Nghệ sĩ hưởng', lFlow: 'Vẫn trả nghệ sĩ trong lúc thu hồi', hFlow: 'Bảng tính gọi là pass through / flow through.',
+      lKyHan: 'Kỳ hạn hợp đồng', lDocQuyen: 'Độc quyền', thang: 'tháng',
+      chiPhi: 'Chi phí và ngưỡng', chiPhiP: 'Để trống thì tính như bảng tính gốc: không chi phí.',
+      lMoiGioi: 'Phí môi giới', hMoiGioi: 'Phần trăm trên hoa hồng Haustek cả kỳ hạn.',
+      lSoBan: 'Số bản phát hành', lGio: 'Giờ mỗi bản', lDonGia: 'Đơn giá giờ', gio: 'giờ',
+      lNguongRoi: 'Ngưỡng ROI đạt', lNguongThuHoi: 'Ngưỡng tháng thu hồi',
+      mocTt: 'Ba mốc thưởng', mocP: 'Nghệ sĩ đạt mốc doanh thu tháng thì ứng thêm. Kỳ hạn còn lại trừ đi số tháng đã trôi.',
+      moc: 'Mốc {i}', lReach: 'Doanh thu tháng đạt mốc', lHeSo: 'Hệ số ứng', hHeSo: 'Khoản ứng = doanh thu tại mốc × hệ số.', lTrong: 'Trong vòng', batMoc: 'Tính thêm ba mốc thưởng',
+      kq: 'Kết quả', roiKy: 'ROI cả kỳ hạn', roiKyS: 'hoa hồng cả kỳ hạn ÷ khoản ứng · ô J5',
+      roiNam: 'ROI mỗi năm', roiNamS: 'ô K5', thuHoi: 'Thu hồi xong sau', thuHoiS: 'ô I3 · bảng gốc để dấu âm',
+      hoaVon: 'Hoà vốn tháng', hoaVonS: 'tính cả hoa hồng và phần thu hồi', ung: 'Khoản ứng', ungS: 'ô B3',
+      dongTien: 'Dòng tiền mỗi tháng', dongTienP: 'Doanh thu tháng chia làm ba đường.',
+      rHaustek: 'Hoa hồng Haustek', rNgheSi: 'Phần nghệ sĩ', rTra: 'Vẫn trả nghệ sĩ', rThuHoi: 'Giữ lại để thu hồi',
+      caKy: 'Cả kỳ hạn', rHoaHong: 'Hoa hồng cả kỳ hạn', rMoiGioi: 'Trừ phí môi giới', rChiPhi: 'Trừ chi phí bản phát hành', rNet: 'Haustek còn lại',
+      rConNo: 'Hết kỳ hạn còn chưa thu hồi', rRoiThuc: 'ROI thực sau phần chưa thu hồi',
+      duong: 'Đường thu hồi', duongP: 'Khoản ứng còn nợ giảm dần theo phần giữ lại mỗi tháng.', conNo: 'Còn nợ', hoaHong: 'Hoa hồng cộng dồn',
+      bang: 'Bốn kịch bản', bangP: 'Danh mục nền và ba mốc thưởng, như bốn sheet trong bảng tính.',
+      cKb: 'Kịch bản', cUng: 'Khoản ứng', cDt: 'Doanh thu tháng', cKyHan: 'Kỳ hạn', cThuHoi: 'Thu hồi', cRoi: 'ROI kỳ hạn', cRoiNam: 'ROI năm', cKl: 'Kết luận',
+      tong: 'Cộng cả bốn', klDat: 'Đạt', klCanXem: 'Cần cân nhắc', klKhong: 'Chưa đạt', klThieu: 'Còn thiếu số',
+      lyDo: 'Vì sao', ganDoiTac: 'Lấy số từ đối tác', datLai: 'Đặt lại', chonDoiTac: 'Đối tác (tên hoặc mã)',
+      daLay: 'Đã lấy số của {t}', khongThay: 'Không tìm thấy đối tác “{q}”', chuaCoSo: '{t} chưa có kỳ nào có số để lấy',
+      daDatLai: 'Đã đặt lại về số mẫu', taoDx: 'Tạo đề xuất tạm ứng',
+      soSanh: 'Hai thang ROI trong phần mềm', soSanhP: 'Trang này và trang Xét duyệt trả lời hai câu khác nhau, đừng so thẳng hai con số.',
+      ss1: 'ROI ở trang này', ss1v: 'Hoa hồng Haustek trên toàn kỳ hạn chia cho khoản ứng. Dùng lúc chào một thương vụ mua danh mục.',
+      ss2: 'ROI ở trang Xét duyệt', ss2v: 'Phí ứng cộng phần Haustek giữ trong thời gian thu hồi, chia cho khoản ứng. Dùng cho tạm ứng trên tài khoản đã chạy.',
+      sua: 'Bốn chỗ bảng tính tính lệch', suaP: 'Trang này tính lại; bảng gốc nên sửa theo.',
+      sua1: 'Ô I3 =(H3/G3)-1 rút gọn thành −B3/G3 nên số tháng thu hồi luôn âm. Đúng là B3/G3.',
+      sua2: 'Ô J11 =J9*J6*J7 lấy J6 là ô trống không nhãn, nên tổng chi phí luôn bằng 0 và ROI sau chi phí luôn bằng ROI.',
+      sua3: 'Ô D7 ở sheet Catalog không trừ chi phí, ba sheet Trigger thì có; cả bốn đều không trừ phí môi giới.',
+      sua4: 'Không sheet nào kiểm khoản ứng có thu hồi kịp trong kỳ hạn không. Hết hạn còn nợ thì phần đó là lỗ.',
+      trong: 'Nhập doanh thu tháng và khoản ứng để bắt đầu', trongMo: 'Hai ô đầu ở khung bên trái là đủ để ra kết quả.'
+    },
+    en: {
+      navRoi: 'Deal ROI', h1: 'Deal ROI calculator',
+      mo: 'Enter the terms of a catalogue deal and see what Haustek gets back and how fast. Figures are typed in, so the partner need not exist in the system yet.',
+      dieuKhoan: 'Deal terms', dieuKhoanP: 'The same inputs as the spreadsheet: monthly income, advance, split, term, exclusivity.',
+      lDoanhThu: 'Catalogue income per month', lUngTien: 'Cash advance', lMkt: 'Marketing budget', lSx: 'Production budget',
+      lNganSachThuHoi: 'Both budgets are recoupable too', hNganSach: 'Untick if Haustek carries them outside the recoupable amount.',
+      lTyLe: 'Artist keeps', lFlow: 'Still paid to the artist while recouping', hFlow: 'The spreadsheet calls it pass through / flow through.',
+      lKyHan: 'Deal term', lDocQuyen: 'Exclusivity', thang: 'months',
+      chiPhi: 'Costs and targets', chiPhiP: 'Leave empty to match the original spreadsheet: no costs.',
+      lMoiGioi: 'Finder’s fee', hMoiGioi: 'Percentage of Haustek’s commission over the term.',
+      lSoBan: 'Releases', lGio: 'Hours per release', lDonGia: 'Cost per hour', gio: 'hours',
+      lNguongRoi: 'ROI target', lNguongThuHoi: 'Recoupment target',
+      mocTt: 'Three triggers', mocP: 'Reaching a monthly-income milestone unlocks another advance. The remaining term drops by the months elapsed.',
+      moc: 'Trigger {i}', lReach: 'Monthly income at the milestone', lHeSo: 'Advance multiple', hHeSo: 'Advance = income at the milestone × multiple.', lTrong: 'Within', batMoc: 'Include the three triggers',
+      kq: 'Result', roiKy: 'ROI over the term', roiKyS: 'commission over the term ÷ advance · cell J5',
+      roiNam: 'ROI per year', roiNamS: 'cell K5', thuHoi: 'Recouped after', thuHoiS: 'cell I3 · negative in the original',
+      hoaVon: 'Break-even month', hoaVonS: 'commission plus recoupment', ung: 'Advance', ungS: 'cell B3',
+      dongTien: 'Monthly cash flow', dongTienP: 'The monthly income splits three ways.',
+      rHaustek: 'Haustek commission', rNgheSi: 'Artist share', rTra: 'Still paid to the artist', rThuHoi: 'Held to recoup',
+      caKy: 'Over the term', rHoaHong: 'Commission over the term', rMoiGioi: 'Less finder’s fee', rChiPhi: 'Less release costs', rNet: 'Haustek keeps',
+      rConNo: 'Unrecouped at the end of the term', rRoiThuc: 'ROI after the unrecouped part',
+      duong: 'Recoupment curve', duongP: 'The outstanding advance falls by the amount held back each month.', conNo: 'Outstanding', hoaHong: 'Cumulative commission',
+      bang: 'Four scenarios', bangP: 'The base catalogue and three triggers, as in the four sheets.',
+      cKb: 'Scenario', cUng: 'Advance', cDt: 'Monthly income', cKyHan: 'Term', cThuHoi: 'Recoup', cRoi: 'ROI / term', cRoiNam: 'ROI / year', cKl: 'Verdict',
+      tong: 'All four', klDat: 'Passes', klCanXem: 'Worth a look', klKhong: 'Below target', klThieu: 'Figures missing',
+      lyDo: 'Why', ganDoiTac: 'Pull from a partner', datLai: 'Reset', chonDoiTac: 'Partner (name or id)',
+      daLay: 'Pulled {t}’s figures', khongThay: 'No partner matching “{q}”', chuaCoSo: '{t} has no periods with figures yet',
+      daDatLai: 'Reset to the sample figures', taoDx: 'Create an advance proposal',
+      soSanh: 'Two ROI scales in the software', soSanhP: 'This page and Approvals answer different questions; do not compare the two numbers directly.',
+      ss1: 'ROI on this page', ss1v: 'Haustek’s commission over the whole term divided by the advance. For pitching a catalogue deal.',
+      ss2: 'ROI in Approvals', ss2v: 'Advance fee plus what Haustek keeps during recoupment, divided by the advance. For an advance on an account already running.',
+      sua: 'Four figures the spreadsheet gets wrong', suaP: 'This page recomputes them; the original is worth fixing too.',
+      sua1: 'Cell I3 =(H3/G3)-1 reduces to −B3/G3, so months to recoup always comes out negative. It should be B3/G3.',
+      sua2: 'Cell J11 =J9*J6*J7 reads J6, an unlabelled empty cell, so total cost is always 0 and ROI after costs always equals ROI.',
+      sua3: 'Cell D7 on the Catalog sheet does not subtract cost while the three Trigger sheets do; none of the four subtract the finder’s fee.',
+      sua4: 'No sheet checks whether the advance recoups inside the term. Anything left at the end is a loss.',
+      trong: 'Enter a monthly income and an advance to start', trongMo: 'The first two boxes on the left are enough for a result.'
+    }
+  },
+
+  ve: function (root, c) {
+    var A = c.A, t = c.t;
+    var html = HM.dau({ h1: HM.esc(t('h1')), mo: HM.esc(t('mo')),
+      nut: '<button type="button" class="btn" data-lay>' + HM.icon('down2') + HM.esc(t('ganDoiTac')) + '</button>' +
+           '<button type="button" class="btn ghost" data-dat-lai>' + HM.esc(t('datLai')) + '</button>' });
+
+    html += '<div class="grid g3">' +
+      /* ---- cột trái: đầu vào ---- */
+      '<div>' + '<div id="roi-kq"></div>' + '</div>' +
+      '<div>' +
+        HM.the({ h2: HM.esc(t('dieuKhoan')), p: HM.esc(t('dieuKhoanP')),
+          than: '<div class="fldrow two-up">' +
+            o('monthlyIncome', t('lDoanhThu'), { hau: '$', step: '1' }) +
+            o('cashAdvance', t('lUngTien'), { hau: '$', step: '100' }) +
+            o('marketing', t('lMkt'), { hau: '$', step: '100' }) +
+            o('production', t('lSx'), { hau: '$', step: '100' }) +
+            tick('recoupBudgets', t('lNganSachThuHoi'), t('hNganSach')) +
+            o('artistShare', t('lTyLe'), { hau: '%', max: 100, step: '0.5' }) +
+            o('passThrough', t('lFlow'), { hau: '%', max: 100, step: '1', hint: t('hFlow') }) +
+            o('termMonths', t('lKyHan'), { hau: t('thang'), step: '1', min: 1 }) +
+            o('exclusivityMonths', t('lDocQuyen'), { hau: t('thang'), step: '1' }) +
+          '</div>' }) +
+        HM.the({ h2: HM.esc(t('chiPhi')), p: HM.esc(t('chiPhiP')),
+          than: '<div class="fldrow two-up">' +
+            o('findersFeePct', t('lMoiGioi'), { hau: '%', max: 100, step: '0.5', hint: t('hMoiGioi') }) +
+            o('releases', t('lSoBan'), { step: '1' }) +
+            o('hoursPerRelease', t('lGio'), { hau: t('gio'), step: '0.5' }) +
+            o('costPerHour', t('lDonGia'), { hau: '$', step: '1' }) +
+            o('nguongRoi', t('lNguongRoi'), { hau: '×', step: '0.05' }) +
+            o('nguongThuHoi', t('lNguongThuHoi'), { hau: t('thang'), step: '1' }) +
+          '</div>' }) +
+        HM.the({ h2: HM.esc(t('mocTt')), p: HM.esc(t('mocP')),
+          than: '<div class="fldrow two-up">' + tick('moc', t('batMoc')) + '</div>' +
+            (IN.moc ? [1, 2, 3].map(function (i) {
+              return '<div class="roi-moc"><div class="roi-moc-t">' + HM.esc(t('moc').replace('{i}', i)) + '</div><div class="fldrow two-up">' +
+                o('t' + i + 'r', t('lReach'), { hau: '$', step: '100' }) +
+                o('t' + i + 'x', t('lHeSo'), { hau: '×', step: '0.5', hint: i === 1 ? t('hHeSo') : '' }) +
+                o('t' + i + 'm', t('lTrong'), { hau: t('thang'), step: '1' }) +
+              '</div></div>';
+            }).join('') : '') }) +
+      '</div>' +
+    '</div>';
+
+    root.innerHTML = html;
+
+    /* --------------- vẽ lại riêng phần kết quả --------------- */
+    function veKq() {
+      var d = soVao();
+      var k = A.roi.tinh(d);
+      var kb = A.roi.kichBan(d);
+      var box = root.querySelector('#roi-kq');
+      if (!box) return;
+      if (!(k.monthlyIncome > 0 && k.advance > 0)) {
+        box.innerHTML = HM.the({ h2: HM.esc(t('kq')), than: HM.trong({ icon: 'chart', tieuDe: t('trong'), moTa: t('trongMo') }) });
+        return;
+      }
+      var h = '';
+      var mauKl = k.recommendation === 'approve' ? HB.mau('ok') : k.recommendation === 'review' ? HB.mau('warn') : HB.mau('no');
+      var chuKl = k.recommendation === 'approve' ? t('klDat') : k.recommendation === 'review' ? t('klCanXem') : k.recommendation === 'incomplete' ? t('klThieu') : t('klKhong');
+
+      h += HM.so([
+        { l: t('roiKy'), v: k.roiAfterCosts == null ? '—' : k.roiAfterCosts.toFixed(2) + '×', lon: true, s: t('roiKyS'), mau: mauKl },
+        { l: t('roiNam'), v: k.roiAfterCostsYearly == null ? '—' : HT.fmt.pct(k.roiAfterCostsYearly), s: t('roiNamS') },
+        { l: t('thuHoi'), v: k.recoupMonths == null ? '—' : k.recoupWhole + ' ' + t('thang'), s: t('thuHoiS') },
+        { l: t('hoaVon'), v: k.paybackMonth == null ? '—' : k.paybackMonth + ' ' + t('thang'), s: t('hoaVonS') },
+        { l: t('ung'), v: c.tien(k.advance), s: t('ungS') }
+      ]);
+
+      h += HM.the({ dai: { kieu: k.recommendation === 'approve' ? 'ok' : k.recommendation === 'review' ? 'warn' : 'no',
+          icon: k.recommendation === 'approve' ? 'check' : 'alert', chu: HM.esc(chuKl) },
+        h2: HM.esc(t('dongTien')), p: HM.esc(t('dongTienP')),
+        than: HM.kv([
+          { t: t('rHaustek') + ' · D3', v: c.tien(k.companyMonthly), manh: true },
+          { t: t('rNgheSi') + ' · D4', v: c.tien(k.artistMonthly) },
+          k.passThroughMonthly > 0 ? { t: t('rTra') + ' · F3', v: c.tien(k.passThroughMonthly) } : null,
+          { t: t('rThuHoi') + ' · G3', v: c.tien(k.recoupableMonthly), manh: true }
+        ]) + '<div class="roi-chia"></div>' + HM.kv([
+          { t: t('rHoaHong') + ' · D5', v: c.tien(k.totalOverTerm) },
+          k.findersFee > 0 ? { t: t('rMoiGioi') + ' · J10', v: '− ' + c.tien(k.findersFee) } : null,
+          k.totalCost > 0 ? { t: t('rChiPhi') + ' · J11', v: '− ' + c.tien(k.totalCost) } : null,
+          { t: t('rNet') + ' · D7', v: c.tien(k.netForCompany), manh: true },
+          k.shortfall > 0 ? { t: t('rConNo'), v: c.tien(k.shortfall), mau: 'neg' } : null,
+          k.shortfall > 0 ? { t: t('rRoiThuc'), v: k.roiNet.toFixed(2) + '×', manh: true, mau: 'neg' } : null
+        ]),
+        chan: k.reasons.length ? '<b>' + HM.esc(t('lyDo')) + ':</b> ' + HM.esc(k.reasons.map(function (r) { return c.lang === 'en' ? r.en : r.vi; }).join(' · ')) : '' });
+
+      var truc = k.series.map(function (s) { return String(s.month); });
+      h += HM.the({ h2: HM.esc(t('duong')), p: HM.esc(t('duongP')),
+        than: HB.o({ loai: 'duong', cao: 190, chuThich: true, truc: truc,
+          tieuDeTip: function (i) { return truc[i] + ' ' + t('thang'); },
+          chuoi: [{ ten: t('conNo'), gt: k.series.map(function (s) { return s.conNo; }), mau: HB.mau('no') },
+                  { ten: t('hoaHong'), gt: k.series.map(function (s) { return s.hoaHong; }), mau: HB.mau('ok') }] }) });
+
+      if (kb.rows.length > 1) {
+        h += HM.the({ h2: HM.esc(t('bang')), p: HM.esc(t('bangP')),
+          than: '<div class="tw"><table class="t"><thead><tr><th>' + HM.esc(t('cKb')) + '</th><th class="num">' + HM.esc(t('cDt')) + '</th><th class="num">' + HM.esc(t('cUng')) +
+            '</th><th class="num">' + HM.esc(t('cKyHan')) + '</th><th class="num">' + HM.esc(t('cThuHoi')) + '</th><th class="num band">' + HM.esc(t('cRoi')) +
+            '</th><th class="num">' + HM.esc(t('cRoiNam')) + '</th><th>' + HM.esc(t('cKl')) + '</th></tr></thead><tbody>' +
+            kb.rows.map(function (r) {
+              var x = r.calc, kl = x.recommendation;
+              return '<tr><td>' + HM.esc(c.lang === 'en' ? r.en : r.vi) + '</td>' +
+                '<td class="num mono">' + HM.esc(c.tien(x.monthlyIncome)) + '</td>' +
+                '<td class="num mono">' + HM.esc(c.tien(x.advance)) + '</td>' +
+                '<td class="num mono">' + x.termMonths + '</td>' +
+                '<td class="num mono">' + (x.recoupWhole == null ? '—' : x.recoupWhole) + '</td>' +
+                '<td class="num band mono"><b>' + (x.roiAfterCosts == null ? '—' : x.roiAfterCosts.toFixed(2) + '×') + '</b></td>' +
+                '<td class="num mono">' + (x.roiAfterCostsYearly == null ? '—' : HM.esc(HT.fmt.pct(x.roiAfterCostsYearly))) + '</td>' +
+                '<td>' + HM.tag(kl === 'approve' ? t('klDat') : kl === 'review' ? t('klCanXem') : kl === 'incomplete' ? t('klThieu') : t('klKhong'),
+                  kl === 'approve' ? 'ok' : kl === 'review' ? 'warn' : 'no') + '</td></tr>';
+            }).join('') +
+            '<tr class="sum"><td><b>' + HM.esc(t('tong')) + '</b></td><td></td><td class="num mono"><b>' + HM.esc(c.tien(kb.tong.advance)) +
+            '</b></td><td></td><td></td><td class="num band mono"><b>' + (kb.tong.roi == null ? '—' : kb.tong.roi.toFixed(2) + '×') + '</b></td><td></td><td></td></tr>' +
+            '</tbody></table></div>' });
+      }
+
+      h += '<div class="grid g2">' +
+        HM.the({ h2: HM.esc(t('soSanh')), p: HM.esc(t('soSanhP')),
+          than: HM.kv([{ t: t('ss1'), v: t('ss1v') }, { t: t('ss2'), v: t('ss2v') }]) }) +
+        HM.the({ h2: HM.esc(t('sua')), p: HM.esc(t('suaP')),
+          than: '<ul class="say-list">' + [t('sua1'), t('sua2'), t('sua3'), t('sua4')].map(function (x) { return '<li>' + HM.esc(x) + '</li>'; }).join('') + '</ul>' }) +
+      '</div>';
+
+      box.innerHTML = h;
+      HB.gan(box);
+    }
+    veKq();
+
+    /* --------------- nhập liệu --------------- */
+    HM.nhap(root, 'input[data-r]', function () { thuSo(root); veKq(); }, 200);
+    HM.doi(root, 'input[data-r]', function (el) {
+      thuSo(root);
+      if (el.getAttribute('data-r') === 'moc') c.veLai(); else veKq();
+    });
+
+    HM.bam(root, '[data-dat-lai]', function () {
+      try { localStorage.removeItem(KHO); } catch (e) {}
+      IN.monthlyIncome = 3300; IN.cashAdvance = 50000; IN.marketing = 0; IN.production = 0; IN.recoupBudgets = true;
+      IN.artistShare = 74; IN.passThrough = 0; IN.termMonths = 60; IN.exclusivityMonths = 36;
+      IN.findersFeePct = 0; IN.releases = 0; IN.hoursPerRelease = 0; IN.costPerHour = 0;
+      IN.nguongRoi = 1; IN.nguongThuHoi = 24; IN.moc = false;
+      [1, 2, 3].forEach(function (i) { IN['t' + i + 'r'] = ''; IN['t' + i + 'x'] = ''; IN['t' + i + 'm'] = ''; });
+      c.thongBao(t('daDatLai'), 'ok'); c.veLai();
+    });
+
+    HM.bam(root, '[data-lay]', function () {
+      HTM.hoiForm(c, { tieuDe: t('ganDoiTac'), rong: false,
+        fields: [{ k: 'q', l: t('chonDoiTac'), req: true, ph: 'Trí Minh' }] }).then(function (f) {
+        if (!f) return;
+        var q = String(f.q).trim().toLowerCase();
+        var ds = A.parties.list({ q: q }).rows || [];
+        var hit = ds[0];
+        if (!hit) { c.thongBao(t('khongThay').replace('{q}', f.q), 'no'); return; }
+        var d = A.roi.tuDoiTac(hit.partyKey);
+        if (!d || !d.monthlyIncome) { c.thongBao(t('chuaCoSo').replace('{t}', hit.name), 'warn'); return; }
+        IN.monthlyIncome = Math.round(d.monthlyIncome);
+        if (d.artistShare != null) IN.artistShare = Math.round(d.artistShare * 1000) / 10;
+        if (d.termMonths) IN.termMonths = d.termMonths;
+        ghiKho(); c.thongBao(t('daLay').replace('{t}', hit.name), 'ok'); c.veLai();
+      });
+    });
+  }
+});
 
 })();
 
@@ -15440,7 +15967,8 @@ HT.dangKy({
         { l: t('tongUng'), v: c.tien(tongGoc) },
         { l: t('conLai'), v: c.tien(A.advances.total()) },
         { l: t('soBen'), v: HT.fmt.n(conNo.length) }
-      ]
+      ],
+      nut: A.quyen && A.quyen.man('roi') ? '<button type="button" class="btn ghost" data-di="roi">' + HM.icon('chart') + HM.esc(c.lang === 'en' ? 'Deal ROI' : 'Tính ROI') + '</button>' : ''
     });
 
     html += HM.so([
@@ -15538,6 +16066,8 @@ HT.dangKy({
     });
     b.ve();
     HB.gan(root);
+
+    HM.bam(root, '[data-di]', function (el) { c.di(el.getAttribute('data-di')); });
 
     HM.bam(root, '[data-nhom]', function (el) { LOC.nhom = el.getAttribute('data-nhom'); c.veLai(); });
     HM.nhap(root, '[data-tim]', function (el) { LOC.tim = el.value; c.veLai(); });
