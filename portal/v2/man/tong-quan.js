@@ -19,7 +19,7 @@ HT.dangKy({
       h1: 'Tổng quan vận hành',
       mo: 'Trạng thái kỳ đang xem, phân bổ doanh thu của kỳ, và những việc còn chờ xử lý.',
       gop: 'Doanh thu gộp', phi: 'Phí dịch vụ Haustek', nghesi: 'Phần nghệ sĩ được hưởng',
-      label: 'Phần label được hưởng', producer: 'Điểm producer', treo: 'Tiền chưa khớp ISRC',
+      label: 'Phần label được hưởng', treo: 'Tiền chưa khớp ISRC',
       luot: 'Lượt nghe', bai: 'Bản ghi có doanh thu',
       dienBien: 'Diễn biến 12 kỳ', dienBienMo: 'Tách theo nguồn báo cáo. Cột nét đứt là kỳ chưa xét duyệt, số liệu còn thay đổi.',
       chiaTien: 'Phân bổ doanh thu kỳ này',
@@ -55,7 +55,7 @@ HT.dangKy({
       h1: 'Operations overview',
       mo: 'Status of the selected period, where its money went, and what is still open.',
       gop: 'Gross revenue', phi: 'Haustek fee', nghesi: 'To artists',
-      label: 'Labels keep', producer: 'Producer points', treo: 'Unmatched, on hold',
+      label: 'Labels keep', treo: 'Unmatched, on hold',
       luot: 'Streams', bai: 'Recordings with revenue',
       dienBien: '12-period trend', dienBienMo: 'Split by data feed. Dashed columns are unapproved periods — figures still moving.',
       chiaTien: 'Where this period’s money went',
@@ -248,19 +248,16 @@ HT.dangKy({
             { l: t('phi'), v: -nay.fee, kind: 'out', nt: HT.fmt.pct(A.cfg.HAUSTEK_FEE) },
             { l: t('label'), v: -nay.labelCut, kind: 'out',
               nt: c.lang === 'vi' ? 'gồm cả phần Haustek theo hợp đồng độc lập' : 'includes the extra Haustek share on independent artists' },
-            { l: t('producer'), v: -nay.producer, kind: 'out',
-              nt: c.lang === 'vi' ? 'trích từ phần nghệ sĩ được hưởng, không phải khoản khấu trừ thêm' : 'deducted from the artist share, not added on top' },
             { l: t('nghesi'), v: nay.artist, kind: 'final' }
           ]
         }) +
         '<div style="margin-top:14px">' + HB.chia([
           { ten: t('phi'), gt: nay.fee, mau: P[5] },
           { ten: t('label'), gt: nay.labelCut, mau: P[1] },
-          { ten: t('producer'), gt: nay.producer, mau: P[2] },
           { ten: t('nghesi'), gt: nay.artist, mau: P[0] }
         ]) + '</div>',
-        chan: (c.lang === 'vi' ? 'Bốn khoản cộng lại đúng bằng doanh thu gộp: ' : 'The four parts add back to gross: ') +
-          '<b>' + HM.esc(c.tien2(nay.fee + nay.labelCut + nay.producer + nay.artist)) + '</b>'
+        chan: (c.lang === 'vi' ? 'Ba khoản cộng lại đúng bằng doanh thu gộp: ' : 'The three parts add back to gross: ') +
+          '<b>' + HM.esc(c.tien2(nay.fee + nay.labelCut + nay.artist)) + '</b>'
       }) +
       HM.the({
         h2: HM.esc(t('cuaHang')),
@@ -303,7 +300,7 @@ HT.dangKy({
        ================================================================= */
     var kiem = HM.nho(A, 'kiem:' + pi, function () { return A.earnedByParty(pi); });
     /* gộp theo bên: label (kể cả bản ghi của nghệ sĩ thuộc label) và nghệ
-       sĩ độc lập; producer không phải đối tác nên không tính */
+       sĩ độc lập */
     var top = HM.nho(A, 'top:' + pi, function () {
       var r = [];
       var cong = function (key, ix) {
@@ -503,11 +500,10 @@ function moChiTietBen(c, key, pi) {
   var buoc = [{ l: 'Doanh thu gộp', v: a.gross, kind: 'top', nt: 'doanh thu gộp của các bản ghi liên quan' },
               { l: 'Phí dịch vụ', v: -a.fee, kind: 'out', nt: HT.fmt.pct(A.cfg.HAUSTEK_FEE) + ' phí dịch vụ Haustek' }];
   if (la) {
-    buoc.push({ l: 'Phần nghệ sĩ', v: -(a.artist + a.producer), kind: 'out', nt: 'phần nghệ sĩ được hưởng và điểm producer' });
+    buoc.push({ l: 'Phần nghệ sĩ', v: -a.artist, kind: 'out', nt: 'phần nghệ sĩ được hưởng theo tỷ lệ của label' });
     buoc.push({ l: 'Phần label được hưởng', v: a.labelCut, kind: 'final' });
   } else {
     buoc.push({ l: 'Phần bên quản lý', v: -a.labelCut, kind: 'out', nt: 'phần label được hưởng; với nghệ sĩ độc lập là phần Haustek theo hợp đồng độc lập' });
-    if (a.producer > 0.004) buoc.push({ l: 'Điểm producer', v: -a.producer, kind: 'out', nt: 'trích từ phần nghệ sĩ được hưởng' });
     buoc.push({ l: 'Phần nghệ sĩ được hưởng', v: a.artist, kind: 'final' });
   }
 

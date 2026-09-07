@@ -123,8 +123,8 @@ HT.dangKy({
     html += HM.the({
       h2: c.lang === 'vi' ? 'Nghệ sĩ thuộc label' : 'Artists under a label',
       than: '<p class="say">' + HM.esc(t('macDinh')) + ' ' + HM.esc(c.lang === 'vi'
-        ? 'Dòng tiền của nghệ sĩ thuộc label đi theo thứ tự: doanh thu gộp → trừ phí dịch vụ Haustek → phần còn lại chia theo tỷ lệ của label → trừ điểm producer trên bản ghi đó. Muốn một nghệ sĩ trong label có tỷ lệ riêng thì phải thêm dòng cho chính nghệ sĩ đó, và bảng tỷ lệ phải quy định rõ dòng nào được ưu tiên. Đây là câu hỏi cần chốt số 3.'
-        : 'Their chain is: gross → less the Haustek fee → the remainder split at the label’s rate → less producer points on that recording. Giving one artist inside a label their own rate needs a row for that artist, and the split table must say which row wins — this is open question 3.') + '</p>'
+        ? 'Dòng tiền của nghệ sĩ thuộc label đi theo thứ tự: doanh thu gộp → trừ phí dịch vụ Haustek → phần còn lại chia theo tỷ lệ của label. Muốn một nghệ sĩ trong label có tỷ lệ riêng thì phải thêm dòng cho chính nghệ sĩ đó, và bảng tỷ lệ phải quy định rõ dòng nào được ưu tiên. Đây là câu hỏi cần chốt số 3.'
+        : 'Their chain is: gross → less the Haustek fee → the remainder split at the label’s rate. Giving one artist inside a label their own rate needs a row for that artist, and the split table must say which row wins — this is open question 3.') + '</p>'
     });
 
     root.innerHTML = html;

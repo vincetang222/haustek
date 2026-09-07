@@ -31,7 +31,7 @@ HT.dangKy({
       chotTg: 'Chốt tỷ giá kỳ', doiTg: 'Đổi tỷ giá hiện hành',
       tgKhoa: 'Đã chốt', tgChua: 'Chưa chốt',
       xemTruoc: 'Bảng thanh toán nếu xét duyệt kỳ ngay bây giờ',
-      seChi: 'Sẽ thanh toán', donSang: 'Chuyển sang kỳ sau', thuTamUng: 'Thu hồi tạm ứng', giuLai: 'Giữ lại (điểm producer)',
+      seChi: 'Sẽ thanh toán', donSang: 'Chuyển sang kỳ sau', thuTamUng: 'Thu hồi tạm ứng',
       benNhan: 'bên thụ hưởng', boQua: 'Xét duyệt kèm ghi nhận ngoại lệ',
       canhBoQua: 'Ngoại lệ ghi vĩnh viễn vào hồ sơ xét duyệt kèm tên người duyệt. Chỉ dùng khi chắc lý do.',
       lyDo: 'Lý do', nguoiDuyet: 'Người xét duyệt'
@@ -48,7 +48,7 @@ HT.dangKy({
       chotTg: 'Lock the period FX rate', doiTg: 'Change the working rate',
       tgKhoa: 'Locked', tgChua: 'Not locked',
       xemTruoc: 'Payout table if approved now',
-      seChi: 'Payable', donSang: 'Carried to next period', thuTamUng: 'Recouped against advances', giuLai: 'Held (producer)',
+      seChi: 'Payable', donSang: 'Carried to next period', thuTamUng: 'Recouped against advances',
       benNhan: 'payees', boQua: 'Approve, overriding unmet conditions',
       canhBoQua: 'The override is written permanently to the approval record with your name. Only when you are sure.',
       lyDo: 'Reason', nguoiDuyet: 'Approved by'
@@ -300,7 +300,7 @@ function veTg(c) {
         HM.esc(khoa ? (c.lang === 'vi' ? 'Đổi tỷ giá đã chốt' : 'Change locked rate') : t('chotTg')) + '</button>',
       than: HM.kv([
         { t: c.lang === 'vi' ? 'Tỷ giá hiện hành' : 'Working rate', v: HT.fmt.n(f.rate) + ' ₫ / USD' },
-        { t: c.lang === 'vi' ? 'Chính sách' : 'Policy', v: f.policy },
+        { t: c.lang === 'vi' ? 'Chính sách' : 'Policy', v: c.lang === 'vi' ? f.policy : (f.policyEn || f.policy) },
         { t: c.lang === 'vi' ? 'Tỷ giá đã chốt cho kỳ này' : 'Locked for this period',
           v: khoa ? HT.fmt.n(khoa.rate) + ' ₫ · ' + HT.fmt.ngay(khoa.at) : t('tgChua'), manh: true },
         { t: c.lang === 'vi' ? 'Doanh thu gộp của kỳ, quy đổi ra VND' : 'Period gross in VND',
@@ -332,9 +332,8 @@ function veXem(c) {
   var A = c.A, t = c.t, pi = c.ky.idx;
   var duyet = A.isApproved(c.kyKey);
   var rows = duyet ? A.payoutOf(c.kyKey) : HM.nho(A, 'xem:' + pi, function () { return A.previewPayout(pi); });
-  var tong = { earned: 0, recoup: 0, payable: 0, carryOut: 0, giu: 0 };
+  var tong = { earned: 0, recoup: 0, payable: 0, carryOut: 0 };
   rows.forEach(function (r) {
-    if (r.held) { tong.giu += r.earned; return; }
     tong.earned += r.earned; tong.recoup += r.recoup; tong.payable += r.payable; tong.carryOut += r.carryOut;
   });
   var P = HB.dayMau();
@@ -353,18 +352,15 @@ function veXem(c) {
       { l: t('thuTamUng'), v: c.tien(tong.recoup) },
       { l: t('donSang'), v: c.tien(tong.carryOut),
         s: c.lang === 'vi' ? 'dưới ngưỡng ' + HT.fmt.usd0(A.cfg.PAYOUT_MIN) : 'below ' + HT.fmt.usd0(A.cfg.PAYOUT_MIN) },
-      { l: t('giuLai'), v: c.tien(tong.giu),
-        s: c.lang === 'vi' ? 'chưa xác định người thụ hưởng' : 'no identity to pay' }
     ]) +
     '<div style="margin-top:6px">' + HB.chia([
       { ten: t('seChi'), gt: tong.payable, mau: P[0] },
       { ten: t('thuTamUng'), gt: tong.recoup, mau: P[4] },
       { ten: t('donSang'), gt: tong.carryOut, mau: P[7] },
-      { ten: t('giuLai'), gt: tong.giu, mau: P[3] }
     ]) + '</div>',
     chan: c.lang === 'vi'
-      ? 'Tổng được hưởng của kỳ là ' + HM.esc(c.tien2(tong.earned + tong.giu)) + ', bằng đúng “phần nghệ sĩ được hưởng” cộng “phần label được hưởng” cộng “điểm producer” ở trang tổng quan.'
-      : 'Total earned this period is ' + HM.esc(c.tien2(tong.earned + tong.giu)) + ' — exactly artists plus labels plus producer points from the overview.'
+      ? 'Tổng được hưởng của kỳ là ' + HM.esc(c.tien2(tong.earned)) + ', bằng đúng “phần nghệ sĩ được hưởng” cộng “phần label được hưởng” ở trang tổng quan.'
+      : 'Total earned this period is ' + HM.esc(c.tien2(tong.earned)) + ' — exactly artists plus labels from the overview.'
   });
 }
 
@@ -498,14 +494,14 @@ function chotTyGia(c) {
   c.hoiThoai({
     tieuDe: c.t('chotTg') + ' ' + c.ky.label,
     moTa: HM.esc(c.lang === 'vi'
-      ? 'Tỷ giá đã chốt được dùng vĩnh viễn để quy đổi mọi con số VND của kỳ này. Mở lại bảng kê cũ sau nửa năm vẫn phải ra đúng số tiền đã chuyển đi.'
-      : 'The locked rate converts every VND figure for this period, permanently. Reopening the statement six months later must still produce the amount that was actually transferred.'),
+      ? 'Lấy tỷ giá bán ra của ' + f.source + ' ngày ' + HT.fmt.ngay(A.fx.ngayChot(c.ky.idx)) + ', tức ngày cuối cùng của tháng ' + c.ky.label + '. Chốt xong thì tỷ giá này quy đổi mọi con số VND của kỳ, vĩnh viễn: mở lại bảng kê sau nửa năm vẫn phải ra đúng số tiền đã chuyển đi.'
+      : 'Use the ' + f.source + ' selling rate on ' + HT.fmt.ngay(A.fx.ngayChot(c.ky.idx)) + ', the last day of ' + c.ky.label + '. Once locked it converts every VND figure for the period, permanently: reopening the statement six months later must still produce the amount actually transferred.'),
     than: '<div class="fldrow two-up">' +
-      '<div><label class="fld">' + (c.lang === 'vi' ? 'Tỷ giá (₫ / USD)' : 'Rate (₫ / USD)') + '</label>' +
+      '<div><label class="fld">' + (c.lang === 'vi' ? 'Tỷ giá bán ra ' + f.source + ' (₫ / USD)' : f.source + ' selling rate (₫ / USD)') + '</label>' +
       '<input class="in" data-o="rate" type="number" step="1" value="' + (khoa ? khoa.rate : f.rate) + '"></div>' +
-      '<div><label class="fld">' + (c.lang === 'vi' ? 'Tỷ giá hiện hành' : 'Working rate') + '</label>' +
-      '<input class="in" value="' + HM.esc(HT.fmt.n(f.rate)) + '" disabled></div></div>' +
-      '<div class="hint">' + HM.esc(c.lang === 'vi' ? 'Chính sách hiện tại: ' + f.policy : 'Policy: ' + f.policy) + '</div>',
+      '<div><label class="fld">' + (c.lang === 'vi' ? 'Ngày áp dụng' : 'Rate date') + '</label>' +
+      '<input class="in" value="' + HM.esc(HT.fmt.ngay(A.fx.ngayChot(c.ky.idx))) + '" disabled></div></div>' +
+      '<div class="hint">' + HM.esc(c.lang === 'vi' ? 'Chính sách: ' + f.policy + '. Ngày áp dụng do kỳ quyết định, chốt muộn vài ngày vẫn là tỷ giá ngày cuối tháng.' : 'Policy: ' + (f.policyEn || f.policy) + '. The rate date follows the period, not today: locking a few days late still uses the last-day-of-month rate.') + '</div>',
     dong: c.t('chotTg')
   }).then(function (r) {
     if (!r) return;

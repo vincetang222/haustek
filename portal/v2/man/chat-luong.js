@@ -5,7 +5,8 @@
    (2024) tách 660.000 lượt/ngày thành nhiều bài nhỏ để lách ngưỡng từng
    bài, nên gom theo tài khoản mới thấy. Mỗi cảnh báo có bằng chứng (năm
    tín hiệu), diễn biến, và hai thao tác: xác nhận gian lận hoặc gỡ cảnh
-   báo, đều ghi nhật ký. Sổ phạt: bài bị nền tảng gắn cờ × mức phạt/tháng.
+   báo, đều ghi nhật ký. Bài bị nền tảng gắn cờ thì lượt nghe bị gỡ khỏi
+   báo cáo, nên kỳ sau doanh thu của bài đó thấp hơn.
    Tab thứ ba là sức khoẻ metadata toàn danh mục: thiếu ISWC / IPI thì
    giữ lại trước khi giao.
    ===================================================================== */
@@ -21,25 +22,25 @@ HT.dangKy({
   chu: {
     vi: {
       navChatLuong: 'Chất lượng lượt nghe', h1: 'Chất lượng lượt nghe',
-      mo: 'Cảnh báo lượt nghe bất thường theo tài khoản, sổ phạt của nền tảng và sức khoẻ metadata.',
-      kCb: 'Cảnh báo', kCbS: '{a} nghiêm trọng · {b} cảnh báo · {c} theo dõi · {n} bài đã quét', kCo: 'Bài bị nền tảng gắn cờ', kCoS: 'phạt {p}/tháng đang treo', kGo: 'Lượt nghe bị gỡ', kTk: 'Tài khoản nhiều bài tăng đồng loạt', kTkS: 'kiểu tách nhỏ để lách ngưỡng', kMo: 'Đang mở', kMoS: '{n} đang khiếu nại', kMd: 'Điểm metadata trung bình', kMdS: '{n} bản ghi thiếu mã quan trọng',
+      mo: 'Cảnh báo lượt nghe bất thường theo tài khoản, bài bị nền tảng gắn cờ và sức khoẻ metadata.',
+      kCb: 'Cảnh báo', kCbS: '{a} nghiêm trọng · {b} cảnh báo · {c} theo dõi · {n} bài đã quét', kCo: 'Bài bị nền tảng gắn cờ', kCoS: 'lượt nghe đã bị gỡ khỏi báo cáo', kGo: 'Lượt nghe bị gỡ', kTk: 'Tài khoản nhiều bài tăng đồng loạt', kTkS: 'kiểu tách nhỏ để lách ngưỡng', kMo: 'Đang mở', kMoS: '{n} đang khiếu nại', kMd: 'Điểm metadata trung bình', kMdS: '{n} bản ghi thiếu mã quan trọng',
       tabTk: 'Theo tài khoản', tabCb: 'Cảnh báo', tabMd: 'Sức khoẻ metadata',
-      cTk: 'Tài khoản', cMau: 'Kiểu', cAlerts: 'Cảnh báo', cNt: 'Nghiêm trọng', cCo: 'Bị gắn cờ', cPhat: 'Phạt / tháng', cGo: 'Lượt bị gỡ', cMo: 'Đang mở',
+      cTk: 'Tài khoản', cMau: 'Kiểu', cAlerts: 'Cảnh báo', cNt: 'Nghiêm trọng', cCo: 'Bị gắn cờ', cGo: 'Lượt nghe bị gỡ', cMo: 'Đang mở',
       mucAll: 'Mọi mức', mucCritical: 'Nghiêm trọng', mucWarn: 'Cảnh báo', mucWatch: 'Theo dõi', ttAll: 'Mọi trạng thái', ttOpen: 'Đang mở', ttDisputed: 'Đang khiếu nại', ttConfirmed: 'Đã xác nhận', ttResolved: 'Đã gỡ',
       tim: 'Tìm bài, ISRC, tài khoản…', dangLoc: 'Đang xem tài khoản', boLoc: 'Bỏ lọc',
-      xacNhan: 'Xác nhận gian lận', go: 'Gỡ cảnh báo', hoiXn: 'Xác nhận gian lận cho “{t}”?', hoiXnMo: 'Bài bị giữ lượt nghe trong kỳ đang mở và đưa vào sổ phạt; đối tác thấy trạng thái này ở cổng của họ.', hoiGo: 'Gỡ cảnh báo cho “{t}”', hoiGoMo: 'Ghi lý do (chiến dịch hợp lệ, playlist biên tập, sự kiện) để lần sau không hỏi lại.', ghiChu: 'Ghi chú', daXn: 'Đã xác nhận gian lận', daGo: 'Đã gỡ cảnh báo',
+      xacNhan: 'Xác nhận gian lận', go: 'Gỡ cảnh báo', hoiXn: 'Xác nhận gian lận cho “{t}”?', hoiXnMo: 'Lượt nghe của bài bị giữ lại trong kỳ đang mở; đối tác thấy trạng thái này ở cổng của họ.', hoiGo: 'Gỡ cảnh báo cho “{t}”', hoiGoMo: 'Ghi lý do (chiến dịch hợp lệ, playlist biên tập, sự kiện) để lần sau không hỏi lại.', ghiChu: 'Ghi chú', daXn: 'Đã xác nhận gian lận', daGo: 'Đã gỡ cảnh báo',
       khong: 'Không có cảnh báo nào khớp bộ lọc', khongMo: 'Đổi bộ lọc phía trên.', khongTk: 'Không có tài khoản nào có cảnh báo',
       mdThieu: 'Mục còn thiếu nhiều nhất', mdThieuMo: 'Số bản ghi thiếu từng mục toàn danh mục (đã nhân theo mẫu).', mdBang: 'Bản ghi bị giữ lại hoặc dưới điểm A', mdBangMo: 'Bấm một bản ghi để xem từng mục và cách sửa.'
     },
     en: {
       navChatLuong: 'Stream quality', h1: 'Stream quality',
-      mo: 'Unusual-stream alerts by account, the platform penalty ledger and metadata health.',
-      kCb: 'Alerts', kCbS: '{a} critical · {b} warning · {c} watch · {n} tracks scanned', kCo: 'Flagged by platforms', kCoS: '{p}/month penalty exposure', kGo: 'Streams removed', kTk: 'Accounts with many small lifts', kTkS: 'spreading streams thin to dodge thresholds', kMo: 'Open', kMoS: '{n} disputed', kMd: 'Average metadata score', kMdS: '{n} recordings missing key identifiers',
+      mo: 'Unusual-stream alerts by account, tracks platforms have flagged, and metadata health.',
+      kCb: 'Alerts', kCbS: '{a} critical · {b} warning · {c} watch · {n} tracks scanned', kCo: 'Flagged by platforms', kCoS: 'streams already removed from reports', kGo: 'Streams removed', kTk: 'Accounts with many small lifts', kTkS: 'spreading streams thin to dodge thresholds', kMo: 'Open', kMoS: '{n} disputed', kMd: 'Average metadata score', kMdS: '{n} recordings missing key identifiers',
       tabTk: 'By account', tabCb: 'Alerts', tabMd: 'Metadata health',
-      cTk: 'Account', cMau: 'Pattern', cAlerts: 'Alerts', cNt: 'Critical', cCo: 'Flagged', cPhat: 'Penalty / month', cGo: 'Removed', cMo: 'Open',
+      cTk: 'Account', cMau: 'Pattern', cAlerts: 'Alerts', cNt: 'Critical', cCo: 'Flagged', cGo: 'Streams removed', cMo: 'Open',
       mucAll: 'Any level', mucCritical: 'Critical', mucWarn: 'Warning', mucWatch: 'Watch', ttAll: 'Any status', ttOpen: 'Open', ttDisputed: 'Disputed', ttConfirmed: 'Confirmed', ttResolved: 'Cleared',
       tim: 'Search track, ISRC, account…', dangLoc: 'Showing account', boLoc: 'Clear',
-      xacNhan: 'Confirm fraud', go: 'Clear alert', hoiXn: 'Confirm fraud on “{t}”?', hoiXnMo: 'Streams are held in the open period and the track enters the penalty ledger; the partner sees this status in their portal.', hoiGo: 'Clear the alert on “{t}”', hoiGoMo: 'Note the reason (legitimate campaign, editorial playlist, event) so it is not asked again.', ghiChu: 'Note', daXn: 'Fraud confirmed', daGo: 'Alert cleared',
+      xacNhan: 'Confirm fraud', go: 'Clear alert', hoiXn: 'Confirm fraud on “{t}”?', hoiXnMo: 'The track’s streams are held in the open period; the partner sees this status in their portal.', hoiGo: 'Clear the alert on “{t}”', hoiGoMo: 'Note the reason (legitimate campaign, editorial playlist, event) so it is not asked again.', ghiChu: 'Note', daXn: 'Fraud confirmed', daGo: 'Alert cleared',
       khong: 'No alerts match the filters', khongMo: 'Change the filters above.', khongTk: 'No accounts with alerts',
       mdThieu: 'Most common gaps', mdThieuMo: 'Recordings missing each item across the catalogue (scaled from the sample).', mdBang: 'Recordings held or below grade A', mdBangMo: 'Click a recording to see each item and how to fix it.'
     }
@@ -53,7 +54,7 @@ HT.dangKy({
     var html = HM.dau({ h1: HM.esc(t('h1')), mo: HM.esc(t('mo')) });
     html += HM.so([
       { l: t('kCb'), v: HT.fmt.n(k.alerts), lon: true, s: t('kCbS').replace('{a}', k.critical).replace('{b}', k.warn).replace('{c}', k.watch).replace('{n}', HT.fmt.n(k.tracksChecked)) },
-      { l: t('kCo'), v: HT.fmt.n(k.flagged), s: t('kCoS').replace('{p}', c.tien2(k.penaltyUsd)), mau: k.flagged ? HB.mau('no') : '' },
+      { l: t('kCo'), v: HT.fmt.n(k.flagged), s: t('kCoS'), mau: k.flagged ? HB.mau('no') : '' },
       { l: t('kGo'), v: HT.fmt.n(k.removedStreams) },
       { l: t('kTk'), v: HT.fmt.n(lifts), s: t('kTkS'), mau: lifts ? HB.mau('warn') : '' },
       { l: t('kMo'), v: HT.fmt.n(k.open), s: t('kMoS').replace('{n}', k.disputed) },
@@ -64,13 +65,14 @@ HT.dangKy({
     if (LOC.tab === 'tk') {
       html += HM.the({ thoBody: true,
         than: !q.cases.length ? HM.trong({ icon: 'check', tieuDe: t('khongTk'), moTa: '' }) :
-          '<div class="tw"><table class="t"><thead><tr><th>' + HM.esc(t('cTk')) + '</th><th>' + HM.esc(t('cMau')) + '</th><th class="num">' + HM.esc(t('cAlerts')) + '</th><th class="num">' + HM.esc(t('cNt')) + '</th><th class="num">' + HM.esc(t('cCo')) + '</th><th class="num">' + HM.esc(t('cPhat')) + '</th><th class="num">' + HM.esc(t('cGo')) + '</th><th class="num">' + HM.esc(t('cMo')) + '</th></tr></thead><tbody>' +
+          '<div class="tw"><table class="t"><thead><tr><th>' + HM.esc(t('cTk')) + '</th><th>' + HM.esc(t('cMau')) + '</th><th class="num">' + HM.esc(t('cAlerts')) + '</th><th class="num">' + HM.esc(t('cNt')) + '</th><th class="num">' + HM.esc(t('cCo')) + '</th><th class="num band">' + HM.esc(t('cGo')) + '</th><th class="num">' + HM.esc(t('cMo')) + '</th></tr></thead><tbody>' +
           q.cases.map(function (x) {
             return '<tr class="pick" data-pk="' + HM.esc(x.partyKey) + '"><td>' + HM.tenBia({ ten: x.name, seed: x.clientId, phu: x.clientId + ' · ' + x.partyKey }) + '</td>' +
               '<td>' + HM.tag(c.song(x, 'patternLabel'), x.pattern === 'many-small-lifts' ? 'warn' : x.pattern === 'dsp-flag' ? 'no' : x.pattern === 'critical' ? 'no' : '') + '</td>' +
               '<td class="num"><b>' + HT.fmt.n(x.alerts) + '</b></td><td class="num">' + (x.critical ? '<span class="neg">' + x.critical + '</span>' : '<span class="nil">—</span>') + '</td>' +
-              '<td class="num">' + (x.flagged ? '<span class="neg">' + x.flagged + '</span>' : '<span class="nil">—</span>') + '</td><td class="num band">' + (x.penaltyUsd ? '<b>' + HM.esc(c.tien2(x.penaltyUsd)) + '</b>' : '<span class="nil">—</span>') + '</td>' +
-              '<td class="num">' + HT.fmt.n(x.removedStreams) + '</td><td class="num">' + HT.fmt.n(x.open) + '</td></tr>';
+              '<td class="num">' + (x.flagged ? '<span class="neg">' + x.flagged + '</span>' : '<span class="nil">—</span>') + '</td>' +
+              '<td class="num band">' + (x.removedStreams ? '<b>' + HM.esc(HT.fmt.n(x.removedStreams)) + '</b>' : '<span class="nil">—</span>') + '</td>' +
+              '<td class="num">' + HT.fmt.n(x.open) + '</td></tr>';
           }).join('') + '</tbody></table></div>',
         chan: HM.esc(c.song(q, 'note')) });
     } else if (LOC.tab === 'cb') {

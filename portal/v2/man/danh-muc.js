@@ -278,14 +278,14 @@ HT.dangKy({
       var lay = idx.slice(0, 5000);
       HM.csv('danh-muc-' + c.kyKey + '.csv',
         ['ISRC', 'ISRC phụ', 'UPC', 'Tên bản ghi', 'Loại', 'Nghệ sĩ', 'Mã nghệ sĩ', 'Chủ sở hữu', 'Phát hành',
-         'Lượt nghe', 'Doanh thu gộp USD', 'Phí dịch vụ Haustek', 'Phần label/Haustek được hưởng', 'Điểm producer', 'Phần nghệ sĩ được hưởng'],
+         'Lượt nghe', 'Doanh thu gộp USD', 'Phí dịch vụ Haustek', 'Phần label/Haustek được hưởng', 'Phần nghệ sĩ được hưởng'],
         lay.map(function (i) {
           var tr = A.track(i), g = A.grossRec(i, pi);
           var sp = A.splitRec(i, g, c.kyKey);
           return [tr.isrc, tr.isrcAlt, tr.upc, tr.title, tr.type, tr.artist,
                   A.artistOf(i).clientId, tr.label || 'Độc lập', tr.releasePeriod,
                   A.streamsOf(i, pi), g.toFixed(2), sp.fee.toFixed(2), sp.labelCut.toFixed(2),
-                  sp.producer.toFixed(2), sp.artist.toFixed(2)];
+                  sp.artist.toFixed(2)];
         }));
       if (idx.length > 5000)
         c.thongBao(c.lang === 'vi' ? 'Chỉ xuất 5.000 dòng đầu trong tổng số ' + HT.fmt.n(idx.length) : 'First 5,000 of ' + HT.fmt.n(idx.length));
@@ -392,8 +392,6 @@ function moBanGhi(c, i) {
       { t: vi ? 'Chủ sở hữu' : 'Owner',
         v: tr.label ? tr.label + ' · ' + A.labels[tr.labelId].clientId : (vi ? 'Nghệ sĩ độc lập' : 'Independent') },
       { t: vi ? 'Ngày phát hành' : 'Release date', v: HT.fmt.ngay(d.releaseDate) + ' · ' + tr.releasePeriod },
-      { t: vi ? 'Điểm producer' : 'Producer points',
-        v: tr.producerPts ? HT.fmt.pct(tr.producerPts) + (vi ? ', khấu trừ từ phần nghệ sĩ' : ' — off the artist share') : '—' }
     ]) +
     '<h4 class="sec">' + HM.esc(c.t('ctSt')) + '</h4>' +
     HM.kv([

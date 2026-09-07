@@ -41,7 +41,7 @@ var CHU = {
     thangMoNb: 'Mỗi cột là một kỳ báo cáo. Kỳ chưa xét duyệt vẫn hiện số nhưng chỉ là số đã nhập tới thời điểm này.',
     khongThang: 'Chưa có kỳ nào để hiển thị.',
     tichLuy: 'Tích luỹ các kỳ đã xét duyệt', phatHanh: 'Phát hành', nenTang: 'Nền tảng', thieu: 'Còn thiếu',
-    sangTac: 'Sáng tác', producer: 'Điểm producer', maBai: 'Mã bài hát',
+    sangTac: 'Sáng tác', maBai: 'Mã bài hát',
     chuaDuyet: 'chưa xét duyệt'
   },
   en: {
@@ -69,7 +69,7 @@ var CHU = {
     thangMoNb: 'Each column is a reporting period. Unapproved periods show what has been loaded so far.',
     khongThang: 'No period to show yet.',
     tichLuy: 'Across approved periods', phatHanh: 'Released', nenTang: 'Platforms', thieu: 'Missing',
-    sangTac: 'Writers', producer: 'Producer points', maBai: 'Track codes',
+    sangTac: 'Writers', maBai: 'Track codes',
     chuaDuyet: 'not approved'
   }
 };
@@ -259,7 +259,7 @@ function moNgan(c, d, opts) {
   var chiTiet = HM.kv([
     { t: t('maBai'), v: 'ISRC ' + d.isrc + (d.isrcAlt ? ' / ' + d.isrcAlt : '') + ' · UPC ' + d.upc },
     { t: t('sangTac'), v: d.credits.writers.join(', ') },
-    d.credits.producerPts ? { t: t('producer'), v: HT.fmt.pct(d.credits.producerPts) } : null
+    null
   ]);
 
   var panels = {};

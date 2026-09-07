@@ -30,7 +30,7 @@ HT.dangKy({
       doanhThu: 'Doanh thu', doanhThuMo: 'phần nghệ sĩ và phần label cộng lại',
       traNs: 'Thanh toán cho nghệ sĩ', cuaDoanhThu: 'của doanh thu',
       luot: 'Lượt nghe', bai: 'Bài hát có doanh thu', baiMo: 'trong kỳ này',
-      tyGia: 'Tỷ giá kỳ này', chotLuc: 'đã chốt ngày', chuaChot: 'chưa chốt',
+      tyGia: 'Tỷ giá kỳ này', chotLuc: 'tỷ giá bán ra {n} ngày', chuaChot: 'chưa chốt',
       dienBien: 'Diễn biến qua các kỳ',
       dienBienMo: 'Chỉ các kỳ đã xét duyệt. Kỳ chưa xét duyệt để trống, không phải bằng 0.',
       tongKy: 'Tổng {n} kỳ đã xét duyệt', duKien: 'Dự kiến kỳ {k}', xemDuBao: 'Xem dự báo',
@@ -54,7 +54,7 @@ HT.dangKy({
       hdTyLe: 'Tỷ lệ bạn được hưởng', hdTyLeLb: 'Tỷ lệ nghệ sĩ được hưởng', hdPhanLabel: 'Phần label', hdPhanLbCua: 'Phần label được hưởng',
       hdHieuLuc: 'Hiệu lực từ kỳ', hdCanCu: 'Căn cứ', hdCanCuKhong: 'Hợp đồng gốc',
       hdThanhToan: 'Bên thanh toán', hdThanhToanV: 'Haustek thanh toán trực tiếp cho bạn theo tỷ lệ này',
-      hdNguong: 'Ngưỡng rút tiền tối thiểu', hdProducer: 'Bài hát có điểm producer', hdProducerMo: 'điểm producer được khấu trừ từ phần của bạn',
+      hdNguong: 'Ngưỡng rút tiền tối thiểu',
       hdLichSu: 'Lịch sử tỷ lệ', hdKy: 'Từ kỳ',
       hdGiaDinh: 'Bản mẫu giả định Haustek trả thẳng cho nghệ sĩ theo tỷ lệ label đặt; nếu label tự chia thì trang này đổi (câu hỏi số 8).',
       hdLabelMe: 'Label mẹ', hdLabelCon: 'Label con', hdLabelConV: '{n} label con', xemHeThong: 'xem trang Hệ thống label',
@@ -80,7 +80,7 @@ HT.dangKy({
       doanhThu: 'Revenue', doanhThuMo: 'artists’ and label’s parts combined',
       traNs: 'Paid to artists', cuaDoanhThu: 'of revenue',
       luot: 'Streams', bai: 'Earning tracks', baiMo: 'this period',
-      tyGia: 'Period FX rate', chotLuc: 'locked', chuaChot: 'not locked',
+      tyGia: 'Period FX rate', chotLuc: '{n} selling rate on', chuaChot: 'not locked',
       dienBien: 'Across periods',
       dienBienMo: 'Approved periods only. An unapproved period is left blank; that is not zero.',
       tongKy: '{n} approved periods in total', duKien: 'Projected for {k}', xemDuBao: 'See the forecast',
@@ -104,7 +104,7 @@ HT.dangKy({
       hdTyLe: 'Your share', hdTyLeLb: 'Artist share', hdPhanLabel: 'Label’s share', hdPhanLbCua: 'Label keeps',
       hdHieuLuc: 'Effective from', hdCanCu: 'Basis', hdCanCuKhong: 'Original agreement',
       hdThanhToan: 'Paid by', hdThanhToanV: 'Haustek pays you directly at this rate',
-      hdNguong: 'Minimum withdrawal', hdProducer: 'Tracks with producer points', hdProducerMo: 'producer points come off your share',
+      hdNguong: 'Minimum withdrawal',
       hdLichSu: 'Rate history', hdKy: 'From',
       hdGiaDinh: 'The prototype assumes Haustek pays artists directly at the label’s rate; if the label pays them itself, this page changes (question 8).',
       hdLabelMe: 'Parent label', hdLabelCon: 'Sub-labels', hdLabelConV: '{n} sub-labels', xemHeThong: 'see the Label network page',
@@ -195,7 +195,7 @@ HT.dangKy({
              d: HM.lech(s.streams, s.prevStreams, s.prevLabel) } : null,
       !la ? { l: t('bai'), v: HT.fmt.n(s.tracks), s: t('baiMo') } : null,
       { l: t('tyGia'), v: HT.fmt.n(s.fx.rate) + ' ₫',
-        s: s.fx.locked ? t('chotLuc') + ' ' + HT.fmt.ngay(s.fx.at) : t('chuaChot') }
+        s: s.fx.locked ? t('chotLuc').replace('{n}', s.fx.source || 'Vietcombank') + ' ' + HT.fmt.ngay(s.fx.at) : t('chuaChot') }
     ].filter(Boolean));
 
     /* ---- hàng 1: đường 12 kỳ + ví ---- */
@@ -379,7 +379,7 @@ function veHopDong(c, la) {
     coTyLe ? { t: t('hdCanCu'), v: hd.basis || t('hdCanCuKhong') } : null,
     !la ? { t: t('hdThanhToan'), v: t('hdThanhToanV') } : null,
     { t: t('hdNguong'), v: HT.fmt.usd0(hd.payoutThreshold) },
-    !la && hd.producerTracks ? { t: t('hdProducer'), v: HT.fmt.n(hd.producerTracks) + ' · ' + t('hdProducerMo') } : null
+    null
   ].filter(Boolean);
 
   var nhip = (hd.cadence || []).map(function (n) {

@@ -24,7 +24,7 @@ HT.dangKy({
       mo: 'Chứng từ chính thức của kỳ. Bạn có thể in hoặc tải về.',
       banGhi: 'Doanh thu bản ghi', tacQuyen: 'Tác quyền', caHai: 'Cả hai dòng tiền',
       benNhan: 'Bên thụ hưởng', maKh: 'Mã đối tác', ky: 'Kỳ báo cáo',
-      chotSo: 'Thời điểm chốt sổ', tyGia: 'Tỷ giá áp dụng', tyGiaKhoa: 'đã chốt cho kỳ này',
+      chotSo: 'Thời điểm chốt sổ', tyGia: 'Tỷ giá áp dụng', tyGiaKhoa: 'tỷ giá bán ra {n} ngày {d}',
       loaiHd: 'Loại hợp đồng', thuoc: 'Thuộc label',
       muc: 'Khoản mục', soTien: 'Số tiền (USD)', quyVnd: 'Quy đổi (VND)', ghiChu: 'Ghi chú',
       dtBg: 'Doanh thu bản ghi', dtTq: 'Tác quyền',
@@ -46,7 +46,7 @@ HT.dangKy({
       mo: 'The official reconciliation for the period. Print it or download it.',
       banGhi: 'Recording revenue', tacQuyen: 'Publishing', caHai: 'Both streams',
       benNhan: 'Payee', maKh: 'Client ID', ky: 'Reporting period',
-      chotSo: 'Closed at', tyGia: 'FX rate applied', tyGiaKhoa: 'locked for this period',
+      chotSo: 'Closed at', tyGia: 'FX rate applied', tyGiaKhoa: '{n} selling rate on {d}',
       loaiHd: 'Relationship', thuoc: 'Under',
       muc: 'Item', soTien: 'Amount (USD)', quyVnd: 'In VND', ghiChu: 'Note',
       dtBg: 'Recording revenue', dtTq: 'Publishing',
@@ -120,7 +120,7 @@ HT.dangKy({
           { t: t('ky'), v: c.ky.label, manh: true },
           { t: t('chotSo'), v: HT.fmt.luc(rec.approvedAt) },
           { t: t('tyGia'), v: HT.fmt.n(tg) + ' ₫ / USD' +
-              (rec.fx.locked ? ' · ' + t('tyGiaKhoa') : '') },
+              (rec.fx.locked ? ' · ' + t('tyGiaKhoa').replace('{n}', rec.fx.source || 'Vietcombank').replace('{d}', HT.fmt.ngay(rec.fx.at)) : '') },
           { t: t('soBai'), v: HT.fmt.n(rec.tracks) + (rec.streams != null ? ' · ' + HT.fmt.n(rec.streams) + ' ' + (c.lang === 'vi' ? 'lượt nghe' : 'streams') : '') }
         ]) + '</div></div>'
     });
@@ -183,11 +183,8 @@ HT.dangKy({
       HM.the({
         h2: HM.esc(t('dieuKhoan')),
         than: '<p class="say">' + HM.esc(c.lang === 'vi'
-          ? 'Doanh thu trong bảng kê này là phần thuộc về bạn theo hợp đồng, sau khi Haustek đã đối soát với báo cáo của từng nền tảng. Phần label quản lý được hưởng (nếu có) và điểm producer (nếu bài hát có) được tách ra ngay trong bảng trên.'
-          : 'Revenue in this statement is the part that belongs to you under your agreement, after Haustek has reconciled every platform’s report. The managing label’s share (if any) and producer points (where the track carries them) are itemised in the table above.') + '</p>' +
-          '<p class="say">' + HM.esc(c.lang === 'vi'
-          ? 'Điểm producer được khấu trừ từ phần của nghệ sĩ, không phải là một phần cộng thêm. Nếu cộng thêm, tổng các phần sẽ vượt quá 100%.'
-          : 'Producer points come off the artist share rather than being added on top — the other way round, the parts would exceed 100%.') + '</p>' +
+          ? 'Doanh thu trong bảng kê này là phần thuộc về bạn theo hợp đồng, sau khi Haustek đã đối soát với báo cáo của từng nền tảng. Phần label quản lý được hưởng, nếu có, được tách ra ngay trong bảng trên.'
+          : 'Revenue in this statement is the part that belongs to you under your agreement, after Haustek has reconciled every platform’s report. The managing label’s share, if any, is itemised in the table above.') + '</p>' +
           (rec.advance ? '<p class="say">' + HM.esc(c.lang === 'vi'
           ? 'Khoản tạm ứng được khấu trừ dần vào phần bạn được hưởng mỗi kỳ, cho đến khi khấu trừ hết. Khoản này tính trên cả doanh thu bản ghi và tác quyền cộng lại.'
           : 'The advance is offset against what you earn each period until it clears. It applies to recording and publishing combined.') + '</p>' : '') +

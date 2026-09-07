@@ -33,7 +33,7 @@ HT.dangKy({
       ghiChu: 'Phần nghệ sĩ là số Haustek trả thẳng cho nghệ sĩ theo tỷ lệ label đặt; phần label là phần còn lại.',
       xuat: 'Xuất CSV', hienThi: 'Hiển thị',
       chiTiet: 'Bài hát của nghệ sĩ này trong kỳ', khongBai: 'Kỳ này nghệ sĩ chưa có bài hát nào phát sinh doanh thu.',
-      diemProducer: 'Điểm producer'
+
     },
     en: {
       themNs: 'Add an artist', themNsMo: 'A new artist on your roster, no recordings yet. They can be picked in a release submission right away.', fNgheDanh: 'Stage name', fTenThat: 'Legal name', fTenThatHint: 'Used for contracts and tax documents.', fSpotify: 'Spotify link', fSpotifyHint: 'Without it the release may be mapped to a namesake profile.', fApple: 'Apple Music link', fEmailNs: 'Portal login email', fEmailNsHint: 'With an email the artist gets their own login to see their share.', fWriter: 'The artist is also a writer', daThemNs: 'Added {t} · {id}',
@@ -50,7 +50,7 @@ HT.dangKy({
       ghiChu: 'Artist share is paid directly by Haustek at the rate the label set; label share is the remainder.',
       xuat: 'Export CSV', hienThi: 'Showing',
       chiTiet: 'This artist’s tracks this period', khongBai: 'No track by this artist earned this period.',
-      diemProducer: 'Producer points'
+
     }
   },
 
@@ -151,7 +151,7 @@ HT.dangKy({
     HM.bam(root, '[data-xuat]', function () {
       HM.csv('nghe-si-' + me.clientId + '-' + c.kyKey + '.csv',
         [c.lang === 'vi' ? 'Mã nghệ sĩ' : 'Artist ID', c.lang === 'vi' ? 'Tên' : 'Name', t('cBai'), t('cLuot'), t('cGop'), t('cNsHuong'), t('cLabel'), t('diemProducer')],
-        rows.map(function (x) { return [x.clientId, x.name, x.tracks, x.streams, x.revenue.toFixed(2), x.artist.toFixed(2), x.labelCut.toFixed(2), x.producer.toFixed(2)]; }));
+        rows.map(function (x) { return [x.clientId, x.name, x.tracks, x.streams, x.revenue.toFixed(2), x.artist.toFixed(2), x.labelCut.toFixed(2)]; }));
     });
     HM.bam(root, '[data-ns]', function (el) { moNgheSi(c, r.rows.filter(function (x) { return x.artistId === +el.getAttribute('data-ns'); })[0]); });
   }
@@ -170,7 +170,6 @@ function moNgheSi(c, x) {
       { l: t('cNsHuong'), v: HT.fmt.usd(x.artist) },
       { l: t('cLabel'), v: HT.fmt.usd(x.labelCut), mau: HB.mau('ok') }
     ]) +
-    (x.producer > 0 ? '<p class="hint" style="margin-top:8px">' + HM.esc(t('diemProducer') + ': ' + HT.fmt.usd(x.producer)) + '</p>' : '') +
     '<h4 class="sec">' + HM.esc(t('chiTiet')) + '</h4>' +
     (rows.length ? '<div class="tw"><table class="t" style="min-width:0"><thead><tr><th>' + HM.esc(c.lang === 'vi' ? 'Bài hát' : 'Track') + '</th>' +
       '<th class="num">' + HM.esc(t('cLuot')) + '</th><th class="num">' + HM.esc(t('cGop')) + '</th><th class="num band">' + HM.esc(t('cLabel')) + '</th></tr></thead><tbody>' +

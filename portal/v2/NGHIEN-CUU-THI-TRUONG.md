@@ -78,7 +78,7 @@ Music Business Worldwide, Music Week, A2IM.
     phạt cho tài khoản; DistroKid có quy trình strike / quiz; Apple tăng
     phạt 10–50% doanh thu (2/2026); Deezer bỏ lượt nghe giả khỏi quỹ và
     phát hiện 85% lượt nghe trên nhạc AI thuần là giả. → Vòng 5: *Chất lượng
-    lượt nghe* hai cổng, sổ phạt, khiếu nại, xác nhận / gỡ có nhật ký.
+    lượt nghe* hai cổng, số lượt bị gỡ, khiếu nại, xác nhận / gỡ có nhật ký.
 12. **Minh bạch thời điểm tiền về** (Kobalt "Collection Gap", ví Amuse và
     Revelator xem "tiền đang về" là màn chính). → đã có nhịp báo cáo theo
     nguồn trong Ví; biểu đồ khoảng cách thu để mở.
@@ -158,7 +158,7 @@ Music Business Worldwide, Music Week, A2IM.
 | Drott, *Fake Streams, Listening Bots, and Click Farms*, American Music 38(2) (2020) | Tăng đột ngột không giải thích được là rủi ro, không chỉ là tin tốt. |
 | Yu, *On click-fraud under pro-rata revenue sharing rule* (2026) | Năng lực phát hiện quyết định mức gian lận cân bằng; đơn vị phân phối có lợi khi phát hiện tốt và cho thấy điều đó. |
 | CNM, *Manipulation des écoutes en ligne* (2023) | 1–3% lượt nghe ở Pháp năm 2021 là giả, và là sàn. → Nền 1–3%; cảnh báo chỉ nhắm phần vượt xa. |
-| Spotify artificial streaming (2024); TuneCore, FUGA chuyển phạt | ≈ €10 / bài / tháng, gỡ lượt nghe khỏi báo cáo, có thể giữ tiền. → Trạng thái "nền tảng gắn cờ", sổ phạt, đường khiếu nại. |
+| Spotify artificial streaming (2024); TuneCore, FUGA chuyển phạt | ≈ €10 / bài / tháng, gỡ lượt nghe khỏi báo cáo, có thể giữ tiền. → **Vòng 13 chốt lại:** khoản phạt đó thu ở tầng đơn vị phân phối giữ tài khoản với nền tảng (OneRPM, Believe, Warner), không phải ở Haustek, nên phần mềm chỉ giữ trạng thái "nền tảng gắn cờ", số lượt nghe bị gỡ và đường khiếu nại — bỏ hẳn con số tiền phạt. |
 | Deezer 2022–2026 | 7–8% lượt nghe giả; 85% trên nhạc AI thuần; toàn bộ bị bỏ khỏi quỹ. → Hiện "lượt báo về" và "lượt bị gỡ". |
 | Music Fights Fraud Alliance; Beatdapp ước ≥10% toàn cầu | Uy tín đơn vị phân phối bị ảnh hưởng. → Nhật ký cảnh báo và thao tác là bằng chứng thẩm định. |
 | US v. Michael Smith (DOJ SDNY, 2024–2026) | 10.000 tài khoản bot, rải ~660.000 lượt/ngày thật mỏng để dưới ngưỡng từng bài. → Gom theo TÀI KHOẢN, không chỉ theo bài; cảnh báo tạo việc không thể bỏ qua. |
@@ -203,7 +203,7 @@ trường; ≥ 4 điểm hoặc bị nền tảng gắn cờ → nghiêm trọng
 Đã cài:
 - Chia sẻ tác quyền (splits) có thu hồi, hai cổng, người cộng tác chỉ thấy
   phần của họ.
-- Chất lượng lượt nghe: năm tín hiệu, gom theo tài khoản, sổ phạt, khiếu
+- Chất lượng lượt nghe: năm tín hiệu, gom theo tài khoản, lượt bị gỡ, khiếu
   nại / xác nhận / gỡ có nhật ký; tab *Chất lượng* trong mọi ngăn hồ sơ.
 - Ngưỡng trả tiền của nền tảng (Spotify 1.000 / 12 tháng, Deezer 1.000 và
   500 người nghe) với thanh tiến độ; nhãn "dưới ngưỡng" trên dòng bài.

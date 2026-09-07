@@ -26,7 +26,7 @@ HT.dangKy({
       xemTruoc: 'Bản xem trước: kỳ chưa xét duyệt nên chưa có bảng thanh toán nào ghi vào sổ.',
       daGhi: 'Bảng thanh toán đã ghi vào sổ lúc xét duyệt kỳ.',
       seChi: 'Sẽ thanh toán kỳ này', soBen: 'Số bên được thanh toán',
-      thuUng: 'Thu hồi tạm ứng', donSang: 'Chuyển sang kỳ sau', giuLai: 'Giữ lại, chưa xác định người thụ hưởng',
+      thuUng: 'Thu hồi tạm ứng', donSang: 'Chuyển sang kỳ sau',
       nhomChi: 'Được thanh toán', nhomDon: 'Dưới ngưỡng thanh toán', nhomUng: 'Đang thu hồi tạm ứng', nhomHet: 'Tất cả',
       tim: 'Tìm theo tên hoặc mã bên thụ hưởng…', tatCaLoai: 'Mọi loại',
       cBen: 'Bên thụ hưởng', cLoai: 'Loại', cKiem: 'Được hưởng', cDon: 'Chuyển từ kỳ trước',
@@ -37,6 +37,9 @@ HT.dangKy({
       chiTiet: 'Chi tiết dòng tiền: từ doanh thu đến số thanh toán',
       tabKy: 'Thanh toán theo kỳ', tabRut: 'Yêu cầu rút tiền', tabBk: 'Bảng kê PDF',
       rTong: 'Đang chờ chuyển khoản', rTongS: 'yêu cầu chờ xử lý', rXuLy: 'Đang chuyển khoản', rDaChuyen: 'Đã chuyển khoản', rTuChoi: 'Từ chối hoặc huỷ',
+      rcThucNhan: 'Thực nhận', rTruThue: 'thuế', rTruPhi: 'phí chuyển',
+      phiTt: 'Phí chuyển tiền', phiDat: 'Đặt phí chuyển tiền', phiSo: 'Phí mỗi lần chuyển (₫)', phiMo: 'Ghi chú (ngân hàng, biểu phí)',
+      phiGiai: 'Phí ngân hàng thu khi chuyển tiền, tính vào hoá đơn của đối tác theo thoả thuận. Trừ sau thuế TNCN, hiện rõ ở ví của đối tác trước khi họ bấm rút.', phiDaDat: 'Đã đặt phí chuyển tiền {v} ₫',
       rMo: 'Đối tác gửi yêu cầu rút từ ví; kế toán chuyển khoản, ghi số tham chiếu; đối tác thấy trạng thái ngay.',
       rTim: 'Tìm mã yêu cầu, tên hoặc mã đối tác…', rTatCa: 'Tất cả',
       requested: 'Chờ xử lý', processing: 'Đang chuyển', paid: 'Đã chuyển', rejected: 'Từ chối', cancelled: 'Đã huỷ',
@@ -64,7 +67,7 @@ HT.dangKy({
       xemTruoc: 'Preview — the period is unapproved so no table has been written.',
       daGhi: 'The payout table was written when the period was approved.',
       seChi: 'Payable this period', soBen: 'Payees paid',
-      thuUng: 'Recouped against advances', donSang: 'Carried to next period', giuLai: 'Held, no owner',
+      thuUng: 'Recouped against advances', donSang: 'Carried to next period',
       nhomChi: 'Being paid', nhomDon: 'Below threshold', nhomUng: 'Recouping', nhomHet: 'All',
       tim: 'Search payee name or code…', tatCaLoai: 'All kinds',
       cBen: 'Payee', cLoai: 'Kind', cKiem: 'Earned', cDon: 'Carried in',
@@ -75,6 +78,9 @@ HT.dangKy({
       chiTiet: 'Payee money chain',
       tabKy: 'Payouts by period', tabRut: 'Withdrawal requests', tabBk: 'PDF statements',
       rTong: 'Waiting to be transferred', rTongS: 'requests waiting', rXuLy: 'Being transferred', rDaChuyen: 'Transferred', rTuChoi: 'Rejected or cancelled',
+      rcThucNhan: 'Net paid', rTruThue: 'tax', rTruPhi: 'transfer fee',
+      phiTt: 'Transfer fee', phiDat: 'Set transfer fee', phiSo: 'Fee per transfer (₫)', phiMo: 'Note (bank, tariff)',
+      phiGiai: 'The bank’s fee for making the transfer, billed to the partner under the agreement. Deducted after withholding tax and shown in the partner’s wallet before they request a withdrawal.', phiDaDat: 'Transfer fee set to {v} ₫',
       rMo: 'Partners request withdrawals from their wallet; accounting transfers and records the reference; status shows at once.',
       rTim: 'Search request ID, partner name or client ID…', rTatCa: 'All',
       requested: 'Requested', processing: 'Processing', paid: 'Paid', rejected: 'Rejected', cancelled: 'Cancelled',
@@ -104,14 +110,13 @@ HT.dangKy({
     var P = HB.dayMau();
     SAU = [];
 
-    var tong = { earned: 0, carryIn: 0, recoup: 0, payable: 0, carryOut: 0, giu: 0 };
+    var tong = { earned: 0, carryIn: 0, recoup: 0, payable: 0, carryOut: 0 };
     rows.forEach(function (r) {
-      if (r.held) { tong.giu += r.earned; return; }
       tong.earned += r.earned; tong.carryIn += r.carryIn; tong.recoup += r.recoup;
       tong.payable += r.payable; tong.carryOut += r.carryOut;
     });
 
-    var ds = rows.filter(function (r) { return !r.held; }).map(function (r) {
+    var ds = rows.map(function (r) {
       return {
         key: r.partyKey, ten: A.partyName(r.partyKey), ma: A.partyClientId(r.partyKey),
         loai: r.kind, earned: r.earned, carryIn: r.carryIn, recoup: r.recoup,
@@ -172,7 +177,6 @@ HT.dangKy({
       { l: t('thuUng'), v: c.tien(tong.recoup), mau: tong.recoup > 0 ? HB.mau('warn') : '' },
       { l: t('donSang'), v: c.tien(tong.carryOut),
         s: HT.fmt.n(ds.filter(function (r) { return r.carryOut > 0; }).length) + (c.lang === 'vi' ? ' bên thụ hưởng' : ' payees') },
-      { l: t('giuLai'), v: c.tien(tong.giu) },
       { l: c.lang === 'vi' ? 'Chuyển từ kỳ trước' : 'Carried in', v: c.tien(tong.carryIn) }
     ]);
 
@@ -180,10 +184,8 @@ HT.dangKy({
       HM.the({
         h2: c.lang === 'vi' ? 'Phân bổ phần được hưởng của kỳ này' : 'Where the period’s earnings went',
         than: HB.o({ loai: 'thac', cao: 210, buoc: [
-          { l: c.lang === 'vi' ? 'Được hưởng' : 'Earned', v: tong.earned + tong.giu, kind: 'top',
+          { l: c.lang === 'vi' ? 'Được hưởng' : 'Earned', v: tong.earned, kind: 'top',
             nt: c.lang === 'vi' ? 'tổng phần được hưởng của mọi bên thụ hưởng' : 'everything owed to payees' },
-          { l: c.lang === 'vi' ? 'Producer' : 'Producers', v: -tong.giu, kind: 'out',
-            nt: c.lang === 'vi' ? 'chưa xác định người thụ hưởng' : 'no identity to pay' },
           { l: c.lang === 'vi' ? 'Tạm ứng' : 'Advances', v: -tong.recoup, kind: 'out',
             nt: c.lang === 'vi' ? 'thu hồi khoản đã tạm ứng' : 'offset against money already advanced' },
           { l: c.lang === 'vi' ? 'Chuyển kỳ sau' : 'Carried', v: -tong.carryOut, kind: 'out',
@@ -297,6 +299,19 @@ function ganTab(root, c) {
   HM.nhap(root, '[data-bk-tim]', function (el) { LOC.bkTim = el.value; var h = root.querySelector('[data-bang-bk]'); if (h) dungBangBk(root, c); });
   HM.bam(root, '[data-xl]', function (el, e) { e.stopPropagation(); xuLyRut(c, el.getAttribute('data-id'), el.getAttribute('data-xl')); });
   HM.bam(root, '[data-rut]', function (el, e) { if (e.target.closest('button')) return; moRut(c, el.getAttribute('data-rut')); });
+  HM.bam(root, '[data-dat-phi]', function () {
+    var phi = c.A.phiChuyen.get();
+    HTM.hoiForm(c, { tieuDe: c.t('phiDat'), moTa: c.t('phiGiai'), rong: false,
+      fields: [{ k: 'vnd', l: c.t('phiSo'), kieu: 'number', min: 0, step: '1000', v: phi.vnd, req: true },
+               { k: 'mo', l: c.t('phiMo'), v: c.song(phi, 'mo'), rong: true }] }).then(function (f) {
+      if (!f) return;
+      try {
+        var r = c.A.phiChuyen.set(+f.vnd, f.mo);
+        c.thongBao(c.t('phiDaDat').replace('{v}', HT.fmt.n(r.vnd)), 'ok');
+        HM.quenHet(); c.veLai();
+      } catch (e) { c.thongBao(e.message, 'no'); }
+    });
+  });
   HM.bam(root, '[data-tao-ho]', function () { taoHo(c); });
   HM.bam(root, '[data-kyto]', function (el) { c.doiKy(el.getAttribute('data-kyto')); });
   HM.bam(root, '[data-dinh-het]', function () {
@@ -336,13 +351,22 @@ function veRut(c) {
   var A = c.A, t = c.t;
   var wc = A.withdrawals.counts();
   var ds = A.withdrawals.list({ status: LOC.rutTt || undefined, q: LOC.rutTim || undefined });
+  var phi = null; try { phi = A.phiChuyen.get(); } catch (e) { phi = null; }
   var html = HM.ghi({ kieu: 'info', tieuDe: HM.esc(t('tabRut')), than: HM.esc(t('rMo')) });
   html += HM.so([
     { l: t('rTong'), v: HT.fmt.usd(wc.pendingAmount), lon: true, s: HT.fmt.n(wc.requested) + ' ' + t('rTongS') },
     { l: t('rXuLy'), v: HT.fmt.n(wc.processing), mau: wc.processing ? HB.mau('warn') : '' },
     { l: t('rDaChuyen'), v: HT.fmt.n(wc.paid) },
-    { l: t('rTuChoi'), v: HT.fmt.n(wc.rejected + wc.cancelled) }
-  ]);
+    { l: t('rTuChoi'), v: HT.fmt.n(wc.rejected + wc.cancelled) },
+    phi ? { l: t('phiTt'), v: HT.fmt.n(phi.vnd) + ' ₫', s: c.song(phi, 'mo') } : null
+  ].filter(Boolean));
+  if (phi) html += HM.the({ h2: HM.esc(t('phiTt')), p: HM.esc(t('phiGiai')),
+    hanhDong: '<button type="button" class="btn sm" data-dat-phi>' + HM.esc(t('phiDat')) + '</button>',
+    than: HM.kv([
+      { t: t('phiSo'), v: HT.fmt.n(phi.vnd) + ' ₫', manh: true },
+      { t: t('phiMo'), v: c.song(phi, 'mo') || '—' },
+      { t: c.lang === 'vi' ? 'Đặt lúc' : 'Set on', v: phi.at ? HT.fmt.ngay(phi.at) : '—' }
+    ]) });
   html += '<div class="bar">' +
     '<div class="srch">' + HM.icon('tim') + '<input type="search" data-rut-tim placeholder="' + HM.esc(t('rTim')) + '" value="' + HM.esc(LOC.rutTim) + '"></div>' +
     [['', t('rTatCa'), ds.length && !LOC.rutTt ? ds.length : A.withdrawals.list({}).length], ['requested', t('requested'), wc.requested], ['processing', t('processing'), wc.processing],
@@ -351,12 +375,15 @@ function veRut(c) {
     }).join('') +
     '<div class="sp"></div><button type="button" class="btn sm" data-tao-ho>' + HM.icon('user') + HM.esc(t('taoHo')) + '</button></div>';
   html += HM.the({ thoBody: true, than: ds.length
-    ? '<div class="tw"><table class="t"><thead><tr><th>' + HM.esc(t('rcDoiTac')) + '</th><th class="num">' + HM.esc(t('rcSoTien')) + '</th><th>' + HM.esc(t('rcNgay')) + '</th>' +
+    ? '<div class="tw"><table class="t"><thead><tr><th>' + HM.esc(t('rcDoiTac')) + '</th><th class="num">' + HM.esc(t('rcSoTien')) + '</th><th class="num band">' + HM.esc(t('rcThucNhan')) + '</th><th>' + HM.esc(t('rcNgay')) + '</th>' +
       '<th>' + HM.esc(t('rcNh')) + '</th><th>' + HM.esc(t('rcTt')) + '</th><th>' + HM.esc(t('rcThaoTac')) + '</th></tr></thead><tbody>' +
       ds.map(function (w) {
         return '<tr class="pick" data-rut="' + HM.esc(w.id) + '">' +
           '<td><div class="t-ttl">' + HM.esc(HM.dai(w.party.name, 30)) + '</div><div class="t-sub">' + HM.esc(w.id + ' · ' + w.party.clientId) + '</div></td>' +
-          '<td class="num band"><b>' + HM.esc(HT.fmt.usd(w.amount)) + '</b></td>' +
+          '<td class="num">' + HM.esc(HT.fmt.usd(w.amount)) + '</td>' +
+          '<td class="num band">' + (w.tax ? '<b>' + HM.esc(HT.fmt.usd(w.tax.net)) + '</b>' +
+            '<div class="t-sub">' + HM.esc([w.tax.pit ? '−' + HT.fmt.usd(w.tax.pit) + ' ' + t('rTruThue') : '', w.tax.fee ? '−' + HT.fmt.usd(w.tax.fee) + ' ' + t('rTruPhi') : ''].filter(Boolean).join(' · ') || '—') + '</div>'
+            : '<span class="nil">—</span>') + '</td>' +
           '<td style="white-space:nowrap">' + HM.esc(HT.fmt.luc(w.requestedAt)) + '</td>' +
           '<td>' + (w.bank ? HM.esc(w.bank.bank) + '<div class="t-sub">' + HM.esc(w.bank.holder + ' · ' + anSo(w.bank.account)) + '</div>' : '<span class="nil">—</span>') + '</td>' +
           '<td>' + HM.tag(t(w.status), KIEU_RUT[w.status]) + '</td>' +

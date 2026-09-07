@@ -11,7 +11,7 @@ TikTok, Zing…) qua một đối tác phân phối chính và hai hợp đồng
 (YouTube, TikTok). Mỗi tháng có ba nguồn báo cáo doanh thu về; tác quyền về theo
 quý từ các tổ chức quản lý tác quyền (VCPMC, The MLC, ASCAP…). Tiền chia theo
 chuỗi: doanh thu gộp → phí dịch vụ Haustek → phần label (hoặc phần Haustek theo
-hợp đồng độc lập) → điểm producer → phần nghệ sĩ → khấu trừ tạm ứng → ngưỡng
+hợp đồng độc lập) → phần nghệ sĩ → khấu trừ tạm ứng → ngưỡng
 thanh toán tối thiểu → số thanh toán. Kỳ chỉ mở cho đối tác sau khi **xét duyệt**.
 
 Hai giả định lớn của bản mẫu, chưa được xác nhận (xem tab Câu hỏi cần chốt):
@@ -35,7 +35,7 @@ Hai giả định lớn của bản mẫu, chưa được xác nhận (xem tab C
 | Ca sĩ / nghệ sĩ thuộc label | nghệ sĩ có hợp đồng với label | Bài nào ra tiền, mình được bao nhiêu sau phần label, bao giờ nhận, tỷ lệ đang áp là gì và theo phụ lục nào, tạm ứng cá nhân | hằng tháng, sau khi kỳ mở |
 | Nghệ sĩ độc lập | ký trực tiếp với Haustek | Như trên nhưng không có label; phần Haustek theo hợp đồng độc lập hiện rõ | hằng tháng |
 | Tác giả / nhạc sĩ | nghệ sĩ có đăng ký phần sáng tác | Tác quyền về chưa, quý nào có báo cáo, chia với đồng tác giả thế nào | hằng quý |
-| Producer | có tên trong danh mục, chưa có mã | Chưa có tài khoản. Điểm producer đang giữ lại vì chưa rõ người nhận (câu hỏi cần chốt số 3) | — |
+| Producer | có tên trong danh mục | Chưa có tài khoản, và không nhận tiền qua Haustek: hợp đồng của Haustek không có điểm producer (đã chốt vòng 13). Tên producer chỉ là metadata của bản ghi | — |
 | **Label mẹ** (công ty có nhiều label con) | chủ tập đoàn / giám đốc nội dung | Theo dõi từng label con và nghệ sĩ bên dưới: doanh thu, phần label, roster; mở cổng của label con để xem như chính họ | hằng tháng, sau xét duyệt |
 | **Label con** | label ký riêng, nằm dưới một label mẹ | Như label; biết mình thuộc label mẹ nào; không thấy label mẹ hay label con khác | hằng tháng |
 | Người khai metadata | nghệ sĩ hoặc quản lý | Gửi hồ sơ phát hành mới (form metadata ở trang chủ), theo dõi trạng thái: đã gửi → đã tiếp nhận → đã cấp ISRC → đã phát hành → đã có doanh thu | theo từng lần phát hành |
@@ -267,7 +267,7 @@ tiếp phục vụ vận hành và kế toán Haustek; phần còn lại ghi đ�
 Xem `NGHIEN-CUU-THI-TRUONG.md` (ma trận 13 nền tảng, 12 tính năng phổ biến,
 tài liệu khoa học về kinh tế streaming, gian lận lượt nghe, UX bảng và niềm
 tin vào bảng kê). Vòng 5 cài: chia sẻ tác quyền có thu hồi; chất lượng lượt
-nghe với năm tín hiệu, gom theo tài khoản, sổ phạt, khiếu nại; ngưỡng trả tiền
+nghe với năm tín hiệu, gom theo tài khoản, lượt nghe bị gỡ, khiếu nại; ngưỡng trả tiền
 của nền tảng; sức khoẻ metadata; giải thích con số từng kỳ; thuế khấu trừ khi
 rút; chuông thông báo và tìm nhanh; chiến dịch; dải P10–P90 cho dự báo; bảng
 dữ liệu thiết kế lại.

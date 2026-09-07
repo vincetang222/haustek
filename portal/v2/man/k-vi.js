@@ -260,8 +260,10 @@ function hoiRut(c, w) {
       host.innerHTML = HM.kv([
         { t: vi ? 'Số tiền rút' : 'Amount', v: HT.fmt.usd(q.amount) + ' · ' + HT.fmt.n(q.vnd) + ' ₫' },
         { t: (vi ? 'Thuế TNCN khấu trừ' : 'Personal income tax withheld') + ' ' + HT.fmt.pct(q.rate), v: q.pit ? '− ' + HT.fmt.usd(q.pit) + ' · ' + HT.fmt.n(q.pitVnd) + ' ₫' : (vi ? 'không' : 'none') },
+        { t: vi ? (q.feeNote || 'Phí chuyển khoản') : (q.feeNoteEn || 'Transfer fee'), v: q.feeVnd ? '− ' + HT.fmt.usd(q.fee) + ' · ' + HT.fmt.n(q.feeVnd) + ' ₫' : (vi ? 'không' : 'none') },
         { t: vi ? 'Thực nhận' : 'Net to you', v: HT.fmt.usd(q.net) + ' · ' + HT.fmt.n(q.netVnd) + ' ₫', manh: true }
-      ]) + '<p class="hint" style="margin-top:6px">' + HM.esc(vi ? q.rule : q.ruleEn) + (q.certificate ? ' ' + HM.esc(vi ? 'Chứng từ khấu trừ tải ở Bảng kê thanh toán sau khi chuyển.' : 'The withholding certificate is available in Statements after payment.') : '') + '</p>';
+      ]) + '<p class="hint" style="margin-top:6px">' + HM.esc(vi ? q.rule : q.ruleEn) + (q.certificate ? ' ' + HM.esc(vi ? 'Chứng từ khấu trừ tải ở Bảng kê thanh toán sau khi chuyển.' : 'The withholding certificate is available in Statements after payment.') : '') + '</p>' +
+        (q.feeVnd ? '<p class="hint">' + HM.esc(vi ? q.feeRule : q.feeRuleEn) + '</p>' : '');
     }
     if (inp && host) { ve(); inp.addEventListener('input', ve); }
   }, 30);

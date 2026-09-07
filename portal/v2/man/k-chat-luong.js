@@ -1,10 +1,10 @@
 /* =====================================================================
    CỔNG ĐỐI TÁC · CHẤT LƯỢNG LƯỢT NGHE & METADATA
    ---------------------------------------------------------------------
-   Hai việc đối tác cần thấy trước khi nền tảng phạt hoặc giữ tiền:
+   Hai việc đối tác cần thấy trước khi nền tảng gỡ lượt nghe khỏi báo cáo:
    · Cảnh báo lượt nghe bất thường: năm tín hiệu tính từ số ngày (vọt so
      với nền, một thị trường chiếm quá nửa, lặp nghe, phụ thuộc playlist,
-     nghe ngắn), bài bị nền tảng gắn cờ kèm số lượt bị gỡ và mức phạt, và
+     nghe ngắn), bài bị nền tảng gắn cờ kèm số lượt nghe bị gỡ, và
      nút khiếu nại có ghi chú — mỗi vấn đề một dòng, không lặp.
    · Sức khoẻ metadata: điểm từng bài, mục còn thiếu và cách sửa; thiếu
      ISWC / IPI thì Haustek giữ lại trước khi giao.
@@ -36,7 +36,7 @@ HT.dangKy({
     vi: {
       navChatLuong: 'Chất lượng lượt nghe', h1: 'Chất lượng lượt nghe',
       mo: 'Tín hiệu bất thường từ lượt nghe ngày, bài bị nền tảng gắn cờ và sức khoẻ metadata. Xem sớm để không bị gỡ lượt nghe hay giữ tiền.',
-      kCb: 'Cảnh báo', kCbS: '{a} nghiêm trọng · {b} cảnh báo · {c} theo dõi', kCo: 'Bài bị nền tảng gắn cờ', kCoS: 'phạt {p}/tháng nếu không khiếu nại', kGo: 'Lượt nghe bị gỡ khỏi báo cáo',
+      kCb: 'Cảnh báo', kCbS: '{a} nghiêm trọng · {b} cảnh báo · {c} theo dõi', kCo: 'Bài bị nền tảng gắn cờ', kCoS: 'lượt nghe đã bị gỡ; khiếu nại được nếu bạn cho là nhầm', kGo: 'Lượt nghe bị gỡ khỏi báo cáo',
       kKn: 'Đang khiếu nại', kKnS: 'trong {n} cảnh báo đang mở', kMd: 'Điểm metadata trung bình', kMdS: '{a} bài A · {b} bài B · {c} bài C', kChan: 'Bị giữ lại trước khi giao', kChanS: 'thiếu ISWC hoặc IPI',
       tabCb: 'Cảnh báo lượt nghe', tabMd: 'Sức khoẻ metadata',
       mucAll: 'Mọi mức', mucCritical: 'Nghiêm trọng', mucWarn: 'Cảnh báo', mucWatch: 'Theo dõi', ttAll: 'Mọi trạng thái', ttOpen: 'Đang mở', ttDisputed: 'Đang khiếu nại', ttResolved: 'Đã gỡ',
@@ -48,7 +48,7 @@ HT.dangKy({
     en: {
       navChatLuong: 'Stream quality', h1: 'Stream quality',
       mo: 'Unusual signals from daily streams, platform-flagged tracks and metadata health. Catch it before streams are removed or money held.',
-      kCb: 'Alerts', kCbS: '{a} critical · {b} warning · {c} watch', kCo: 'Flagged by platforms', kCoS: '{p}/month penalty unless disputed', kGo: 'Streams removed from reports',
+      kCb: 'Alerts', kCbS: '{a} critical · {b} warning · {c} watch', kCo: 'Flagged by platforms', kCoS: 'those streams are already removed; dispute if you think it is wrong', kGo: 'Streams removed from reports',
       kKn: 'Disputed', kKnS: 'of {n} open alerts', kMd: 'Average metadata score', kMdS: '{a} tracks A · {b} B · {c} C', kChan: 'Held before delivery', kChanS: 'missing ISWC or IPI',
       tabCb: 'Stream alerts', tabMd: 'Metadata health',
       mucAll: 'Any level', mucCritical: 'Critical', mucWarn: 'Warning', mucWatch: 'Watch', ttAll: 'Any status', ttOpen: 'Open', ttDisputed: 'Disputed', ttResolved: 'Cleared',
@@ -66,7 +66,7 @@ HT.dangKy({
     var html = HM.dau({ h1: HM.esc(t('h1')), mo: HM.esc(t('mo')) });
     html += HM.so([
       { l: t('kCb'), v: HT.fmt.n(k.alerts), lon: true, s: t('kCbS').replace('{a}', k.critical).replace('{b}', k.warn).replace('{c}', k.watch) },
-      { l: t('kCo'), v: HT.fmt.n(k.flagged), s: t('kCoS').replace('{p}', HT.fmt.usd(k.penaltyUsd)), mau: k.flagged ? HB.mau('no') : '' },
+      { l: t('kCo'), v: HT.fmt.n(k.flagged), s: t('kCoS'), mau: k.flagged ? HB.mau('no') : '' },
       { l: t('kGo'), v: HT.fmt.n(k.removedStreams) },
       { l: t('kKn'), v: HT.fmt.n(k.disputed), s: t('kKnS').replace('{n}', k.open) },
       { l: t('kMd'), v: String(md.counts.avg), s: t('kMdS').replace('{a}', md.counts.A).replace('{b}', md.counts.B).replace('{c}', md.counts.C), mau: md.counts.avg >= 90 ? HB.mau('ok') : md.counts.avg >= 70 ? HB.mau('warn') : HB.mau('no') },

@@ -65,7 +65,7 @@ gọi `HAUSTEK.lockdown()` **trước khi** chạy bất cứ trang nào, và kh
 | Quản lý quyền | `man/quyen.js` | Xung đột Content ID và khiếu nại trên nền tảng; cài đặt video theo tài khoản |
 | Theo dõi | `man/theo-doi.js` | Bài hát, tài khoản, bản phát hành đang lên trong cửa sổ 7 / 28 / 60 ngày; yêu thích (lưu trình duyệt, có Lưu / Khôi phục), top hits, đang bùng nổ, số playlist và video ngắn |
 | Bảng giá nền tảng | `man/bang-gia.js` | Nhóm giá của các nền tảng bán tải về: giá album và track theo nền tảng và tiền tệ, nối sang Sửa hàng loạt |
-| Chất lượng lượt nghe | `man/chat-luong.js` | Cảnh báo lượt nghe bất thường gom theo tài khoản (kiểu tách nhỏ để lách ngưỡng), năm tín hiệu có bằng chứng, sổ phạt của nền tảng, xác nhận / gỡ có nhật ký; sức khoẻ metadata toàn danh mục |
+| Chất lượng lượt nghe | `man/chat-luong.js` | Cảnh báo lượt nghe bất thường gom theo tài khoản (kiểu tách nhỏ để lách ngưỡng), năm tín hiệu có bằng chứng, bài bị nền tảng gắn cờ kèm số lượt nghe bị gỡ khỏi báo cáo, xác nhận / gỡ có nhật ký; sức khoẻ metadata toàn danh mục |
 | Chia sẻ tác quyền | `man/chia-se.js` | Splits của mọi tài khoản: ai được chia bao nhiêu, lời mời chưa nhận, thu hồi còn dở; xác nhận thay có nhật ký |
 | Chiến dịch | `man/chien-dich.js` | Liên kết thông minh / pre-save, pitch playlist, quảng cáo trả phí của mọi tài khoản, phễu kết quả và chi tiết |
 | Xét duyệt | `man/xet-duyet.js` | Đề xuất tạm ứng và hợp đồng: kinh doanh hoặc đối tác đề xuất, kế toán kiểm số, giám đốc duyệt / từ chối / trả lại. Mỗi đề xuất chụp bản tính lúc tạo: thu nhập ròng 12 kỳ, tăng trưởng, độ dao động, tập trung bài đầu, mức ứng tối đa theo hạng rủi ro, khoản thu hồi, thời gian thu hồi, phí ứng thu về, phần Haustek giữ trong thời gian thu hồi, ROI; hợp đồng so phần Haustek giữ theo phí hiện tại và phí đề xuất. Duyệt xong tự ghi sổ tạm ứng hoặc áp phí mới từ kỳ mở kế tiếp |
@@ -363,6 +363,54 @@ một thẻ nhắc lại điều đó.
 Cổng đối tác không có và không nên có: bảng tính này đọc ra phần Haustek
 giữ lại, phí môi giới và biên lợi nhuận. Đối tác muốn biết mình ứng được bao
 nhiêu thì vẫn dùng `k-tam-ung`, chạy trên `advanceOfferOf()` đã lược sạch.
+
+## Vòng 13: bỏ hai cơ chế không có thật, chốt tỷ giá và phí chuyển tiền
+
+Haustek soát lại và xác nhận hai thứ trong bản mẫu không có trong nghiệp vụ
+của họ. Cả hai đến từ nghiên cứu thị trường vòng 5, không từ mô tả nghiệp vụ.
+
+**Điểm producer — gỡ hẳn.** Hợp đồng thu âm kiểu Âu–Mỹ trả cho người sản
+xuất bản ghi 3–5% doanh thu ròng, trừ vào phần nghệ sĩ. Hợp đồng của Haustek
+không có khoản này. Bản mẫu đang trừ nó trên 34,7% số bài và để tiền lại một
+dòng `P:*` "chưa xác định người thụ hưởng" — cộng 10 kỳ đã duyệt là hơn 80.000
+USD treo, chưa từng trả cho ai. Đây không phải tính năng thừa mà là **khoản
+trừ sai**. Chuỗi chia tiền giờ chỉ còn ba phần:
+
+```
+doanh thu gộp − phí Haustek − phần label giữ = phần nghệ sĩ
+```
+
+`api-guard.js` có một phép kiểm chốt chuỗi này chỉ có ba phần và `splitRec`
+không còn trường `producer`, để nó không quay lại dưới tên khác.
+
+**Phạt nền tảng — giữ phát hiện, bỏ số tiền.** Spotify thu ≈ €10 / bài /
+tháng khi phát hiện lượt nghe giả, nhưng thu ở **tầng đơn vị phân phối giữ
+tài khoản với nền tảng** (OneRPM, Believe, Warner), không ở Haustek. Phần mềm
+từng hiện một con số tiền Haustek không kiểm soát và không đối chiếu được.
+Giờ chỉ còn trạng thái "nền tảng gắn cờ", **số lượt nghe bị gỡ khỏi báo cáo**
+và đường khiếu nại — phần phát hiện sớm vẫn giữ, vì đó là thứ Haustek muốn
+biết trước khi OneRPM báo.
+
+**Tỷ giá: ngày cuối tháng, Vietcombank.** Mỗi kỳ chốt một tỷ giá, lấy tỷ giá
+bán ra của Vietcombank **ngày cuối cùng của tháng kỳ đó**. Ngày áp dụng do kỳ
+quyết định chứ không phải hôm nay là ngày mấy: chốt muộn ba ngày vẫn là tỷ giá
+ngày cuối tháng. `A.fx.ngayChot(pIdx)` tính ra ngày ấy, `A.fx.lock()` đóng dấu
+đúng ngày ấy kèm nguồn. Bảng kê và trang Tổng quan của đối tác ghi rõ "tỷ giá
+bán ra Vietcombank ngày dd.mm.yyyy". Câu hỏi cần chốt số 4 đã có lời giải.
+
+**Phí chuyển tiền tính vào hoá đơn đối tác.** Khi rút tiền có hai khoản trừ,
+hai bản chất khác nhau, và cả hai đều hiện rõ chứ không gộp thành một con số
+"thực nhận" trống nghĩa:
+
+| Khoản | Bản chất | Chứng từ |
+|---|---|---|
+| Thuế TNCN | nộp ngân sách thay đối tác, 10% với cá nhân cư trú từ 2.000.000 ₫ | chứng từ khấu trừ |
+| Phí chuyển tiền | chi phí ngân hàng, tính vào hoá đơn đối tác theo thoả thuận | hoá đơn |
+
+Phí báo bằng VND (mặc định 22.000 ₫, sửa ở trang Thanh toán, tab *Yêu cầu rút
+tiền*) nên giữ VND làm số gốc và quy ra USD theo tỷ giá đang dùng — làm ngược
+lại thì số ₫ trên giấy báo nợ lệch. Đối tác thấy cả hai khoản ngay trong ví,
+trước khi bấm rút.
 
 ## Khung: chuông thông báo, tìm nhanh, bảng dữ liệu
 

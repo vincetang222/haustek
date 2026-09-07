@@ -31,7 +31,6 @@ var TK = {
   '511': { ten: 'Doanh thu cung cấp dịch vụ (phí dịch vụ Haustek)', loai: 'dt' },
   '3311': { ten: 'Phải trả label', loai: 'no' },
   '3312': { ten: 'Phải trả nghệ sĩ', loai: 'no' },
-  '3313': { ten: 'Phải trả producer (chưa xác định người thụ hưởng)', loai: 'no' },
   '3314': { ten: 'Phải trả tác giả (tác quyền)', loai: 'no' },
   '338': { ten: 'Phải trả khác (tiền chưa khớp ISRC)', loai: 'no' }
 };
@@ -107,7 +106,7 @@ HT.dangKy({
       so: [
         { l: t('dtGop'), v: c.tien(s.gross + s.pubGross) },
         { l: t('dtPhi'), v: c.tien(s.fee + s.pubFee) },
-        { l: t('dtPhaiTra'), v: c.tien(s.labelCut + s.artist + s.producer + s.pubWriter) }
+        { l: t('dtPhaiTra'), v: c.tien(s.labelCut + s.artist + s.pubWriter) }
       ]
     });
 
@@ -157,9 +156,8 @@ function soLieu(A, pi, pk) {
     var chi = duyet ? A.payoutOf(pk) : A.previewPayout(pi);
     var treo = A.queue.pendingTotal(pk);
 
-    var tong = { earned: 0, carryIn: 0, recoup: 0, payable: 0, carryOut: 0, giu: 0 };
+    var tong = { earned: 0, carryIn: 0, recoup: 0, payable: 0, carryOut: 0 };
     chi.forEach(function (r) {
-      if (r.held) { tong.giu += r.earned; return; }
       tong.earned += r.earned; tong.carryIn += r.carryIn;
       tong.recoup += r.recoup; tong.payable += r.payable; tong.carryOut += r.carryOut;
     });
@@ -169,7 +167,7 @@ function soLieu(A, pi, pk) {
     return {
       pi: pi, pk: pk, duyet: duyet,
       gross: rec.gross, fee: rec.fee, labelCut: rec.labelCut,
-      producer: rec.producer, artist: rec.artist,
+      artist: rec.artist,
       streams: rec.streams, tracks: rec.tracks,
       pubGross: pub.gross, pubFee: pubFee, pubWriter: lam(pub.gross - pubFee),
       pubCo: A.pubLoaded(pi),
@@ -197,13 +195,12 @@ function veButToan(c, s) {
   bt.push(butToan(t('but1'),
     c.lang === 'vi'
       ? 'Doanh thu từ ba nguồn báo cáo, đã khớp tới từng bản ghi. Phí dịch vụ Haustek là doanh thu của công ty; ba khoản còn lại là nợ phải trả, chưa phải khoản đã thanh toán.'
-      : 'Revenue from the three feeds, matched to recordings. The Haustek fee is company revenue; the other three are liabilities, not costs already paid.',
+      : 'Revenue from the three feeds, matched to recordings. The Haustek fee is company revenue; the other two are liabilities, not costs already paid.',
     [
       { no: true, tk: '131', mo: c.lang === 'vi' ? 'Phải thu doanh thu kỳ ' + c.ky.label : 'Receivable, ' + c.ky.label, gt: s.gross },
       { no: false, tk: '511', mo: c.lang === 'vi' ? 'Phí dịch vụ Haustek ' + HT.fmt.pct(A.cfg.HAUSTEK_FEE) : 'Haustek fee ' + HT.fmt.pct(A.cfg.HAUSTEK_FEE), gt: s.fee },
       { no: false, tk: '3311', mo: c.lang === 'vi' ? 'Phần label được hưởng, cộng phần Haustek theo hợp đồng độc lập' : 'Label share, plus extra Haustek share on independents', gt: s.labelCut },
-      { no: false, tk: '3313', mo: c.lang === 'vi' ? 'Điểm producer, khấu trừ từ phần nghệ sĩ' : 'Producer points — deducted from the artist share', gt: s.producer },
-      { no: false, tk: '3312', mo: c.lang === 'vi' ? 'Phần nghệ sĩ được hưởng, sau khi trừ điểm producer' : 'Artist share, after producer points', gt: s.artist }
+      { no: false, tk: '3312', mo: c.lang === 'vi' ? 'Phần nghệ sĩ được hưởng' : 'Artist share', gt: s.artist }
     ]));
 
   if (s.pubCo && s.pubGross > 0.004) {
@@ -372,7 +369,6 @@ function veCongNo(c, s) {
     tg.duDau += r.duDau; tg.ps += r.ps; tg.thu += r.thu; tg.chi += r.chi; tg.duCuoi += r.duCuoi;
   });
 
-  var giu = s.chi.filter(function (r) { return r.held; })[0];
 
   var html = HM.the({
     h2: HM.esc(t('tCn')) + ' · ' + HM.esc(c.ky.label),
@@ -402,18 +398,6 @@ function veCongNo(c, s) {
   });
 
   html += HM.the({ thoBody: true, than: '<div data-bangcn></div>' });
-
-  if (giu) {
-    html += HM.ghi({ kieu: 'warn',
-      tieuDe: HM.esc(c.lang === 'vi'
-        ? 'Giữ lại ' + c.tien2(giu.earned) + ': điểm producer chưa xác định người thụ hưởng'
-        : 'Holding ' + c.tien2(giu.earned) + ' — producer points with no identity'),
-      than: HM.esc(c.lang === 'vi'
-        ? 'Cột Producer trong danh mục hiện chỉ ghi tên, không có mã. Không có mã thì không xác định được người thụ hưởng, nên khoản này được giữ ở một dòng riêng, hiển thị rõ, thay vì biến mất khỏi bảng thanh toán. Đây là câu hỏi cần chốt số 3.'
-        : 'The catalogue’s Producer column holds a NAME, not an id. Without an id there is nobody to pay, so the amount sits on its own visible row rather than quietly vanishing. This is open question 3.'),
-      nut: '<button type="button" class="btn sm" data-di="quan-tri">' +
-        HM.esc(c.lang === 'vi' ? 'Xem câu hỏi cần chốt' : 'Open questions') + '</button>' });
-  }
 
   /* Bảng chỉ dựng được sau khi HTML đã nằm trong DOM — hàm bang() cần
      một phần tử thật để gắn sự kiện vào. */
@@ -584,17 +568,17 @@ function veGhiNhan(c) {
       var pub = A.pubLoaded(i) ? A.agg('admin', 0, i, 'pub') : null;
       var pf = pub ? Math.round(pub.gross * A.cfg.PUB_FEE * 100) / 100 : 0;
       return { p: p, gross: r.gross, fee: r.fee, labelCut: r.labelCut,
-               producer: r.producer, artist: r.artist, streams: r.streams,
+               artist: r.artist, streams: r.streams,
                pubGross: pub ? pub.gross : 0, pubFee: pf,
                treo: A.queue.pendingTotal(p.k), duyet: A.isApproved(p.k) };
     });
   });
   var tg = ds.reduce(function (s, r) {
     s.gross += r.gross; s.fee += r.fee; s.labelCut += r.labelCut;
-    s.producer += r.producer; s.artist += r.artist;
+    s.artist += r.artist;
     s.pubGross += r.pubGross; s.pubFee += r.pubFee; s.treo += r.treo;
     return s;
-  }, { gross: 0, fee: 0, labelCut: 0, producer: 0, artist: 0, pubGross: 0, pubFee: 0, treo: 0 });
+  }, { gross: 0, fee: 0, labelCut: 0, artist: 0, pubGross: 0, pubFee: 0, treo: 0 });
 
   var html = HM.the({
     h2: HM.esc(t('tGhi')),
@@ -617,7 +601,6 @@ function veGhiNhan(c) {
       chuoi: [
         { ten: t('dtPhi'), gt: ds.map(function (r) { return Math.round((r.fee + r.pubFee) * 100) / 100; }), mau: P[5] },
         { ten: c.lang === 'vi' ? 'Phải trả label' : 'Payable to labels', gt: ds.map(function (r) { return r.labelCut; }), mau: P[1] },
-        { ten: c.lang === 'vi' ? 'Phải trả producer' : 'Payable to producers', gt: ds.map(function (r) { return r.producer; }), mau: P[2] },
         { ten: c.lang === 'vi' ? 'Phải trả nghệ sĩ' : 'Payable to artists', gt: ds.map(function (r) { return r.artist; }), mau: P[0] },
         { ten: c.lang === 'vi' ? 'Phải trả tác giả' : 'Payable to writers',
           gt: ds.map(function (r) { return Math.round((r.pubGross - r.pubFee) * 100) / 100; }), mau: P[3] }
@@ -632,7 +615,6 @@ function veGhiNhan(c) {
       '<th class="num">' + HM.esc(t('dtGop')) + '</th>' +
       '<th class="num band">' + HM.esc(t('dtPhi')) + '</th>' +
       '<th class="num">' + (c.lang === 'vi' ? 'Label' : 'Labels') + '</th>' +
-      '<th class="num">' + (c.lang === 'vi' ? 'Producer' : 'Producers') + '</th>' +
       '<th class="num">' + (c.lang === 'vi' ? 'Nghệ sĩ' : 'Artists') + '</th>' +
       '<th class="num">' + (c.lang === 'vi' ? 'Tác quyền' : 'Publishing') + '</th>' +
       '<th class="num">' + (c.lang === 'vi' ? 'Chưa khớp' : 'Held') + '</th>' +
@@ -644,7 +626,6 @@ function veGhiNhan(c) {
           '<td class="num">' + HM.esc(c.tien(r.gross + r.pubGross)) + '</td>' +
           '<td class="num band">' + HM.esc(c.tien(r.fee + r.pubFee)) + '</td>' +
           '<td class="num">' + HM.esc(c.tien(r.labelCut)) + '</td>' +
-          '<td class="num">' + HM.esc(c.tien(r.producer)) + '</td>' +
           '<td class="num">' + HM.esc(c.tien(r.artist)) + '</td>' +
           '<td class="num">' + (r.pubGross > 0 ? HM.esc(c.tien(r.pubGross - r.pubFee)) : '<span class="nil">—</span>') + '</td>' +
           '<td class="num">' + (r.treo > 0.004 ? '<span class="tag warn">' + HM.esc(c.tien(r.treo)) + '</span>' : '<span class="nil">—</span>') + '</td>' +
@@ -654,7 +635,6 @@ function veGhiNhan(c) {
       '<td class="num">' + HM.esc(c.tien(tg.gross + tg.pubGross)) + '</td>' +
       '<td class="num band">' + HM.esc(c.tien(tg.fee + tg.pubFee)) + '</td>' +
       '<td class="num">' + HM.esc(c.tien(tg.labelCut)) + '</td>' +
-      '<td class="num">' + HM.esc(c.tien(tg.producer)) + '</td>' +
       '<td class="num">' + HM.esc(c.tien(tg.artist)) + '</td>' +
       '<td class="num">' + HM.esc(c.tien(tg.pubGross - tg.pubFee)) + '</td>' +
       '<td class="num">' + HM.esc(c.tien(tg.treo)) + '</td><td></td></tr></tfoot></table></div>'
@@ -805,7 +785,6 @@ function xuatButToan(c, s) {
   push(c.t('but1'), '131', 'Phải thu doanh thu kỳ', s.gross, 0);
   push(c.t('but1'), '511', 'Phí dịch vụ Haustek', 0, s.fee);
   push(c.t('but1'), '3311', 'Phần label được hưởng', 0, s.labelCut);
-  push(c.t('but1'), '3313', 'Điểm producer', 0, s.producer);
   push(c.t('but1'), '3312', 'Phần nghệ sĩ được hưởng', 0, s.artist);
   if (s.pubCo && s.pubGross > 0.004) {
     push(c.t('but2'), '131', 'Tác quyền quý', s.pubGross, 0);

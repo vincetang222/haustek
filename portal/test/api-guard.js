@@ -245,28 +245,36 @@ check("Tổng khách nhìn thấy khớp tổng admin tính ra", () => {
 check("Chuỗi chia tiền cộng lại đúng bằng doanh thu gộp", () => {
   const pi = A.pIndexOf(approvedKey);
   const a = A.agg("admin", 0, pi, "rec");
-  const tong = a.fee + a.labelCut + a.producer + a.artist;
+  const tong = a.fee + a.labelCut + a.artist;
   must(Math.abs(tong - a.gross) < 0.05, "lệch " + (tong - a.gross).toFixed(2)
-    + " — phí + phần label giữ + điểm producer + phần nghệ sĩ phải bằng doanh thu gộp");
-  return "gộp " + H.fmt.usd0(a.gross) + " = phí + label + producer + nghệ sĩ";
+    + " — phí + phần label giữ + phần nghệ sĩ phải bằng doanh thu gộp");
+  return "gộp " + H.fmt.usd0(a.gross) + " = phí + label + nghệ sĩ";
 });
 
-check("Điểm producer trừ vào phần nghệ sĩ, không cộng thêm bên trên", () => {
+/* Chuỗi chia tiền chỉ có BA phần: phí Haustek, phần label giữ, phần nghệ
+   sĩ. Không có bước nào trích cho bên thứ tư. Điểm producer (producer
+   points) từng có ở đây là quy ước hợp đồng thu âm Âu–Mỹ, không có trong
+   hợp đồng của Haustek, nên đã gỡ vòng 13; phép kiểm này chốt là nó không
+   quay lại dưới bất kỳ tên nào. */
+check("Chuỗi chia tiền chỉ có ba phần, không có bên thứ tư nào được trích", () => {
   const pk = approvedKey, pi = A.pIndexOf(pk);
   let kiem = 0;
   for (let i = 0; i < 4000; i++) {
-    if (A.track(i).producerPts <= 0) continue;
     const g = A.grossRec(i, pi);
     if (g <= 0) continue;
     const s = A.splitRec(i, g, pk);
-    must(Math.abs(s.fee + s.labelCut + s.producer + s.artist - s.gross) < 0.02,
-      "bài " + i + " không cân");
-    must(s.producer > 0 && s.artist >= 0, "bài " + i + ": điểm producer sai dấu");
+    must(Math.abs(s.fee + s.labelCut + s.artist - s.gross) < 0.02, "bài " + i + " không cân");
+    must(s.artist >= 0 && s.labelCut >= 0 && s.fee >= 0, "bài " + i + ": có phần âm");
+    must(s.producer === undefined, "bài " + i + ": splitRec vẫn còn trường producer");
     kiem++;
-    if (kiem >= 200) break;
+    if (kiem >= 300) break;
   }
-  must(kiem > 0, "không tìm được bài nào có điểm producer để kiểm");
-  return "kiểm " + kiem + " bài có điểm producer, cân hết";
+  must(kiem > 0, "không tìm được bài nào có doanh thu để kiểm");
+  /* và không dòng chi trả nào bị giữ lại vì "chưa xác định người thụ hưởng" */
+  const rows = A.previewPayout(pi) || [];
+  must(!rows.some(r => r.held || r.partyKey === "P:*"), "bảng chi trả vẫn còn dòng treo của bên thứ ba");
+  must(A.track(0).producerPts === undefined, "hồ sơ bài hát vẫn còn trường producerPts");
+  return "kiểm " + kiem + " bài · " + rows.length + " dòng chi trả, không dòng nào bị treo";
 });
 
 check("Tiền treo ở hàng chờ không lọt vào số của khách", () => {
@@ -717,14 +725,42 @@ check("Giải thích con số: bước ghi vào ví khớp với ví của đố
   must(Math.abs(buoc.value - cr.credit) < 0.011, "ghi ví trong giải thích " + buoc.value + " ≠ ví " + cr.credit);
   return ex.label + " · " + buoc.value;
 });
-check("Thuế khấu trừ khi rút: cá nhân từ 2 triệu đồng 10%, tổ chức 0%", () => {
+/* Hai khoản trừ khi rút, hai bản chất khác nhau, và cả hai đều phải hiện
+   ra chứ không được gộp thành một con số "thực nhận" trống nghĩa:
+     · thuế TNCN — tiền nộp thay đối tác, có chứng từ khấu trừ;
+     · phí chuyển tiền — chi phí ngân hàng, tính vào hoá đơn đối tác. */
+check("Rút tiền trừ đúng hai khoản: thuế TNCN và phí chuyển tiền", () => {
+  const phi = A.phiChuyen.get();
+  must(phi.vnd > 0, "chưa cấu hình phí chuyển tiền");
   const ca = H.api.withdrawalQuote("artist", A1.id, 100);
-  must(ca.vnd >= 2000000 && ca.rate === 0.10 && Math.abs(ca.net - 90) < 0.011, "cá nhân 100 USD phải khấu trừ 10%");
+  must(ca.vnd >= 2000000 && ca.rate === 0.10, "cá nhân 100 USD phải khấu trừ 10%");
+  must(ca.feeVnd === phi.vnd, "phí chuyển tiền " + ca.feeVnd + " ≠ mức đã đặt " + phi.vnd);
+  must(Math.abs(ca.net - (100 - ca.pit - ca.fee)) < 0.011, "thực nhận không bằng số rút trừ thuế trừ phí");
+  must(Math.abs(ca.netVnd - (ca.vnd - ca.pitVnd - ca.feeVnd)) <= 1, "số ₫ thực nhận không khớp");
+  must(ca.net < 90, "thực nhận phải thấp hơn 90 USD vì còn phí chuyển tiền");
   const nho = H.api.withdrawalQuote("artist", A1.id, 50);
   must(nho.vnd < 2000000 ? nho.rate === 0 : nho.rate === 0.10, "ngưỡng 2 triệu đồng tính sai");
   const to = H.api.withdrawalQuote("label", L1.id, 100);
   must(to.rate === 0 && to.invoice === true, "tổ chức phải 0% và xuất hoá đơn");
-  return "cá nhân " + ca.rate * 100 + "% · tổ chức " + to.rate * 100 + "%";
+  must(to.feeVnd === phi.vnd, "tổ chức cũng phải chịu phí chuyển tiền");
+  /* rút số rất nhỏ: phí không được ăn quá phần còn lại, thực nhận không âm */
+  const beo = H.api.withdrawalQuote("artist", A1.id, 0.5);
+  must(beo.net >= 0 && beo.netVnd >= 0, "rút số nhỏ ra thực nhận âm");
+  /* đối tác không được thấy khoản nào ngoài hai khoản này */
+  must(to.pit != null && to.fee != null, "gói rút tiền thiếu một trong hai khoản trừ");
+  return "thuế " + ca.rate * 100 + "% · phí " + H.fmt.num(phi.vnd) + " ₫ · thực nhận " + H.fmt.usd(ca.net);
+});
+
+check("Chỉ vai có nhóm tiền mới đặt được phí chuyển tiền", () => {
+  const cu = A.phiChuyen.get().vnd;
+  ["S07", "S01"].forEach(id => { const me = nhu(id); A.phiChuyen.set(cu, "Phí chuyển khoản Vietcombank");
+    must(A.phiChuyen.get().vnd === cu, "vai " + me.role + " đặt phí không ăn"); });
+  ["S02", "S03", "S05"].forEach(id => { const me = nhu(id); mustThrow(() => A.phiChuyen.set(cu), "đặt phí chuyển tiền với vai " + me.role); });
+  nhu("S01");
+  mustThrow(() => A.phiChuyen.set(-1), "phí âm");
+  mustThrow(() => A.phiChuyen.set(9000000), "phí vượt trần");
+  must(H.api.phiChuyen === undefined, "cổng đối tác lộ mặt đặt phí");
+  return "kế toán và giám đốc đặt được · vận hành, kinh doanh, hỗ trợ bị chặn";
 });
 check("Thông báo và tìm nhanh chỉ trong phạm vi của người xem", () => {
   const n = H.api.notifications("artist", A1.id);

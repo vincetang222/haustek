@@ -18,7 +18,7 @@ var CHU = {
     mucCritical: 'Nghiêm trọng', mucWarn: 'Cảnh báo', mucWatch: 'Theo dõi',
     ttOpen: 'Đang mở', ttDisputed: 'Đang khiếu nại', ttResolved: 'Đã gỡ', ttConfirmed: 'Đã xác nhận',
     tinHieu: 'Tín hiệu', nguong: 'ngưỡng', luot7: 'Lượt nghe 7 ngày', nen: 'nền / ngày', nguoiNghe: 'người nghe',
-    co: 'Nền tảng gắn cờ', goBo: 'lượt bị gỡ', phat: 'phạt', thang: '/tháng', khieuNai: 'Khiếu nại', xuLy: 'Xử lý',
+    co: 'Nền tảng gắn cờ', goBo: 'lượt bị gỡ khỏi báo cáo', khieuNai: 'Khiếu nại', xuLy: 'Xử lý',
     cBai: 'Bài hát', cTk: 'Tài khoản', cMuc: 'Mức', cTinHieu: 'Tín hiệu vượt ngưỡng', cLuot: 'Lượt nghe 7 ngày', cCo: 'Cờ nền tảng', cTt: 'Trạng thái', cThaoTac: 'Thao tác',
     lichSu: 'Diễn biến', chuaCo: 'Chưa có thao tác nào.',
     chuSoHuu: 'Chủ bản ghi', cong: 'Người cộng tác', cPhan: 'Phần chia', cDaChia: 'Đã chia', cThuHoi: 'Thu hồi', them: 'Thêm người', bo: 'Bỏ', nhan: 'Đã nhận', moi: 'Chờ nhận', xacNhanThay: 'Xác nhận thay',
@@ -42,7 +42,7 @@ var CHU = {
     mucCritical: 'Critical', mucWarn: 'Warning', mucWatch: 'Watch',
     ttOpen: 'Open', ttDisputed: 'Disputed', ttResolved: 'Cleared', ttConfirmed: 'Confirmed',
     tinHieu: 'Signals', nguong: 'threshold', luot7: 'Streams, 7 days', nen: 'baseline / day', nguoiNghe: 'listeners',
-    co: 'Flagged by platform', goBo: 'streams removed', phat: 'penalty', thang: '/month', khieuNai: 'Dispute', xuLy: 'Handle',
+    co: 'Flagged by platform', goBo: 'streams removed from reports', khieuNai: 'Dispute', xuLy: 'Handle',
     cBai: 'Track', cTk: 'Account', cMuc: 'Level', cTinHieu: 'Signals over threshold', cLuot: 'Streams, 7 days', cCo: 'Platform flag', cTt: 'Status', cThaoTac: 'Actions',
     lichSu: 'History', chuaCo: 'No actions yet.',
     chuSoHuu: 'Owner', cong: 'Collaborators', cPhan: 'Share', cDaChia: 'Paid out', cThuHoi: 'Recoup', them: 'Add person', bo: 'Remove', nhan: 'Accepted', moi: 'Invited', xacNhanThay: 'Accept on behalf',
@@ -92,7 +92,7 @@ function chipTinHieu(r) {
 function coNenTang(r) {
   if (!r.dsp) return '<span class="nil">—</span>';
   return '<div class="t-ttl" style="color:var(--danger)">' + esc(r.dsp.platform) + ' · ' + esc(HT.fmt.date(r.dsp.at)) + '</div>' +
-    '<div class="t-sub" style="font-family:var(--f)">' + esc(n(r.dsp.removedStreams) + ' ' + t('goBo') + ' · ' + t('phat') + ' ' + HT.fmt.usd(r.dsp.penaltyUsd) + t('thang')) + '</div>';
+    '<div class="t-sub" style="font-family:var(--f)">' + esc(n(r.dsp.removedStreams) + ' ' + t('goBo')) + '</div>';
 }
 /* bảng cảnh báo; opts: { noiBo, nut(r) → html nút } */
 function bangCanhBao(rows, opts) {
@@ -116,7 +116,7 @@ function theCanhBao(r) {
       '<span class="muted" style="font-size:12.5px">' + esc(n(r.last7) + ' ' + t('luot7').toLowerCase() + ' · ' + n(r.listeners7) + ' ' + t('nguoiNghe') + ' · ' + n(r.baselinePerDay) + ' ' + t('nen')) + '</span></div>' +
     tinHieu(r) +
     (r.dsp ? '<div class="note no" style="margin-top:12px"><div>' + icon('alert') + '</div><div><b>' + esc(t('co') + ': ' + r.dsp.platform + ' · ' + HT.fmt.date(r.dsp.at)) + '</b>' +
-      '<p>' + esc(song(r.dsp, 'reason') + ' · ' + n(r.dsp.removedStreams) + ' ' + t('goBo') + ' · ' + t('phat') + ' ' + HT.fmt.usd(r.dsp.penaltyUsd) + t('thang')) + '</p></div></div>' : '') +
+      '<p>' + esc(song(r.dsp, 'reason') + ' · ' + n(r.dsp.removedStreams) + ' ' + t('goBo')) + '</p></div></div>' : '') +
     '<h4 class="sec" style="margin-top:14px">' + esc(t('lichSu')) + '</h4>' +
     (r.history && r.history.length ? '<ul class="tl">' + r.history.slice().reverse().map(function (h) {
       return '<li><b>' + esc(h.status) + '</b> · <span class="mono">' + esc(h.at) + '</span>' + (h.by ? ' · ' + esc(h.by) : '') + (h.note ? '<div class="muted" style="font-size:12.5px">' + esc(h.note) + '</div>' : '') + '</li>';
