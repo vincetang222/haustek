@@ -310,9 +310,12 @@ function form(fields) {
     if (f.kieu === 'hidden') return '<input type="hidden" ' + id + ' value="' + esc(f.v == null ? '' : f.v) + '">';
     if (f.kieu === 'select') than = '<select class="in" ' + id + '>' + (f.opts || []).map(function (x) { return '<option value="' + esc(x[0]) + '"' + (String(x[0]) === String(f.v == null ? '' : f.v) ? ' selected' : '') + '>' + esc(x[1]) + '</option>'; }).join('') + '</select>';
     else if (f.kieu === 'textarea') than = '<textarea class="in" ' + id + ' rows="' + (f.rows || 3) + '"' + (f.ph ? ' placeholder="' + esc(f.ph) + '"' : '') + '>' + esc(f.v == null ? '' : f.v) + '</textarea>';
-    else if (f.kieu === 'check') return '<div class="fgrp' + (f.rong ? ' span2' : '') + '"><label class="tickrow"><input type="checkbox" ' + id + (f.v ? ' checked' : '') + ' value="1"><span>' + esc(f.l) + '</span></label>' + (f.hint ? '<div class="fhint">' + esc(f.hint) + '</div>' : '') + '</div>';
+    else if (f.kieu === 'check') return '<div class="fgrp' + (f.rong ? ' span2' : '') + '"><label class="tickrow"><input type="checkbox" ' + id + (f.v ? ' checked' : '') + ' value="1"><span>' + esc(f.l) + '</span></label>' + HM.hoi(f.hint) + '</div>';
     else than = '<input class="in" ' + id + ' type="' + (f.kieu || 'text') + '" value="' + esc(f.v == null ? '' : f.v) + '"' + (f.ph ? ' placeholder="' + esc(f.ph) + '"' : '') + (f.min != null ? ' min="' + f.min + '"' : '') + (f.max != null ? ' max="' + f.max + '"' : '') + (f.step != null ? ' step="' + f.step + '"' : '') + (f.list ? ' list="' + esc(f.list) + '"' : '') + (f.kieu === 'number' ? ' inputmode="decimal"' : '') + '>';
-    return '<div class="fgrp' + (f.rong ? ' span2' : '') + '"><label class="fld">' + esc(f.l) + req + kbb + '</label>' + than + (f.hint ? '<div class="fhint">' + esc(f.hint) + '</div>' : '') + '</div>';
+    /* Chú thích của ô nhập nằm trong dấu ? cạnh nhãn, không phải một dòng
+       chữ dưới ô: biểu mẫu hồ sơ phát hành có hơn ba mươi ô, in hết chú
+       thích ra thì dài gấp đôi mà chẳng ai đọc. */
+    return '<div class="fgrp' + (f.rong ? ' span2' : '') + '"><label class="fld">' + esc(f.l) + req + kbb + HM.hoi(f.hint) + '</label>' + than + '</div>';
   }).join('') + '</div>';
 }
 function hoiForm(c, o) {

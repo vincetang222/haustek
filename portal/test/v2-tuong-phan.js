@@ -33,8 +33,17 @@ const f = require('/home/user/haustek/portal/test/font-that.js');
         const r = await p.evaluate(() => {
           const L = c => { const s = c / 255; return s <= .03928 ? s / 12.92 : Math.pow((s + .055) / 1.055, 2.4); };
           const lum = ([r, g, b]) => .2126 * L(r) + .7152 * L(g) + .0722 * L(b);
-          const doc = s => (s.match(/\d+(\.\d+)?/g) || [0, 0, 0]).slice(0, 3).map(Number);
-          const alpha = s => { const m = s.match(/rgba?\([^)]*,\s*([\d.]+)\)/); return m ? +m[1] : 1; };
+          /* Chrome trả color-mix() ra dạng "color(srgb 0.96 0.94 0.91)" — ba số
+             trong khoảng 0–1 chứ không phải 0–255. Đọc nhầm thang là chấm sai
+             cả một dòng bảng thành gần đen, rồi báo hỏng một chỗ không hỏng. */
+          const doc = s => {
+            const n = (s.match(/-?\d+(\.\d+)?/g) || [0, 0, 0]).slice(0, 3).map(Number);
+            return /^color\(/.test(s) ? n.map(v => Math.max(0, Math.min(1, v)) * 255) : n;
+          };
+          const alpha = s => {
+            const m = s.match(/rgba?\([^)]*,\s*([\d.]+)\)/) || s.match(/\/\s*([\d.]+)\s*\)/);
+            return m ? +m[1] : 1;
+          };
           function nen(el) {
             for (let a = el; a; a = a.parentElement) {
               const c = getComputedStyle(a).backgroundColor;

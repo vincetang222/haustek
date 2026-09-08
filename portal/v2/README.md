@@ -42,11 +42,12 @@ gọi `HAUSTEK.lockdown()` **trước khi** chạy bất cứ trang nào, và kh
 > `localStorage` thì trang nào cùng gốc cũng đọc được. Xem tab **Quản trị → Ranh giới
 > hai cổng** để biết cái gì thật sự chặn được và cái gì không.
 
-## Hai mươi hai trang nội bộ
+## Hai mươi lăm trang nội bộ
 
 | Trang | File | Trả lời câu gì |
 |---|---|---|
 | Tổng quan | `man/tong-quan.js` | Kỳ này đóng được chưa, tiền chia đi đâu, còn gì treo |
+| **Nhập số liệu** | `man/nhap-so-lieu.js` | Chỗ điều phối viên ngồi mỗi ngày. Bốn tab: lượt nghe hằng ngày (ngày nào nguồn chưa về thì gõ tổng vào), doanh thu theo kỳ × nguồn (gõ tổng lấy trên báo cáo OneRPM / Warner / Believe / YouTube CMS), doanh thu theo từng bài (khi báo cáo có dòng riêng), nhật ký nhập có nút gỡ. Số gõ tay đè lên số máy sinh |
 | Nhập báo cáo | `man/nap-du-lieu.js` | Kỳ nào thiếu nguồn nào: bảng 12 kỳ × 4 nguồn |
 | Khớp ISRC | `man/khop-isrc.js` | Tiền chưa có chủ nằm ở đâu, khớp về ai |
 | Đối soát & xét duyệt kỳ | `man/doi-chieu.js` | Tổng hệ thống có khớp file gốc không, xét duyệt được chưa |
@@ -68,6 +69,8 @@ gọi `HAUSTEK.lockdown()` **trước khi** chạy bất cứ trang nào, và kh
 | Xét duyệt | `man/xet-duyet.js` | Đề xuất tạm ứng và hợp đồng: kinh doanh hoặc đối tác đề xuất, kế toán kiểm số, giám đốc duyệt / từ chối / trả lại. Mỗi đề xuất chụp bản tính lúc tạo: thu nhập ròng 12 kỳ, tăng trưởng, độ dao động, tập trung bài đầu, mức ứng tối đa theo hạng rủi ro, khoản thu hồi, thời gian thu hồi, phí ứng thu về, phần Haustek giữ trong thời gian thu hồi, ROI; hợp đồng so phần Haustek giữ theo phí hiện tại và phí đề xuất. Duyệt xong tự ghi sổ tạm ứng hoặc áp phí mới từ kỳ mở kế tiếp |
 | Tính ROI | `man/roi.js` | Dựng lại bảng tính ROI_Haustek.xlsx: nhập doanh thu danh mục mỗi tháng, khoản ứng (tiền mặt cộng ngân sách truyền thông và sản xuất nếu thu hồi được), tỷ lệ nghệ sĩ hưởng, phần vẫn trả nghệ sĩ trong lúc thu hồi, kỳ hạn, độc quyền, phí môi giới, chi phí bản phát hành. Ra: hoa hồng Haustek mỗi tháng (ô D3), phần giữ lại để thu hồi (G3), số tháng thu hồi (I3), hoa hồng cả kỳ hạn (D5), ROI kỳ hạn (J5), ROI mỗi năm (K5), ROI sau chi phí (J12), phần chưa thu hồi khi hết hạn và ROI thực. Bốn kịch bản: danh mục nền và ba mốc thưởng. Số nhập tay nên chạy được cho đối tác chưa có trên hệ thống; có sẵn thì bấm *Lấy số từ đối tác* |
 | Mức trả nền tảng | `man/muc-tra.js` | USD gộp trên 1.000 lượt của từng nền tảng, suy từ báo cáo 3 kỳ và hiệu chỉnh theo thị trường Việt Nam; nhập số thật từng nền tảng hoặc dán CSV để ghi đè, dự báo và giải thích số đổi theo ngay |
+| **Hiệu suất** | `man/hieu-suat.js` | Từng người: đã giao, đang làm, đúng hạn, quá hạn, thời gian xử lý trung bình, mức. Bấm một người ra dòng việc của họ, biểu đồ theo tháng, việc đang mở kèm bước quy trình còn dở, và ô đánh giá cuối năm. Tab thứ ba là sổ tay quy trình của cả sáu loại việc. Chỉ Level 1–2 |
+| **Hiệu quả vốn** | `man/hieu-qua-von.js` | Tiền tạm ứng đã đi, đã về, còn đọng; đường thu hồi quá khứ nối tiếp dự báo mười hai tháng bằng nét đứt; từng hợp đồng có nhịp thu hồi, số tháng còn cần và có kịp hạn hợp đồng không; lứa ký và tuổi nợ. Chỉ Level 1–2 |
 | Quản trị | `man/quan-tri.js` | Tài khoản, nhật ký, câu hỏi treo, dữ liệu, ranh giới |
 
 ## Mười tám trang cổng đối tác
@@ -362,6 +365,109 @@ một thẻ nhắc lại điều đó.
 Cổng đối tác không có và không nên có: bảng tính này đọc ra phần Haustek
 giữ lại, phí môi giới và biên lợi nhuận. Đối tác muốn biết mình ứng được bao
 nhiêu thì vẫn dùng `k-tam-ung`, chạy trên `advanceOfferOf()` đã lược sạch.
+
+## Vòng 15: chỗ nhập số liệu, xuất PDF, quy trình từng việc, hiệu quả vốn
+
+Sáu việc, theo đúng sáu điều đối tác vận hành nêu ra.
+
+### 1 · Chỗ nhập số liệu
+
+Trước vòng này, `nap-du-lieu.js` chỉ **đánh dấu** một nguồn là đã nạp bằng một tên
+file giả — không có chỗ nào gõ số. Nhưng cách Haustek chạy thật là một điều phối
+viên mở OneRPM, Warner, Believe, YouTube CMS rồi gõ số vào. Vòng này dựng đúng chỗ
+đó: `man/nhap-so-lieu.js` cộng mục **21b** trong lõi.
+
+Ba mức, mức sau đè lên mức trước:
+
+| Mức | Cái gì | Hiệu lực |
+|---|---|---|
+| máy sinh | ước tính khi báo cáo chưa về | thấp nhất |
+| tổng của một nguồn trong một kỳ | số lấy thẳng trên báo cáo | phần chưa gõ theo bài co giãn để cộng lại đúng bằng nó |
+| số của từng bài | dòng riêng trên báo cáo | tuyệt đối, không ai chia lại |
+
+Tab *Doanh thu theo bài* còn một ô **dán từ bảng tính**: bôi đen cột ISRC và cột
+tiền trên báo cáo rồi dán vào, mỗi dòng một bài. Dòng nào không tra được ISRC hay
+số tiền không hợp lệ thì bị bỏ qua và **liệt kê trả lại** kèm số dòng và lý do —
+không nuốt im lặng. Gõ tay bốn mươi dòng và dán bốn mươi dòng là khác nhau một
+buổi làm.
+
+Gõ tổng vào là nguồn đó được đánh dấu **đã nạp**, ghi rõ do người nhập chứ không
+phải do file. Mỗi dòng gõ giữ lại số trước đó, nên nút *Gỡ* trả số về đúng mức cũ.
+Kỳ đã xét duyệt bị khoá — sổ đã chốt thì không ai gõ đè.
+
+Lượt nghe đi đường khác: phần mềm tự cập nhật những ngày đã có số, điều phối viên
+chỉ gõ những ngày nguồn chưa về (thường là một tới hai ngày gần nhất). Sửa tổng của
+một ngày thì cả ngày co giãn theo, nên biểu đồ ngày, dự báo và trang Theo dõi cùng
+đọc một con số.
+
+### 2 · Xuất PDF thật
+
+`HM.banIn({ tieuDe, phu, ky, than, nguoi, chan })` mở một overlay khổ giấy — người
+dùng **nhìn thấy đúng thứ sắp ra giấy** trước khi bấm In. Nút In gọi `window.print()`;
+CSS `@media print` khi `body.dang-in` chỉ để lại tờ giấy. Không dựng bộ sinh PDF
+riêng: trình duyệt nào cũng có sẵn "In → Lưu thành PDF", việc cần làm là dựng đúng
+cái trang được in.
+
+Có ở: bảng kê đối tác (đối tác **tự xuất**, không phải chờ Haustek tải lên), bảng
+chi trả kỳ để kế toán trình ký, hồ sơ tranh chấp để gửi nền tảng, nhật ký nhập số
+liệu, bảng hiệu suất nhân viên, và báo cáo hiệu quả vốn.
+
+### 3 · Quy trình từng bước, và bám theo từng việc
+
+Mục **21c** trong lõi giữ sáu quy trình: tranh chấp (10 bước), nhập số liệu hằng
+ngày (5), phát hành (6), ticket (4), chi trả kỳ (5), đề xuất (4). Mỗi bước có tên,
+mô tả, số giờ cho phép, và *báo cho ai*.
+
+Bước **không** phải trạng thái. Trạng thái là thứ hệ thống tự đổi khi dữ liệu đổi;
+bước là thứ con người đánh dấu đã làm. Hai thứ đi song song và soi lẫn nhau: việc
+đã "xong" mà bước còn dở là dấu hiệu người làm bỏ qua bước — thường là bước gom
+bằng chứng.
+
+`HTS.soTay(c, id)` vẽ quy trình để đọc; `HTS.buocViec(c, id, viecId)` vẽ đúng quy
+trình ấy bám vào một việc cụ thể, có thanh tiến độ và nút đánh dấu; `HTS.ganBuoc`
+gắn nút. Đã gắn ở: ngăn khiếu nại, ngăn ticket, ngăn hồ sơ phát hành, trang chi trả
+(theo kỳ), bàn làm việc của vận hành (theo ngày).
+
+### 4 · Hiệu suất nhân viên
+
+`man/hieu-suat.js` (mục **21d** trong lõi). Ba nguồn việc có chủ và có hạn — ticket
+hỗ trợ, khiếu nại bản quyền, và mỗi lần một người đẩy hồ sơ phát hành sang bước sau
+— gộp thành một dòng việc cho mỗi người.
+
+Cố ý **không chấm một điểm tổng**. Một con số duy nhất giấu mất chuyện người này
+nhận toàn việc khó. Bốn cột đứng cạnh nhau (đã giao · đang làm · đúng hạn · quá hạn)
+cộng thời gian xử lý trung bình, rồi người quản lý tự kết luận. Ô đánh giá cuối năm
+để trống cho người quản lý viết; hệ thống chỉ giữ.
+
+### 5 · Hiệu quả sử dụng vốn
+
+`man/hieu-qua-von.js` (mục **21e**). Quá khứ đọc thẳng từ bảng chi trả các kỳ đã
+chốt sổ, không ước lượng. Tương lai nối tiếp bằng nhịp thu hồi ba kỳ gần nhất của
+đúng đối tác ấy, vẽ nét đứt.
+
+Sáu con số đầu bảng: đã giải ngân · đã thu hồi · còn đọng · tỷ lệ thu hồi · doanh
+thu trên mỗi đô vốn · thời gian hoà vốn trung bình. Bảng từng hợp đồng nói thẳng
+cái người ký hợp đồng cần biết: theo nhịp này còn cần bao nhiêu tháng, và hợp đồng
+còn bao nhiêu tháng — **có kịp hay không**. Thêm phân lứa theo năm ký và tuổi nợ
+của phần chưa thu.
+
+Một giả định có nói rõ trên màn: ngày giải ngân lấy theo ngày ký hợp đồng, vì bản
+mẫu chưa giữ ngày chuyển tiền riêng.
+
+### 6 · Chú thích vào một ký hiệu
+
+Dấu `?` vốn đã dùng cho tiêu đề trang và tiêu đề thẻ, nay dùng cho cả nhãn ô nhập
+và đầu cột: `HM.hoi(chu)`. Bỏ hẳn dòng `.fhint` dưới mỗi ô ở trang ROI, ở bộ dựng
+biểu mẫu `HTM.hoiForm` và ở biểu mẫu hồ sơ phát hành — biểu mẫu hồ sơ có hơn ba
+mươi ô, in hết chú thích ra thì dài gấp đôi mà chẳng ai đọc. Một ký hiệu cho cả sản
+phẩm: đọc quen một chỗ là quen mọi chỗ.
+
+### Dọn theo
+
+Bàn làm việc của vận hành còn hai lối tắt tới *Giao nhận* và *Sửa hàng loạt* — hai
+trang đã bỏ ở vòng 14 — nên bấm vào không ra gì. Đã thay bằng lối tắt tới Nhập số
+liệu, cộng hai ô số *ngày chờ nhập* và *nguồn chưa có số*, cộng khối quy trình hằng
+ngày đánh dấu được tại chỗ.
 
 ## Vòng 14: hết phẳng, sáu cấp tổ chức, hai mức trả, mốc theo hoà vốn
 

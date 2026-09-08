@@ -139,6 +139,7 @@ HT.dangKy({
     var html = HM.dau({
       h1: HM.esc(t('h1')) + ' <span>' + HM.esc(c.ky.label) + '</span>',
       mo: HM.esc(t('mo')),
+      nut: '<button type="button" class="btn sm ghost" data-in-ct>' + HM.icon('file') + HM.esc(c.lang === 'vi' ? 'Bản in' : 'Print view') + '</button>',
       so: [
         { l: t('seChi'), v: c.tien(tong.payable) },
         { l: t('soBen'), v: HT.fmt.n(demChi) },
@@ -171,6 +172,11 @@ HT.dangKy({
           : 'Recomputed from current data each time this screen opens. Loading a feed or matching a row changes it.')),
       nut: '<button type="button" class="btn sm" data-di="doi-chieu">' +
         HM.esc(c.lang === 'vi' ? 'Mở trang xét duyệt kỳ' : 'Approval screen') + '</button>' });
+
+    /* Quy trình chi trả của chính kỳ này: năm bước, đánh dấu tới đâu biết
+       tới đó. Kỳ nào cũng có bảng riêng, nên tháng sau mở lại vẫn thấy. */
+    html += HM.the({ h2: HM.esc(c.lang === 'vi' ? 'Quy trình chi trả kỳ ' + c.ky.label : 'Payout runbook · ' + c.ky.label),
+      icon: 'list', than: HTS.buocViec(c, 'chi-tra', c.kyKey) });
 
     html += HM.so([
       { l: t('seChi'), v: c.tien(tong.payable), lon: true },
@@ -291,9 +297,57 @@ HT.dangKy({
   }
 });
 
+/* =====================================================================
+   BẢN IN BẢNG CHI TRẢ KỲ
+   Kế toán cần một tờ giấy để trình ký và lưu hồ sơ, không phải một màn
+   hình. Bảng in gồm tổng kỳ, quy trình đã làm tới đâu, và từng dòng chi.
+   ===================================================================== */
+function inChiTra(c) {
+  var A = c.A, t = c.t, vi = c.lang === 'vi';
+  var duyet = A.isApproved(c.kyKey);
+  var rows, tong;
+  try {
+    var kq = duyet ? A.payoutOf(c.kyKey) : A.previewPayout(c.ky.idx);
+    rows = (kq && kq.rows) ? kq.rows : (Array.isArray(kq) ? kq : []);
+  } catch (e) { rows = []; }
+  tong = rows.reduce(function (s, r) { return s + (r.payable || 0); }, 0);
+  var st = A.quyTrinh.cua('chi-tra', c.kyKey);
+  var than = '<h2>' + HM.esc(vi ? 'Tổng kỳ' : 'Period totals') + '</h2><dl>' +
+    [[vi ? 'Kỳ' : 'Period', c.ky.label],
+     [vi ? 'Trạng thái' : 'Status', duyet ? (vi ? 'Đã xét duyệt' : 'Approved') : (vi ? 'Xem trước, chưa xét duyệt' : 'Preview, not approved')],
+     [vi ? 'Số bên được chi' : 'Payees', HT.fmt.n(rows.filter(function (r) { return r.payable > 0.004; }).length)],
+     [vi ? 'Tổng chi' : 'Total payable', HT.fmt.usd(tong)],
+     [vi ? 'Ngưỡng thanh toán' : 'Payout threshold', HT.fmt.usd0(A.cfg.PAYOUT_MIN)]]
+      .map(function (r) { return '<dt>' + HM.esc(r[0]) + '</dt><dd>' + HM.esc(String(r[1])) + '</dd>'; }).join('') + '</dl>';
+  if (st) {
+    than += '<h2>' + HM.esc(vi ? 'Quy trình chi trả' : 'Payout runbook') + ' · ' + st.xong + '/' + st.tong + '</h2><ol>' +
+      st.buoc.map(function (b) {
+        return '<li><b>' + HM.esc(c.lang === 'en' ? b.en : b.vi) + '</b> — ' +
+          (b.xong ? HM.esc(HT.fmt.luc(b.at) + (b.by ? ' · ' + b.by : '')) : '<i>' + HM.esc(vi ? 'chưa làm' : 'not done') + '</i>') + '</li>';
+      }).join('') + '</ol>';
+  }
+  var top = rows.filter(function (r) { return r.payable > 0.004; })
+    .sort(function (a, b) { return b.payable - a.payable; }).slice(0, 80);
+  than += '<h2>' + HM.esc(vi ? 'Từng dòng chi' : 'Payout lines') + '</h2><table><thead><tr>' +
+    '<th>' + HM.esc(vi ? 'Đối tác' : 'Partner') + '</th><th class="num">' + HM.esc(vi ? 'Được hưởng' : 'Earned') + '</th>' +
+    '<th class="num">' + HM.esc(vi ? 'Trừ tạm ứng' : 'Recouped') + '</th><th class="num">' + HM.esc(vi ? 'Thực chi' : 'Payable') + '</th></tr></thead><tbody>' +
+    top.map(function (r) {
+      return '<tr><td>' + HM.esc(A.partyName(r.partyKey) + ' · ' + A.partyClientId(r.partyKey)) + '</td>' +
+        '<td class="num">' + HM.esc(HT.fmt.usd(r.earned || 0)) + '</td>' +
+        '<td class="num">' + HM.esc(HT.fmt.usd(r.recoup || 0)) + '</td>' +
+        '<td class="num">' + HM.esc(HT.fmt.usd(r.payable || 0)) + '</td></tr>';
+    }).join('') + '</tbody></table>' +
+    (rows.length > top.length ? '<div class="in-ghi">' + HM.esc((vi ? 'và ' : 'and ') + HT.fmt.n(rows.length - top.length) + (vi ? ' dòng dưới ngưỡng, dồn sang kỳ sau.' : ' sub-threshold lines carried to the next period.')) + '</div>' : '');
+  HM.banIn({ tieuDe: vi ? 'Bảng chi trả kỳ ' + c.ky.label : 'Payout run · ' + c.ky.label,
+    phu: vi ? 'Bản trình ký và lưu hồ sơ.' : 'For signature and the file.',
+    ky: c.ky.label, than: than, nguoi: A.staff.me.name });
+}
+
 function ganTab(root, c) {
   var A = c.A, t = c.t, me = A.staff.me;
   HM.bam(root, '[data-tab]', function (el) { LOC.tab = el.getAttribute('data-tab'); c.veLai(); });
+  HM.bam(root, '[data-in-ct]', function () { inChiTra(c); });
+  HTS.ganBuoc(c, root, 'chi-tra', c.kyKey, function () { c.veLai(); });
   HM.bam(root, '[data-rut-tt]', function (el) { LOC.rutTt = el.getAttribute('data-rut-tt'); c.veLai(); });
   HM.nhap(root, '[data-rut-tim]', function (el) { LOC.rutTim = el.value; c.veLai(); });
   HM.nhap(root, '[data-bk-tim]', function (el) { LOC.bkTim = el.value; var h = root.querySelector('[data-bang-bk]'); if (h) dungBangBk(root, c); });

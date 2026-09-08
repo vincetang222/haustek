@@ -32,7 +32,12 @@ HT.dangKy({
       donTruoc: 'Cộng phần chuyển từ kỳ trước', truUng: 'Khấu trừ tạm ứng',
       thucChi: 'Số thực thanh toán kỳ này', thucChiNgan: 'Thực thanh toán kỳ này', donSau: 'Chuyển sang kỳ sau',
       soBai: 'Số bài hát có doanh thu', soLuot: 'Tổng lượt nghe',
-      inRa: 'In bảng kê', taiVe: 'Tải CSV',
+      inRa: 'Xuất PDF', taiVe: 'Tải CSV',
+      pdfTieu: 'Bảng kê kỳ {p}', pdfPhu: 'Bảng kê do bạn tự xuất từ cổng đối tác Haustek. Số liệu đúng bằng số đang hiển thị trên màn hình.',
+      pdfBen: 'Bên nhận', pdfKy: 'Kỳ báo cáo', pdfMuc: 'Các khoản mục', pdfBai: 'Chi tiết theo bài hát',
+      pdfConLai: 'và {n} bài khác', pdfCs: 'Cơ sở tính',
+      pdfChan: 'Bảng kê tự xuất, dùng để đối chiếu nội bộ. Bảng kê chính thức có chữ ký do Haustek phát hành từng kỳ.',
+      xuatKy: 'Xuất PDF',
       chuaMo: 'Kỳ này chưa chốt sổ',
       chuaMoMo: 'Bảng kê chỉ có sau khi kỳ chốt sổ, tức Haustek đã nhận đủ báo cáo và đối soát khớp đến từng xu.',
       dieuKhoan: 'Căn cứ tính',
@@ -54,7 +59,12 @@ HT.dangKy({
       donTruoc: 'Plus carried in from last period', truUng: 'Less advance recouped',
       thucChi: 'PAID THIS PERIOD', thucChiNgan: 'Paid this period', donSau: 'Carried to next period',
       soBai: 'Earning tracks', soLuot: 'Total streams',
-      inRa: 'Print statement', taiVe: 'Download CSV',
+      inRa: 'Export PDF', taiVe: 'Download CSV',
+      pdfTieu: 'Statement for {p}', pdfPhu: 'A statement you exported yourself from the Haustek partner portal. The figures match what is on screen.',
+      pdfBen: 'Payee', pdfKy: 'Period', pdfMuc: 'Line items', pdfBai: 'Track detail',
+      pdfConLai: 'and {n} more tracks', pdfCs: 'Basis',
+      pdfChan: 'A self-exported statement, for your own reconciliation. The signed statement of record is issued by Haustek each period.',
+      xuatKy: 'Export PDF',
       chuaMo: 'Period not open',
       chuaMoMo: 'A statement exists only after the period closes: every platform reported and reconciliation balances to the cent.',
       dieuKhoan: 'Basis of calculation',
@@ -210,9 +220,10 @@ HT.dangKy({
     HB.gan(root);
 
     HM.bam(root, '[data-kyto]', function (el) { c.doiKy(el.getAttribute('data-kyto')); });
-    HM.bam(root, '[data-in]', function () { window.print(); });
+    HM.bam(root, '[data-in]', function () { inBangKe(c, c.kyKey); });
     HM.doi(root, '[data-bk-tu]', function (el) { BK.tu = el.value; c.veLai(); });
     HM.doi(root, '[data-bk-den]', function (el) { BK.den = el.value; c.veLai(); });
+    HM.bam(root, '[data-xuat-pdf]', function (el) { inBangKe(c, el.getAttribute('data-xuat-pdf')); });
     HM.bam(root, '[data-csv-tt]', function (el) { csvKy(c, el.getAttribute('data-csv-tt'), 'tt'); });
     HM.bam(root, '[data-csv-ct]', function (el) { csvKy(c, el.getAttribute('data-csv-ct'), 'ct'); });
     HM.bam(root, '[data-csv-ns]', function (el) { csvKy(c, el.getAttribute('data-csv-ns'), 'ns'); });
@@ -251,6 +262,7 @@ function veBaoCaoThang(c) {
   var nutTai = function (r) {
     return '<div class="btnrow">' +
       (r.pdf ? '<button type="button" class="btn sm" data-tai-pdf="' + HM.esc(r.pdf.file) + '">' + HM.icon('file') + 'PDF</button>' : '<span class="muted" style="font-size:12px">' + HM.esc(vi ? 'PDF chưa có' : 'PDF pending') + '</span>') +
+      '<button type="button" class="btn sm" data-xuat-pdf="' + r.k + '">' + HM.icon('file') + HM.esc(c.t('xuatKy')) + '</button>' +
       '<button type="button" class="btn sm ghost" data-csv-tt="' + r.k + '">' + HM.esc(vi ? 'Tóm tắt' : 'Summary') + '</button>' +
       '<button type="button" class="btn sm ghost" data-csv-ct="' + r.k + '">' + HM.esc(vi ? 'Chi tiết' : 'Details') + '</button>' +
       (la ? '<button type="button" class="btn sm ghost" data-csv-ns="' + r.k + '">' + HM.esc(vi ? 'Theo nghệ sĩ' : 'By artist') + '</button>' : '') + '</div>';
@@ -276,6 +288,74 @@ function veBaoCaoThang(c) {
       }).join('') + '</tbody></table></div>'
   });
 }
+/* =====================================================================
+   BẢN IN BẢNG KÊ — đối tác tự xuất PDF
+   ---------------------------------------------------------------------
+   Đối tác không phải chờ Haustek tải bảng kê lên: mọi con số đã có trên
+   màn, chỉ cần bày lại theo khổ giấy. Bản tự xuất ghi rõ là bản tự xuất,
+   để không ai nhầm với bảng kê chính thức có chữ ký.
+   ===================================================================== */
+function inBangKe(c, k) {
+  var api = c.api, me = c.phien.me, t = c.t, vi = c.lang === 'vi', la = me.role === 'label';
+  var ky = c.kys.filter(function (p) { return p.k === k; })[0];
+  var rec, pub = null, ct = null;
+  try { rec = api.summary(me.role, me.partyId, k, 'rec'); } catch (e) { c.thongBao(e.message, 'no'); return; }
+  if (me.hasPublishing) { try { pub = api.summary(me.role, me.partyId, k, 'pub'); } catch (e) { pub = null; } }
+  try { ct = api.tracks(me.role, me.partyId, k, 'rec', { sort: 'mine', dir: -1 }); } catch (e) { ct = null; }
+
+  var tg = rec.fx.rate, chi = rec.payout;
+  var coTq = pub && pub.total > 0.004;
+  var congPs = Math.round(((rec.total || 0) + (coTq ? pub.total : 0)) * 100) / 100;
+
+  var muc = [];
+  rec.chain.forEach(function (b) { muc.push([c.song(b, 'label'), b.value, c.song(b, 'note') || '', b.kind === 'final']); });
+  if (coTq) pub.chain.forEach(function (b) { muc.push([c.t('tacQuyen') + ' · ' + c.song(b, 'label'), b.value, c.song(b, 'note') || '', b.kind === 'final']); });
+  muc.push([t('cong'), congPs, '', true]);
+  if (chi) {
+    if (chi.carryIn > 0.004) muc.push([t('donTruoc'), chi.carryIn, '', false]);
+    if (rec.advance && rec.advance.recoupedThisPeriod > 0.004)
+      muc.push([t('truUng'), -rec.advance.recoupedThisPeriod,
+        (vi ? 'còn phải khấu trừ sau kỳ này: ' : 'left after this period: ') + HT.fmt.usd(rec.advance.left), false]);
+    muc.push([t('thucChi'), chi.payable, c.song(chi, 'note') || '', true]);
+    if (chi.carryOut > 0.004) muc.push([t('donSau'), chi.carryOut, '', false]);
+  }
+
+  var than = '<h2>' + HM.esc(t('pdfBen')) + '</h2><dl>' +
+    [[t('pdfBen'), me.name], [t('maKh'), me.clientId],
+     [t('loaiHd'), la ? 'Label' : (me.independent ? (vi ? 'Nghệ sĩ độc lập' : 'Independent artist') : (vi ? 'Nghệ sĩ thuộc label' : 'Artist under a label'))],
+     [t('pdfKy'), ky ? ky.label : k], [t('chotSo'), HT.fmt.luc(rec.approvedAt)],
+     [t('tyGia'), HT.fmt.n(tg) + ' ₫ / USD'],
+     [t('soBai'), HT.fmt.n(rec.tracks) + (rec.streams != null ? ' · ' + HT.fmt.n(rec.streams) + ' ' + (vi ? 'lượt nghe' : 'streams') : '')]]
+      .map(function (r) { return '<dt>' + HM.esc(r[0]) + '</dt><dd>' + HM.esc(String(r[1])) + '</dd>'; }).join('') + '</dl>' +
+    '<h2>' + HM.esc(t('pdfMuc')) + '</h2><table><thead><tr>' +
+      '<th>' + HM.esc(t('muc')) + '</th><th class="num">' + HM.esc(t('soTien')) + '</th>' +
+      '<th class="num">' + HM.esc(t('quyVnd')) + '</th></tr></thead><tbody>' +
+      muc.map(function (d) {
+        return '<tr' + (d[3] ? ' class="tong"' : '') + '><td>' + HM.esc(d[0]) +
+          (d[2] ? '<br><small>' + HM.esc(d[2]) + '</small>' : '') + '</td>' +
+          '<td class="num">' + HM.esc(HT.fmt.usd(d[1])) + '</td>' +
+          '<td class="num">' + HM.esc(HT.fmt.n(d[1] * tg)) + ' ₫</td></tr>';
+      }).join('') + '</tbody></table>';
+
+  if (ct && ct.rows && ct.rows.length) {
+    var top = ct.rows.slice(0, 40);
+    than += '<h2>' + HM.esc(t('pdfBai')) + '</h2><table><thead><tr>' +
+      '<th>ISRC</th><th>' + HM.esc(vi ? 'Bài hát' : 'Track') + '</th><th>' + HM.esc(vi ? 'Nghệ sĩ' : 'Artist') + '</th>' +
+      '<th class="num">' + HM.esc(vi ? 'Lượt nghe' : 'Streams') + '</th>' +
+      '<th class="num">' + HM.esc(la ? (vi ? 'Doanh thu' : 'Revenue') : (vi ? 'Thu nhập' : 'Yours')) + '</th></tr></thead><tbody>' +
+      top.map(function (r) {
+        return '<tr><td>' + HM.esc(r.isrc) + '</td><td>' + HM.esc(r.title) + '</td><td>' + HM.esc(r.artist) + '</td>' +
+          '<td class="num">' + (r.streams == null ? '—' : HM.esc(HT.fmt.n(r.streams))) + '</td>' +
+          '<td class="num">' + HM.esc(HT.fmt.usd(la ? r.revenue : r.mine)) + '</td></tr>';
+      }).join('') + '</tbody></table>' +
+      (ct.rows.length > top.length ? '<div class="in-ghi">' + HM.esc(t('pdfConLai').replace('{n}', HT.fmt.n(ct.rows.length - top.length))) + '</div>' : '');
+  }
+  than += '<h2>' + HM.esc(t('pdfCs')) + '</h2><div class="in-ghi">' + HM.esc(t('luuYNoiDung')) + '</div>';
+
+  HM.banIn({ tieuDe: t('pdfTieu').replace('{p}', ky ? ky.label : k), phu: t('pdfPhu'),
+    ky: ky ? ky.label : k, than: than, nguoi: me.name, chan: t('pdfChan') });
+}
+
 function csvKy(c, k, loai) {
   var api = c.api, me = c.phien.me, vi = c.lang === 'vi', la = me.role === 'label';
   var ky = c.kys.filter(function (p) { return p.k === k; })[0], nhan = ky ? ky.label.replace('/', '-') : k;

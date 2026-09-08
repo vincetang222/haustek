@@ -55,16 +55,14 @@ function soVao() {
 function o(k, nhan, opt) {
   opt = opt || {};
   var v = IN[k] == null ? '' : IN[k];
-  return '<div class="fgrp' + (opt.rong ? ' span2' : '') + '"><label class="fld" for="roi-' + k + '">' + HM.esc(nhan) + '</label>' +
+  return '<div class="fgrp' + (opt.rong ? ' span2' : '') + '"><label class="fld" for="roi-' + k + '">' + HM.esc(nhan) + HM.hoi(opt.hint) + '</label>' +
     '<div class="roi-in' + (opt.hau ? ' co-hau' : '') + '"><input class="in mono" id="roi-' + k + '" data-r="' + k + '" type="number" inputmode="decimal"' +
     (opt.min != null ? ' min="' + opt.min + '"' : ' min="0"') + (opt.max != null ? ' max="' + opt.max + '"' : '') +
     ' step="' + (opt.step || 'any') + '" value="' + HM.esc(String(v)) + '">' +
-    (opt.hau ? '<span class="hau">' + HM.esc(opt.hau) + '</span>' : '') + '</div>' +
-    (opt.hint ? '<div class="fhint">' + HM.esc(opt.hint) + '</div>' : '') + '</div>';
+    (opt.hau ? '<span class="hau">' + HM.esc(opt.hau) + '</span>' : '') + '</div></div>';
 }
 function tick(k, nhan, hint) {
-  return '<div class="fgrp span2"><label class="tickrow"><input type="checkbox" data-r="' + k + '" value="1"' + (IN[k] ? ' checked' : '') + '><span>' + HM.esc(nhan) + '</span></label>' +
-    (hint ? '<div class="fhint">' + HM.esc(hint) + '</div>' : '') + '</div>';
+  return '<div class="fgrp span2"><label class="tickrow"><input type="checkbox" data-r="' + k + '" value="1"' + (IN[k] ? ' checked' : '') + '><span>' + HM.esc(nhan) + '</span></label>' + HM.hoi(hint) + '</div>';
 }
 
 HT.dangKy({
@@ -84,6 +82,20 @@ HT.dangKy({
       lMoiGioi: 'Phí môi giới', hMoiGioi: 'Phần trăm trên hoa hồng Haustek cả kỳ hạn.',
       lSoBan: 'Số bản phát hành', lGio: 'Giờ mỗi bản', lDonGia: 'Đơn giá giờ', gio: 'giờ',
       lNguongRoi: 'Ngưỡng ROI đạt', lNguongThuHoi: 'Ngưỡng tháng thu hồi',
+      hDoanhThu: 'Doanh thu danh mục của đối tác trong một tháng, trước khi chia. Lấy trung bình ba kỳ gần nhất, đừng lấy tháng đỉnh.',
+      hUngTien: 'Tiền mặt trả một lần cho đối tác khi ký. Đây là phần chắc chắn phải thu hồi.',
+      hMkt: 'Ngân sách quảng bá cam kết trong hợp đồng. Có thu hồi hay không thì đánh dấu ở ô bên dưới.',
+      hSx: 'Ngân sách sản xuất cam kết trong hợp đồng. Cùng cách xử lý với ngân sách truyền thông.',
+      hTyLe: 'Phần trăm doanh thu ròng nghệ sĩ được hưởng theo hợp đồng. Phần còn lại là hoa hồng Haustek.',
+      hKyHan: 'Số tháng hợp đồng còn hiệu lực. Hết kỳ hạn mà chưa thu hồi xong thì phần còn lại mất trắng.',
+      hDocQuyen: 'Số tháng độc quyền. Thu hồi vượt quá mốc này là rủi ro: hết độc quyền, đối tác được quyền đi.',
+      hSoBan: 'Số bản phát hành dự kiến trong cả kỳ hạn. Nhân với giờ và đơn giá ra chi phí vận hành.',
+      hGio: 'Số giờ nhân sự Haustek bỏ ra cho một bản phát hành: metadata, giao nhận, theo dõi lên kệ.',
+      hDonGia: 'Chi phí một giờ nhân sự, tính đủ lương và chi phí gián tiếp.',
+      hNguongRoi: 'Dưới ngưỡng này thì kết luận là chưa đạt. Đặt theo khẩu vị rủi ro của công ty.',
+      hNguongThuHoi: 'Thu hồi lâu hơn ngần này tháng thì coi là chậm, kể cả khi ROI vẫn đạt.',
+      hReach: 'Doanh thu tháng mà đối tác phải chạm tới thì mốc này mới mở.',
+      hTrong: 'Hạn chót để chạm mốc, tính từ ngày ký. Quá hạn thì mốc đóng lại.',
       mocTt: 'Ba mốc thưởng', mocP: 'Mốc chỉ mở khi khoản ứng ngay trước đã hoà vốn: gốc hoà vốn xong mới tới mốc 1, mốc 1 hoà vốn xong mới tới mốc 2. Haustek không ôm hai khoản chưa thu hồi cùng lúc.',
       lTrongMo: 'Hạn chót, không phải lịch trả: hoà vốn muộn hơn số này thì mốc không mở.', cMo: 'Mở khoá', moRoi: 'mở', khoaRoi: 'khoá', khoaVi: 'Vì sao khoá', hoaVonO: 'mở ở tháng {n}',
       moc: 'Mốc {i}', lReach: 'Doanh thu tháng đạt mốc', lHeSo: 'Hệ số ứng', hHeSo: 'Khoản ứng = doanh thu tại mốc × hệ số.', lTrong: 'Trong vòng', batMoc: 'Tính thêm ba mốc thưởng',
@@ -123,6 +135,20 @@ HT.dangKy({
       lMoiGioi: 'Finder’s fee', hMoiGioi: 'Percentage of Haustek’s commission over the term.',
       lSoBan: 'Releases', lGio: 'Hours per release', lDonGia: 'Cost per hour', gio: 'hours',
       lNguongRoi: 'ROI target', lNguongThuHoi: 'Recoupment target',
+      hDoanhThu: 'The partner’s monthly catalogue revenue before any split. Use a three-period average, not the peak month.',
+      hUngTien: 'Cash paid to the partner on signing. This is the part that must come back.',
+      hMkt: 'Marketing budget committed in the contract. Whether it is recoupable is the tick box below.',
+      hSx: 'Production budget committed in the contract. Same treatment as marketing.',
+      hTyLe: 'The share of net revenue the artist keeps under the deal. The rest is Haustek’s commission.',
+      hKyHan: 'Months the contract runs. Anything unrecouped when it ends is written off.',
+      hDocQuyen: 'Months of exclusivity. Recouping past this point is a risk: once it lapses the partner is free to leave.',
+      hSoBan: 'Releases expected across the whole term. Times hours times rate gives the operating cost.',
+      hGio: 'Haustek staff hours per release: metadata, delivery, watching it go live.',
+      hDonGia: 'Fully loaded cost of one staff hour.',
+      hNguongRoi: 'Below this the verdict is “not met”. Set it to the company’s risk appetite.',
+      hNguongThuHoi: 'Recouping slower than this counts as slow, even when the ROI passes.',
+      hReach: 'The monthly revenue the partner must reach before this tranche unlocks.',
+      hTrong: 'The deadline to reach it, counted from signing. Past that, the tranche closes.',
       mocTt: 'Three triggers', mocP: 'A trigger only unlocks once the advance before it has broken even: the base first, then trigger 1, then trigger 2. Haustek never carries two unrecouped advances at once.',
       lTrongMo: 'A deadline, not a payment date: break even later than this and the trigger never unlocks.', cMo: 'Unlocked', moRoi: 'open', khoaRoi: 'locked', khoaVi: 'Why locked', hoaVonO: 'opens in month {n}',
       moc: 'Trigger {i}', lReach: 'Monthly income at the milestone', lHeSo: 'Advance multiple', hHeSo: 'Advance = income at the milestone × multiple.', lTrong: 'Within', batMoc: 'Include the three triggers',
@@ -164,32 +190,32 @@ HT.dangKy({
       '<div>' +
         HM.the({ h2: HM.esc(t('dieuKhoan')), p: HM.esc(t('dieuKhoanP')),
           than: '<div class="fldrow two-up">' +
-            o('monthlyIncome', t('lDoanhThu'), { hau: '$', step: '1' }) +
-            o('cashAdvance', t('lUngTien'), { hau: '$', step: '100' }) +
-            o('marketing', t('lMkt'), { hau: '$', step: '100' }) +
-            o('production', t('lSx'), { hau: '$', step: '100' }) +
+            o('monthlyIncome', t('lDoanhThu'), { hau: '$', step: '1', hint: t('hDoanhThu') }) +
+            o('cashAdvance', t('lUngTien'), { hau: '$', step: '100', hint: t('hUngTien') }) +
+            o('marketing', t('lMkt'), { hau: '$', step: '100', hint: t('hMkt') }) +
+            o('production', t('lSx'), { hau: '$', step: '100', hint: t('hSx') }) +
             tick('recoupBudgets', t('lNganSachThuHoi'), t('hNganSach')) +
-            o('artistShare', t('lTyLe'), { hau: '%', max: 100, step: '0.5' }) +
+            o('artistShare', t('lTyLe'), { hau: '%', max: 100, step: '0.5', hint: t('hTyLe') }) +
             o('passThrough', t('lFlow'), { hau: '%', max: 100, step: '1', hint: t('hFlow') }) +
-            o('termMonths', t('lKyHan'), { hau: t('thang'), step: '1', min: 1 }) +
-            o('exclusivityMonths', t('lDocQuyen'), { hau: t('thang'), step: '1' }) +
+            o('termMonths', t('lKyHan'), { hau: t('thang'), step: '1', min: 1, hint: t('hKyHan') }) +
+            o('exclusivityMonths', t('lDocQuyen'), { hau: t('thang'), step: '1', hint: t('hDocQuyen') }) +
           '</div>' }) +
         HM.the({ h2: HM.esc(t('chiPhi')), p: HM.esc(t('chiPhiP')),
           than: '<div class="fldrow two-up">' +
             o('findersFeePct', t('lMoiGioi'), { hau: '%', max: 100, step: '0.5', hint: t('hMoiGioi') }) +
-            o('releases', t('lSoBan'), { step: '1' }) +
-            o('hoursPerRelease', t('lGio'), { hau: t('gio'), step: '0.5' }) +
-            o('costPerHour', t('lDonGia'), { hau: '$', step: '1' }) +
-            o('nguongRoi', t('lNguongRoi'), { hau: '×', step: '0.05' }) +
-            o('nguongThuHoi', t('lNguongThuHoi'), { hau: t('thang'), step: '1' }) +
+            o('releases', t('lSoBan'), { step: '1', hint: t('hSoBan') }) +
+            o('hoursPerRelease', t('lGio'), { hau: t('gio'), step: '0.5', hint: t('hGio') }) +
+            o('costPerHour', t('lDonGia'), { hau: '$', step: '1', hint: t('hDonGia') }) +
+            o('nguongRoi', t('lNguongRoi'), { hau: '×', step: '0.05', hint: t('hNguongRoi') }) +
+            o('nguongThuHoi', t('lNguongThuHoi'), { hau: t('thang'), step: '1', hint: t('hNguongThuHoi') }) +
           '</div>' }) +
         HM.the({ h2: HM.esc(t('mocTt')), p: HM.esc(t('mocP')),
           than: '<div class="fldrow two-up">' + tick('moc', t('batMoc')) + '</div>' +
             (IN.moc ? [1, 2, 3].map(function (i) {
               return '<div class="roi-moc"><div class="roi-moc-t">' + HM.esc(t('moc').replace('{i}', i)) + '</div><div class="fldrow two-up">' +
-                o('t' + i + 'r', t('lReach'), { hau: '$', step: '100' }) +
-                o('t' + i + 'x', t('lHeSo'), { hau: '×', step: '0.5', hint: i === 1 ? t('hHeSo') : '' }) +
-                o('t' + i + 'm', t('lTrong'), { hau: t('thang'), step: '1', hint: i === 1 ? t('lTrongMo') : '' }) +
+                o('t' + i + 'r', t('lReach'), { hau: '$', step: '100', hint: t('hReach') }) +
+                o('t' + i + 'x', t('lHeSo'), { hau: '×', step: '0.5', hint: t('hHeSo') }) +
+                o('t' + i + 'm', t('lTrong'), { hau: t('thang'), step: '1', hint: t('hTrong') }) +
               '</div></div>';
             }).join('') : '') }) +
       '</div>' +

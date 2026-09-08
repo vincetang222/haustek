@@ -414,8 +414,8 @@ function fileNameFor(f, p) {
 
 let state = null;
 function ensureShape(s) {
-  ["withdrawals", "tickets", "claims", "deliveries", "bulk", "releases", "proposals", "staff", "campaigns", "adjustments", "priceExtra", "platformsExtra", "extraParties"].forEach(k => { if (!Array.isArray(s[k])) s[k] = []; });
-  ["statements", "bank", "videoSettings", "partyManager", "splits", "alerts", "notifRead", "rateOverride", "contracts", "platformOwner", "toChucThem"].forEach(k => { if (!s[k] || typeof s[k] !== "object") s[k] = {}; });
+  ["withdrawals", "tickets", "claims", "deliveries", "bulk", "releases", "proposals", "staff", "campaigns", "adjustments", "priceExtra", "platformsExtra", "extraParties", "nhapTay"].forEach(k => { if (!Array.isArray(s[k])) s[k] = []; });
+  ["statements", "bank", "videoSettings", "partyManager", "splits", "alerts", "notifRead", "rateOverride", "contracts", "platformOwner", "toChucThem", "luotNgay", "buocViec", "danhGiaNam"].forEach(k => { if (!s[k] || typeof s[k] !== "object") s[k] = {}; });
   return s;
 }
 
@@ -814,6 +814,21 @@ function splitRec(i, gross, periodKey) {
    khớp tay từ hàng chờ.
    ===================================================================== */
 let MATCH = new Map();                     /* (i*P+p) → Float64Array(3) tiền khớp tay theo luồng */
+
+/* ---------------------------------------------------------------------
+   Lớp SỐ GÕ TAY (chi tiết ở mục 21b). Khai báo sớm ở đây vì grossRec đọc
+   tới; nội dung do rebuildNhapIndex() dựng lại mỗi lần điều phối viên gõ.
+     TAY_BAI  (i*P+p) → Float64Array(3), NaN = luồng đó chưa ai gõ
+     TAY_KY   "p:f"   → tổng của cả nguồn trong kỳ, do người nhập chốt
+     HE_SO_KY "p:f"   → tỷ lệ co giãn phần chưa gõ tay, tính một lần rồi nhớ
+   --------------------------------------------------------------------- */
+let TAY_BAI = new Map(), TAY_KY = new Map(), HE_SO_KY = new Map();
+/* "p:f" → {tien, auto, so}: tổng số đã gõ theo bài, tổng số máy sinh của
+   đúng những bài ấy, và đếm — để tính hệ số co giãn mà không quét lại
+   toàn danh mục mỗi lần vẽ. */
+let TAY_GO = new Map();
+let AUTO_KY_MATCH = null;                  /* tổng khớp tay theo kỳ × nguồn, dựng lười */
+
 function rebuildMatchIndex() {
   MATCH = new Map();
   for (const k in state.match) {
@@ -823,6 +838,7 @@ function rebuildMatchIndex() {
     if (!a) { a = new Float64Array(3); MATCH.set(key, a); }
     a[f] += state.match[k];
   }
+  AUTO_KY_MATCH = null; HE_SO_KY.clear();
 }
 rebuildMatchIndex();
 
@@ -834,25 +850,109 @@ function loadedFeedIds(pIdx) { return FEEDS.filter(f => feedLoaded(pIdx, f.id)).
 function missingFeeds(pIdx)  { return FEEDS.filter(f => !feedLoaded(pIdx, f.id)); }
 function pubLoaded(pIdx)     { const s = state.pub[PERIODS[pIdx].k]; return !!(s && s.status === "loaded"); }
 
-/* doanh thu bản ghi của một bài trong một kỳ, chỉ tính luồng đã nạp */
+/* doanh thu bản ghi của một bài trong một kỳ, chỉ tính luồng đã nạp.
+   Số điều phối viên gõ tay (mục 21b) đè lên số máy sinh; khi chưa ai gõ
+   thì hai đường dưới đây chạy y như trước. */
 function grossRec(i, p) {
   const base = i * P + p, o = base * 3;
-  let g = 0;
-  if (feedLoaded(p, 0)) g += recGross[o];
-  if (feedLoaded(p, 1)) g += recGross[o + 1];
-  if (feedLoaded(p, 2)) g += recGross[o + 2];
-  if (MATCH.size) {
-    const m = MATCH.get(base);
-    if (m) { for (let f = 0; f < 3; f++) if (feedLoaded(p, f)) g += m[f]; }
+  if (!TAY_BAI.size && !TAY_KY.size) {
+    let g = 0;
+    if (feedLoaded(p, 0)) g += recGross[o];
+    if (feedLoaded(p, 1)) g += recGross[o + 1];
+    if (feedLoaded(p, 2)) g += recGross[o + 2];
+    if (MATCH.size) {
+      const m = MATCH.get(base);
+      if (m) { for (let f = 0; f < 3; f++) if (feedLoaded(p, f)) g += m[f]; }
+    }
+    return g;
   }
+  let g = 0;
+  for (let f = 0; f < 3; f++) g += grossRecByFeed(i, p, f);
   return g;
 }
-function grossRecByFeed(i, p, f) {
-  if (!feedLoaded(p, f)) return 0;
+function grossRecTuSinh(i, p, f) {
   const base = i * P + p;
   const m = MATCH.size ? MATCH.get(base) : null;
   return recGross[base * 3 + f] + (m ? m[f] : 0);
 }
+function grossRecByFeed(i, p, f) {
+  if (!feedLoaded(p, f)) return 0;
+  const base = i * P + p;
+  if (TAY_BAI.size) {
+    const b = TAY_BAI.get(base);
+    if (b && b[f] === b[f]) return b[f];          /* NaN nghĩa là chưa ai gõ bài này */
+  }
+  const auto = grossRecTuSinh(i, p, f);
+  if (!TAY_KY.size) return auto;
+  const s = heSoKy(p, f);
+  return s === 1 ? auto : cents(auto * s);
+}
+/* Người nhập chốt TỔNG của một nguồn trong một kỳ. Những bài đã có số
+   riêng giữ nguyên; phần còn lại co giãn để cộng đúng bằng tổng đó. */
+function heSoKy(p, f) {
+  const k = p + ":" + f;
+  const ky = TAY_KY.get(k);
+  if (!ky) return 1;
+  let h = HE_SO_KY.get(k);
+  if (h != null) return h;
+  const g = TAY_GO.get(k) || { tien: 0, auto: 0, so: 0 };
+  const conLai = autoKy(p, f) - g.auto;
+  h = conLai > 0 ? Math.max(0, (ky.tien - g.tien) / conLai) : 1;
+  HE_SO_KY.set(k, h);
+  return h;
+}
+/* Tổng máy sinh của một nguồn trong một kỳ: dựng sẵn từ recGross lúc khởi
+   động, cộng thêm những dòng đã khớp tay từ hàng chờ (số này ít). */
+const AUTO_KY = new Float64Array(P * 3);
+for (let i = 0; i < N; i++) for (let q = 0; q < P; q++) {
+  const o = (i * P + q) * 3;
+  AUTO_KY[q * 3] += recGross[o]; AUTO_KY[q * 3 + 1] += recGross[o + 1]; AUTO_KY[q * 3 + 2] += recGross[o + 2];
+}
+function autoKy(p, f) {
+  if (!AUTO_KY_MATCH) {
+    AUTO_KY_MATCH = new Float64Array(P * 3);
+    MATCH.forEach((a, key) => { const q = key % P; for (let x = 0; x < 3; x++) AUTO_KY_MATCH[q * 3 + x] += a[x]; });
+  }
+  return AUTO_KY[p * 3 + f] + AUTO_KY_MATCH[p * 3 + f];
+}
+
+/* Tổng lượt nghe của một ngày do điều phối viên sửa lại: cả ngày co giãn
+   theo, để mọi biểu đồ và dự báo cùng đọc một con số. */
+let LUOT_HS = new Map();
+function heSoNgay(back) {
+  if (!state.luotNgay) return 1;
+  const ngay = isoDate(new Date(ASOF.getTime() - back * 864e5));
+  const g = state.luotNgay[ngay];
+  if (!g || !(g.tong > 0)) return 1;
+  let h = LUOT_HS.get(ngay);
+  if (h != null) return h;
+  const tuSinh = luotTuSinh(back);
+  h = tuSinh > 0 ? g.tong / tuSinh : 1;
+  LUOT_HS.set(ngay, h);
+  return h;
+}
+/* Tổng máy sinh của một ngày, lấy mẫu thưa như mọi phép quét toàn danh mục */
+let LUOT_AUTO = new Map();
+function luotTuSinh(back) {
+  let v = LUOT_AUTO.get(back);
+  if (v != null) return v;
+  const step = 25;
+  let s = 0;
+  for (let i = 0; i < N; i += step) {
+    const base = recStreams[i * P + (P - 1)] / 30;
+    if (base <= 0) continue;
+    const trend = 0.85 + hash(i, 61) * 0.55;
+    const t = 1 - back / N_DAYS;
+    const dow = new Date(ASOF.getTime() - back * 864e5).getDay();
+    const wk = dow === 5 || dow === 6 ? 1.07 : dow === 0 ? 1.03 : 0.985;
+    const n1 = hash(i * 97 + back, 62), n2 = hash(i * 97 + back + 1, 62), n3 = hash(i * 97 + back + 2, 62);
+    s += base * Math.pow(trend, t) * wk * (0.9 + (n1 + n2 + n3) / 3 * 0.2);
+  }
+  v = Math.round(s * step);
+  LUOT_AUTO.set(back, v);
+  return v;
+}
+
 function grossPub(i, p) { return pubLoaded(p) ? pubGross[i * P + p] : 0; }
 function grossOf(i, p, stream) { return stream === "pub" ? grossPub(i, p) : grossRec(i, p); }
 
@@ -1760,8 +1860,8 @@ const TAI_SAN = [
   { id: "ticket",         vi: "Ticket hỗ trợ",     en: "Support tickets", man: "ho-tro", dem: () => state.tickets.length, gan: id => state.tickets.filter(t => t.assignee === id).length },
   { id: "khieuNai",       vi: "Khiếu nại bản quyền", en: "Rights claims", man: "quyen", dem: () => state.claims.length, gan: id => state.claims.filter(c => c.assignee === id).length }
 ];
-const MAN_TAT_CA = ["ban-lam-viec", "to-chuc", "ho-tro", "tong-quan", "theo-doi", "nap-du-lieu", "khop-isrc", "doi-chieu", "phat-hanh", "chien-dich", "quyen", "muc-tra", "chia-se", "xet-duyet", "roi", "nen-tang", "ke-toan", "chi-tra", "tam-ung", "ty-le", "doi-tac", "danh-muc", "quan-tri"];
-const NHOM_TAT_CA = ["tong", "tien", "doiSoat", "doiTac", "doiTacTao", "deXuat", "deXuatTao", "vanHanh", "danhMuc", "theoDoi", "chienDich", "chiaSe", "khieuNai", "hoTro", "quanTri", "phatHanhHo", "nhanSu", "toChuc"];
+const MAN_TAT_CA = ["ban-lam-viec", "to-chuc", "ho-tro", "tong-quan", "theo-doi", "nhap-so-lieu", "nap-du-lieu", "khop-isrc", "doi-chieu", "phat-hanh", "chien-dich", "quyen", "muc-tra", "chia-se", "xet-duyet", "roi", "nen-tang", "ke-toan", "chi-tra", "tam-ung", "ty-le", "doi-tac", "danh-muc", "quan-tri", "hieu-suat", "hieu-qua-von"];
+const NHOM_TAT_CA = ["tong", "tien", "doiSoat", "doiTac", "doiTacTao", "deXuat", "deXuatTao", "vanHanh", "nhapLieu", "danhMuc", "theoDoi", "chienDich", "chiaSe", "khieuNai", "hoTro", "quanTri", "phatHanhHo", "nhanSu", "toChuc", "von", "hieuSuat", "quyTrinh"];
 const doiTacSapHetHan = me => partiesList({ status: "renew", manager: me && me.role === "sales" && !laTruong(me) ? me.id : undefined }).total;
 const TO_CHUC = [
   { id: "ban-giam-doc", vai: "mgmt", vi: "Ban giám đốc", en: "Management",
@@ -1775,8 +1875,8 @@ const TO_CHUC = [
   { id: "van-hanh", vai: "ops", vi: "Vận hành", en: "Operations",
     chucNang: { vi: ["Tiếp nhận hồ sơ phát hành, kiểm metadata, cấp ISRC / UPC", "Giao bản ghi tới nền tảng, theo dõi trạng thái lên kệ", "Nạp báo cáo kỳ, khớp ISRC, đối soát trước xét duyệt", "Mức trả nền tảng, danh mục, chất lượng lượt nghe"],
                 en: ["Receive release files, check metadata, assign ISRC / UPC", "Deliver recordings to platforms, track go-live", "Load period reports, match ISRC, reconcile before approval", "Platform rates, catalogue, stream quality"] },
-    man: ["ban-lam-viec", "to-chuc", "ho-tro", "doi-chieu", "chien-dich", "theo-doi", "nap-du-lieu", "khop-isrc", "muc-tra", "danh-muc", "nen-tang", "phat-hanh", "quyen"],
-    nhom: ["doiSoat", "vanHanh", "danhMuc", "theoDoi", "chienDich", "khieuNai", "hoTro", "phatHanhHo", "toChuc"],
+    man: ["ban-lam-viec", "to-chuc", "ho-tro", "doi-chieu", "chien-dich", "theo-doi", "nhap-so-lieu", "nap-du-lieu", "khop-isrc", "muc-tra", "danh-muc", "nen-tang", "phat-hanh", "quyen"],
+    nhom: ["doiSoat", "vanHanh", "nhapLieu", "danhMuc", "theoDoi", "chienDich", "khieuNai", "hoTro", "phatHanhHo", "toChuc", "quyTrinh"],
     taiSan: ["danhMuc", "hoSoPhatHanh", "nenTang", "baoCaoKy"],
     to: [
       { id: "phat-hanh", vi: "Phát hành & metadata", en: "Releases & metadata", nhiemVu: [
@@ -1791,7 +1891,7 @@ const TO_CHUC = [
     chucNang: { vi: ["Tìm và ký đối tác mới, chăm sóc tài khoản đang có", "Đề xuất tạm ứng, hợp đồng, gia hạn", "Chiến dịch quảng bá cùng đối tác", "Tạo hồ sơ phát hành thay đối tác mình phụ trách"],
                 en: ["Sign new partners, look after existing accounts", "Propose advances, contracts and renewals", "Promotion campaigns with partners", "Create release files for managed partners"] },
     man: ["ban-lam-viec", "to-chuc", "ho-tro", "xet-duyet", "roi", "doi-tac", "chien-dich"],
-    nhom: ["doiTac", "doiTacTao", "deXuat", "deXuatTao", "chienDich", "hoTro", "phatHanhHo", "toChuc"],
+    nhom: ["doiTac", "doiTacTao", "deXuat", "deXuatTao", "chienDich", "hoTro", "phatHanhHo", "toChuc", "quyTrinh"],
     taiSan: ["taiKhoanDoiTac", "hopDong", "chienDich"],
     to: [
       { id: "doi-tac", vi: "Đối tác & A&R", en: "Partners & A&R", nhiemVu: [
@@ -1805,8 +1905,8 @@ const TO_CHUC = [
   { id: "tai-chinh", vai: "accounting", vi: "Tài chính", en: "Finance",
     chucNang: { vi: ["Chi trả theo kỳ, xử lý rút tiền, bảng kê PDF", "Sổ tạm ứng và thu hồi", "Kiểm số đề xuất trước khi giám đốc duyệt", "Sổ kế toán, thuế khấu trừ, bút toán điều chỉnh"],
                 en: ["Period payouts, withdrawals, PDF statements", "Advance ledger and recoupment", "Check proposal figures before management approval", "Ledger, withholding tax, adjustments"] },
-    man: ["ban-lam-viec", "to-chuc", "ho-tro", "ke-toan", "chi-tra", "tam-ung", "chia-se", "doi-chieu", "xet-duyet", "roi"],
-    nhom: ["tien", "doiSoat", "deXuat", "chiaSe", "hoTro", "toChuc"],
+    man: ["ban-lam-viec", "to-chuc", "ho-tro", "ke-toan", "chi-tra", "tam-ung", "chia-se", "doi-chieu", "xet-duyet", "roi", "nhap-so-lieu", "hieu-qua-von"],
+    nhom: ["tien", "doiSoat", "deXuat", "chiaSe", "hoTro", "toChuc", "nhapLieu", "von", "quyTrinh"],
     taiSan: ["vi", "tamUng", "bangKe"],
     to: [
       { id: "thanh-toan", vi: "Thanh toán", en: "Payments", nhiemVu: [
@@ -1820,7 +1920,7 @@ const TO_CHUC = [
     chucNang: { vi: ["Cửa trước cho mọi yêu cầu của đối tác, chuyển đúng bộ phận", "Khiếu nại bản quyền, Content ID, cài đặt video", "Tra cứu hồ sơ phát hành và chất lượng lượt nghe"],
                 en: ["Front door for partner requests, route to the right department", "Rights claims, Content ID, video settings", "Look up release files and stream quality"] },
     man: ["ban-lam-viec", "to-chuc", "ho-tro", "danh-muc", "phat-hanh", "quyen"],
-    nhom: ["danhMuc", "khieuNai", "hoTro", "toChuc"],
+    nhom: ["danhMuc", "khieuNai", "hoTro", "toChuc", "quyTrinh"],
     taiSan: ["ticket", "khieuNai"],
     to: [
       { id: "cskh", vi: "Chăm sóc đối tác", en: "Partner care", nhiemVu: [
@@ -2116,7 +2216,10 @@ function dailyStreams(i, back) {
   /* nhiễu có nhớ: hai ngày kề nhau gần nhau, để đường không thành răng cưa */
   const n1 = hash(i * 97 + back, 62), n2 = hash(i * 97 + back + 1, 62), n3 = hash(i * 97 + back + 2, 62);
   const noise = 0.9 + (n1 + n2 + n3) / 3 * 0.2;
-  return Math.round(base * Math.pow(trend, t) * wk * noise);
+  const v = base * Math.pow(trend, t) * wk * noise;
+  /* điều phối viên sửa tổng của một ngày thì cả ngày đó co giãn theo */
+  const h = heSoNgay(back);
+  return Math.round(h === 1 ? v : v * h);
 }
 /* mức trả gộp USD trên 1.000 lượt nghe của từng nền tảng, từ 3 kỳ đã xét duyệt gần nhất */
 let _rateCacheKey = null, _rateCacheVal = null;
@@ -3760,6 +3863,773 @@ const ingest = {
   }
 };
 
+/* =====================================================================
+   21b. NHẬP SỐ LIỆU BẰNG TAY — điều phối viên mới là nguồn của sự thật
+   ---------------------------------------------------------------------
+   Haustek không đọc file báo cáo tự động. Mỗi ngày một điều phối viên mở
+   OneRPM, Warner, Believe, YouTube CMS rồi gõ số vào đây. Vậy nên số gõ
+   tay phải THẮNG số máy sinh — nếu không, người nhập chẳng có lý do gì
+   để nhập.
+
+   Ba mức, mức sau đè lên mức trước:
+     · số máy sinh — ước tính, dùng khi báo cáo chưa về;
+     · tổng của cả một nguồn trong một kỳ — phần chưa gõ theo bài co giãn
+       để cộng lại đúng bằng tổng ấy;
+     · số của từng bài trong nguồn đó — tuyệt đối, không ai chia lại.
+
+   Lượt nghe đi đường khác: phần mềm tự cập nhật mỗi ngày, điều phối viên
+   chỉ sửa những ngày nguồn không về. Sửa tổng của một ngày thì cả ngày co
+   giãn theo, để biểu đồ và dự báo cùng đọc một con số.
+
+   Mỗi lần gõ ghi lại ai, lúc nào, số cũ bao nhiêu — hoàn tác được, và
+   người quản lý biết con số trong báo cáo đến từ đâu.
+   ===================================================================== */
+const NGUON_NHAP = [
+  { id: "onerpm",  vi: "OneRPM",       en: "OneRPM" },
+  { id: "warner",  vi: "Warner",       en: "Warner" },
+  { id: "believe", vi: "Believe",      en: "Believe" },
+  { id: "yt-cms",  vi: "YouTube CMS",  en: "YouTube CMS" },
+  { id: "khac",    vi: "Nguồn khác",   en: "Other source" }
+];
+const NGUON_OK = NGUON_NHAP.map(x => x.id);
+/* Ngày gần nhất mà nguồn lượt nghe chưa về: bảng điều khiển của nền tảng
+   nào cũng chậm một tới hai ngày, nên đó là phần việc hằng ngày thật sự. */
+const LUOT_TRE = 2;
+
+/* Tra ISRC → chỉ số bài, dựng lười một lần rồi giữ: dán một khối bốn mươi
+   dòng mà mỗi dòng quét 50.000 bản ghi thì người dán ngồi đợi. */
+let ISRC_MAP = null;
+function isrcTim(ma) {
+  if (!ISRC_MAP) {
+    ISRC_MAP = new Map();
+    for (let i = 0; i < N; i++) ISRC_MAP.set(tIsrc[i].toUpperCase().replace(/[^A-Z0-9]/g, ""), i);
+  }
+  const i = ISRC_MAP.get(ma);
+  return i == null ? -1 : i;
+}
+
+function rebuildNhapIndex() {
+  TAY_BAI = new Map(); TAY_KY = new Map(); TAY_GO = new Map(); HE_SO_KY.clear();
+  (state.nhapTay || []).forEach(e => {
+    if (e.kieu === "ky") { TAY_KY.set(e.pIdx + ":" + e.fId, e); return; }
+    if (e.kieu !== "bai" || !(e.trackIdx >= 0)) return;
+    const key = e.trackIdx * P + e.pIdx;
+    let a = TAY_BAI.get(key);
+    if (!a) { a = new Float64Array(3); a[0] = a[1] = a[2] = NaN; TAY_BAI.set(key, a); }
+    const k2 = e.pIdx + ":" + e.fId;
+    let g = TAY_GO.get(k2);
+    if (!g) { g = { tien: 0, auto: 0, so: 0 }; TAY_GO.set(k2, g); }
+    /* gõ lại cùng một bài thì dòng sau thay dòng trước, không cộng dồn */
+    if (a[e.fId] === a[e.fId]) g.tien -= a[e.fId]; else { g.auto += grossRecTuSinh(e.trackIdx, e.pIdx, e.fId); g.so++; }
+    a[e.fId] = e.tien; g.tien += e.tien;
+  });
+}
+
+function tongNhapKy(pIdx, fId) {
+  if (!feedLoaded(pIdx, fId)) return 0;
+  const g = TAY_GO.get(pIdx + ":" + fId) || { tien: 0, auto: 0, so: 0 };
+  const conLai = autoKy(pIdx, fId) - g.auto;
+  return cents(g.tien + Math.max(0, conLai) * heSoKy(pIdx, fId));
+}
+
+function moiNhap(o, by) {
+  const me = by || (_me ? _me.email : "");
+  return { id: "N-" + String((state.nhapTay.length + 1)).padStart(4, "0") + "-" + Date.now().toString(36).slice(-4),
+    at: nowISO(), by: me, kieu: o.kieu, pIdx: o.pIdx, ky: PERIODS[o.pIdx].k, fId: o.fId,
+    trackIdx: o.trackIdx == null ? null : o.trackIdx, tien: o.tien, truoc: o.truoc,
+    nguon: o.nguon, ghiChu: o.ghiChu || "" };
+}
+function kiemKy(pIdx) {
+  if (!(pIdx >= 0 && pIdx < P)) throw new Error("Kỳ không hợp lệ");
+  if (state.approved[PERIODS[pIdx].k]) throw new Error("Kỳ " + PERIODS[pIdx].label + " đã xét duyệt. Huỷ xét duyệt trước khi sửa số");
+}
+function kiemTien(v) {
+  const n = Number(v);
+  if (!isFinite(n) || n < 0) throw new Error("Số tiền phải là số không âm");
+  if (n > 5e8) throw new Error("Số tiền vượt ngưỡng hợp lý, kiểm lại đơn vị");
+  return cents(n);
+}
+function kiemNguon(ng) {
+  if (!ng) throw new Error("Chọn nguồn đã lấy số");
+  if (NGUON_OK.indexOf(ng) < 0) throw new Error("Không có nguồn " + ng);
+  return ng;
+}
+
+const nhapLieu = {
+  nguon: () => NGUON_NHAP.map(x => ({ id: x.id, vi: x.vi, en: x.en })),
+  tre: () => LUOT_TRE,
+
+  /* ---- bảng kỳ × nguồn: chỗ điều phối viên nhìn vào mỗi tháng ---- */
+  bang() {
+    return PERIODS.map((pp, pi) => ({
+      pIdx: pi, ky: pp.k, label: pp.label, duyet: !!state.approved[pp.k],
+      cot: FEEDS.map(f => {
+        const e = TAY_KY.get(pi + ":" + f.id) || null;
+        const g = TAY_GO.get(pi + ":" + f.id) || { tien: 0, so: 0 };
+        return { fId: f.id, ten: f.short, tenEn: f.shortEn, nap: feedLoaded(pi, f.id),
+          tuSinh: cents(autoKy(pi, f.id)), thuc: tongNhapKy(pi, f.id),
+          chot: e ? e.tien : null, nguon: e ? e.nguon : null, by: e ? e.by : null, at: e ? e.at : null,
+          soBai: g.so, tienBai: cents(g.tien) };
+      }),
+      tuSinh: cents(FEEDS.reduce((s, f) => s + (feedLoaded(pi, f.id) ? autoKy(pi, f.id) : 0), 0)),
+      thuc: cents(FEEDS.reduce((s, f) => s + tongNhapKy(pi, f.id), 0))
+    }));
+  },
+
+  /* ---- gõ tổng của một nguồn trong một kỳ ---- */
+  ghiKy(pIdx, fId, tien, o, by) {
+    chanQuyen("nhapLieu.ghiKy", "nhapLieu");
+    kiemKy(pIdx);
+    if (!FEEDS[fId]) throw new Error("Không có nguồn " + fId);
+    o = o || {};
+    const t = kiemTien(tien), ng = kiemNguon(o.nguon);
+    const cu = TAY_KY.get(pIdx + ":" + fId);
+    const truoc = cu ? cu.tien : tongNhapKy(pIdx, fId);
+    state.nhapTay = state.nhapTay.filter(x => !(x.kieu === "ky" && x.pIdx === pIdx && x.fId === fId));
+    const e = moiNhap({ kieu: "ky", pIdx, fId, tien: t, truoc, nguon: ng, ghiChu: o.ghiChu }, by);
+    state.nhapTay.unshift(e);
+    /* gõ số vào là nguồn đó có mặt: đánh dấu đã nạp, ghi rõ do người nhập */
+    const st = state.feeds[PERIODS[pIdx].k];
+    if (st && st[fId] && st[fId].status !== "loaded") {
+      st[fId] = { status: "loaded", at: nowISO(), file: null, rows: 0, control: null, tay: true };
+    }
+    rebuildNhapIndex();
+    audit.log("nhap.ky", FEEDS[fId].short + " · " + PERIODS[pIdx].label + " · " + fmt.usd(t) + " · nguồn " + ng, by);
+    store.save();
+    return e;
+  },
+
+  /* ---- gõ số của một bài trong một nguồn ---- */
+  ghiBai(pIdx, fId, trackIdx, tien, o, by) {
+    chanQuyen("nhapLieu.ghiBai", "nhapLieu");
+    kiemKy(pIdx);
+    if (!FEEDS[fId]) throw new Error("Không có nguồn " + fId);
+    if (!(trackIdx >= 0 && trackIdx < N)) throw new Error("Bản ghi không hợp lệ");
+    o = o || {};
+    const t = kiemTien(tien), ng = kiemNguon(o.nguon);
+    const truoc = grossRecByFeed(trackIdx, pIdx, fId);
+    state.nhapTay = state.nhapTay.filter(x => !(x.kieu === "bai" && x.pIdx === pIdx && x.fId === fId && x.trackIdx === trackIdx));
+    const e = moiNhap({ kieu: "bai", pIdx, fId, trackIdx, tien: t, truoc, nguon: ng, ghiChu: o.ghiChu }, by);
+    e.isrc = tIsrc[trackIdx]; e.tenBai = tTitle[trackIdx];
+    state.nhapTay.unshift(e);
+    const st = state.feeds[PERIODS[pIdx].k];
+    if (st && st[fId] && st[fId].status !== "loaded") {
+      st[fId] = { status: "loaded", at: nowISO(), file: null, rows: 0, control: null, tay: true };
+    }
+    rebuildNhapIndex();
+    audit.log("nhap.bai", tIsrc[trackIdx] + " · " + FEEDS[fId].short + " · " + PERIODS[pIdx].label + " · " + fmt.usd(t), by);
+    store.save();
+    return e;
+  },
+
+  /* ---- danh sách bài trong một kỳ × nguồn, để gõ theo từng dòng ---- */
+  baiTrongKy(pIdx, fId, o) {
+    o = o || {};
+    const q = String(o.q || "").trim().toLowerCase();
+    const lim = Math.min(200, o.limit || 40);
+    const ra = [];
+    let quet = 0;
+    /* không có từ khoá thì lấy những bài lớn nhất của kỳ, vì đó là chỗ
+       một con số sai làm lệch tổng nhiều nhất */
+    const nguon = [];
+    if (q) {
+      for (let i = 0; i < N && nguon.length < 4000; i++) {
+        if (tIsrc[i].toLowerCase().indexOf(q) === 0 || tTitle[i].toLowerCase().indexOf(q) >= 0) nguon.push(i);
+      }
+    } else {
+      const top = [];
+      for (let i = 0; i < N; i += 7) {
+        const v = grossRecTuSinh(i, pIdx, fId);
+        if (v > 0) top.push([v, i]);
+      }
+      top.sort((a, b) => b[0] - a[0]);
+      for (let k = 0; k < Math.min(top.length, 400); k++) nguon.push(top[k][1]);
+    }
+    for (const i of nguon) {
+      if (ra.length >= lim) break;
+      quet++;
+      const b = TAY_BAI.get(i * P + pIdx);
+      const goTay = !!(b && b[fId] === b[fId]);
+      ra.push({ i, isrc: tIsrc[i], title: tTitle[i], artist: ARTISTS[tArtist[i]].name,
+        tuSinh: cents(grossRecTuSinh(i, pIdx, fId)), thuc: cents(grossRecByFeed(i, pIdx, fId)), goTay });
+    }
+    return { rows: ra, tong: nguon.length };
+  },
+
+  /* ---- dán một khối từ bảng tính: mỗi dòng một bài ----
+     Điều phối viên bôi đen cột ISRC và cột tiền trên báo cáo rồi dán vào.
+     Gõ tay bốn mươi dòng và dán bốn mươi dòng là khác nhau một buổi làm. */
+  danBai(pIdx, fId, text, o, by) {
+    chanQuyen("nhapLieu.danBai", "nhapLieu");
+    kiemKy(pIdx);
+    if (!FEEDS[fId]) throw new Error("Không có nguồn " + fId);
+    o = o || {};
+    const ng = kiemNguon(o.nguon);
+    const dong = String(text || "").split(/\r?\n/).map(x => x.trim()).filter(Boolean);
+    const ok = [], bo = [];
+    dong.forEach((d, k) => {
+      const c = d.split(/[\t;,]/).map(x => x.trim()).filter(x => x !== "");
+      if (c.length < 2) { bo.push({ dong: k + 1, ly: "thiếu cột", chu: d }); return; }
+      const ma = c[0].toUpperCase().replace(/[^A-Z0-9]/g, "");
+      const i = isrcTim(ma);
+      if (i < 0) { bo.push({ dong: k + 1, ly: "không tìm thấy ISRC", chu: c[0] }); return; }
+      const v = Number(String(c[c.length - 1]).replace(/[^0-9.\-]/g, ""));
+      if (!isFinite(v) || v < 0) { bo.push({ dong: k + 1, ly: "số tiền không hợp lệ", chu: c[c.length - 1] }); return; }
+      ok.push({ i, tien: cents(v) });
+    });
+    if (!ok.length) return { ok: [], bo };
+    /* một lần dựng lại chỉ mục cho cả khối, không phải mỗi dòng một lần */
+    ok.forEach(x => {
+      state.nhapTay = state.nhapTay.filter(y => !(y.kieu === "bai" && y.pIdx === pIdx && y.fId === fId && y.trackIdx === x.i));
+      const e = moiNhap({ kieu: "bai", pIdx, fId, trackIdx: x.i, tien: x.tien,
+        truoc: grossRecByFeed(x.i, pIdx, fId), nguon: ng, ghiChu: o.ghiChu || "dán từ bảng tính" }, by);
+      e.isrc = tIsrc[x.i]; e.tenBai = tTitle[x.i];
+      state.nhapTay.unshift(e);
+    });
+    const st = state.feeds[PERIODS[pIdx].k];
+    if (st && st[fId] && st[fId].status !== "loaded") {
+      st[fId] = { status: "loaded", at: nowISO(), file: null, rows: 0, control: null, tay: true };
+    }
+    rebuildNhapIndex();
+    audit.log("nhap.dan", FEEDS[fId].short + " · " + PERIODS[pIdx].label + " · " + ok.length + " dòng, bỏ qua " + bo.length, by);
+    store.save();
+    return { ok: ok.map(x => ({ isrc: tIsrc[x.i], title: tTitle[x.i], tien: x.tien })), bo };
+  },
+
+  /* ---- hoàn tác một dòng đã gõ ---- */
+  go(id, by) {
+    chanQuyen("nhapLieu.go", "nhapLieu");
+    const e = (state.nhapTay || []).find(x => x.id === id);
+    if (!e) throw new Error("Không tìm thấy dòng " + id);
+    kiemKy(e.pIdx);
+    state.nhapTay = state.nhapTay.filter(x => x.id !== id);
+    rebuildNhapIndex();
+    audit.log("nhap.go", "Gỡ dòng " + id + " · " + (e.kieu === "ky" ? FEEDS[e.fId].short : e.isrc) + " · " + PERIODS[e.pIdx].label, by);
+    store.save();
+    return true;
+  },
+
+  nhatKy(limit) {
+    return (state.nhapTay || []).slice(0, limit || 60).map(e => Object.assign({}, e,
+      { nguonTen: (NGUON_NHAP.find(x => x.id === e.nguon) || {}).vi || e.nguon,
+        kyTen: (PERIODS[e.pIdx] || {}).label, nguonBaoCao: FEEDS[e.fId] ? FEEDS[e.fId].short : "" }));
+  },
+
+  /* ---- lượt nghe hằng ngày ---- */
+  ngay(n) {
+    n = Math.min(60, n || 30);
+    const ra = [];
+    for (let b = 0; b < n; b++) {
+      const ngay = isoDate(new Date(ASOF.getTime() - b * 864e5));
+      const g = (state.luotNgay || {})[ngay];
+      const tuSinh = luotTuSinh(b);
+      const cho = b < LUOT_TRE && !g;               /* nguồn chưa về, chờ nhập hoặc chờ đồng bộ */
+      ra.push({ ngay, back: b, tuSinh, tong: g ? g.tong : (cho ? 0 : tuSinh),
+        trangThai: g ? "tay" : cho ? "cho" : "tuDong",
+        by: g ? g.by : null, at: g ? g.at : null, ghiChu: g ? g.ghiChu || "" : "",
+        plat: g && g.plat ? g.plat : null,
+        platTuSinh: STORE_TOP.map(x => ({ n: x.n, luot: Math.round(tuSinh * x.w / 0.92) })) });
+    }
+    return ra;
+  },
+  ghiNgay(ngay, tong, o, by) {
+    chanQuyen("nhapLieu.ghiNgay", "nhapLieu");
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(String(ngay))) throw new Error("Ngày không hợp lệ");
+    const n = Number(tong);
+    if (!isFinite(n) || n < 0) throw new Error("Lượt nghe phải là số không âm");
+    if (n > 5e9) throw new Error("Lượt nghe vượt ngưỡng hợp lý, kiểm lại đơn vị");
+    o = o || {};
+    if (!state.luotNgay) state.luotNgay = {};
+    state.luotNgay[ngay] = { tong: Math.round(n), plat: o.plat || null, ghiChu: o.ghiChu || "",
+      by: by || (_me ? _me.email : ""), at: nowISO() };
+    LUOT_HS.delete(ngay);
+    audit.log("nhap.ngay", ngay + " · " + fmt.num(n) + " lượt nghe", by);
+    store.save();
+    return state.luotNgay[ngay];
+  },
+  xoaNgay(ngay, by) {
+    chanQuyen("nhapLieu.xoaNgay", "nhapLieu");
+    if (!state.luotNgay || !state.luotNgay[ngay]) throw new Error("Ngày " + ngay + " chưa có số nhập tay");
+    delete state.luotNgay[ngay];
+    LUOT_HS.delete(ngay);
+    audit.log("nhap.ngayGo", "Trả ngày " + ngay + " về số tự động", by);
+    store.save();
+    return true;
+  },
+  /* việc còn phải làm hôm nay — dùng cho huy hiệu điều hướng và bàn làm việc */
+  conThieu() {
+    let ngayThieu = 0;
+    for (let b = 0; b < LUOT_TRE; b++) {
+      const ngay = isoDate(new Date(ASOF.getTime() - b * 864e5));
+      if (!(state.luotNgay || {})[ngay]) ngayThieu++;
+    }
+    const kyThieu = PERIODS.reduce((s, pp, pi) => s + (state.approved[pp.k] ? 0 : missingFeeds(pi).length), 0);
+    return { ngay: ngayThieu, ky: kyThieu, tong: ngayThieu + kyThieu };
+  }
+};
+rebuildNhapIndex();
+
+/* =====================================================================
+   21c. QUY TRÌNH — mỗi loại việc một đường đi, mỗi bước một cái hạn
+   ---------------------------------------------------------------------
+   Nhân viên mới vào không đoán được "gặp tranh chấp thì làm gì trước".
+   Bảng dưới đây là câu trả lời: từng bước, ai làm, trong bao lâu, cần
+   giấy tờ gì, và báo cho ai. Việc nào cũng bám đúng bảng của loại đó,
+   nên người quản lý nhìn một cái là biết việc đang đứng ở bước nào và
+   đứng bao lâu rồi.
+
+   Bước không phải là trạng thái. Trạng thái là thứ hệ thống tự đổi khi
+   dữ liệu đổi; bước là thứ CON NGƯỜI đánh dấu đã làm. Hai thứ đi song
+   song và soi lẫn nhau: việc đã "đã xong" mà bước còn dở là dấu hiệu
+   người làm bỏ qua bước, thường là bước gom bằng chứng.
+   ===================================================================== */
+function b(id, vi, en, gio, mo, moEn, bao) {
+  return { id, vi, en, gio, mo: mo || "", moEn: moEn || "", bao: bao || "" };
+}
+const QUY_TRINH = [
+  { id: "tranh-chap", vai: "support", man: "quyen", nhip: "viec",
+    vi: "Xử lý tranh chấp bản quyền", en: "Handling a rights dispute",
+    mo: "Từ lúc nền tảng báo có tranh chấp tới lúc tiền bị giữ về đúng chủ.",
+    moEn: "From the platform flagging a dispute to the held money reaching its owner.",
+    buoc: [
+      b("ghi-nhan", "Mở hồ sơ và phân loại", "Open the file and classify", 4,
+        "Ghi mã vụ, nền tảng, mã tài sản, thị trường, bên còn lại. Chọn đúng một trong năm loại tranh chấp — chọn sai là đi sai đường ngay từ bước đầu.",
+        "Record the case ID, platform, asset ID, territory and the other party. Pick one of the five dispute types — the wrong type sends the whole case down the wrong path."),
+      b("khoa-thiet-hai", "Chốt mức thiệt hại", "Fix the exposure", 4,
+        "Ghi lại số lượt xem mỗi ngày đang bị ảnh hưởng và số tiền nền tảng đang giữ, kèm ảnh màn hình có ngày. Con số này về sau không sửa lại được.",
+        "Record daily affected views and the amount the platform is holding, with a dated screenshot. This figure cannot be revised later.",
+        "trưởng bộ phận nếu tiền giữ vượt 2.000 USD"),
+      b("bang-chung", "Gom bằng chứng", "Gather the evidence", 24,
+        "Bốn thứ, thiếu một là hồ sơ hỏng: hợp đồng phân phối còn hiệu lực, file master gốc kèm ngày tạo, biên nhận ISRC / UPC, thư uỷ quyền của đối tác.",
+        "Four items, any one missing sinks the case: the distribution contract in force, the original master with its creation date, the ISRC / UPC receipt, and the partner’s letter of authority."),
+      b("doi-chieu", "Đối chiếu nội bộ trước khi cãi", "Check ourselves first", 8,
+        "Bản ghi có thật trong danh mục Haustek không, đúng lãnh thổ không, còn trong thời hạn hợp đồng không. Nếu ta sai thì nhả claim ngay tại bước này, đừng để bên kia chứng minh hộ.",
+        "Is the recording really in Haustek’s catalogue, in that territory, inside the contract term? If we are wrong, release the claim here — do not make the other side prove it for us.",
+        "trưởng bộ phận nếu phải nhả claim"),
+      b("lien-he", "Liên hệ bên còn lại trước", "Contact the other side first", 24,
+        "Gửi thư nêu rõ quyền và bằng chứng, hẹn 5 ngày làm việc. Phần lớn vụ dừng ở đây và không tốn hạn tranh chấp của nền tảng.",
+        "Send a letter setting out the rights and the evidence, giving five working days. Most cases end here without spending the platform’s dispute window."),
+      b("nop", "Nộp tranh chấp trên nền tảng", "File the dispute", 8,
+        "Đúng biểu mẫu của nền tảng, đính kèm đủ bốn bằng chứng, ghi lại mã vụ nền tảng cấp. Từ đây đồng hồ 30 ngày bắt đầu chạy.",
+        "On the platform’s own form, with all four evidence items attached; note the case ID it returns. The 30-day clock starts here."),
+      b("bao-doi-tac", "Báo đối tác", "Tell the partner", 8,
+        "Nghệ sĩ hoặc label phải biết trong ngày: đang bị tranh chấp gì, tiền có bị giữ không, khi nào có kết quả. Im lặng ở bước này là chỗ mất đối tác.",
+        "The artist or label must know the same day: what is disputed, whether money is held, when an answer is due. Silence here is where partners are lost.",
+        "đối tác"),
+      b("theo-han", "Theo hạn 30 ngày", "Watch the 30-day window", 0,
+        "Đặt nhắc ở ngày 25. Nền tảng im tới hạn là chuyển sang bước nâng cấp, không chờ thêm.",
+        "Set a reminder at day 25. If the platform is silent at the deadline, escalate — do not wait longer."),
+      b("nang-cap", "Nâng cấp khi bị từ chối", "Escalate a rejection", 48,
+        "Khiếu nại lần hai kèm bằng chứng mới hoặc ý kiến luật sư. Chỉ nâng cấp khi chắc quyền — nâng cấp hỏng để lại vết trên tài khoản đối tác.",
+        "A second appeal with new evidence or counsel’s opinion. Escalate only when the rights are certain — a failed escalation leaves a mark on the partner’s account.",
+        "giám đốc"),
+      b("ket-so", "Kết thúc và ghi sổ", "Close and book it", 8,
+        "Xác nhận tiền bị giữ đã về, đổi trạng thái vụ, ghi một dòng bài học để vụ sau không lặp lại.",
+        "Confirm the held money has arrived, change the case status, and write one line of what was learned so the next case does not repeat it.") ] },
+
+  { id: "nhap-so-lieu", vai: "ops", man: "nhap-so-lieu", nhip: "ngay",
+    vi: "Nhập số liệu hằng ngày", en: "Daily data entry",
+    mo: "Việc lặp mỗi ngày của điều phối viên. Bỏ một ngày thì kỳ đó lệch, và lệch ở đâu thì tháng sau mới biết.",
+    moEn: "The coordinator’s daily loop. Skip a day and the period drifts — and you find out a month later.",
+    buoc: [
+      b("kiem-ngay", "Kiểm ngày còn thiếu", "Check for missing days", 1,
+        "Mở bảng lượt nghe hằng ngày, xem có ngày nào nguồn chưa về. Ngày gần nhất luôn chậm một tới hai ngày, đó là bình thường.",
+        "Open the daily stream table and look for days the feed has not reached. The last day or two always lags — that is normal."),
+      b("go-luot", "Gõ lượt nghe ngày thiếu", "Key in the missing days", 2,
+        "Lấy tổng lượt nghe từng nền tảng trên bảng điều khiển, gõ vào ngày tương ứng. Ghi rõ lấy từ đâu.",
+        "Take each platform’s daily total from its dashboard and key it into that date. Record where it came from."),
+      b("go-tien", "Gõ doanh thu khi báo cáo về", "Key in revenue when the report lands", 4,
+        "Báo cáo tháng về là gõ tổng của nguồn đó vào đúng kỳ. Nếu báo cáo có dòng theo bài thì gõ tiếp những bài lớn.",
+        "When a monthly report lands, key its total into the right period. If the report itemises tracks, key in the large ones too."),
+      b("soat-lech", "Soát chênh lệch", "Check the variance", 2,
+        "So số vừa gõ với số ước tính. Lệch quá 20% thì dừng lại kiểm đơn vị tiền và kỳ trước khi lưu.",
+        "Compare what you keyed against the estimate. More than 20% apart, stop and check the currency and the period before saving.",
+        "trưởng bộ phận nếu lệch trên 20%"),
+      b("bao-xong", "Báo đã đủ nguồn", "Report the period complete", 1,
+        "Kỳ đủ ba nguồn thì báo đối soát. Trước đó không ai được xét duyệt kỳ.",
+        "When all three feeds are in, tell reconciliation. Nobody approves the period before that.") ] },
+
+  { id: "phat-hanh", vai: "ops", man: "phat-hanh", nhip: "viec",
+    vi: "Tiếp nhận và phát hành hồ sơ", en: "Intake and release",
+    mo: "Từ lúc đối tác gửi hồ sơ tới lúc bản ghi lên kệ.",
+    moEn: "From the partner’s submission to the recording going live.",
+    buoc: [
+      b("tiep-nhan", "Tiếp nhận trong 24 giờ", "Take it in within 24 hours", 24,
+        "Hồ sơ nằm ở trạng thái đã gửi quá một ngày là đối tác bắt đầu mất tin.",
+        "A file sitting in “submitted” for more than a day starts costing the partner’s trust."),
+      b("kiem-metadata", "Kiểm mục bắt buộc", "Check the required fields", 8,
+        "Thiếu mục bắt buộc thì trả lại ngay kèm danh sách thiếu, đừng sửa hộ rồi im.",
+        "If a required field is missing, return it with the list — do not quietly fill it in yourself."),
+      b("cap-ma", "Cấp ISRC / UPC", "Assign ISRC / UPC", 8, "", ""),
+      b("giao-nen-tang", "Giao tới nền tảng", "Deliver to the platforms", 24, "", ""),
+      b("kiem-len-ke", "Kiểm đã lên kệ", "Confirm it is live", 48,
+        "Kiểm từng nền tảng chính, không tin báo cáo giao nhận suông.",
+        "Check each major platform yourself; do not trust the delivery report alone."),
+      b("bao-doi-tac", "Báo đối tác kèm đường dẫn", "Tell the partner, with links", 4, "", "", "đối tác") ] },
+
+  { id: "ticket", vai: "support", man: "ho-tro", nhip: "viec",
+    vi: "Xử lý yêu cầu hỗ trợ", en: "Handling a support request",
+    mo: "Ticket của đối tác, tính hạn theo mức ưu tiên.",
+    moEn: "Partner tickets, with a deadline set by priority.",
+    buoc: [
+      b("nhan", "Nhận và trả lời lần đầu", "Acknowledge and first reply", 4,
+        "Trả lời lần đầu trong 4 giờ kể cả khi chưa có câu trả lời — nói rõ đang xem.",
+        "Reply within four hours even without an answer — say it is being looked at."),
+      b("phan-loai", "Phân loại và định tuyến", "Classify and route", 2,
+        "Sai bộ phận thì chuyển ngay, đừng giữ để tự xử lý.",
+        "Wrong department: hand it over at once rather than trying to solve it yourself."),
+      b("xu-ly", "Xử lý", "Work it", 0, "", ""),
+      b("xac-nhan", "Xác nhận với đối tác rồi mới đóng", "Confirm before closing", 4,
+        "Đối tác xác nhận xong mới đóng. Tự đóng là ticket mở lại.",
+        "Close only after the partner confirms. Self-closing means it reopens.", "đối tác") ] },
+
+  { id: "chi-tra", vai: "accounting", man: "chi-tra", nhip: "thang",
+    vi: "Chi trả kỳ", en: "Period payout",
+    mo: "Sau khi kỳ được xét duyệt.",
+    moEn: "After the period is approved.",
+    buoc: [
+      b("chot-ty-gia", "Chốt tỷ giá ngày cuối tháng", "Lock the month-end FX rate", 2,
+        "Tỷ giá bán ra Vietcombank ngày cuối tháng của kỳ. Chốt xong không đổi.",
+        "Vietcombank selling rate on the last day of the period’s month. Once locked, it stays."),
+      b("soat-nguong", "Soát ngưỡng và dồn kỳ", "Check thresholds and carry-overs", 4, "", ""),
+      b("thue", "Tính thuế khấu trừ", "Compute withholding tax", 4, "", ""),
+      b("bang-ke", "Phát bảng kê cho đối tác", "Issue partner statements", 8, "", "", "đối tác"),
+      b("chuyen-tien", "Chuyển tiền và ghi phí", "Transfer and book the fee", 8,
+        "Phí chuyển khoản tính vào hoá đơn đối tác, ghi rõ trên bảng kê.",
+        "The transfer fee goes on the partner’s invoice and is shown on the statement.") ] },
+
+  { id: "de-xuat", vai: "sales", man: "xet-duyet", nhip: "viec",
+    vi: "Đề xuất tạm ứng / hợp đồng", en: "Advance / contract proposal",
+    mo: "Từ lúc kinh doanh dựng số tới lúc giám đốc ký.",
+    moEn: "From sales building the numbers to management signing.",
+    buoc: [
+      b("tinh-roi", "Chạy bảng tính ROI", "Run the ROI sheet", 4,
+        "Không có bảng ROI thì không có đề xuất. Mốc thưởng chỉ mở khi phần trước đã hoà vốn.",
+        "No ROI sheet, no proposal. Bonus tranches unlock only after the previous one has paid back."),
+      b("kiem-so", "Kế toán kiểm số", "Finance checks the figures", 24, "", ""),
+      b("trinh", "Trình giám đốc", "Send to management", 0, "", "", "giám đốc"),
+      b("ky", "Ký và mở hợp đồng", "Sign and open the contract", 48, "", "") ] }
+];
+const QT_MAP = {};
+QUY_TRINH.forEach(q => { QT_MAP[q.id] = q; });
+
+function khoaBuoc(loai, id) { return loai + ":" + id; }
+function buocLuu(loai, id) {
+  if (!state.buocViec) state.buocViec = {};
+  const k = khoaBuoc(loai, id);
+  if (!state.buocViec[k]) state.buocViec[k] = { xong: {} };
+  return state.buocViec[k];
+}
+const quyTrinh = {
+  list() { return QUY_TRINH.map(q => ({ id: q.id, vi: q.vi, en: q.en, mo: q.mo, moEn: q.moEn, vai: q.vai, man: q.man, nhip: q.nhip, soBuoc: q.buoc.length })); },
+  get(id) {
+    const q = QT_MAP[id];
+    return q ? { id: q.id, vi: q.vi, en: q.en, mo: q.mo, moEn: q.moEn, vai: q.vai, man: q.man, nhip: q.nhip,
+      buoc: q.buoc.map(x => Object.assign({}, x)) } : null;
+  },
+  /* trạng thái bước của MỘT việc cụ thể */
+  cua(loai, id) {
+    const q = QT_MAP[loai];
+    if (!q) return null;
+    const luu = (state.buocViec || {})[khoaBuoc(loai, id)] || { xong: {} };
+    let tiep = null;
+    const buoc = q.buoc.map(x => {
+      const d = luu.xong[x.id] || null;
+      if (!d && !tiep) tiep = x.id;
+      return Object.assign({}, x, { xong: !!d, at: d ? d.at : null, by: d ? d.by : null, ghiChu: d ? d.ghiChu || "" : "" });
+    });
+    const xong = buoc.filter(x => x.xong).length;
+    return { loai, id, qt: q.id, vi: q.vi, en: q.en, buoc, xong, tong: buoc.length, tiep,
+      xongHet: xong === buoc.length };
+  },
+  danhDau(loai, id, buocId, o, by) {
+    chanQuyen("quyTrinh.danhDau", "quyTrinh");
+    const q = QT_MAP[loai];
+    if (!q) throw new Error("Không có quy trình " + loai);
+    if (!q.buoc.some(x => x.id === buocId)) throw new Error("Quy trình " + loai + " không có bước " + buocId);
+    const luu = buocLuu(loai, id);
+    luu.xong[buocId] = { at: nowISO(), by: by || (_me ? _me.email : ""), ghiChu: (o && o.ghiChu) || "" };
+    audit.log("buoc.xong", loai + " · " + id + " · " + buocId, by);
+    store.save();
+    return this.cua(loai, id);
+  },
+  moLai(loai, id, buocId, by) {
+    chanQuyen("quyTrinh.moLai", "quyTrinh");
+    const luu = buocLuu(loai, id);
+    if (!luu.xong[buocId]) throw new Error("Bước này chưa được đánh dấu");
+    delete luu.xong[buocId];
+    audit.log("buoc.moLai", loai + " · " + id + " · " + buocId, by);
+    store.save();
+    return this.cua(loai, id);
+  }
+};
+
+/* =====================================================================
+   21d. HIỆU SUẤT NHÂN VIÊN — đo bằng việc, không đo bằng cảm giác
+   ---------------------------------------------------------------------
+   Ba nguồn việc có chủ và có hạn: ticket hỗ trợ, khiếu nại bản quyền, và
+   những lần một người đẩy hồ sơ phát hành sang bước tiếp theo. Ba nguồn
+   ấy gộp lại thành một dòng việc cho mỗi người, rồi mới ra được: đã giao
+   bao nhiêu, xong bao nhiêu, đúng hạn bao nhiêu, quá hạn bao nhiêu, và
+   trung bình bao lâu thì xong một việc.
+
+   Cố ý KHÔNG chấm điểm tổng. Một con số duy nhất giấu mất chuyện người
+   này nhận toàn việc khó; người quản lý phải nhìn thấy cả bốn cột rồi tự
+   kết luận. Ô đánh giá cuối năm để trống cho người quản lý viết.
+   ===================================================================== */
+function gioGiua(a, b) {
+  if (!a || !b) return null;
+  const x = new Date(String(a).replace(" ", "T")), y = new Date(String(b).replace(" ", "T"));
+  const h = (y - x) / 36e5;
+  return isFinite(h) && h >= 0 ? h : null;
+}
+function thangCua(iso) { return String(iso || "").slice(0, 7); }
+/* dòng việc chuẩn hoá của một người */
+function viecCua(staffId) {
+  const nv = staffById(staffId);
+  if (!nv) return [];
+  const ra = [];
+  const now = nowISO();
+  state.tickets.forEach(t => {
+    if (t.assignee !== staffId) return;
+    const xong = t.status === "done";
+    ra.push({ loai: "ticket", qt: "ticket", id: t.id, tieuDe: t.title, mo: t.type,
+      mo1: t.priority, giao: t.createdAt, han: t.dueAt, xongLuc: xong ? t.updatedAt : null, xong,
+      quaHan: xong ? (t.updatedAt > t.dueAt) : (now > t.dueAt), man: "ho-tro" });
+  });
+  state.claims.forEach(c => {
+    if (c.assignee !== staffId) return;
+    const xong = c.status === "resolved" || c.status === "released";
+    const han = c.expiresAt || addDays(String(c.createdAt).slice(0, 10), 30);
+    ra.push({ loai: "khieuNai", qt: "tranh-chap", id: c.id, tieuDe: c.track.title, mo: c.category,
+      mo1: c.priority, giao: c.createdAt, han: han + " 23:59:59", xongLuc: xong ? c.updatedAt : null, xong,
+      quaHan: xong ? (String(c.updatedAt).slice(0, 10) > han) : (String(now).slice(0, 10) > han), man: "quyen" });
+  });
+  state.releases.forEach(r => {
+    (r.history || []).forEach((h, k) => {
+      if (!h.by || h.by !== nv.email) return;
+      const truoc = r.history[k - 1];
+      ra.push({ loai: "phatHanh", qt: "phat-hanh", id: r.id, tieuDe: r.title, mo: h.status, mo1: "normal",
+        giao: truoc ? truoc.at : r.createdAt, han: null, xongLuc: h.at, xong: true, quaHan: false, man: "phat-hanh" });
+    });
+  });
+  return ra.sort((a, b) => (a.giao < b.giao ? 1 : -1));
+}
+function gopViec(ds) {
+  const xong = ds.filter(x => x.xong);
+  const coHan = ds.filter(x => x.han);
+  const quaHan = ds.filter(x => x.quaHan);
+  const gio = xong.map(x => gioGiua(x.giao, x.xongLuc)).filter(x => x != null);
+  const dungHan = coHan.filter(x => !x.quaHan).length;
+  return {
+    giao: ds.length, xong: xong.length, dangLam: ds.length - xong.length,
+    quaHan: quaHan.length, coHan: coHan.length, dungHan,
+    tyLeDungHan: coHan.length ? Math.round(dungHan / coHan.length * 1000) / 10 : null,
+    gioTb: gio.length ? Math.round(gio.reduce((s, v) => s + v, 0) / gio.length * 10) / 10 : null
+  };
+}
+const MUC_HIEU_SUAT = [
+  { id: "tot", vi: "Tốt", en: "Strong", tu: 90 },
+  { id: "dat", vi: "Đạt", en: "Meets", tu: 75 },
+  { id: "canXem", vi: "Cần xem lại", en: "Needs review", tu: 0 }
+];
+function mucCua(tyLe) {
+  if (tyLe == null) return null;
+  return MUC_HIEU_SUAT.find(m => tyLe >= m.tu) || MUC_HIEU_SUAT[MUC_HIEU_SUAT.length - 1];
+}
+const hieuSuat = {
+  muc: () => MUC_HIEU_SUAT.map(m => ({ id: m.id, vi: m.vi, en: m.en, tu: m.tu })),
+  /* một dòng cho mỗi nhân viên đang làm việc */
+  bang(o) {
+    o = o || {};
+    return STAFF.filter(x => x.active !== false)
+      .filter(x => !o.vai || x.role === o.vai)
+      .map(nv => {
+        const ds = viecCua(nv.id);
+        const g = gopViec(ds);
+        return Object.assign({ id: nv.id, name: nv.name, email: nv.email, role: nv.role,
+          cap: capCua(nv), capTen: chucDanhCua(nv.chucDanh), to: nv.to || null }, g,
+          { muc: mucCua(g.tyLeDungHan) });
+      })
+      .sort((a, b) => (b.giao - a.giao));
+  },
+  /* hồ sơ một người: việc gần đây, theo tháng, và bước còn dở */
+  cua(staffId, o) {
+    const nv = staffById(staffId);
+    if (!nv) return null;
+    o = o || {};
+    const ds = viecCua(staffId);
+    const g = gopViec(ds);
+    const thang = {};
+    ds.forEach(x => {
+      const k = thangCua(x.xongLuc || x.giao);
+      if (!thang[k]) thang[k] = { thang: k, giao: 0, xong: 0, quaHan: 0 };
+      thang[k].giao++; if (x.xong) thang[k].xong++; if (x.quaHan) thang[k].quaHan++;
+    });
+    const theoThang = Object.values(thang).sort((a, b) => (a.thang < b.thang ? -1 : 1)).slice(-12);
+    /* Việc đang mở kèm bước quy trình còn dở — chỗ người quản lý gỡ tắc.
+       Tên phải KHÁC "dangLam" của gopViec: cái kia là một con số, cái này là
+       một danh sách; trùng tên thì Object.assign đè số bằng mảng và màn hình
+       in ra NaN mà không ném lỗi nào. */
+    const viecMo = ds.filter(x => !x.xong).slice(0, o.limit || 24).map(x => {
+      const bc = quyTrinh.cua(x.qt, x.id);
+      return Object.assign({}, x, { buocXong: bc ? bc.xong : 0, buocTong: bc ? bc.tong : 0,
+        buocTiep: bc && bc.tiep ? (QT_MAP[x.qt].buoc.find(y => y.id === bc.tiep) || {}).vi : null });
+    });
+    return Object.assign({ id: nv.id, name: nv.name, email: nv.email, role: nv.role,
+      cap: capCua(nv), capTen: chucDanhCua(nv.chucDanh) }, g,
+      { muc: mucCua(g.tyLeDungHan), theoThang, viecMo,
+        danhGia: (state.danhGiaNam || {})[nv.id] || null,
+        quaHanGanDay: ds.filter(x => x.quaHan).slice(0, 10) });
+  },
+  /* cả công ty theo tháng, để biết đội đang khoẻ hay đang đuối */
+  congTy() {
+    const thang = {};
+    STAFF.filter(x => x.active !== false).forEach(nv => {
+      viecCua(nv.id).forEach(x => {
+        const k = thangCua(x.xongLuc || x.giao);
+        if (!thang[k]) thang[k] = { thang: k, giao: 0, xong: 0, quaHan: 0 };
+        thang[k].giao++; if (x.xong) thang[k].xong++; if (x.quaHan) thang[k].quaHan++;
+      });
+    });
+    return Object.values(thang).sort((a, b) => (a.thang < b.thang ? -1 : 1)).slice(-12);
+  },
+  /* ô đánh giá cuối năm: người quản lý viết, hệ thống chỉ giữ */
+  ghiDanhGia(staffId, nam, o, by) {
+    chanQuyen("hieuSuat.ghiDanhGia", "hieuSuat");
+    if (!staffById(staffId)) throw new Error("Không có nhân viên này");
+    const y = Number(nam);
+    if (!(y >= 2020 && y <= 2100)) throw new Error("Năm đánh giá không hợp lệ");
+    o = o || {};
+    if (!state.danhGiaNam) state.danhGiaNam = {};
+    const cu = state.danhGiaNam[staffId] || {};
+    cu[y] = { muc: o.muc || "", nhanXet: chuoi(o.nhanXet), by: by || (_me ? _me.name : ""), at: nowISO() };
+    state.danhGiaNam[staffId] = cu;
+    audit.log("hieuSuat.danhGia", staffById(staffId).name + " · " + y + " · " + (o.muc || "—"), by);
+    store.save();
+    return cu[y];
+  }
+};
+
+/* =====================================================================
+   21e. HIỆU QUẢ SỬ DỤNG VỐN — tiền ứng đi rồi có về không, về lúc nào
+   ---------------------------------------------------------------------
+   Tạm ứng là tiền Haustek bỏ ra trước và thu lại dần từ doanh thu của
+   chính đối tác đó. Bảng chi trả từng kỳ đã ghi sẵn từng lượt thu hồi,
+   nên quá khứ không phải ước lượng — đọc thẳng từ sổ. Tương lai thì nối
+   tiếp bằng nhịp thu hồi ba kỳ gần nhất của đúng đối tác ấy.
+
+   Ngày giải ngân lấy theo ngày ký hợp đồng: bản mẫu không giữ ngày
+   chuyển tiền riêng. Chỗ này là giả định, và có nói rõ trên màn hình.
+   ===================================================================== */
+const von = {
+  /* thu hồi thật, theo từng kỳ đã chốt sổ */
+  theoKy() {
+    let luy = 0;
+    return PERIODS.map((pp, pi) => {
+      const rows = state.payouts[pp.k] || [];
+      const thu = cents(rows.reduce((s, r) => s + (r.recoup || 0), 0));
+      luy = cents(luy + thu);
+      return { pIdx: pi, ky: pp.k, label: pp.label, thuHoi: thu, luyKe: luy, chot: !!state.approved[pp.k] };
+    });
+  },
+  /* một dòng cho mỗi đối tác có tạm ứng */
+  bang() {
+    const kyChot = PERIODS.filter(pp => state.approved[pp.k]);
+    return Object.keys(state.advances).map(pk => {
+      const a = state.advances[pk];
+      const daThu = cents(Object.values(a.byPeriod || {}).reduce((s, v) => s + v, 0));
+      const conLai = advanceBalance(pk);
+      /* nhịp thu hồi ba kỳ chốt gần nhất của chính đối tác này */
+      const gan = kyChot.slice(-3).map(pp => (a.byPeriod || {})[pp.k] || 0);
+      const nhip = gan.length ? cents(gan.reduce((s, v) => s + v, 0) / gan.length) : 0;
+      const conThang = conLai > 0 ? (nhip > 0 ? Math.ceil(conLai / nhip) : null) : 0;
+      const ky = signedAtOf(pk), het = contractEndOf(pk);
+      const thangTroi = Math.max(1, Math.round((ASOF - new Date(ky)) / 2628e6));
+      const thangConHopDong = Math.round((new Date(het) - ASOF) / 2628e6);
+      return { partyKey: pk, name: partyName(pk), clientId: partyClientId(pk),
+        kind: pk[0] === "L" ? "label" : "artist",
+        giaiNgan: a.opening, daThu, conLai, note: a.note || "",
+        tyLe: a.opening > 0 ? Math.round(daThu / a.opening * 1000) / 10 : 0,
+        nhip, conThang, kyHopDong: ky, hetHopDong: het, thangTroi, thangConHopDong,
+        /* kịp hay không: còn bao nhiêu tháng hợp đồng so với số tháng cần để thu hết */
+        kip: conLai <= 0 ? true : (conThang == null ? false : conThang <= thangConHopDong),
+        tocDo: a.opening > 0 && thangTroi > 0 ? Math.round(daThu / thangTroi * 100) / 100 : 0 };
+    }).sort((a, b) => b.conLai - a.conLai);
+  },
+  /* đường thu hồi: quá khứ đọc từ sổ, tương lai nối bằng nhịp gần nhất */
+  duong(thangToi) {
+    const n = Math.min(24, thangToi || 12);
+    const qua = this.theoKy();
+    const rows = this.bang();
+    /* mỗi tháng tới, mỗi đối tác trả tiếp bằng nhịp của mình cho tới khi hết nợ */
+    const con = rows.map(r => ({ conLai: r.conLai, nhip: r.nhip }));
+    let luy = qua.length ? qua[qua.length - 1].luyKe : 0;
+    const toi = [];
+    const cuoi = PERIODS[P - 1];
+    for (let k = 1; k <= n; k++) {
+      let thu = 0;
+      con.forEach(c => {
+        if (c.conLai <= 0 || c.nhip <= 0) return;
+        const v = Math.min(c.conLai, c.nhip);
+        c.conLai = cents(c.conLai - v); thu += v;
+      });
+      thu = cents(thu); luy = cents(luy + thu);
+      const d = new Date(cuoi.year, cuoi.month - 1 + k, 1);
+      toi.push({ label: String(d.getMonth() + 1).padStart(2, "0") + "/" + d.getFullYear(),
+        thuHoi: thu, luyKe: luy, duBao: true });
+    }
+    return { qua, toi, conSauCung: cents(con.reduce((s, c) => s + Math.max(0, c.conLai), 0)) };
+  },
+  /* con số đầu bảng */
+  tongQuan() {
+    const rows = this.bang();
+    const giaiNgan = cents(rows.reduce((s, r) => s + r.giaiNgan, 0));
+    const daThu = cents(rows.reduce((s, r) => s + r.daThu, 0));
+    const conLai = cents(rows.reduce((s, r) => s + r.conLai, 0));
+    const xong = rows.filter(r => r.conLai <= 0);
+    const treo = rows.filter(r => r.conLai > 0 && !r.kip);
+    /* doanh thu đối tác tạo ra trên mỗi đồng vốn đã ứng */
+    let sinhRa = 0;
+    PERIODS.forEach((pp, pi) => {
+      if (!state.approved[pp.k]) return;
+      (state.payouts[pp.k] || []).forEach(r => { if (state.advances[r.partyKey]) sinhRa += (r.earned || 0); });
+    });
+    const thangXong = xong.map(r => r.thangTroi).filter(x => x > 0);
+    return { soHopDong: rows.length, giaiNgan, daThu, conLai,
+      tyLeThuHoi: giaiNgan > 0 ? Math.round(daThu / giaiNgan * 1000) / 10 : 0,
+      daXong: xong.length, treo: treo.length, treoTien: cents(treo.reduce((s, r) => s + r.conLai, 0)),
+      sinhRa: cents(sinhRa),
+      trenMoiDong: giaiNgan > 0 ? Math.round(sinhRa / giaiNgan * 100) / 100 : 0,
+      thangHoaVonTb: thangXong.length ? Math.round(thangXong.reduce((s, v) => s + v, 0) / thangXong.length) : null };
+  },
+  /* phân lớp theo năm ký: lứa nào thu hồi tốt hơn lứa nào */
+  lop() {
+    const m = {};
+    this.bang().forEach(r => {
+      const y = String(r.kyHopDong).slice(0, 4);
+      if (!m[y]) m[y] = { nam: y, so: 0, giaiNgan: 0, daThu: 0, conLai: 0 };
+      m[y].so++; m[y].giaiNgan = cents(m[y].giaiNgan + r.giaiNgan);
+      m[y].daThu = cents(m[y].daThu + r.daThu); m[y].conLai = cents(m[y].conLai + r.conLai);
+    });
+    return Object.values(m).sort((a, b) => (a.nam < b.nam ? -1 : 1))
+      .map(x => Object.assign(x, { tyLe: x.giaiNgan > 0 ? Math.round(x.daThu / x.giaiNgan * 1000) / 10 : 0 }));
+  },
+  /* tuổi nợ của phần chưa thu hồi */
+  tuoiNo() {
+    const bucket = [{ id: "0-6", vi: "Dưới 6 tháng", en: "Under 6 months", tu: 0, den: 6, tien: 0, so: 0 },
+      { id: "6-12", vi: "6 tới 12 tháng", en: "6 to 12 months", tu: 6, den: 12, tien: 0, so: 0 },
+      { id: "12-24", vi: "1 tới 2 năm", en: "1 to 2 years", tu: 12, den: 24, tien: 0, so: 0 },
+      { id: "24+", vi: "Trên 2 năm", en: "Over 2 years", tu: 24, den: 1e6, tien: 0, so: 0 }];
+    this.bang().forEach(r => {
+      if (r.conLai <= 0) return;
+      const b2 = bucket.find(x => r.thangTroi >= x.tu && r.thangTroi < x.den) || bucket[3];
+      b2.tien = cents(b2.tien + r.conLai); b2.so++;
+    });
+    return bucket;
+  }
+};
+
 /* hàng chờ khớp ISRC */
 const queue = {
   list(filter) {
@@ -3894,6 +4764,10 @@ const NHOM_MO = {
   deXuat:    { vi: "Đề xuất tạm ứng / hợp đồng; bảng tính ROI hợp đồng; bản tính lược theo vai", en: "Advance / contract proposals; deal ROI calculator; calculation trimmed per role" },
   deXuatTao: { vi: "Tạo đề xuất", en: "Create proposals" },
   vanHanh:   { vi: "Phát hành, giao nhận, sửa hàng loạt, nạp báo cáo, mức trả, nền tảng, bảng giá", en: "Releases, deliveries, bulk edits, report ingest, rates, platforms, pricing" },
+  nhapLieu:  { vi: "Gõ doanh thu từ báo cáo nền tảng và sửa lượt nghe hằng ngày", en: "Key in revenue from platform reports and correct daily streams" },
+  von:       { vi: "Hiệu quả sử dụng vốn: tiền đã ứng, đã thu hồi, còn đọng, dự báo thu hồi", en: "Capital efficiency: money advanced, recouped, still out, recovery forecast" },
+  hieuSuat:  { vi: "Hiệu suất từng nhân viên: việc đã giao, đúng hạn, quá hạn, thời gian xử lý", en: "Per-person performance: work assigned, on time, overdue, handling time" },
+  quyTrinh:  { vi: "Quy trình từng loại việc và bước đã làm của mỗi việc", en: "The runbook for each kind of work and each item’s completed steps" },
   danhMuc:   { vi: "Danh mục, chất lượng lượt nghe, metadata, hồ sơ phát hành (đọc)", en: "Catalogue, stream quality, metadata, release files (read)" },
   theoDoi:   { vi: "Lượt nghe theo ngày, playlist toàn danh mục", en: "Daily streams and playlists across the catalogue" },
   chienDich: { vi: "Chiến dịch quảng bá, tạo và nhận yêu cầu chiến dịch", en: "Promotion campaigns, create and take campaign requests" },
@@ -3932,6 +4806,7 @@ const QUYEN_HAM = {
   catalogue: "danhMuc", platformReport: "danhMuc", catalogueReleases: "danhMuc", releases: "danhMuc",
   "releases.receive": "vanHanh", "releases.assignCodes": "vanHanh", "releases.publish": "vanHanh", "releases.returnFix": "vanHanh", "releases.createFor": "phatHanhHo",
   deliveries: "vanHanh", bulk: "vanHanh", ingest: "vanHanh", platformRates: "vanHanh",
+  nhapLieu: "nhapLieu", quyTrinh: "quyTrinh", hieuSuat: "hieuSuat", von: "von",
   /* Mức trả đầy đủ mang biên của Haustek: chỉ nhóm "tong" (giám đốc) mới gọi. */
   platformRatesFull: "tong", setPlatformRate: "tong", clearPlatformRate: "tong", importPlatformRates: "tong",
   proposals: "deXuat", "proposals.proposeAdvance": "deXuatTao", "proposals.proposeContract": "deXuatTao", advanceCalc: "deXuat", contractCalc: "deXuat", partySeries: "deXuat", advanceOfferOf: "deXuat",
@@ -3946,7 +4821,7 @@ function coQuyenNhom(nhom, role) { role = role || vaiHienTai(); const g = QUYEN_
 /* Vài trang chỉ mở cho cấp quản lý trở lên, bất kể thuộc khối nào: trưởng
    bộ phận kinh doanh cũng là quản lý, nên chặn theo VAI thì chặn nhầm.
    Số là cấp thấp nhất còn được vào (nhỏ là cao). */
-const MAN_CAP = { "to-chuc": CAP_TRUONG, "muc-tra": CAP_TRUONG };
+const MAN_CAP = { "to-chuc": CAP_TRUONG, "muc-tra": CAP_TRUONG, "hieu-suat": CAP_TRUONG, "hieu-qua-von": CAP_TRUONG };
 function manCoQuyen(id, role, cap) {
   role = role || vaiHienTai();
   cap = cap == null ? capCua(_me) : cap;
@@ -4139,7 +5014,7 @@ const admin = {
   isApproved: pk => !!state.approved[pk],
   approvalOf: pk => state.approved[pk] || null,
   payoutOf: pk => state.payouts[pk] || null,
-  rates, fx, ingest, queue, audit,
+  rates, fx, ingest, queue, audit, nhapLieu, quyTrinh, hieuSuat, von,
   advances: {
     list() {
       return Object.keys(state.advances).map(k => ({

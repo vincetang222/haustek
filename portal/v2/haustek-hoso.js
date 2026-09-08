@@ -117,7 +117,8 @@ function goi(d, o) {
 
 /* ---- ô nhập ---- */
 function o(nhan, than, hint, opt) {
-  return '<div class="fgrp">' + '<label class="fld">' + esc(nhan) + (opt ? ' <span class="kbb">(' + esc(T('kbb')) + ')</span>' : '') + '</label>' + than + (hint ? '<div class="fhint">' + esc(hint) + '</div>' : '') + '</div>';
+  /* chú thích vào dấu ? cạnh nhãn: biểu mẫu này hơn ba mươi ô */
+  return '<div class="fgrp">' + '<label class="fld">' + esc(nhan) + (opt ? ' <span class="kbb">(' + esc(T('kbb')) + ')</span>' : '') + HM.hoi(hint) + '</label>' + than + '</div>';
 }
 var attr = function (f, extra) { return ' data-f="' + esc(f) + '"' + (extra || ''); };
 function chu(f, v, ph, extra) { return '<input class="in"' + attr(f, extra) + ' value="' + esc(v) + '"' + (ph ? ' placeholder="' + esc(ph) + '"' : '') + '>'; }

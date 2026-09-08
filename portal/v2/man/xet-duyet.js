@@ -165,9 +165,11 @@ function thaoTac(c, act, id) {
 function moDx(c, id) {
   var A = c.A, t = tx, me = A.staff.me, p = A.proposals.get(id); if (!p) return;
   var html = '<div class="asset-h">' + HM.hinh(p.party.name, p.party.clientId, 'lon') + '<div class="asset-t"><b>' + HM.esc(p.party.name) + '</b><span>' + HM.esc(p.party.clientId + ' · ' + p.id + ' · ' + (p.byRole === 'partner' ? t('cuaDoiTac') : t('cDx').toLowerCase() + ' ' + p.by)) + '</span></div></div>' +
-    HTM.theDeXuat(p, { tien: c.tien2 }) + '<div class="btnrow" style="margin-top:14px">' + nutDx(c, p, me) + '</div>';
+    HTM.theDeXuat(p, { tien: c.tien2 }) + '<div class="btnrow" style="margin-top:14px">' + nutDx(c, p, me) + '</div>' +
+    '<h4 class="sec">' + HM.esc(HTS.t('bvTieu')) + '</h4>' + HTS.buocViec(c, 'de-xuat', p.id);
   c.nganTruot(html, { tieuDe: t('chiTiet') + ' ' + p.id, phu: c.song(p, 'moTa'), khiMo: function (dr) {
     HB.gan(dr);
+    HTS.ganBuoc(c, dr, 'de-xuat', p.id, function () { moDx(c, id); });
     HM.bam(dr, '[data-dx]', function (el) { thaoTac(c, el.getAttribute('data-dx'), el.getAttribute('data-id')); });
   } });
 }

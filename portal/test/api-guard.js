@@ -1187,6 +1187,124 @@ check("Bảng tính ROI hợp đồng: ba vai có quyền đề xuất dùng đ�
   return "3 vai dùng được · 2 vai bị chặn · api không có · ROI 1,0296 khớp ô J5";
 });
 
+/* ---------------------------------------------------------------------
+   VÒNG 15 — lớp nhập tay, quy trình, hiệu suất, hiệu quả vốn
+   --------------------------------------------------------------------- */
+check("Nhập số liệu: vận hành và kế toán gõ được, kinh doanh và hỗ trợ bị chặn, cổng đối tác không có", () => {
+  ["S02", "S07"].forEach(id => {
+    const me = nhu(id);
+    must(A.quyen.man("nhap-so-lieu"), "vai " + me.role + " không mở được trang nhập số liệu");
+    must(Array.isArray(A.nhapLieu.bang()), "vai " + me.role + " không đọc được bảng kỳ × nguồn");
+  });
+  ["S03", "S05"].forEach(id => {
+    const me = nhu(id);
+    must(!A.quyen.man("nhap-so-lieu"), "vai " + me.role + " vẫn mở được trang nhập số liệu");
+    mustThrow(() => A.nhapLieu.ghiKy(0, 0, 100, { nguon: "onerpm" }), "gõ doanh thu với vai " + me.role);
+  });
+  nhu("S02");
+  must(H.api.nhapLieu === undefined && H.api.quyTrinh === undefined && H.api.hieuSuat === undefined && H.api.von === undefined,
+    "cổng đối tác lộ lớp nhập tay hoặc quy trình hoặc hiệu suất hoặc vốn");
+  return "2 vai gõ được · 2 vai bị chặn · api không có";
+});
+
+check("Số gõ tay thắng số ước tính, và gỡ ra thì số cũ quay lại", () => {
+  nhu("S02");
+  /* kỳ đang mở, nguồn 0 — kỳ đã xét duyệt phải bị chặn, thử luôn ở dưới */
+  const bang = A.nhapLieu.bang();
+  const mo = bang.filter(r => !r.duyet)[0];
+  must(mo, "không còn kỳ nào đang mở để thử");
+  const truoc = mo.cot[0].thuc;
+  const e = A.nhapLieu.ghiKy(mo.pIdx, 0, 12345.67, { nguon: "onerpm", ghiChu: "kiểm thử" });
+  const sau = A.nhapLieu.bang()[mo.pIdx].cot[0];
+  must(Math.abs(sau.thuc - 12345.67) < 0.02, "gõ tổng nguồn xong tổng không bằng số vừa gõ: " + sau.thuc);
+  must(sau.chot === 12345.67, "không ghi lại số đã chốt");
+  /* gõ theo bài: bài đó tuyệt đối, tổng của nguồn KHÔNG đổi */
+  const bai = A.nhapLieu.baiTrongKy(mo.pIdx, 0, { limit: 1 }).rows[0];
+  A.nhapLieu.ghiBai(mo.pIdx, 0, bai.i, 999, { nguon: "onerpm" });
+  must(Math.abs(A.grossRecByFeed(bai.i, mo.pIdx, 0) - 999) < 0.005, "gõ theo bài không đè được lên số của bài");
+  const sau2 = A.nhapLieu.bang()[mo.pIdx].cot[0];
+  must(Math.abs(sau2.thuc - 12345.67) < 0.05, "gõ theo bài làm lệch tổng của nguồn: " + sau2.thuc);
+  /* gỡ cả hai dòng thì số quay về đúng mức cũ */
+  A.nhapLieu.nhatKy(9).filter(x => x.ghiChu === "kiểm thử" || x.tien === 999).forEach(x => A.nhapLieu.go(x.id));
+  const lai = A.nhapLieu.bang()[mo.pIdx].cot[0];
+  must(Math.abs(lai.thuc - truoc) < 0.05, "gỡ xong số không quay về mức cũ: " + lai.thuc + " ≠ " + truoc);
+  /* kỳ đã xét duyệt là sổ đã chốt, không ai gõ đè lên được */
+  const daDuyet = A.nhapLieu.bang().filter(r => r.duyet)[0];
+  if (daDuyet) mustThrow(() => A.nhapLieu.ghiKy(daDuyet.pIdx, 0, 1, { nguon: "onerpm" }), "gõ đè lên kỳ đã xét duyệt");
+  return "đè được · theo bài tuyệt đối · gỡ ra hoàn nguyên · kỳ đã duyệt bị khoá";
+});
+
+check("Dán một khối từ bảng tính: nhận dòng tra được ISRC, trả lại dòng hỏng chứ không nuốt", () => {
+  nhu("S02");
+  const mo = A.nhapLieu.bang().filter(r => !r.duyet)[0];
+  const bai = A.nhapLieu.baiTrongKy(mo.pIdx, 0, { limit: 3 }).rows;
+  must(bai.length === 3, "không lấy được ba bài để thử");
+  const txt = bai.map((x, k) => x.isrc + "\t" + (1000 + k * 10)).join("\n") +
+    "\nXX-KHONG-CO-THAT\t99\nthieu-cot\n" + bai[0].isrc + "\tkhong-phai-so";
+  const kq = A.nhapLieu.danBai(mo.pIdx, 0, txt, { nguon: "believe" });
+  must(kq.ok.length === 3, "nhận sai số dòng: " + kq.ok.length);
+  must(kq.bo.length === 3, "bỏ sai số dòng: " + kq.bo.length);
+  must(kq.bo.every(x => x.dong && x.ly), "dòng bị bỏ phải nói rõ dòng số mấy và vì sao");
+  must(Math.abs(A.grossRecByFeed(bai[0].i, mo.pIdx, 0) - 1000) < 0.005, "dán xong số của bài không đổi");
+  /* dán lại cùng bài thì thay chứ không cộng dồn */
+  A.nhapLieu.danBai(mo.pIdx, 0, bai[0].isrc + "\t2000", { nguon: "believe" });
+  must(Math.abs(A.grossRecByFeed(bai[0].i, mo.pIdx, 0) - 2000) < 0.005, "dán lại cùng bài lại cộng dồn");
+  A.nhapLieu.nhatKy(99).filter(x => x.nguon === "believe").forEach(x => A.nhapLieu.go(x.id));
+  return "3 nhận · 3 bỏ có lý do · dán lại thì thay, không cộng dồn";
+});
+
+check("Lượt nghe hằng ngày: sửa tay thì mọi biểu đồ đọc theo số sửa", () => {
+  nhu("S02");
+  const ds = A.nhapLieu.ngay(5);
+  must(ds.length === 5 && ds[0].tuSinh > 0, "không đọc được bảng lượt nghe hằng ngày");
+  const truoc = A.dailyStreams(0, 0);
+  A.nhapLieu.ghiNgay(ds[0].ngay, Math.round(ds[0].tuSinh / 2));
+  const sau = A.dailyStreams(0, 0);
+  must(sau < truoc, "sửa tổng lượt nghe của ngày mà đường ngày không đổi theo");
+  must(A.nhapLieu.ngay(1)[0].trangThai === "tay", "ngày đã sửa tay không được đánh dấu");
+  A.nhapLieu.xoaNgay(ds[0].ngay);
+  must(Math.abs(A.dailyStreams(0, 0) - truoc) <= 1, "trả về tự động mà số không quay lại");
+  return "sửa tay kéo theo cả đường ngày · trả về tự động thì hoàn nguyên";
+});
+
+check("Quy trình: mỗi loại việc một bảng bước, đánh dấu và bỏ đánh dấu đều ghi lại", () => {
+  nhu("S05");
+  const ds = A.quyTrinh.list();
+  must(ds.length >= 6, "thiếu quy trình, chỉ có " + ds.length);
+  const tc = A.quyTrinh.get("tranh-chap");
+  must(tc && tc.buoc.length === 10, "quy trình tranh chấp phải có 10 bước");
+  must(tc.buoc.every(b => b.id && b.vi && b.en), "có bước thiếu mã hoặc thiếu bản dịch");
+  const cl = A.claims.list()[0];
+  const b0 = A.quyTrinh.cua("tranh-chap", cl.id);
+  must(b0.xong === 0 && b0.tiep === tc.buoc[0].id, "việc mới phải chưa làm bước nào và trỏ vào bước đầu");
+  A.quyTrinh.danhDau("tranh-chap", cl.id, tc.buoc[0].id, { ghiChu: "kiểm thử" });
+  const b1 = A.quyTrinh.cua("tranh-chap", cl.id);
+  must(b1.xong === 1 && b1.buoc[0].xong && b1.buoc[0].by && b1.tiep === tc.buoc[1].id, "đánh dấu xong mà bảng không đổi");
+  A.quyTrinh.moLai("tranh-chap", cl.id, tc.buoc[0].id);
+  must(A.quyTrinh.cua("tranh-chap", cl.id).xong === 0, "bỏ đánh dấu không có tác dụng");
+  mustThrow(() => A.quyTrinh.danhDau("tranh-chap", cl.id, "khong-co-buoc-nay"), "đánh dấu một bước không tồn tại");
+  return ds.length + " quy trình · tranh chấp 10 bước · đánh dấu và bỏ đều chạy";
+});
+
+check("Hiệu suất và hiệu quả vốn chỉ mở từ Level 2 trở lên, và không rời cổng nội bộ", () => {
+  const gd = nhu("S01");
+  must(gd.cap === 1 && A.quyen.man("hieu-suat") && A.quyen.man("hieu-qua-von"), "giám đốc phải vào được cả hai trang");
+  const cv = nhu("S03");
+  must(cv.cap > 2 && !A.quyen.man("hieu-suat") && !A.quyen.man("hieu-qua-von"), "chuyên viên vẫn vào được trang cấp quản lý");
+  nhu("S01");
+  const bang = A.hieuSuat.bang();
+  must(bang.length > 0 && bang.every(r => r.giao >= 0 && r.quaHan <= r.giao), "bảng hiệu suất ra số không hợp lệ");
+  must(bang.every(r => r.tyLeDungHan == null || (r.tyLeDungHan >= 0 && r.tyLeDungHan <= 100)), "tỷ lệ đúng hạn ngoài khoảng 0–100");
+  const tq = A.von.tongQuan();
+  must(tq.giaiNgan > 0 && Math.abs(tq.giaiNgan - tq.daThu - tq.conLai) < 1, "giải ngân ≠ đã thu + còn đọng");
+  const d = A.von.duong(6);
+  must(d.qua.length === A.periods.length && d.toi.length === 6 && d.toi.every(x => x.duBao), "đường thu hồi sai hình dạng");
+  must(d.qua.every((x, i) => i === 0 || x.luyKe >= d.qua[i - 1].luyKe), "luỹ kế thu hồi phải không giảm");
+  const tuoi = A.von.tuoiNo();
+  must(Math.abs(tuoi.reduce((s, b) => s + b.tien, 0) - tq.conLai) < 1, "tổng tuổi nợ ≠ vốn còn đọng");
+  return "Level 1 vào được · Level 4 bị chặn · sổ vốn cân · đường thu hồi không giảm";
+});
+
 check("lockdown() gỡ hẳn mặt tiền admin khỏi trang", () => {
   must(!!H.admin, "chưa lockdown mà admin đã mất");
   H.lockdown();

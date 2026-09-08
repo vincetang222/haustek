@@ -25,6 +25,15 @@ function giup(chu) {
   var nhan = HT.lang === 'en' ? 'What is this?' : 'Giải thích';
   return '<button type="button" class="help" data-giup="' + chu + '" aria-label="' + nhan + '" title="">?</button>';
 }
+/* Cùng một dấu ? ấy, cỡ nhãn — dùng cho nhãn ô nhập và đầu cột, thay cho
+   một dòng chữ giải thích nằm chình ình dưới mỗi ô. Một ký hiệu cho cả
+   sản phẩm: đọc quen một chỗ là quen mọi chỗ. */
+function hoi(chu) {
+  if (!chu) return '';
+  var nhan = HT.lang === 'en' ? 'What is this?' : 'Giải thích';
+  return '<button type="button" class="help hi" data-giup="' + esc(chu) + '" aria-label="' + nhan + '" title="">?</button>';
+}
+
 function dau(o) {
   return '<div class="page"><div><h1>' + (o.h1 || '') + giup(o.mo) + '</h1></div>' +
     (o.so && o.so.length ? '<div class="page-kpis">' + o.so.map(function (k) {
@@ -401,8 +410,72 @@ function xepHang(rows, o) {
   }).join('') + '</ol>';
 }
 
+/* =====================================================================
+   BẢN IN — xem trước rồi mới in, và in ra là ra PDF
+   ---------------------------------------------------------------------
+   Trình duyệt nào cũng có sẵn "In → Lưu thành PDF", nên chỗ cần làm không
+   phải là dựng một bộ sinh PDF mà là dựng đúng cái trang được in: khổ
+   giấy, chữ đen trên nền trắng, bảng có viền, đầu trang có tên công ty,
+   kỳ báo cáo, ngày in và người in.
+
+   Overlay hiện trước để người dùng nhìn thấy đúng thứ sắp ra giấy. Nút In
+   gọi window.print(); nếu trình duyệt chặn (một số khung nhúng chặn hộp
+   thoại), overlay vẫn còn đó và Ctrl+P vẫn ra đúng bản này.
+   ===================================================================== */
+var _inLop = null;
+function dongIn() {
+  if (_inLop) { _inLop.remove(); _inLop = null; }
+  document.body.classList.remove('dang-in');
+}
+function banIn(o) {
+  o = o || {};
+  dongIn();
+  var vi = HT.lang !== 'en';
+  var ngay = new Date();
+  var dNgay = String(ngay.getDate()).padStart(2, '0') + '.' + String(ngay.getMonth() + 1).padStart(2, '0') + '.' + ngay.getFullYear();
+  var nguoi = o.nguoi || '';
+  var el = document.createElement('div');
+  el.className = 'in-lop';
+  el.innerHTML =
+    '<div class="in-thanh">' +
+      '<b>' + esc(vi ? 'Bản in' : 'Print view') + '</b>' +
+      '<span class="sp"></span>' +
+      '<button type="button" class="btn sm" data-in-in>' + icon('file') + (vi ? 'In · Lưu PDF' : 'Print · Save PDF') + '</button>' +
+      '<button type="button" class="btn sm ghost" data-in-dong>' + icon('x') + (vi ? 'Đóng' : 'Close') + '</button>' +
+    '</div>' +
+    '<div class="in-cuon"><div class="in-giay">' +
+      '<div class="in-dau">' +
+        '<div class="in-hieu">HAUSTEK<span>' + esc(vi ? 'Công ty phân phối âm nhạc' : 'Music distribution') + '</span></div>' +
+        '<div class="in-meta">' +
+          (o.ky ? '<div>' + esc(vi ? 'Kỳ' : 'Period') + ': <b>' + esc(o.ky) + '</b></div>' : '') +
+          '<div>' + esc(vi ? 'Ngày in' : 'Printed') + ': <b>' + esc(dNgay) + '</b></div>' +
+          (nguoi ? '<div>' + esc(vi ? 'Người in' : 'By') + ': <b>' + esc(nguoi) + '</b></div>' : '') +
+        '</div>' +
+      '</div>' +
+      '<h1 class="in-ttl">' + esc(o.tieuDe || '') + '</h1>' +
+      (o.phu ? '<p class="in-phu">' + esc(o.phu) + '</p>' : '') +
+      '<div class="in-than">' + (o.than || '') + '</div>' +
+      '<div class="in-chan">' + (o.chan
+        ? esc(o.chan)
+        : esc(vi ? 'Bản in nội bộ Haustek. Số liệu tính tới ngày in; kỳ chưa xét duyệt có thể còn đổi.'
+                 : 'Haustek internal print. Figures as of the print date; unapproved periods may still change.')) + '</div>' +
+    '</div></div>';
+  document.body.appendChild(el);
+  _inLop = el;
+  document.body.classList.add('dang-in');
+  el.querySelector('[data-in-dong]').addEventListener('click', dongIn);
+  el.querySelector('[data-in-in]').addEventListener('click', function () {
+    try { window.print(); } catch (e) { /* khung nhúng chặn: overlay vẫn còn, Ctrl+P vẫn đúng */ }
+  });
+  el.addEventListener('click', function (e) { if (e.target === el) dongIn(); });
+  el.querySelector('[data-in-in]').focus();
+  return el;
+}
+document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && _inLop) dongIn(); });
+
 global.HM = {
   dau: dau, so: so, the: the, huyHieu: huyHieu, suyHieu: suyHieu, tabs: tabs, trong: trong, ghi: ghi, menu: menu, kv: kv,
+  hoi: hoi, banIn: banIn, dongIn: dongIn,
   tag: tag, cham: cham, bam: bam, doi: doi, nhap: nhap, csv: csv,
   lech: lech, lechHtml: lechHtml, dai: dai, esc: esc, icon: icon,
   nho: nho, quenHet: quenHet, moc: moc,

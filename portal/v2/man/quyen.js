@@ -38,7 +38,13 @@ HT.dangKy({
       themKn: 'Thêm khiếu nại', fBai: 'Bài hát', fBaiHint: 'Gõ tên bài hoặc ISRC rồi chọn trong gợi ý.', fStore: 'Nền tảng', fLoaiKn: 'Loại', fBenKia: 'Bên kia', fNuoc: 'Nước', fXem: 'Lượt xem / ngày', fUuTien: 'Ưu tiên', uNormal: 'Bình thường', uHigh: 'Cao', uUrgent: 'Khẩn', fGan: 'Giao cho', chuaGan: 'Chưa gán', fGhiKn: 'Ghi chú', daTaoKn: 'Đã tạo khiếu nại {id}', khongBai: 'Không tìm thấy bài hát',
       nhomDoiTac: 'Đối tác', navQuyen: 'Quản lý quyền', h1: 'Quản lý quyền',
       mo: 'Xung đột Content ID, khiếu nại trên nền tảng và cài đặt video theo tài khoản.',
-      tabKn: 'Xung đột và khiếu nại', tabVideo: 'Cài đặt video',
+      tabKn: 'Xung đột và khiếu nại', tabVideo: 'Cài đặt video', tabQt: 'Quy trình xử lý',
+      qtH: 'Quy trình xử lý tranh chấp', qtMo: 'Mười bước, theo đúng thứ tự. Nhân viên mới cứ theo bảng này mà làm; mỗi vụ có bảng riêng bám theo.',
+      qtBuoc: 'Bước', qtCua: 'Quy trình của vụ này', qtXongB: 'Đánh dấu bước đã làm',
+      qtGhi: 'Ghi lại đã làm gì ở bước này', qtDaXong: 'Đã đánh dấu bước “{b}”', qtDaMo: 'Đã bỏ đánh dấu bước “{b}”',
+      qtHoi: 'Đánh dấu bước đã làm', qtHoiMo: 'Ghi lại một dòng để người sau biết bạn đã làm gì. Bỏ trống cũng được.',
+      inHoSo: 'Xuất hồ sơ', inTieu: 'Hồ sơ tranh chấp {id}', inPhu: 'Bản tóm tắt để gửi nền tảng hoặc lưu hồ sơ nội bộ.',
+      inTt: 'Thông tin vụ việc', inBuoc: 'Các bước đã làm', inGhi: 'Ghi chú và lịch sử', inChuaLam: 'chưa làm',
       kDangMo: 'Đang mở', kDangMoS: 'mới · tranh chấp · đã chuyển lên', kXem: 'Lượt xem/ngày đang tranh chấp',
       kHetHan: 'Sắp hết hạn tranh chấp', kHetHanS: 'trong 7 ngày', kXong: 'Đã giải quyết 30 ngày', kXongS: 'đã giải quyết hoặc đã nhả',
       tim: 'Tìm UPC, ISRC, Asset ID, bài hát, bên liên quan…',
@@ -75,7 +81,13 @@ HT.dangKy({
       themKn: 'Add a claim', fBai: 'Track', fBaiHint: 'Type a title or ISRC and pick a suggestion.', fStore: 'Platform', fLoaiKn: 'Category', fBenKia: 'Other party', fNuoc: 'Country', fXem: 'Daily views', fUuTien: 'Priority', uNormal: 'Normal', uHigh: 'High', uUrgent: 'Urgent', fGan: 'Assign to', chuaGan: 'Unassigned', fGhiKn: 'Note', daTaoKn: 'Created claim {id}', khongBai: 'Track not found',
       nhomDoiTac: 'Partners', navQuyen: 'Rights manager', h1: 'Rights manager',
       mo: 'Content ID conflicts, platform claims and per-account video settings.',
-      tabKn: 'Conflicts and claims', tabVideo: 'Video settings',
+      tabKn: 'Conflicts and claims', tabVideo: 'Video settings', tabQt: 'The runbook',
+      qtH: 'Dispute handling runbook', qtMo: 'Ten steps, in order. A new joiner follows this table; every case carries its own copy.',
+      qtBuoc: 'Step', qtCua: 'This case’s steps', qtXongB: 'Mark the step done',
+      qtGhi: 'Note what you did at this step', qtDaXong: 'Marked “{b}” done', qtDaMo: 'Unmarked “{b}”',
+      qtHoi: 'Mark this step done', qtHoiMo: 'Leave one line so whoever picks this up knows what you did. Blank is fine.',
+      inHoSo: 'Export dossier', inTieu: 'Dispute dossier {id}', inPhu: 'A summary to send the platform or keep on file.',
+      inTt: 'Case details', inBuoc: 'Steps taken', inGhi: 'Notes and history', inChuaLam: 'not done',
       kDangMo: 'Open', kDangMoS: 'new · disputed · escalated', kXem: 'Daily views in dispute',
       kHetHan: 'Disputes expiring', kHetHanS: 'within 7 days', kXong: 'Closed in 30 days', kXongS: 'resolved or released',
       tim: 'Search UPC, ISRC, Asset ID, track, other party…',
@@ -120,9 +132,10 @@ HT.dangKy({
            { l: t('kXem'), v: HB.gonSo(dem.views) }] });
     html += HM.tabs([
       { k: 'kn', l: t('tabKn'), icon: 'alert', dem: dem.open + dem.disputed + dem.escalated },
-      { k: 'video', l: t('tabVideo'), icon: 'disc', dem: Object.keys(A.state().videoSettings).length }
+      { k: 'video', l: t('tabVideo'), icon: 'disc', dem: Object.keys(A.state().videoSettings).length },
+      { k: 'qt', l: t('tabQt'), icon: 'list' }
     ], LOC.tab);
-    var phan = LOC.tab === 'video' ? veVideo(c) : veKhieuNai(c);
+    var phan = LOC.tab === 'video' ? veVideo(c) : LOC.tab === 'qt' ? veQuyTrinh(c) : veKhieuNai(c);
     root.innerHTML = html + phan.html;
     phan.sau(root);
     HM.bam(root, '[data-tab]', function (el) { LOC.tab = el.getAttribute('data-tab'); c.veLai(); });
@@ -347,6 +360,7 @@ function moClaim(c, id) {
   var nut = '';
   if (mo && x.assignee !== me.id) nut += '<button type="button" class="btn sm" data-nhan>' + HM.icon('user') + HM.esc(t('nhanViec')) + '</button>';
   if (mo) nut += '<button type="button" class="btn sm ghost" data-gan>' + HM.esc(t('ganCho')) + '</button>';
+  nut += '<button type="button" class="btn sm ghost" data-in-hs>' + HM.icon('file') + HM.esc(t('inHoSo')) + '</button>';
   if (x.status === 'open') nut += '<button type="button" class="btn sm pri" data-tt="disputed">' + HM.esc(t('guiTranhChap')) + '</button>';
   if (x.status === 'open' || x.status === 'disputed') nut += '<button type="button" class="btn sm" data-tt="escalated">' + HM.icon('up') + HM.esc(t('chuyenLen')) + '</button>';
   if (mo) nut += '<button type="button" class="btn sm go" data-tt="resolved">' + HM.icon('check') + HM.esc(t('daGiaiQuyet')) + '</button>' +
@@ -372,6 +386,8 @@ function moClaim(c, id) {
       { t: t('cCapNhat'), v: HT.fmt.luc(x.updatedAt) },
       { t: t('hetHan'), v: (x.expiresAt ? HT.fmt.ngay(x.expiresAt) + ' · ' : '') + hanChu, mau: x.expiresAt && dHan <= 7 && mo ? 'neg' : '' }
     ]) +
+    '<h4 class="sec">' + HM.esc(t('qtCua')) + '</h4>' +
+    HTS.buocViec(c, 'tranh-chap', x.id) +
     '<h4 class="sec">' + HM.esc(t('ghiChu')) + '</h4>' +
     (x.notes.length
       ? '<div class="steps">' + x.notes.slice().reverse().map(function (n, i) {
@@ -380,6 +396,26 @@ function moClaim(c, id) {
       : '<p class="hint">' + HM.esc(t('chuaGhi')) + '</p>'),
     { tieuDe: x.track.title, phu: x.id + ' · ' + x.track.artist, khiMo: function (dr) {
       var xong = function (msg) { c.thongBao(msg + ' · ' + x.id, 'ok'); c.dongNgan(); c.veLai(); };
+      HM.bam(dr, '[data-in-hs]', function () { inHoSo(c, A.claims.get(x.id) || x); });
+      HM.bam(dr, '[data-buoc]', function (el) {
+        var bid = el.getAttribute('data-buoc');
+        var cu = A.quyTrinh.cua('tranh-chap', x.id);
+        var b0 = cu.buoc.filter(function (y) { return y.id === bid; })[0];
+        var ten = c.lang === 'en' ? b0.en : b0.vi;
+        if (b0.xong) {
+          try { A.quyTrinh.moLai('tranh-chap', x.id, bid, me.email); c.thongBao(t('qtDaMo').replace('{b}', ten), 'ok'); moClaim(c, x.id); }
+          catch (e) { c.thongBao(e.message, 'no'); }
+          return;
+        }
+        c.hoiThoai({ tieuDe: t('qtHoi'), moTa: HM.esc(ten + ' · ' + t('qtHoiMo')),
+          than: '<label class="fld">' + HM.esc(t('qtGhi')) + '</label><textarea class="in" data-o="ghi" rows="3"></textarea>',
+          dong: t('qtXongB') }).then(function (f) {
+          if (!f) return;
+          try { A.quyTrinh.danhDau('tranh-chap', x.id, bid, { ghiChu: (f.ghi || '').trim() }, me.email);
+            c.thongBao(t('qtDaXong').replace('{b}', ten), 'ok'); moClaim(c, x.id); }
+          catch (e) { c.thongBao(e.message, 'no'); }
+        });
+      });
       HM.bam(dr, '[data-nhan]', function () {
         try { A.claims.assign(x.id, me.id, me.email); xong(t('daGan')); } catch (e) { c.thongBao(e.message, 'no'); }
       });
@@ -406,6 +442,45 @@ function moClaim(c, id) {
         });
       });
     } });
+}
+
+/* =====================================================================
+   TAB 3 · QUY TRÌNH XỬ LÝ
+   Bảng đọc, không gắn với vụ nào. Mỗi vụ có bản riêng trong ngăn trượt.
+   ===================================================================== */
+function veQuyTrinh(c) {
+  var t = c.t;
+  return { html: HM.the({ h2: HM.esc(t('qtH')), p: HM.esc(t('qtMo')), icon: 'list',
+    than: HTS.soTay(c, 'tranh-chap') }), sau: function () {} };
+}
+
+/* ---- bản in hồ sơ một vụ ---- */
+function inHoSo(c, x) {
+  var A = c.A, t = c.t;
+  var cat = A.claims.categories.filter(function (k) { return k.id === x.category; })[0];
+  var st = A.quyTrinh.cua('tranh-chap', x.id);
+  var than = '<h2>' + HM.esc(t('inTt')) + '</h2><dl>' +
+    [['Asset ID', x.assetId], [t('cNt'), x.store], [t('cLoai'), cat ? c.song(cat, 'label') : x.category],
+     [t('cBai'), x.track.title + ' · ' + x.track.artist], ['ISRC · UPC', x.track.isrc + ' · ' + x.track.upc],
+     [t('cDoiTac'), x.party.name + ' · ' + x.party.clientId], [t('benKhac'), x.otherParty || t('khongBen')],
+     [t('cTt'), x.country], [t('luotXem'), HT.fmt.n(x.dailyViews)],
+     [t('cTrangThai'), TT[c.lang][x.status]], [t('ngayTao'), HT.fmt.luc(x.createdAt)],
+     [t('hetHan'), x.expiresAt ? HT.fmt.ngay(x.expiresAt) : t('khongHan')]]
+      .map(function (r) { return '<dt>' + HM.esc(r[0]) + '</dt><dd>' + HM.esc(String(r[1])) + '</dd>'; }).join('') + '</dl>';
+  if (st) {
+    than += '<h2>' + HM.esc(t('inBuoc')) + ' · ' + st.xong + '/' + st.tong + '</h2><ol>' +
+      st.buoc.map(function (bb) {
+        return '<li><b>' + HM.esc(c.lang === 'en' ? bb.en : bb.vi) + '</b> — ' +
+          (bb.xong ? HM.esc(HT.fmt.luc(bb.at) + (bb.by ? ' · ' + bb.by : '') + (bb.ghiChu ? ' · ' + bb.ghiChu : ''))
+                   : '<i>' + HM.esc(t('inChuaLam')) + '</i>') + '</li>';
+      }).join('') + '</ol>';
+  }
+  if (x.notes && x.notes.length) {
+    than += '<h2>' + HM.esc(t('inGhi')) + '</h2><ul>' + x.notes.slice().reverse().map(function (n) {
+      return '<li>' + HM.esc(HT.fmt.luc(n.at) + ' · ' + n.by) + '<br>' + HM.esc(n.text) + '</li>';
+    }).join('') + '</ul>';
+  }
+  HM.banIn({ tieuDe: t('inTieu').replace('{id}', x.id), phu: t('inPhu'), than: than, nguoi: A.staff.me.name });
 }
 
 /* =====================================================================

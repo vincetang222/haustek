@@ -179,6 +179,8 @@ function moHoSo(c, id) {
         '<td>' + (tr.producer ? HM.esc(tr.producer) : '<span class="nil">—</span>') + '</td>' +
         '<td style="font-size:12px">' + (tr.writers.length ? tr.writers.map(function (w) { return HM.esc(w.name) + ' <span class="muted">' + HM.esc(w.role) + ' · ' + w.pct + '%</span>'; }).join('<br>') : '<span class="nil">—</span>') + '</td></tr>';
     }).join('') + '</tbody></table></div>' +
+    '<h4 class="sec">' + HM.esc(HTS.t('bvTieu')) + '</h4>' +
+    HTS.buocViec(c, 'phat-hanh', r.id) +
     '<h4 class="sec">' + HM.esc(t('lichSu')) + '</h4>' +
     '<div class="steps">' + r.history.map(function (h, i) {
       var cuoi = i === r.history.length - 1;
@@ -186,6 +188,7 @@ function moHoSo(c, id) {
         (h.note ? '<span>' + HM.esc(h.note) + '</span>' : '') + '<div class="tm">' + HM.esc(HT.fmt.luc(h.at) + ' · ' + h.by) + '</div></div>';
     }).join('') + '</div>',
     { tieuDe: r.title, phu: r.id + ' · ' + r.artistName, khiMo: function (dr) {
+      HTS.ganBuoc(c, dr, 'phat-hanh', r.id, function () { moHoSo(c, r.id); });
       HM.bam(dr, '[data-tiep]', function () {
         c.xacNhan(t('hoiTiep'), HM.esc(t('hoiTiepMo')), t('tiepNhan')).then(function (ok) {
           if (!ok) return;

@@ -18,6 +18,9 @@ var esc = HT.esc, icon = HT.icon;
 var CHU = {
   vi: {
     tabQt: 'Quy trình', tabNt: 'Nền tảng', tabThang: 'Theo tháng',
+    bvHoi: 'Đánh dấu bước đã làm', bvHoiMo: 'Ghi một dòng để người sau biết bạn đã làm gì. Bỏ trống cũng được.',
+    bvGhi: 'Đã làm gì ở bước này', bvXong: 'Đánh dấu đã làm', bvDaXong: 'Đã đánh dấu “{b}”', bvDaMo: 'Đã bỏ đánh dấu “{b}”',
+    bvTieu: 'Quy trình của việc này',
     stLive: 'Đã lên', stProcessing: 'Đang xử lý', stPending: 'Chưa xác nhận', stRejected: 'Bị từ chối', stTakedown: 'Đã gỡ',
     bDone: 'Đã xong', bDoing: 'Đang thực hiện', bTodo: 'Chưa tới', bIssue: 'Có vấn đề', bSkip: 'Không đăng ký',
     tabKn: 'Khiếu nại', ycMkt: 'Yêu cầu hỗ trợ marketing', ycHt: 'Gửi yêu cầu hỗ trợ về bài hát này',
@@ -46,6 +49,9 @@ var CHU = {
   },
   en: {
     tabQt: 'Pipeline', tabNt: 'Platforms', tabThang: 'By month',
+    bvHoi: 'Mark this step done', bvHoiMo: 'Leave one line so whoever picks this up knows what you did. Blank is fine.',
+    bvGhi: 'What you did at this step', bvXong: 'Mark done', bvDaXong: 'Marked “{b}” done', bvDaMo: 'Unmarked “{b}”',
+    bvTieu: 'This item’s steps',
     stLive: 'Live', stProcessing: 'Processing', stPending: 'Unconfirmed', stRejected: 'Rejected', stTakedown: 'Taken down',
     bDone: 'Done', bDoing: 'In progress', bTodo: 'Not yet', bIssue: 'Issue', bSkip: 'Not requested',
     tabKn: 'Claims', ycMkt: 'Request marketing support', ycHt: 'Open a support request about this track',
@@ -351,8 +357,105 @@ function plCua(c, id) {
   return PL.rows.filter(function (r) { return r.trackId === id; });
 }
 
+/* =====================================================================
+   SỔ TAY QUY TRÌNH — cùng một khuôn cho mọi loại việc
+   ---------------------------------------------------------------------
+   Hai cách dùng:
+     soTay(c, 'tranh-chap')             — đọc quy trình, không gắn với việc nào
+     buocViec(c, 'tranh-chap', 'CL-01') — đúng quy trình ấy, nhưng bám vào
+                                          một việc cụ thể: bước nào đã làm,
+                                          ai làm, lúc nào, bước kế là gì.
+   Bước không tự đánh dấu. Người làm bấm mới xong — vì thứ ta muốn đo là
+   người ta CÓ làm bước đó không, chứ không phải hệ thống đoán hộ.
+   ===================================================================== */
+function slaChu(c, gio) {
+  if (!gio) return '';
+  var vi = c.lang !== 'en';
+  if (gio < 24) return gio + (vi ? ' giờ' : 'h');
+  var d = Math.round(gio / 24);
+  return d + (vi ? ' ngày' : d > 1 ? ' days' : ' day');
+}
+function moBuoc(c, x) {
+  return c.lang === 'en' ? (x.moEn || x.mo || '') : (x.mo || '');
+}
+function tenBuoc(c, x) { return c.lang === 'en' ? (x.en || x.vi) : x.vi; }
+
+function dongBuoc(c, x, i, o) {
+  o = o || {};
+  var mo = moBuoc(c, x);
+  var vi = c.lang !== 'en';
+  var trang = o.xong ? 'xong' : o.tiep ? 'tiep' : 'cho';
+  return '<li class="buoc ' + trang + '">' +
+    (o.bam
+      ? '<button type="button" class="buoc-o" data-buoc="' + esc(x.id) + '" aria-pressed="' + (o.xong ? 'true' : 'false') + '" title="' + esc(o.xong ? (vi ? 'Bỏ đánh dấu' : 'Undo') : (vi ? 'Đánh dấu đã làm' : 'Mark done')) + '">' +
+        (o.xong ? icon('check') : '<span>' + (i + 1) + '</span>') + '</button>'
+      : '<span class="buoc-o">' + (i + 1) + '</span>') +
+    '<div class="buoc-t">' +
+      '<b>' + esc(tenBuoc(c, x)) + '</b>' +
+      (x.gio ? '<span class="tag">' + esc(slaChu(c, x.gio)) + '</span>' : '') +
+      (x.bao ? '<span class="tag warn">' + esc((vi ? 'Báo: ' : 'Tell: ') + x.bao) + '</span>' : '') +
+      (mo ? '<span class="buoc-m">' + esc(mo) + '</span>' : '') +
+      (o.xong && o.at ? '<span class="buoc-x">' + esc((vi ? 'Đã làm · ' : 'Done · ') + HT.fmt.luc(o.at) + (o.by ? ' · ' + o.by : '')) + '</span>' : '') +
+      (o.ghiChu ? '<span class="buoc-m">' + esc(o.ghiChu) + '</span>' : '') +
+    '</div></li>';
+}
+
+function soTay(c, qtId) {
+  var q = null;
+  try { q = c.A.quyTrinh.get(qtId); } catch (e) { q = null; }
+  if (!q) return '';
+  var mo = c.lang === 'en' ? (q.moEn || q.mo) : q.mo;
+  return (mo ? '<p class="say">' + esc(mo) + '</p>' : '') +
+    '<ol class="buoc-ds">' + q.buoc.map(function (x, i) { return dongBuoc(c, x, i, {}); }).join('') + '</ol>';
+}
+
+/* trạng thái bước của một việc, kèm thanh tiến độ và nút đánh dấu */
+function buocViec(c, qtId, itemId, o) {
+  o = o || {};
+  var st = null;
+  try { st = c.A.quyTrinh.cua(qtId, itemId); } catch (e) { st = null; }
+  if (!st) return '';
+  var vi = c.lang !== 'en';
+  var pct = st.tong ? Math.round(st.xong / st.tong * 100) : 0;
+  return '<div class="buoc-dau"><b>' + esc(st.xong + '/' + st.tong) + '</b>' +
+      '<span>' + esc(vi ? 'bước đã làm' : 'steps done') + '</span>' +
+      '<div class="buoc-thanh"><i style="width:' + pct + '%"></i></div></div>' +
+    '<ol class="buoc-ds">' + st.buoc.map(function (x, i) {
+      return dongBuoc(c, x, i, { xong: x.xong, at: x.at, by: x.by, ghiChu: x.ghiChu,
+        tiep: st.tiep === x.id, bam: o.bam !== false });
+    }).join('') + '</ol>';
+}
+
+/* Gắn nút đánh dấu bước cho một khối buocViec đã vẽ. Bốn màn dùng chung
+   một đoạn này; chép bốn lần thì sửa một chỗ là quên ba chỗ. */
+function ganBuoc(c, goc, qtId, itemId, sauKhi) {
+  HM.bam(goc, '[data-buoc]', function (el) {
+    var bid = el.getAttribute('data-buoc');
+    var st = c.A.quyTrinh.cua(qtId, itemId);
+    if (!st) return;
+    var b0 = st.buoc.filter(function (y) { return y.id === bid; })[0];
+    if (!b0) return;
+    var ten = tenBuoc(c, b0);
+    var ai = c.A.staff.me ? c.A.staff.me.email : '';
+    if (b0.xong) {
+      try { c.A.quyTrinh.moLai(qtId, itemId, bid, ai); c.thongBao(t('bvDaMo').replace('{b}', ten), 'ok'); if (sauKhi) sauKhi(); }
+      catch (e) { c.thongBao(e.message, 'no'); }
+      return;
+    }
+    c.hoiThoai({ tieuDe: t('bvHoi'), moTa: esc(ten + ' · ' + t('bvHoiMo')),
+      than: '<label class="fld">' + esc(t('bvGhi')) + '</label><textarea class="in" data-o="ghi" rows="3"></textarea>',
+      dong: t('bvXong') }).then(function (f) {
+      if (!f) return;
+      try { c.A.quyTrinh.danhDau(qtId, itemId, bid, { ghiChu: (f.ghi || '').trim() }, ai);
+        c.thongBao(t('bvDaXong').replace('{b}', ten), 'ok'); if (sauKhi) sauKhi(); }
+      catch (e) { c.thongBao(e.message, 'no'); }
+    });
+  });
+}
+
 global.HTS = {
   t: t, song: song, plCua: plCua, qCua: qCua, lamMoiQ: lamMoiQ,
+  soTay: soTay, buocViec: buocViec, ganBuoc: ganBuoc,
   tagNenTang: tagNenTang, tagGiaiDoan: tagGiaiDoan, tagMuc: tagMuc, chamNenTang: chamNenTang,
   quyTrinh: quyTrinh, conThieu: conThieu, nenTang: nenTang, maTran: maTran, chonThuocDo: chonThuocDo, csvMaTran: csvMaTran, khieuNai: khieuNai,
   moNgan: moNgan

@@ -324,6 +324,8 @@ function moTicket(c, id) {
       selNho('data-doiuu', T('doiUu'), UU.filter(function (p) { return p !== tk.priority; }).map(function (p) { return [p, T(p)]; })) +
       selNho('data-chuyen', T('chuyenBp'), A.tickets.types.filter(function (x) { return x.id !== tk.type; }).map(function (x) { var d = A.tickets.depts[A.tickets.deptOf(x.id)]; return [x.id, c.song(x, 'label') + ' · ' + (HT.lang === 'en' ? d.en : d.vi)]; })) +
     '</div>' +
+    '<h4 class="sec">' + HM.esc(HTS.t('bvTieu')) + '</h4>' +
+    HTS.buocViec(c, 'ticket', tk.id) +
     '<h4 class="sec">' + HM.esc(T('luongTin')) + ' (' + tk.messages.length + ')</h4>' +
     '<div>' + tin + '</div>' +
     '<h4 class="sec">' + HM.esc(T('traLoi')) + '</h4>' +
@@ -335,6 +337,7 @@ function moTicket(c, id) {
         try { fn(); c.thongBao(msg, 'ok'); LOC.moId = id; c.veLai(); }
         catch (e) { c.thongBao(e.message, 'no'); }
       };
+      HTS.ganBuoc(c, dr, 'ticket', tk.id, function () { LOC.moId = id; c.veLai(); });
       HM.bam(dr, '[data-nhan]', function () { lam(function () { A.tickets.assign(id, me.id, me.email); }, T('daNhan') + ' · ' + id); });
       HM.doi(dr, '[data-chuyen]', function (el) { if (!el.value) return; lam(function () { A.tickets.chuyen(id, el.value, me.email); }, T('daChuyen') + ' · ' + id); });
       HM.doi(dr, '[data-gan]', function (el) {
