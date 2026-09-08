@@ -48,6 +48,12 @@ HT.dangKy({
       tqTrong: 'Kỳ này chưa có báo cáo tác quyền',
       tqTrongMo: 'Tác quyền chốt theo quý và về trễ một đến hai quý, nên nhiều kỳ không có báo cáo. Đây là bình thường.',
       tqCo: 'Các kỳ đã có báo cáo tác quyền', soSangTac: 'Bài hát bạn có phần sáng tác',
+      tpTieu: 'Tác phẩm bạn đứng tên', tpMo: 'Tiền tác quyền bám theo TÁC PHẨM chứ không theo bản ghi, nên một bài được người khác hát lại thì bạn vẫn được hưởng. Muốn thu được thì tác phẩm phải đăng ký với hội tác quyền của từng nước — bảng dưới cho biết đã đăng ký ở đâu.',
+      tpTen: 'Tác phẩm', tpIswc: 'Mã ISWC', tpToi: 'Tỷ lệ của bạn', tpDong: 'Đồng tác giả',
+      tpBanGhi: 'Bản ghi', tpHoi: 'Đã đăng ký', tpChuaIswc: 'chưa có',
+      tpLech: 'Tổng tỷ lệ tác giả chưa đủ 100% — thường là còn người đồng sáng tác chưa khai. Nhắn cho Haustek để bổ sung.',
+      tpKhong: 'Chưa có tác phẩm nào đứng tên bạn', tpKhongMo: 'Tác phẩm hiện ra ở đây khi Haustek khai báo bạn là tác giả của một bài.',
+      tpHoiKhong: 'chưa đăng ký ở đâu',
       tqGiaiThich: 'Tác quyền khác doanh thu bản ghi như thế nào',
       tqG1: 'Doanh thu bản ghi trả cho <b>bản thu</b>: ai tạo bản thu thì nhận, hằng tháng qua nền tảng.',
       tqG2: 'Tác quyền trả cho <b>bài hát</b>: người viết giai điệu và lời nhận, kể cả khi người khác hát; theo quý qua tổ chức tác quyền.',
@@ -71,7 +77,13 @@ HT.dangKy({
       xuat: 'Download list (CSV)', hienThi: 'Showing',
       tqTrong: 'No publishing report for this period',
       tqTrongMo: 'Publishing settles quarterly and arrives one to two quarters late, so many periods have no report. That is normal.',
-      tqCo: 'Periods with a publishing report', soSangTac: 'Works you co-wrote',
+      tqCo: 'Periods with a publishing report',
+      tpTieu: 'Works you are credited on', tpMo: 'Publishing money follows the WORK, not the recording, so if someone else covers your song you still earn from it. To collect, the work must be registered with each country’s society — the table shows where it is registered.',
+      tpTen: 'Work', tpIswc: 'ISWC code', tpToi: 'Your split', tpDong: 'Co-writers',
+      tpBanGhi: 'Recordings', tpHoi: 'Registered', tpChuaIswc: 'not yet',
+      tpLech: 'The writer splits do not total 100% — usually a co-writer has not been declared. Message Haustek to add them.',
+      tpKhong: 'No works credited to you yet', tpKhongMo: 'Works appear here once Haustek records you as a writer on a song.',
+      tpHoiKhong: 'not registered anywhere', soSangTac: 'Works you co-wrote',
       tqGiaiThich: 'How publishing differs from recording revenue',
       tqG1: 'Recording revenue pays for the <b>master</b>: whoever made the recording is paid, monthly via platforms.',
       tqG2: 'Publishing pays for the <b>song</b>: whoever wrote it is paid, even when someone else sings it; quarterly via societies.',
@@ -208,6 +220,12 @@ HT.dangKy({
         }) + '</div>';
     }
 
+    /* Tab tác quyền có thêm bảng TÁC PHẨM. Bảng bản ghi ở trên trả lời
+       "kỳ này tôi được bao nhiêu"; bảng này trả lời "tài sản của tôi gồm
+       những gì và đã đăng ký ở đâu" — hai câu khác nhau, và câu thứ hai
+       mới là câu người sáng tác hay hỏi nhất. */
+    if (LUONG === 'pub') html += veTacPham(c);
+
     root.innerHTML = html;
     HB.gan(root);
 
@@ -282,6 +300,43 @@ function moBai(c, id, luong, la) {
           }
         });
       } });
+}
+
+
+/* ---------------------------------------------------------------------
+   Tác phẩm của người sáng tác — bảng metadata, không có tiền
+   ------------------------------------------------------------------- */
+function veTacPham(c) {
+  var t = c.t, me = c.phien.me, d;
+  if (me.role !== 'artist') return '';
+  try { d = c.api.tacPham(me.role, me.partyId, { limit: 50 }); } catch (e) { return ''; }
+  if (!d.rows.length) return HM.the({ h2: HM.esc(t('tpTieu')),
+    than: HM.trong({ icon: 'book', tieuDe: t('tpKhong'), moTa: t('tpKhongMo') }) });
+
+  return HM.the({
+    h2: HM.esc(t('tpTieu')) + ' <span>' + HM.esc(HT.fmt.n(d.tong)) + '</span>',
+    p: HM.esc(t('tpMo')), icon: 'book', thoBody: true,
+    than: (d.lechTyLe ? HM.ghi({ kieu: 'no', icon: 'alert', tieuDe: HM.esc(t('tpToi')), than: HM.esc(t('tpLech')) }) : '') +
+      '<div class="tw"><table class="t"><thead><tr>' +
+      '<th>' + HM.esc(t('tpTen')) + '</th><th>' + HM.esc(t('tpIswc')) + '</th>' +
+      '<th class="num">' + HM.esc(t('tpToi')) + '</th><th>' + HM.esc(t('tpDong')) + '</th>' +
+      '<th class="num">' + HM.esc(t('tpBanGhi')) + '</th><th>' + HM.esc(t('tpHoi')) + '</th>' +
+      '</tr></thead><tbody>' + d.rows.map(function (r) {
+        return '<tr' + (r.canTyLe ? '' : ' class="canh"') + '>' +
+          '<td>' + HM.tenBia({ ten: HM.dai(r.ten, 34), seed: r.ten, bia: r.ten }) + '</td>' +
+          '<td class="mono">' + (r.iswc ? HM.esc(r.iswc) : '<span class="nil">' + HM.esc(t('tpChuaIswc')) + '</span>') + '</td>' +
+          '<td class="num mono"><b>' + (r.tyLeCuaToi == null ? '—' : r.tyLeCuaToi + '%') + '</b>' +
+            (r.vaiTro ? ' <span class="muted">' + HM.esc(r.vaiTro) + '</span>' : '') + '</td>' +
+          '<td style="font-size:12px">' + (r.dongTacGia.length
+            ? r.dongTacGia.map(function (x) { return HM.esc(x.ten) + ' <span class="muted">' + x.tyLe + '%</span>'; }).join('<br>')
+            : '<span class="nil">—</span>') + '</td>' +
+          '<td class="num mono">' + r.soBanGhi + '</td>' +
+          '<td>' + (r.soHoi
+            ? r.daDangKy.slice(0, 4).map(function (h) { return HM.tag(h.hoi, 'ok'); }).join(' ') +
+              (r.soHoi > 4 ? ' <span class="muted">+' + (r.soHoi - 4) + '</span>' : '')
+            : '<span class="nil">' + HM.esc(t('tpHoiKhong')) + '</span>') + '</td></tr>';
+      }).join('') + '</tbody></table></div>'
+  });
 }
 
 })();

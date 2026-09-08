@@ -42,11 +42,12 @@ gọi `HAUSTEK.lockdown()` **trước khi** chạy bất cứ trang nào, và kh
 > `localStorage` thì trang nào cùng gốc cũng đọc được. Xem tab **Quản trị → Ranh giới
 > hai cổng** để biết cái gì thật sự chặn được và cái gì không.
 
-## Hai mươi bảy trang nội bộ
+## Hai mươi tám trang nội bộ
 
 | Trang | File | Trả lời câu gì |
 |---|---|---|
 | Tổng quan | `man/tong-quan.js` | Kỳ này đóng được chưa, tiền chia đi đâu, còn gì treo |
+| **Tác quyền** | `man/xuat-ban.js` | Tác phẩm (ISWC) tách khỏi bản ghi (ISRC), tác giả và tỷ lệ, và đăng ký với mười bảy hội tác quyền. Bốn tab: tiền đang để trên bàn (lãnh thổ có doanh thu mà chưa đăng ký ở hội của lãnh thổ ấy); việc còn phải làm xếp theo tiền; bảng tác phẩm có ngăn chi tiết sửa được tác giả, tỷ lệ và trạng thái từng hội; nhập bảng xuất của Sentric. Tổng tỷ lệ tác giả phải đúng 100% và phải có ISWC mới gửi đăng ký được. Vận hành, kế toán và giám đốc |
 | **Phiếu giao việc** | `man/phieu-giao.js` | Chỗ nhân viên chép metadata sang OneRPM và các tool khác. Bốn tab: Metadata xếp đúng thứ tự năm bước của OneRPM, mỗi trường một nút chép; Tool là bảng tick đã đẩy lên đâu, ai đẩy, tool trả về mã gì; Store chọn nền tảng sẽ phân phối tới; Link dán đường dẫn store thật của từng bài sau khi lên kệ, khoá theo ISRC, dán nhầm cột bị chặn tại chỗ. Chưa tick tool nào thì không đánh dấu phát hành được. Chỉ vận hành và giám đốc |
 | **Nhập số liệu** | `man/nhap-so-lieu.js` | Chỗ điều phối viên ngồi mỗi ngày. Năm tab: lượt nghe hằng ngày (ngày nào nguồn chưa về thì gõ tổng vào), doanh thu theo kỳ × nguồn (gõ tổng lấy trên báo cáo OneRPM / Warner / Believe / YouTube CMS), doanh thu theo từng bài (khi báo cáo có dòng riêng), nhật ký nhập có nút gỡ. Số gõ tay đè lên số máy sinh |
 | Nhập báo cáo | `man/nap-du-lieu.js` | Kỳ nào thiếu nguồn nào: bảng 12 kỳ × 4 nguồn |
@@ -366,6 +367,104 @@ một thẻ nhắc lại điều đó.
 Cổng đối tác không có và không nên có: bảng tính này đọc ra phần Haustek
 giữ lại, phí môi giới và biên lợi nhuận. Đối tác muốn biết mình ứng được bao
 nhiêu thì vẫn dùng `k-tam-ung`, chạy trên `advanceOfferOf()` đã lược sạch.
+
+## Vòng 18: tác quyền — tác phẩm, đăng ký với hội, và tiền đang để trên bàn
+
+Mảng này **khác hẳn** bản ghi, và lẫn hai thứ ấy là lỗi tốn tiền nhất trong
+ngành:
+
+| | Bản ghi (recording) | Tác phẩm (work) |
+|---|---|---|
+| Mã | **ISRC** | **ISWC** |
+| Là gì | ai hát, ai thu | ai sáng tác |
+| Tiền từ đâu | store (Spotify, Apple…) | hội tác quyền từng nước |
+| Ai lo | OneRPM / Believe / ADA | **Sentric** |
+
+Một tác phẩm đẻ ra nhiều bản ghi: bản gốc, bản live, bản cover của người
+khác. Tiền tác quyền bám theo **tác phẩm**, nên một bài được cover mười lần
+thì tác giả vẫn ăn cả mười.
+
+### 1 · Tiền đang để trên bàn
+
+Đây là con số đáng giá nhất của cả trang, và là lý do trang này tồn tại.
+
+Muốn thu tiền tác quyền ở một nước thì tác phẩm phải **đăng ký với hội của
+nước ấy**. Chưa đăng ký thì hội **vẫn thu tiền** — nhưng không biết trả cho
+ai, nên giữ trong quỹ chưa phân phối, và sau ba tới năm năm là mất hẳn.
+
+`tienTrenBan(w)` bắt chéo hai thứ: lãnh thổ nào đang **có doanh thu**, và
+tác phẩm đã đăng ký ở hội nào. Chỗ giao nhau là tiền đang hở. Bản đồ lãnh
+thổ → hội có mười lăm nước:
+
+```
+Việt Nam → VCPMC       Hoa Kỳ → ASCAP + The MLC   Anh → PRS
+Nhật → JASRAC          Hàn Quốc → KOMCA           Đức → GEMA
+Pháp → SACEM           Úc → APRA AMCOS            Canada → SOCAN
+Đài Loan → MÜST        Thái Lan → MCT             Singapore → COMPASS
+Brazil → UBC/ECAD      Mexico → SACM              Indonesia → WAMI
+```
+cộng YouTube Content ID cho toàn cầu — mười bảy hội cả thảy.
+
+### 2 · Trang Tác quyền, bốn tab theo thứ tự đáng lo
+
+* **Tiền để trên bàn** — tác phẩm nào hở lãnh thổ nào, xếp theo tiền
+* **Việc còn phải làm** — ba nhóm, mỗi nhóm xếp theo **tiền** chứ không theo
+  bảng chữ cái: chưa có ISWC; tỷ lệ tác giả không đủ 100%; hồ sơ bị hội trả
+  lại (từ chối hoặc trùng lặp)
+* **Tác phẩm** — tra cứu, lọc, mở ngăn chi tiết: tác giả và tỷ lệ, danh sách
+  bản ghi, và ma trận đăng ký mười bảy hội với trạng thái đặt tay đè được
+* **Nhập từ Sentric** — dán bảng xuất vào
+
+Hai luật cứng trong lõi:
+
+* **Tổng tỷ lệ tác giả phải đúng 100%** mới ghi được. Hội tác quyền nào cũng
+  trả lại hồ sơ không đủ 100%, nên chặn ở đây rẻ hơn chặn sau ba tháng.
+* **Chưa có ISWC thì chưa gửi đăng ký được.** Xin mã qua Sentric trước.
+
+### 3 · Nối với Sentric
+
+`nhapSentric()` nhận bảng bốn cột `ISRC · ISWC · Mã hội · Hội`, tra ISRC
+ngược về tác phẩm, ghi ISWC và trạng thái đăng ký. Dòng nào không tra được
+thì **trả lại kèm lý do** chứ không nuốt.
+
+Thứ tự nên hỏi Sentric khi lên thật:
+
+1. **Có API hoặc giao file SFTP cho khách label không** — hỏi người phụ trách
+   tài khoản. Sentric thuộc cùng tập đoàn với Believe (bên phân phối của
+   Haustek), nên nhiều khả năng đi chung một đầu mối; điều này **cần xác nhận
+   lại với họ**, đừng coi là đã chắc.
+2. Không có API thì **xuất CSV theo kỳ**, máy chủ Haustek tự tải mỗi tháng.
+3. Cuối cùng mới là **dán tay** như hàm hiện nay.
+
+Cả ba đường đều đổ vào đúng một bảng, nên đổi đường không phải viết lại
+trang.
+
+### 4 · Cổng đối tác: tác giả thấy tài sản của mình
+
+Tab Tác quyền ở trang *Bài hát của tôi* có thêm bảng **Tác phẩm bạn đứng
+tên**: tên, ISWC, **tỷ lệ của bạn**, đồng tác giả và tỷ lệ của họ, số bản
+ghi, và **đã đăng ký ở hội nào**.
+
+Bảng bản ghi phía trên trả lời *"kỳ này tôi được bao nhiêu"*; bảng này trả
+lời *"tài sản của tôi gồm những gì và đã đăng ký ở đâu"* — hai câu khác nhau,
+và câu thứ hai mới là câu người sáng tác hay hỏi nhất.
+
+Đồng tác giả thấy tên và tỷ lệ của nhau — đó là chuyện bình thường và cần
+thiết trong tác quyền. Nhưng **phần Haustek giữ, phí, và ước tính tiền đang
+để trên bàn thì không ra khỏi cổng nội bộ**; `api-guard` quét gói để bảo đảm.
+
+### Tốc độ
+
+Quét cả danh mục để đếm việc còn lại mất khoảng 400ms, mà trang gọi lại mỗi
+lần vẽ. Nên `viecConLai()` nhớ kết quả theo phiên bản dữ liệu tác quyền: sửa
+một tác phẩm hay một đăng ký thì bản nhớ hỏng và tính lại. Đo được:
+**412ms lần đầu → 0ms các lần sau → 393ms sau khi sửa**.
+
+### Danh sách tool phân phối đã chốt
+
+OneRPM · Believe Music · ADA (Warner Music) · YouTube CMS *(sắp có, có nhãn
+riêng trên phiếu giao việc)*. Danh sách vẫn sửa được ở lõi khi ký thêm hoặc
+bỏ một nhà phân phối.
 
 ## Vòng 17: phiếu giao việc phát hành, và số công khai trên store
 

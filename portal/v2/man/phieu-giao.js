@@ -59,7 +59,7 @@ HT.dangKy({
       chuaCo: 'chưa có', tongTrack: '{n} track',
       toolMo: 'Tick từng tool ngay khi đẩy xong, đừng để cuối ngày. Hồ sơ chưa tick tool nào thì không đánh dấu phát hành được.',
       cTn: 'Tool', cMaTr: 'Mã tool trả về', cAi: 'Ai · lúc nào', cLam: '',
-      daDay: 'Đã đẩy', chuaDay: 'Chưa đẩy', danhDau: 'Đánh dấu đã đẩy', boDanhDau: 'Bỏ đánh dấu', mo: 'Mở tool',
+      daDay: 'Đã đẩy', chuaDay: 'Chưa đẩy', sapToi: 'sắp có', danhDau: 'Đánh dấu đã đẩy', boDanhDau: 'Bỏ đánh dấu', mo: 'Mở tool',
       hoiTool: 'Đánh dấu đã đẩy lên {t}?', hoiToolMo: 'Ghi mã tool trả về để sau này lần ngược được. Bỏ trống cũng được.',
       lMaTr: 'Mã tool trả về (nếu có)', lGhi: 'Ghi chú',
       daDanh: 'Đã đánh dấu {t}', daBo: 'Đã bỏ đánh dấu {t}',
@@ -104,7 +104,7 @@ HT.dangKy({
       chuaCo: 'not set', tongTrack: '{n} tracks',
       toolMo: 'Tick each tool the moment you finish it, not at the end of the day. A submission with no tool ticked cannot be marked released.',
       cTn: 'Tool', cMaTr: 'ID the tool returned', cAi: 'Who · when', cLam: '',
-      daDay: 'Delivered', chuaDay: 'Not yet', danhDau: 'Mark delivered', boDanhDau: 'Undo', mo: 'Open tool',
+      daDay: 'Delivered', chuaDay: 'Not yet', sapToi: 'coming', danhDau: 'Mark delivered', boDanhDau: 'Undo', mo: 'Open tool',
       hoiTool: 'Mark as delivered to {t}?', hoiToolMo: 'Record the ID the tool gave back so it can be traced later. Optional.',
       lMaTr: 'ID the tool returned (optional)', lGhi: 'Note',
       daDanh: 'Marked {t}', daBo: 'Unmarked {t}',
@@ -339,7 +339,8 @@ function veTool(c, r, tool) {
       '<th>' + HM.esc(t('cAi')) + '</th><th></th></tr></thead><tbody>' +
       tool.map(function (x) {
         return '<tr' + (x.xong ? '' : ' class="canh"') + '>' +
-          '<td><div class="t-ttl">' + HM.esc(x.ten) + ' ' + HM.tag(x.xong ? t('daDay') : t('chuaDay'), x.xong ? 'ok' : 'no') + '</div>' +
+          '<td><div class="t-ttl">' + HM.esc(x.ten) + ' ' + HM.tag(x.xong ? t('daDay') : t('chuaDay'), x.xong ? 'ok' : 'no') +
+            (x.sapToi ? ' ' + HM.tag(t('sapToi'), 'warn') : '') + '</div>' +
             '<div class="t-sub">' + HM.esc(c.lang === 'vi' ? x.mo : (x.moEn || x.mo)) +
             (x.web ? ' · <a href="' + HM.esc(x.web) + '" target="_blank" rel="noopener">' + HM.esc(t('mo')) + '</a>' : '') + '</div>' +
             (x.ghiChu ? '<div class="t-sub">' + HM.esc(x.ghiChu) + '</div>' : '') + '</td>' +

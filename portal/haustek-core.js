@@ -419,7 +419,7 @@ function fileNameFor(f, p) {
 let state = null;
 function ensureShape(s) {
   ["withdrawals", "tickets", "claims", "deliveries", "bulk", "releases", "proposals", "staff", "campaigns", "adjustments", "priceExtra", "platformsExtra", "extraParties", "nhapTay"].forEach(k => { if (!Array.isArray(s[k])) s[k] = []; });
-  ["statements", "bank", "videoSettings", "partyManager", "splits", "alerts", "notifRead", "rateOverride", "contracts", "platformOwner", "toChucThem", "luotNgay", "buocViec", "danhGiaNam", "doiSoatNgay", "doiSoatBai", "giaoTool", "linkStore", "soCongKhai"].forEach(k => { if (!s[k] || typeof s[k] !== "object") s[k] = {}; });
+  ["statements", "bank", "videoSettings", "partyManager", "splits", "alerts", "notifRead", "rateOverride", "contracts", "platformOwner", "toChucThem", "luotNgay", "buocViec", "danhGiaNam", "doiSoatNgay", "doiSoatBai", "giaoTool", "linkStore", "soCongKhai", "tacPham", "dangKyTq", "bkSentric"].forEach(k => { if (!s[k] || typeof s[k] !== "object") s[k] = {}; });
   if (!Array.isArray(s.toolThem)) s.toolThem = [];
   if (!Array.isArray(s.toolBo)) s.toolBo = [];
   return s;
@@ -1947,8 +1947,8 @@ const TAI_SAN = [
   { id: "ticket",         vi: "Ticket hỗ trợ",     en: "Support tickets", man: "ho-tro", dem: () => state.tickets.length, gan: id => state.tickets.filter(t => t.assignee === id).length },
   { id: "khieuNai",       vi: "Khiếu nại bản quyền", en: "Rights claims", man: "quyen", dem: () => state.claims.length, gan: id => state.claims.filter(c => c.assignee === id).length }
 ];
-const MAN_TAT_CA = ["ban-lam-viec", "to-chuc", "ho-tro", "tong-quan", "theo-doi", "nhap-so-lieu", "nap-du-lieu", "khop-isrc", "doi-chieu", "phat-hanh", "chien-dich", "quyen", "muc-tra", "chia-se", "xet-duyet", "roi", "nen-tang", "ke-toan", "chi-tra", "tam-ung", "ty-le", "doi-tac", "danh-muc", "quan-tri", "hieu-suat", "hieu-qua-von", "phieu-giao"];
-const NHOM_TAT_CA = ["tong", "tien", "doiSoat", "doiTac", "doiTacTao", "deXuat", "deXuatTao", "vanHanh", "nhapLieu", "danhMuc", "theoDoi", "chienDich", "chiaSe", "khieuNai", "hoTro", "quanTri", "phatHanhHo", "nhanSu", "toChuc", "von", "hieuSuat", "quyTrinh"];
+const MAN_TAT_CA = ["ban-lam-viec", "to-chuc", "ho-tro", "tong-quan", "theo-doi", "nhap-so-lieu", "nap-du-lieu", "khop-isrc", "doi-chieu", "phat-hanh", "chien-dich", "quyen", "muc-tra", "chia-se", "xet-duyet", "roi", "nen-tang", "ke-toan", "chi-tra", "tam-ung", "ty-le", "doi-tac", "danh-muc", "quan-tri", "hieu-suat", "hieu-qua-von", "phieu-giao", "xuat-ban"];
+const NHOM_TAT_CA = ["tong", "tien", "doiSoat", "doiTac", "doiTacTao", "deXuat", "deXuatTao", "vanHanh", "nhapLieu", "danhMuc", "theoDoi", "chienDich", "chiaSe", "khieuNai", "hoTro", "quanTri", "phatHanhHo", "nhanSu", "toChuc", "von", "hieuSuat", "quyTrinh", "tacQuyen"];
 const doiTacSapHetHan = me => partiesList({ status: "renew", manager: me && me.role === "sales" && !laTruong(me) ? me.id : undefined }).total;
 const TO_CHUC = [
   { id: "ban-giam-doc", vai: "mgmt", vi: "Ban giám đốc", en: "Management",
@@ -1962,8 +1962,8 @@ const TO_CHUC = [
   { id: "van-hanh", vai: "ops", vi: "Vận hành", en: "Operations",
     chucNang: { vi: ["Tiếp nhận hồ sơ phát hành, kiểm metadata, cấp ISRC / UPC", "Giao bản ghi tới nền tảng, theo dõi trạng thái lên kệ", "Nạp báo cáo kỳ, khớp ISRC, đối soát trước xét duyệt", "Mức trả nền tảng, danh mục, chất lượng lượt nghe"],
                 en: ["Receive release files, check metadata, assign ISRC / UPC", "Deliver recordings to platforms, track go-live", "Load period reports, match ISRC, reconcile before approval", "Platform rates, catalogue, stream quality"] },
-    man: ["ban-lam-viec", "to-chuc", "ho-tro", "doi-chieu", "chien-dich", "theo-doi", "nhap-so-lieu", "nap-du-lieu", "khop-isrc", "muc-tra", "danh-muc", "nen-tang", "phat-hanh", "phieu-giao", "quyen"],
-    nhom: ["doiSoat", "vanHanh", "nhapLieu", "danhMuc", "theoDoi", "chienDich", "khieuNai", "hoTro", "phatHanhHo", "toChuc", "quyTrinh"],
+    man: ["ban-lam-viec", "to-chuc", "ho-tro", "doi-chieu", "chien-dich", "theo-doi", "nhap-so-lieu", "nap-du-lieu", "khop-isrc", "muc-tra", "danh-muc", "nen-tang", "phat-hanh", "phieu-giao", "xuat-ban", "quyen"],
+    nhom: ["doiSoat", "vanHanh", "nhapLieu", "danhMuc", "theoDoi", "chienDich", "khieuNai", "hoTro", "phatHanhHo", "toChuc", "quyTrinh", "tacQuyen"],
     taiSan: ["danhMuc", "hoSoPhatHanh", "nenTang", "baoCaoKy"],
     to: [
       { id: "phat-hanh", vi: "Phát hành & metadata", en: "Releases & metadata", nhiemVu: [
@@ -1992,8 +1992,8 @@ const TO_CHUC = [
   { id: "tai-chinh", vai: "accounting", vi: "Tài chính", en: "Finance",
     chucNang: { vi: ["Chi trả theo kỳ, xử lý rút tiền, bảng kê PDF", "Sổ tạm ứng và thu hồi", "Kiểm số đề xuất trước khi giám đốc duyệt", "Sổ kế toán, thuế khấu trừ, bút toán điều chỉnh"],
                 en: ["Period payouts, withdrawals, PDF statements", "Advance ledger and recoupment", "Check proposal figures before management approval", "Ledger, withholding tax, adjustments"] },
-    man: ["ban-lam-viec", "to-chuc", "ho-tro", "ke-toan", "chi-tra", "tam-ung", "chia-se", "doi-chieu", "xet-duyet", "roi", "nhap-so-lieu", "hieu-qua-von"],
-    nhom: ["tien", "doiSoat", "deXuat", "chiaSe", "hoTro", "toChuc", "nhapLieu", "von", "quyTrinh"],
+    man: ["ban-lam-viec", "to-chuc", "ho-tro", "ke-toan", "chi-tra", "tam-ung", "chia-se", "doi-chieu", "xet-duyet", "roi", "nhap-so-lieu", "hieu-qua-von", "xuat-ban"],
+    nhom: ["tien", "doiSoat", "deXuat", "chiaSe", "hoTro", "toChuc", "nhapLieu", "von", "quyTrinh", "tacQuyen"],
     taiSan: ["vi", "tamUng", "bangKe"],
     to: [
       { id: "thanh-toan", vi: "Thanh toán", en: "Payments", nhiemVu: [
@@ -3519,21 +3519,18 @@ function seedProposals() {
 /* Danh sách tool phân phối. Sửa được ở Quản trị vì mỗi công ty một bộ,
    và bộ ấy đổi theo hợp đồng chứ không cố định. */
 const TOOL_GOC = [
-  { id: "onerpm",  ten: "OneRPM",      web: "https://onerpm.com",
+  { id: "onerpm",  ten: "OneRPM", web: "https://onerpm.com",
     mo: "Phân phối chính · album, track, chọn store, giá bán",
     moEn: "Primary distributor · album, track, store picker, pricing" },
-  { id: "believe", ten: "Believe",     web: "https://backstage.believe.com",
-    mo: "Phân phối phụ theo hợp đồng riêng",
-    moEn: "Secondary distributor under a separate agreement" },
+  { id: "believe", ten: "Believe Music", web: "https://backstage.believe.com",
+    mo: "Phân phối theo hợp đồng riêng. Cùng tập đoàn với Sentric bên tác quyền",
+    moEn: "Distribution under a separate agreement. Same group as Sentric on the publishing side" },
+  { id: "ada",     ten: "ADA (Warner Music)", web: "https://www.adamusic.com",
+    mo: "Phân phối qua Warner · hợp đồng riêng theo bản phát hành",
+    moEn: "Distribution through Warner · per-release agreement" },
   { id: "yt-cms",  ten: "YouTube CMS", web: "https://studio.youtube.com",
     mo: "Art Track, Content ID, kênh Topic",
-    moEn: "Art Track, Content ID, Topic channel" },
-  { id: "soundon", ten: "TikTok SoundOn", web: "https://www.soundon.global",
-    mo: "Đưa bản ghi vào thư viện âm thanh TikTok",
-    moEn: "Push the recording into TikTok's sound library" },
-  { id: "fb-rm",   ten: "Facebook Rights Manager", web: "https://business.facebook.com",
-    mo: "Bảo vệ bản ghi trên Facebook và Instagram",
-    moEn: "Protect the recording on Facebook and Instagram" }
+    moEn: "Art Track, Content ID, Topic channel", sapToi: true }
 ];
 function toolTatCa() {
   const bo = state.toolBo || [];
@@ -3548,7 +3545,7 @@ function giaoToolCua(rid) {
   const g = (state.giaoTool || {})[rid] || {};
   return toolTatCa().map(x => {
     const d = g[x.id] || null;
-    return { id: x.id, ten: x.ten, web: x.web, mo: x.mo, moEn: x.moEn, them: !!x.them,
+    return { id: x.id, ten: x.ten, web: x.web, mo: x.mo, moEn: x.moEn, them: !!x.them, sapToi: !!x.sapToi,
       xong: !!d, ma: d ? d.ma || "" : "", ghiChu: d ? d.ghiChu || "" : "",
       at: d ? d.at : null, by: d ? d.by || "" : "" };
   });
@@ -3649,6 +3646,214 @@ function ckNhip(ds) {
       moiNgay: Math.round(chenh / ngay), lui: chenh < 0 });
   }
   return ra;
+}
+
+/* =====================================================================
+   23. TÁC QUYỀN — TÁC PHẨM, TÁC GIẢ, ĐĂNG KÝ VỚI HỘI
+   ---------------------------------------------------------------------
+   Đây là mảng KHÁC HẲN bản ghi, và lẫn hai thứ ấy là lỗi tốn tiền nhất
+   trong ngành:
+
+     BẢN GHI (recording)  · mã ISRC · ai hát, ai thu · tiền từ store
+     TÁC PHẨM (work)      · mã ISWC · ai sáng tác   · tiền từ hội tác quyền
+
+   Một tác phẩm đẻ ra nhiều bản ghi: bản gốc, bản live, bản cover của
+   người khác, bản remix. Tiền tác quyền bám theo TÁC PHẨM, nên một bài
+   hit được người khác cover mười lần thì tác giả vẫn ăn cả mười.
+
+   Muốn thu được tiền ấy thì tác phẩm phải được ĐĂNG KÝ với hội tác quyền
+   của từng lãnh thổ. Chưa đăng ký ở đâu thì tiền lãnh thổ ấy nằm im
+   trong quỹ chưa phân phối của hội, và sau vài năm là mất hẳn.
+
+   Haustek đi qua Sentric (cùng tập đoàn với Believe) để làm việc đăng ký
+   ấy. Trang này không thay Sentric — nó là chỗ THEO DÕI: tác phẩm nào
+   chưa có ISWC, tỷ lệ tác giả nào chưa đủ 100%, bản ghi nào chưa nối vào
+   tác phẩm, và quan trọng nhất: lãnh thổ nào đang có doanh thu mà tác
+   phẩm chưa đăng ký ở hội của lãnh thổ ấy — tức tiền đang để trên bàn.
+   ===================================================================== */
+
+/* Hội tác quyền theo lãnh thổ. Mỗi lãnh thổ một hội chính; Hoa Kỳ có hai
+   tuyến vì biểu diễn và cơ khí do hai bên khác nhau thu. */
+const HOI_TQ = [
+  { id: "vcpmc",   ten: "VCPMC",     nuoc: "Việt Nam", loai: "bieu-dien" },
+  { id: "ascap",   ten: "ASCAP",     nuoc: "Hoa Kỳ",   loai: "bieu-dien" },
+  { id: "mlc",     ten: "The MLC",   nuoc: "Hoa Kỳ",   loai: "co-khi" },
+  { id: "prs",     ten: "PRS",       nuoc: "Anh",      loai: "bieu-dien" },
+  { id: "gema",    ten: "GEMA",      nuoc: "Đức",      loai: "bieu-dien" },
+  { id: "sacem",   ten: "SACEM",     nuoc: "Pháp",     loai: "bieu-dien" },
+  { id: "jasrac",  ten: "JASRAC",    nuoc: "Nhật Bản", loai: "bieu-dien" },
+  { id: "komca",   ten: "KOMCA",     nuoc: "Hàn Quốc", loai: "bieu-dien" },
+  { id: "apra",    ten: "APRA AMCOS", nuoc: "Úc",      loai: "bieu-dien" },
+  { id: "socan",   ten: "SOCAN",     nuoc: "Canada",   loai: "bieu-dien" },
+  { id: "must",    ten: "MÜST",      nuoc: "Đài Loan", loai: "bieu-dien" },
+  { id: "mct",     ten: "MCT",       nuoc: "Thái Lan", loai: "bieu-dien" },
+  { id: "compass", ten: "COMPASS",   nuoc: "Singapore", loai: "bieu-dien" },
+  { id: "ecad",    ten: "UBC / ECAD", nuoc: "Brazil",  loai: "bieu-dien" },
+  { id: "sacm",    ten: "SACM",      nuoc: "Mexico",   loai: "bieu-dien" },
+  { id: "wami",    ten: "WAMI",      nuoc: "Indonesia", loai: "bieu-dien" },
+  { id: "ytcid",   ten: "YouTube Content ID", nuoc: "Toàn cầu", loai: "content-id" }
+];
+/* Lãnh thổ nào đi với hội nào — dùng để chỉ ra tiền đang để trên bàn. */
+const HOI_THEO_LANH_THO = {
+  "Việt Nam": ["vcpmc"], "Hoa Kỳ": ["ascap", "mlc"], "Nhật Bản": ["jasrac"],
+  "Hàn Quốc": ["komca"], "Đức": ["gema"], "Anh": ["prs"], "Pháp": ["sacem"],
+  "Úc": ["apra"], "Canada": ["socan"], "Đài Loan": ["must"], "Thái Lan": ["mct"],
+  "Singapore": ["compass"], "Brazil": ["ecad"], "Mexico": ["sacm"], "Indonesia": ["wami"]
+};
+const VAI_TAC_GIA = [
+  { id: "C",  vi: "Nhạc",        en: "Composer" },
+  { id: "A",  vi: "Lời",         en: "Author / lyricist" },
+  { id: "CA", vi: "Nhạc và lời", en: "Composer and author" },
+  { id: "AR", vi: "Phối khí",    en: "Arranger" },
+  { id: "AD", vi: "Chuyển thể",  en: "Adaptor" }
+];
+const DK_TRANG_THAI = ["chua-gui", "da-gui", "da-khop", "tu-choi", "trung-lap"];
+
+/* Báo cáo tác quyền về sau một tới hai quý, nên kỳ cuối cùng thường CHƯA
+   có số. Mọi con số của trang này lấy theo kỳ gần nhất ĐÃ có số, không
+   phải kỳ mới nhất — không thì bảng nào cũng bằng 0 và người đọc tưởng
+   hỏng. */
+/* Quét cả danh mục để đếm việc còn lại mất khoảng 400ms. Trang gọi lại
+   mỗi lần vẽ, nên nhớ kết quả theo phiên bản dữ liệu tác quyền; sửa một
+   tác phẩm hay một đăng ký là bản nhớ hỏng và tính lại. */
+let TQ_VER = 0, TQ_NHO = null;
+function tqDoi() { TQ_VER++; TQ_NHO = null; }
+
+function kyTqGanNhat() {
+  for (let p = P - 1; p >= 0; p--) if (pubLoaded(p)) return p;
+  return P - 1;
+}
+
+/* ---- ISWC: T-034.524.680-1, kiểm số cuối theo chuẩn CISAC ---- */
+function iswcCua(n) {
+  const so = String(100000000 + (n % 900000000));
+  let t = 1;
+  for (let k = 0; k < 9; k++) t += (k + 1) * (+so[k]);
+  return "T-" + so + "-" + ((10 - (t % 10)) % 10);
+}
+
+/* ---- Nối bản ghi vào tác phẩm ----
+   Một tác phẩm nhiều bản ghi là chuyện thường: bản gốc, bản live, bản
+   cover. Ở đây khoảng 7% bản ghi là bản thứ hai của một tác phẩm đã có,
+   để quan hệ một-nhiều có mặt thật chứ không phải chỉ nói suông. */
+let TP_INDEX = null;
+function dungTpIndex() {
+  if (TP_INDEX) return TP_INDEX;
+  const cua = new Int32Array(N);                    /* bản ghi i thuộc tác phẩm nào */
+  for (let i = 0; i < N; i++) cua[i] = i;
+  for (let i = 1; i < N; i++) {
+    if (hash(i, 77) < 0.07) {
+      const goc = i - 1 - ((hash(i, 78) * Math.min(i, 400)) | 0);
+      if (goc >= 0 && cua[goc] === goc) cua[i] = goc;
+    }
+  }
+  const banGhi = new Map();
+  for (let i = 0; i < N; i++) {
+    const w = cua[i];
+    let a = banGhi.get(w); if (!a) { a = []; banGhi.set(w, a); }
+    a.push(i);
+  }
+  TP_INDEX = { cua, banGhi };
+  return TP_INDEX;
+}
+function tpCuaBanGhi(i) { return dungTpIndex().cua[i]; }
+
+/* ---- Một tác phẩm ---- */
+function ipiCua(artistId) { return String(100000000 + artistId * 7919 % 899999999); }
+function tacPhamCua(w) {
+  if (!(w >= 0 && w < N)) throw new Error("Tác phẩm không hợp lệ");
+  const ix = dungTpIndex();
+  if (ix.cua[w] !== w) w = ix.cua[w];
+  const ghiDe = (state.tacPham || {})[w] || {};
+  const bg = (ix.banGhi.get(w) || [w]).slice(0, 40);
+
+  /* Tác giả suy từ hai người viết của bản ghi gốc, cộng tỷ lệ nhà xuất
+     bản. Nhập tay từ Sentric thì đè lên. */
+  let tacGia = ghiDe.tacGia;
+  if (!tacGia) {
+    const w1 = tW1[w], w2 = tW2[w], s1 = Math.round(tW1s[w] * 100);
+    /* 5% tác phẩm chỉ biết được một phần tác giả — thường là bài cũ, hoặc
+       bài có người đồng sáng tác chưa khai báo. Tổng không đủ 100% và hội
+       tác quyền nào cũng trả lại hồ sơ như thế, nên nó phải hiện ra. */
+    const hut = hash(w, 82) < 0.05 ? 10 + ((hash(w, 83) * 16) | 0) : 0;
+    const con = 100 - hut;
+    tacGia = [{ ten: ARTISTS[w1].name, vaiTro: w2 >= 0 ? "C" : "CA",
+      tyLe: Math.round((w2 >= 0 ? con * (s1 / 100) : con) * 100) / 100,
+      ipi: ipiCua(w1), kiemSoat: true, artistId: w1 }];
+    if (w2 >= 0) tacGia.push({ ten: ARTISTS[w2].name, vaiTro: "A",
+      tyLe: Math.round((con - tacGia[0].tyLe) * 100) / 100,
+      ipi: ipiCua(w2), kiemSoat: hash(w, 79) < 0.82, artistId: w2 });
+  }
+  const tong = tacGia.reduce((a, x) => a + (+x.tyLe || 0), 0);
+  const nxb = ghiDe.nhaXuatBan || [{ ten: "Haustek Publishing", tyLe: 50, ipi: "00521140377", qua: "Sentric" }];
+
+  return {
+    id: w, iswc: ghiDe.iswc || (hash(w, 80) < 0.86 ? iswcCua(w * 7 + 13) : ""),
+    ten: ghiDe.ten || tTitle[w],
+    tacGia, tongTyLe: Math.round(tong * 100) / 100, canTyLe: Math.abs(tong - 100) < 0.01,
+    nhaXuatBan: nxb,
+    banGhi: bg.map(i => ({ i, isrc: tIsrc[i], ten: tTitle[i], nghe: ARTISTS[tArtist[i]].name,
+      goc: i === w, luotThang: recStreams[i * P + (P - 1)] })),
+    soBanGhi: (ix.banGhi.get(w) || [w]).length,
+    nguon: ghiDe.nguon || "suy", capNhat: ghiDe.at || null, boi: ghiDe.by || ""
+  };
+}
+
+/* ---- Đăng ký với từng hội ----
+   Trạng thái suy ra xác định để bản mẫu có số mà xem; ghi đè bằng tay
+   hoặc bằng file Sentric thì đè lên. */
+function dangKyCua(w) {
+  const tp = tacPhamCua(w);
+  const g = (state.dangKyTq || {})[tp.id] || {};
+  return HOI_TQ.map((h, j) => {
+    const d = g[h.id];
+    if (d) return Object.assign({ hoi: h.id, ten: h.ten, nuoc: h.nuoc, loai: h.loai, tay: true }, d);
+    let tt = "chua-gui";
+    if (tp.iswc) {
+      /* Hồ sơ bị hội trả lại là chuyện của MỘT SỐ tác phẩm (thiếu IPI, tên
+         viết khác nhau giữa hai hội), không phải chuyện rải đều mười bảy
+         hội. Nên gom vào 8% tác phẩm có vấn đề, còn lại chỉ là đã gửi hay
+         chưa gửi. */
+      const xau = hash(tp.id, 81) < 0.08;
+      const r = hash(tp.id, 300 + j);
+      tt = h.id === "vcpmc" ? (r < 0.93 ? "da-khop" : "da-gui")
+         : r < 0.5 ? "da-khop" : r < 0.68 ? "da-gui"
+         : xau && r < 0.72 ? "tu-choi" : xau && r < 0.74 ? "trung-lap" : "chua-gui";
+    }
+    const rel = releaseDateOf(tp.id);
+    return { hoi: h.id, ten: h.ten, nuoc: h.nuoc, loai: h.loai, trangThai: tt, tay: false,
+      ngayGui: tt === "chua-gui" ? null : addDays(rel, 14 + ((hash(tp.id, 400 + j) * 40) | 0)),
+      ngayKhop: tt === "da-khop" ? addDays(rel, 60 + ((hash(tp.id, 500 + j) * 120) | 0)) : null,
+      maHoi: tt === "da-khop" ? h.ten.replace(/[^A-Z]/g, "").slice(0, 3) + chuSo(tp.id + j, 600, 8) : "",
+      ghiChu: tt === "tu-choi" ? "Hội trả lại: thiếu IPI của một tác giả"
+            : tt === "trung-lap" ? "Trùng với một đăng ký khác của cùng tác phẩm" : "" };
+  });
+}
+
+/* ---- TIỀN ĐANG ĐỂ TRÊN BÀN ----
+   Lãnh thổ đang có doanh thu mà tác phẩm chưa đăng ký ở hội của lãnh thổ
+   ấy. Đây là con số đáng giá nhất của cả trang: hội vẫn thu tiền, nhưng
+   không biết trả cho ai nên giữ trong quỹ chưa phân phối, và sau ba tới
+   năm năm là mất hẳn. */
+function tienTrenBan(w) {
+  const tp = tacPhamCua(w);
+  const dk = dangKyCua(w);
+  const coHoi = {}; dk.forEach(x => { if (x.trangThai === "da-khop") coHoi[x.hoi] = true; });
+  const p = kyTqGanNhat();
+  let pub = 0;
+  tp.banGhi.forEach(b => { pub += grossPub(b.i, p); });
+  const ra = [];
+  TERR.forEach((nuoc, j) => {
+    const hs = HOI_THEO_LANH_THO[nuoc];
+    if (!hs) return;
+    const thieu = hs.filter(h => !coHoi[h]);
+    if (!thieu.length) return;
+    const tien = cents(pub * TERR_W[j]);
+    if (tien < 0.5) return;
+    ra.push({ nuoc, hoi: thieu.map(h => (HOI_TQ.find(x => x.id === h) || {}).ten || h), tienKy: tien });
+  });
+  return { tp: tp.id, ten: tp.ten, iswc: tp.iswc, rows: ra.sort((a, b) => b.tienKy - a.tienKy),
+    tong: cents(ra.reduce((a, x) => a + x.tienKy, 0)) };
 }
 
 /* ---- mức trả nền tảng: bảng đầy đủ để hiển thị và ghi đè ---- */
@@ -5211,6 +5416,7 @@ const NHOM_MO = {
   quyTrinh:  { vi: "Quy trình từng loại việc và bước đã làm của mỗi việc", en: "The runbook for each kind of work and each item’s completed steps" },
   danhMuc:   { vi: "Danh mục, chất lượng lượt nghe, metadata, hồ sơ phát hành (đọc)", en: "Catalogue, stream quality, metadata, release files (read)" },
   theoDoi:   { vi: "Lượt nghe theo ngày, playlist toàn danh mục", en: "Daily streams and playlists across the catalogue" },
+  tacQuyen:  { vi: "Tác phẩm, tác giả và đăng ký với hội tác quyền", en: "Works, writers and society registrations" },
   chienDich: { vi: "Chiến dịch quảng bá, tạo và nhận yêu cầu chiến dịch", en: "Promotion campaigns, create and take campaign requests" },
   chiaSe:    { vi: "Chia sẻ tác quyền của mọi tài khoản", en: "Royalty splits across accounts" },
   khieuNai:  { vi: "Khiếu nại bản quyền, cài đặt video", en: "Rights claims, video settings" },
@@ -5242,6 +5448,9 @@ const QUYEN_HAM = {
   catalogueFor: "doiTac",
   dailyTrends: "theoDoi", dailyTrendsFor: "theoDoi", playlists: "theoDoi", playlistsFor: "theoDoi",
   "soCongKhai.cua": "theoDoi", "soCongKhai.cuaBai": "theoDoi", "soCongKhai.ghi": "theoDoi", "soCongKhai.xoa": "theoDoi",
+  "xuatBan.tacPham": "tacQuyen", "xuatBan.chiTiet": "tacQuyen", "xuatBan.ghi": "tacQuyen",
+  "xuatBan.datDangKy": "tacQuyen", "xuatBan.boDangKy": "tacQuyen", "xuatBan.viecConLai": "tacQuyen",
+  "xuatBan.tongQuan": "tacQuyen", "xuatBan.nhapSentric": "tacQuyen",
   "soCongKhai.docTuDong": "theoDoi", "soCongKhai.canDoc": "theoDoi",
   "releases.tool.cua": "vanHanh", "releases.tool.danhDau": "vanHanh", "releases.tool.boDanhDau": "vanHanh",
   "releases.tool.them": "quanTri", "releases.tool.bo": "quanTri",
@@ -5778,6 +5987,201 @@ const admin = {
         });
       });
       return ra.sort((a, b) => String(a.lanCuoi || "").localeCompare(String(b.lanCuoi || "")));
+    }
+  },
+  /* ---- tác quyền: tác phẩm, đăng ký, và tiền đang để trên bàn ---- */
+  xuatBan: {
+    hoi: () => HOI_TQ.slice(),
+    vaiTacGia: () => VAI_TAC_GIA.slice(),
+    hoiTheoLanhTho: () => Object.assign({}, HOI_THEO_LANH_THO),
+
+    /* Danh sách tác phẩm. Quét cả 50.000 bản ghi là chậm, nên lấy mẫu
+       theo bước rồi lọc — đủ cho một bảng người đọc được. */
+    tacPham(o) {
+      chanQuyen("xuatBan.tacPham", "tacQuyen");
+      o = o || {};
+      const q = String(o.q || "").trim().toLowerCase();
+      const gioiHan = Math.max(1, Math.min(300, o.limit || 60));
+      const ix = dungTpIndex();
+      const ra = [];
+      let quet = 0;
+      const buoc = q ? 1 : 7;
+      for (let w = 0; w < N && ra.length < gioiHan * 4; w += buoc) {
+        if (ix.cua[w] !== w) continue;
+        quet++;
+        const tp = tacPhamCua(w);
+        if (q && (tp.ten + " " + tp.iswc + " " + tp.tacGia.map(x => x.ten).join(" ")).toLowerCase().indexOf(q) < 0) continue;
+        if (o.thieuIswc && tp.iswc) continue;
+        if (o.lechTyLe && tp.canTyLe) continue;
+        if (o.nhieuBanGhi && tp.soBanGhi < 2) continue;
+        ra.push(tp);
+      }
+      return { rows: ra.slice(0, gioiHan), quet, uocLuong: buoc > 1 };
+    },
+    chiTiet(w) {
+      chanQuyen("xuatBan.chiTiet", "tacQuyen");
+      const tp = tacPhamCua(w);
+      return Object.assign({}, tp, { dangKy: dangKyCua(w), trenBan: tienTrenBan(w) });
+    },
+    /* Sửa tay: ISWC, tác giả và tỷ lệ. Tỷ lệ phải đủ 100% mới ghi được —
+       hội tác quyền nào cũng trả lại hồ sơ không đủ 100%. */
+    ghi(w, d, by) {
+      chanQuyen("xuatBan.ghi", "tacQuyen");
+      const tp = tacPhamCua(w);
+      const cu = (state.tacPham || {})[tp.id] || {};
+      const moi = Object.assign({}, cu);
+      if (d.iswc !== undefined) {
+        const x = String(d.iswc || "").trim().toUpperCase().replace(/[.\s]/g, "");
+        if (x && !/^T-?\d{9}-?\d$/.test(x)) throw new Error("Mã ISWC phải có dạng T-123456789-0");
+        moi.iswc = x ? (x[1] === "-" ? x : "T-" + x.slice(1, 10) + "-" + x.slice(10)) : "";
+      }
+      if (d.ten !== undefined) moi.ten = chuoi(d.ten).slice(0, 200);
+      if (d.tacGia !== undefined) {
+        const ds = (d.tacGia || []).map(x => ({
+          ten: chuoi(x.ten), vaiTro: VAI_TAC_GIA.some(v => v.id === x.vaiTro) ? x.vaiTro : "CA",
+          tyLe: Math.round((+x.tyLe || 0) * 100) / 100, ipi: String(x.ipi || "").replace(/\D/g, "").slice(0, 11),
+          kiemSoat: !!x.kiemSoat, artistId: x.artistId == null ? null : +x.artistId
+        })).filter(x => x.ten);
+        if (!ds.length) throw new Error("Tác phẩm phải có ít nhất một tác giả");
+        const tong = ds.reduce((a, x) => a + x.tyLe, 0);
+        if (Math.abs(tong - 100) > 0.01)
+          throw new Error("Tổng tỷ lệ tác giả phải đúng 100%, đang là " + Math.round(tong * 100) / 100 + "%");
+        moi.tacGia = ds;
+      }
+      moi.nguon = d.nguon === "sentric" ? "sentric" : "tay";
+      moi.at = nowISO(); moi.by = by || (_me ? _me.name : "");
+      state.tacPham[tp.id] = moi;
+      tqDoi();
+      audit.log("tq.ghi", tp.id + " · " + (moi.ten || tp.ten) + (moi.iswc ? " · " + moi.iswc : ""), by);
+      store.save();
+      return this.chiTiet(tp.id);
+    },
+    /* Đặt trạng thái đăng ký với một hội. Đây là thứ Sentric trả về, và
+       cũng là thứ nhân viên gõ tay khi hội gửi thư. */
+    datDangKy(w, hoiId, d, by) {
+      chanQuyen("xuatBan.datDangKy", "tacQuyen");
+      const tp = tacPhamCua(w);
+      const h = HOI_TQ.find(x => x.id === hoiId);
+      if (!h) throw new Error("Không có hội " + hoiId);
+      if (DK_TRANG_THAI.indexOf(d.trangThai) < 0) throw new Error("Trạng thái đăng ký không hợp lệ");
+      if (d.trangThai !== "chua-gui" && !tp.iswc)
+        throw new Error("Chưa có ISWC thì chưa gửi đăng ký được. Xin mã ở Sentric trước.");
+      if (!state.dangKyTq[tp.id]) state.dangKyTq[tp.id] = {};
+      state.dangKyTq[tp.id][hoiId] = {
+        trangThai: d.trangThai, maHoi: chuoi(d.maHoi).slice(0, 40), ghiChu: chuoi(d.ghiChu).slice(0, 300),
+        ngayGui: d.trangThai === "chua-gui" ? null : (d.ngayGui || isoDate(ASOF)),
+        ngayKhop: d.trangThai === "da-khop" ? (d.ngayKhop || isoDate(ASOF)) : null,
+        at: nowISO(), by: by || (_me ? _me.name : "")
+      };
+      tqDoi();
+      audit.log("tq.dangKy", tp.id + " · " + h.ten + " · " + d.trangThai, by);
+      store.save();
+      return dangKyCua(tp.id);
+    },
+    boDangKy(w, hoiId, by) {
+      chanQuyen("xuatBan.boDangKy", "tacQuyen");
+      const tp = tacPhamCua(w);
+      const g = (state.dangKyTq || {})[tp.id];
+      if (!g || !g[hoiId]) throw new Error("Chưa đặt tay trạng thái đăng ký ở hội này");
+      delete g[hoiId];
+      if (!Object.keys(g).length) delete state.dangKyTq[tp.id];
+      tqDoi();
+      audit.log("tq.dangKy.go", tp.id + " · " + hoiId, by); store.save();
+      return dangKyCua(tp.id);
+    },
+
+    /* ---- VIỆC CÒN PHẢI LÀM ----
+       Xếp theo TIỀN chứ không theo thứ tự bảng chữ cái: bài kiếm nhiều mà
+       thiếu ISWC thì phải nằm trên đầu, bài không ai nghe thì để sau. */
+    viecConLai(gioiHan) {
+      chanQuyen("xuatBan.viecConLai", "tacQuyen");
+      const n = Math.max(5, Math.min(200, gioiHan || 40));
+      if (TQ_NHO && TQ_NHO.n >= n) return TQ_NHO.kq;
+      const ix = dungTpIndex(), p = kyTqGanNhat();
+      const thieuIswc = [], lechTyLe = [], hong = [], trenBan = [];
+      let tongTrenBan = 0, soTp = 0;
+      const buoc = 5;
+      for (let w = 0; w < N; w += buoc) {
+        if (ix.cua[w] !== w) continue;
+        soTp++;
+        const tp = tacPhamCua(w);
+        let tien = 0;
+        (ix.banGhi.get(w) || [w]).forEach(i => { tien += grossPub(i, p); });
+        if (!tp.iswc) thieuIswc.push({ w, ten: tp.ten, tien: cents(tien) });
+        if (!tp.canTyLe) lechTyLe.push({ w, ten: tp.ten, tong: tp.tongTyLe, tien: cents(tien) });
+        const dk = dangKyCua(w);
+        const xau = dk.filter(x => x.trangThai === "tu-choi" || x.trangThai === "trung-lap");
+        if (xau.length) hong.push({ w, ten: tp.ten, hoi: xau.map(x => x.ten), tien: cents(tien) });
+        if (tien > 0 && tp.iswc) {
+          const tb = tienTrenBan(w);
+          if (tb.tong > 1) { trenBan.push({ w, ten: tp.ten, tong: tb.tong, nuoc: tb.rows.slice(0, 3).map(x => x.nuoc) }); tongTrenBan += tb.tong; }
+        }
+      }
+      const sx = a => a.sort((x, y) => (y.tong || y.tien || 0) - (x.tong || x.tien || 0)).slice(0, n);
+      const kq = {
+        uocLuong: true, mau: soTp, buoc,
+        thieuIswc: sx(thieuIswc), lechTyLe: sx(lechTyLe), hong: sx(hong), trenBan: sx(trenBan),
+        dem: { thieuIswc: thieuIswc.length * buoc, lechTyLe: lechTyLe.length * buoc,
+               hong: hong.length * buoc, trenBan: trenBan.length * buoc },
+        tongTrenBan: cents(tongTrenBan * buoc)
+      };
+      TQ_NHO = { n, kq };
+      return kq;
+    },
+
+    /* ---- Tổng quan cho bảng đầu trang ---- */
+    tongQuan() {
+      chanQuyen("xuatBan.tongQuan", "tacQuyen");
+      const v = this.viecConLai(5);
+      const p = kyTqGanNhat(), pk = PERIODS[p].k;
+      let pubKy = 0;
+      for (let i = 0; i < N; i += 5) pubKy += grossPub(i, p);
+      pubKy = cents(pubKy * 5);
+      const ix = dungTpIndex();
+      let soTp = 0, nhieuBg = 0;
+      for (let w = 0; w < N; w += 5) { if (ix.cua[w] === w) { soTp++; if ((ix.banGhi.get(w) || []).length > 1) nhieuBg++; } }
+      return { ky: pk, kyLabel: PERIODS[p].label, doanhThuKy: pubKy,
+        soTacPham: soTp * 5, soNhieuBanGhi: nhieuBg * 5,
+        tongTrenBan: v.tongTrenBan, dem: v.dem, uocLuong: true };
+    },
+
+    /* ---- Nối Sentric ----
+       Sentric là bên làm việc đăng ký thật; trang này chỉ theo dõi. Cách
+       nhận dữ liệu, theo thứ tự nên hỏi: (1) API hoặc SFTP nếu Sentric có
+       cho khách label — hỏi người phụ trách tài khoản; (2) xuất CSV theo
+       kỳ; (3) dán tay như hàm dưới đây. Hàm này nhận cả ba vì cả ba rốt
+       cuộc đều là cùng một bảng. */
+    nhapSentric(text, by) {
+      chanQuyen("xuatBan.nhapSentric", "tacQuyen");
+      const dong = String(text || "").split(/\r?\n/).map(x => x.trim()).filter(Boolean);
+      if (!dong.length) throw new Error("Chưa dán gì vào");
+      if (dong.length > 3000) throw new Error("Mỗi lần dán tối đa 3.000 dòng");
+      const ok = [], bo = [];
+      /* Cột: ISRC hoặc tên bài | ISWC | mã đăng ký hội | hội */
+      dong.forEach(d => {
+        if (/^(isrc|title|t[eê]n|work)/i.test(d)) return;                 /* dòng tiêu đề */
+        const c = d.split(/\t|;|,(?=\s*[^\s])/).map(x => x.trim());
+        if (c.length < 2) { bo.push({ dong: d, vi: "không đủ cột" }); return; }
+        const khoa = c[0].toUpperCase().replace(/[^A-Z0-9]/g, "");
+        let w = -1;
+        if (/^[A-Z]{2}[A-Z0-9]{3}\d{7}$/.test(khoa)) {
+          const i = isrcTim(khoa);
+          if (i >= 0) w = tpCuaBanGhi(i);
+        }
+        if (w < 0) { bo.push({ dong: d, vi: "không tra được ISRC " + c[0] }); return; }
+        const iswc = c[1] ? c[1].toUpperCase().replace(/[.\s]/g, "") : "";
+        if (iswc && !/^T-?\d{9}-?\d$/.test(iswc)) { bo.push({ dong: d, vi: "ISWC sai định dạng: " + c[1] }); return; }
+        try {
+          if (iswc) this.ghi(w, { iswc, nguon: "sentric" }, by || "Sentric");
+          if (c[3]) {
+            const h = HOI_TQ.find(x => x.ten.toLowerCase() === String(c[3]).toLowerCase() || x.id === String(c[3]).toLowerCase());
+            if (h) this.datDangKy(w, h.id, { trangThai: "da-khop", maHoi: c[2] || "" }, by || "Sentric");
+          }
+          ok.push({ w, isrc: khoa, iswc });
+        } catch (e) { bo.push({ dong: d, vi: e.message }); }
+      });
+      if (ok.length) audit.log("tq.nhapSentric", ok.length + " tác phẩm nhận, " + bo.length + " dòng bỏ", by);
+      return { ok, bo };
     }
   },
   /* ---- cây tổ chức: quyền, chức năng, nhiệm vụ, tài sản, nhân sự ---- */
@@ -6758,6 +7162,43 @@ const api = {
       else if (hien.length) hien[0].value = cents(hien[0].value + du);
     }
     return scrub({ dim, rows: hien, tail, shown: hien.length, totalStores, expanded });
+  },
+
+  /* Tác phẩm của một tác giả. Đây là bảng METADATA, không có tiền: tiền
+     tác quyền đã có ở summary/tracks luồng "pub". Đồng tác giả thấy tên
+     và tỷ lệ của nhau — đó là chuyện bình thường và cần thiết trong tác
+     quyền. Nhưng phần Haustek giữ, phí, và ước tính tiền đang để trên bàn
+     thì không ra khỏi cổng nội bộ. */
+  tacPham(role, partyId, opts) {
+    assertParty(role, partyId);
+    if (role !== "artist") throw new Error("Chỉ tác giả mới có danh sách tác phẩm");
+    const o = opts || {};
+    const q = String(o.q || "").trim().toLowerCase();
+    const gioiHan = Math.max(1, Math.min(200, o.limit || 50));
+    const bg = idxOf(byWriter, partyId);
+    const daCo = new Set(), ra = [];
+    for (let k = 0; k < bg.length && ra.length < gioiHan; k++) {
+      const w = tpCuaBanGhi(bg[k]);
+      if (daCo.has(w)) continue;
+      daCo.add(w);
+      const tp = tacPhamCua(w);
+      if (q && (tp.ten + " " + tp.iswc).toLowerCase().indexOf(q) < 0) continue;
+      const cuaToi = tp.tacGia.find(x => x.artistId === partyId);
+      const dk = dangKyCua(w).filter(x => x.trangThai === "da-khop");
+      ra.push({
+        ten: tp.ten, iswc: tp.iswc,
+        tyLeCuaToi: cuaToi ? cuaToi.tyLe : null, vaiTro: cuaToi ? cuaToi.vaiTro : null,
+        dongTacGia: tp.tacGia.filter(x => x.artistId !== partyId).map(x => ({ ten: x.ten, vaiTro: x.vaiTro, tyLe: x.tyLe })),
+        canTyLe: tp.canTyLe,
+        soBanGhi: tp.soBanGhi,
+        banGhi: tp.banGhi.slice(0, 8).map(x => ({ isrc: x.isrc, ten: x.ten, nghe: x.nghe })),
+        daDangKy: dk.map(x => ({ hoi: x.ten, nuoc: x.nuoc })),
+        soHoi: dk.length
+      });
+    }
+    return scrub({ tong: daCo.size, rows: ra,
+      chuaCoIswc: ra.filter(x => !x.iswc).length,
+      lechTyLe: ra.filter(x => !x.canTyLe).length });
   },
 
   tracks(role, partyId, periodKey, stream, opts) {

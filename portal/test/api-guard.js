@@ -1570,6 +1570,126 @@ check("Phiếu giao việc và số công khai không rời cổng nội bộ, v
   return "vai sai bị chặn · api không có phiếu giao và số công khai";
 });
 
+/* ---------------------------------------------------------------------
+   VÒNG 18 — tác quyền: tác phẩm, đăng ký với hội, và ranh giới
+   ------------------------------------------------------------------- */
+check("Tác phẩm khác bản ghi: một tác phẩm nhiều bản ghi, và ISWC khác ISRC", () => {
+  nhu("S02");
+  const d = A.xuatBan.tacPham({ nhieuBanGhi: true, limit: 5 });
+  must(d.rows.length >= 1, "không tìm được tác phẩm nào có nhiều hơn một bản ghi");
+  const tp = d.rows[0];
+  must(tp.soBanGhi >= 2, "lọc nhiều bản ghi mà trả về tác phẩm một bản ghi");
+  must(tp.banGhi.every(b => /^[A-Z]{2}[A-Z0-9]{3}\d{7}$/.test(b.isrc)), "bản ghi phải có ISRC đúng định dạng");
+  must(!tp.iswc || /^T-\d{9}-\d$/.test(tp.iswc), "ISWC sai định dạng: " + tp.iswc);
+  must(tp.banGhi.filter(b => b.goc).length === 1, "một tác phẩm phải có đúng một bản ghi gốc");
+  /* mọi bản ghi của tác phẩm đều tra ngược về đúng tác phẩm ấy */
+  const ct = A.xuatBan.chiTiet(tp.id);
+  must(ct.id === tp.id, "tra chi tiết ra tác phẩm khác");
+  return tp.soBanGhi + " bản ghi cùng một tác phẩm · ISWC và ISRC là hai mã khác nhau";
+});
+
+check("Tỷ lệ tác giả phải đủ 100%, và ISWC phải đúng định dạng mới ghi được", () => {
+  nhu("S02");
+  const w = A.xuatBan.tacPham({ limit: 1 }).rows[0].id;
+  mustThrow(() => A.xuatBan.ghi(w, { tacGia: [{ ten: "A", vaiTro: "C", tyLe: 60 }, { ten: "B", vaiTro: "A", tyLe: 30 }] }, "x"),
+    "ghi tỷ lệ tác giả chỉ 90%");
+  mustThrow(() => A.xuatBan.ghi(w, { tacGia: [{ ten: "A", vaiTro: "C", tyLe: 70 }, { ten: "B", vaiTro: "A", tyLe: 40 }] }, "x"),
+    "ghi tỷ lệ tác giả 110%");
+  mustThrow(() => A.xuatBan.ghi(w, { tacGia: [] }, "x"), "ghi tác phẩm không có tác giả nào");
+  mustThrow(() => A.xuatBan.ghi(w, { iswc: "ABC123" }, "x"), "ghi ISWC sai định dạng");
+  A.xuatBan.ghi(w, { iswc: "T-123456789-0",
+    tacGia: [{ ten: "Nguyễn A", vaiTro: "C", tyLe: 60, ipi: "00123456789" }, { ten: "Trần B", vaiTro: "A", tyLe: 40 }] }, "Vận hành");
+  const ct = A.xuatBan.chiTiet(w);
+  must(ct.iswc === "T-123456789-0" && ct.canTyLe && ct.tongTyLe === 100, "ghi xong mà đọc lại không đúng");
+  must(ct.nguon === "tay" && ct.boi, "không ghi lại ai sửa");
+  return "chặn 90% · chặn 110% · chặn rỗng · chặn ISWC sai · ghi đúng thì đọc lại được";
+});
+
+check("Chưa có ISWC thì chưa gửi đăng ký được, và trạng thái đặt tay đè lên số suy ra", () => {
+  nhu("S02");
+  const ds = A.xuatBan.tacPham({ thieuIswc: true, limit: 3 });
+  must(ds.rows.length >= 1, "không tìm được tác phẩm nào thiếu ISWC");
+  const w = ds.rows[0].id;
+  mustThrow(() => A.xuatBan.datDangKy(w, "prs", { trangThai: "da-khop" }, "x"), "gửi đăng ký khi chưa có ISWC");
+  A.xuatBan.datDangKy(w, "prs", { trangThai: "chua-gui" }, "x");     /* chưa gửi thì không cần ISWC */
+  A.xuatBan.ghi(w, { iswc: "T-222333444-4" }, "x");
+  mustThrow(() => A.xuatBan.datDangKy(w, "hoi-khong-co", { trangThai: "da-gui" }, "x"), "đăng ký với hội không tồn tại");
+  mustThrow(() => A.xuatBan.datDangKy(w, "prs", { trangThai: "linh-tinh" }, "x"), "trạng thái đăng ký không hợp lệ");
+  A.xuatBan.datDangKy(w, "prs", { trangThai: "da-khop", maHoi: "PRS777" }, "Vận hành");
+  const r = A.xuatBan.chiTiet(w).dangKy.find(x => x.hoi === "prs");
+  must(r.trangThai === "da-khop" && r.maHoi === "PRS777" && r.tay, "đặt tay không đè lên số suy ra");
+  A.xuatBan.boDangKy(w, "prs", "Vận hành");
+  must(!A.xuatBan.chiTiet(w).dangKy.find(x => x.hoi === "prs").tay, "bỏ đặt tay mà vẫn còn cờ tay");
+  return "chưa ISWC thì chặn · hội lạ bị chặn · đặt tay đè được và gỡ được";
+});
+
+check("Tiền để trên bàn chỉ tính lãnh thổ CÓ doanh thu mà CHƯA đăng ký", () => {
+  nhu("S02");
+  const v = A.xuatBan.viecConLai(30);
+  must(v.trenBan.length >= 1, "không tìm được tác phẩm nào đang hở lãnh thổ");
+  const w = v.trenBan[0].w;
+  const truoc = A.xuatBan.chiTiet(w).trenBan;
+  must(truoc.tong > 0 && truoc.rows.length >= 1, "tác phẩm này phải đang hở ít nhất một lãnh thổ");
+  const banDo = A.xuatBan.hoiTheoLanhTho();
+  truoc.rows.forEach(r => must(banDo[r.nuoc], "lãnh thổ " + r.nuoc + " không có hội nào trong bản đồ"));
+  /* đăng ký đủ ở mọi hội của lãnh thổ đầu tiên thì lãnh thổ ấy phải biến mất */
+  const nuoc = truoc.rows[0].nuoc;
+  banDo[nuoc].forEach(h => A.xuatBan.datDangKy(w, h, { trangThai: "da-khop", maHoi: "X" }, "test"));
+  const sau = A.xuatBan.chiTiet(w).trenBan;
+  must(!sau.rows.some(r => r.nuoc === nuoc), "đăng ký đủ rồi mà lãnh thổ " + nuoc + " vẫn còn trong danh sách hở");
+  must(sau.tong < truoc.tong, "đăng ký thêm mà tổng tiền trên bàn không giảm");
+  banDo[nuoc].forEach(h => A.xuatBan.boDangKy(w, h, "test"));
+  return "hở " + truoc.rows.length + " lãnh thổ · đăng ký xong thì lãnh thổ ấy rời danh sách · tổng giảm";
+});
+
+check("Nhập bảng Sentric: nhận dòng tra được ISRC, trả lại dòng hỏng chứ không nuốt", () => {
+  nhu("S02");
+  const w = A.xuatBan.tacPham({ limit: 1 }).rows[0];
+  const isrc = w.banGhi[0].isrc;
+  const kq = A.xuatBan.nhapSentric(
+    "ISRC\tISWC\tMã hội\tHội\n" +
+    isrc + "\tT-987654321-5\tPRS4242\tPRS\n" +
+    "KHONG-CO-ISRC\tT-111222333-4\t\t\n" +
+    isrc + "\tISWC-SAI\t\t\n", "Sentric");
+  must(kq.ok.length === 1, "phải nhận đúng một dòng, nhận " + kq.ok.length);
+  must(kq.bo.length === 2, "phải trả lại đúng hai dòng, trả lại " + kq.bo.length);
+  must(kq.bo.every(x => x.vi), "dòng bỏ lại phải nói rõ lý do");
+  const ct = A.xuatBan.chiTiet(kq.ok[0].w);
+  must(ct.iswc === "T-987654321-5", "ISWC từ Sentric không vào");
+  must(ct.nguon === "sentric", "không ghi lại nguồn là Sentric");
+  must(ct.dangKy.find(x => x.hoi === "prs").maHoi === "PRS4242", "mã hội từ Sentric không vào");
+  mustThrow(() => A.xuatBan.nhapSentric("", "x"), "dán rỗng");
+  return "1 nhận · 2 bỏ có lý do · ISWC và mã hội vào đúng chỗ · nguồn ghi là Sentric";
+});
+
+check("Tác quyền không rời cổng nội bộ, và tác giả chỉ thấy tác phẩm của chính mình", () => {
+  ["S03", "S05"].forEach(id => {
+    const me = nhu(id);
+    if (!A.quyen.nhom("tacQuyen")) {
+      mustThrow(() => A.xuatBan.tacPham({}), "vai " + me.role + " đọc được danh sách tác phẩm");
+      mustThrow(() => A.xuatBan.viecConLai(5), "vai " + me.role + " đọc được việc còn lại");
+    }
+  });
+  nhu("S02");
+  must(H.api.xuatBan === undefined, "cổng đối tác lộ mặt tiền tác quyền nội bộ");
+  /* tác giả A không thấy tác phẩm của tác giả B */
+  const gA = H.api.tacPham("artist", A1.id, { limit: 50 });
+  const gB = H.api.tacPham("artist", A2.id, { limit: 50 });
+  const tenA = new Set(gA.rows.map(x => x.ten + "|" + x.iswc));
+  const chung = gB.rows.filter(x => tenA.has(x.ten + "|" + x.iswc) && x.iswc);
+  chung.forEach(x => {
+    /* trùng chỉ hợp lệ khi HAI người cùng đứng tên trên đúng tác phẩm ấy */
+    const a = gA.rows.find(y => y.ten === x.ten && y.iswc === x.iswc);
+    must(a.tyLeCuaToi != null && x.tyLeCuaToi != null, "tác phẩm lọt sang người không đứng tên");
+  });
+  /* gói của đối tác không mang phí, biên, hay ước tính tiền trên bàn */
+  const goi = JSON.stringify(gA);
+  ["\"fee\"", "\"bien\"", "trenBan", "tienKy", "kiemSoat", "nhaXuatBan"].forEach(k =>
+    must(goi.indexOf(k) < 0, "gói tác phẩm của đối tác lộ " + k));
+  mustThrow(() => H.api.tacPham("label", L1.id, {}), "label đọc được danh sách tác phẩm");
+  return "hai vai bị chặn · api không có mặt tiền nội bộ · tác giả chỉ thấy tác phẩm mình đứng tên";
+});
+
 check("lockdown() gỡ hẳn mặt tiền admin khỏi trang", () => {
   must(!!H.admin, "chưa lockdown mà admin đã mất");
   H.lockdown();
