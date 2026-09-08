@@ -106,6 +106,7 @@ chromium nếu playwright không tự tìm được), `SHOTS` (nơi lưu ảnh c
 | `v2-tuong-phan.js` | Đo tương phản chữ/nền **trên trang đã render**, không phải theo cặp biến. Đây là điểm khác biệt quan trọng: bộ biến có thể đúng mà thành phần vẫn ghép nhầm cặp, và chữ 11px trên nền thẻ thì chuẩn AA đòi 4,5:1 chứ không phải 3:1. |
 | `roi-cong-thuc.js` | Không cần trình duyệt. Neo `A.roi.tinh()` vào từng ô của `ROI_Haustek.xlsx` theo ba sheet còn đọc được số (Catalog, Trigger 1, Trigger 2), và chốt cách tính **đúng** ở bốn chỗ bảng tính lệch: số tháng thu hồi phải dương, tổng chi phí phải nhân đủ ba yếu tố, "net" phải trừ cả chi phí lẫn phí môi giới, còn nợ khi hết kỳ hạn phải bị trừ vào ROI. Kèm số biên (chia cho 0, tỷ lệ quá 100%, chữ lọt vào ô số) và ranh giới quyền theo vai. |
 | `vong15-man.js` | Bốn thứ mới của vòng 15 chạy thật: gõ lượt nghe cho một ngày rồi trả về tự động và kiểm đường lượt nghe có đổi theo; gõ tổng doanh thu một nguồn rồi đọc lại ô trên bảng; gỡ một dòng nhật ký; mở bản in, bấm In, đóng lại; bấm đánh dấu và bỏ đánh dấu một bước trong bảng quy trình tranh chấp; xuất hồ sơ tranh chấp; mở hai trang cấp quản lý với Level 1 và kiểm Level 3 trở xuống bị chặn; và bên cổng đối tác, tự xuất bảng kê PDF. Chính bài này bắt được chỗ `hieuSuat.cua()` đặt trùng tên `dangLam` cho một con số và một mảng, khiến ngăn trượt in ra NaN mà không ném lỗi nào. |
+| `vong16-man.js` | Hai đường đi của vòng 16, chạy thật trên trình duyệt: gõ mức trả đối tác ở trang Mức trả rồi đọc lại tiền của nghệ sĩ ở `agg` — số phải đổi; hứa trả cao hơn mức nền tảng trả về thì dòng đỏ và có cảnh báo; gỡ bảng giá thì mọi số hoàn nguyên. Rồi mở bảng đối soát của một ngày, gõ lệch 0,5% (khớp) và lệch 40% (lệch), gỡ ra về lại chờ; sang tab theo bài, kiểm đường dẫn store là https thật, gõ số cho một nền tảng và gỡ ra. Cuối cùng sang cổng đối tác mở bảng "Giải thích con số" và kiểm nhãn *bảng giá* có mặt còn mức gốc và biên thì không. Chính bài này bắt được nút "Giải thích" ở bảng kê đối tác gắn tay bấm nhầm vào nhánh *kỳ chưa mở*, nên bấm không ra gì với đối tác có bảng kê thật. |
 | `roi-man.js` | Trang Tính ROI chạy thật: **đọc con số hiện trên mặt** rồi so với bảng tính, chứ không chỉ xem trang có vẽ ra hay không. Gõ vào ô nhập rồi kiểm kết quả có tính lại; bật ba mốc thưởng rồi kiểm bảng bốn kịch bản; đổi sang EN và nền tối; rời trang rồi quay lại xem số có được nhớ. Chính bài này bắt được lỗi `HM.nhap` dùng chung một đồng hồ hoãn cho cả trang. |
 | `v2-tieng-anh.js` | Bật EN rồi soi những chỗ **chỉ chứa chữ của giao diện** — nhãn, phụ đề thẻ, đầu cột, tab, câu giải thích. Tên nghệ sĩ, tên bài, tên label là DỮ LIỆU tiếng Việt và phải giữ nguyên, nên bài kiểm bỏ qua tiêu đề thẻ (nhiều chỗ là dữ liệu) và bóc phần trong ngoặc kép trước khi soi. |
 
@@ -121,7 +122,7 @@ node test/v2-quet.js v2/khach.html    390,640,900
 node test/v2-hep.js
 node test/v2-bam.js && node test/v2-khach-tk.js && node test/v2-luong.js
 node test/v2-tuong-phan.js && node test/v2-tieng-anh.js && node test/api-guard.js
-node test/roi-cong-thuc.js && node test/roi-man.js && node test/vong15-man.js
+node test/roi-cong-thuc.js && node test/roi-man.js && node test/vong15-man.js && node test/vong16-man.js
 node dung-goi.js && node test/v2-nhu-artifact.js && node test/v2-khong-mang.js
 ```
 

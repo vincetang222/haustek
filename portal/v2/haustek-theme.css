@@ -1497,3 +1497,6 @@ button.buoc-o:hover{border-color:var(--accent);color:var(--accent)}
    màu đã chồng lên, và chữ mờ trên đó tụt xuống dưới chuẩn. */
 table.t tr.canh td{background:color-mix(in srgb,var(--warn) 9%,var(--card))}
 table.t tr.canh td .muted,table.t tr.canh td.muted{color:var(--ink-2)}
+
+/* dòng tổng trong bảng trên màn: nền dày hơn zebra, chữ đậm, không viền lạ */
+table.t tbody tr.tong td{background:var(--band);font-weight:600;border-top:1.5px solid var(--line-2)}

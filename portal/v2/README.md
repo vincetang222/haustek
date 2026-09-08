@@ -366,6 +366,92 @@ Cổng đối tác không có và không nên có: bảng tính này đọc ra p
 giữ lại, phí môi giới và biên lợi nhuận. Đối tác muốn biết mình ứng được bao
 nhiêu thì vẫn dùng `k-tam-ung`, chạy trên `advanceOfferOf()` đã lược sạch.
 
+## Vòng 16: mức trả nhập tay quyết định tiền, đối soát lượt nghe hằng ngày
+
+Hai câu trả lời của người dùng, làm thành hai đường đi thật.
+
+### 1 · Mức trả nhập tay là căn cứ trả tiền đối tác
+
+> *"Mức trả: tôi nhập tay vào sau → từ đó bạn có thể tính tiền chi trả cho đối tác."*
+
+Trước vòng này, hai mức trong bảng giá (`per1k` nền tảng trả về, `khach` Haustek
+trả đối tác) chỉ dùng cho **dự báo**. Tiền thật vẫn chia theo tỷ lệ hợp đồng.
+Nhập một con số rồi không thấy gì đổi thì không ai tin con số ấy.
+
+Nay `splitRec()` đọc bảng giá trước:
+
+```
+Nền tảng ĐÃ có mức trả đối tác  →  tiền đối tác = lượt nghe ÷ 1.000 × mức trả
+Nền tảng CHƯA có mức            →  giữ nguyên: gộp × (1 − phí Haustek)
+```
+
+Cộng lại theo từng bản ghi ra `net`; phần còn lại là `fee` — phần Haustek giữ.
+Ba điều đã cân nhắc và viết thẳng vào chú thích trong lõi:
+
+* **Doanh thu GỘP không đổi.** Bảng giá chỉ quyết định số tiền *chảy sang phía
+  đối tác*, không đụng vào số nền tảng trả về.
+* **Tỷ lệ hợp đồng label ↔ nghệ sĩ không đụng đến.** Bảng giá quyết định tổng
+  về phía đối tác; chia tổng ấy giữa label và nghệ sĩ vẫn theo hợp đồng.
+* **Không chặn trên.** Hứa trả cao hơn số nền tảng trả về thì phần Haustek giữ
+  âm, và màn hiện đúng số âm ấy màu đỏ. Giấu đi thì tháng sau mới biết lỗ.
+
+Chi phí: đường này chỉ bật khi đã có ít nhất một mức trả đối tác
+(`coMucTraKhach()`), và kết quả mỗi kỳ được nhớ theo phiên bản
+(`NHAP_VER` + bảng ghi đè). Đo trên 50.000 bản ghi: 14ms → 131ms lần đầu,
+80ms các lần sau.
+
+**Trang Mức trả** có thêm khối *"Đặt mức này thì kỳ … ra sao"*: từng nền tảng
+với lượt nghe, mức thực tế trên 1.000, nền tảng trả về bao nhiêu, trả đối tác
+bao nhiêu, Haustek giữ bao nhiêu, và nhãn *Bảng giá* / *Phần trăm*. Bốn ô số
+đầu khối, trong đó có **lệch so với cách tính cũ**. Nền tảng nào âm thì dòng
+đỏ và có cảnh báo đếm rõ bao nhiêu nền tảng.
+
+**Bảng kê phía đối tác** — trong bảng "Giải thích con số" — gắn nhãn *bảng giá*
+lên đúng nền tảng đang chạy theo mức đã ký, và dòng mức trả bình quân nói rõ
+"*n* nền tảng chạy theo bảng giá đã ký; số còn lại theo tỷ lệ hợp đồng".
+Đối tác vẫn **không** thấy mức nền tảng trả về hay biên — `api-guard` quét mọi
+gói của cổng đối tác để bảo đảm điều đó.
+
+### 2 · Đối soát lượt nghe hằng ngày qua đường dẫn store
+
+> *"Mỗi bài hát sau khi phát hành sẽ có đường link dẫn tới nền tảng (store) được
+> phát hành. Bạn lấy link đó và cập nhật mỗi ngày (reconcile số, tương tự với kế toán)."*
+
+Làm đúng như sổ kế toán: một bên là số hệ thống, một bên là số đọc được từ
+store, chênh lệch nằm giữa, và **mọi bút toán đều gỡ được**.
+
+Hai mức đối soát, ở hai tab của trang **Nhập số liệu**:
+
+| | Đối soát theo ngày | Đối soát theo bài |
+|---|---|---|
+| Việc | hằng ngày, tám nền tảng | khi một bài trông lạ |
+| Số hệ thống | lượt ngày × cơ cấu nền tảng | lượt ngày của bài × cơ cấu của chính bài ấy |
+| Đường dẫn | — | link store thật của bài, mở tab mới |
+| Ghi | `ghiDoiSoat(ngay, plat, thucTe)` | `ghiDoiSoatBai(i, ngay, plat, thucTe)` |
+| Gỡ | `boDoiSoat` | `boDoiSoatBai` |
+
+Ngưỡng lệch là **2%**: dưới thì `khớp`, trên thì `lệch` và dòng đỏ. Việc còn
+phải làm hiện ở huy hiệu điều hướng và ở bàn làm việc vận hành.
+
+**Một ngày chỉ có một con số.** `dongBoNgayTuDoiSoat()` giữ nguyên tắc ấy: nền
+tảng nào đã đối soát thì lấy số đã gõ, nền tảng còn lại giữ số hệ thống, phần
+đuôi giữ tỷ trọng 8%. Không sinh ra con số thứ hai để hai bảng đá nhau.
+
+Tab **Đối soát theo bài** khi chưa gõ gì thì bày sẵn tám bài nghe nhiều nhất
+bảy ngày qua — mở ra là có việc làm ngay, gõ tên hoặc ISRC thì đổi sang kết quả tìm.
+
+### Ba lỗi cũ mà vòng này lôi ra
+
+* **Nút "Giải thích" ở bảng kê đối tác không làm gì.** Tay bấm được gắn trong
+  nhánh *kỳ chưa mở*, nên đối tác nào có bảng kê thật lại là người bấm không ra
+  gì. Nay gắn ở một chỗ dùng chung cho cả hai nhánh.
+* **Đối soát theo bài gõ vào thì không gỡ ra được.** Thêm `boDoiSoatBai` và nút
+  gỡ ngay cạnh ô nhập.
+* **Một phép kiểm cũ để sót bảng giá 4,00 USD.** Trước vòng này vô hại vì bảng
+  giá chỉ dùng cho dự báo; nay nó làm mọi phép kiểm sau đó tính tiền trên một
+  mức bịa ra. Đã dọn, và thêm một dòng kiểm "bàn phải sạch" để lần sau lỗi này
+  kêu lên ngay tại chỗ gây ra.
+
 ## Vòng 15: chỗ nhập số liệu, xuất PDF, quy trình từng việc, hiệu quả vốn
 
 Sáu việc, theo đúng sáu điều đối tác vận hành nêu ra.

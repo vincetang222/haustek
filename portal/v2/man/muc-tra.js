@@ -27,7 +27,14 @@ HT.dangKy({
       dan: 'Dán CSV', danMo: 'Mỗi dòng: tên nền tảng, USD trên 1.000 lượt (nhận dấu phẩy, ; hoặc tab). Ví dụ: Spotify,1.52', nhap: 'Nhập', daNhap: 'Đã nhập {a} nền tảng, bỏ qua {b} dòng',
       soSanh: 'Suy từ báo cáo so với tham chiếu và số đang dùng', soSanhMo: 'USD / 1.000 lượt. Cột đỏ là nền tảng đang dùng số nhập tay.',
       ghiChu: 'Ghi chú (nguồn, kỳ báo cáo)', chua: 'chưa',
-      note: 'Mức trả Việt Nam thấp hơn Âu–Mỹ 2–3 lần; nền tảng nội địa trả thấp nhất. Số ở đây là gộp về Haustek; đối tác thấy mức đã nhân tỷ lệ của họ.'
+      note: 'Mức trả Việt Nam thấp hơn Âu–Mỹ 2–3 lần; nền tảng nội địa trả thấp nhất. Số ở đây là gộp về Haustek; đối tác thấy mức đã nhân tỷ lệ của họ.',
+      td: 'Đặt mức này thì kỳ {k} ra sao', tdMo: 'Nền tảng đã nhập mức trả đối tác thì tiền của đối tác trên nền tảng ấy là lượt nghe chia 1.000 nhân mức trả, không còn theo phần trăm nữa. Bảng dưới lấy kỳ chốt gần nhất mà tính lại.',
+      tdLuot: 'Lượt nghe', tdGop: 'Nền tảng trả về', tdTra: 'Trả đối tác', tdBien: 'Haustek giữ', tdKieu: 'Tính theo',
+      kieuMuc: 'Bảng giá', kieuPt: 'Phần trăm', tdThuc: 'Thực tế / 1.000',
+      tdTong: 'Cả kỳ', tdSo: 'Chênh so với cách cũ', tdSoMo: 'so với tính hết bằng phần trăm hợp đồng',
+      tdAm: 'Có {n} nền tảng đang trả đối tác nhiều hơn số nền tảng trả về. Tháng ấy Haustek bù phần chênh. Xem lại mức đã hứa hoặc đàm phán lại với nền tảng.',
+      tdChua: 'Chưa nền tảng nào nhập mức trả đối tác, nên tiền vẫn chia theo phần trăm hợp đồng như trước. Nhập mức ở bảng trên là bảng này đổi theo ngay.',
+      tdUoc: 'Số lấy mẫu thưa trên danh mục lớn, sai số dưới một phần trăm.'
     },
     en: {
       navMucTra: 'Platform payout rates', h1: 'Platform payout rates',
@@ -40,7 +47,14 @@ HT.dangKy({
       dan: 'Paste CSV', danMo: 'One line per platform: name, USD per 1,000 (comma, ; or tab). Example: Spotify,1.52', nhap: 'Import', daNhap: 'Imported {a} platforms, skipped {b} lines',
       soSanh: 'Derived vs reference vs in use', soSanhMo: 'USD / 1,000 streams. Red bars are platforms using entered figures.',
       ghiChu: 'Note (source, report period)', chua: 'none',
-      note: 'Vietnamese rates are 2–3× below Europe/US; domestic platforms pay least. Figures are gross to Haustek; partners see rates times their share.'
+      note: 'Vietnamese rates are 2–3× below Europe/US; domestic platforms pay least. Figures are gross to Haustek; partners see rates times their share.',
+      td: 'What these rates did to {k}', tdMo: 'Where a partner rate is set, the partner’s money on that platform is streams ÷ 1,000 × the rate — no longer a percentage. The table recomputes the most recent closed period.',
+      tdLuot: 'Streams', tdGop: 'Platform paid in', tdTra: 'Paid to partner', tdBien: 'Haustek keeps', tdKieu: 'Basis',
+      kieuMuc: 'Rate card', kieuPt: 'Percentage', tdThuc: 'Actual / 1,000',
+      tdTong: 'Whole period', tdSo: 'vs the old way', tdSoMo: 'against charging the contract percentage throughout',
+      tdAm: '{n} platforms are paying partners more than the platform paid in. Haustek covers the gap those months. Revisit the promised rate or renegotiate with the platform.',
+      tdChua: 'No platform has a partner rate yet, so money still splits by contract percentage. Enter a rate above and this table follows immediately.',
+      tdUoc: 'Sampled across the large catalogue; the error is under one percent.'
     }
   },
 
@@ -74,6 +88,7 @@ HT.dangKy({
             '<td><div class="btnrow" style="flex-wrap:nowrap"><button type="button" class="btn sm pri" data-luu="' + HM.esc(r.name) + '">' + HM.esc(t('luu')) + '</button>' + (r.source === 'override' ? '<button type="button" class="btn sm ghost" data-bo="' + HM.esc(r.name) + '">' + HM.esc(t('bo')) + '</button>' : '') + '</div></td></tr>';
         }).join('') + '</tbody></table></div>',
       chan: HM.esc(t('note')) });
+    html += veTacDong(c);
     html += '<div class="grid g2">' +
       HM.the({ h2: HM.esc(t('soSanh')), p: HM.esc(t('soSanhMo')),
         than: HB.o({ loai: 'thanh', dinhDang: function (v) { return HT.fmt.usd(v); }, hang: rows.map(function (r, i) { return { ten: c.song(r, 'name'), gt: r.per1k, mau: r.source === 'override' ? HB.mau('no') : P[i % 8], phu: t('cSuy') + ' ' + HT.fmt.usd(r.derived) + (r.refVn != null ? ' · ' + t('cVn') + ' ' + HT.fmt.usd(r.refVn) : '') }; }) }) }) +
@@ -97,5 +112,67 @@ HT.dangKy({
     });
   }
 });
+
+/* =====================================================================
+   BẢNG GIÁ NÀY LÀM GÌ VỚI TIỀN THẬT
+   ---------------------------------------------------------------------
+   Đặt một con số vào ô rồi không thấy gì đổi thì không ai tin con số ấy
+   có tác dụng. Khối này lấy kỳ chốt gần nhất tính lại: từng nền tảng
+   nhận bao nhiêu lượt, nền tảng trả về bao nhiêu, Haustek trả đối tác
+   bao nhiêu, giữ lại bao nhiêu — và tổng lệch bao nhiêu so với cách tính
+   cũ. Nền tảng nào âm thì đỏ, không giấu.
+   ===================================================================== */
+function veTacDong(c) {
+  var A = c.A, t = c.t;
+  var kys = A.periods.filter(function (p) { return A.isApproved(p.k); });
+  var pi = kys.length ? kys[kys.length - 1].idx : A.periods.length - 1;
+  var d = null;
+  try { d = A.mucTraTacDong(pi); } catch (e) { return ''; }
+  if (!d) return '';
+
+  var than = '<div class="tw"><table class="t"><thead><tr>' +
+    '<th>' + HM.esc(t('cNt')) + '</th>' +
+    '<th class="num">' + HM.esc(t('tdLuot')) + '</th>' +
+    '<th class="num">' + HM.esc(t('tdThuc')) + '</th>' +
+    '<th class="num">' + HM.esc(t('tdGop')) + '</th>' +
+    '<th class="num band">' + HM.esc(t('tdTra')) + '</th>' +
+    '<th class="num">' + HM.esc(t('tdBien')) + '</th>' +
+    '<th>' + HM.esc(t('tdKieu')) + HM.hoi(t('tdMo')) + '</th></tr></thead><tbody>' +
+    d.rows.map(function (r) {
+      return '<tr' + (r.am ? ' class="canh"' : '') + '>' +
+        '<td>' + HM.tenBia({ ten: r.name, seed: r.name }) + '</td>' +
+        '<td class="num mono">' + HM.esc(HT.fmt.n(r.streams)) + '</td>' +
+        '<td class="num mono muted">' + HM.esc(HT.fmt.usd(r.thucTe1k)) + '</td>' +
+        '<td class="num mono">' + HM.esc(c.tien(r.gross)) + '</td>' +
+        '<td class="num band mono"><b>' + HM.esc(c.tien(r.tra)) + '</b>' +
+          (r.theoMucTra ? '<div class="t-sub">' + HM.esc(HT.fmt.usd(r.khach) + ' / 1.000') + '</div>' : '') + '</td>' +
+        '<td class="num mono">' + (r.am
+          ? '<span class="neg">' + HM.esc(c.tien(r.bien)) + ' · ' + HM.esc(HT.fmt.pct(r.bienPct)) + '</span>'
+          : '<span class="pos">' + HM.esc(c.tien(r.bien)) + ' · ' + HM.esc(HT.fmt.pct(r.bienPct)) + '</span>') + '</td>' +
+        '<td>' + HM.tag(r.theoMucTra ? t('kieuMuc') : t('kieuPt'), r.theoMucTra ? 'ok' : '') + '</td></tr>';
+    }).join('') +
+    '<tr class="tong"><td><b>' + HM.esc(t('tdTong')) + '</b></td><td></td><td></td>' +
+    '<td class="num mono"><b>' + HM.esc(c.tien(d.gross)) + '</b></td>' +
+    '<td class="num band mono"><b>' + HM.esc(c.tien(d.tra)) + '</b></td>' +
+    '<td class="num mono"><b>' + HM.esc(c.tien(d.bien)) + ' · ' + HM.esc(HT.fmt.pct(d.bienPct)) + '</b></td>' +
+    '<td></td></tr></tbody></table></div>';
+
+  var canh = '';
+  if (!d.soTheoMuc) canh = HM.ghi({ kieu: 'info', icon: 'info', tieuDe: HM.esc(t('tdKieu')), than: HM.esc(t('tdChua')) });
+  else if (d.soAm) canh = HM.ghi({ kieu: 'no', icon: 'alert', tieuDe: HM.esc(t('cBien')), than: HM.esc(t('tdAm').replace('{n}', d.soAm)) });
+
+  return canh + HM.the({
+    h2: HM.esc(t('td').replace('{k}', d.label)), p: HM.esc(t('tdMo')), icon: 'cash', thoBody: true,
+    than: HM.so([
+      { l: t('tdGop'), v: c.tien(d.gross) },
+      { l: t('tdTra'), v: c.tien(d.tra), lon: true },
+      { l: t('tdBien'), v: c.tien(d.bien) + ' · ' + HT.fmt.pct(d.bienPct),
+        mau: d.bien >= 0 ? HB.mau('ok') : HB.mau('no') },
+      { l: t('tdSo'), v: (d.lech >= 0 ? '+' : '') + c.tien(d.lech), s: t('tdSoMo'),
+        mau: d.lech > 0 ? HB.mau('warn') : d.lech < 0 ? HB.mau('ok') : '' }
+    ]) + than,
+    chan: d.uocLuong ? HM.esc(t('tdUoc')) : ''
+  });
+}
 
 })();

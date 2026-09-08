@@ -25,7 +25,7 @@ var CHU = {
     thuHoiCon: 'còn {n} để thu hồi', thuHoiXong: 'đã thu hồi đủ', chuaChia: 'chưa có người cộng tác',
     ngRule: 'Luật trả tiền của nền tảng', datNguong: 'đạt', duoiNguong: 'dưới ngưỡng', uocTinh: 'ước tính', khongNguong: 'không có ngưỡng',
     mdDiem: 'Điểm metadata', mdThieu: 'thiếu {n} mục', mdDu: 'đủ', mdChan: 'giữ lại trước khi giao', mdGoiY: 'Cách sửa',
-    gtBuoc: 'Chuỗi suy ra con số', gtNt: 'Theo nền tảng', cNt: 'Nền tảng', cLuotN: 'Lượt nghe', cMucTra: 'Mức trả / 1.000', cTien: 'Số tiền',
+    gtBuoc: 'Chuỗi suy ra con số', gtNt: 'Theo nền tảng', gtBangGia: 'bảng giá', cNt: 'Nền tảng', cLuotN: 'Lượt nghe', cMucTra: 'Mức trả / 1.000', cTien: 'Số tiền',
     cdLoai: 'Loại', cdTrangThai: 'Trạng thái', cdThoiGian: 'Thời gian', cdKq: 'Kết quả', cdNgay: 'ngày',
     cdRunning: 'Đang chạy', cdPlanned: 'Sắp chạy', cdDone: 'Đã xong', cdRequested: 'Đối tác yêu cầu',
     xem: 'lượt xem', bam: 'lượt bấm', luuTruoc: 'lưu trước', chuyenDoi: 'chuyển đổi', daGui: 'đã gửi', daNhan: 'nhận', choKq: 'chờ', tuChoi: 'từ chối',
@@ -49,7 +49,7 @@ var CHU = {
     thuHoiCon: '{n} left to recoup', thuHoiXong: 'fully recouped', chuaChia: 'no collaborators',
     ngRule: 'Platform payout rules', datNguong: 'met', duoiNguong: 'below threshold', uocTinh: 'estimate', khongNguong: 'no threshold',
     mdDiem: 'Metadata score', mdThieu: '{n} missing', mdDu: 'complete', mdChan: 'held before delivery', mdGoiY: 'How to fix',
-    gtBuoc: 'How the number is derived', gtNt: 'By platform', cNt: 'Platform', cLuotN: 'Streams', cMucTra: 'Rate / 1,000', cTien: 'Amount',
+    gtBuoc: 'How the number is derived', gtNt: 'By platform', gtBangGia: 'rate card', cNt: 'Platform', cLuotN: 'Streams', cMucTra: 'Rate / 1,000', cTien: 'Amount',
     cdLoai: 'Kind', cdTrangThai: 'Status', cdThoiGian: 'Timing', cdKq: 'Results', cdNgay: 'days',
     cdRunning: 'Running', cdPlanned: 'Planned', cdDone: 'Done', cdRequested: 'Requested by partner',
     xem: 'views', bam: 'clicks', luuTruoc: 'pre-saves', chuyenDoi: 'conversion', daGui: 'sent', daNhan: 'accepted', choKq: 'pending', tuChoi: 'declined',
@@ -188,7 +188,9 @@ function giaiThich(ex, opts) {
       '<b class="ld-v">' + esc(s.kind === 'so' ? n(s.value) : tien(s.value)) + '</b></li>';
   }).join('') + '</ol>' +
   (ex.platforms && ex.platforms.length ? '<h4 class="sec" style="margin-top:14px">' + esc(t('gtNt')) + '</h4><div class="tw"><table class="t" style="min-width:0"><thead><tr><th>' + esc(t('cNt')) + '</th><th class="num">' + esc(t('cLuotN')) + '</th><th class="num">' + esc(t('cMucTra')) + '</th><th class="num">' + esc(t('cTien')) + '</th></tr></thead><tbody>' +
-    ex.platforms.map(function (p) { return '<tr><td>' + esc(song(p, 'name')) + '</td><td class="num">' + esc(n(p.streams)) + '</td><td class="num mono">' + esc(HT.fmt.usd(p.per1k)) + '</td><td class="num"><b>' + esc(tien(p.amount)) + '</b></td></tr>'; }).join('') +
+    ex.platforms.map(function (p) { return '<tr><td>' + esc(song(p, 'name')) +
+      (p.bangGia ? ' ' + HM.tag(t('gtBangGia'), 'ok') : '') +
+      '</td><td class="num">' + esc(n(p.streams)) + '</td><td class="num mono">' + esc(HT.fmt.usd(p.per1k)) + '</td><td class="num"><b>' + esc(tien(p.amount)) + '</b></td></tr>'; }).join('') +
     '</tbody></table></div>' : '') +
   '<p class="hint" style="margin-top:10px">' + esc(song(ex, 'note')) + '</p>';
 }

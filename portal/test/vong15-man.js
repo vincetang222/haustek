@@ -46,7 +46,9 @@ const den = async (p, man) => { await p.evaluate(m => { location.hash = '#' + m;
   await doiVai(p, 'ops');
   await den(p, 'nhap-so-lieu');
   must(await p.$('main [data-tab="ngay"]') !== null, 'có tab lượt nghe hằng ngày');
-  must((await p.$$('main [data-tab]')).length === 4, 'có đủ bốn tab');
+  /* vòng 16 thêm tab Đối soát theo bài, thành năm */
+  must((await p.$$('main [data-tab]')).length === 5, 'có đủ năm tab');
+  must(await p.$('main [data-tab="soat"]') !== null, 'có tab đối soát theo bài');
   must((await p.$$('main .kpi')).length === 4, 'có bốn ô số đầu trang');
   const nav = await p.evaluate(() => {
     const a = [...document.querySelectorAll('[data-nav] a, [data-nav] button')]

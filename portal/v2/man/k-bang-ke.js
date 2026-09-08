@@ -79,6 +79,20 @@ HT.dangKy({
     var api = c.api, me = c.phien.me, t = c.t;
     var la = me.role === 'label';
 
+    /* Nút "Giải thích" đứng trong bảng các kỳ, mà bảng ấy hiện ở CẢ HAI
+       nhánh: kỳ chưa mở và kỳ đã mở. Nên gắn tay bấm ở một chỗ dùng chung,
+       đừng gắn trong nhánh lỗi — gắn ở đó thì đối tác nào có bảng kê thật
+       lại là người bấm không ra gì. */
+    function ganGiaiThich() {
+      HM.bam(root, '[data-gt]', function (el) {
+        var k = el.getAttribute('data-gt'), ex;
+        try { ex = c.api.explain(c.phien.me.role, c.phien.me.partyId, k); } catch (e) { c.thongBao(e.message, 'no'); return; }
+        c.hoiThoai({ tieuDe: (c.lang === 'vi' ? 'Giải thích con số kỳ ' : 'How the number for ') + ex.label + (c.lang === 'vi' ? '' : ' is derived'),
+          moTa: HM.esc(c.lang === 'vi' ? 'Mỗi bước là một con số có thể kiểm lại; bảng dưới tách theo nền tảng.' : 'Each step is a checkable figure; the table below splits it by platform.'),
+          than: HTM.giaiThich(ex, { tien: HT.fmt.usd }), dong: c.lang === 'vi' ? 'Đóng' : 'Close', huy: false, rong: true });
+      });
+    }
+
     var rec, pub = null;
     try { rec = api.summary(me.role, me.partyId, c.kyKey, 'rec'); }
     catch (e) {
@@ -86,13 +100,7 @@ HT.dangKy({
         HM.the({ than: HM.trong({ icon: 'clock', tieuDe: t('chuaMo'), moTa: t('chuaMoMo') }) }) +
         veCacKy(c);
       HM.bam(root, '[data-kyto]', function (el) { c.doiKy(el.getAttribute('data-kyto')); });
-      HM.bam(root, '[data-gt]', function (el) {
-      var k = el.getAttribute('data-gt'), ex;
-      try { ex = c.api.explain(c.phien.me.role, c.phien.me.partyId, k); } catch (e) { c.thongBao(e.message, 'no'); return; }
-      c.hoiThoai({ tieuDe: (c.lang === 'vi' ? 'Giải thích con số kỳ ' : 'How the number for ') + ex.label + (c.lang === 'vi' ? '' : ' is derived'),
-        moTa: HM.esc(c.lang === 'vi' ? 'Mỗi bước là một con số có thể kiểm lại; bảng dưới tách theo nền tảng.' : 'Each step is a checkable figure; the table below splits it by platform.'),
-        than: HTM.giaiThich(ex, { tien: HT.fmt.usd }), dong: c.lang === 'vi' ? 'Đóng' : 'Close', huy: false, rong: true });
-    });
+      ganGiaiThich();
       return;
     }
     if (me.hasPublishing) {
@@ -220,6 +228,7 @@ HT.dangKy({
     HB.gan(root);
 
     HM.bam(root, '[data-kyto]', function (el) { c.doiKy(el.getAttribute('data-kyto')); });
+    ganGiaiThich();
     HM.bam(root, '[data-in]', function () { inBangKe(c, c.kyKey); });
     HM.doi(root, '[data-bk-tu]', function (el) { BK.tu = el.value; c.veLai(); });
     HM.doi(root, '[data-bk-den]', function (el) { BK.den = el.value; c.veLai(); });

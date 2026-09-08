@@ -109,7 +109,11 @@ for (let i = CFG.N_PERIODS - 1; i >= 0; i--) {
     quarter: Math.floor(d.getMonth() / 3) + 1
   });
 }
-const pIndexOf = k => PERIODS.findIndex(p => p.k === k);
+const P_INDEX = {};
+PERIODS.forEach((p, i) => { P_INDEX[p.k] = i; });
+/* Tra kỳ theo mã, dựng một lần: splitRec gọi tới trên đường nóng (50.000
+   bản ghi × 12 kỳ), quét mảng mỗi lần thì thấy rõ độ trễ. */
+const pIndexOf = k => { const v = P_INDEX[k]; return v == null ? -1 : v; };
 
 /* ---------------------------------------------------------------------
    4. LUỒNG DỮ LIỆU & CỬA HÀNG
@@ -415,7 +419,7 @@ function fileNameFor(f, p) {
 let state = null;
 function ensureShape(s) {
   ["withdrawals", "tickets", "claims", "deliveries", "bulk", "releases", "proposals", "staff", "campaigns", "adjustments", "priceExtra", "platformsExtra", "extraParties", "nhapTay"].forEach(k => { if (!Array.isArray(s[k])) s[k] = []; });
-  ["statements", "bank", "videoSettings", "partyManager", "splits", "alerts", "notifRead", "rateOverride", "contracts", "platformOwner", "toChucThem", "luotNgay", "buocViec", "danhGiaNam"].forEach(k => { if (!s[k] || typeof s[k] !== "object") s[k] = {}; });
+  ["statements", "bank", "videoSettings", "partyManager", "splits", "alerts", "notifRead", "rateOverride", "contracts", "platformOwner", "toChucThem", "luotNgay", "buocViec", "danhGiaNam", "doiSoatNgay", "doiSoatBai"].forEach(k => { if (!s[k] || typeof s[k] !== "object") s[k] = {}; });
   return s;
 }
 
@@ -799,13 +803,90 @@ function feeOf(i, periodKey) {
   return c && c.feePct != null && (!c.fromKey || c.fromKey <= periodKey) ? c.feePct : CFG.HAUSTEK_FEE;
 }
 demHopDong();   /* state đã nạp ở mục 9 phía trên */
-function splitRec(i, gross, periodKey) {
-  const fee = cents(gross * feeOf(i, periodKey));
-  const net = cents(gross - fee);
+/* =====================================================================
+   MỨC TRẢ NỀN TẢNG QUYẾT ĐỊNH TIỀN TRẢ ĐỐI TÁC  (chốt vòng 16)
+   ---------------------------------------------------------------------
+   Trước vòng này, phần đối tác được hưởng luôn là doanh thu gộp trừ phần
+   trăm phí Haustek. Nhưng cách Haustek bán hàng là một BẢNG GIÁ: "nền
+   tảng trả tôi 0,0044 trên 1.000 lượt, tôi trả anh 0,004". Nên nền tảng
+   nào đã nhập mức trả đối tác thì tiền của đối tác trên nền tảng ấy là
+
+       lượt nghe của nền tảng đó ÷ 1.000 × mức trả
+
+   chứ không phải phần trăm nữa. Nền tảng chưa nhập mức thì giữ nguyên
+   đường phần trăm, nên bật dần từng nền tảng được, không phải bật hết
+   một lượt.
+
+   Hai điều cố ý KHÔNG làm:
+     · không chặn trên: nếu tháng đó nền tảng trả về ít hơn mức đã hứa với
+       đối tác thì phần Haustek giữ là số ÂM. Đó là sự thật của tháng ấy;
+       giấu đi bằng cách kẹp về 0 là để người ký hợp đồng không bao giờ
+       biết mình hứa lỗ. Màn Mức trả nền tảng đếm và cảnh báo.
+     · không đụng tới tỷ lệ label / nghệ sĩ: mức trả quyết định TỔNG về
+       phía đối tác, còn chia đôi bên trong vẫn theo hợp đồng như cũ.
+
+   Tính theo từng bài thì tốn: mỗi bài phải bóc doanh thu và lượt nghe ra
+   chín nền tảng. Nên dựng sẵn cả kỳ một lần rồi nhớ, và chỉ dựng khi có
+   ít nhất một nền tảng đã nhập mức — chưa nhập thì đường cũ chạy y như
+   trước, không chậm đi một nhịp nào.
+   ===================================================================== */
+let NET_KY = new Array(CFG.N_PERIODS).fill(null);
+let NET_VER = null;
+let NHAP_VER = 0;                    /* tăng mỗi lần số gõ tay hoặc khớp tay đổi */
+function mucTraVer() {
+  return NHAP_VER + "|" + JSON.stringify(state.rateOverride || {});
+}
+/* mức trả đối tác theo CHỈ SỐ nền tảng, null nghĩa là nền tảng đó chưa nhập */
+function khachTheoNenTang() {
+  const ov = state.rateOverride || {};
+  const out = new Array(N_PLAT).fill(null);
+  for (let j = 0; j < N_PLAT; j++) {
+    const o = ov[PLAT_NAMES[j]];
+    if (o && o.khach > 0) out[j] = o.khach;
+  }
+  return out;
+}
+function coMucTraKhach() {
+  const ov = state.rateOverride || {};
+  for (const k in ov) if (ov[k] && ov[k].khach > 0) return true;
+  return false;
+}
+function dungNetKy(p) {
+  const kh = khachTheoNenTang();
+  const rev = new Float64Array(N_PLAT), st = new Float64Array(N_PLAT);
+  const out = new Float64Array(N);
+  const pk = PERIODS[p].k;
+  for (let i = 0; i < N; i++) {
+    const g = grossRec(i, p);
+    if (g <= 0) { out[i] = 0; continue; }
+    splitStores(i, p, rev); splitStreams(i, p, rev, st);
+    const conLai = 1 - feeOf(i, pk);
+    let net = 0;
+    for (let j = 0; j < N_PLAT; j++) {
+      net += kh[j] != null ? st[j] / 1000 * kh[j] : rev[j] * conLai;
+    }
+    out[i] = net;
+  }
+  return out;
+}
+/* null = nền tảng chưa ai nhập mức, cứ đi đường phần trăm như cũ */
+function netKhachCua(i, p) {
+  if (!coMucTraKhach()) return null;
+  const ver = mucTraVer();
+  if (NET_VER !== ver) { NET_KY = new Array(CFG.N_PERIODS).fill(null); NET_VER = ver; }
+  if (!NET_KY[p]) NET_KY[p] = dungNetKy(p);
+  return NET_KY[p][i];
+}
+
+function splitRec(i, gross, periodKey, pIdx) {
   const r = rates.rateFor(partyKeyOfTrack(i), periodKey);
+  const p = pIdx == null ? pIndexOf(periodKey) : pIdx;
+  const kh = p >= 0 ? netKhachCua(i, p) : null;
+  const net = kh == null ? cents(gross - cents(gross * feeOf(i, periodKey))) : cents(kh);
+  const fee = cents(gross - net);
   const artistBase = cents(net * r);
   const labelCut = cents(net - artistBase);
-  return { gross, fee, net, labelCut, artist: artistBase, rate: r };
+  return { gross, fee, net, labelCut, artist: artistBase, rate: r, theoMucTra: kh != null };
 }
 
 /* =====================================================================
@@ -838,7 +919,7 @@ function rebuildMatchIndex() {
     if (!a) { a = new Float64Array(3); MATCH.set(key, a); }
     a[f] += state.match[k];
   }
-  AUTO_KY_MATCH = null; HE_SO_KY.clear();
+  AUTO_KY_MATCH = null; HE_SO_KY.clear(); NHAP_VER++;
 }
 rebuildMatchIndex();
 
@@ -2763,14 +2844,24 @@ function explainPeriod(role, partyId, pk) {
   const partyKey = role === "label" ? "L:" + partyId : role === "artist" ? "A:" + partyId : null;
   const payout = partyKey ? (state.payouts[pk] || []).find(r => r.partyKey === partyKey) : null;
   const matched = partyKey ? Object.keys(state.match).filter(k2 => k2.endsWith(":" + p)).reduce((s, k2) => { const i = +k2.split(":")[0]; return (sc ? sc.includes(i) : true) ? s + (state.match[k2] || 0) : s; }, 0) : 0;
-  const platforms = PLAT_NAMES.map((nm, j) => ({ name: nm, nameEn: PLAT_NAMES_EN[j], streams: Math.round(accS[j]), per1k: accS[j] > 0 ? cents(accR[j] / accS[j] * 1000 * (gross > 0 ? mine / gross : 0)) : 0, amount: cents(accR[j] * (gross > 0 ? mine / gross : 0)) })).filter(x => x.streams > 0).sort((a, b) => b.amount - a.amount);
+  /* Nền tảng nào đang chạy theo bảng giá thì nói thẳng là theo bảng giá,
+     đừng để người đọc tưởng đó là số bình quân suy ra. Mức hiện ở đây vẫn
+     là mức CỦA NGƯỜI XEM (đã nhân tỷ lệ hợp đồng), không phải mức gốc. */
+  const khGia = khachTheoNenTang();
+  const platforms = PLAT_NAMES.map((nm, j) => ({ name: nm, nameEn: PLAT_NAMES_EN[j], streams: Math.round(accS[j]), per1k: accS[j] > 0 ? cents(accR[j] / accS[j] * 1000 * (gross > 0 ? mine / gross : 0)) : 0, amount: cents(accR[j] * (gross > 0 ? mine / gross : 0)), bangGia: khGia[j] != null })).filter(x => x.streams > 0).sort((a, b) => b.amount - a.amount);
   const steps = [];
   steps.push({ k: "streams", label: "Lượt nghe nền tảng báo về", labelEn: "Streams reported by platforms", value: Math.round(streams), kind: "so", detail: tracks * step + " bản ghi · " + platforms.length + " nền tảng", detailEn: tracks * step + " recordings · " + platforms.length + " platforms" });
-  steps.push({ k: "rate", label: "× mức trả bình quân trên 1.000 lượt (theo nền tảng)", labelEn: "× average payout per 1,000 streams (per platform)", value: streams > 0 ? cents(mine / streams * 1000) : 0, kind: "tien", detail: "Mỗi nền tảng một mức; bảng bên dưới", detailEn: "One rate per platform; table below" });
+  const soBangGia = platforms.filter(x => x.bangGia).length;
+  steps.push({ k: "rate", label: "× mức trả bình quân trên 1.000 lượt (theo nền tảng)", labelEn: "× average payout per 1,000 streams (per platform)", value: streams > 0 ? cents(mine / streams * 1000) : 0, kind: "tien",
+    detail: soBangGia ? soBangGia + " nền tảng chạy theo bảng giá đã ký; số còn lại theo tỷ lệ hợp đồng" : "Mỗi nền tảng một mức; bảng bên dưới",
+    detailEn: soBangGia ? soBangGia + (soBangGia === 1 ? " platform runs" : " platforms run") + " on the agreed rate card; the rest by contract share" : "One rate per platform; table below" });
   if (role === "admin") {
     let partner = 0; earnedByParty(p).forEach(v => { partner += v; });
     steps.push({ k: "gross", label: "= Doanh thu gộp về Haustek", labelEn: "= Gross revenue to Haustek", value: cents(gross), kind: "tien" });
-    steps.push({ k: "partner", label: "− Phần trả đối tác theo tỷ lệ chia", labelEn: "− Partner share by contract", value: cents(partner), kind: "tien" });
+    steps.push({ k: "partner",
+      label: soBangGia ? "− Phần trả đối tác (bảng giá nền tảng + tỷ lệ hợp đồng)" : "− Phần trả đối tác theo tỷ lệ chia",
+      labelEn: soBangGia ? "− Paid to partners (rate card + contract share)" : "− Partner share by contract",
+      value: cents(partner), kind: "tien" });
     steps.push({ k: "kept", label: "= Phần Haustek giữ lại", labelEn: "= Retained by Haustek", value: cents(gross - partner), kind: "tien", tong: true });
   } else {
     steps.push({ k: "mine", label: "= Số tiền của bạn cho kỳ này", labelEn: "= Your earnings for this period", value: cents(mine), kind: "tien", tong: true });
@@ -3415,6 +3506,46 @@ function platformRatesFull() {
    Chênh lệch là biên của Haustek. Đây là số nhạy nhất trong sản phẩm: đối
    tác chỉ được thấy mức của chính họ, không bao giờ thấy mức nền tảng trả
    hay biên. Cổng đối tác đã lược ở scrub(); trang nội bộ chặn theo cấp. */
+/* =====================================================================
+   TÁC ĐỘNG CỦA BẢNG GIÁ LÊN MỘT KỲ
+   ---------------------------------------------------------------------
+   Người ký bảng giá cần thấy ngay: đặt mức này thì kỳ vừa rồi Haustek
+   giữ lại bao nhiêu, nền tảng nào âm. Mang biên nên chỉ nhóm "tong".
+   ===================================================================== */
+function mucTraTacDong(pIdx) {
+  chanQuyen("mucTraTacDong", "tong");
+  if (!(pIdx >= 0 && pIdx < P)) throw new Error("Kỳ không hợp lệ");
+  const kh = khachTheoNenTang();
+  const step = N > 6000 ? Math.ceil(N / 6000) : 1;
+  const rev = new Float64Array(N_PLAT), st = new Float64Array(N_PLAT);
+  const accR = new Float64Array(N_PLAT), accS = new Float64Array(N_PLAT);
+  for (let i = 0; i < N; i += step) {
+    if (grossRec(i, pIdx) <= 0) continue;
+    splitStores(i, pIdx, rev); splitStreams(i, pIdx, rev, st);
+    for (let j = 0; j < N_PLAT; j++) { accR[j] += rev[j] * step; accS[j] += st[j] * step; }
+  }
+  const rows = PLAT_NAMES.map((nm, j) => {
+    const gop = cents(accR[j]), luot = Math.round(accS[j]);
+    const theo = kh[j] != null;
+    const traTheoMuc = theo ? cents(luot / 1000 * kh[j]) : null;
+    const traTheoPhanTram = cents(gop * (1 - CFG.HAUSTEK_FEE));
+    const tra = theo ? traTheoMuc : traTheoPhanTram;
+    return { name: nm, nameEn: PLAT_NAMES_EN[j], streams: luot, gross: gop,
+      khach: theo ? kh[j] : null, theoMucTra: theo,
+      thucTe1k: luot > 0 ? cents4(gop / luot * 1000) : 0,
+      tra, traTheoPhanTram, bien: cents(gop - tra),
+      bienPct: gop > 0 ? Math.round((gop - tra) / gop * 1000) / 1000 : 0,
+      am: gop - tra < -0.004 };
+  }).filter(r => r.streams > 0).sort((a, b) => b.gross - a.gross);
+  const gop = cents(rows.reduce((x, r) => x + r.gross, 0));
+  const tra = cents(rows.reduce((x, r) => x + r.tra, 0));
+  const cu = cents(rows.reduce((x, r) => x + r.traTheoPhanTram, 0));
+  return { pIdx, ky: PERIODS[pIdx].k, label: PERIODS[pIdx].label, rows,
+    gross: gop, tra, bien: cents(gop - tra), bienPct: gop > 0 ? Math.round((gop - tra) / gop * 1000) / 1000 : 0,
+    theoPhanTram: cu, lech: cents(tra - cu), soAm: rows.filter(r => r.am).length,
+    soTheoMuc: rows.filter(r => r.theoMucTra).length, uocLuong: step > 1 };
+}
+
 function setPlatformRate(name, per1k, note, by, khach) {
   if (PLAT_NAMES.indexOf(name) < 0) throw new Error("Không có nền tảng " + name);
   per1k = cents4(+per1k);
@@ -3895,6 +4026,38 @@ const NGUON_OK = NGUON_NHAP.map(x => x.id);
 /* Ngày gần nhất mà nguồn lượt nghe chưa về: bảng điều khiển của nền tảng
    nào cũng chậm một tới hai ngày, nên đó là phần việc hằng ngày thật sự. */
 const LUOT_TRE = 2;
+/* Lệch dưới ngưỡng này coi là khớp: số nền tảng báo trong ngày luôn nhúc
+   nhích vài phần trăm rồi mới đứng yên, bắt khớp tuyệt đối thì ngày nào
+   cũng đỏ và người đối soát bỏ nhìn. */
+const NGUONG_LECH = 0.02;
+/* Đối soát xong nền tảng nào thì tổng của ngày lấy số đã đối soát cho nền
+   tảng ấy, phần còn lại giữ số hệ thống — để cả sản phẩm chỉ có MỘT con
+   số cho một ngày, không phải hai. */
+function dongBoNgayTuDoiSoat(ngay) {
+  const back = Math.round((ASOF - new Date(ngay)) / 864e5);
+  if (!(back >= 0 && back < N_DAYS)) return;
+  const ds = (state.doiSoatNgay || {})[ngay];
+  const tuSinh = luotTuSinh(back);
+  if (!ds || !Object.keys(ds).length) {
+    if (state.luotNgay && state.luotNgay[ngay] && state.luotNgay[ngay].tuDoiSoat) delete state.luotNgay[ngay];
+    LUOT_HS.delete(ngay);
+    return;
+  }
+  let tong = 0;
+  STORE_TOP.forEach(x => {
+    const d = ds[x.n];
+    tong += d ? d.thucTe : Math.round(tuSinh * x.w / 0.92);
+  });
+  /* phần đuôi (hơn hai trăm nền tảng nhỏ) giữ nguyên tỷ lệ của nó */
+  tong += Math.round(tuSinh * (1 - 0.92));
+  if (!state.luotNgay) state.luotNgay = {};
+  const cu = state.luotNgay[ngay];
+  if (!cu || cu.tuDoiSoat) {
+    state.luotNgay[ngay] = { tong: Math.round(tong), plat: null, ghiChu: "", tuDoiSoat: true,
+      by: _me ? _me.email : "", at: nowISO() };
+  }
+  LUOT_HS.delete(ngay);
+}
 
 /* Tra ISRC → chỉ số bài, dựng lười một lần rồi giữ: dán một khối bốn mươi
    dòng mà mỗi dòng quét 50.000 bản ghi thì người dán ngồi đợi. */
@@ -3909,7 +4072,7 @@ function isrcTim(ma) {
 }
 
 function rebuildNhapIndex() {
-  TAY_BAI = new Map(); TAY_KY = new Map(); TAY_GO = new Map(); HE_SO_KY.clear();
+  TAY_BAI = new Map(); TAY_KY = new Map(); TAY_GO = new Map(); HE_SO_KY.clear(); NHAP_VER++;
   (state.nhapTay || []).forEach(e => {
     if (e.kieu === "ky") { TAY_KY.set(e.pIdx + ":" + e.fId, e); return; }
     if (e.kieu !== "bai" || !(e.trackIdx >= 0)) return;
@@ -4156,6 +4319,120 @@ const nhapLieu = {
     store.save();
     return true;
   },
+  /* ---- đối soát lượt nghe theo nền tảng, giống bút toán kế toán ----
+     Mỗi bài đã lên kệ có đường dẫn tới từng store. Điều phối viên mở link,
+     đọc số trên nền tảng, gõ vào; hệ thống so với số nó đang giữ và ghi
+     lại chênh lệch. Không tự sửa số hộ: người đối soát chốt, hệ thống ghi
+     ai chốt lúc nào — hệt như một bút toán, không phải một phép đoán. */
+  nenTangNgay(ngay) {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(String(ngay))) throw new Error("Ngày không hợp lệ");
+    const back = Math.round((ASOF - new Date(ngay)) / 864e5);
+    const tuSinh = back >= 0 && back < N_DAYS ? luotTuSinh(back) : 0;
+    const ds = (state.doiSoatNgay || {})[ngay] || {};
+    return STORE_TOP.map(x => {
+      const heThong = Math.round(tuSinh * x.w / 0.92);
+      const d = ds[x.n] || null;
+      const thucTe = d ? d.thucTe : null;
+      const lech = thucTe == null ? null : thucTe - heThong;
+      return { plat: x.n, heThong, thucTe, lech,
+        lechPct: thucTe == null || heThong <= 0 ? null : Math.round(lech / heThong * 1000) / 1000,
+        trangThai: d ? d.trangThai : "cho", by: d ? d.by : null, at: d ? d.at : null,
+        ghiChu: d ? d.ghiChu || "" : "" };
+    });
+  },
+  nguongLech: () => NGUONG_LECH,
+  ghiDoiSoat(ngay, plat, thucTe, o, by) {
+    chanQuyen("nhapLieu.ghiDoiSoat", "nhapLieu");
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(String(ngay))) throw new Error("Ngày không hợp lệ");
+    if (!STORE_TOP.some(x => x.n === plat)) throw new Error("Không có nền tảng " + plat);
+    const v = Number(thucTe);
+    if (!isFinite(v) || v < 0) throw new Error("Lượt nghe phải là số không âm");
+    if (v > 5e9) throw new Error("Lượt nghe vượt ngưỡng hợp lý, kiểm lại đơn vị");
+    const hang = this.nenTangNgay(ngay).find(r => r.plat === plat);
+    const lech = hang.heThong > 0 ? Math.abs(v - hang.heThong) / hang.heThong : (v > 0 ? 1 : 0);
+    if (!state.doiSoatNgay) state.doiSoatNgay = {};
+    if (!state.doiSoatNgay[ngay]) state.doiSoatNgay[ngay] = {};
+    state.doiSoatNgay[ngay][plat] = { thucTe: Math.round(v), trangThai: lech <= NGUONG_LECH ? "khop" : "lech",
+      ghiChu: (o && o.ghiChu) || "", by: by || (_me ? _me.email : ""), at: nowISO() };
+    dongBoNgayTuDoiSoat(ngay);
+    audit.log("nhap.doiSoat", ngay + " · " + plat + " · " + fmt.num(v) + (lech > NGUONG_LECH ? " · LỆCH " + Math.round(lech * 100) + "%" : " · khớp"), by);
+    store.save();
+    return this.nenTangNgay(ngay);
+  },
+  boDoiSoat(ngay, plat, by) {
+    chanQuyen("nhapLieu.boDoiSoat", "nhapLieu");
+    const g = (state.doiSoatNgay || {})[ngay];
+    if (!g || !g[plat]) throw new Error("Nền tảng này chưa đối soát cho ngày " + ngay);
+    delete g[plat];
+    if (!Object.keys(g).length) delete state.doiSoatNgay[ngay];
+    dongBoNgayTuDoiSoat(ngay);
+    audit.log("nhap.doiSoatGo", ngay + " · " + plat, by);
+    store.save();
+    return this.nenTangNgay(ngay);
+  },
+  /* ---- đối soát một BÀI trong một ngày, theo đường dẫn store ----
+     Tổng của cả nền tảng là việc hằng ngày; còn khi một bài trông lạ thì
+     mở đúng link của bài ấy trên store, đọc số, gõ vào đây. Số hệ thống
+     của một bài trong một ngày = lượt ngày của bài × cơ cấu nền tảng của
+     chính bài ấy ở kỳ gần nhất — cơ cấu ấy đổi chậm, nên dùng cho một
+     ngày là đủ sát; chỗ này có nói rõ trên màn. */
+  baiNgay(trackIdx, ngay) {
+    if (!(trackIdx >= 0 && trackIdx < N)) throw new Error("Bản ghi không hợp lệ");
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(String(ngay))) throw new Error("Ngày không hợp lệ");
+    const back = Math.round((ASOF - new Date(ngay)) / 864e5);
+    const luotNgay = back >= 0 && back < N_DAYS ? dailyStreams(trackIdx, back) : 0;
+    const pCuoi = P - 1;
+    const rev = splitStores(trackIdx, pCuoi), st = splitStreams(trackIdx, pCuoi, rev);
+    let tong = 0; for (let j = 0; j < N_PLAT; j++) tong += st[j];
+    const d = deliveryOf(trackIdx);
+    const link = {}; d.rows.forEach(r => { if (r.url) link[r.name] = r.url; });
+    const luu = state.doiSoatBai || {};
+    const rows = PLAT_NAMES.map((nm, j) => {
+      const heThong = tong > 0 ? Math.round(luotNgay * st[j] / tong) : 0;
+      const g = luu[ngay + ":" + trackIdx + ":" + nm] || null;
+      const thucTe = g ? g.thucTe : null;
+      return { plat: nm, platEn: PLAT_NAMES_EN[j], url: link[nm] || null, heThong, thucTe,
+        lech: thucTe == null ? null : thucTe - heThong,
+        lechPct: thucTe == null || heThong <= 0 ? null : Math.round((thucTe - heThong) / heThong * 1000) / 1000,
+        trangThai: g ? g.trangThai : "cho", by: g ? g.by : null, at: g ? g.at : null };
+    }).filter(r => r.heThong > 0 || r.url || r.thucTe != null);
+    return { i: trackIdx, isrc: tIsrc[trackIdx], title: tTitle[trackIdx], artist: ARTISTS[tArtist[trackIdx]].name,
+      ngay, luotNgay, rows };
+  },
+  ghiDoiSoatBai(trackIdx, ngay, plat, thucTe, by) {
+    chanQuyen("nhapLieu.ghiDoiSoatBai", "nhapLieu");
+    const hs = this.baiNgay(trackIdx, ngay).rows.find(r => r.plat === plat);
+    if (!hs) throw new Error("Bài này không có nền tảng " + plat);
+    const v = Number(thucTe);
+    if (!isFinite(v) || v < 0) throw new Error("Lượt nghe phải là số không âm");
+    const lech = hs.heThong > 0 ? Math.abs(v - hs.heThong) / hs.heThong : (v > 0 ? 1 : 0);
+    if (!state.doiSoatBai) state.doiSoatBai = {};
+    state.doiSoatBai[ngay + ":" + trackIdx + ":" + plat] = { thucTe: Math.round(v),
+      trangThai: lech <= NGUONG_LECH ? "khop" : "lech", by: by || (_me ? _me.email : ""), at: nowISO() };
+    audit.log("nhap.doiSoatBai", tIsrc[trackIdx] + " · " + plat + " · " + ngay + " · " + fmt.num(v), by);
+    store.save();
+    return this.baiNgay(trackIdx, ngay);
+  },
+  /* Gõ nhầm một con số theo bài thì phải gỡ được, y như đối soát theo ngày.
+     Đối soát nào cũng đảo ngược được, không có con số nào bị khoá cứng. */
+  boDoiSoatBai(trackIdx, ngay, plat, by) {
+    chanQuyen("nhapLieu.boDoiSoatBai", "nhapLieu");
+    const k = ngay + ":" + trackIdx + ":" + plat;
+    if (!state.doiSoatBai || !state.doiSoatBai[k]) throw new Error("Bài này chưa đối soát " + plat + " cho ngày " + ngay);
+    delete state.doiSoatBai[k];
+    audit.log("nhap.doiSoatBaiGo", tIsrc[trackIdx] + " · " + plat + " · " + ngay, by);
+    store.save();
+    return this.baiNgay(trackIdx, ngay);
+  },
+
+  /* đường dẫn tới từng store của một bài — chỗ đi lấy số về mà đối soát */
+  linkNenTang(trackIdx) {
+    if (!(trackIdx >= 0 && trackIdx < N)) throw new Error("Bản ghi không hợp lệ");
+    const d = deliveryOf(trackIdx);
+    return { isrc: tIsrc[trackIdx], title: tTitle[trackIdx], artist: ARTISTS[tArtist[trackIdx]].name,
+      rows: d.rows.filter(r => r.url).map(r => ({ plat: r.name, url: r.url, liveAt: r.liveAt })) };
+  },
+
   /* việc còn phải làm hôm nay — dùng cho huy hiệu điều hướng và bàn làm việc */
   conThieu() {
     let ngayThieu = 0;
@@ -4164,7 +4441,10 @@ const nhapLieu = {
       if (!(state.luotNgay || {})[ngay]) ngayThieu++;
     }
     const kyThieu = PERIODS.reduce((s, pp, pi) => s + (state.approved[pp.k] ? 0 : missingFeeds(pi).length), 0);
-    return { ngay: ngayThieu, ky: kyThieu, tong: ngayThieu + kyThieu };
+    let lech = 0;
+    const ds = state.doiSoatNgay || {};
+    for (const d in ds) for (const nt in ds[d]) if (ds[d][nt].trangThai === "lech") lech++;
+    return { ngay: ngayThieu, ky: kyThieu, lech, tong: ngayThieu + kyThieu + lech };
   }
 };
 rebuildNhapIndex();
@@ -4808,7 +5088,7 @@ const QUYEN_HAM = {
   deliveries: "vanHanh", bulk: "vanHanh", ingest: "vanHanh", platformRates: "vanHanh",
   nhapLieu: "nhapLieu", quyTrinh: "quyTrinh", hieuSuat: "hieuSuat", von: "von",
   /* Mức trả đầy đủ mang biên của Haustek: chỉ nhóm "tong" (giám đốc) mới gọi. */
-  platformRatesFull: "tong", setPlatformRate: "tong", clearPlatformRate: "tong", importPlatformRates: "tong",
+  platformRatesFull: "tong", setPlatformRate: "tong", clearPlatformRate: "tong", importPlatformRates: "tong", mucTraTacDong: "tong",
   proposals: "deXuat", "proposals.proposeAdvance": "deXuatTao", "proposals.proposeContract": "deXuatTao", advanceCalc: "deXuat", contractCalc: "deXuat", partySeries: "deXuat", advanceOfferOf: "deXuat",
   roi: "deXuat",
   tickets: "hoTro", claims: "khieuNai", videoSettings: "khieuNai",
@@ -5014,7 +5294,7 @@ const admin = {
   isApproved: pk => !!state.approved[pk],
   approvalOf: pk => state.approved[pk] || null,
   payoutOf: pk => state.payouts[pk] || null,
-  rates, fx, ingest, queue, audit, nhapLieu, quyTrinh, hieuSuat, von,
+  rates, fx, ingest, queue, audit, nhapLieu, quyTrinh, hieuSuat, von, mucTraTacDong,
   advances: {
     list() {
       return Object.keys(state.advances).map(k => ({

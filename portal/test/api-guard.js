@@ -1139,7 +1139,12 @@ check("Biên mức trả nền tảng không rời cổng nội bộ và không 
   const goi = JSON.stringify(goiDs);
   ["\"khach\"", "\"bien\"", "\"bienPct\""].forEach(k => must(goi.indexOf(k) < 0, "cổng đối tác lộ " + k));
   must(H.api.platformRatesFull === undefined && H.api.setPlatformRate === undefined, "cổng đối tác có mặt đặt mức trả");
-  return nt + " · nền tảng " + H.fmt.usd(4.4) + " → đối tác " + H.fmt.usd(4.0) + " · biên 9,1%";
+  /* Mức trả nay chảy thẳng vào tiền đối tác, nên phép kiểm này phải dọn sau
+     mình: bỏ quên một bảng giá 4,00 USD ở đây là mọi phép kiểm phía sau tính
+     tiền trên một mức bịa ra. */
+  A.clearPlatformRate(nt, "guard");
+  must(!A.platformRatesFull().find(x => x.name === nt).override, "dọn bảng giá không sạch");
+  return nt + " · nền tảng " + H.fmt.usd(4.4) + " → đối tác " + H.fmt.usd(4.0) + " · biên 9,1% · dọn sạch sau khi thử";
 });
 
 /* Trang Tổ chức chặn theo CẤP chứ không theo vai: trưởng bộ phận kinh
@@ -1303,6 +1308,134 @@ check("Hiệu suất và hiệu quả vốn chỉ mở từ Level 2 trở lên, 
   const tuoi = A.von.tuoiNo();
   must(Math.abs(tuoi.reduce((s, b) => s + b.tien, 0) - tq.conLai) < 1, "tổng tuổi nợ ≠ vốn còn đọng");
   return "Level 1 vào được · Level 4 bị chặn · sổ vốn cân · đường thu hồi không giảm";
+});
+
+/* ---------------------------------------------------------------------
+   VÒNG 16 — bảng giá nền tảng quyết định tiền, và đối soát lượt nghe
+   --------------------------------------------------------------------- */
+check("Bảng giá nền tảng quyết định tiền trả đối tác, gộp không đổi, gỡ ra thì hoàn nguyên", () => {
+  nhu("S01");
+  const pi = A.periods.findIndex(p => p.k === approvedKey);
+  must(pi >= 0, "không tìm được kỳ đã duyệt để thử");
+  /* Mức trả nay là đầu vào của tiền thật, nên trước khi đo phải chắc bàn sạch:
+     một phép kiểm phía trên bỏ quên bảng giá là mọi số dưới đây vô nghĩa. */
+  must(!A.platformRatesFull().some(r => r.override), "một phép kiểm trước để sót bảng giá");
+  const truoc = A.agg("admin", 0, pi, "rec");
+  const suy = A.platformRatesFull().find(r => r.name === "Spotify");
+  must(suy && suy.derived > 0, "không đọc được mức suy từ báo cáo của Spotify");
+  const nen = Math.round(suy.derived * 10000) / 10000;
+  const traKhach = Math.round(nen * 0.875 * 10000) / 10000;      /* trả 87,5% mức nền tảng */
+  A.setPlatformRate("Spotify", nen, "kiểm thử", "test", traKhach);
+  const sau = A.agg("admin", 0, pi, "rec");
+  must(Math.abs(truoc.gross - sau.gross) < 1, "đặt bảng giá mà doanh thu GỘP đổi: " + truoc.gross + " ≠ " + sau.gross);
+  must(Math.abs(sau.gross - sau.fee - sau.artist - sau.labelCut) < 2, "chuỗi không còn cộng đúng sau khi đặt bảng giá");
+  must(sau.artist + sau.labelCut !== truoc.artist + truoc.labelCut, "đặt bảng giá mà phần về đối tác không đổi chút nào");
+  /* tác động phải nói rõ nền tảng nào theo bảng giá, nền tảng nào theo phần trăm */
+  const td = A.mucTraTacDong(pi);
+  const sp = td.rows.find(r => r.name === "Spotify");
+  must(sp && sp.theoMucTra && sp.khach === traKhach, "bảng tác động không ghi nhận Spotify chạy theo bảng giá");
+  must(td.rows.filter(r => !r.theoMucTra).every(r => Math.abs(r.bienPct - 0.15) < 0.02),
+    "nền tảng chưa đặt mức phải giữ nguyên biên 15% theo phần trăm");
+  must(Math.abs(td.gross - td.tra - td.bien) < 2, "tổng bảng tác động không cân");
+  /* Mức suy ở bảng giá là bình quân ba kỳ đã duyệt gần nhất, không phải mức
+     của riêng kỳ này. Muốn ép biên về 0 thì phải trả đúng mức thực tế của kỳ
+     đang xét, và đó cũng là con số trang Mức trả bày ra cạnh ô nhập. */
+  const thuc = sp.thucTe1k;
+  must(thuc > 0, "không đọc được mức thực tế của Spotify trong kỳ này");
+  A.setPlatformRate("Spotify", thuc, "kiểm thử", "test", thuc);
+  const sp0 = A.mucTraTacDong(pi).rows.find(r => r.name === "Spotify");
+  must(Math.abs(sp0.bien) < 2 && !sp0.am, "trả bằng đúng mức thực tế mà biên không về 0: " + sp0.bien);
+  /* biên âm không bị giấu: hứa trả cao hơn mức nền tảng trả về thì phải hiện ra */
+  const cao = Math.round(thuc * 1.2 * 10000) / 10000;
+  A.setPlatformRate("Spotify", cao, "kiểm thử", "test", cao);
+  const td2 = A.mucTraTacDong(pi);
+  const sp1 = td2.rows.find(r => r.name === "Spotify");
+  must(sp1.am && sp1.bien < 0 && sp1.bienPct < -0.15, "hứa trả cao hơn mức nền tảng mà biên không âm: " + sp1.bienPct);
+  must(td2.soAm >= 1, "bảng tác động không đếm nền tảng đang âm");
+  A.clearPlatformRate("Spotify", "test");
+  const lai = A.agg("admin", 0, pi, "rec");
+  must(Math.abs(lai.fee - truoc.fee) < 1 && Math.abs(lai.artist - truoc.artist) < 1, "gỡ bảng giá xong số không quay về như cũ");
+  return "gộp giữ nguyên · chuỗi cân · nền tảng khác vẫn 15% · trả đúng mức thì biên 0 · trả cao hơn thì âm · gỡ ra hoàn nguyên";
+});
+
+check("Bảng giá và tác động của nó không rời cổng nội bộ, và chỉ giám đốc gọi được", () => {
+  ["S02", "S03", "S05", "S07"].forEach(id => {
+    const me = nhu(id);
+    mustThrow(() => A.mucTraTacDong(0), "bảng tác động mức trả với vai " + me.role);
+  });
+  nhu("S01");
+  must(typeof A.mucTraTacDong(0) === "object", "giám đốc phải gọi được bảng tác động");
+  must(H.api.mucTraTacDong === undefined, "cổng đối tác lộ bảng tác động mức trả");
+  /* đối tác vẫn không được thấy mức gốc hay biên qua bất kỳ gói nào */
+  const s = H.api.summary("artist", A1.id, approvedKey, "rec");
+  must(JSON.stringify(s).indexOf("khach") < 0 && JSON.stringify(s).indexOf("bien") < 0, "gói bảng kê đối tác lộ mức gốc hoặc biên");
+  return "4 vai bị chặn · giám đốc gọi được · api không có";
+});
+
+check("Đối soát lượt nghe: khớp, lệch, hoàn tác, và một ngày chỉ có một con số", () => {
+  nhu("S02");
+  const ngay = A.nhapLieu.ngay(4)[2].ngay;
+  const rows = A.nhapLieu.nenTangNgay(ngay);
+  must(rows.length === 8 && rows.every(r => r.trangThai === "cho"), "ngày mới phải chưa đối soát nền tảng nào");
+  const sp = rows[0];
+  A.nhapLieu.ghiDoiSoat(ngay, sp.plat, Math.round(sp.heThong * 1.005));
+  must(A.nhapLieu.nenTangNgay(ngay)[0].trangThai === "khop", "lệch 0,5% phải coi là khớp");
+  A.nhapLieu.ghiDoiSoat(ngay, rows[1].plat, Math.round(rows[1].heThong * 1.4));
+  const r2 = A.nhapLieu.nenTangNgay(ngay)[1];
+  must(r2.trangThai === "lech" && Math.abs(r2.lechPct - 0.4) < 0.01, "lệch 40% phải bị đánh dấu");
+  must(A.nhapLieu.conThieu().lech >= 1, "việc còn phải làm không đếm dòng lệch");
+  /* tổng của ngày phải đi theo số đã đối soát, không sinh ra con số thứ hai */
+  const ng = A.nhapLieu.ngay(4).find(x => x.ngay === ngay);
+  must(ng.trangThai === "tay" && ng.tong > 0, "đối soát xong mà tổng ngày không cập nhật");
+  A.nhapLieu.boDoiSoat(ngay, rows[1].plat);
+  must(A.nhapLieu.nenTangNgay(ngay)[1].trangThai === "cho", "bỏ đối soát không có tác dụng");
+  A.nhapLieu.boDoiSoat(ngay, sp.plat);
+  must(A.nhapLieu.ngay(4).find(x => x.ngay === ngay).trangThai !== "tay", "bỏ hết đối soát mà ngày vẫn treo số tay");
+  mustThrow(() => A.nhapLieu.ghiDoiSoat(ngay, "Không Có Nền Tảng Này", 1), "đối soát một nền tảng không tồn tại");
+  mustThrow(() => A.nhapLieu.ghiDoiSoat("hôm-qua", sp.plat, 1), "đối soát với ngày sai định dạng");
+  return "khớp 0,5% · lệch 40% · hoàn tác sạch · một ngày một số";
+});
+
+check("Đối soát theo bài đi qua đúng đường dẫn store của bài ấy", () => {
+  nhu("S02");
+  const ngay = A.nhapLieu.ngay(3)[1].ngay;
+  let i = -1;
+  for (let k = 0; k < 200; k++) { if (A.nhapLieu.linkNenTang(k).rows.length >= 3) { i = k; break; } }
+  must(i >= 0, "không tìm được bài nào có đủ đường dẫn store để thử");
+  const b = A.nhapLieu.baiNgay(i, ngay);
+  must(b.isrc && b.rows.length > 0, "không đọc được bảng đối soát của bài");
+  const co = b.rows.filter(r => r.url);
+  must(co.length >= 3, "bài này phải có ít nhất ba đường dẫn store");
+  must(co.every(r => /^https:\/\//.test(r.url)), "đường dẫn store phải là https");
+  const r0 = co[0];
+  A.nhapLieu.ghiDoiSoatBai(i, ngay, r0.plat, r0.heThong);
+  const sau = A.nhapLieu.baiNgay(i, ngay).rows.find(r => r.plat === r0.plat);
+  must(sau.thucTe === r0.heThong && sau.trangThai === "khop", "gõ đúng bằng số hệ thống mà không báo khớp");
+  must(sau.by, "không ghi lại ai đối soát");
+  mustThrow(() => A.nhapLieu.ghiDoiSoatBai(i, ngay, "Nền tảng không có", 1), "đối soát bài với nền tảng không có");
+  mustThrow(() => A.nhapLieu.baiNgay(-1, ngay), "đối soát một bản ghi không hợp lệ");
+  /* Gõ nhầm thì phải gỡ được: đối soát nào cũng đảo ngược được, y như sổ kế toán. */
+  A.nhapLieu.boDoiSoatBai(i, ngay, r0.plat);
+  const go = A.nhapLieu.baiNgay(i, ngay).rows.find(r => r.plat === r0.plat);
+  must(go.thucTe == null && go.trangThai === "cho", "gỡ đối soát theo bài mà số vẫn còn");
+  mustThrow(() => A.nhapLieu.boDoiSoatBai(i, ngay, r0.plat), "gỡ hai lần mà không báo lỗi");
+  /* Vận hành và kế toán cùng cầm nhóm nhapLieu; kinh doanh và hỗ trợ thì không.
+     Phép kiểm đọc thẳng ma trận thay vì đoán, để đổi ma trận là kiểm đổi theo. */
+  let chan = 0;
+  ["S03", "S05", "S07"].forEach(id => {
+    const me = nhu(id);
+    if (A.quyen.nhom("nhapLieu")) {
+      A.nhapLieu.ghiDoiSoatBai(i, ngay, r0.plat, r0.heThong, "x");
+      A.nhapLieu.boDoiSoatBai(i, ngay, r0.plat, "x");
+      return;
+    }
+    chan++;
+    mustThrow(() => A.nhapLieu.ghiDoiSoatBai(i, ngay, r0.plat, 1), "vai " + me.role + " đối soát được theo bài");
+    mustThrow(() => A.nhapLieu.boDoiSoatBai(i, ngay, r0.plat), "vai " + me.role + " gỡ được đối soát theo bài");
+  });
+  must(chan >= 2, "phải có ít nhất hai vai bị chặn khỏi đối soát theo bài");
+  nhu("S02");
+  return co.length + " đường dẫn · khớp ghi đúng · có người đối soát · gỡ ra sạch · " + chan + " vai bị chặn";
 });
 
 check("lockdown() gỡ hẳn mặt tiền admin khỏi trang", () => {

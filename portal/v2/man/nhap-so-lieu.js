@@ -19,7 +19,7 @@
 (function () {
 
 var TAB = 'ngay';
-var CHON = { pIdx: null, fId: 0, q: '' };
+var CHON = { pIdx: null, fId: 0, q: '', ngay: null, bai: null, qBai: '' };
 
 HT.dangKy({
   id: 'nhap-so-lieu', nav: 'navNhap', nhom: 'nhomVanHanh', icon: 'down2',
@@ -29,7 +29,21 @@ HT.dangKy({
     vi: {
       navNhap: 'Nhập số liệu', h1: 'Nhập số liệu',
       mo: 'Chỗ gõ số từ OneRPM, Warner, Believe, YouTube CMS vào hệ thống. Số gõ tay thắng số ước tính.',
-      tNgay: 'Lượt nghe hằng ngày', tTien: 'Doanh thu theo kỳ', tBai: 'Doanh thu theo bài', tSu: 'Nhật ký nhập',
+      tNgay: 'Lượt nghe hằng ngày', tSoat: 'Đối soát theo bài', tTien: 'Doanh thu theo kỳ', tBai: 'Doanh thu theo bài', tSu: 'Nhật ký nhập',
+      dsTieu: 'Đối soát nền tảng ngày {d}', dsMo: 'Mở bảng điều khiển của từng nền tảng, đọc số của ngày đó rồi gõ vào. Lệch dưới {p} coi là khớp; lệch hơn thì đánh dấu đỏ để xem lại, không tự sửa số.',
+      dsNt: 'Nền tảng', dsHt: 'Số hệ thống', dsTt: 'Số trên nền tảng', dsLech: 'Lệch', dsTrang: 'Trạng thái',
+      dsKhop: 'Khớp', dsLechT: 'Lệch', dsCho: 'Chưa đối soát', dsLuu: 'Đối soát', dsBo: 'Bỏ đối soát',
+      dsDa: 'Đã đối soát {n}: lệch {l}', dsDaBo: 'Đã bỏ đối soát {n}',
+      dsChonNgay: 'Đối soát ngày này', dsDangXem: 'đang đối soát',
+      dsTong: 'Tổng ngày sau đối soát', dsTongMo: 'Nền tảng đã đối soát lấy số vừa gõ, phần còn lại giữ số hệ thống. Cả sản phẩm chỉ có một con số cho một ngày.',
+
+      sbTieu: 'Đối soát một bài theo đường dẫn store', sbMo: 'Mỗi bài đã lên kệ có đường dẫn tới từng nền tảng. Mở link, đọc số của ngày, gõ vào đây. Dùng khi một bài trông lạ, không phải để chạy hằng ngày.',
+      sbTim: 'Tìm bài theo tên hoặc ISRC', sbChon: 'Chọn một bài để mở đường dẫn store',
+      sbGoiY: 'Bài nghe nhiều nhất bảy ngày qua', sbGoiYMo: 'Chưa gõ gì thì đây là những bài đáng soát trước; gõ tên hoặc ISRC để tìm bài khác.',
+      sbNgay: 'Ngày đối soát', sbLuot: 'Lượt nghe cả bài trong ngày', sbMoLink: 'Mở link',
+      sbCoCau: 'Số hệ thống của từng nền tảng suy từ cơ cấu nền tảng của chính bài ấy ở kỳ gần nhất; cơ cấu đổi chậm nên dùng cho một ngày là đủ sát.',
+      sbKhongLink: 'Bài này chưa có đường dẫn store nào — thường là chưa lên kệ.',
+      sbDa: 'Đã đối soát {n} cho {t}',
       kNgayThieu: 'Ngày chờ nhập', kNgayThieuS: 'nguồn nền tảng chậm 1–2 ngày là bình thường',
       kNguonThieu: 'Nguồn chưa có số', kNguonThieuS: 'trên mọi kỳ chưa xét duyệt',
       kDaGo: 'Dòng đã gõ tay', kDaGoS: 'đang đè lên số ước tính',
@@ -68,7 +82,21 @@ HT.dangKy({
     en: {
       navNhap: 'Data entry', h1: 'Data entry',
       mo: 'Where figures from OneRPM, Warner, Believe and YouTube CMS are keyed in. Keyed figures beat estimates.',
-      tNgay: 'Daily streams', tTien: 'Revenue by period', tBai: 'Revenue by track', tSu: 'Entry log',
+      tNgay: 'Daily streams', tSoat: 'Reconcile a track', tTien: 'Revenue by period', tBai: 'Revenue by track', tSu: 'Entry log',
+      dsTieu: 'Platform reconciliation for {d}', dsMo: 'Open each platform’s dashboard, read that day’s figure and key it in. Under {p} counts as matching; more than that is flagged red for review — nothing is silently corrected.',
+      dsNt: 'Platform', dsHt: 'System figure', dsTt: 'Platform figure', dsLech: 'Difference', dsTrang: 'Status',
+      dsKhop: 'Matches', dsLechT: 'Off', dsCho: 'Not reconciled', dsLuu: 'Reconcile', dsBo: 'Undo',
+      dsDa: 'Reconciled {n}: off by {l}', dsDaBo: 'Undid the {n} reconciliation',
+      dsChonNgay: 'Reconcile this day', dsDangXem: 'being reconciled',
+      dsTong: 'Day total after reconciliation', dsTongMo: 'Reconciled platforms use the keyed figure; the rest keep the system figure. One number per day across the whole product.',
+
+      sbTieu: 'Reconcile one track through its store links', sbMo: 'Every released track has a link to each platform. Open it, read the day’s figure, key it in. For when a track looks odd — not for the daily loop.',
+      sbTim: 'Search by title or ISRC', sbChon: 'Pick a track to open its store links',
+      sbGoiY: 'Most-streamed tracks of the last seven days', sbGoiYMo: 'With no search these are the ones worth checking first; type a title or ISRC to find another.',
+      sbNgay: 'Date', sbLuot: 'The track’s streams that day', sbMoLink: 'Open',
+      sbCoCau: 'Each platform’s system figure comes from that track’s own platform mix in the most recent period; the mix moves slowly, so it is close enough for one day.',
+      sbKhongLink: 'This track has no store links yet — usually it is not live.',
+      sbDa: 'Reconciled {n} for {t}',
       kNgayThieu: 'Days awaiting entry', kNgayThieuS: 'platform feeds run one to two days behind',
       kNguonThieu: 'Feeds with no figure', kNguonThieuS: 'across all unapproved periods',
       kDaGo: 'Hand-keyed rows', kDaGoS: 'currently overriding the estimate',
@@ -132,13 +160,15 @@ HT.dangKy({
       { l: t('kDoanhThu'), v: c.tien(tongSo), s: t('kDoanhThuS'), lon: true }
     ]);
     html += HM.tabs([
-      { k: 'ngay', l: t('tNgay'), icon: 'cal' },
+      { k: 'ngay', l: t('tNgay'), icon: 'cal', dem: thieu.lech ? '!' + thieu.lech : undefined },
+      { k: 'soat', l: t('tSoat'), icon: 'link' },
       { k: 'tien', l: t('tTien'), icon: 'cash' },
       { k: 'bai', l: t('tBai'), icon: 'disc' },
       { k: 'su', l: t('tSu'), icon: 'clock' }
     ], TAB);
 
     if (TAB === 'ngay') html += veNgay(c);
+    if (TAB === 'soat') html += veSoatBai(c);
     if (TAB === 'tien') html += veTien(c, bang);
     if (TAB === 'bai') html += veBai(c, bang);
     if (TAB === 'su') html += veSu(c);
@@ -171,6 +201,42 @@ HT.dangKy({
         c.thongBao(t('daGoBai').replace('{t}', e2.tenBai).replace('{v}', c.tien2(e2.tien)), 'ok');
         HM.quenHet(); c.veLai();
       } catch (err) { c.thongBao(err.message, 'no'); }
+    });
+    HM.bam(root, '[data-soat-ngay]', function (el) { CHON.ngay = el.getAttribute('data-soat-ngay'); c.veLai(); });
+    HM.doi(root, '[data-soat-chon-ngay]', function (el) { CHON.ngay = el.value; c.veLai(); });
+    HM.nhap(root, '[data-tim-bai]', function (el) { CHON.qBai = el.value; c.veLai(); });
+    HM.bam(root, '[data-chon-bai]', function (el) { CHON.bai = +el.getAttribute('data-chon-bai'); c.veLai(); });
+    HM.bam(root, '[data-luu-nt]', function (el) {
+      var nt = el.getAttribute('data-luu-nt');
+      var o = root.querySelector('[data-so-nt="' + nt.replace(/"/g, '\\"') + '"]');
+      if (!o || o.value === '') return;
+      try {
+        var kq = A.nhapLieu.ghiDoiSoat(CHON.ngay, nt, parseFloat(o.value), {}, A.staff.me.name);
+        var h = kq.filter(function (x) { return x.plat === nt; })[0];
+        c.thongBao(t('dsDa').replace('{n}', nt).replace('{l}', h.lechPct == null ? '—' : HT.fmt.pct(h.lechPct)), h.trangThai === 'lech' ? 'no' : 'ok');
+        HM.quenHet(); c.veLai();
+      } catch (e) { c.thongBao(e.message, 'no'); }
+    });
+    HM.bam(root, '[data-bo-nt]', function (el) {
+      var nt = el.getAttribute('data-bo-nt');
+      try { A.nhapLieu.boDoiSoat(CHON.ngay, nt, A.staff.me.name); c.thongBao(t('dsDaBo').replace('{n}', nt), 'ok'); HM.quenHet(); c.veLai(); }
+      catch (e) { c.thongBao(e.message, 'no'); }
+    });
+    HM.bam(root, '[data-luu-bai-nt]', function (el) {
+      var nt = el.getAttribute('data-luu-bai-nt');
+      var o = root.querySelector('[data-so-bai-nt="' + nt.replace(/"/g, '\\"') + '"]');
+      if (!o || o.value === '' || CHON.bai == null) return;
+      try {
+        var kq = A.nhapLieu.ghiDoiSoatBai(CHON.bai, CHON.ngay, nt, parseFloat(o.value), A.staff.me.name);
+        c.thongBao(t('sbDa').replace('{n}', nt).replace('{t}', kq.title), 'ok');
+        HM.quenHet(); c.veLai();
+      } catch (e) { c.thongBao(e.message, 'no'); }
+    });
+    HM.bam(root, '[data-bo-bai-nt]', function (el) {
+      var nt = el.getAttribute('data-bo-bai-nt');
+      if (CHON.bai == null) return;
+      try { A.nhapLieu.boDoiSoatBai(CHON.bai, CHON.ngay, nt, A.staff.me.name); c.thongBao(t('dsDaBo').replace('{n}', nt), 'ok'); HM.quenHet(); c.veLai(); }
+      catch (e) { c.thongBao(e.message, 'no'); }
     });
     HM.bam(root, '[data-nhan-dan]', function () {
       var o = root.querySelector('[data-dan]');
@@ -230,6 +296,7 @@ function veNgay(c) {
         '<td><div class="btnrow" style="flex-wrap:nowrap">' +
           '<button type="button" class="btn sm' + (x.trangThai === 'cho' ? ' pri' : ' ghost') + '" data-o-ngay="' + x.ngay + '" data-uoc="' + x.tuSinh + '">' +
             HM.esc(x.trangThai === 'tay' ? t('goBai') : t('lLuot')) + '</button>' +
+          '<button type="button" class="btn sm ghost' + (CHON.ngay === x.ngay ? ' on' : '') + '" data-soat-ngay="' + x.ngay + '">' + HM.esc(t('dsChonNgay')) + '</button>' +
           (x.trangThai === 'tay' ? '<button type="button" class="btn sm ghost" data-tra-ngay="' + x.ngay + '">' + HM.esc(t('traTuDong')) + '</button>' : '') +
         '</div></td></tr>';
     }).join('') + '</tbody></table></div>';
@@ -245,7 +312,130 @@ function veNgay(c) {
     HM.the({ h2: HM.esc(t('qt')), icon: 'list',
       than: HTS.soTay(c, 'nhap-so-lieu') }) +
     '</div>';
+  html += veDoiSoat(c, ds);
   return html;
+}
+
+/* ---- đối soát từng nền tảng cho một ngày ---- */
+function veDoiSoat(c, ds) {
+  var A = c.A, t = c.t;
+  if (!CHON.ngay) CHON.ngay = (ds.filter(function (x) { return x.trangThai !== 'cho'; })[0] || ds[0]).ngay;
+  var rows;
+  try { rows = A.nhapLieu.nenTangNgay(CHON.ngay); } catch (e) { return ''; }
+  var nguong = A.nhapLieu.nguongLech();
+  var tong = A.nhapLieu.ngay(30).filter(function (x) { return x.ngay === CHON.ngay; })[0];
+
+  var than = '<div class="tw"><table class="t"><thead><tr>' +
+    '<th>' + HM.esc(t('dsNt')) + '</th>' +
+    '<th class="num">' + HM.esc(t('dsHt')) + '</th>' +
+    '<th class="num">' + HM.esc(t('dsTt')) + '</th>' +
+    '<th class="num">' + HM.esc(t('dsLech')) + '</th>' +
+    '<th>' + HM.esc(t('dsTrang')) + '</th>' +
+    '<th>' + HM.esc(t('cNguoi')) + '</th>' +
+    '<th>' + HM.esc(t('cTT')) + HM.hoi(t('dsMo').replace('{p}', HT.fmt.pct(nguong))) + '</th></tr></thead><tbody>' +
+    rows.map(function (r) {
+      var tag = r.trangThai === 'khop' ? HM.tag(t('dsKhop'), 'ok')
+        : r.trangThai === 'lech' ? HM.tag(t('dsLechT'), 'no') : HM.tag(t('dsCho'), '');
+      return '<tr' + (r.trangThai === 'lech' ? ' class="canh"' : '') + '>' +
+        '<td>' + HM.tenBia({ ten: r.plat, seed: r.plat }) + '</td>' +
+        '<td class="num mono muted">' + HM.esc(HT.fmt.n(r.heThong)) + '</td>' +
+        '<td class="num mono"><b>' + (r.thucTe == null ? '<span class="nil">—</span>' : HM.esc(HT.fmt.n(r.thucTe))) + '</b></td>' +
+        '<td class="num mono">' + (r.lech == null ? '<span class="nil">—</span>'
+          : '<span class="' + (r.trangThai === 'lech' ? 'neg' : 'pos') + '">' + (r.lech > 0 ? '+' : '') + HM.esc(HT.fmt.n(r.lech)) +
+            (r.lechPct == null ? '' : ' · ' + HM.esc(HT.fmt.pct(r.lechPct))) + '</span>') + '</td>' +
+        '<td>' + tag + '</td>' +
+        '<td class="muted">' + (r.by ? HM.esc(r.by) : '<span class="nil">—</span>') + '</td>' +
+        '<td><div class="bar" style="margin:0;gap:6px;flex-wrap:nowrap">' +
+          '<input class="in mono" type="number" min="0" step="1" style="width:120px" data-so-nt="' + HM.esc(r.plat) + '" value="' + (r.thucTe == null ? '' : r.thucTe) + '" placeholder="' + HM.esc(HT.fmt.n(r.heThong)) + '">' +
+          '<button type="button" class="btn sm pri" data-luu-nt="' + HM.esc(r.plat) + '">' + HM.esc(t('dsLuu')) + '</button>' +
+          (r.thucTe == null ? '' : '<button type="button" class="btn sm ghost" data-bo-nt="' + HM.esc(r.plat) + '">' + HM.esc(t('dsBo')) + '</button>') +
+        '</div></td></tr>';
+    }).join('') + '</tbody></table></div>';
+
+  return HM.the({
+    h2: HM.esc(t('dsTieu').replace('{d}', HT.fmt.ngay(CHON.ngay))),
+    p: HM.esc(t('dsMo').replace('{p}', HT.fmt.pct(nguong))), icon: 'swap', thoBody: true,
+    than: than,
+    chan: HM.esc(t('dsTong')) + ': <b>' + HM.esc(HT.fmt.n(tong ? tong.tong : 0)) + '</b> · ' + HM.esc(t('dsTongMo'))
+  });
+}
+
+/* =====================================================================
+   TAB — ĐỐI SOÁT MỘT BÀI THEO ĐƯỜNG DẪN STORE
+   ===================================================================== */
+function veSoatBai(c) {
+  var A = c.A, t = c.t;
+  var ngayDs = A.nhapLieu.ngay(30);
+  if (!CHON.ngay) CHON.ngay = ngayDs[0].ngay;
+  var thanh = '<div class="bar">' +
+    '<div class="srch">' + HM.icon('tim') + '<input type="search" data-tim-bai placeholder="' +
+      HM.esc(t('sbTim')) + '" value="' + HM.esc(CHON.qBai) + '"></div>' +
+    '<select class="in" data-soat-chon-ngay style="width:auto;height:34px" aria-label="' + HM.esc(t('sbNgay')) + '">' +
+      ngayDs.slice(0, 14).map(function (x) {
+        return '<option value="' + x.ngay + '"' + (x.ngay === CHON.ngay ? ' selected' : '') + '>' + HM.esc(HT.fmt.ngay(x.ngay)) + '</option>';
+      }).join('') + '</select></div>';
+
+  /* Không gõ gì thì vẫn phải có việc để làm: mở tab ra là thấy ngay những
+     bài nghe nhiều nhất tuần, tức là những bài lệch một chút cũng thành
+     tiền. Gõ vào ô tìm thì danh sách đổi sang kết quả tìm. */
+  var ds = [], goiY = false;
+  if (CHON.qBai.trim().length >= 2) {
+    try { ds = A.search(CHON.qBai.trim(), 8).tracks.map(function (x) {
+      return { id: x.id, title: x.title, artist: x.artist, isrc: x.isrc, luot: x.streamsMonth }; }); } catch (e) { ds = []; }
+  } else {
+    goiY = true;
+    try { ds = A.dailyTrends(7, 12).topTracks.slice(0, 8).map(function (x) {
+      return { id: x.id, title: x.title, artist: x.artist, isrc: x.isrc, luot: x.streams }; }); } catch (e) { ds = []; }
+  }
+  var chon = '';
+  if (ds.length) {
+    chon = (goiY ? '<p class="say">' + HM.esc(t('sbGoiY')) + HM.hoi(t('sbGoiYMo')) + '</p>' : '') +
+      '<div class="tw"><table class="t"><tbody>' + ds.map(function (x) {
+      return '<tr class="pick" data-chon-bai="' + x.id + '">' +
+        '<td>' + HM.tenBia({ ten: x.title, bia: x.id, seed: x.id, phu: x.artist + ' · ' + x.isrc }) + '</td>' +
+        '<td class="num mono muted">' + HM.esc(HT.fmt.n(x.luot)) + '</td></tr>';
+    }).join('') + '</tbody></table></div>';
+  }
+
+  var khoi = '';
+  if (CHON.bai != null) {
+    var b;
+    try { b = A.nhapLieu.baiNgay(CHON.bai, CHON.ngay); } catch (e) { b = null; }
+    if (b) {
+      var co = b.rows.filter(function (r) { return r.url; });
+      khoi = HM.the({
+        h2: HM.esc(b.title), p: HM.esc(b.artist + ' · ' + b.isrc), icon: 'link', thoBody: true,
+        than: HM.kv([
+          { t: t('sbNgay'), v: HT.fmt.ngay(b.ngay) },
+          { t: t('sbLuot'), v: HT.fmt.n(b.luotNgay), manh: true }
+        ]) + (co.length ? '<div class="tw"><table class="t"><thead><tr>' +
+          '<th>' + HM.esc(t('dsNt')) + '</th><th class="num">' + HM.esc(t('dsHt')) + '</th>' +
+          '<th class="num">' + HM.esc(t('dsTt')) + '</th><th class="num">' + HM.esc(t('dsLech')) + '</th>' +
+          '<th>' + HM.esc(t('dsTrang')) + '</th><th>' + HM.esc(t('cTT')) + HM.hoi(t('sbCoCau')) + '</th></tr></thead><tbody>' +
+          co.map(function (r) {
+            var tag = r.trangThai === 'khop' ? HM.tag(t('dsKhop'), 'ok')
+              : r.trangThai === 'lech' ? HM.tag(t('dsLechT'), 'no') : HM.tag(t('dsCho'), '');
+            return '<tr' + (r.trangThai === 'lech' ? ' class="canh"' : '') + '>' +
+              '<td><a href="' + HM.esc(r.url) + '" target="_blank" rel="noopener">' + HM.esc(r.plat) + '</a>' +
+                '<div class="t-sub">' + HM.esc(HM.dai(r.url.replace(/^https?:\/\//, ''), 40)) + '</div></td>' +
+              '<td class="num mono muted">' + HM.esc(HT.fmt.n(r.heThong)) + '</td>' +
+              '<td class="num mono"><b>' + (r.thucTe == null ? '<span class="nil">—</span>' : HM.esc(HT.fmt.n(r.thucTe))) + '</b></td>' +
+              '<td class="num mono">' + (r.lech == null ? '<span class="nil">—</span>'
+                : '<span class="' + (r.trangThai === 'lech' ? 'neg' : 'pos') + '">' + (r.lech > 0 ? '+' : '') + HM.esc(HT.fmt.n(r.lech)) + '</span>') + '</td>' +
+              '<td>' + tag + '</td>' +
+              '<td><div class="bar" style="margin:0;gap:6px;flex-wrap:nowrap">' +
+                '<input class="in mono" type="number" min="0" step="1" style="width:104px" data-so-bai-nt="' + HM.esc(r.plat) + '" value="' + (r.thucTe == null ? '' : r.thucTe) + '" placeholder="' + HM.esc(HT.fmt.n(r.heThong)) + '">' +
+                '<button type="button" class="btn sm pri" data-luu-bai-nt="' + HM.esc(r.plat) + '">' + HM.esc(t('dsLuu')) + '</button>' +
+                (r.thucTe == null ? '' : '<button type="button" class="btn sm ghost" data-bo-bai-nt="' + HM.esc(r.plat) + '">' + HM.esc(t('dsBo')) + '</button>') +
+              '</div></td></tr>';
+          }).join('') + '</tbody></table></div>'
+          : HM.trong({ icon: 'link', tieuDe: t('sbKhongLink'), moTa: t('sbMo') }))
+      });
+    }
+  }
+
+  return HM.the({ h2: HM.esc(t('sbTieu')), p: HM.esc(t('sbMo')), icon: 'link',
+    than: thanh + (chon || (CHON.bai == null ? HM.trong({ icon: 'tim', tieuDe: t('sbChon'), moTa: t('sbMo') }) : '')) }) + khoi;
 }
 
 function goNgay(c, ngay, uoc) {
