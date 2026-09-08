@@ -50,7 +50,7 @@ HT.dangKy({
       open: 'Mới', in_progress: 'Đang xử lý', waiting: 'Chờ phản hồi', done: 'Đã xong',
       knOpen: 'Mới', knDisputed: 'Đang tranh chấp', knEscalated: 'Đã chuyển lên', knResolved: 'Đã giải quyết', knReleased: 'Đã nhả',
       low: 'Thấp', normal: 'Thường', high: 'Cao', urgent: 'Khẩn', quaHan: 'quá hạn', conNgay: 'còn {n} ngày',
-      moHoTro: 'Mở trang Hỗ trợ', moQuyen: 'Mở quản lý quyền', moDoiTac: 'Mở sổ đối tác', moChiTra: 'Mở thanh toán', moNhapSo: 'Mở nhập số liệu', moPhatHanh: 'Mở phát hành', moDuBao: 'Xem dự báo', moDoiChieu: 'Mở xét duyệt kỳ',
+      moHoTro: 'Mở trang Hỗ trợ', moQuyen: 'Mở quản lý quyền', moDoiTac: 'Mở sổ đối tác', moChiTra: 'Mở thanh toán', moNhapSo: 'Mở nhập số liệu', moPhieu: 'Mở phiếu giao việc', moPhatHanh: 'Mở phát hành', moDuBao: 'Xem dự báo', moDoiChieu: 'Mở xét duyệt kỳ',
       /* kinh doanh */
       kdDt: 'Doanh thu gộp quý {q}', kdTk: 'Tài khoản phụ trách', kdLabel: 'label', kdNs: 'nghệ sĩ', kdChiTieu: 'Chỉ tiêu quý', kdDat: 'đạt {p}',
       kdMoi: 'Tài khoản mới', kdGiaHan: 'Cần gia hạn', kdTienDo: 'Tiến độ chỉ tiêu', kdTienDoMo: 'Doanh thu gộp quý của các tài khoản bạn phụ trách so với chỉ tiêu.',
@@ -70,6 +70,7 @@ HT.dangKy({
       /* vận hành */
       vhPhatHanh: 'Hồ sơ phát hành', vhTicket: 'Ticket phát hành / nền tảng', vhKn: 'Khiếu nại đang mở',
       vhNgay: 'Ngày chờ nhập lượt nghe', vhNguon: 'Nguồn báo cáo chưa có số', vhQtNgay: 'Việc hằng ngày',
+      vhTool: 'Hồ sơ chưa đẩy tool nào', vhToolMo: 'Tiếp nhận rồi mà chưa đưa lên OneRPM hay tool nào khác.',
       vhQtNgayMo: 'Quy trình nhập số liệu, đánh dấu tới đâu biết tới đó. Bảng này tính theo ngày hôm nay.',
       vhNhap: 'Nhập số liệu', vhNhapMo: 'Ngày nào nguồn chưa về và kỳ nào còn thiếu nguồn báo cáo.',
       vhHangDoi: 'Giao nhận và sửa hàng loạt', vhHangDoiMo: 'Yêu cầu chưa xong. Bấm để mở trang tương ứng.',
@@ -100,7 +101,7 @@ HT.dangKy({
       open: 'New', in_progress: 'In progress', waiting: 'Waiting', done: 'Done',
       knOpen: 'New', knDisputed: 'Disputed', knEscalated: 'Escalated', knResolved: 'Resolved', knReleased: 'Released',
       low: 'Low', normal: 'Normal', high: 'High', urgent: 'Urgent', quaHan: 'overdue', conNgay: '{n} days left',
-      moHoTro: 'Open Support', moQuyen: 'Open Rights', moDoiTac: 'Open Partners', moChiTra: 'Open Payouts', moNhapSo: 'Open Data entry', moPhatHanh: 'Open Releases', moDuBao: 'See the forecast', moDoiChieu: 'Open approval',
+      moHoTro: 'Open Support', moQuyen: 'Open Rights', moDoiTac: 'Open Partners', moChiTra: 'Open Payouts', moNhapSo: 'Open Data entry', moPhieu: 'Open the worksheet', moPhatHanh: 'Open Releases', moDuBao: 'See the forecast', moDoiChieu: 'Open approval',
       kdDt: 'Quarter gross {q}', kdTk: 'Accounts managed', kdLabel: 'labels', kdNs: 'artists', kdChiTieu: 'Quarter target', kdDat: '{p} reached',
       kdMoi: 'New accounts', kdGiaHan: 'Renewals due', kdTienDo: 'Target progress', kdTienDoMo: 'Quarter gross of your accounts against the target.',
       kdTop: 'Largest accounts', kdTopMo: 'By quarter gross. Open the Partners directory for more.',
@@ -117,6 +118,7 @@ HT.dangKy({
       ktKy: 'Partners’ earnings per period', ktKyMo: 'Everything owed to payees, per period. The selected period is highlighted.',
       vhPhatHanh: 'Release submissions', vhTicket: 'Release / platform tickets', vhKn: 'Open claims',
       vhNgay: 'Days awaiting stream entry', vhNguon: 'Feeds with no figure', vhQtNgay: 'The daily routine',
+      vhTool: 'Submissions on no tool yet', vhToolMo: 'Received, but not yet pushed to OneRPM or any other tool.',
       vhQtNgayMo: 'The data-entry runbook; mark each step as you go. This copy is for today.',
       vhNhap: 'Data entry', vhNhapMo: 'Which days the feed has not reached, and which periods are still missing a feed.',
       vhHangDoi: 'Deliveries and bulk edits', vhHangDoiMo: 'Unfinished requests. Open a row for its page.',
@@ -443,11 +445,21 @@ function veVanHanh(c) {
   var rl = null; try { rl = A.releases.counts(); } catch (e) { rl = null; }
   var rlMo = rl ? Object.keys(rl).filter(function (k) { return k !== 'released' && k !== 'total' && typeof rl[k] === 'number'; }).reduce(function (a, k) { return a + rl[k]; }, 0) : 0;
   var db = null; try { db = A.forecastStreams(); } catch (e) { db = null; }
-  var html = nutLoi(c, [['nhap-so-lieu', 'moNhapSo', 'down2'], ['phat-hanh', 'moPhatHanh', 'disc'], ['ho-tro', 'moHoTro', 'info']]);
+  /* Hồ sơ đã tiếp nhận mà chưa đẩy lên tool nào là việc trễ nhất trong
+     ngày của vận hành: đối tác đã gửi, mà bài chưa đi đâu cả. */
+  var chuaTool = 0;
+  try {
+    chuaTool = A.releases.list().filter(function (r) {
+      return (r.status === 'received' || r.status === 'coded') &&
+        A.releases.tool.cua(r.id).filter(function (x) { return x.xong; }).length === 0;
+    }).length;
+  } catch (e) {}
+  var html = nutLoi(c, [['nhap-so-lieu', 'moNhapSo', 'down2'], ['phieu-giao', 'moPhieu', 'up'], ['phat-hanh', 'moPhatHanh', 'disc'], ['ho-tro', 'moHoTro', 'info']]);
   html += HM.so([
     { l: t('vhNgay'), v: HT.fmt.n(thieu.ngay), lon: true, s: t('vhNhapMo'),
       mau: thieu.ngay ? HB.mau('warn') : HB.mau('ok') },
     { l: t('vhNguon'), v: HT.fmt.n(thieu.ky), mau: thieu.ky ? HB.mau('warn') : HB.mau('ok') },
+    { l: t('vhTool'), v: HT.fmt.n(chuaTool), s: t('vhToolMo'), mau: chuaTool ? HB.mau('no') : HB.mau('ok') },
     { l: t('vhTicket'), v: HT.fmt.n(tk.length), s: HT.fmt.n(tk.filter(function (x) { return quaHan(A, x); }).length) + ' ' + t('quaHan') },
     { l: t('vhPhatHanh'), v: HT.fmt.n(rlMo) },
     { l: t('vhKn'), v: HT.fmt.n(kc.open + kc.disputed + kc.escalated) }

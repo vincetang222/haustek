@@ -86,6 +86,7 @@ var IC = {
   right: '<path d="M6.5 2.5 12 8l-5.5 5.5"/>',
   x:     '<path d="M3.5 3.5l9 9M12.5 3.5l-9 9"/>',
   check: '<path d="M3 8.5l3.5 3.5L13 4.5"/>',
+  copy:  '<path d="M5.5 5.5h8v8h-8zM10.5 5.5V2.5h-8v8h3"/>',
   alert: '<path d="M8 1.8 15 14H1zM8 6.5v3.2M8 11.6v.1"/>',
   more:  '<circle cx="3.2" cy="8" r="1.45" fill="currentColor" stroke="none"/><circle cx="8" cy="8" r="1.45" fill="currentColor" stroke="none"/><circle cx="12.8" cy="8" r="1.45" fill="currentColor" stroke="none"/>',
   bell:  '<path d="M8 2.2a3.8 3.8 0 0 0-3.8 3.8v2.6L2.8 11h10.4l-1.4-2.4V6A3.8 3.8 0 0 0 8 2.2zM6.6 13a1.4 1.4 0 0 0 2.8 0"/>',

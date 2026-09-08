@@ -419,7 +419,9 @@ function fileNameFor(f, p) {
 let state = null;
 function ensureShape(s) {
   ["withdrawals", "tickets", "claims", "deliveries", "bulk", "releases", "proposals", "staff", "campaigns", "adjustments", "priceExtra", "platformsExtra", "extraParties", "nhapTay"].forEach(k => { if (!Array.isArray(s[k])) s[k] = []; });
-  ["statements", "bank", "videoSettings", "partyManager", "splits", "alerts", "notifRead", "rateOverride", "contracts", "platformOwner", "toChucThem", "luotNgay", "buocViec", "danhGiaNam", "doiSoatNgay", "doiSoatBai"].forEach(k => { if (!s[k] || typeof s[k] !== "object") s[k] = {}; });
+  ["statements", "bank", "videoSettings", "partyManager", "splits", "alerts", "notifRead", "rateOverride", "contracts", "platformOwner", "toChucThem", "luotNgay", "buocViec", "danhGiaNam", "doiSoatNgay", "doiSoatBai", "giaoTool", "linkStore", "soCongKhai"].forEach(k => { if (!s[k] || typeof s[k] !== "object") s[k] = {}; });
+  if (!Array.isArray(s.toolThem)) s.toolThem = [];
+  if (!Array.isArray(s.toolBo)) s.toolBo = [];
   return s;
 }
 
@@ -1347,7 +1349,11 @@ function deliveryOf(i, nhe) {
     if (!nhe) {
       const off = j < N_TOP ? ((hash(i, 200 + j) * 4) | 0) : 2 + ((hash(i, 200 + j) * 9) | 0);
       r.liveAt = status === "live" ? addDays(rel, off) : null;
-      r.url = status === "live" ? platformUrl(name, i) : null;
+      /* Link nhân viên dán vào ở phiếu giao việc là link thật của bài trên
+         store, nên nó thắng link sinh ra — và đối tác thấy đúng link ấy. */
+      const tay = ((state.linkStore || {})[tIsrc[i]] || {})[name];
+      r.url = tay ? tay.url : (status === "live" ? platformUrl(name, i) : null);
+      if (tay) r.tay = true;
       const ly = LY_DO[status];
       if (ly) { const x = ly[(hash(i, 400 + j) * ly.length) | 0]; r.reason = x[0]; r.reasonEn = x[1]; }
     }
@@ -1941,7 +1947,7 @@ const TAI_SAN = [
   { id: "ticket",         vi: "Ticket hỗ trợ",     en: "Support tickets", man: "ho-tro", dem: () => state.tickets.length, gan: id => state.tickets.filter(t => t.assignee === id).length },
   { id: "khieuNai",       vi: "Khiếu nại bản quyền", en: "Rights claims", man: "quyen", dem: () => state.claims.length, gan: id => state.claims.filter(c => c.assignee === id).length }
 ];
-const MAN_TAT_CA = ["ban-lam-viec", "to-chuc", "ho-tro", "tong-quan", "theo-doi", "nhap-so-lieu", "nap-du-lieu", "khop-isrc", "doi-chieu", "phat-hanh", "chien-dich", "quyen", "muc-tra", "chia-se", "xet-duyet", "roi", "nen-tang", "ke-toan", "chi-tra", "tam-ung", "ty-le", "doi-tac", "danh-muc", "quan-tri", "hieu-suat", "hieu-qua-von"];
+const MAN_TAT_CA = ["ban-lam-viec", "to-chuc", "ho-tro", "tong-quan", "theo-doi", "nhap-so-lieu", "nap-du-lieu", "khop-isrc", "doi-chieu", "phat-hanh", "chien-dich", "quyen", "muc-tra", "chia-se", "xet-duyet", "roi", "nen-tang", "ke-toan", "chi-tra", "tam-ung", "ty-le", "doi-tac", "danh-muc", "quan-tri", "hieu-suat", "hieu-qua-von", "phieu-giao"];
 const NHOM_TAT_CA = ["tong", "tien", "doiSoat", "doiTac", "doiTacTao", "deXuat", "deXuatTao", "vanHanh", "nhapLieu", "danhMuc", "theoDoi", "chienDich", "chiaSe", "khieuNai", "hoTro", "quanTri", "phatHanhHo", "nhanSu", "toChuc", "von", "hieuSuat", "quyTrinh"];
 const doiTacSapHetHan = me => partiesList({ status: "renew", manager: me && me.role === "sales" && !laTruong(me) ? me.id : undefined }).total;
 const TO_CHUC = [
@@ -1956,7 +1962,7 @@ const TO_CHUC = [
   { id: "van-hanh", vai: "ops", vi: "Vận hành", en: "Operations",
     chucNang: { vi: ["Tiếp nhận hồ sơ phát hành, kiểm metadata, cấp ISRC / UPC", "Giao bản ghi tới nền tảng, theo dõi trạng thái lên kệ", "Nạp báo cáo kỳ, khớp ISRC, đối soát trước xét duyệt", "Mức trả nền tảng, danh mục, chất lượng lượt nghe"],
                 en: ["Receive release files, check metadata, assign ISRC / UPC", "Deliver recordings to platforms, track go-live", "Load period reports, match ISRC, reconcile before approval", "Platform rates, catalogue, stream quality"] },
-    man: ["ban-lam-viec", "to-chuc", "ho-tro", "doi-chieu", "chien-dich", "theo-doi", "nhap-so-lieu", "nap-du-lieu", "khop-isrc", "muc-tra", "danh-muc", "nen-tang", "phat-hanh", "quyen"],
+    man: ["ban-lam-viec", "to-chuc", "ho-tro", "doi-chieu", "chien-dich", "theo-doi", "nhap-so-lieu", "nap-du-lieu", "khop-isrc", "muc-tra", "danh-muc", "nen-tang", "phat-hanh", "phieu-giao", "quyen"],
     nhom: ["doiSoat", "vanHanh", "nhapLieu", "danhMuc", "theoDoi", "chienDich", "khieuNai", "hoTro", "phatHanhHo", "toChuc", "quyTrinh"],
     taiSan: ["danhMuc", "hoSoPhatHanh", "nenTang", "baoCaoKy"],
     to: [
@@ -3495,6 +3501,156 @@ function seedProposals() {
   store.save();
 }
 
+/* =====================================================================
+   22. PHIẾU GIAO VIỆC PHÁT HÀNH
+   ---------------------------------------------------------------------
+   Haustek không tự phân phối. Đối tác gửi hồ sơ lên đây, rồi NHÂN VIÊN
+   ngồi gõ lại metadata ấy vào OneRPM (và các tool khác). Đó là công đoạn
+   dễ sai và dễ quên nhất trong cả dây chuyền: gõ nhầm một ký tự ISRC là
+   tháng sau tiền không khớp; quên một tool là bài không lên một nửa số
+   nền tảng mà không ai biết cho tới khi đối tác hỏi.
+
+   Nên phiếu này giữ ba thứ:
+     · metadata xếp đúng thứ tự tool để chép, không phải mò
+     · đã đẩy lên tool nào rồi, ai đẩy, lúc nào, tool trả về mã gì
+     · sau khi lên kệ, link store thật của từng bài, dán vào cho đối tác
+   ===================================================================== */
+
+/* Danh sách tool phân phối. Sửa được ở Quản trị vì mỗi công ty một bộ,
+   và bộ ấy đổi theo hợp đồng chứ không cố định. */
+const TOOL_GOC = [
+  { id: "onerpm",  ten: "OneRPM",      web: "https://onerpm.com",
+    mo: "Phân phối chính · album, track, chọn store, giá bán",
+    moEn: "Primary distributor · album, track, store picker, pricing" },
+  { id: "believe", ten: "Believe",     web: "https://backstage.believe.com",
+    mo: "Phân phối phụ theo hợp đồng riêng",
+    moEn: "Secondary distributor under a separate agreement" },
+  { id: "yt-cms",  ten: "YouTube CMS", web: "https://studio.youtube.com",
+    mo: "Art Track, Content ID, kênh Topic",
+    moEn: "Art Track, Content ID, Topic channel" },
+  { id: "soundon", ten: "TikTok SoundOn", web: "https://www.soundon.global",
+    mo: "Đưa bản ghi vào thư viện âm thanh TikTok",
+    moEn: "Push the recording into TikTok's sound library" },
+  { id: "fb-rm",   ten: "Facebook Rights Manager", web: "https://business.facebook.com",
+    mo: "Bảo vệ bản ghi trên Facebook và Instagram",
+    moEn: "Protect the recording on Facebook and Instagram" }
+];
+function toolTatCa() {
+  const bo = state.toolBo || [];
+  return TOOL_GOC.filter(x => bo.indexOf(x.id) < 0)
+    .concat((state.toolThem || []).map(x => Object.assign({ them: true }, x)));
+}
+function toolCua(id) { return toolTatCa().find(x => x.id === id) || null; }
+
+/* Trạng thái đẩy tool của một hồ sơ, giữ ở state chứ không ở hồ sơ, để
+   hồ sơ vẫn là thứ đối tác gửi lên và không lẫn với việc nội bộ. */
+function giaoToolCua(rid) {
+  const g = (state.giaoTool || {})[rid] || {};
+  return toolTatCa().map(x => {
+    const d = g[x.id] || null;
+    return { id: x.id, ten: x.ten, web: x.web, mo: x.mo, moEn: x.moEn, them: !!x.them,
+      xong: !!d, ma: d ? d.ma || "" : "", ghiChu: d ? d.ghiChu || "" : "",
+      at: d ? d.at : null, by: d ? d.by || "" : "" };
+  });
+}
+
+/* ---- link store thật, khoá theo ISRC ----
+   ISRC là khoá nối duy nhất giữa hồ sơ phát hành và danh mục 50.000 bản
+   ghi, và cũng là khoá nối với báo cáo của nhà phân phối. Nên link store
+   khoá theo ISRC chứ không theo số thứ tự bản ghi: đổi hệ, gộp danh mục,
+   nhập lại từ đầu — link vẫn bám đúng bài. */
+const HOST_STORE = {
+  "Spotify":       ["open.spotify.com", "spotify.link"],
+  "Apple Music":   ["music.apple.com", "geo.music.apple.com"],
+  "YouTube Music": ["music.youtube.com", "youtube.com", "youtu.be"],
+  "TikTok":        ["tiktok.com"],
+  "Zing MP3":      ["zingmp3.vn"],
+  "NhacCuaTui":    ["nhaccuatui.com"],
+  "Facebook":      ["facebook.com", "fb.watch"],
+  "Instagram":     ["instagram.com"],
+  "Amazon Music":  ["music.amazon.com", "amazon.com"],
+  "Deezer":        ["deezer.com", "dzr.page.link"],
+  "Tidal":         ["tidal.com"],
+  "Pandora":       ["pandora.com"],
+  "SoundCloud":    ["soundcloud.com"]
+};
+function kiemLink(plat, url) {
+  const u = String(url || "").trim();
+  if (!/^https:\/\/[^\s]+$/i.test(u)) throw new Error("Đường dẫn phải bắt đầu bằng https://");
+  if (u.length > 500) throw new Error("Đường dẫn dài bất thường, kiểm lại");
+  const host = (u.split("/")[2] || "").toLowerCase();
+  const cho = HOST_STORE[plat];
+  /* Dán nhầm cột là lỗi hay gặp nhất khi ngồi copy mười cái link liền
+     tay. Nền tảng nào biết tên miền thì chặn ngay tại chỗ. */
+  if (cho && !cho.some(h => host === h || host.endsWith("." + h)))
+    throw new Error("Đường dẫn này không thuộc " + plat + " (" + host + "). Kiểm lại xem có dán nhầm cột không");
+  return u;
+}
+function chuanIsrc(v) {
+  const x = String(v || "").replace(/[^A-Za-z0-9]/g, "").toUpperCase();
+  if (!/^[A-Z]{2}[A-Z0-9]{3}\d{7}$/.test(x)) throw new Error("Mã ISRC không đúng định dạng: " + v);
+  return x;
+}
+function linkCua(isrc) { return (state.linkStore || {})[isrc] || {}; }
+
+/* =====================================================================
+   22b. SỐ CÔNG KHAI TRÊN STORE
+   ---------------------------------------------------------------------
+   Con số này KHÔNG PHẢI tiền và không bao giờ được chạm vào chuỗi chia
+   tiền. Ba lý do, cả ba đều đủ để một mình nó chặn:
+
+     · Nền tảng đếm "lượt phát" khác với "lượt nghe được trả tiền".
+       Spotify hiện số cộng dồn trên trang bài, nhưng đó là plays, không
+       phải số trong báo cáo doanh thu.
+     · Số công khai là CỘNG DỒN từ ngày phát hành, không theo ngày. Muốn
+       có số của một ngày thì phải lấy hiệu hai lần đọc liên tiếp, mà hai
+       lần ấy có thể cách nhau mấy ngày.
+     · Nhiều nền tảng không công bố gì cả.
+
+   Vậy nó dùng để làm gì? Một việc thôi, nhưng đáng: BÁO ĐỘNG SỚM. Báo
+   cáo doanh thu về sau một tới hai tháng; số công khai đọc được hôm nay.
+   Bài đang bùng nổ hay bị gỡ khỏi store thì thấy ngay, không phải chờ.
+
+   Tiền vẫn đi đúng một đường: báo cáo của nhà phân phối.
+   ===================================================================== */
+const CONG_KHAI = {
+  "YouTube Music": { co: true, kieu: "luot-xem", tu: "api",
+    ghi: "YouTube Data API v3 · statistics.viewCount", ghiEn: "YouTube Data API v3 · statistics.viewCount" },
+  "Spotify":       { co: true, kieu: "luot-phat", tu: "trang",
+    ghi: "Trang bài có số lượt phát cộng dồn. Điều khoản Spotify cấm thu thập tự động, nên đọc bằng tay.",
+    ghiEn: "The track page shows a cumulative play count. Spotify's terms forbid scraping, so read it by hand." },
+  "Zing MP3":      { co: true, kieu: "luot-nghe", tu: "trang",
+    ghi: "Trang bài có lượt nghe công khai, không có API chính thức.",
+    ghiEn: "The song page shows a public play count; no official API." },
+  "NhacCuaTui":    { co: true, kieu: "luot-nghe", tu: "trang",
+    ghi: "Trang bài có lượt nghe công khai, không có API chính thức.",
+    ghiEn: "The song page shows a public play count; no official API." },
+  "Apple Music":   { co: false, ghi: "Apple không hiện lượt nghe ra ngoài. Số thật nằm sau đăng nhập Apple Music for Artists.",
+    ghiEn: "Apple publishes no play count. The real figure sits behind Apple Music for Artists." },
+  "TikTok":        { co: false, ghi: "Trang sound đếm số video dùng bản ghi, không phải lượt nghe.",
+    ghiEn: "A sound page counts videos using the recording, not streams." },
+  "Facebook":      { co: false, ghi: "Không công bố lượt nghe theo bản ghi.", ghiEn: "No per-recording play count is published." },
+  "Instagram":     { co: false, ghi: "Không công bố lượt nghe theo bản ghi.", ghiEn: "No per-recording play count is published." }
+};
+const CK_TOI_DA = 60;                                /* giữ 60 lần đọc gần nhất cho mỗi bài × nền tảng */
+function ckKey(isrc, plat) { return isrc + "|" + plat; }
+function ckDoc(isrc, plat) { return ((state.soCongKhai || {})[ckKey(isrc, plat)] || []).slice(); }
+
+/* Hiệu hai lần đọc liên tiếp, chia cho số ngày ở giữa. Đọc cách nhau bao
+   nhiêu ngày cũng ra được số bình quân ngày, và nói rõ là bình quân. */
+function ckNhip(ds) {
+  const ra = [];
+  for (let k = 0; k < ds.length - 1; k++) {
+    const nay = ds[k], truoc = ds[k + 1];
+    const ngay = Math.round((new Date(nay.ngay) - new Date(truoc.ngay)) / 864e5);
+    if (ngay <= 0) continue;
+    const chenh = nay.so - truoc.so;
+    ra.push({ tu: truoc.ngay, den: nay.ngay, ngay, chenh,
+      moiNgay: Math.round(chenh / ngay), lui: chenh < 0 });
+  }
+  return ra;
+}
+
 /* ---- mức trả nền tảng: bảng đầy đủ để hiển thị và ghi đè ---- */
 function platformRatesFull() {
   const ov = lazyState("rateOverride", {});
@@ -4429,8 +4585,13 @@ const nhapLieu = {
   linkNenTang(trackIdx) {
     if (!(trackIdx >= 0 && trackIdx < N)) throw new Error("Bản ghi không hợp lệ");
     const d = deliveryOf(trackIdx);
-    return { isrc: tIsrc[trackIdx], title: tTitle[trackIdx], artist: ARTISTS[tArtist[trackIdx]].name,
-      rows: d.rows.filter(r => r.url).map(r => ({ plat: r.name, url: r.url, liveAt: r.liveAt })) };
+    /* Link nhân viên dán vào sau khi bài lên kệ là link THẬT; link sinh ra
+       chỉ để bản mẫu có cái mà bấm. Có link thật thì luôn lấy link thật. */
+    const tay = linkCua(tIsrc[trackIdx]);
+    const rows = d.rows.filter(r => r.url || tay[r.name]).map(r => ({
+      plat: r.name, url: tay[r.name] ? tay[r.name].url : r.url,
+      liveAt: r.liveAt, tay: !!tay[r.name] }));
+    return { isrc: tIsrc[trackIdx], title: tTitle[trackIdx], artist: ARTISTS[tArtist[trackIdx]].name, rows };
   },
 
   /* việc còn phải làm hôm nay — dùng cho huy hiệu điều hướng và bàn làm việc */
@@ -5080,6 +5241,12 @@ const QUYEN_HAM = {
   wallet: "tien", credits: "tien", statementsOf: "tien", withdrawals: "tien", statements: "tien", bank: "tien", advances: "tien", advanceBalance: "tien", withdrawalQuote: "tien", phiChuyen: "tien",
   catalogueFor: "doiTac",
   dailyTrends: "theoDoi", dailyTrendsFor: "theoDoi", playlists: "theoDoi", playlistsFor: "theoDoi",
+  "soCongKhai.cua": "theoDoi", "soCongKhai.cuaBai": "theoDoi", "soCongKhai.ghi": "theoDoi", "soCongKhai.xoa": "theoDoi",
+  "soCongKhai.docTuDong": "theoDoi", "soCongKhai.canDoc": "theoDoi",
+  "releases.tool.cua": "vanHanh", "releases.tool.danhDau": "vanHanh", "releases.tool.boDanhDau": "vanHanh",
+  "releases.tool.them": "quanTri", "releases.tool.bo": "quanTri",
+  "releases.datStore": "vanHanh", "releases.link.dat": "vanHanh", "releases.link.bo": "vanHanh",
+  "releases.link.conThieu": "vanHanh",
   campaigns: "chienDich", campaignsFor: "chienDich",
   splits: "chiaSe", splitsFor: "chiaSe", setSplit: "chiaSe", removeSplit: "chiaSe", acceptSplit: "chiaSe",
   quality: "danhMuc", qualityFor: "danhMuc", setAlertStatus: "danhMuc", metadataReport: "danhMuc", metadataReportFor: "danhMuc",
@@ -5371,6 +5538,115 @@ const admin = {
       audit.log("release.create.staff", r.id + " · " + r.title + " · " + partyName(partyKey), by); store.save();
       return r;
     },
+    /* ---- phiếu giao việc: đẩy lên tool nào rồi ---- */
+    tool: {
+      danhSach: () => toolTatCa(),
+      cua(rid) {
+        chanQuyen("releases.tool.cua", "vanHanh");
+        if (!state.releases.some(r => r.id === rid)) throw new Error("Không tìm thấy hồ sơ " + rid);
+        return giaoToolCua(rid);
+      },
+      danhDau(rid, toolId, o, by) {
+        chanQuyen("releases.tool.danhDau", "vanHanh");
+        const r = state.releases.find(x => x.id === rid);
+        if (!r) throw new Error("Không tìm thấy hồ sơ " + rid);
+        if (r.status === "submitted") throw new Error("Tiếp nhận hồ sơ trước khi đẩy lên tool");
+        const tl = toolCua(toolId); if (!tl) throw new Error("Không có tool " + toolId);
+        if (!state.giaoTool[rid]) state.giaoTool[rid] = {};
+        state.giaoTool[rid][toolId] = { ma: chuoi(o && o.ma).slice(0, 80), ghiChu: chuoi(o && o.ghiChu).slice(0, 300),
+          at: nowISO(), by: by || (_me ? _me.name : "") };
+        audit.log("release.tool", rid + " · " + tl.ten + ((o && o.ma) ? " · " + o.ma : ""), by);
+        store.save();
+        return giaoToolCua(rid);
+      },
+      boDanhDau(rid, toolId, by) {
+        chanQuyen("releases.tool.boDanhDau", "vanHanh");
+        const g = (state.giaoTool || {})[rid];
+        if (!g || !g[toolId]) throw new Error("Hồ sơ này chưa đánh dấu đẩy lên tool ấy");
+        delete g[toolId];
+        if (!Object.keys(g).length) delete state.giaoTool[rid];
+        audit.log("release.tool.go", rid + " · " + toolId, by); store.save();
+        return giaoToolCua(rid);
+      },
+      /* thêm / bỏ tool: mỗi công ty một bộ, và bộ ấy đổi theo hợp đồng */
+      them(o, by) {
+        chanQuyen("releases.tool.them", "quanTri");
+        const ten = chuoi(o && o.ten); if (!ten) throw new Error("Thiếu tên tool");
+        const id = "t-" + ten.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 24);
+        if (toolCua(id)) throw new Error("Đã có tool tên này");
+        state.toolThem.push({ id, ten, web: chuoi(o.web), mo: chuoi(o.mo), moEn: chuoi(o.mo) });
+        audit.log("tool.them", ten, by); store.save(); return toolTatCa();
+      },
+      bo(id, by) {
+        chanQuyen("releases.tool.bo", "quanTri");
+        if (!toolCua(id)) throw new Error("Không có tool " + id);
+        state.toolThem = state.toolThem.filter(x => x.id !== id);
+        if (TOOL_GOC.some(x => x.id === id) && state.toolBo.indexOf(id) < 0) state.toolBo.push(id);
+        audit.log("tool.bo", id, by); store.save(); return toolTatCa();
+      }
+    },
+    /* ---- store sẽ phân phối tới ---- */
+    datStore(rid, ds, by) {
+      chanQuyen("releases.datStore", "vanHanh");
+      const r = state.releases.find(x => x.id === rid);
+      if (!r) throw new Error("Không tìm thấy hồ sơ " + rid);
+      const chon = (ds || []).map(chuoi).filter(x => STORES.indexOf(x) >= 0);
+      r.stores = chon.length ? chon : null;              /* null = toàn bộ store */
+      r.updatedAt = nowISO();
+      audit.log("release.stores", rid + " · " + (chon.length ? chon.length + " store" : "toàn bộ"), by);
+      store.save(); return r.stores;
+    },
+    storeCua(rid) {
+      const r = state.releases.find(x => x.id === rid);
+      if (!r) throw new Error("Không tìm thấy hồ sơ " + rid);
+      const chon = r.stores;
+      return { tatCa: !chon, so: chon ? chon.length : STORES.length, tong: STORES.length,
+        rows: STORE_TOP.map(x => ({ name: x.n, chon: !chon || chon.indexOf(x.n) >= 0, lon: true }))
+          .concat(STORES.slice(N_TOP, N_TOP + 24).map(n => ({ name: n, chon: !chon || chon.indexOf(n) >= 0, lon: false }))) };
+    },
+    /* ---- link store thật, dán sau khi lên kệ ---- */
+    link: {
+      cua(isrc) {
+        const k = chuanIsrc(isrc), g = linkCua(k);
+        return PLAT_NAMES.slice(0, N_TOP).map((n, j) => {
+          const d = g[n] || null;
+          return { plat: n, platEn: PLAT_NAMES_EN[j], url: d ? d.url : null,
+            at: d ? d.at : null, by: d ? d.by || "" : "", congKhai: !!(CONG_KHAI[n] && CONG_KHAI[n].co) };
+        });
+      },
+      dat(isrc, plat, url, by) {
+        chanQuyen("releases.link.dat", "vanHanh");
+        const k = chuanIsrc(isrc);
+        if (PLAT_NAMES.indexOf(plat) < 0) throw new Error("Không có nền tảng " + plat);
+        const u = kiemLink(plat, url);
+        if (!state.linkStore[k]) state.linkStore[k] = {};
+        state.linkStore[k][plat] = { url: u, at: nowISO(), by: by || (_me ? _me.name : "") };
+        audit.log("release.link", k + " · " + plat, by); store.save();
+        return this.cua(k);
+      },
+      bo(isrc, plat, by) {
+        chanQuyen("releases.link.bo", "vanHanh");
+        const k = chuanIsrc(isrc), g = state.linkStore[k];
+        if (!g || !g[plat]) throw new Error("Bài này chưa có link " + plat);
+        delete g[plat];
+        if (!Object.keys(g).length) delete state.linkStore[k];
+        audit.log("release.link.go", k + " · " + plat, by); store.save();
+        return this.cua(k);
+      },
+      /* Bài nào đã lên kệ mà chưa có đủ link — đây là việc còn phải làm. */
+      conThieu(rid) {
+        chanQuyen("releases.link.conThieu", "vanHanh");
+        const r = state.releases.find(x => x.id === rid);
+        if (!r) throw new Error("Không tìm thấy hồ sơ " + rid);
+        let co = 0, thieu = 0;
+        r.tracks.forEach(t => {
+          if (!t.isrc) { thieu += N_TOP; return; }
+          const g = linkCua(t.isrc);
+          PLAT_NAMES.slice(0, N_TOP).forEach(n => { if (g[n]) co++; else thieu++; });
+        });
+        return { co, thieu, tong: co + thieu, xong: thieu === 0 };
+      }
+    },
     counts() {
       const c = { submitted: 0, received: 0, coded: 0, released: 0, returned: 0 };
       state.releases.forEach(r => { c[r.status] = (c[r.status] || 0) + 1; });
@@ -5394,6 +5670,10 @@ const admin = {
     publish(id, by, date) {
       const r = this.get(id); if (!r) throw new Error("Không tìm thấy hồ sơ " + id);
       if (r.status !== "coded") throw new Error("Phải cấp mã trước khi đánh dấu đã phát hành");
+      /* Đánh dấu "đã phát hành" mà chưa đẩy lên tool nào là nói dối đối
+         tác. Phải tick ít nhất một tool — đây chính là chỗ hay quên. */
+      const daDay = Object.keys((state.giaoTool || {})[id] || {}).length;
+      if (!daDay) throw new Error("Chưa đẩy hồ sơ lên tool phân phối nào. Đánh dấu ở phiếu giao việc trước.");
       r.releasedAt = date || r.releaseDate;
       releaseStamp(r, "released", by || "ops@haustek-group.com", null);
       audit.log("release.publish", r.id + " · " + r.title + " · " + r.releasedAt, by); store.save(); return r;
@@ -5404,6 +5684,100 @@ const admin = {
       if (r.status === "released") throw new Error("Hồ sơ đã phát hành, không trả lại được");
       releaseStamp(r, "returned", by || "ops@haustek-group.com", note);
       audit.log("release.return", r.id + " · " + r.title + " · " + note.slice(0, 80), by); store.save(); return r;
+    }
+  },
+  /* ---- số công khai trên store: tín hiệu theo dõi, KHÔNG phải tiền ---- */
+  soCongKhai: {
+    nenTang() {
+      return PLAT_NAMES.slice(0, N_TOP).map((n, j) => {
+        const c = CONG_KHAI[n] || { co: false, ghi: "Chưa khảo sát nền tảng này.", ghiEn: "Not surveyed yet." };
+        return { plat: n, platEn: PLAT_NAMES_EN[j], co: !!c.co, kieu: c.kieu || null,
+          tu: c.tu || null, ghi: c.ghi, ghiEn: c.ghiEn };
+      });
+    },
+    /* Bảng của một bài: link, lần đọc gần nhất, và bình quân mỗi ngày
+       suy từ hai lần đọc liên tiếp. Nền tảng không công bố thì nói thẳng. */
+    cua(isrc) {
+      chanQuyen("soCongKhai.cua", "theoDoi");
+      const k = chuanIsrc(isrc), link = linkCua(k);
+      return PLAT_NAMES.slice(0, N_TOP).map((n, j) => {
+        const c = CONG_KHAI[n] || { co: false, ghi: "Chưa khảo sát nền tảng này.", ghiEn: "Not surveyed yet." };
+        const ds = ckDoc(k, n), nhip = ckNhip(ds);
+        return { plat: n, platEn: PLAT_NAMES_EN[j], co: !!c.co, kieu: c.kieu || null, tu: c.tu || null,
+          ghi: c.ghi, ghiEn: c.ghiEn, url: link[n] ? link[n].url : null,
+          moiNhat: ds[0] || null, soLan: ds.length,
+          moiNgay: nhip.length ? nhip[0].moiNgay : null, lui: nhip.length ? nhip[0].lui : false, nhip };
+      });
+    },
+    /* Cùng bảng ấy nhưng tra theo bản ghi, để lấy được cả đường dẫn store
+       đã giao lẫn đường dẫn nhân viên dán tay — nhân viên cần một cái link
+       để bấm vào mà đọc số, không thì bảng này vô dụng. */
+    cuaBai(trackIdx) {
+      chanQuyen("soCongKhai.cuaBai", "theoDoi");
+      const lk = nhapLieu.linkNenTang(trackIdx);
+      const theoNt = {}; lk.rows.forEach(r => { theoNt[r.plat] = r; });
+      return this.cua(lk.isrc).map(x => Object.assign({}, x, {
+        url: x.url || (theoNt[x.plat] ? theoNt[x.plat].url : null),
+        linkTay: !!x.url || !!(theoNt[x.plat] && theoNt[x.plat].tay)
+      }));
+    },
+    ghi(isrc, plat, ngay, so, by) {
+      chanQuyen("soCongKhai.ghi", "theoDoi");
+      const k = chuanIsrc(isrc);
+      const c = CONG_KHAI[plat];
+      if (!c) throw new Error("Không có nền tảng " + plat);
+      if (!c.co) throw new Error(plat + " không công bố số ra ngoài, không ghi được");
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(String(ngay))) throw new Error("Ngày không hợp lệ");
+      const v = Number(so);
+      if (!isFinite(v) || v < 0 || Math.floor(v) !== v) throw new Error("Số công khai phải là số nguyên không âm");
+      if (v > 1e11) throw new Error("Số vượt ngưỡng hợp lý, kiểm lại đơn vị");
+      const key = ckKey(k, plat);
+      const ds = (state.soCongKhai[key] || []).filter(x => x.ngay !== ngay);
+      ds.push({ ngay, so: v, nguon: "tay", at: nowISO(), by: by || (_me ? _me.name : "") });
+      ds.sort((a, b) => b.ngay.localeCompare(a.ngay));
+      state.soCongKhai[key] = ds.slice(0, CK_TOI_DA);
+      audit.log("congKhai.ghi", k + " · " + plat + " · " + ngay + " · " + fmt.num(v), by);
+      store.save();
+      return this.cua(k);
+    },
+    xoa(isrc, plat, ngay, by) {
+      chanQuyen("soCongKhai.xoa", "theoDoi");
+      const k = chuanIsrc(isrc), key = ckKey(k, plat);
+      const ds = state.soCongKhai[key] || [];
+      if (!ds.some(x => x.ngay === ngay)) throw new Error("Không có lần đọc nào ngày " + ngay);
+      state.soCongKhai[key] = ds.filter(x => x.ngay !== ngay);
+      if (!state.soCongKhai[key].length) delete state.soCongKhai[key];
+      audit.log("congKhai.xoa", k + " · " + plat + " · " + ngay, by); store.save();
+      return this.cua(k);
+    },
+    /* Bộ đọc tự động. Bản mẫu chạy trong trình duyệt, không có máy chủ,
+       và trình duyệt bị CORS chặn không gọi sang store được — nên hàm này
+       nói thẳng là chưa nối, chứ không giả vờ chạy rồi trả số bịa.
+       Đặc tả phía máy chủ nằm ở portal/v2/README.md, mục Vòng 17. */
+    docTuDong(isrc, plat) {
+      chanQuyen("soCongKhai.docTuDong", "theoDoi");
+      const c = CONG_KHAI[plat];
+      if (!c) throw new Error("Không có nền tảng " + plat);
+      if (!c.co) throw new Error(plat + " không công bố số ra ngoài");
+      if (c.tu !== "api") throw new Error(plat + " chỉ có số trên trang, không có API chính thức. Mở link rồi gõ số vào.");
+      throw new Error("Bản mẫu chưa nối máy chủ nên chưa đọc tự động được. Cần một dịch vụ chạy nền gọi YouTube Data API.");
+    },
+    /* Việc còn phải làm: bài đã lên kệ, có link, nhưng lâu chưa đọc lại. */
+    canDoc(ngayCu) {
+      chanQuyen("soCongKhai.canDoc", "theoDoi");
+      const han = Math.max(1, Math.min(90, ngayCu || 7));
+      const moc = isoDate(new Date(ASOF.getTime() - han * 864e5));
+      const ra = [];
+      Object.keys(state.linkStore || {}).forEach(isrc => {
+        Object.keys(state.linkStore[isrc]).forEach(plat => {
+          const c = CONG_KHAI[plat];
+          if (!c || !c.co) return;
+          const ds = ckDoc(isrc, plat);
+          if (!ds.length || ds[0].ngay < moc)
+            ra.push({ isrc, plat, url: state.linkStore[isrc][plat].url, lanCuoi: ds.length ? ds[0].ngay : null });
+        });
+      });
+      return ra.sort((a, b) => String(a.lanCuoi || "").localeCompare(String(b.lanCuoi || "")));
     }
   },
   /* ---- cây tổ chức: quyền, chức năng, nhiệm vụ, tài sản, nhân sự ---- */

@@ -17,9 +17,24 @@ const fs = require('fs');
 const V = __dirname + '/v2/';
 const doc = p => fs.readFileSync(p, 'utf8');
 
-const NOIBO = ['ban-lam-viec','tong-quan','theo-doi','chia-se','chien-dich','xet-duyet','roi','muc-tra','nap-du-lieu','khop-isrc','doi-chieu','phat-hanh','ke-toan',
-               'chi-tra','tam-ung','ty-le','danh-muc','nen-tang','doi-tac','ho-tro','quyen','quan-tri','to-chuc'];
-const KHACH = ['k-tong-quan','k-ban-ghi','k-danh-muc','k-nen-tang','k-du-bao','k-xu-huong','k-playlist','k-chat-luong','k-chia-se','k-chien-dich','k-phat-hanh','k-nghe-si','k-he-thong','k-vi','k-bang-ke','k-tam-ung','k-ho-tro','k-tai-lieu'];
+/* Danh sách trang ĐỌC THẲNG TỪ HAI TRANG THẬT, không chép tay.
+   Trước đây hai mảng này gõ cứng ở đây, và hệ quả đúng như phải thế: vòng
+   15 thêm ba trang mới vào intranet.html mà quên thêm vào đây, nên suốt
+   hai vòng bản gói một trang — tức bản người ngoài mở ra xem — thiếu hẳn
+   ba trang ấy, trong khi mọi bài kiểm đều xanh vì chúng kiểm trang thật.
+   Đọc từ thẻ <script src="man/…"> thì danh sách không bao giờ lệch được
+   nữa: thêm trang vào trang thật là bản gói có ngay. */
+function manCua(trang) {
+  const html = doc(V + trang);
+  const ra = [];
+  const re = /<script\s+src="man\/([a-z0-9-]+)\.js"><\/script>/gi;
+  let m;
+  while ((m = re.exec(html))) ra.push(m[1]);
+  if (!ra.length) throw new Error('Không đọc được trang nào từ ' + trang);
+  return ra;
+}
+const NOIBO = manCua('intranet.html');
+const KHACH = manCua('khach.html');
 const boc = ds => ds.map(n =>
   '/* ---- man/' + n + '.js ---- */\nfunction(){\n' + doc(V + 'man/' + n + '.js') + '\n}').join(',\n');
 

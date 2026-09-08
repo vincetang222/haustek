@@ -42,12 +42,13 @@ gọi `HAUSTEK.lockdown()` **trước khi** chạy bất cứ trang nào, và kh
 > `localStorage` thì trang nào cùng gốc cũng đọc được. Xem tab **Quản trị → Ranh giới
 > hai cổng** để biết cái gì thật sự chặn được và cái gì không.
 
-## Hai mươi lăm trang nội bộ
+## Hai mươi bảy trang nội bộ
 
 | Trang | File | Trả lời câu gì |
 |---|---|---|
 | Tổng quan | `man/tong-quan.js` | Kỳ này đóng được chưa, tiền chia đi đâu, còn gì treo |
-| **Nhập số liệu** | `man/nhap-so-lieu.js` | Chỗ điều phối viên ngồi mỗi ngày. Bốn tab: lượt nghe hằng ngày (ngày nào nguồn chưa về thì gõ tổng vào), doanh thu theo kỳ × nguồn (gõ tổng lấy trên báo cáo OneRPM / Warner / Believe / YouTube CMS), doanh thu theo từng bài (khi báo cáo có dòng riêng), nhật ký nhập có nút gỡ. Số gõ tay đè lên số máy sinh |
+| **Phiếu giao việc** | `man/phieu-giao.js` | Chỗ nhân viên chép metadata sang OneRPM và các tool khác. Bốn tab: Metadata xếp đúng thứ tự năm bước của OneRPM, mỗi trường một nút chép; Tool là bảng tick đã đẩy lên đâu, ai đẩy, tool trả về mã gì; Store chọn nền tảng sẽ phân phối tới; Link dán đường dẫn store thật của từng bài sau khi lên kệ, khoá theo ISRC, dán nhầm cột bị chặn tại chỗ. Chưa tick tool nào thì không đánh dấu phát hành được. Chỉ vận hành và giám đốc |
+| **Nhập số liệu** | `man/nhap-so-lieu.js` | Chỗ điều phối viên ngồi mỗi ngày. Năm tab: lượt nghe hằng ngày (ngày nào nguồn chưa về thì gõ tổng vào), doanh thu theo kỳ × nguồn (gõ tổng lấy trên báo cáo OneRPM / Warner / Believe / YouTube CMS), doanh thu theo từng bài (khi báo cáo có dòng riêng), nhật ký nhập có nút gỡ. Số gõ tay đè lên số máy sinh |
 | Nhập báo cáo | `man/nap-du-lieu.js` | Kỳ nào thiếu nguồn nào: bảng 12 kỳ × 4 nguồn |
 | Khớp ISRC | `man/khop-isrc.js` | Tiền chưa có chủ nằm ở đâu, khớp về ai |
 | Đối soát & xét duyệt kỳ | `man/doi-chieu.js` | Tổng hệ thống có khớp file gốc không, xét duyệt được chưa |
@@ -365,6 +366,135 @@ một thẻ nhắc lại điều đó.
 Cổng đối tác không có và không nên có: bảng tính này đọc ra phần Haustek
 giữ lại, phí môi giới và biên lợi nhuận. Đối tác muốn biết mình ứng được bao
 nhiêu thì vẫn dùng `k-tam-ung`, chạy trên `advanceOfferOf()` đã lược sạch.
+
+## Vòng 17: phiếu giao việc phát hành, và số công khai trên store
+
+Haustek **không tự phân phối**. Đối tác gửi hồ sơ lên cổng, rồi nhân viên
+ngồi gõ lại metadata ấy sang OneRPM và các tool khác. Vòng này dựng đúng chỗ
+ngồi làm việc đó.
+
+### 1 · Trang Phiếu giao việc phát hành
+
+Một hồ sơ đi qua ba chặng, chặng nào cũng để lại vết ai làm lúc nào:
+
+```
+đối tác gửi  →  chép sang tool  →  dán link store về
+(trang Phát hành)   (tab Metadata + Tool)    (tab Link)
+```
+
+**Tab Metadata** xếp các trường đúng thứ tự năm bước của OneRPM
+(Album Info → Track Upload → Album Art → Distribution Preferences), nhãn giữ
+nguyên tiếng Anh như trên tool để mắt đi từ trên xuống mà không phải dịch
+ngược. Mỗi trường một nút chép, và mỗi khối một nút "chép cả khối" (ra dạng
+`nhãn⇥giá trị`, dán thẳng vào bảng tính được).
+
+Chép chứ không gõ lại là có lý do: **gõ nhầm một ký tự ISRC là tháng sau tiền
+không khớp** và phải lần ngược cả kỳ.
+
+> `HM.chep()` thử `navigator.clipboard` trước, hỏng thì rơi xuống
+> `execCommand` trên một textarea tạm — vì trong khung sandbox của trình xem
+> artifact, clipboard API bị chặn mà không báo lỗi.
+
+**Tab Tool** là bảng tick từng tool: OneRPM, Believe, YouTube CMS, TikTok
+SoundOn, Facebook Rights Manager. Mỗi dòng ghi **mã tool trả về** (để sau này
+lần ngược), người tick và thời điểm. Danh sách tool sửa được vì mỗi công ty
+một bộ và bộ ấy đổi theo hợp đồng.
+
+Một luật cứng: **chưa tick tool nào thì `releases.publish()` từ chối**. Đánh
+dấu "đã phát hành" khi bài chưa đi đâu cả là nói dối đối tác, và đây đúng là
+chỗ hay quên nhất.
+
+**Tab Store** chọn store sẽ phân phối tới (8 nền tảng lớn + 24 store tiếp
+theo, còn lại theo mặc định nhà phân phối). Bỏ chọn hết là quay về toàn bộ.
+
+**Tab Link** để dán link store thật của **từng bài** sau khi lên kệ. Link
+khoá theo **ISRC** chứ không theo số thứ tự bản ghi — đổi hệ, gộp danh mục,
+nhập lại từ đầu thì link vẫn bám đúng bài. Dán nhầm cột bị chặn tại chỗ:
+`kiemLink()` so tên miền với nền tảng, dán link Spotify vào ô Apple Music là
+báo ngay chứ không đợi đối tác phát hiện.
+
+Link dán tay **thắng** link sinh ra, ở cả `linkNenTang()` lẫn `deliveryOf()`,
+nên đối tác thấy đúng link thật trên cổng của họ.
+
+### 2 · Số công khai trên store — tín hiệu, không phải tiền
+
+Câu hỏi của người dùng: *"các số liệu stream mình có cơ chế tự vào link và
+đọc số không?"* Câu trả lời trung thực, ghi thẳng vào lõi:
+
+| Nền tảng | Có công bố | Nguồn | Đọc tự động |
+|---|---|---|---|
+| YouTube Music | có (lượt xem) | **API chính thức** (Data API v3) | được, khi có máy chủ |
+| Spotify | có (lượt phát **cộng dồn**) | trang bài | không — điều khoản cấm, trang có chống bot |
+| Zing MP3 | có | trang bài | không có API chính thức |
+| NhacCuaTui | có | trang bài | không có API chính thức |
+| Apple Music, TikTok, Facebook, Instagram | **không** | — | — |
+
+Ba lý do con số này **không bao giờ được chạm vào chuỗi chia tiền**, mỗi lý
+do đủ để một mình nó chặn:
+
+1. Nền tảng đếm "lượt phát" khác với lượt nghe **được trả tiền**.
+2. Số công khai là **cộng dồn** từ ngày phát hành, không theo ngày.
+3. Nhiều nền tảng không công bố gì cả.
+
+Vậy dùng để làm gì? Một việc, nhưng đáng: **báo động sớm**. Báo cáo doanh thu
+về sau một tới hai tháng; số công khai đọc được hôm nay. Bài đang bùng nổ hay
+bị gỡ khỏi store thì thấy ngay.
+
+Bảng nằm ở trang **Nhập số liệu → tab Đối soát theo bài**, ngay cạnh tiêu đề
+có nhãn đỏ **"không dùng để tính tiền"**. Nền tảng nào không công bố thì ghi
+thẳng lý do vào đúng dòng ấy. `ckNhip()` lấy hiệu hai lần đọc liên tiếp chia
+số ngày ở giữa để ra bình quân mỗi ngày; số **lùi** so với lần trước thì dòng
+đỏ và có chú thích, vì đó là dấu hiệu nền tảng tính lại hoặc bài bị gỡ.
+
+`api-guard` có một phép kiểm chỉ để canh đúng điều này: ghi số công khai vào
+rồi đọc lại `agg()` — `gross`, `fee`, `artist`, `labelCut` phải **không đổi
+một xu nào**.
+
+### 3 · Đặc tả phía máy chủ cho bộ đọc tự động
+
+Bản mẫu chạy trong trình duyệt, không có máy chủ, và CORS chặn thẳng mọi lời
+gọi sang store. Nên `soCongKhai.docTuDong()` **nói thật là chưa nối** thay vì
+trả về một con số bịa:
+
+```
+Spotify      → "chỉ có số trên trang, không có API chính thức"
+YouTube      → "chưa nối máy chủ. Cần một dịch vụ chạy nền gọi YouTube Data API"
+Apple Music  → "không công bố số ra ngoài"
+```
+
+Khi lên thật, phần cần viết là một dịch vụ chạy nền:
+
+* **YouTube**: `GET youtube/v3/videos?part=statistics&id=<videoId>` với API key.
+  Lấy `videoId` từ link store đã dán. Quota mặc định 10.000 đơn vị/ngày, mỗi
+  lời gọi 1 đơn vị — thừa sức cho cả danh mục.
+* **Zing MP3 / NhacCuaTui**: không có API, phải đọc trang. Đây là phần dễ vỡ
+  nhất (đổi giao diện là hỏng) và nên có cảnh báo khi bộ đọc trả về rỗng
+  nhiều ngày liền, thay vì im lặng ghi 0.
+* **Spotify / Apple Music / TikTok**: không làm. Ghi tay từ Spotify for
+  Artists / Apple Music for Artists.
+* Ghi vào bằng đúng `soCongKhai.ghi()` với `nguon: "may"` thay vì `"tay"`.
+
+Nhưng ưu tiên **cao hơn hẳn** việc này: hỏi OneRPM có API hoặc giao file
+SFTP hằng ngày cho **Daily Trends** không. Một nguồn, đủ mọi nền tảng, và là
+số thật sự tính tiền.
+
+### Một lỗi cũ đáng kể mà vòng này lôi ra
+
+`dung-goi.js` gõ cứng danh sách trang. Vòng 15 thêm ba trang vào
+`intranet.html` mà quên thêm vào đó, nên **suốt hai vòng, bản gói một trang —
+tức bản artifact người ngoài mở ra xem — thiếu hẳn `nhap-so-lieu`,
+`hieu-suat` và `hieu-qua-von`**, trong khi toàn bộ bài kiểm vẫn xanh vì bài
+nào cũng kiểm trang thật chứ không kiểm gói.
+
+Đã sửa hai lớp:
+
+* `dung-goi.js` **đọc danh sách từ thẻ `<script src="man/…">` của hai trang
+  thật**, không chép tay nữa — thêm trang vào trang thật là bản gói có ngay.
+* Thêm `portal/test/goi-du-trang.js`: so danh sách trang của hai trang thật
+  với những gì thực sự nằm trong bản gói, và bắt cả file trang mồ côi (viết
+  xong mà quên đấu dây). Lệch một trang là đỏ ngay tại chỗ gây ra.
+
+Bản gói nay có đủ **27 trang nội bộ + 18 trang đối tác**.
 
 ## Vòng 16: mức trả nhập tay quyết định tiền, đối soát lượt nghe hằng ngày
 

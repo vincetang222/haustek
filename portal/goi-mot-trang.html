@@ -2074,7 +2074,9 @@ function fileNameFor(f, p) {
 let state = null;
 function ensureShape(s) {
   ["withdrawals", "tickets", "claims", "deliveries", "bulk", "releases", "proposals", "staff", "campaigns", "adjustments", "priceExtra", "platformsExtra", "extraParties", "nhapTay"].forEach(k => { if (!Array.isArray(s[k])) s[k] = []; });
-  ["statements", "bank", "videoSettings", "partyManager", "splits", "alerts", "notifRead", "rateOverride", "contracts", "platformOwner", "toChucThem", "luotNgay", "buocViec", "danhGiaNam", "doiSoatNgay", "doiSoatBai"].forEach(k => { if (!s[k] || typeof s[k] !== "object") s[k] = {}; });
+  ["statements", "bank", "videoSettings", "partyManager", "splits", "alerts", "notifRead", "rateOverride", "contracts", "platformOwner", "toChucThem", "luotNgay", "buocViec", "danhGiaNam", "doiSoatNgay", "doiSoatBai", "giaoTool", "linkStore", "soCongKhai"].forEach(k => { if (!s[k] || typeof s[k] !== "object") s[k] = {}; });
+  if (!Array.isArray(s.toolThem)) s.toolThem = [];
+  if (!Array.isArray(s.toolBo)) s.toolBo = [];
   return s;
 }
 
@@ -3002,7 +3004,11 @@ function deliveryOf(i, nhe) {
     if (!nhe) {
       const off = j < N_TOP ? ((hash(i, 200 + j) * 4) | 0) : 2 + ((hash(i, 200 + j) * 9) | 0);
       r.liveAt = status === "live" ? addDays(rel, off) : null;
-      r.url = status === "live" ? platformUrl(name, i) : null;
+      /* Link nhân viên dán vào ở phiếu giao việc là link thật của bài trên
+         store, nên nó thắng link sinh ra — và đối tác thấy đúng link ấy. */
+      const tay = ((state.linkStore || {})[tIsrc[i]] || {})[name];
+      r.url = tay ? tay.url : (status === "live" ? platformUrl(name, i) : null);
+      if (tay) r.tay = true;
       const ly = LY_DO[status];
       if (ly) { const x = ly[(hash(i, 400 + j) * ly.length) | 0]; r.reason = x[0]; r.reasonEn = x[1]; }
     }
@@ -3596,7 +3602,7 @@ const TAI_SAN = [
   { id: "ticket",         vi: "Ticket hỗ trợ",     en: "Support tickets", man: "ho-tro", dem: () => state.tickets.length, gan: id => state.tickets.filter(t => t.assignee === id).length },
   { id: "khieuNai",       vi: "Khiếu nại bản quyền", en: "Rights claims", man: "quyen", dem: () => state.claims.length, gan: id => state.claims.filter(c => c.assignee === id).length }
 ];
-const MAN_TAT_CA = ["ban-lam-viec", "to-chuc", "ho-tro", "tong-quan", "theo-doi", "nhap-so-lieu", "nap-du-lieu", "khop-isrc", "doi-chieu", "phat-hanh", "chien-dich", "quyen", "muc-tra", "chia-se", "xet-duyet", "roi", "nen-tang", "ke-toan", "chi-tra", "tam-ung", "ty-le", "doi-tac", "danh-muc", "quan-tri", "hieu-suat", "hieu-qua-von"];
+const MAN_TAT_CA = ["ban-lam-viec", "to-chuc", "ho-tro", "tong-quan", "theo-doi", "nhap-so-lieu", "nap-du-lieu", "khop-isrc", "doi-chieu", "phat-hanh", "chien-dich", "quyen", "muc-tra", "chia-se", "xet-duyet", "roi", "nen-tang", "ke-toan", "chi-tra", "tam-ung", "ty-le", "doi-tac", "danh-muc", "quan-tri", "hieu-suat", "hieu-qua-von", "phieu-giao"];
 const NHOM_TAT_CA = ["tong", "tien", "doiSoat", "doiTac", "doiTacTao", "deXuat", "deXuatTao", "vanHanh", "nhapLieu", "danhMuc", "theoDoi", "chienDich", "chiaSe", "khieuNai", "hoTro", "quanTri", "phatHanhHo", "nhanSu", "toChuc", "von", "hieuSuat", "quyTrinh"];
 const doiTacSapHetHan = me => partiesList({ status: "renew", manager: me && me.role === "sales" && !laTruong(me) ? me.id : undefined }).total;
 const TO_CHUC = [
@@ -3611,7 +3617,7 @@ const TO_CHUC = [
   { id: "van-hanh", vai: "ops", vi: "Vận hành", en: "Operations",
     chucNang: { vi: ["Tiếp nhận hồ sơ phát hành, kiểm metadata, cấp ISRC / UPC", "Giao bản ghi tới nền tảng, theo dõi trạng thái lên kệ", "Nạp báo cáo kỳ, khớp ISRC, đối soát trước xét duyệt", "Mức trả nền tảng, danh mục, chất lượng lượt nghe"],
                 en: ["Receive release files, check metadata, assign ISRC / UPC", "Deliver recordings to platforms, track go-live", "Load period reports, match ISRC, reconcile before approval", "Platform rates, catalogue, stream quality"] },
-    man: ["ban-lam-viec", "to-chuc", "ho-tro", "doi-chieu", "chien-dich", "theo-doi", "nhap-so-lieu", "nap-du-lieu", "khop-isrc", "muc-tra", "danh-muc", "nen-tang", "phat-hanh", "quyen"],
+    man: ["ban-lam-viec", "to-chuc", "ho-tro", "doi-chieu", "chien-dich", "theo-doi", "nhap-so-lieu", "nap-du-lieu", "khop-isrc", "muc-tra", "danh-muc", "nen-tang", "phat-hanh", "phieu-giao", "quyen"],
     nhom: ["doiSoat", "vanHanh", "nhapLieu", "danhMuc", "theoDoi", "chienDich", "khieuNai", "hoTro", "phatHanhHo", "toChuc", "quyTrinh"],
     taiSan: ["danhMuc", "hoSoPhatHanh", "nenTang", "baoCaoKy"],
     to: [
@@ -5150,6 +5156,156 @@ function seedProposals() {
   store.save();
 }
 
+/* =====================================================================
+   22. PHIẾU GIAO VIỆC PHÁT HÀNH
+   ---------------------------------------------------------------------
+   Haustek không tự phân phối. Đối tác gửi hồ sơ lên đây, rồi NHÂN VIÊN
+   ngồi gõ lại metadata ấy vào OneRPM (và các tool khác). Đó là công đoạn
+   dễ sai và dễ quên nhất trong cả dây chuyền: gõ nhầm một ký tự ISRC là
+   tháng sau tiền không khớp; quên một tool là bài không lên một nửa số
+   nền tảng mà không ai biết cho tới khi đối tác hỏi.
+
+   Nên phiếu này giữ ba thứ:
+     · metadata xếp đúng thứ tự tool để chép, không phải mò
+     · đã đẩy lên tool nào rồi, ai đẩy, lúc nào, tool trả về mã gì
+     · sau khi lên kệ, link store thật của từng bài, dán vào cho đối tác
+   ===================================================================== */
+
+/* Danh sách tool phân phối. Sửa được ở Quản trị vì mỗi công ty một bộ,
+   và bộ ấy đổi theo hợp đồng chứ không cố định. */
+const TOOL_GOC = [
+  { id: "onerpm",  ten: "OneRPM",      web: "https://onerpm.com",
+    mo: "Phân phối chính · album, track, chọn store, giá bán",
+    moEn: "Primary distributor · album, track, store picker, pricing" },
+  { id: "believe", ten: "Believe",     web: "https://backstage.believe.com",
+    mo: "Phân phối phụ theo hợp đồng riêng",
+    moEn: "Secondary distributor under a separate agreement" },
+  { id: "yt-cms",  ten: "YouTube CMS", web: "https://studio.youtube.com",
+    mo: "Art Track, Content ID, kênh Topic",
+    moEn: "Art Track, Content ID, Topic channel" },
+  { id: "soundon", ten: "TikTok SoundOn", web: "https://www.soundon.global",
+    mo: "Đưa bản ghi vào thư viện âm thanh TikTok",
+    moEn: "Push the recording into TikTok's sound library" },
+  { id: "fb-rm",   ten: "Facebook Rights Manager", web: "https://business.facebook.com",
+    mo: "Bảo vệ bản ghi trên Facebook và Instagram",
+    moEn: "Protect the recording on Facebook and Instagram" }
+];
+function toolTatCa() {
+  const bo = state.toolBo || [];
+  return TOOL_GOC.filter(x => bo.indexOf(x.id) < 0)
+    .concat((state.toolThem || []).map(x => Object.assign({ them: true }, x)));
+}
+function toolCua(id) { return toolTatCa().find(x => x.id === id) || null; }
+
+/* Trạng thái đẩy tool của một hồ sơ, giữ ở state chứ không ở hồ sơ, để
+   hồ sơ vẫn là thứ đối tác gửi lên và không lẫn với việc nội bộ. */
+function giaoToolCua(rid) {
+  const g = (state.giaoTool || {})[rid] || {};
+  return toolTatCa().map(x => {
+    const d = g[x.id] || null;
+    return { id: x.id, ten: x.ten, web: x.web, mo: x.mo, moEn: x.moEn, them: !!x.them,
+      xong: !!d, ma: d ? d.ma || "" : "", ghiChu: d ? d.ghiChu || "" : "",
+      at: d ? d.at : null, by: d ? d.by || "" : "" };
+  });
+}
+
+/* ---- link store thật, khoá theo ISRC ----
+   ISRC là khoá nối duy nhất giữa hồ sơ phát hành và danh mục 50.000 bản
+   ghi, và cũng là khoá nối với báo cáo của nhà phân phối. Nên link store
+   khoá theo ISRC chứ không theo số thứ tự bản ghi: đổi hệ, gộp danh mục,
+   nhập lại từ đầu — link vẫn bám đúng bài. */
+const HOST_STORE = {
+  "Spotify":       ["open.spotify.com", "spotify.link"],
+  "Apple Music":   ["music.apple.com", "geo.music.apple.com"],
+  "YouTube Music": ["music.youtube.com", "youtube.com", "youtu.be"],
+  "TikTok":        ["tiktok.com"],
+  "Zing MP3":      ["zingmp3.vn"],
+  "NhacCuaTui":    ["nhaccuatui.com"],
+  "Facebook":      ["facebook.com", "fb.watch"],
+  "Instagram":     ["instagram.com"],
+  "Amazon Music":  ["music.amazon.com", "amazon.com"],
+  "Deezer":        ["deezer.com", "dzr.page.link"],
+  "Tidal":         ["tidal.com"],
+  "Pandora":       ["pandora.com"],
+  "SoundCloud":    ["soundcloud.com"]
+};
+function kiemLink(plat, url) {
+  const u = String(url || "").trim();
+  if (!/^https:\/\/[^\s]+$/i.test(u)) throw new Error("Đường dẫn phải bắt đầu bằng https://");
+  if (u.length > 500) throw new Error("Đường dẫn dài bất thường, kiểm lại");
+  const host = (u.split("/")[2] || "").toLowerCase();
+  const cho = HOST_STORE[plat];
+  /* Dán nhầm cột là lỗi hay gặp nhất khi ngồi copy mười cái link liền
+     tay. Nền tảng nào biết tên miền thì chặn ngay tại chỗ. */
+  if (cho && !cho.some(h => host === h || host.endsWith("." + h)))
+    throw new Error("Đường dẫn này không thuộc " + plat + " (" + host + "). Kiểm lại xem có dán nhầm cột không");
+  return u;
+}
+function chuanIsrc(v) {
+  const x = String(v || "").replace(/[^A-Za-z0-9]/g, "").toUpperCase();
+  if (!/^[A-Z]{2}[A-Z0-9]{3}\d{7}$/.test(x)) throw new Error("Mã ISRC không đúng định dạng: " + v);
+  return x;
+}
+function linkCua(isrc) { return (state.linkStore || {})[isrc] || {}; }
+
+/* =====================================================================
+   22b. SỐ CÔNG KHAI TRÊN STORE
+   ---------------------------------------------------------------------
+   Con số này KHÔNG PHẢI tiền và không bao giờ được chạm vào chuỗi chia
+   tiền. Ba lý do, cả ba đều đủ để một mình nó chặn:
+
+     · Nền tảng đếm "lượt phát" khác với "lượt nghe được trả tiền".
+       Spotify hiện số cộng dồn trên trang bài, nhưng đó là plays, không
+       phải số trong báo cáo doanh thu.
+     · Số công khai là CỘNG DỒN từ ngày phát hành, không theo ngày. Muốn
+       có số của một ngày thì phải lấy hiệu hai lần đọc liên tiếp, mà hai
+       lần ấy có thể cách nhau mấy ngày.
+     · Nhiều nền tảng không công bố gì cả.
+
+   Vậy nó dùng để làm gì? Một việc thôi, nhưng đáng: BÁO ĐỘNG SỚM. Báo
+   cáo doanh thu về sau một tới hai tháng; số công khai đọc được hôm nay.
+   Bài đang bùng nổ hay bị gỡ khỏi store thì thấy ngay, không phải chờ.
+
+   Tiền vẫn đi đúng một đường: báo cáo của nhà phân phối.
+   ===================================================================== */
+const CONG_KHAI = {
+  "YouTube Music": { co: true, kieu: "luot-xem", tu: "api",
+    ghi: "YouTube Data API v3 · statistics.viewCount", ghiEn: "YouTube Data API v3 · statistics.viewCount" },
+  "Spotify":       { co: true, kieu: "luot-phat", tu: "trang",
+    ghi: "Trang bài có số lượt phát cộng dồn. Điều khoản Spotify cấm thu thập tự động, nên đọc bằng tay.",
+    ghiEn: "The track page shows a cumulative play count. Spotify's terms forbid scraping, so read it by hand." },
+  "Zing MP3":      { co: true, kieu: "luot-nghe", tu: "trang",
+    ghi: "Trang bài có lượt nghe công khai, không có API chính thức.",
+    ghiEn: "The song page shows a public play count; no official API." },
+  "NhacCuaTui":    { co: true, kieu: "luot-nghe", tu: "trang",
+    ghi: "Trang bài có lượt nghe công khai, không có API chính thức.",
+    ghiEn: "The song page shows a public play count; no official API." },
+  "Apple Music":   { co: false, ghi: "Apple không hiện lượt nghe ra ngoài. Số thật nằm sau đăng nhập Apple Music for Artists.",
+    ghiEn: "Apple publishes no play count. The real figure sits behind Apple Music for Artists." },
+  "TikTok":        { co: false, ghi: "Trang sound đếm số video dùng bản ghi, không phải lượt nghe.",
+    ghiEn: "A sound page counts videos using the recording, not streams." },
+  "Facebook":      { co: false, ghi: "Không công bố lượt nghe theo bản ghi.", ghiEn: "No per-recording play count is published." },
+  "Instagram":     { co: false, ghi: "Không công bố lượt nghe theo bản ghi.", ghiEn: "No per-recording play count is published." }
+};
+const CK_TOI_DA = 60;                                /* giữ 60 lần đọc gần nhất cho mỗi bài × nền tảng */
+function ckKey(isrc, plat) { return isrc + "|" + plat; }
+function ckDoc(isrc, plat) { return ((state.soCongKhai || {})[ckKey(isrc, plat)] || []).slice(); }
+
+/* Hiệu hai lần đọc liên tiếp, chia cho số ngày ở giữa. Đọc cách nhau bao
+   nhiêu ngày cũng ra được số bình quân ngày, và nói rõ là bình quân. */
+function ckNhip(ds) {
+  const ra = [];
+  for (let k = 0; k < ds.length - 1; k++) {
+    const nay = ds[k], truoc = ds[k + 1];
+    const ngay = Math.round((new Date(nay.ngay) - new Date(truoc.ngay)) / 864e5);
+    if (ngay <= 0) continue;
+    const chenh = nay.so - truoc.so;
+    ra.push({ tu: truoc.ngay, den: nay.ngay, ngay, chenh,
+      moiNgay: Math.round(chenh / ngay), lui: chenh < 0 });
+  }
+  return ra;
+}
+
 /* ---- mức trả nền tảng: bảng đầy đủ để hiển thị và ghi đè ---- */
 function platformRatesFull() {
   const ov = lazyState("rateOverride", {});
@@ -6084,8 +6240,13 @@ const nhapLieu = {
   linkNenTang(trackIdx) {
     if (!(trackIdx >= 0 && trackIdx < N)) throw new Error("Bản ghi không hợp lệ");
     const d = deliveryOf(trackIdx);
-    return { isrc: tIsrc[trackIdx], title: tTitle[trackIdx], artist: ARTISTS[tArtist[trackIdx]].name,
-      rows: d.rows.filter(r => r.url).map(r => ({ plat: r.name, url: r.url, liveAt: r.liveAt })) };
+    /* Link nhân viên dán vào sau khi bài lên kệ là link THẬT; link sinh ra
+       chỉ để bản mẫu có cái mà bấm. Có link thật thì luôn lấy link thật. */
+    const tay = linkCua(tIsrc[trackIdx]);
+    const rows = d.rows.filter(r => r.url || tay[r.name]).map(r => ({
+      plat: r.name, url: tay[r.name] ? tay[r.name].url : r.url,
+      liveAt: r.liveAt, tay: !!tay[r.name] }));
+    return { isrc: tIsrc[trackIdx], title: tTitle[trackIdx], artist: ARTISTS[tArtist[trackIdx]].name, rows };
   },
 
   /* việc còn phải làm hôm nay — dùng cho huy hiệu điều hướng và bàn làm việc */
@@ -6735,6 +6896,12 @@ const QUYEN_HAM = {
   wallet: "tien", credits: "tien", statementsOf: "tien", withdrawals: "tien", statements: "tien", bank: "tien", advances: "tien", advanceBalance: "tien", withdrawalQuote: "tien", phiChuyen: "tien",
   catalogueFor: "doiTac",
   dailyTrends: "theoDoi", dailyTrendsFor: "theoDoi", playlists: "theoDoi", playlistsFor: "theoDoi",
+  "soCongKhai.cua": "theoDoi", "soCongKhai.cuaBai": "theoDoi", "soCongKhai.ghi": "theoDoi", "soCongKhai.xoa": "theoDoi",
+  "soCongKhai.docTuDong": "theoDoi", "soCongKhai.canDoc": "theoDoi",
+  "releases.tool.cua": "vanHanh", "releases.tool.danhDau": "vanHanh", "releases.tool.boDanhDau": "vanHanh",
+  "releases.tool.them": "quanTri", "releases.tool.bo": "quanTri",
+  "releases.datStore": "vanHanh", "releases.link.dat": "vanHanh", "releases.link.bo": "vanHanh",
+  "releases.link.conThieu": "vanHanh",
   campaigns: "chienDich", campaignsFor: "chienDich",
   splits: "chiaSe", splitsFor: "chiaSe", setSplit: "chiaSe", removeSplit: "chiaSe", acceptSplit: "chiaSe",
   quality: "danhMuc", qualityFor: "danhMuc", setAlertStatus: "danhMuc", metadataReport: "danhMuc", metadataReportFor: "danhMuc",
@@ -7026,6 +7193,115 @@ const admin = {
       audit.log("release.create.staff", r.id + " · " + r.title + " · " + partyName(partyKey), by); store.save();
       return r;
     },
+    /* ---- phiếu giao việc: đẩy lên tool nào rồi ---- */
+    tool: {
+      danhSach: () => toolTatCa(),
+      cua(rid) {
+        chanQuyen("releases.tool.cua", "vanHanh");
+        if (!state.releases.some(r => r.id === rid)) throw new Error("Không tìm thấy hồ sơ " + rid);
+        return giaoToolCua(rid);
+      },
+      danhDau(rid, toolId, o, by) {
+        chanQuyen("releases.tool.danhDau", "vanHanh");
+        const r = state.releases.find(x => x.id === rid);
+        if (!r) throw new Error("Không tìm thấy hồ sơ " + rid);
+        if (r.status === "submitted") throw new Error("Tiếp nhận hồ sơ trước khi đẩy lên tool");
+        const tl = toolCua(toolId); if (!tl) throw new Error("Không có tool " + toolId);
+        if (!state.giaoTool[rid]) state.giaoTool[rid] = {};
+        state.giaoTool[rid][toolId] = { ma: chuoi(o && o.ma).slice(0, 80), ghiChu: chuoi(o && o.ghiChu).slice(0, 300),
+          at: nowISO(), by: by || (_me ? _me.name : "") };
+        audit.log("release.tool", rid + " · " + tl.ten + ((o && o.ma) ? " · " + o.ma : ""), by);
+        store.save();
+        return giaoToolCua(rid);
+      },
+      boDanhDau(rid, toolId, by) {
+        chanQuyen("releases.tool.boDanhDau", "vanHanh");
+        const g = (state.giaoTool || {})[rid];
+        if (!g || !g[toolId]) throw new Error("Hồ sơ này chưa đánh dấu đẩy lên tool ấy");
+        delete g[toolId];
+        if (!Object.keys(g).length) delete state.giaoTool[rid];
+        audit.log("release.tool.go", rid + " · " + toolId, by); store.save();
+        return giaoToolCua(rid);
+      },
+      /* thêm / bỏ tool: mỗi công ty một bộ, và bộ ấy đổi theo hợp đồng */
+      them(o, by) {
+        chanQuyen("releases.tool.them", "quanTri");
+        const ten = chuoi(o && o.ten); if (!ten) throw new Error("Thiếu tên tool");
+        const id = "t-" + ten.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 24);
+        if (toolCua(id)) throw new Error("Đã có tool tên này");
+        state.toolThem.push({ id, ten, web: chuoi(o.web), mo: chuoi(o.mo), moEn: chuoi(o.mo) });
+        audit.log("tool.them", ten, by); store.save(); return toolTatCa();
+      },
+      bo(id, by) {
+        chanQuyen("releases.tool.bo", "quanTri");
+        if (!toolCua(id)) throw new Error("Không có tool " + id);
+        state.toolThem = state.toolThem.filter(x => x.id !== id);
+        if (TOOL_GOC.some(x => x.id === id) && state.toolBo.indexOf(id) < 0) state.toolBo.push(id);
+        audit.log("tool.bo", id, by); store.save(); return toolTatCa();
+      }
+    },
+    /* ---- store sẽ phân phối tới ---- */
+    datStore(rid, ds, by) {
+      chanQuyen("releases.datStore", "vanHanh");
+      const r = state.releases.find(x => x.id === rid);
+      if (!r) throw new Error("Không tìm thấy hồ sơ " + rid);
+      const chon = (ds || []).map(chuoi).filter(x => STORES.indexOf(x) >= 0);
+      r.stores = chon.length ? chon : null;              /* null = toàn bộ store */
+      r.updatedAt = nowISO();
+      audit.log("release.stores", rid + " · " + (chon.length ? chon.length + " store" : "toàn bộ"), by);
+      store.save(); return r.stores;
+    },
+    storeCua(rid) {
+      const r = state.releases.find(x => x.id === rid);
+      if (!r) throw new Error("Không tìm thấy hồ sơ " + rid);
+      const chon = r.stores;
+      return { tatCa: !chon, so: chon ? chon.length : STORES.length, tong: STORES.length,
+        rows: STORE_TOP.map(x => ({ name: x.n, chon: !chon || chon.indexOf(x.n) >= 0, lon: true }))
+          .concat(STORES.slice(N_TOP, N_TOP + 24).map(n => ({ name: n, chon: !chon || chon.indexOf(n) >= 0, lon: false }))) };
+    },
+    /* ---- link store thật, dán sau khi lên kệ ---- */
+    link: {
+      cua(isrc) {
+        const k = chuanIsrc(isrc), g = linkCua(k);
+        return PLAT_NAMES.slice(0, N_TOP).map((n, j) => {
+          const d = g[n] || null;
+          return { plat: n, platEn: PLAT_NAMES_EN[j], url: d ? d.url : null,
+            at: d ? d.at : null, by: d ? d.by || "" : "", congKhai: !!(CONG_KHAI[n] && CONG_KHAI[n].co) };
+        });
+      },
+      dat(isrc, plat, url, by) {
+        chanQuyen("releases.link.dat", "vanHanh");
+        const k = chuanIsrc(isrc);
+        if (PLAT_NAMES.indexOf(plat) < 0) throw new Error("Không có nền tảng " + plat);
+        const u = kiemLink(plat, url);
+        if (!state.linkStore[k]) state.linkStore[k] = {};
+        state.linkStore[k][plat] = { url: u, at: nowISO(), by: by || (_me ? _me.name : "") };
+        audit.log("release.link", k + " · " + plat, by); store.save();
+        return this.cua(k);
+      },
+      bo(isrc, plat, by) {
+        chanQuyen("releases.link.bo", "vanHanh");
+        const k = chuanIsrc(isrc), g = state.linkStore[k];
+        if (!g || !g[plat]) throw new Error("Bài này chưa có link " + plat);
+        delete g[plat];
+        if (!Object.keys(g).length) delete state.linkStore[k];
+        audit.log("release.link.go", k + " · " + plat, by); store.save();
+        return this.cua(k);
+      },
+      /* Bài nào đã lên kệ mà chưa có đủ link — đây là việc còn phải làm. */
+      conThieu(rid) {
+        chanQuyen("releases.link.conThieu", "vanHanh");
+        const r = state.releases.find(x => x.id === rid);
+        if (!r) throw new Error("Không tìm thấy hồ sơ " + rid);
+        let co = 0, thieu = 0;
+        r.tracks.forEach(t => {
+          if (!t.isrc) { thieu += N_TOP; return; }
+          const g = linkCua(t.isrc);
+          PLAT_NAMES.slice(0, N_TOP).forEach(n => { if (g[n]) co++; else thieu++; });
+        });
+        return { co, thieu, tong: co + thieu, xong: thieu === 0 };
+      }
+    },
     counts() {
       const c = { submitted: 0, received: 0, coded: 0, released: 0, returned: 0 };
       state.releases.forEach(r => { c[r.status] = (c[r.status] || 0) + 1; });
@@ -7049,6 +7325,10 @@ const admin = {
     publish(id, by, date) {
       const r = this.get(id); if (!r) throw new Error("Không tìm thấy hồ sơ " + id);
       if (r.status !== "coded") throw new Error("Phải cấp mã trước khi đánh dấu đã phát hành");
+      /* Đánh dấu "đã phát hành" mà chưa đẩy lên tool nào là nói dối đối
+         tác. Phải tick ít nhất một tool — đây chính là chỗ hay quên. */
+      const daDay = Object.keys((state.giaoTool || {})[id] || {}).length;
+      if (!daDay) throw new Error("Chưa đẩy hồ sơ lên tool phân phối nào. Đánh dấu ở phiếu giao việc trước.");
       r.releasedAt = date || r.releaseDate;
       releaseStamp(r, "released", by || "ops@haustek-group.com", null);
       audit.log("release.publish", r.id + " · " + r.title + " · " + r.releasedAt, by); store.save(); return r;
@@ -7059,6 +7339,100 @@ const admin = {
       if (r.status === "released") throw new Error("Hồ sơ đã phát hành, không trả lại được");
       releaseStamp(r, "returned", by || "ops@haustek-group.com", note);
       audit.log("release.return", r.id + " · " + r.title + " · " + note.slice(0, 80), by); store.save(); return r;
+    }
+  },
+  /* ---- số công khai trên store: tín hiệu theo dõi, KHÔNG phải tiền ---- */
+  soCongKhai: {
+    nenTang() {
+      return PLAT_NAMES.slice(0, N_TOP).map((n, j) => {
+        const c = CONG_KHAI[n] || { co: false, ghi: "Chưa khảo sát nền tảng này.", ghiEn: "Not surveyed yet." };
+        return { plat: n, platEn: PLAT_NAMES_EN[j], co: !!c.co, kieu: c.kieu || null,
+          tu: c.tu || null, ghi: c.ghi, ghiEn: c.ghiEn };
+      });
+    },
+    /* Bảng của một bài: link, lần đọc gần nhất, và bình quân mỗi ngày
+       suy từ hai lần đọc liên tiếp. Nền tảng không công bố thì nói thẳng. */
+    cua(isrc) {
+      chanQuyen("soCongKhai.cua", "theoDoi");
+      const k = chuanIsrc(isrc), link = linkCua(k);
+      return PLAT_NAMES.slice(0, N_TOP).map((n, j) => {
+        const c = CONG_KHAI[n] || { co: false, ghi: "Chưa khảo sát nền tảng này.", ghiEn: "Not surveyed yet." };
+        const ds = ckDoc(k, n), nhip = ckNhip(ds);
+        return { plat: n, platEn: PLAT_NAMES_EN[j], co: !!c.co, kieu: c.kieu || null, tu: c.tu || null,
+          ghi: c.ghi, ghiEn: c.ghiEn, url: link[n] ? link[n].url : null,
+          moiNhat: ds[0] || null, soLan: ds.length,
+          moiNgay: nhip.length ? nhip[0].moiNgay : null, lui: nhip.length ? nhip[0].lui : false, nhip };
+      });
+    },
+    /* Cùng bảng ấy nhưng tra theo bản ghi, để lấy được cả đường dẫn store
+       đã giao lẫn đường dẫn nhân viên dán tay — nhân viên cần một cái link
+       để bấm vào mà đọc số, không thì bảng này vô dụng. */
+    cuaBai(trackIdx) {
+      chanQuyen("soCongKhai.cuaBai", "theoDoi");
+      const lk = nhapLieu.linkNenTang(trackIdx);
+      const theoNt = {}; lk.rows.forEach(r => { theoNt[r.plat] = r; });
+      return this.cua(lk.isrc).map(x => Object.assign({}, x, {
+        url: x.url || (theoNt[x.plat] ? theoNt[x.plat].url : null),
+        linkTay: !!x.url || !!(theoNt[x.plat] && theoNt[x.plat].tay)
+      }));
+    },
+    ghi(isrc, plat, ngay, so, by) {
+      chanQuyen("soCongKhai.ghi", "theoDoi");
+      const k = chuanIsrc(isrc);
+      const c = CONG_KHAI[plat];
+      if (!c) throw new Error("Không có nền tảng " + plat);
+      if (!c.co) throw new Error(plat + " không công bố số ra ngoài, không ghi được");
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(String(ngay))) throw new Error("Ngày không hợp lệ");
+      const v = Number(so);
+      if (!isFinite(v) || v < 0 || Math.floor(v) !== v) throw new Error("Số công khai phải là số nguyên không âm");
+      if (v > 1e11) throw new Error("Số vượt ngưỡng hợp lý, kiểm lại đơn vị");
+      const key = ckKey(k, plat);
+      const ds = (state.soCongKhai[key] || []).filter(x => x.ngay !== ngay);
+      ds.push({ ngay, so: v, nguon: "tay", at: nowISO(), by: by || (_me ? _me.name : "") });
+      ds.sort((a, b) => b.ngay.localeCompare(a.ngay));
+      state.soCongKhai[key] = ds.slice(0, CK_TOI_DA);
+      audit.log("congKhai.ghi", k + " · " + plat + " · " + ngay + " · " + fmt.num(v), by);
+      store.save();
+      return this.cua(k);
+    },
+    xoa(isrc, plat, ngay, by) {
+      chanQuyen("soCongKhai.xoa", "theoDoi");
+      const k = chuanIsrc(isrc), key = ckKey(k, plat);
+      const ds = state.soCongKhai[key] || [];
+      if (!ds.some(x => x.ngay === ngay)) throw new Error("Không có lần đọc nào ngày " + ngay);
+      state.soCongKhai[key] = ds.filter(x => x.ngay !== ngay);
+      if (!state.soCongKhai[key].length) delete state.soCongKhai[key];
+      audit.log("congKhai.xoa", k + " · " + plat + " · " + ngay, by); store.save();
+      return this.cua(k);
+    },
+    /* Bộ đọc tự động. Bản mẫu chạy trong trình duyệt, không có máy chủ,
+       và trình duyệt bị CORS chặn không gọi sang store được — nên hàm này
+       nói thẳng là chưa nối, chứ không giả vờ chạy rồi trả số bịa.
+       Đặc tả phía máy chủ nằm ở portal/v2/README.md, mục Vòng 17. */
+    docTuDong(isrc, plat) {
+      chanQuyen("soCongKhai.docTuDong", "theoDoi");
+      const c = CONG_KHAI[plat];
+      if (!c) throw new Error("Không có nền tảng " + plat);
+      if (!c.co) throw new Error(plat + " không công bố số ra ngoài");
+      if (c.tu !== "api") throw new Error(plat + " chỉ có số trên trang, không có API chính thức. Mở link rồi gõ số vào.");
+      throw new Error("Bản mẫu chưa nối máy chủ nên chưa đọc tự động được. Cần một dịch vụ chạy nền gọi YouTube Data API.");
+    },
+    /* Việc còn phải làm: bài đã lên kệ, có link, nhưng lâu chưa đọc lại. */
+    canDoc(ngayCu) {
+      chanQuyen("soCongKhai.canDoc", "theoDoi");
+      const han = Math.max(1, Math.min(90, ngayCu || 7));
+      const moc = isoDate(new Date(ASOF.getTime() - han * 864e5));
+      const ra = [];
+      Object.keys(state.linkStore || {}).forEach(isrc => {
+        Object.keys(state.linkStore[isrc]).forEach(plat => {
+          const c = CONG_KHAI[plat];
+          if (!c || !c.co) return;
+          const ds = ckDoc(isrc, plat);
+          if (!ds.length || ds[0].ngay < moc)
+            ra.push({ isrc, plat, url: state.linkStore[isrc][plat].url, lanCuoi: ds.length ? ds[0].ngay : null });
+        });
+      });
+      return ra.sort((a, b) => String(a.lanCuoi || "").localeCompare(String(b.lanCuoi || "")));
     }
   },
   /* ---- cây tổ chức: quyền, chức năng, nhiệm vụ, tài sản, nhân sự ---- */
@@ -8396,6 +8770,7 @@ var IC = {
   right: '<path d="M6.5 2.5 12 8l-5.5 5.5"/>',
   x:     '<path d="M3.5 3.5l9 9M12.5 3.5l-9 9"/>',
   check: '<path d="M3 8.5l3.5 3.5L13 4.5"/>',
+  copy:  '<path d="M5.5 5.5h8v8h-8zM10.5 5.5V2.5h-8v8h3"/>',
   alert: '<path d="M8 1.8 15 14H1zM8 6.5v3.2M8 11.6v.1"/>',
   more:  '<circle cx="3.2" cy="8" r="1.45" fill="currentColor" stroke="none"/><circle cx="8" cy="8" r="1.45" fill="currentColor" stroke="none"/><circle cx="12.8" cy="8" r="1.45" fill="currentColor" stroke="none"/>',
   bell:  '<path d="M8 2.2a3.8 3.8 0 0 0-3.8 3.8v2.6L2.8 11h10.4l-1.4-2.4V6A3.8 3.8 0 0 0 8 2.2zM6.6 13a1.4 1.4 0 0 0 2.8 0"/>',
@@ -10318,7 +10693,37 @@ function banIn(o) {
 }
 document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && _inLop) dongIn(); });
 
+/* Chép một chuỗi vào bộ nhớ tạm. Nhân viên ngồi gõ lại metadata sang
+   OneRPM sẽ bấm nút này vài chục lần một hồ sơ, nên nó phải chạy được ở
+   MỌI chỗ: trang thường, file:// và cả khung sandbox của trình xem
+   artifact — chỗ mà navigator.clipboard bị chặn không báo lỗi. Nên thử
+   API mới trước, hỏng thì rơi xuống execCommand trên một textarea tạm. */
+function chep(chu) {
+  var s = String(chu == null ? '' : chu);
+  if (!s) return Promise.resolve(false);
+  function cachCu() {
+    try {
+      var o = document.createElement('textarea');
+      o.value = s;
+      o.setAttribute('readonly', '');
+      o.style.cssText = 'position:fixed;top:-1000px;opacity:0';
+      document.body.appendChild(o);
+      o.select(); o.setSelectionRange(0, s.length);
+      var ok = document.execCommand('copy');
+      document.body.removeChild(o);
+      return !!ok;
+    } catch (e) { return false; }
+  }
+  try {
+    if (navigator.clipboard && navigator.clipboard.writeText)
+      return navigator.clipboard.writeText(s).then(function () { return true; },
+        function () { return cachCu(); });
+  } catch (e) {}
+  return Promise.resolve(cachCu());
+}
+
 global.HM = {
+  chep: chep,
   dau: dau, so: so, the: the, huyHieu: huyHieu, suyHieu: suyHieu, tabs: tabs, trong: trong, ghi: ghi, menu: menu, kv: kv,
   hoi: hoi, banIn: banIn, dongIn: dongIn,
   tag: tag, cham: cham, bam: bam, doi: doi, nhap: nhap, csv: csv,
@@ -11613,7 +12018,7 @@ HT.dangKy({
       open: 'Mới', in_progress: 'Đang xử lý', waiting: 'Chờ phản hồi', done: 'Đã xong',
       knOpen: 'Mới', knDisputed: 'Đang tranh chấp', knEscalated: 'Đã chuyển lên', knResolved: 'Đã giải quyết', knReleased: 'Đã nhả',
       low: 'Thấp', normal: 'Thường', high: 'Cao', urgent: 'Khẩn', quaHan: 'quá hạn', conNgay: 'còn {n} ngày',
-      moHoTro: 'Mở trang Hỗ trợ', moQuyen: 'Mở quản lý quyền', moDoiTac: 'Mở sổ đối tác', moChiTra: 'Mở thanh toán', moNhapSo: 'Mở nhập số liệu', moPhatHanh: 'Mở phát hành', moDuBao: 'Xem dự báo', moDoiChieu: 'Mở xét duyệt kỳ',
+      moHoTro: 'Mở trang Hỗ trợ', moQuyen: 'Mở quản lý quyền', moDoiTac: 'Mở sổ đối tác', moChiTra: 'Mở thanh toán', moNhapSo: 'Mở nhập số liệu', moPhieu: 'Mở phiếu giao việc', moPhatHanh: 'Mở phát hành', moDuBao: 'Xem dự báo', moDoiChieu: 'Mở xét duyệt kỳ',
       /* kinh doanh */
       kdDt: 'Doanh thu gộp quý {q}', kdTk: 'Tài khoản phụ trách', kdLabel: 'label', kdNs: 'nghệ sĩ', kdChiTieu: 'Chỉ tiêu quý', kdDat: 'đạt {p}',
       kdMoi: 'Tài khoản mới', kdGiaHan: 'Cần gia hạn', kdTienDo: 'Tiến độ chỉ tiêu', kdTienDoMo: 'Doanh thu gộp quý của các tài khoản bạn phụ trách so với chỉ tiêu.',
@@ -11633,6 +12038,7 @@ HT.dangKy({
       /* vận hành */
       vhPhatHanh: 'Hồ sơ phát hành', vhTicket: 'Ticket phát hành / nền tảng', vhKn: 'Khiếu nại đang mở',
       vhNgay: 'Ngày chờ nhập lượt nghe', vhNguon: 'Nguồn báo cáo chưa có số', vhQtNgay: 'Việc hằng ngày',
+      vhTool: 'Hồ sơ chưa đẩy tool nào', vhToolMo: 'Tiếp nhận rồi mà chưa đưa lên OneRPM hay tool nào khác.',
       vhQtNgayMo: 'Quy trình nhập số liệu, đánh dấu tới đâu biết tới đó. Bảng này tính theo ngày hôm nay.',
       vhNhap: 'Nhập số liệu', vhNhapMo: 'Ngày nào nguồn chưa về và kỳ nào còn thiếu nguồn báo cáo.',
       vhHangDoi: 'Giao nhận và sửa hàng loạt', vhHangDoiMo: 'Yêu cầu chưa xong. Bấm để mở trang tương ứng.',
@@ -11663,7 +12069,7 @@ HT.dangKy({
       open: 'New', in_progress: 'In progress', waiting: 'Waiting', done: 'Done',
       knOpen: 'New', knDisputed: 'Disputed', knEscalated: 'Escalated', knResolved: 'Resolved', knReleased: 'Released',
       low: 'Low', normal: 'Normal', high: 'High', urgent: 'Urgent', quaHan: 'overdue', conNgay: '{n} days left',
-      moHoTro: 'Open Support', moQuyen: 'Open Rights', moDoiTac: 'Open Partners', moChiTra: 'Open Payouts', moNhapSo: 'Open Data entry', moPhatHanh: 'Open Releases', moDuBao: 'See the forecast', moDoiChieu: 'Open approval',
+      moHoTro: 'Open Support', moQuyen: 'Open Rights', moDoiTac: 'Open Partners', moChiTra: 'Open Payouts', moNhapSo: 'Open Data entry', moPhieu: 'Open the worksheet', moPhatHanh: 'Open Releases', moDuBao: 'See the forecast', moDoiChieu: 'Open approval',
       kdDt: 'Quarter gross {q}', kdTk: 'Accounts managed', kdLabel: 'labels', kdNs: 'artists', kdChiTieu: 'Quarter target', kdDat: '{p} reached',
       kdMoi: 'New accounts', kdGiaHan: 'Renewals due', kdTienDo: 'Target progress', kdTienDoMo: 'Quarter gross of your accounts against the target.',
       kdTop: 'Largest accounts', kdTopMo: 'By quarter gross. Open the Partners directory for more.',
@@ -11680,6 +12086,7 @@ HT.dangKy({
       ktKy: 'Partners’ earnings per period', ktKyMo: 'Everything owed to payees, per period. The selected period is highlighted.',
       vhPhatHanh: 'Release submissions', vhTicket: 'Release / platform tickets', vhKn: 'Open claims',
       vhNgay: 'Days awaiting stream entry', vhNguon: 'Feeds with no figure', vhQtNgay: 'The daily routine',
+      vhTool: 'Submissions on no tool yet', vhToolMo: 'Received, but not yet pushed to OneRPM or any other tool.',
       vhQtNgayMo: 'The data-entry runbook; mark each step as you go. This copy is for today.',
       vhNhap: 'Data entry', vhNhapMo: 'Which days the feed has not reached, and which periods are still missing a feed.',
       vhHangDoi: 'Deliveries and bulk edits', vhHangDoiMo: 'Unfinished requests. Open a row for its page.',
@@ -12006,11 +12413,21 @@ function veVanHanh(c) {
   var rl = null; try { rl = A.releases.counts(); } catch (e) { rl = null; }
   var rlMo = rl ? Object.keys(rl).filter(function (k) { return k !== 'released' && k !== 'total' && typeof rl[k] === 'number'; }).reduce(function (a, k) { return a + rl[k]; }, 0) : 0;
   var db = null; try { db = A.forecastStreams(); } catch (e) { db = null; }
-  var html = nutLoi(c, [['nhap-so-lieu', 'moNhapSo', 'down2'], ['phat-hanh', 'moPhatHanh', 'disc'], ['ho-tro', 'moHoTro', 'info']]);
+  /* Hồ sơ đã tiếp nhận mà chưa đẩy lên tool nào là việc trễ nhất trong
+     ngày của vận hành: đối tác đã gửi, mà bài chưa đi đâu cả. */
+  var chuaTool = 0;
+  try {
+    chuaTool = A.releases.list().filter(function (r) {
+      return (r.status === 'received' || r.status === 'coded') &&
+        A.releases.tool.cua(r.id).filter(function (x) { return x.xong; }).length === 0;
+    }).length;
+  } catch (e) {}
+  var html = nutLoi(c, [['nhap-so-lieu', 'moNhapSo', 'down2'], ['phieu-giao', 'moPhieu', 'up'], ['phat-hanh', 'moPhatHanh', 'disc'], ['ho-tro', 'moHoTro', 'info']]);
   html += HM.so([
     { l: t('vhNgay'), v: HT.fmt.n(thieu.ngay), lon: true, s: t('vhNhapMo'),
       mau: thieu.ngay ? HB.mau('warn') : HB.mau('ok') },
     { l: t('vhNguon'), v: HT.fmt.n(thieu.ky), mau: thieu.ky ? HB.mau('warn') : HB.mau('ok') },
+    { l: t('vhTool'), v: HT.fmt.n(chuaTool), s: t('vhToolMo'), mau: chuaTool ? HB.mau('no') : HB.mau('ok') },
     { l: t('vhTicket'), v: HT.fmt.n(tk.length), s: HT.fmt.n(tk.filter(function (x) { return quaHan(A, x); }).length) + ' ' + t('quaHan') },
     { l: t('vhPhatHanh'), v: HT.fmt.n(rlMo) },
     { l: t('vhKn'), v: HT.fmt.n(kc.open + kc.disputed + kc.escalated) }
@@ -13845,6 +14262,1182 @@ function veTacDong(c) {
         mau: d.lech > 0 ? HB.mau('warn') : d.lech < 0 ? HB.mau('ok') : '' }
     ]) + than,
     chan: d.uocLuong ? HM.esc(t('tdUoc')) : ''
+  });
+}
+
+})();
+
+},
+/* ---- man/nhap-so-lieu.js ---- */
+function(){
+/* =====================================================================
+   NỘI BỘ · NHẬP SỐ LIỆU
+   ---------------------------------------------------------------------
+   Trang này là chỗ điều phối viên ngồi mỗi ngày. Mọi trang khác chỉ đọc
+   lại thứ được gõ ở đây, nên nếu có một trang phải chạy nhanh, gọn, không
+   bắt bấm nhiều thì là trang này.
+
+   Bốn việc, đúng theo nhịp thật của công việc:
+     · mỗi ngày — soát lượt nghe, ngày nào nguồn chưa về thì gõ vào;
+     · mỗi tháng — báo cáo nền tảng về thì gõ tổng của nguồn đó vào kỳ;
+     · khi cần — gõ số của từng bài, đè lên phần chia đều;
+     · bất cứ lúc nào — mở nhật ký xem ai gõ gì, gõ nhầm thì gỡ.
+
+   Số gõ tay luôn thắng số máy sinh. Bảng luôn hiện cả hai để người gõ
+   thấy mình vừa làm lệch bao nhiêu so với ước tính — lệch nhiều thường
+   là gõ nhầm đơn vị tiền hoặc nhầm kỳ, không phải thị trường đổi.
+   ===================================================================== */
+"use strict";
+(function () {
+
+var TAB = 'ngay';
+var CHON = { pIdx: null, fId: 0, q: '', ngay: null, bai: null, qBai: '' };
+
+HT.dangKy({
+  id: 'nhap-so-lieu', nav: 'navNhap', nhom: 'nhomVanHanh', icon: 'down2',
+  vai: ['ops', 'accounting', 'mgmt'],
+
+  chu: {
+    vi: {
+      navNhap: 'Nhập số liệu', h1: 'Nhập số liệu',
+      mo: 'Chỗ gõ số từ OneRPM, Warner, Believe, YouTube CMS vào hệ thống. Số gõ tay thắng số ước tính.',
+      tNgay: 'Lượt nghe hằng ngày', tSoat: 'Đối soát theo bài', tTien: 'Doanh thu theo kỳ', tBai: 'Doanh thu theo bài', tSu: 'Nhật ký nhập',
+      dsTieu: 'Đối soát nền tảng ngày {d}', dsMo: 'Mở bảng điều khiển của từng nền tảng, đọc số của ngày đó rồi gõ vào. Lệch dưới {p} coi là khớp; lệch hơn thì đánh dấu đỏ để xem lại, không tự sửa số.',
+      dsNt: 'Nền tảng', dsHt: 'Số hệ thống', dsTt: 'Số trên nền tảng', dsLech: 'Lệch', dsTrang: 'Trạng thái',
+      dsKhop: 'Khớp', dsLechT: 'Lệch', dsCho: 'Chưa đối soát', dsLuu: 'Đối soát', dsBo: 'Bỏ đối soát',
+      dsDa: 'Đã đối soát {n}: lệch {l}', dsDaBo: 'Đã bỏ đối soát {n}',
+      dsChonNgay: 'Đối soát ngày này', dsDangXem: 'đang đối soát',
+      dsTong: 'Tổng ngày sau đối soát', dsTongMo: 'Nền tảng đã đối soát lấy số vừa gõ, phần còn lại giữ số hệ thống. Cả sản phẩm chỉ có một con số cho một ngày.',
+
+      sbTieu: 'Đối soát một bài theo đường dẫn store', sbMo: 'Mỗi bài đã lên kệ có đường dẫn tới từng nền tảng. Mở link, đọc số của ngày, gõ vào đây. Dùng khi một bài trông lạ, không phải để chạy hằng ngày.',
+      sbTim: 'Tìm bài theo tên hoặc ISRC', sbChon: 'Chọn một bài để mở đường dẫn store',
+      sbGoiY: 'Bài nghe nhiều nhất bảy ngày qua', sbGoiYMo: 'Chưa gõ gì thì đây là những bài đáng soát trước; gõ tên hoặc ISRC để tìm bài khác.',
+      ckTieu: 'Số công khai trên store', ckKhongTien: 'không dùng để tính tiền',
+      ckMo: 'Số nền tảng hiện công khai trên trang bài. Đây là số CỘNG DỒN từ ngày phát hành, và nền tảng đếm khác với lượt nghe được trả tiền. Dùng để thấy sớm bài đang lên hay bị gỡ, không dùng để tính tiền — tiền vẫn theo báo cáo của nhà phân phối.',
+      ckNt: 'Nền tảng', ckSo: 'Số mới nhất', ckNgayDoc: 'Đọc ngày', ckNhip: 'Bình quân mỗi ngày', ckGo: 'Số đọc được',
+      ckLuu: 'Ghi', ckXoa: 'Bỏ', ckMoLink: 'Mở trang', ckChuaCo: 'chưa đọc lần nào',
+      ckKhongCo: 'Nền tảng này không công bố số ra ngoài',
+      ckLui: 'Số lùi so với lần trước — nền tảng tính lại hoặc bài bị gỡ bớt. Kiểm lại trước khi tin.',
+      ckLan: '{n} lần đọc', ckDa: 'Đã ghi {n}', ckDaXoa: 'Đã bỏ lần đọc ngày {d}',
+      ckChuaLink: 'Bài này chưa có link store nào. Dán link ở trang Phiếu giao việc phát hành trước.',
+      ckTuDong: 'Đọc tự động',
+      sbNgay: 'Ngày đối soát', sbLuot: 'Lượt nghe cả bài trong ngày', sbMoLink: 'Mở link',
+      sbCoCau: 'Số hệ thống của từng nền tảng suy từ cơ cấu nền tảng của chính bài ấy ở kỳ gần nhất; cơ cấu đổi chậm nên dùng cho một ngày là đủ sát.',
+      sbKhongLink: 'Bài này chưa có đường dẫn store nào — thường là chưa lên kệ.',
+      sbDa: 'Đã đối soát {n} cho {t}',
+      kNgayThieu: 'Ngày chờ nhập', kNgayThieuS: 'nguồn nền tảng chậm 1–2 ngày là bình thường',
+      kNguonThieu: 'Nguồn chưa có số', kNguonThieuS: 'trên mọi kỳ chưa xét duyệt',
+      kDaGo: 'Dòng đã gõ tay', kDaGoS: 'đang đè lên số ước tính',
+      kDoanhThu: 'Doanh thu đang ghi sổ', kDoanhThuS: 'cả 12 kỳ, chỉ nguồn đã có số',
+
+      cNgay: 'Ngày', cLuot: 'Lượt nghe', cUoc: 'Ước tính', cTrangThai: 'Trạng thái', cNguoi: 'Người nhập', cTT: 'Thao tác',
+      sTay: 'Đã nhập tay', sTuDong: 'Tự động', sCho: 'Chờ nhập',
+      goNgay: 'Nhập lượt nghe ngày {d}', goNgayMo: 'Tổng lượt nghe cả danh mục trong ngày đó, cộng mọi nền tảng. Lấy trên bảng điều khiển của từng nền tảng rồi cộng lại.',
+      lLuot: 'Tổng lượt nghe', traTuDong: 'Trả về số tự động', daGoNgay: 'Đã ghi {d}: {v} lượt', daTraNgay: 'Đã trả ngày {d} về số tự động',
+      ngayMo: 'Phần mềm tự cập nhật những ngày đã có số. Chỉ ngày nào nguồn chưa về mới cần gõ, và chỉ cần tổng.',
+
+      cKy: 'Kỳ', cTong: 'Đang ghi sổ', cChot: 'Số đã chốt', cLech: 'Lệch ước tính', cDuyet: 'Kỳ',
+      chuaCo: 'chưa có số', daDuyet: 'đã xét duyệt', dangMo: 'đang mở',
+      goKy: 'Nhập doanh thu · {f} · {p}', goKyMo: 'Tổng tiền của nguồn này trong kỳ này, lấy thẳng trên báo cáo. Những bài chưa gõ riêng sẽ chia theo tỷ trọng để cộng lại đúng bằng số này.',
+      lTien: 'Tổng doanh thu nguồn (USD)', lNguon: 'Lấy số từ đâu', lGhiChu: 'Ghi chú (tên file, ngày tải)',
+      daGoKy: 'Đã ghi {f} · {p}: {v}', uoc: 'Ước tính', dangCo: 'Đang ghi sổ',
+      tienMo: 'Mỗi ô là một nguồn trong một kỳ. Bấm để gõ tổng lấy từ báo cáo. Kỳ đã xét duyệt thì khoá lại.',
+
+      chonKy: 'Kỳ', chonNguon: 'Nguồn', timBai: 'Tìm tên bài hoặc ISRC', cBai: 'Bài hát', cIsrc: 'Mã ISRC',
+      goBai: 'Gõ số cho bài này', luuBai: 'Lưu', daGoBai: 'Đã ghi {t}: {v}', goiY: 'Đang hiện những bài có doanh thu lớn nhất kỳ. Gõ để tìm bài khác.',
+      dan: 'Dán từ bảng tính', danMo: 'Bôi đen cột ISRC và cột tiền trên báo cáo rồi dán vào đây. Mỗi dòng một bài, ngăn cách bằng tab, dấu phẩy hoặc chấm phẩy. Dòng nào không tra được ISRC thì bỏ qua và báo lại.',
+      danNut: 'Nhận khối này', danXong: 'Đã nhận {a} dòng, bỏ qua {b} dòng', danKhong: 'Không nhận được dòng nào. Kiểm lại cột ISRC.',
+      danBo: 'Dòng bị bỏ qua',
+      baiMo: 'Chỉ gõ theo bài khi báo cáo có dòng riêng cho bài đó. Bài đã gõ tay không bị chia lại khi bạn sửa tổng của nguồn.',
+      daTay: 'đã gõ tay',
+
+      cLuc: 'Lúc', cKieu: 'Kiểu', cDoiTuong: 'Nội dung', cTruoc: 'Số trước', cSau: 'Số sau',
+      kieuKy: 'Tổng nguồn', kieuBai: 'Theo bài', go: 'Gỡ', hoiGo: 'Gỡ dòng vừa nhập',
+      hoiGoMo: 'Gỡ xong số quay về mức trước đó. Việc này có ghi nhật ký.', daGo: 'Đã gỡ dòng {id}',
+      suMo: 'Sáu mươi dòng gần nhất. Gỡ một dòng là trả số về đúng mức trước khi gõ.',
+      trongSu: 'Chưa ai gõ số nào. Bảng bên trái vẫn đang chạy bằng số ước tính.',
+
+      in: 'Bản in', inTieu: 'Nhật ký nhập số liệu', inPhu: 'Ai gõ số nào, lúc nào, và số trước đó là bao nhiêu.',
+      qt: 'Quy trình mỗi ngày'
+    },
+    en: {
+      navNhap: 'Data entry', h1: 'Data entry',
+      mo: 'Where figures from OneRPM, Warner, Believe and YouTube CMS are keyed in. Keyed figures beat estimates.',
+      tNgay: 'Daily streams', tSoat: 'Reconcile a track', tTien: 'Revenue by period', tBai: 'Revenue by track', tSu: 'Entry log',
+      dsTieu: 'Platform reconciliation for {d}', dsMo: 'Open each platform’s dashboard, read that day’s figure and key it in. Under {p} counts as matching; more than that is flagged red for review — nothing is silently corrected.',
+      dsNt: 'Platform', dsHt: 'System figure', dsTt: 'Platform figure', dsLech: 'Difference', dsTrang: 'Status',
+      dsKhop: 'Matches', dsLechT: 'Off', dsCho: 'Not reconciled', dsLuu: 'Reconcile', dsBo: 'Undo',
+      dsDa: 'Reconciled {n}: off by {l}', dsDaBo: 'Undid the {n} reconciliation',
+      dsChonNgay: 'Reconcile this day', dsDangXem: 'being reconciled',
+      dsTong: 'Day total after reconciliation', dsTongMo: 'Reconciled platforms use the keyed figure; the rest keep the system figure. One number per day across the whole product.',
+
+      sbTieu: 'Reconcile one track through its store links', sbMo: 'Every released track has a link to each platform. Open it, read the day’s figure, key it in. For when a track looks odd — not for the daily loop.',
+      sbTim: 'Search by title or ISRC', sbChon: 'Pick a track to open its store links',
+      sbGoiY: 'Most-streamed tracks of the last seven days', sbGoiYMo: 'With no search these are the ones worth checking first; type a title or ISRC to find another.',
+      ckTieu: 'Public figures on the stores', ckKhongTien: 'not used for money',
+      ckMo: 'What the platform shows publicly on the track page. It is CUMULATIVE since release, and platforms count plays differently from royalty-bearing streams. Use it to spot a track rising or being pulled, never to compute money — money still follows the distributor’s report.',
+      ckNt: 'Platform', ckSo: 'Latest figure', ckNgayDoc: 'Read on', ckNhip: 'Average per day', ckGo: 'Figure you read',
+      ckLuu: 'Save', ckXoa: 'Remove', ckMoLink: 'Open page', ckChuaCo: 'never read',
+      ckKhongCo: 'This platform publishes no figure',
+      ckLui: 'The figure went down since last time — the platform recounted, or content was pulled. Check before trusting it.',
+      ckLan: '{n} readings', ckDa: 'Saved {n}', ckDaXoa: 'Removed the reading for {d}',
+      ckChuaLink: 'This track has no store link yet. Paste one on the delivery worksheet first.',
+      ckTuDong: 'Read automatically',
+      sbNgay: 'Date', sbLuot: 'The track’s streams that day', sbMoLink: 'Open',
+      sbCoCau: 'Each platform’s system figure comes from that track’s own platform mix in the most recent period; the mix moves slowly, so it is close enough for one day.',
+      sbKhongLink: 'This track has no store links yet — usually it is not live.',
+      sbDa: 'Reconciled {n} for {t}',
+      kNgayThieu: 'Days awaiting entry', kNgayThieuS: 'platform feeds run one to two days behind',
+      kNguonThieu: 'Feeds with no figure', kNguonThieuS: 'across all unapproved periods',
+      kDaGo: 'Hand-keyed rows', kDaGoS: 'currently overriding the estimate',
+      kDoanhThu: 'Revenue on the books', kDoanhThuS: 'all 12 periods, feeds with a figure only',
+
+      cNgay: 'Date', cLuot: 'Streams', cUoc: 'Estimate', cTrangThai: 'Status', cNguoi: 'Entered by', cTT: 'Actions',
+      sTay: 'Keyed in', sTuDong: 'Automatic', sCho: 'Awaiting entry',
+      goNgay: 'Enter streams for {d}', goNgayMo: 'Total catalogue streams that day across every platform. Take each platform’s daily total and add them up.',
+      lLuot: 'Total streams', traTuDong: 'Back to automatic', daGoNgay: 'Recorded {d}: {v} streams', daTraNgay: '{d} is back on the automatic figure',
+      ngayMo: 'The software keeps the settled days up to date on its own. Only days the feed has not reached need keying, and only the total.',
+
+      cKy: 'Period', cTong: 'On the books', cChot: 'Figure keyed', cLech: 'vs estimate', cDuyet: 'Period',
+      chuaCo: 'no figure', daDuyet: 'approved', dangMo: 'open',
+      goKy: 'Enter revenue · {f} · {p}', goKyMo: 'This feed’s total for this period, straight off the report. Tracks without their own figure are scaled so they add up to exactly this.',
+      lTien: 'Feed revenue total (USD)', lNguon: 'Where the figure came from', lGhiChu: 'Note (file name, download date)',
+      daGoKy: 'Recorded {f} · {p}: {v}', uoc: 'Estimate', dangCo: 'On the books',
+      tienMo: 'Each cell is one feed in one period. Click to key in the report total. Approved periods are locked.',
+
+      chonKy: 'Period', chonNguon: 'Feed', timBai: 'Search title or ISRC', cBai: 'Track', cIsrc: 'ISRC code',
+      goBai: 'Key a figure for this track', luuBai: 'Save', daGoBai: 'Recorded {t}: {v}', goiY: 'Showing the period’s largest earners. Type to find another track.',
+      dan: 'Paste from a spreadsheet', danMo: 'Select the ISRC column and the amount column on the report and paste them here. One track per line, separated by a tab, comma or semicolon. Lines whose ISRC cannot be matched are skipped and listed back.',
+      danNut: 'Take this block', danXong: 'Took {a} lines, skipped {b}', danKhong: 'Nothing could be taken. Check the ISRC column.',
+      danBo: 'Skipped lines',
+      baiMo: 'Key a track only when the report itemises it. Hand-keyed tracks are not rescaled when you change the feed total.',
+      daTay: 'keyed',
+
+      cLuc: 'When', cKieu: 'Kind', cDoiTuong: 'What', cTruoc: 'Was', cSau: 'Now',
+      kieuKy: 'Feed total', kieuBai: 'Per track', go: 'Undo', hoiGo: 'Undo this entry',
+      hoiGoMo: 'The figure returns to what it was before. The undo is logged.', daGo: 'Undid {id}',
+      suMo: 'The last sixty rows. Undoing one returns the figure to what it was before it was keyed.',
+      trongSu: 'Nothing keyed yet. The tables are still running on estimates.',
+
+      in: 'Print view', inTieu: 'Data entry log', inPhu: 'Who keyed what, when, and what it was before.',
+      qt: 'The daily routine'
+    }
+  },
+
+  dem: function (c) {
+    try { var x = c.A.nhapLieu.conThieu(); return x.tong ? '!' + x.tong : ''; } catch (e) { return ''; }
+  },
+
+  ve: function (root, c) {
+    var A = c.A, t = c.t;
+    var thieu = A.nhapLieu.conThieu();
+    var bang = A.nhapLieu.bang();
+    var daGo = A.nhapLieu.nhatKy(999).length;
+    var tongSo = bang.reduce(function (s, r) { return s + r.thuc; }, 0);
+    if (CHON.pIdx == null) {
+      var mo = bang.filter(function (r) { return !r.duyet; })[0];
+      CHON.pIdx = mo ? mo.pIdx : bang.length - 1;
+    }
+
+    var html = HM.dau({
+      h1: HM.esc(t('h1')), mo: HM.esc(t('mo')),
+      nut: '<button type="button" class="btn sm ghost" data-in>' + HM.icon('file') + HM.esc(t('in')) + '</button>'
+    });
+    html += HM.so([
+      { l: t('kNgayThieu'), v: HT.fmt.n(thieu.ngay), s: t('kNgayThieuS'), mau: thieu.ngay ? HB.mau('warn') : HB.mau('ok') },
+      { l: t('kNguonThieu'), v: HT.fmt.n(thieu.ky), s: t('kNguonThieuS'), mau: thieu.ky ? HB.mau('warn') : HB.mau('ok') },
+      { l: t('kDaGo'), v: HT.fmt.n(daGo), s: t('kDaGoS'), mau: daGo ? HB.mau('ok') : '' },
+      { l: t('kDoanhThu'), v: c.tien(tongSo), s: t('kDoanhThuS'), lon: true }
+    ]);
+    html += HM.tabs([
+      { k: 'ngay', l: t('tNgay'), icon: 'cal', dem: thieu.lech ? '!' + thieu.lech : undefined },
+      { k: 'soat', l: t('tSoat'), icon: 'link' },
+      { k: 'tien', l: t('tTien'), icon: 'cash' },
+      { k: 'bai', l: t('tBai'), icon: 'disc' },
+      { k: 'su', l: t('tSu'), icon: 'clock' }
+    ], TAB);
+
+    if (TAB === 'ngay') html += veNgay(c);
+    if (TAB === 'soat') html += veSoatBai(c);
+    if (TAB === 'tien') html += veTien(c, bang);
+    if (TAB === 'bai') html += veBai(c, bang);
+    if (TAB === 'su') html += veSu(c);
+
+    root.innerHTML = html;
+    HB.gan(root);
+
+    HM.bam(root, '[data-tab]', function (el) { TAB = el.getAttribute('data-tab'); c.veLai(); });
+    HM.bam(root, '[data-in]', function () { inRa(c); });
+    HM.bam(root, '[data-o-ngay]', function (el) { goNgay(c, el.getAttribute('data-o-ngay'), el.getAttribute('data-uoc')); });
+    HM.bam(root, '[data-tra-ngay]', function (el) {
+      var d = el.getAttribute('data-tra-ngay');
+      try { A.nhapLieu.xoaNgay(d, A.staff.me.name); c.thongBao(t('daTraNgay').replace('{d}', HT.fmt.ngay(d)), 'ok'); HM.quenHet(); c.veLai(); }
+      catch (e) { c.thongBao(e.message, 'no'); }
+    });
+    HM.bam(root, '[data-o-ky]', function (el) {
+      var v = el.getAttribute('data-o-ky').split(':');
+      goKy(c, +v[0], +v[1]);
+    });
+    HM.doi(root, '[data-chon-ky]', function (el) { CHON.pIdx = +el.value; c.veLai(); });
+    HM.doi(root, '[data-chon-nguon]', function (el) { CHON.fId = +el.value; c.veLai(); });
+    HM.nhap(root, '[data-tim]', function (el) { CHON.q = el.value; c.veLai(); });
+    HM.bam(root, '[data-luu-bai]', function (el) {
+      var i = +el.getAttribute('data-luu-bai');
+      var o = root.querySelector('[data-so-bai="' + i + '"]');
+      var v = o ? o.value : '';
+      if (v === '') return;
+      try {
+        var e2 = A.nhapLieu.ghiBai(CHON.pIdx, CHON.fId, i, parseFloat(String(v).replace(',', '.')), { nguon: nguonMacDinh(A) }, A.staff.me.name);
+        c.thongBao(t('daGoBai').replace('{t}', e2.tenBai).replace('{v}', c.tien2(e2.tien)), 'ok');
+        HM.quenHet(); c.veLai();
+      } catch (err) { c.thongBao(err.message, 'no'); }
+    });
+    HM.bam(root, '[data-soat-ngay]', function (el) { CHON.ngay = el.getAttribute('data-soat-ngay'); c.veLai(); });
+    HM.doi(root, '[data-soat-chon-ngay]', function (el) { CHON.ngay = el.value; c.veLai(); });
+    HM.nhap(root, '[data-tim-bai]', function (el) { CHON.qBai = el.value; c.veLai(); });
+    HM.bam(root, '[data-chon-bai]', function (el) { CHON.bai = +el.getAttribute('data-chon-bai'); c.veLai(); });
+    HM.bam(root, '[data-luu-nt]', function (el) {
+      var nt = el.getAttribute('data-luu-nt');
+      var o = root.querySelector('[data-so-nt="' + nt.replace(/"/g, '\\"') + '"]');
+      if (!o || o.value === '') return;
+      try {
+        var kq = A.nhapLieu.ghiDoiSoat(CHON.ngay, nt, parseFloat(o.value), {}, A.staff.me.name);
+        var h = kq.filter(function (x) { return x.plat === nt; })[0];
+        c.thongBao(t('dsDa').replace('{n}', nt).replace('{l}', h.lechPct == null ? '—' : HT.fmt.pct(h.lechPct)), h.trangThai === 'lech' ? 'no' : 'ok');
+        HM.quenHet(); c.veLai();
+      } catch (e) { c.thongBao(e.message, 'no'); }
+    });
+    HM.bam(root, '[data-bo-nt]', function (el) {
+      var nt = el.getAttribute('data-bo-nt');
+      try { A.nhapLieu.boDoiSoat(CHON.ngay, nt, A.staff.me.name); c.thongBao(t('dsDaBo').replace('{n}', nt), 'ok'); HM.quenHet(); c.veLai(); }
+      catch (e) { c.thongBao(e.message, 'no'); }
+    });
+    HM.bam(root, '[data-luu-bai-nt]', function (el) {
+      var nt = el.getAttribute('data-luu-bai-nt');
+      var o = root.querySelector('[data-so-bai-nt="' + nt.replace(/"/g, '\\"') + '"]');
+      if (!o || o.value === '' || CHON.bai == null) return;
+      try {
+        var kq = A.nhapLieu.ghiDoiSoatBai(CHON.bai, CHON.ngay, nt, parseFloat(o.value), A.staff.me.name);
+        c.thongBao(t('sbDa').replace('{n}', nt).replace('{t}', kq.title), 'ok');
+        HM.quenHet(); c.veLai();
+      } catch (e) { c.thongBao(e.message, 'no'); }
+    });
+    HM.bam(root, '[data-ck-luu]', function (el) {
+      var nt = el.getAttribute('data-ck-luu');
+      var o = root.querySelector('[data-ck="' + nt.replace(/"/g, '\\"') + '"]');
+      if (!o || o.value === '' || CHON.bai == null) return;
+      try {
+        var isrc = A.nhapLieu.baiNgay(CHON.bai, CHON.ngay).isrc;
+        A.soCongKhai.ghi(isrc, nt, CHON.ngay, parseInt(o.value, 10), A.staff.me.name);
+        c.thongBao(t('ckDa').replace('{n}', nt), 'ok'); HM.quenHet(); c.veLai();
+      } catch (e) { c.thongBao(e.message, 'no'); }
+    });
+    HM.bam(root, '[data-ck-xoa]', function (el) {
+      var nt = el.getAttribute('data-ck-xoa');
+      if (CHON.bai == null) return;
+      try {
+        var isrc = A.nhapLieu.baiNgay(CHON.bai, CHON.ngay).isrc;
+        var hang = A.soCongKhai.cua(isrc).find(function (x) { return x.plat === nt; });
+        if (!hang || !hang.moiNhat) return;
+        A.soCongKhai.xoa(isrc, nt, hang.moiNhat.ngay, A.staff.me.name);
+        c.thongBao(t('ckDaXoa').replace('{d}', HT.fmt.ngay(hang.moiNhat.ngay)), 'ok'); HM.quenHet(); c.veLai();
+      } catch (e) { c.thongBao(e.message, 'no'); }
+    });
+    HM.bam(root, '[data-bo-bai-nt]', function (el) {
+      var nt = el.getAttribute('data-bo-bai-nt');
+      if (CHON.bai == null) return;
+      try { A.nhapLieu.boDoiSoatBai(CHON.bai, CHON.ngay, nt, A.staff.me.name); c.thongBao(t('dsDaBo').replace('{n}', nt), 'ok'); HM.quenHet(); c.veLai(); }
+      catch (e) { c.thongBao(e.message, 'no'); }
+    });
+    HM.bam(root, '[data-nhan-dan]', function () {
+      var o = root.querySelector('[data-dan]');
+      if (!o || !o.value.trim()) return;
+      try {
+        var kq = A.nhapLieu.danBai(CHON.pIdx, CHON.fId, o.value, { nguon: nguonMacDinh(A) }, A.staff.me.name);
+        if (!kq.ok.length) { c.thongBao(t('danKhong'), 'no'); return; }
+        c.thongBao(t('danXong').replace('{a}', kq.ok.length).replace('{b}', kq.bo.length), 'ok');
+        if (kq.bo.length) {
+          c.hoiThoai({ tieuDe: t('danBo') + ' · ' + kq.bo.length, moTa: HM.esc(t('danMo')),
+            than: '<ul class="say-list">' + kq.bo.slice(0, 20).map(function (x) {
+              return '<li>' + HM.esc((c.lang === 'en' ? 'Line ' : 'Dòng ') + x.dong + ' · ' + x.ly + ' · ' + HM.dai(x.chu, 40)) + '</li>';
+            }).join('') + '</ul>', huy: false, dong: c.lang === 'en' ? 'Close' : 'Đóng' });
+        }
+        HM.quenHet(); c.veLai();
+      } catch (e) { c.thongBao(e.message, 'no'); }
+    });
+    HM.bam(root, '[data-go]', function (el) {
+      var id = el.getAttribute('data-go');
+      c.xacNhan(t('hoiGo'), HM.esc(t('hoiGoMo')), t('go'), true).then(function (ok) {
+        if (!ok) return;
+        try { A.nhapLieu.go(id, A.staff.me.name); c.thongBao(t('daGo').replace('{id}', id), 'ok'); HM.quenHet(); c.veLai(); }
+        catch (e) { c.thongBao(e.message, 'no'); }
+      });
+    });
+    HM.bam(root, '[data-di]', function (el) { c.di(el.getAttribute('data-di')); });
+  }
+});
+
+function nguonMacDinh(A) { return A.nhapLieu.nguon()[0].id; }
+
+/* =====================================================================
+   TAB 1 — LƯỢT NGHE HẰNG NGÀY
+   Việc lặp mỗi ngày. Bảng xếp ngày mới nhất lên đầu vì đó là ngày duy
+   nhất người dùng thật sự cần chạm tới.
+   ===================================================================== */
+function veNgay(c) {
+  var A = c.A, t = c.t;
+  var ds = A.nhapLieu.ngay(30);
+  var cho = ds.filter(function (x) { return x.trangThai === 'cho'; });
+  var than = '<div class="tw"><table class="t"><thead><tr>' +
+    '<th>' + HM.esc(t('cNgay')) + '</th>' +
+    '<th class="num">' + HM.esc(t('cLuot')) + '</th>' +
+    '<th class="num">' + HM.esc(t('cUoc')) + HM.hoi(t('ngayMo')) + '</th>' +
+    '<th>' + HM.esc(t('cTrangThai')) + '</th>' +
+    '<th>' + HM.esc(t('cNguoi')) + '</th>' +
+    '<th>' + HM.esc(t('cTT')) + '</th></tr></thead><tbody>' +
+    ds.map(function (x) {
+      var tag = x.trangThai === 'tay' ? HM.tag(t('sTay'), 'ok')
+        : x.trangThai === 'cho' ? HM.tag(t('sCho'), 'warn') : HM.tag(t('sTuDong'), '');
+      return '<tr' + (x.trangThai === 'cho' ? ' class="canh"' : '') + '>' +
+        '<td class="mono">' + HM.esc(HT.fmt.ngay(x.ngay)) + '</td>' +
+        '<td class="num mono"><b>' + (x.tong > 0 ? HM.esc(HT.fmt.n(x.tong)) : '<span class="nil">—</span>') + '</b></td>' +
+        '<td class="num mono muted">' + HM.esc(HT.fmt.n(x.tuSinh)) + '</td>' +
+        '<td>' + tag + '</td>' +
+        '<td class="muted">' + (x.by ? HM.esc(x.by) : '<span class="nil">—</span>') + '</td>' +
+        '<td><div class="btnrow" style="flex-wrap:nowrap">' +
+          '<button type="button" class="btn sm' + (x.trangThai === 'cho' ? ' pri' : ' ghost') + '" data-o-ngay="' + x.ngay + '" data-uoc="' + x.tuSinh + '">' +
+            HM.esc(x.trangThai === 'tay' ? t('goBai') : t('lLuot')) + '</button>' +
+          '<button type="button" class="btn sm ghost' + (CHON.ngay === x.ngay ? ' on' : '') + '" data-soat-ngay="' + x.ngay + '">' + HM.esc(t('dsChonNgay')) + '</button>' +
+          (x.trangThai === 'tay' ? '<button type="button" class="btn sm ghost" data-tra-ngay="' + x.ngay + '">' + HM.esc(t('traTuDong')) + '</button>' : '') +
+        '</div></td></tr>';
+    }).join('') + '</tbody></table></div>';
+
+  var html = '';
+  if (cho.length) {
+    html += HM.ghi({ kieu: 'warn', icon: 'clock',
+      tieuDe: HM.esc(t('kNgayThieu')) + ' · ' + cho.length,
+      than: HM.esc(cho.map(function (x) { return HT.fmt.ngay(x.ngay); }).join(' · ')) });
+  }
+  html += '<div class="grid g2">' +
+    HM.the({ h2: HM.esc(t('tNgay')), p: HM.esc(t('ngayMo')), thoBody: true, than: than }) +
+    HM.the({ h2: HM.esc(t('qt')), icon: 'list',
+      than: HTS.soTay(c, 'nhap-so-lieu') }) +
+    '</div>';
+  html += veDoiSoat(c, ds);
+  return html;
+}
+
+/* ---- đối soát từng nền tảng cho một ngày ---- */
+function veDoiSoat(c, ds) {
+  var A = c.A, t = c.t;
+  if (!CHON.ngay) CHON.ngay = (ds.filter(function (x) { return x.trangThai !== 'cho'; })[0] || ds[0]).ngay;
+  var rows;
+  try { rows = A.nhapLieu.nenTangNgay(CHON.ngay); } catch (e) { return ''; }
+  var nguong = A.nhapLieu.nguongLech();
+  var tong = A.nhapLieu.ngay(30).filter(function (x) { return x.ngay === CHON.ngay; })[0];
+
+  var than = '<div class="tw"><table class="t"><thead><tr>' +
+    '<th>' + HM.esc(t('dsNt')) + '</th>' +
+    '<th class="num">' + HM.esc(t('dsHt')) + '</th>' +
+    '<th class="num">' + HM.esc(t('dsTt')) + '</th>' +
+    '<th class="num">' + HM.esc(t('dsLech')) + '</th>' +
+    '<th>' + HM.esc(t('dsTrang')) + '</th>' +
+    '<th>' + HM.esc(t('cNguoi')) + '</th>' +
+    '<th>' + HM.esc(t('cTT')) + HM.hoi(t('dsMo').replace('{p}', HT.fmt.pct(nguong))) + '</th></tr></thead><tbody>' +
+    rows.map(function (r) {
+      var tag = r.trangThai === 'khop' ? HM.tag(t('dsKhop'), 'ok')
+        : r.trangThai === 'lech' ? HM.tag(t('dsLechT'), 'no') : HM.tag(t('dsCho'), '');
+      return '<tr' + (r.trangThai === 'lech' ? ' class="canh"' : '') + '>' +
+        '<td>' + HM.tenBia({ ten: r.plat, seed: r.plat }) + '</td>' +
+        '<td class="num mono muted">' + HM.esc(HT.fmt.n(r.heThong)) + '</td>' +
+        '<td class="num mono"><b>' + (r.thucTe == null ? '<span class="nil">—</span>' : HM.esc(HT.fmt.n(r.thucTe))) + '</b></td>' +
+        '<td class="num mono">' + (r.lech == null ? '<span class="nil">—</span>'
+          : '<span class="' + (r.trangThai === 'lech' ? 'neg' : 'pos') + '">' + (r.lech > 0 ? '+' : '') + HM.esc(HT.fmt.n(r.lech)) +
+            (r.lechPct == null ? '' : ' · ' + HM.esc(HT.fmt.pct(r.lechPct))) + '</span>') + '</td>' +
+        '<td>' + tag + '</td>' +
+        '<td class="muted">' + (r.by ? HM.esc(r.by) : '<span class="nil">—</span>') + '</td>' +
+        '<td><div class="bar" style="margin:0;gap:6px;flex-wrap:nowrap">' +
+          '<input class="in mono" type="number" min="0" step="1" style="width:120px" data-so-nt="' + HM.esc(r.plat) + '" value="' + (r.thucTe == null ? '' : r.thucTe) + '" placeholder="' + HM.esc(HT.fmt.n(r.heThong)) + '">' +
+          '<button type="button" class="btn sm pri" data-luu-nt="' + HM.esc(r.plat) + '">' + HM.esc(t('dsLuu')) + '</button>' +
+          (r.thucTe == null ? '' : '<button type="button" class="btn sm ghost" data-bo-nt="' + HM.esc(r.plat) + '">' + HM.esc(t('dsBo')) + '</button>') +
+        '</div></td></tr>';
+    }).join('') + '</tbody></table></div>';
+
+  return HM.the({
+    h2: HM.esc(t('dsTieu').replace('{d}', HT.fmt.ngay(CHON.ngay))),
+    p: HM.esc(t('dsMo').replace('{p}', HT.fmt.pct(nguong))), icon: 'swap', thoBody: true,
+    than: than,
+    chan: HM.esc(t('dsTong')) + ': <b>' + HM.esc(HT.fmt.n(tong ? tong.tong : 0)) + '</b> · ' + HM.esc(t('dsTongMo'))
+  });
+}
+
+/* =====================================================================
+   TAB — ĐỐI SOÁT MỘT BÀI THEO ĐƯỜNG DẪN STORE
+   ===================================================================== */
+function veSoatBai(c) {
+  var A = c.A, t = c.t;
+  var ngayDs = A.nhapLieu.ngay(30);
+  if (!CHON.ngay) CHON.ngay = ngayDs[0].ngay;
+  var thanh = '<div class="bar">' +
+    '<div class="srch">' + HM.icon('tim') + '<input type="search" data-tim-bai placeholder="' +
+      HM.esc(t('sbTim')) + '" value="' + HM.esc(CHON.qBai) + '"></div>' +
+    '<select class="in" data-soat-chon-ngay style="width:auto;height:34px" aria-label="' + HM.esc(t('sbNgay')) + '">' +
+      ngayDs.slice(0, 14).map(function (x) {
+        return '<option value="' + x.ngay + '"' + (x.ngay === CHON.ngay ? ' selected' : '') + '>' + HM.esc(HT.fmt.ngay(x.ngay)) + '</option>';
+      }).join('') + '</select></div>';
+
+  /* Không gõ gì thì vẫn phải có việc để làm: mở tab ra là thấy ngay những
+     bài nghe nhiều nhất tuần, tức là những bài lệch một chút cũng thành
+     tiền. Gõ vào ô tìm thì danh sách đổi sang kết quả tìm. */
+  var ds = [], goiY = false;
+  if (CHON.qBai.trim().length >= 2) {
+    try { ds = A.search(CHON.qBai.trim(), 8).tracks.map(function (x) {
+      return { id: x.id, title: x.title, artist: x.artist, isrc: x.isrc, luot: x.streamsMonth }; }); } catch (e) { ds = []; }
+  } else {
+    goiY = true;
+    try { ds = A.dailyTrends(7, 12).topTracks.slice(0, 8).map(function (x) {
+      return { id: x.id, title: x.title, artist: x.artist, isrc: x.isrc, luot: x.streams }; }); } catch (e) { ds = []; }
+  }
+  var chon = '';
+  if (ds.length) {
+    chon = (goiY ? '<p class="say">' + HM.esc(t('sbGoiY')) + HM.hoi(t('sbGoiYMo')) + '</p>' : '') +
+      '<div class="tw"><table class="t"><tbody>' + ds.map(function (x) {
+      return '<tr class="pick" data-chon-bai="' + x.id + '">' +
+        '<td>' + HM.tenBia({ ten: x.title, bia: x.id, seed: x.id, phu: x.artist + ' · ' + x.isrc }) + '</td>' +
+        '<td class="num mono muted">' + HM.esc(HT.fmt.n(x.luot)) + '</td></tr>';
+    }).join('') + '</tbody></table></div>';
+  }
+
+  var khoi = '';
+  if (CHON.bai != null) {
+    khoi += veCongKhai(c);
+    var b;
+    try { b = A.nhapLieu.baiNgay(CHON.bai, CHON.ngay); } catch (e) { b = null; }
+    if (b) {
+      var co = b.rows.filter(function (r) { return r.url; });
+      khoi += HM.the({
+        h2: HM.esc(b.title), p: HM.esc(b.artist + ' · ' + b.isrc), icon: 'link', thoBody: true,
+        than: HM.kv([
+          { t: t('sbNgay'), v: HT.fmt.ngay(b.ngay) },
+          { t: t('sbLuot'), v: HT.fmt.n(b.luotNgay), manh: true }
+        ]) + (co.length ? '<div class="tw"><table class="t"><thead><tr>' +
+          '<th>' + HM.esc(t('dsNt')) + '</th><th class="num">' + HM.esc(t('dsHt')) + '</th>' +
+          '<th class="num">' + HM.esc(t('dsTt')) + '</th><th class="num">' + HM.esc(t('dsLech')) + '</th>' +
+          '<th>' + HM.esc(t('dsTrang')) + '</th><th>' + HM.esc(t('cTT')) + HM.hoi(t('sbCoCau')) + '</th></tr></thead><tbody>' +
+          co.map(function (r) {
+            var tag = r.trangThai === 'khop' ? HM.tag(t('dsKhop'), 'ok')
+              : r.trangThai === 'lech' ? HM.tag(t('dsLechT'), 'no') : HM.tag(t('dsCho'), '');
+            return '<tr' + (r.trangThai === 'lech' ? ' class="canh"' : '') + '>' +
+              '<td><a href="' + HM.esc(r.url) + '" target="_blank" rel="noopener">' + HM.esc(r.plat) + '</a>' +
+                '<div class="t-sub">' + HM.esc(HM.dai(r.url.replace(/^https?:\/\//, ''), 40)) + '</div></td>' +
+              '<td class="num mono muted">' + HM.esc(HT.fmt.n(r.heThong)) + '</td>' +
+              '<td class="num mono"><b>' + (r.thucTe == null ? '<span class="nil">—</span>' : HM.esc(HT.fmt.n(r.thucTe))) + '</b></td>' +
+              '<td class="num mono">' + (r.lech == null ? '<span class="nil">—</span>'
+                : '<span class="' + (r.trangThai === 'lech' ? 'neg' : 'pos') + '">' + (r.lech > 0 ? '+' : '') + HM.esc(HT.fmt.n(r.lech)) + '</span>') + '</td>' +
+              '<td>' + tag + '</td>' +
+              '<td><div class="bar" style="margin:0;gap:6px;flex-wrap:nowrap">' +
+                '<input class="in mono" type="number" min="0" step="1" style="width:104px" data-so-bai-nt="' + HM.esc(r.plat) + '" value="' + (r.thucTe == null ? '' : r.thucTe) + '" placeholder="' + HM.esc(HT.fmt.n(r.heThong)) + '">' +
+                '<button type="button" class="btn sm pri" data-luu-bai-nt="' + HM.esc(r.plat) + '">' + HM.esc(t('dsLuu')) + '</button>' +
+                (r.thucTe == null ? '' : '<button type="button" class="btn sm ghost" data-bo-bai-nt="' + HM.esc(r.plat) + '">' + HM.esc(t('dsBo')) + '</button>') +
+              '</div></td></tr>';
+          }).join('') + '</tbody></table></div>'
+          : HM.trong({ icon: 'link', tieuDe: t('sbKhongLink'), moTa: t('sbMo') }))
+      });
+    }
+  }
+
+  return HM.the({ h2: HM.esc(t('sbTieu')), p: HM.esc(t('sbMo')), icon: 'link',
+    than: thanh + (chon || (CHON.bai == null ? HM.trong({ icon: 'tim', tieuDe: t('sbChon'), moTa: t('sbMo') }) : '')) }) + khoi;
+}
+
+/* =====================================================================
+   SỐ CÔNG KHAI TRÊN STORE — tín hiệu, không phải tiền
+   ---------------------------------------------------------------------
+   Nhân viên mở link store của bài, đọc con số nền tảng đang hiện, gõ vào
+   đây. Con số ấy là CỘNG DỒN, nên bảng tính hiệu hai lần đọc liên tiếp
+   rồi chia số ngày để ra bình quân mỗi ngày.
+
+   Vì sao không nối vào chuỗi chia tiền: nền tảng đếm "lượt phát" khác
+   với lượt nghe được trả tiền, và nhiều nền tảng không công bố gì cả.
+   Nhãn "không dùng để tính tiền" nằm ngay cạnh tiêu đề để không ai
+   nhầm — kể cả người mở trang lần đầu.
+   ===================================================================== */
+function veCongKhai(c) {
+  var A = c.A, t = c.t;
+  var ds;
+  try { ds = A.soCongKhai.cuaBai(CHON.bai); } catch (e) { return ''; }
+  var coLink = ds.some(function (x) { return x.url; });
+
+  return HM.the({
+    h2: HM.esc(t('ckTieu')) + ' ' + HM.tag(t('ckKhongTien'), 'warn'),
+    p: HM.esc(t('ckMo')), icon: 'chart', thoBody: true,
+    than: coLink ? '<div class="tw"><table class="t"><thead><tr>' +
+      '<th>' + HM.esc(t('ckNt')) + '</th>' +
+      '<th class="num">' + HM.esc(t('ckSo')) + '</th>' +
+      '<th class="num">' + HM.esc(t('ckNhip')) + HM.hoi(t('ckMo')) + '</th>' +
+      '<th>' + HM.esc(t('ckNgayDoc')) + '</th>' +
+      '<th>' + HM.esc(t('ckGo')) + '</th></tr></thead><tbody>' +
+      ds.map(function (x) {
+        if (!x.co) return '<tr><td>' + HM.esc(c.lang === 'vi' ? x.plat : x.platEn) + '</td>' +
+          '<td colspan="4" class="muted">' + HM.esc(t('ckKhongCo')) + ' · ' + HM.esc(c.lang === 'vi' ? x.ghi : x.ghiEn) + '</td></tr>';
+        return '<tr' + (x.lui ? ' class="canh"' : '') + '>' +
+          '<td>' + (x.url
+            ? '<a href="' + HM.esc(x.url) + '" target="_blank" rel="noopener">' + HM.esc(c.lang === 'vi' ? x.plat : x.platEn) + '</a>'
+            : HM.esc(c.lang === 'vi' ? x.plat : x.platEn)) +
+            '<div class="t-sub">' + HM.esc(t('ckLan').replace('{n}', x.soLan)) + '</div></td>' +
+          '<td class="num mono"><b>' + (x.moiNhat ? HM.esc(HT.fmt.n(x.moiNhat.so)) : '<span class="nil">' + HM.esc(t('ckChuaCo')) + '</span>') + '</b></td>' +
+          '<td class="num mono">' + (x.moiNgay == null ? '<span class="nil">—</span>'
+            : '<span class="' + (x.lui ? 'neg' : 'pos') + '">' + (x.moiNgay > 0 ? '+' : '') + HM.esc(HT.fmt.n(x.moiNgay)) + '</span>' +
+              (x.lui ? HM.hoi(t('ckLui')) : '')) + '</td>' +
+          '<td class="mono muted">' + (x.moiNhat ? HM.esc(HT.fmt.ngay(x.moiNhat.ngay)) : '<span class="nil">—</span>') + '</td>' +
+          '<td><div class="bar" style="margin:0;gap:6px;flex-wrap:nowrap">' +
+            '<input class="in mono" type="number" min="0" step="1" style="width:118px" data-ck="' + HM.esc(x.plat) + '" placeholder="' + HM.esc(x.moiNhat ? HT.fmt.n(x.moiNhat.so) : '0') + '">' +
+            '<button type="button" class="btn sm pri" data-ck-luu="' + HM.esc(x.plat) + '">' + HM.esc(t('ckLuu')) + '</button>' +
+            (x.moiNhat ? '<button type="button" class="btn sm ghost" data-ck-xoa="' + HM.esc(x.plat) + '">' + HM.esc(t('ckXoa')) + '</button>' : '') +
+          '</div></td></tr>';
+      }).join('') + '</tbody></table></div>'
+      : HM.trong({ icon: 'link', tieuDe: t('ckChuaLink'), moTa: t('ckMo') })
+  });
+}
+
+function goNgay(c, ngay, uoc) {
+  var A = c.A, t = c.t;
+  var hien = A.nhapLieu.ngay(30).filter(function (x) { return x.ngay === ngay; })[0] || {};
+  c.hoiThoai({
+    tieuDe: t('goNgay').replace('{d}', HT.fmt.ngay(ngay)),
+    moTa: HM.esc(t('goNgayMo')),
+    than: '<label class="fld">' + HM.esc(t('lLuot')) + '</label>' +
+      '<input class="in mono" type="number" min="0" step="1" data-o="luot" value="' + (hien.trangThai === 'tay' ? hien.tong : '') + '" placeholder="' + HM.esc(HT.fmt.n(+uoc || 0)) + '">' +
+      '<label class="fld">' + HM.esc(t('lGhiChu')) + '</label>' +
+      '<input class="in" data-o="ghi" value="' + HM.esc(hien.ghiChu || '') + '">',
+    dong: t('lLuot')
+  }).then(function (r) {
+    if (!r || r.luot === '') return;
+    try {
+      A.nhapLieu.ghiNgay(ngay, parseFloat(r.luot), { ghiChu: r.ghi }, A.staff.me.name);
+      c.thongBao(t('daGoNgay').replace('{d}', HT.fmt.ngay(ngay)).replace('{v}', HT.fmt.n(parseFloat(r.luot))), 'ok');
+      HM.quenHet(); c.veLai();
+    } catch (e) { c.thongBao(e.message, 'no'); }
+  });
+}
+
+/* =====================================================================
+   TAB 2 — DOANH THU THEO KỲ × NGUỒN
+   Ma trận mười hai dòng, ba cột. Ô nào chưa có số thật thì hiện số ước
+   tính bằng chữ mờ, để phân biệt ngay bằng mắt.
+   ===================================================================== */
+function veTien(c, bang) {
+  var t = c.t, A = c.A;
+  var feeds = A.feeds;
+  var than = '<div class="tw"><table class="t"><thead><tr>' +
+    '<th>' + HM.esc(t('cKy')) + '</th>' +
+    feeds.map(function (f) { return '<th class="num">' + HM.esc(c.song(f, 'short')) + '</th>'; }).join('') +
+    '<th class="num">' + HM.esc(t('cTong')) + '</th>' +
+    '<th class="num">' + HM.esc(t('cLech')) + HM.hoi(t('tienMo')) + '</th>' +
+    '<th>' + HM.esc(t('cDuyet')) + '</th></tr></thead><tbody>' +
+    bang.slice().reverse().map(function (r) {
+      var lech = r.tuSinh > 0 ? (r.thuc - r.tuSinh) / r.tuSinh : 0;
+      return '<tr>' +
+        '<td><b>' + HM.esc(r.label) + '</b></td>' +
+        r.cot.map(function (o) {
+          if (!o.nap) return '<td class="num"><button type="button" class="btn sm ghost" data-o-ky="' + r.pIdx + ':' + o.fId + '"' + (r.duyet ? ' disabled' : '') + '>' + HM.esc(t('chuaCo')) + '</button></td>';
+          return '<td class="num mono">' +
+            '<button type="button" class="o-tien' + (o.chot != null ? ' go' : '') + '" data-o-ky="' + r.pIdx + ':' + o.fId + '"' + (r.duyet ? ' disabled' : '') + '>' +
+              '<b>' + HM.esc(c.tien(o.thuc)) + '</b>' +
+              (o.chot != null ? '<span>' + HM.esc(t('cChot')) + '</span>' : '<span class="muted">' + HM.esc(t('uoc')) + '</span>') +
+            '</button></td>';
+        }).join('') +
+        '<td class="num mono"><b>' + HM.esc(c.tien(r.thuc)) + '</b></td>' +
+        '<td class="num mono">' + (Math.abs(lech) < 0.001 ? '<span class="nil">—</span>'
+          : '<span class="' + (lech > 0 ? 'pos' : 'neg') + '">' + (lech > 0 ? '+' : '') + HM.esc(HT.fmt.pct(lech)) + '</span>') + '</td>' +
+        '<td>' + (r.duyet ? HM.tag(t('daDuyet'), 'ok') : HM.tag(t('dangMo'), '')) + '</td></tr>';
+    }).join('') + '</tbody></table></div>';
+  return HM.the({ h2: HM.esc(t('tTien')), p: HM.esc(t('tienMo')), thoBody: true, than: than });
+}
+
+function goKy(c, pIdx, fId) {
+  var A = c.A, t = c.t;
+  var r = A.nhapLieu.bang()[pIdx];
+  var o = r.cot.filter(function (x) { return x.fId === fId; })[0];
+  var f = A.feeds[fId];
+  var nguon = A.nhapLieu.nguon();
+  c.hoiThoai({
+    tieuDe: t('goKy').replace('{f}', c.song(f, 'short')).replace('{p}', r.label),
+    moTa: HM.esc(t('goKyMo')),
+    than: HM.kv([{ t: t('uoc'), v: c.tien2(o.tuSinh) }, { t: t('dangCo'), v: c.tien2(o.thuc), manh: true }]) +
+      '<label class="fld">' + HM.esc(t('lTien')) + '</label>' +
+      '<input class="in mono" type="number" min="0" step="0.01" data-o="tien" value="' + (o.chot != null ? o.chot : '') + '" placeholder="' + o.tuSinh.toFixed(2) + '">' +
+      '<label class="fld">' + HM.esc(t('lNguon')) + '</label>' +
+      '<select class="in" data-o="nguon">' + nguon.map(function (n) {
+        return '<option value="' + n.id + '"' + (o.nguon === n.id ? ' selected' : '') + '>' + HM.esc(c.lang === 'en' ? n.en : n.vi) + '</option>';
+      }).join('') + '</select>' +
+      '<label class="fld">' + HM.esc(t('lGhiChu')) + '</label>' +
+      '<input class="in" data-o="ghi" placeholder="onerpm-2026-06.csv">',
+    dong: t('tTien')
+  }).then(function (res) {
+    if (!res || res.tien === '') return;
+    try {
+      var e = A.nhapLieu.ghiKy(pIdx, fId, parseFloat(String(res.tien).replace(',', '.')), { nguon: res.nguon, ghiChu: res.ghi }, A.staff.me.name);
+      c.thongBao(t('daGoKy').replace('{f}', c.song(f, 'short')).replace('{p}', r.label).replace('{v}', c.tien2(e.tien)), 'ok');
+      HM.quenHet(); c.veLai();
+    } catch (err) { c.thongBao(err.message, 'no'); }
+  });
+}
+
+/* =====================================================================
+   TAB 3 — DOANH THU THEO BÀI
+   Ô nhập nằm ngay trên dòng, không mở hộp thoại: gõ mười bài liên tiếp là
+   việc thật, mở mười hộp thoại thì không ai làm.
+   ===================================================================== */
+function veBai(c, bang) {
+  var A = c.A, t = c.t;
+  var r = bang[CHON.pIdx];
+  var kq = A.nhapLieu.baiTrongKy(CHON.pIdx, CHON.fId, { q: CHON.q, limit: 40 });
+  var thanh = '<div class="bar">' +
+    '<div class="srch">' + HM.icon('tim') + '<input type="search" data-tim placeholder="' +
+      HM.esc(t('timBai')) + '" value="' + HM.esc(CHON.q) + '"></div>' +
+    '<select class="in" data-chon-ky style="width:auto;height:34px" aria-label="' + HM.esc(t('chonKy')) + '">' + bang.map(function (x) {
+      return '<option value="' + x.pIdx + '"' + (x.pIdx === CHON.pIdx ? ' selected' : '') + (x.duyet ? ' disabled' : '') + '>' + HM.esc(x.label) + (x.duyet ? ' · ' + HM.esc(t('daDuyet')) : '') + '</option>';
+    }).join('') + '</select>' +
+    '<select class="in" data-chon-nguon style="width:auto;height:34px" aria-label="' + HM.esc(t('chonNguon')) + '">' + A.feeds.map(function (f) {
+      return '<option value="' + f.id + '"' + (f.id === CHON.fId ? ' selected' : '') + '>' + HM.esc(c.song(f, 'short')) + '</option>';
+    }).join('') + '</select>' +
+    '</div>';
+
+  var than = thanh + '<div class="tw"><table class="t"><thead><tr>' +
+    '<th>' + HM.esc(t('cBai')) + '</th><th>' + HM.esc(t('cIsrc')) + '</th>' +
+    '<th class="num">' + HM.esc(t('cUoc')) + '</th>' +
+    '<th class="num">' + HM.esc(t('cTong')) + '</th>' +
+    '<th>' + HM.esc(t('goBai')) + HM.hoi(t('baiMo')) + '</th></tr></thead><tbody>' +
+    kq.rows.map(function (x) {
+      return '<tr>' +
+        '<td>' + HM.tenBia({ ten: x.title, seed: x.i, bia: x.i, phu: x.artist }) + '</td>' +
+        '<td class="mono muted">' + HM.esc(x.isrc) + '</td>' +
+        '<td class="num mono muted">' + HM.esc(c.tien2(x.tuSinh)) + '</td>' +
+        '<td class="num mono"><b>' + HM.esc(c.tien2(x.thuc)) + '</b>' + (x.goTay ? ' ' + HM.tag(t('daTay'), 'ok') : '') + '</td>' +
+        '<td><div class="bar" style="margin:0;gap:6px;flex-wrap:nowrap">' +
+          '<input class="in mono" type="number" min="0" step="0.01" style="width:110px" data-so-bai="' + x.i + '" value="' + (x.goTay ? x.thuc : '') + '" placeholder="' + x.tuSinh.toFixed(2) + '"' + (r.duyet ? ' disabled' : '') + '>' +
+          '<button type="button" class="btn sm pri" data-luu-bai="' + x.i + '"' + (r.duyet ? ' disabled' : '') + '>' + HM.esc(t('luuBai')) + '</button>' +
+        '</div></td></tr>';
+    }).join('') + '</tbody></table></div>';
+
+  if (!kq.rows.length) than = thanh + HM.trong({ icon: 'tim', tieuDe: t('timBai'), moTa: t('goiY') });
+  return HM.the({ h2: HM.esc(t('tBai')), p: HM.esc(CHON.q ? t('baiMo') : t('goiY')), thoBody: true, than: than }) +
+    HM.the({ h2: HM.esc(t('dan')), p: HM.esc(t('danMo')), icon: 'down2',
+      than: '<textarea class="in mono" rows="6" data-dan placeholder="VNA2P2600123\t1520.40&#10;VNA2P2600124\t880.15"' + (r.duyet ? ' disabled' : '') + '></textarea>' +
+        '<div class="btnrow" style="margin-top:10px"><button type="button" class="btn pri" data-nhan-dan' + (r.duyet ? ' disabled' : '') + '>' +
+        HM.icon('down2') + HM.esc(t('danNut')) + '</button></div>' });
+}
+
+/* =====================================================================
+   TAB 4 — NHẬT KÝ
+   ===================================================================== */
+function veSu(c) {
+  var A = c.A, t = c.t;
+  var ds = A.nhapLieu.nhatKy(60);
+  if (!ds.length) return HM.the({ h2: HM.esc(t('tSu')), than: HM.trong({ icon: 'clock', tieuDe: t('trongSu'), moTa: t('suMo') }) });
+  var than = '<div class="tw"><table class="t"><thead><tr>' +
+    '<th>' + HM.esc(t('cLuc')) + '</th><th>' + HM.esc(t('cKieu')) + '</th><th>' + HM.esc(t('cDoiTuong')) + '</th>' +
+    '<th class="num">' + HM.esc(t('cTruoc')) + '</th><th class="num">' + HM.esc(t('cSau')) + '</th>' +
+    '<th>' + HM.esc(t('cNguoi')) + '</th><th>' + HM.esc(t('cTT')) + '</th></tr></thead><tbody>' +
+    ds.map(function (e) {
+      return '<tr>' +
+        '<td class="mono muted">' + HM.esc(HT.fmt.luc(e.at)) + '</td>' +
+        '<td>' + HM.tag(e.kieu === 'ky' ? t('kieuKy') : t('kieuBai'), e.kieu === 'ky' ? '' : 'ok') + '</td>' +
+        '<td>' + HM.esc((e.kieu === 'ky' ? e.nguonBaoCao : (e.tenBai || '')) + ' · ' + e.kyTen) +
+          '<div class="t-sub">' + HM.esc(e.nguonTen + (e.ghiChu ? ' · ' + e.ghiChu : '')) + '</div></td>' +
+        '<td class="num mono muted">' + HM.esc(c.tien2(e.truoc || 0)) + '</td>' +
+        '<td class="num mono"><b>' + HM.esc(c.tien2(e.tien)) + '</b></td>' +
+        '<td class="muted">' + HM.esc(e.by || '—') + '</td>' +
+        '<td><button type="button" class="btn sm ghost" data-go="' + HM.esc(e.id) + '">' + HM.esc(t('go')) + '</button></td></tr>';
+    }).join('') + '</tbody></table></div>';
+  return HM.the({ h2: HM.esc(t('tSu')), p: HM.esc(t('suMo')), thoBody: true, than: than });
+}
+
+/* ---- bản in nhật ký ---- */
+function inRa(c) {
+  var A = c.A, t = c.t;
+  var ds = A.nhapLieu.nhatKy(200);
+  var than = '<h2>' + HM.esc(t('tSu')) + '</h2>' +
+    '<table><thead><tr><th>' + HM.esc(t('cLuc')) + '</th><th>' + HM.esc(t('cKieu')) + '</th><th>' + HM.esc(t('cDoiTuong')) + '</th>' +
+    '<th class="num">' + HM.esc(t('cTruoc')) + '</th><th class="num">' + HM.esc(t('cSau')) + '</th><th>' + HM.esc(t('cNguoi')) + '</th></tr></thead><tbody>' +
+    (ds.length ? ds.map(function (e) {
+      return '<tr><td>' + HM.esc(HT.fmt.luc(e.at)) + '</td><td>' + HM.esc(e.kieu === 'ky' ? t('kieuKy') : t('kieuBai')) + '</td>' +
+        '<td>' + HM.esc((e.kieu === 'ky' ? e.nguonBaoCao : (e.tenBai || '')) + ' · ' + e.kyTen + ' · ' + e.nguonTen) + '</td>' +
+        '<td class="num">' + HM.esc(c.tien2(e.truoc || 0)) + '</td><td class="num">' + HM.esc(c.tien2(e.tien)) + '</td>' +
+        '<td>' + HM.esc(e.by || '—') + '</td></tr>';
+    }).join('') : '<tr><td colspan="6">' + HM.esc(t('trongSu')) + '</td></tr>') + '</tbody></table>';
+  HM.banIn({ tieuDe: t('inTieu'), phu: t('inPhu'), than: than, nguoi: A.staff.me.name });
+}
+
+})();
+
+},
+/* ---- man/phieu-giao.js ---- */
+function(){
+/* =====================================================================
+   NỘI BỘ · PHIẾU GIAO VIỆC PHÁT HÀNH
+   ---------------------------------------------------------------------
+   Haustek không tự phân phối. Đối tác gửi hồ sơ lên cổng, rồi nhân viên
+   ngồi gõ lại metadata ấy sang OneRPM và các tool khác. Trang này là chỗ
+   ngồi làm việc đó, xếp đúng thứ tự các bước của OneRPM để mắt đi từ
+   trên xuống mà không phải nhớ, mỗi trường một nút chép.
+
+   Ba việc, ba tab:
+     · Metadata — chép sang tool, không gõ tay lại (gõ tay là sai ISRC)
+     · Tool — đã đẩy lên đâu rồi, ai đẩy, tool trả về mã gì
+     · Link — sau khi lên kệ, dán link store thật cho đối tác thấy
+   ===================================================================== */
+"use strict";
+(function () {
+
+var CHON = { hs: null, tab: 'meta', tim: '', loc: 'lam' };
+
+HT.dangKy({
+  id: 'phieu-giao', nav: 'nav', nhom: 'nhomVanHanh', icon: 'up',
+  vai: ['ops', 'mgmt'],
+  dem: function (A) {
+    try {
+      var n = A.releases.list().filter(function (r) {
+        return (r.status === 'received' || r.status === 'coded') &&
+          A.releases.tool.cua(r.id).filter(function (x) { return x.xong; }).length === 0;
+      }).length;
+      return n ? String(n) : '';
+    } catch (e) { return ''; }
+  },
+
+  chu: {
+    vi: {
+      nav: 'Phiếu giao việc', h1: 'Phiếu giao việc phát hành',
+      mo: 'Chép metadata sang tool phân phối, đánh dấu đã đẩy lên đâu, rồi dán link store về cho đối tác.',
+      lLam: 'Đang làm', lLink: 'Chờ dán link', lHet: 'Tất cả',
+      tim: 'Tìm mã hồ sơ, tên bản phát hành, nghệ sĩ…',
+      cMa: 'Mã hồ sơ', cTen: 'Bản phát hành', cTt: 'Trạng thái', cTool: 'Đã đẩy tool', cLink: 'Link store',
+      khong: 'Không có hồ sơ nào ở đây', khongMo: 'Hồ sơ vào đây sau khi vận hành tiếp nhận. Đổi bộ lọc để xem hồ sơ khác.',
+      chon: 'Chọn một hồ sơ', chonMo: 'Bấm một dòng ở bảng trên để mở phiếu giao việc của hồ sơ ấy.',
+      quayLai: 'Chọn hồ sơ khác',
+      tMeta: 'Metadata', tTool: 'Tool phân phối', tLink: 'Link store', tStore: 'Store phân phối',
+      chep: 'Chép', daChep: 'Đã chép: {v}', chepHong: 'Trình duyệt không cho chép. Bôi đen rồi Ctrl+C.',
+      chepHet: 'Chép cả khối', daChepHet: 'Đã chép {n} dòng',
+      b1: 'Bước 1 · Album Info', b2: 'Bước 2 · Track', b3: 'Bước 3 · Album Art', b4: 'Bước 4 · Distribution Preferences',
+      b1Mo: 'Khớp với trang đầu của OneRPM. Chép từ trên xuống là hết một trang.',
+      b2Mo: 'Mỗi track một khối. ISRC phải chép chứ đừng gõ lại — gõ nhầm một ký tự là tháng sau tiền không khớp.',
+      b3Mo: 'Ảnh bìa tối thiểu 3000×3000, RGB, không có chữ quảng cáo hay ngày phát hành trên ảnh.',
+      b4Mo: 'Lãnh thổ, ngày giờ phát hành, và danh sách store bên dưới.',
+      fTen: 'Title of an Album, Single or EP', fNs: 'Primary Artist or Band Name', fThem: 'Additional Artists',
+      fTl: 'Main Genre', fTl2: 'Secondary Genre', fNn: 'Language', fLabel: 'Label',
+      fC: 'Copyright Date of Release (©)', fP: 'Copyright Date of Recording (℗)', fUpc: 'Bar Code (UPC)',
+      fNgay: 'Release Date', fGio: 'Release Time', fMui: 'Release Timezone', fLanhTho: 'Select Territory',
+      fBia: 'Album art', fLoai: 'Loại phát hành', fPreSave: 'Pre-order / pre-save',
+      trackTen: 'Track title', trackNs: 'Track artist', trackFeat: 'Featuring', trackIsrc: 'ISRC',
+      trackNn: 'Lyrics language', trackEx: 'Explicit', trackPro: 'Producer', trackSt: 'Songwriters',
+      trackAudio: 'Audio file', trackPrev: 'Preview start', trackAi: 'AI declaration',
+      exNo: 'Not explicit', exYes: 'Explicit', exClean: 'Clean',
+      chuaCo: 'chưa có', tongTrack: '{n} track',
+      toolMo: 'Tick từng tool ngay khi đẩy xong, đừng để cuối ngày. Hồ sơ chưa tick tool nào thì không đánh dấu phát hành được.',
+      cTn: 'Tool', cMaTr: 'Mã tool trả về', cAi: 'Ai · lúc nào', cLam: '',
+      daDay: 'Đã đẩy', chuaDay: 'Chưa đẩy', danhDau: 'Đánh dấu đã đẩy', boDanhDau: 'Bỏ đánh dấu', mo: 'Mở tool',
+      hoiTool: 'Đánh dấu đã đẩy lên {t}?', hoiToolMo: 'Ghi mã tool trả về để sau này lần ngược được. Bỏ trống cũng được.',
+      lMaTr: 'Mã tool trả về (nếu có)', lGhi: 'Ghi chú',
+      daDanh: 'Đã đánh dấu {t}', daBo: 'Đã bỏ đánh dấu {t}',
+      storeMo: 'Store nào sẽ có bài này. Để trống là toàn bộ store của nhà phân phối.',
+      storeTatCa: 'Toàn bộ store', storeChon: 'Chọn riêng', storeLuu: 'Lưu danh sách store',
+      daLuuStore: 'Đã lưu {n} store', daLuuHet: 'Đã đặt lại toàn bộ store',
+      linkMo: 'Dán link store thật của từng bài sau khi lên kệ. Đối tác thấy link này ở cổng của họ.',
+      linkChuaMa: 'Track chưa có ISRC thì chưa dán link được — cấp mã ở trang Phát hành trước.',
+      linkDan: 'Dán link', linkBo: 'Bỏ', linkMoRa: 'Mở',
+      cNt: 'Nền tảng', cLinkCot: 'Đường dẫn', cCk: 'Số công khai',
+      ckCo: 'có công bố', ckKhong: 'không công bố',
+      daDatLink: 'Đã lưu link {n}', daBoLink: 'Đã bỏ link {n}',
+      chuaPh: 'Hồ sơ chưa đánh dấu phát hành. Dán link được, nhưng thường đợi bài lên kệ đã.',
+      xong: 'xong', conThieu: 'còn {n}'
+    },
+    en: {
+      nav: 'Delivery worksheet', h1: 'Release delivery worksheet',
+      mo: 'Copy metadata into the distribution tools, tick off where it went, then paste the store links back for the partner.',
+      lLam: 'In progress', lLink: 'Awaiting links', lHet: 'All',
+      tim: 'Search submission ID, title, artist…',
+      cMa: 'Submission', cTen: 'Release', cTt: 'Status', cTool: 'Tools done', cLink: 'Store links',
+      khong: 'Nothing here', khongMo: 'Submissions arrive once operations receives them. Change the filter to see others.',
+      chon: 'Pick a submission', chonMo: 'Click a row above to open its worksheet.',
+      quayLai: 'Pick another submission',
+      tMeta: 'Metadata', tTool: 'Distribution tools', tLink: 'Store links', tStore: 'Stores',
+      chep: 'Copy', daChep: 'Copied: {v}', chepHong: 'The browser blocked copying. Select the text and press Ctrl+C.',
+      chepHet: 'Copy the block', daChepHet: 'Copied {n} lines',
+      b1: 'Step 1 · Album Info', b2: 'Step 2 · Track', b3: 'Step 3 · Album Art', b4: 'Step 4 · Distribution Preferences',
+      b1Mo: 'Mirrors OneRPM’s first page. Copy top to bottom and the page is done.',
+      b2Mo: 'One block per track. Copy the ISRC, never retype it — one wrong character and next month’s money will not match.',
+      b3Mo: 'Cover art at least 3000×3000, RGB, no ad copy or release dates printed on the image.',
+      b4Mo: 'Territory, release date and time, and the store list below.',
+      fTen: 'Title of an Album, Single or EP', fNs: 'Primary Artist or Band Name', fThem: 'Additional Artists',
+      fTl: 'Main Genre', fTl2: 'Secondary Genre', fNn: 'Language', fLabel: 'Label',
+      fC: 'Copyright Date of Release (©)', fP: 'Copyright Date of Recording (℗)', fUpc: 'Bar Code (UPC)',
+      fNgay: 'Release Date', fGio: 'Release Time', fMui: 'Release Timezone', fLanhTho: 'Select Territory',
+      fBia: 'Album art', fLoai: 'Release type', fPreSave: 'Pre-order / pre-save',
+      trackTen: 'Track title', trackNs: 'Track artist', trackFeat: 'Featuring', trackIsrc: 'ISRC',
+      trackNn: 'Lyrics language', trackEx: 'Explicit', trackPro: 'Producer', trackSt: 'Songwriters',
+      trackAudio: 'Audio file', trackPrev: 'Preview start', trackAi: 'AI declaration',
+      exNo: 'Not explicit', exYes: 'Explicit', exClean: 'Clean',
+      chuaCo: 'not set', tongTrack: '{n} tracks',
+      toolMo: 'Tick each tool the moment you finish it, not at the end of the day. A submission with no tool ticked cannot be marked released.',
+      cTn: 'Tool', cMaTr: 'ID the tool returned', cAi: 'Who · when', cLam: '',
+      daDay: 'Delivered', chuaDay: 'Not yet', danhDau: 'Mark delivered', boDanhDau: 'Undo', mo: 'Open tool',
+      hoiTool: 'Mark as delivered to {t}?', hoiToolMo: 'Record the ID the tool gave back so it can be traced later. Optional.',
+      lMaTr: 'ID the tool returned (optional)', lGhi: 'Note',
+      daDanh: 'Marked {t}', daBo: 'Unmarked {t}',
+      storeMo: 'Which stores get this release. Leave it as all for the distributor’s full list.',
+      storeTatCa: 'All stores', storeChon: 'Pick individually', storeLuu: 'Save store list',
+      daLuuStore: 'Saved {n} stores', daLuuHet: 'Reset to all stores',
+      linkMo: 'Paste each track’s real store link once it is live. Partners see these on their own portal.',
+      linkChuaMa: 'A track without an ISRC cannot take links yet — assign codes on the Releases page first.',
+      linkDan: 'Save link', linkBo: 'Remove', linkMoRa: 'Open',
+      cNt: 'Platform', cLinkCot: 'URL', cCk: 'Public figure',
+      ckCo: 'published', ckKhong: 'not published',
+      daDatLink: 'Saved the {n} link', daBoLink: 'Removed the {n} link',
+      chuaPh: 'This submission is not marked released yet. You can still paste links, but usually you wait for it to go live.',
+      xong: 'done', conThieu: '{n} left'
+    }
+  },
+
+  ve: function (root, c) {
+    var A = c.A, t = c.t;
+    var hs = CHON.hs ? A.releases.get(CHON.hs) : null;
+    if (CHON.hs && !hs) CHON.hs = null;
+
+    var html = HM.dau({ h1: HM.esc(t('h1')), mo: HM.esc(t('mo')) });
+    html += hs ? veHoSo(c, hs) : veDanhSach(c);
+    root.innerHTML = html;
+
+    HM.nhap(root, '[data-tim]', function (el) { CHON.tim = el.value; c.veLai(); });
+    HM.bam(root, '[data-loc]', function (el) { CHON.loc = el.getAttribute('data-loc'); c.veLai(); });
+    HM.bam(root, '[data-hs]', function (el) { CHON.hs = el.getAttribute('data-hs'); CHON.tab = 'meta'; c.veLai(); });
+    HM.bam(root, '[data-ve-ds]', function () { CHON.hs = null; c.veLai(); });
+    HM.bam(root, '[data-di-ph]', function () { c.di('phat-hanh'); });
+    HM.bam(root, '[data-tab]', function (el) { CHON.tab = el.getAttribute('data-tab'); c.veLai(); });
+
+    HM.bam(root, '[data-chep]', function (el) {
+      var v = el.getAttribute('data-chep');
+      HM.chep(v).then(function (ok) {
+        c.thongBao(ok ? t('daChep').replace('{v}', HM.dai(v, 40)) : t('chepHong'), ok ? 'ok' : 'no');
+      });
+    });
+    HM.bam(root, '[data-chep-khoi]', function (el) {
+      var o = root.querySelector('[data-khoi="' + el.getAttribute('data-chep-khoi') + '"]');
+      if (!o) return;
+      var dong = [].slice.call(o.querySelectorAll('[data-chep]')).map(function (x) {
+        return (x.getAttribute('data-nhan') || '') + '\t' + x.getAttribute('data-chep');
+      });
+      HM.chep(dong.join('\n')).then(function (ok) {
+        c.thongBao(ok ? t('daChepHet').replace('{n}', dong.length) : t('chepHong'), ok ? 'ok' : 'no');
+      });
+    });
+
+    if (!hs) return;
+    ganTool(root, c, hs);
+    ganStore(root, c, hs);
+    ganLink(root, c, hs);
+  }
+});
+
+/* ================================================================= */
+function veDanhSach(c) {
+  var A = c.A, t = c.t;
+  var tatCa = A.releases.list().filter(function (r) { return r.status !== 'submitted' && r.status !== 'returned'; });
+  var ds = tatCa;
+  if (CHON.loc === 'lam') ds = ds.filter(function (r) { return r.status !== 'released' || !linkXong(A, r); });
+  else if (CHON.loc === 'link') ds = ds.filter(function (r) { return r.status === 'released' && !linkXong(A, r); });
+  var q = CHON.tim.trim().toLowerCase();
+  if (q) ds = ds.filter(function (r) {
+    return (r.id + ' ' + r.title + ' ' + r.artistName).toLowerCase().indexOf(q) >= 0;
+  });
+
+  var html = '<div class="bar">' +
+    '<div class="srch">' + HM.icon('tim') + '<input type="search" data-tim value="' + HM.esc(CHON.tim) + '" placeholder="' + HM.esc(t('tim')) + '"></div>' +
+    [['lam', t('lLam')], ['link', t('lLink')], ['het', t('lHet')]].map(function (b) {
+      return '<button type="button" class="pill' + (CHON.loc === b[0] ? ' on' : '') + '" data-loc="' + b[0] + '">' + HM.esc(b[1]) + '</button>';
+    }).join('') + '</div>';
+
+  html += HM.the({
+    thoBody: true,
+    than: ds.length ? '<div class="tw"><table class="t"><thead><tr>' +
+      '<th>' + HM.esc(t('cMa')) + '</th><th>' + HM.esc(t('cTen')) + '</th>' +
+      '<th>' + HM.esc(t('cTt')) + '</th><th>' + HM.esc(t('cTool')) + '</th><th>' + HM.esc(t('cLink')) + '</th>' +
+      '</tr></thead><tbody>' + ds.map(function (r) {
+        var tool = A.releases.tool.cua(r.id), xong = tool.filter(function (x) { return x.xong; }).length;
+        var lk = A.releases.link.conThieu(r.id);
+        return '<tr class="pick" data-hs="' + HM.esc(r.id) + '">' +
+          '<td class="mono">' + HM.esc(r.id) + '</td>' +
+          '<td>' + HM.tenBia({ bia: r.id, ten: r.title, phu: r.artistName + ' · ' + t('tongTrack').replace('{n}', r.tracks.length) }) + '</td>' +
+          '<td>' + HM.tag(nhanTt(c, r.status), r.status === 'released' ? 'ok' : r.status === 'coded' ? 'warn' : 'info') + '</td>' +
+          '<td>' + (xong ? HM.tag(xong + '/' + tool.length, xong === tool.length ? 'ok' : 'warn') : HM.tag('0/' + tool.length, 'no')) + '</td>' +
+          '<td>' + (lk.xong ? HM.tag(t('xong'), 'ok') : HM.tag(t('conThieu').replace('{n}', lk.thieu), lk.co ? 'warn' : '')) + '</td></tr>';
+      }).join('') + '</tbody></table></div>'
+      : HM.trong({ icon: 'file', tieuDe: t('khong'), moTa: t('khongMo') })
+  });
+
+  /* Hai thẻ dưới đây luôn hiện, kể cả khi bảng trống. Người mở trang lần
+     đầu — hoặc mở đúng hôm không có hồ sơ nào — vẫn phải hiểu trang này
+     dùng để làm gì và công ty đang đẩy bài lên những tool nào. */
+  html += '<div class="grid g2">' +
+    HM.the({
+      h2: HM.esc(t('cachTieu')), p: HM.esc(t('cachMo')), icon: 'list',
+      hanhDong: '<button type="button" class="btn sm ghost" data-di-ph>' + HM.esc(t('moPh')) + '</button>',
+      than: HM.kv([
+        { t: t('c1'), v: t('c1Mo') },
+        { t: t('c2'), v: t('c2Mo') },
+        { t: t('c3'), v: t('c3Mo') }
+      ])
+    }) +
+    HM.the({
+      h2: HM.esc(t('dsTool')), p: HM.esc(t('dsToolMo')), icon: 'up', thoBody: true,
+      than: '<div class="tw"><table class="t"><tbody>' +
+        A.releases.tool.danhSach().map(function (x) {
+          return '<tr><td>' + HM.tenBia({ ten: x.ten, seed: x.id, phu: c.lang === 'vi' ? x.mo : (x.moEn || x.mo) }) + '</td>' +
+            '<td style="width:1%">' + (x.web
+              ? '<a class="btn sm ghost" href="' + HM.esc(x.web) + '" target="_blank" rel="noopener">' + HM.esc(t('mo')) + '</a>'
+              : '') + '</td></tr>';
+        }).join('') + '</tbody></table></div>'
+    }) + '</div>';
+  return html;
+}
+function nhanTt(c, s) {
+  var vi = { received: 'Đã tiếp nhận', coded: 'Đã cấp mã', released: 'Đã phát hành' };
+  var en = { received: 'Received', coded: 'Codes assigned', released: 'Released' };
+  return (c.lang === 'vi' ? vi : en)[s] || s;
+}
+function linkXong(A, r) { try { return A.releases.link.conThieu(r.id).xong; } catch (e) { return false; } }
+
+/* ================================================================= */
+function veHoSo(c, r) {
+  var A = c.A, t = c.t;
+  var tool = A.releases.tool.cua(r.id), toolXong = tool.filter(function (x) { return x.xong; }).length;
+  var lk = A.releases.link.conThieu(r.id);
+  var st = A.releases.storeCua(r.id);
+
+  var html = '<div class="bar">' +
+    '<button type="button" class="btn sm ghost" data-ve-ds>' + HM.icon('left') + HM.esc(t('quayLai')) + '</button>' +
+    '<div class="sp"></div>' + HM.tag(nhanTt(c, r.status), r.status === 'released' ? 'ok' : 'warn') + '</div>';
+
+  html += HM.the({
+    h2: HM.esc(r.title) + (r.version ? ' <span class="muted">(' + HM.esc(r.version) + ')</span>' : ''),
+    p: HM.esc(r.artistName + ' · ' + r.id + ' · ' + t('tongTrack').replace('{n}', r.tracks.length)),
+    icon: 'file', thoBody: true,
+    than: HM.so([
+      { l: t('tTool'), v: toolXong + '/' + tool.length, mau: toolXong ? (toolXong === tool.length ? HB.mau('ok') : HB.mau('warn')) : HB.mau('no') },
+      { l: t('tStore'), v: st.tatCa ? t('storeTatCa') : HT.fmt.n(st.so) },
+      { l: t('tLink'), v: lk.co + '/' + lk.tong, mau: lk.xong ? HB.mau('ok') : '' }
+    ]) + HM.tabs([
+      { k: 'meta', l: t('tMeta') },
+      { k: 'tool', l: t('tTool'), dem: tool.length - toolXong || null },
+      { k: 'store', l: t('tStore') },
+      { k: 'link', l: t('tLink'), dem: lk.thieu || null }
+    ], CHON.tab)
+  });
+
+  if (CHON.tab === 'meta') html += veMeta(c, r);
+  else if (CHON.tab === 'tool') html += veTool(c, r, tool);
+  else if (CHON.tab === 'store') html += veStore(c, r, st);
+  else html += veLink(c, r);
+  return html;
+}
+
+/* ---- một dòng metadata có nút chép ---- */
+function dong(nhan, gt, o) {
+  o = o || {};
+  var v = gt == null ? '' : String(gt);
+  var co = v !== '';
+  return '<tr>' +
+    '<th style="width:38%;text-align:left;font-weight:500">' + HM.esc(nhan) + (o.hoi ? HM.hoi(o.hoi) : '') + '</th>' +
+    '<td class="' + (o.mono ? 'mono' : '') + '">' + (co ? HM.esc(v) : '<span class="nil">—</span>') + '</td>' +
+    '<td style="width:1%">' + (co
+      ? '<button type="button" class="btn sm ghost" data-chep="' + HM.esc(v) + '" data-nhan="' + HM.esc(nhan) + '">' + HM.icon('copy') + '</button>'
+      : '') + '</td></tr>';
+}
+function khoi(c, id, tieu, mo, than) {
+  return HM.the({
+    h2: HM.esc(tieu), p: HM.esc(mo), icon: 'file', thoBody: true,
+    hanhDong: '<button type="button" class="btn sm" data-chep-khoi="' + id + '">' + HM.icon('copy') + HM.esc(c.t('chepHet')) + '</button>',
+    than: '<div class="tw" data-khoi="' + id + '"><table class="t">' + than + '</table></div>'
+  });
+}
+
+function veMeta(c, r) {
+  var t = c.t;
+  var nam = String(r.releaseDate || '').slice(0, 4);
+  var html = khoi(c, 'b1', t('b1'), t('b1Mo'),
+    dong(t('fTen'), r.title + (r.version ? ' (' + r.version + ')' : '')) +
+    dong(t('fLoai'), r.type) +
+    dong(t('fNs'), (r.artists && r.artists.length ? r.artists[0] : r.artistName)) +
+    dong(t('fThem'), (r.artists || []).slice(1).concat(r.feats || []).join(', ')) +
+    dong(t('fTl'), r.genre) + dong(t('fTl2'), r.genre2) +
+    dong(t('fNn'), r.lang) +
+    dong(t('fLabel'), r.label) +
+    dong(t('fC'), r.cLine || (nam + ' ' + (r.label || ''))) +
+    dong(t('fP'), r.pLine || (nam + ' ' + (r.label || ''))) +
+    dong(t('fUpc'), r.upc, { mono: true }));
+
+  html += khoi(c, 'b2', t('b2'), t('b2Mo'),
+    r.tracks.map(function (tr) {
+      var ex = { no: t('exNo'), yes: t('exYes'), clean: t('exClean') }[tr.explicit] || tr.explicit;
+      return '<tr class="tong"><td colspan="3"><b>' + tr.pos + '. ' + HM.esc(tr.title) + '</b></td></tr>' +
+        dong(t('trackTen'), tr.title + (tr.version ? ' (' + tr.version + ')' : '')) +
+        dong(t('trackNs'), tr.artist) +
+        dong(t('trackFeat'), tr.feat) +
+        dong(t('trackIsrc'), tr.isrc, { mono: true }) +
+        dong(t('trackNn'), tr.lyricsLang) +
+        dong(t('trackEx'), ex) +
+        dong(t('trackPro'), tr.producer) +
+        dong(t('trackSt'), tr.writers.map(function (w) { return w.name + ' (' + w.role + ' ' + w.pct + '%)'; }).join('; ')) +
+        dong(t('trackAudio'), tr.audioUrl) +
+        dong(t('trackPrev'), tr.previewStart ? tr.previewStart + 's' : '') +
+        dong(t('trackAi'), tr.ai === '0' ? '' : 'AI ' + tr.ai);
+    }).join(''));
+
+  html += khoi(c, 'b3', t('b3'), t('b3Mo'),
+    dong(t('fBia'), r.artwork) +
+    dong(c.lang === 'vi' ? 'Người thiết kế' : 'Designer', r.artworkDesigner));
+
+  html += khoi(c, 'b4', t('b4'), t('b4Mo'),
+    dong(t('fLanhTho'), r.territory === 'worldwide' ? 'World' : (r.territoryNote || r.territory)) +
+    dong(t('fNgay'), r.releaseDate, { mono: true }) +
+    dong(t('fGio'), r.releaseHour, { mono: true }) +
+    dong(t('fMui'), '(GMT+7:00) Bangkok, Hanoi, Jakarta') +
+    dong(t('fPreSave'), r.presaveDate, { mono: true }));
+  return html;
+}
+
+/* ================================================================= */
+function veTool(c, r, tool) {
+  var t = c.t;
+  return HM.the({
+    h2: HM.esc(t('tTool')), p: HM.esc(t('toolMo')), icon: 'up', thoBody: true,
+    than: '<div class="tw"><table class="t"><thead><tr>' +
+      '<th>' + HM.esc(t('cTn')) + '</th><th>' + HM.esc(t('cMaTr')) + '</th>' +
+      '<th>' + HM.esc(t('cAi')) + '</th><th></th></tr></thead><tbody>' +
+      tool.map(function (x) {
+        return '<tr' + (x.xong ? '' : ' class="canh"') + '>' +
+          '<td><div class="t-ttl">' + HM.esc(x.ten) + ' ' + HM.tag(x.xong ? t('daDay') : t('chuaDay'), x.xong ? 'ok' : 'no') + '</div>' +
+            '<div class="t-sub">' + HM.esc(c.lang === 'vi' ? x.mo : (x.moEn || x.mo)) +
+            (x.web ? ' · <a href="' + HM.esc(x.web) + '" target="_blank" rel="noopener">' + HM.esc(t('mo')) + '</a>' : '') + '</div>' +
+            (x.ghiChu ? '<div class="t-sub">' + HM.esc(x.ghiChu) + '</div>' : '') + '</td>' +
+          '<td class="mono">' + (x.ma ? HM.esc(x.ma) : '<span class="nil">—</span>') + '</td>' +
+          '<td class="mono muted">' + (x.at ? HM.esc(x.by + ' · ' + HT.fmt.luc(x.at)) : '<span class="nil">—</span>') + '</td>' +
+          '<td><div class="btnrow" style="flex-wrap:nowrap">' + (x.xong
+            ? '<button type="button" class="btn sm ghost" data-tool-bo="' + x.id + '">' + HM.esc(t('boDanhDau')) + '</button>'
+            : '<button type="button" class="btn sm pri" data-tool="' + x.id + '">' + HM.esc(t('danhDau')) + '</button>') +
+          '</div></td></tr>';
+      }).join('') + '</tbody></table></div>'
+  });
+}
+function ganTool(root, c, r) {
+  var A = c.A, t = c.t;
+  HM.bam(root, '[data-tool]', function (el) {
+    var id = el.getAttribute('data-tool');
+    var tl = A.releases.tool.danhSach().find(function (x) { return x.id === id; }) || { ten: id };
+    c.hoiThoai({
+      tieuDe: t('hoiTool').replace('{t}', tl.ten), moTa: HM.esc(t('hoiToolMo')),
+      than: '<label class="fld">' + HM.esc(t('lMaTr')) + '</label><input class="in mono" data-o="ma">' +
+        '<label class="fld">' + HM.esc(t('lGhi')) + '</label><input class="in" data-o="ghi">',
+      dong: t('danhDau')
+    }).then(function (f) {
+      if (!f) return;
+      try {
+        A.releases.tool.danhDau(r.id, id, { ma: f.ma, ghiChu: f.ghi }, A.staff.me.name);
+        c.thongBao(t('daDanh').replace('{t}', tl.ten), 'ok'); HM.quenHet(); c.veLai();
+      } catch (e) { c.thongBao(e.message, 'no'); }
+    });
+  });
+  HM.bam(root, '[data-tool-bo]', function (el) {
+    var id = el.getAttribute('data-tool-bo');
+    try { A.releases.tool.boDanhDau(r.id, id, A.staff.me.name); c.thongBao(t('daBo').replace('{t}', id), 'ok'); HM.quenHet(); c.veLai(); }
+    catch (e) { c.thongBao(e.message, 'no'); }
+  });
+}
+
+/* ================================================================= */
+function veStore(c, r, st) {
+  var t = c.t;
+  return HM.the({
+    h2: HM.esc(t('tStore')), p: HM.esc(t('storeMo')), icon: 'shop', thoBody: true,
+    hanhDong: '<button type="button" class="btn sm pri" data-store-luu>' + HM.esc(t('storeLuu')) + '</button>',
+    than: '<div class="bar"><label class="tickrow"><input type="checkbox" data-store-het' + (st.tatCa ? ' checked' : '') + '> ' + HM.esc(t('storeTatCa')) + '</label></div>' +
+      '<div class="fldrow" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:6px">' +
+      st.rows.map(function (x) {
+        return '<label class="tickrow"><input type="checkbox" data-store="' + HM.esc(x.name) + '"' + (x.chon ? ' checked' : '') + '> ' +
+          (x.lon ? '<b>' + HM.esc(x.name) + '</b>' : HM.esc(x.name)) + '</label>';
+      }).join('') + '</div>' +
+      '<p class="say">' + HM.esc(c.lang === 'vi'
+        ? 'Bảng này liệt kê 8 nền tảng lớn và 24 store tiếp theo; ' + st.tong + ' store còn lại đi theo mặc định của nhà phân phối.'
+        : 'This lists the 8 major platforms and the next 24 stores; the remaining ' + st.tong + ' follow the distributor’s default.') + '</p>'
+  });
+}
+function ganStore(root, c, r) {
+  var A = c.A, t = c.t;
+  HM.bam(root, '[data-store-luu]', function () {
+    var het = root.querySelector('[data-store-het]');
+    if (het && het.checked) {
+      try { A.releases.datStore(r.id, [], A.staff.me.name); c.thongBao(t('daLuuHet'), 'ok'); HM.quenHet(); c.veLai(); }
+      catch (e) { c.thongBao(e.message, 'no'); }
+      return;
+    }
+    var chon = [].slice.call(root.querySelectorAll('[data-store]:checked')).map(function (x) { return x.getAttribute('data-store'); });
+    try {
+      A.releases.datStore(r.id, chon, A.staff.me.name);
+      c.thongBao(t('daLuuStore').replace('{n}', chon.length), 'ok'); HM.quenHet(); c.veLai();
+    } catch (e) { c.thongBao(e.message, 'no'); }
+  });
+}
+
+/* ================================================================= */
+function veLink(c, r) {
+  var A = c.A, t = c.t;
+  var coMa = r.tracks.some(function (x) { return !!x.isrc; });
+  if (!coMa) return HM.the({ than: HM.trong({ icon: 'link', tieuDe: t('linkChuaMa'), moTa: t('linkMo') }) });
+
+  var html = r.status === 'released' ? '' :
+    HM.ghi({ kieu: 'info', icon: 'info', tieuDe: HM.esc(t('tLink')), than: HM.esc(t('chuaPh')) });
+
+  r.tracks.forEach(function (tr) {
+    if (!tr.isrc) return;
+    var rows = A.releases.link.cua(tr.isrc);
+    html += HM.the({
+      h2: HM.esc(tr.pos + '. ' + tr.title), p: HM.esc(tr.isrc + ' · ' + t('linkMo')), icon: 'link', thoBody: true,
+      than: '<div class="tw"><table class="t"><thead><tr>' +
+        '<th>' + HM.esc(t('cNt')) + '</th><th>' + HM.esc(t('cLinkCot')) + '</th>' +
+        '<th>' + HM.esc(t('cCk')) + '</th><th></th></tr></thead><tbody>' +
+        rows.map(function (x) {
+          return '<tr>' +
+            '<td>' + HM.esc(c.lang === 'vi' ? x.plat : x.platEn) + '</td>' +
+            '<td><input class="in mono" style="min-width:230px" data-link="' + HM.esc(tr.isrc + '|' + x.plat) + '" value="' + HM.esc(x.url || '') + '" placeholder="https://…">' +
+              (x.at ? '<div class="t-sub">' + HM.esc(x.by + ' · ' + HT.fmt.luc(x.at)) + '</div>' : '') + '</td>' +
+            '<td>' + HM.tag(x.congKhai ? t('ckCo') : t('ckKhong'), x.congKhai ? 'ok' : '') + '</td>' +
+            '<td><div class="btnrow" style="flex-wrap:nowrap">' +
+              '<button type="button" class="btn sm pri" data-link-luu="' + HM.esc(tr.isrc + '|' + x.plat) + '">' + HM.esc(t('linkDan')) + '</button>' +
+              (x.url ? '<a class="btn sm ghost" href="' + HM.esc(x.url) + '" target="_blank" rel="noopener">' + HM.esc(t('linkMoRa')) + '</a>' +
+                '<button type="button" class="btn sm ghost" data-link-bo="' + HM.esc(tr.isrc + '|' + x.plat) + '">' + HM.esc(t('linkBo')) + '</button>' : '') +
+            '</div></td></tr>';
+        }).join('') + '</tbody></table></div>'
+    });
+  });
+  return html;
+}
+function ganLink(root, c) {
+  var A = c.A, t = c.t;
+  HM.bam(root, '[data-link-luu]', function (el) {
+    var k = el.getAttribute('data-link-luu'), p = k.split('|');
+    var o = root.querySelector('[data-link="' + k.replace(/"/g, '\\"') + '"]');
+    if (!o || !o.value.trim()) return;
+    try {
+      A.releases.link.dat(p[0], p[1], o.value.trim(), A.staff.me.name);
+      c.thongBao(t('daDatLink').replace('{n}', p[1]), 'ok'); HM.quenHet(); c.veLai();
+    } catch (e) { c.thongBao(e.message, 'no'); }
+  });
+  HM.bam(root, '[data-link-bo]', function (el) {
+    var p = el.getAttribute('data-link-bo').split('|');
+    try {
+      A.releases.link.bo(p[0], p[1], A.staff.me.name);
+      c.thongBao(t('daBoLink').replace('{n}', p[1]), 'ok'); HM.quenHet(); c.veLai();
+    } catch (e) { c.thongBao(e.message, 'no'); }
   });
 }
 
@@ -20691,6 +22284,697 @@ function moNhanSu(c, cay, id) {
         });
       });
     } });
+}
+
+})();
+
+},
+/* ---- man/hieu-suat.js ---- */
+function(){
+/* =====================================================================
+   NỘI BỘ · HIỆU SUẤT NHÂN VIÊN
+   ---------------------------------------------------------------------
+   Câu hỏi của người quản lý là "ai đang đuối, đuối ở chỗ nào", không phải
+   "ai giỏi hơn ai". Nên trang này KHÔNG chấm một điểm tổng. Bốn cột đứng
+   cạnh nhau — đã giao, đang làm, đúng hạn, quá hạn — cộng thời gian xử lý
+   trung bình. Một người quá hạn nhiều có thể là làm chậm, cũng có thể là
+   đang ôm toàn việc khó; hai chuyện ấy chỉ phân biệt được khi nhìn cả
+   dòng việc của người đó, nên bấm vào một người là mở ra dòng việc.
+
+   Ô đánh giá cuối năm để người quản lý tự viết. Hệ thống giữ số và giữ
+   chữ, không tự kết luận thay.
+   ===================================================================== */
+"use strict";
+(function () {
+
+var TAB = 'nguoi';
+var LOC = { vai: '' };
+
+HT.dangKy({
+  id: 'hieu-suat', nav: 'navHieuSuat', nhom: 'nhomHeThong', icon: 'chart',
+
+  chu: {
+    vi: {
+      navHieuSuat: 'Hiệu suất', h1: 'Hiệu suất nhân viên',
+      mo: 'Việc đã giao, đúng hạn, quá hạn và thời gian xử lý của từng người. Chỉ Level 1–2 mở được.',
+      nguon: 'Nguồn số: ticket hỗ trợ, khiếu nại bản quyền, và mỗi lần một người đẩy hồ sơ phát hành sang bước sau. Việc không có hạn thì không tính vào tỷ lệ đúng hạn.',
+      tNguoi: 'Theo người', tThang: 'Theo tháng', tQt: 'Quy trình từng loại việc',
+
+      kNguoi: 'Người đang làm việc', kMo: 'Việc đang mở', kQuaHan: 'Việc quá hạn', kQuaHanS: 'tính trên việc có hạn',
+      kDungHan: 'Tỷ lệ đúng hạn', kDungHanS: 'cả công ty, mọi việc có hạn',
+
+      cNguoi: 'Người', cCap: 'Cấp', cVai: 'Khối', cGiao: 'Đã giao', cDangLam: 'Đang làm',
+      cDungHan: 'Đúng hạn', cQuaHan: 'Quá hạn', cTyLe: 'Tỷ lệ đúng hạn', cGio: 'Xử lý trung bình',
+      cMuc: 'Mức', gio: 'giờ', khong: 'Chưa ai được giao việc nào.',
+      moiVai: 'Mọi khối',
+
+      dTieu: 'Dòng việc của {n}', dDangLam: 'Việc đang mở', dQuaHan: 'Việc từng quá hạn', dThang: 'Theo tháng',
+      dBuoc: 'Bước', dHan: 'Hạn', dViec: 'Việc', dLoai: 'Loại', dTrangThai: 'Trạng thái',
+      lTicket: 'Ticket hỗ trợ', lKhieuNai: 'Tranh chấp', lPhatHanh: 'Phát hành',
+      dTrong: 'Không còn việc nào đang mở.', dQhTrong: 'Chưa có việc nào quá hạn.',
+      xemViec: 'Mở trang', qh: 'quá hạn', conHan: 'còn hạn',
+
+      dg: 'Đánh giá cuối năm', dgMo: 'Người quản lý viết. Số ở trên là căn cứ, không phải kết luận.',
+      dgVier: 'Viết đánh giá', dgMuc: 'Mức', dgNhanXet: 'Nhận xét', dgLuu: 'Lưu đánh giá',
+      dgDaLuu: 'Đã lưu đánh giá {n} năm {y}', dgChua: 'Chưa có đánh giá năm nay.', dgNam: 'Năm',
+
+      bdGiao: 'Đã giao', bdXong: 'Đã xong', bdQuaHan: 'Quá hạn',
+      thangMo: 'Mười hai tháng gần nhất, gộp cả công ty. Cột đỏ cao lên là tháng đội bị dồn việc.',
+      qtMo: 'Mỗi loại việc một quy trình. Nhân viên làm theo bảng này, và mỗi việc giữ bảng riêng của nó.',
+      qtNhip: 'Nhịp', nhipNgay: 'Mỗi ngày', nhipThang: 'Mỗi tháng', nhipViec: 'Theo từng việc',
+      qtSoBuoc: '{n} bước', qtKhoi: 'Khối',
+
+      in: 'Bản in', inTieu: 'Hiệu suất nhân viên', inPhu: 'Việc đã giao, đúng hạn, quá hạn và thời gian xử lý trung bình.',
+      kd: 'Kết quả kinh doanh', kdMo: 'Người khối kinh doanh còn được đo bằng doanh số, không chỉ bằng kỷ luật việc.',
+      kdTk: 'Tài khoản phụ trách', kdQuy: 'Doanh thu quý', kdChiTieu: 'Chỉ tiêu quý', kdDat: 'Đạt chỉ tiêu',
+      kdMoi: 'Tài khoản mới 120 ngày', kdGiaHan: 'Hợp đồng hết hạn trong 120 ngày', kdChuaVao: 'Chưa đăng nhập lần nào'
+    },
+    en: {
+      navHieuSuat: 'Performance', h1: 'Team performance',
+      mo: 'Work assigned, on time, overdue and handling time, per person. Level 1–2 only.',
+      nguon: 'Sources: support tickets, rights claims, and each time someone moves a release file to its next step. Work with no deadline does not count towards the on-time rate.',
+      tNguoi: 'By person', tThang: 'By month', tQt: 'Runbook per kind of work',
+
+      kNguoi: 'People at work', kMo: 'Open items', kQuaHan: 'Overdue items', kQuaHanS: 'of items that have a deadline',
+      kDungHan: 'On-time rate', kDungHanS: 'company-wide, all items with a deadline',
+
+      cNguoi: 'Person', cCap: 'Level', cVai: 'Unit', cGiao: 'Assigned', cDangLam: 'Open',
+      cDungHan: 'On time', cQuaHan: 'Overdue', cTyLe: 'On-time rate', cGio: 'Avg handling',
+      cMuc: 'Band', gio: 'h', khong: 'Nobody has been assigned any work yet.',
+      moiVai: 'All units',
+
+      dTieu: '{n}’s work', dDangLam: 'Open items', dQuaHan: 'Items that ran late', dThang: 'By month',
+      dBuoc: 'Steps', dHan: 'Due', dViec: 'Item', dLoai: 'Kind', dTrangThai: 'Status',
+      lTicket: 'Support ticket', lKhieuNai: 'Dispute', lPhatHanh: 'Release',
+      dTrong: 'Nothing open right now.', dQhTrong: 'Nothing has run late.',
+      xemViec: 'Open screen', qh: 'overdue', conHan: 'in time',
+
+      dg: 'Year-end review', dgMo: 'Written by the manager. The figures above are evidence, not a verdict.',
+      dgVier: 'Write the review', dgMuc: 'Band', dgNhanXet: 'Comments', dgLuu: 'Save review',
+      dgDaLuu: 'Saved {n}’s {y} review', dgChua: 'No review for this year yet.', dgNam: 'Year',
+
+      bdGiao: 'Assigned', bdXong: 'Done', bdQuaHan: 'Overdue',
+      thangMo: 'The last twelve months, company-wide. A tall red bar is a month the team fell behind.',
+      qtMo: 'One runbook per kind of work. People follow it, and each item keeps its own copy.',
+      qtNhip: 'Cadence', nhipNgay: 'Daily', nhipThang: 'Monthly', nhipViec: 'Per item',
+      qtSoBuoc: '{n} steps', qtKhoi: 'Unit',
+
+      in: 'Print view', inTieu: 'Team performance', inPhu: 'Work assigned, on time, overdue and average handling time.',
+      kd: 'Commercial results', kdMo: 'People in Sales are also measured on revenue, not only on work discipline.',
+      kdTk: 'Accounts managed', kdQuy: 'Quarter revenue', kdChiTieu: 'Quarter target', kdDat: 'Against target',
+      kdMoi: 'New accounts, 120 days', kdGiaHan: 'Contracts ending within 120 days', kdChuaVao: 'Never logged in'
+    }
+  },
+
+  dem: function (c) {
+    try {
+      var n = c.A.hieuSuat.bang().reduce(function (s, r) { return s + r.quaHan; }, 0);
+      return n ? '!' + n : '';
+    } catch (e) { return ''; }
+  },
+
+  ve: function (root, c) {
+    var A = c.A, t = c.t;
+    var ds = A.hieuSuat.bang();
+    var mo = ds.reduce(function (s, r) { return s + r.dangLam; }, 0);
+    var qh = ds.reduce(function (s, r) { return s + r.quaHan; }, 0);
+    var coHan = ds.reduce(function (s, r) { return s + r.coHan; }, 0);
+    var dung = ds.reduce(function (s, r) { return s + r.dungHan; }, 0);
+
+    var html = HM.dau({
+      h1: HM.esc(t('h1')), mo: HM.esc(t('mo')),
+      nut: '<button type="button" class="btn sm ghost" data-in>' + HM.icon('file') + HM.esc(t('in')) + '</button>'
+    });
+    html += HM.so([
+      { l: t('kNguoi'), v: HT.fmt.n(ds.length) },
+      { l: t('kMo'), v: HT.fmt.n(mo) },
+      { l: t('kQuaHan'), v: HT.fmt.n(qh), s: t('kQuaHanS'), mau: qh ? HB.mau('no') : HB.mau('ok') },
+      { l: t('kDungHan'), v: coHan ? HT.fmt.pct(dung / coHan) : '—', s: t('kDungHanS'), lon: true,
+        mau: coHan ? HB.mau(dung / coHan >= 0.9 ? 'ok' : dung / coHan >= 0.75 ? 'warn' : 'no') : '' }
+    ]);
+    html += HM.tabs([
+      { k: 'nguoi', l: t('tNguoi'), icon: 'user' },
+      { k: 'thang', l: t('tThang'), icon: 'chart' },
+      { k: 'qt', l: t('tQt'), icon: 'list' }
+    ], TAB);
+
+    if (TAB === 'nguoi') html += veNguoi(c, ds);
+    if (TAB === 'thang') html += veThang(c);
+    if (TAB === 'qt') html += veQt(c);
+
+    root.innerHTML = html;
+    HB.gan(root);
+    HM.bam(root, '[data-tab]', function (el) { TAB = el.getAttribute('data-tab'); c.veLai(); });
+    HM.bam(root, '[data-in]', function () { inRa(c, ds); });
+    HM.doi(root, '[data-vai]', function (el) { LOC.vai = el.value; c.veLai(); });
+    HM.bam(root, '[data-nv]', function (el) { moNv(c, el.getAttribute('data-nv')); });
+    HM.bam(root, '[data-qt]', function (el) { moQt(c, el.getAttribute('data-qt')); });
+  }
+});
+
+/* cây tổ chức trả về theo khối; chỉ cần tên khối để đọc cho dễ */
+var _khoi = null;
+function KHOI(A) { if (!_khoi) { try { _khoi = (A.toChuc.cay() || {}).khoi || []; } catch (e) { _khoi = []; } } return _khoi; }
+
+function tenMuc(c, m) { return m ? (c.lang === 'en' ? m.en : m.vi) : '—'; }
+function kieuMuc(m) { return !m ? '' : m.id === 'tot' ? 'ok' : m.id === 'dat' ? '' : 'warn'; }
+function tenLoai(c, loai) {
+  var t = c.t;
+  return loai === 'ticket' ? t('lTicket') : loai === 'khieuNai' ? t('lKhieuNai') : t('lPhatHanh');
+}
+
+/* =====================================================================
+   TAB 1 — THEO NGƯỜI
+   ===================================================================== */
+function veNguoi(c, ds) {
+  var A = c.A, t = c.t;
+  var loc = LOC.vai ? ds.filter(function (r) { return r.role === LOC.vai; }) : ds;
+  var vais = [];
+  ds.forEach(function (r) { if (vais.indexOf(r.role) < 0) vais.push(r.role); });
+
+  var thanh = '<div class="bar">' +
+    '<select class="in" data-vai style="width:auto;height:34px" aria-label="' + HM.esc(t('cVai')) + '">' +
+      '<option value="">' + HM.esc(t('moiVai')) + '</option>' +
+      vais.map(function (v) {
+        var k = KHOI(A).filter(function (x) { return x.vai === v; })[0];
+        return '<option value="' + v + '"' + (LOC.vai === v ? ' selected' : '') + '>' + HM.esc(k ? c.song(k, 'vi') : v) + '</option>';
+      }).join('') + '</select></div>';
+
+  if (!loc.length) return HM.the({ h2: HM.esc(t('tNguoi')), than: thanh + HM.trong({ icon: 'user', tieuDe: t('khong'), moTa: t('nguon') }) });
+
+  var than = thanh + '<div class="tw"><table class="t"><thead><tr>' +
+    '<th>' + HM.esc(t('cNguoi')) + '</th><th>' + HM.esc(t('cCap')) + '</th>' +
+    '<th class="num">' + HM.esc(t('cGiao')) + '</th><th class="num">' + HM.esc(t('cDangLam')) + '</th>' +
+    '<th class="num">' + HM.esc(t('cDungHan')) + '</th><th class="num">' + HM.esc(t('cQuaHan')) + '</th>' +
+    '<th class="num">' + HM.esc(t('cTyLe')) + HM.hoi(t('nguon')) + '</th>' +
+    '<th class="num">' + HM.esc(t('cGio')) + '</th><th>' + HM.esc(t('cMuc')) + '</th></tr></thead><tbody>' +
+    loc.map(function (r) {
+      return '<tr class="pick" data-nv="' + r.id + '">' +
+        '<td>' + HM.tenBia({ ten: r.name, seed: r.email, phu: r.email }) + '</td>' +
+        '<td>' + HM.tag('Level ' + r.cap, r.cap <= 2 ? 'ok' : '') + '</td>' +
+        '<td class="num mono">' + HM.esc(HT.fmt.n(r.giao)) + '</td>' +
+        '<td class="num mono">' + HM.esc(HT.fmt.n(r.dangLam)) + '</td>' +
+        '<td class="num mono">' + HM.esc(HT.fmt.n(r.dungHan)) + '</td>' +
+        '<td class="num mono">' + (r.quaHan ? '<span class="neg">' + HM.esc(HT.fmt.n(r.quaHan)) + '</span>' : '<span class="nil">0</span>') + '</td>' +
+        '<td class="num mono"><b>' + (r.tyLeDungHan == null ? '<span class="nil">—</span>' : HM.esc(HT.fmt.pct(r.tyLeDungHan / 100))) + '</b></td>' +
+        '<td class="num mono muted">' + (r.gioTb == null ? '—' : HM.esc(HT.fmt.n(r.gioTb) + ' ' + t('gio'))) + '</td>' +
+        '<td>' + HM.tag(tenMuc(c, r.muc), kieuMuc(r.muc)) + '</td></tr>';
+    }).join('') + '</tbody></table></div>';
+  return HM.the({ h2: HM.esc(t('tNguoi')), p: HM.esc(t('nguon')), thoBody: true, than: than });
+}
+
+/* ---- ngăn trượt: một người ---- */
+function moNv(c, id) {
+  var A = c.A, t = c.t, P = HB.dayMau();
+  var x = A.hieuSuat.cua(id);
+  if (!x) return;
+  var nam = new Date().getFullYear();
+  var dg = x.danhGia ? x.danhGia[nam] : null;
+
+  var bd = x.theoThang.length > 1 ? HB.o({ loai: 'cot', cao: 170, chuThich: true,
+    truc: x.theoThang.map(function (m) { return m.thang.slice(5) + '/' + m.thang.slice(2, 4); }),
+    chuoi: [
+      { ten: t('bdGiao'), gt: x.theoThang.map(function (m) { return m.giao; }), mau: P[0] },
+      { ten: t('bdXong'), gt: x.theoThang.map(function (m) { return m.xong; }), mau: HB.mau('ok') },
+      { ten: t('bdQuaHan'), gt: x.theoThang.map(function (m) { return m.quaHan; }), mau: HB.mau('no') }
+    ] }) : '';
+
+  /* Người khối kinh doanh: thêm doanh số. Hai thước đo cạnh nhau mới đủ —
+     đúng hạn mà không có doanh số cũng không phải là làm tốt. */
+  var kd = '';
+  if (x.role === 'sales') {
+    var k = null;
+    try { k = A.sales.kpi(x.id, c.ky.idx); } catch (e) { k = null; }
+    if (k) {
+      kd = '<h4 class="sec">' + HM.esc(t('kd')) + '</h4>' +
+        '<p class="hint">' + HM.esc(t('kdMo')) + '</p>' +
+        HM.kv([
+          { t: t('kdTk'), v: HT.fmt.n(k.accounts), manh: true },
+          { t: t('kdQuy'), v: c.tien(k.revenueQ) },
+          { t: t('kdChiTieu'), v: k.target ? c.tien(k.target) : '—' },
+          { t: t('kdDat'), v: k.targetPct == null ? '—' : HT.fmt.pct(k.targetPct),
+            manh: true, mau: k.targetPct == null ? '' : k.targetPct >= 1 ? 'pos' : 'neg' },
+          { t: t('kdMoi'), v: HT.fmt.n(k.newAccounts) },
+          { t: t('kdGiaHan'), v: HT.fmt.n(k.renewals.length), mau: k.renewals.length ? 'neg' : '' },
+          { t: t('kdChuaVao'), v: HT.fmt.n(k.neverLogged) }
+        ]);
+    }
+  }
+
+  var dsMo = x.viecMo.length
+    ? '<div class="tw"><table class="t"><thead><tr><th>' + HM.esc(t('dViec')) + '</th><th>' + HM.esc(t('dLoai')) + '</th>' +
+      '<th>' + HM.esc(t('dBuoc')) + '</th><th>' + HM.esc(t('dHan')) + '</th></tr></thead><tbody>' +
+      x.viecMo.map(function (v) {
+        return '<tr><td><b>' + HM.esc(HM.dai(v.tieuDe, 44)) + '</b><div class="t-sub">' + HM.esc(v.id) + '</div></td>' +
+          '<td>' + HM.tag(tenLoai(c, v.loai), '') + '</td>' +
+          '<td class="mono">' + (v.buocTong ? HM.esc(v.buocXong + '/' + v.buocTong) + (v.buocTiep ? '<div class="t-sub">' + HM.esc(v.buocTiep) + '</div>' : '') : '<span class="nil">—</span>') + '</td>' +
+          '<td>' + (v.han ? '<span class="' + (v.quaHan ? 'neg' : 'muted') + '">' + HM.esc(HT.fmt.ngay(String(v.han).slice(0, 10))) + '</span>' : '<span class="nil">—</span>') + '</td></tr>';
+      }).join('') + '</tbody></table></div>'
+    : '<p class="hint">' + HM.esc(t('dTrong')) + '</p>';
+
+  var dsQh = x.quaHanGanDay.length
+    ? '<ul class="say-list">' + x.quaHanGanDay.map(function (v) {
+        return '<li>' + HM.esc(HM.dai(v.tieuDe, 40)) + ' <span class="muted">· ' + HM.esc(tenLoai(c, v.loai) + ' · ' + v.id) + '</span></li>';
+      }).join('') + '</ul>'
+    : '<p class="hint">' + HM.esc(t('dQhTrong')) + '</p>';
+
+  c.nganTruot(
+    HM.kv([
+      { t: t('cCap'), v: 'Level ' + x.cap + ' · ' + (c.lang === 'en' ? x.capTen.en : x.capTen.vi) },
+      { t: t('cGiao'), v: HT.fmt.n(x.giao), manh: true },
+      { t: t('cDangLam'), v: HT.fmt.n(x.dangLam) },
+      { t: t('cDungHan'), v: HT.fmt.n(x.dungHan) + ' / ' + HT.fmt.n(x.coHan) },
+      { t: t('cQuaHan'), v: HT.fmt.n(x.quaHan), mau: x.quaHan ? 'neg' : '' },
+      { t: t('cTyLe'), v: x.tyLeDungHan == null ? '—' : HT.fmt.pct(x.tyLeDungHan / 100), manh: true },
+      { t: t('cGio'), v: x.gioTb == null ? '—' : HT.fmt.n(x.gioTb) + ' ' + t('gio') },
+      { t: t('cMuc'), v: tenMuc(c, x.muc) }
+    ]) +
+    kd +
+    (bd ? '<h4 class="sec">' + HM.esc(t('dThang')) + '</h4>' + bd : '') +
+    '<h4 class="sec">' + HM.esc(t('dDangLam')) + '</h4>' + dsMo +
+    '<h4 class="sec">' + HM.esc(t('dQuaHan')) + '</h4>' + dsQh +
+    '<h4 class="sec">' + HM.esc(t('dg')) + '</h4>' +
+    (dg
+      ? HM.kv([{ t: t('dgMuc'), v: dg.muc || '—', manh: true }, { t: t('dgNhanXet'), v: dg.nhanXet || '—' },
+               { t: t('dgNam'), v: String(nam) + ' · ' + (dg.by || '') + ' · ' + HT.fmt.luc(dg.at) }])
+      : '<p class="hint">' + HM.esc(t('dgChua')) + '</p>') +
+    '<div class="btnrow" style="margin-top:12px"><button type="button" class="btn sm pri" data-dg>' + HM.esc(t('dgVier')) + '</button></div>',
+    { tieuDe: t('dTieu').replace('{n}', x.name), phu: x.email, khiMo: function (dr) {
+      HM.bam(dr, '[data-dg]', function () {
+        var mucs = A.hieuSuat.muc();
+        c.hoiThoai({ tieuDe: t('dgVier') + ' · ' + x.name, moTa: HM.esc(t('dgMo')),
+          than: '<label class="fld">' + HM.esc(t('dgMuc')) + '</label>' +
+            '<select class="in" data-o="muc">' + mucs.map(function (m) {
+              return '<option value="' + HM.esc(c.lang === 'en' ? m.en : m.vi) + '"' + (dg && dg.muc === (c.lang === 'en' ? m.en : m.vi) ? ' selected' : '') + '>' + HM.esc(c.lang === 'en' ? m.en : m.vi) + '</option>';
+            }).join('') + '</select>' +
+            '<label class="fld">' + HM.esc(t('dgNhanXet')) + '</label>' +
+            '<textarea class="in" data-o="nx" rows="4">' + HM.esc(dg ? dg.nhanXet || '' : '') + '</textarea>',
+          dong: t('dgLuu') }).then(function (f) {
+          if (!f) return;
+          try {
+            A.hieuSuat.ghiDanhGia(x.id, nam, { muc: f.muc, nhanXet: f.nx }, A.staff.me.name);
+            c.thongBao(t('dgDaLuu').replace('{n}', x.name).replace('{y}', nam), 'ok');
+            c.dongNgan(); c.veLai();
+          } catch (e) { c.thongBao(e.message, 'no'); }
+        });
+      });
+    } });
+}
+
+/* =====================================================================
+   TAB 2 — THEO THÁNG
+   ===================================================================== */
+function veThang(c) {
+  var A = c.A, t = c.t, P = HB.dayMau();
+  var ds = A.hieuSuat.congTy();
+  if (!ds.length) return HM.the({ h2: HM.esc(t('tThang')), than: HM.trong({ icon: 'chart', tieuDe: t('khong'), moTa: t('thangMo') }) });
+  var bang = A.hieuSuat.bang();
+  var xh = bang.filter(function (r) { return r.quaHan > 0; }).slice(0, 10);
+
+  /* Gộp theo khối: một tháng cả công ty đuối thường là một khối đuối, chứ
+     không phải mọi người cùng chậm. Cột này chỉ ra đúng khối ấy. */
+  var khoi = {};
+  bang.forEach(function (r) {
+    var k = khoi[r.role] || (khoi[r.role] = { role: r.role, nguoi: 0, giao: 0, dangLam: 0, quaHan: 0, coHan: 0, dungHan: 0 });
+    k.nguoi++; k.giao += r.giao; k.dangLam += r.dangLam; k.quaHan += r.quaHan; k.coHan += r.coHan; k.dungHan += r.dungHan;
+  });
+  var dsKhoi = Object.keys(khoi).map(function (v) {
+    var k = khoi[v], kh = KHOI(A).filter(function (x) { return x.vai === v; })[0];
+    k.ten = kh ? c.song(kh, 'vi') : v;
+    k.tyLe = k.coHan ? Math.round(k.dungHan / k.coHan * 1000) / 10 : null;
+    return k;
+  }).sort(function (a, b) { return b.giao - a.giao; });
+
+  var bangThang = '<div class="tw"><table class="t"><thead><tr>' +
+    '<th>' + HM.esc(t('dThang')) + '</th><th class="num">' + HM.esc(t('bdGiao')) + '</th>' +
+    '<th class="num">' + HM.esc(t('bdXong')) + '</th><th class="num">' + HM.esc(t('bdQuaHan')) + '</th>' +
+    '<th class="num">' + HM.esc(t('cTyLe')) + '</th></tr></thead><tbody>' +
+    ds.slice().reverse().map(function (m) {
+      var tl = m.giao ? (m.giao - m.quaHan) / m.giao : null;
+      return '<tr><td class="mono">' + HM.esc(m.thang.slice(5) + '/' + m.thang.slice(0, 4)) + '</td>' +
+        '<td class="num mono">' + HM.esc(HT.fmt.n(m.giao)) + '</td>' +
+        '<td class="num mono">' + HM.esc(HT.fmt.n(m.xong)) + '</td>' +
+        '<td class="num mono">' + (m.quaHan ? '<span class="neg">' + HM.esc(HT.fmt.n(m.quaHan)) + '</span>' : '<span class="nil">0</span>') + '</td>' +
+        '<td class="num mono"><b>' + (tl == null ? '—' : HM.esc(HT.fmt.pct(tl))) + '</b></td></tr>';
+    }).join('') + '</tbody></table></div>';
+
+  var bangKhoi = '<div class="tw"><table class="t"><thead><tr>' +
+    '<th>' + HM.esc(t('qtKhoi')) + '</th><th class="num">' + HM.esc(t('kNguoi')) + '</th>' +
+    '<th class="num">' + HM.esc(t('cGiao')) + '</th><th class="num">' + HM.esc(t('cDangLam')) + '</th>' +
+    '<th class="num">' + HM.esc(t('cQuaHan')) + '</th><th class="num">' + HM.esc(t('cTyLe')) + '</th></tr></thead><tbody>' +
+    dsKhoi.map(function (k) {
+      return '<tr><td><b>' + HM.esc(k.ten) + '</b></td>' +
+        '<td class="num mono">' + HM.esc(HT.fmt.n(k.nguoi)) + '</td>' +
+        '<td class="num mono">' + HM.esc(HT.fmt.n(k.giao)) + '</td>' +
+        '<td class="num mono">' + HM.esc(HT.fmt.n(k.dangLam)) + '</td>' +
+        '<td class="num mono">' + (k.quaHan ? '<span class="neg">' + HM.esc(HT.fmt.n(k.quaHan)) + '</span>' : '<span class="nil">0</span>') + '</td>' +
+        '<td class="num mono"><b>' + (k.tyLe == null ? '—' : HM.esc(HT.fmt.pct(k.tyLe / 100))) + '</b></td></tr>';
+    }).join('') + '</tbody></table></div>';
+
+  var bd = ds.length > 1 ? HB.o({ loai: 'cot', cao: 220, chuThich: true, dinhDang: 'so',
+    truc: ds.map(function (m) { return m.thang.slice(5) + '/' + m.thang.slice(2, 4); }),
+    chuoi: [
+      { ten: t('bdGiao'), gt: ds.map(function (m) { return m.giao; }), mau: P[0] },
+      { ten: t('bdXong'), gt: ds.map(function (m) { return m.xong; }), mau: HB.mau('ok') },
+      { ten: t('bdQuaHan'), gt: ds.map(function (m) { return m.quaHan; }), mau: HB.mau('no') }
+    ] }) : '';
+
+  return HM.the({ h2: HM.esc(t('tThang')), p: HM.esc(t('thangMo')),
+      than: bd + bangThang }) +
+    '<div class="grid g2">' +
+    HM.the({ h2: HM.esc(t('qtKhoi')), p: HM.esc(t('nguon')), thoBody: true, than: bangKhoi }) +
+    HM.the({ h2: HM.esc(t('cQuaHan')), p: HM.esc(t('kQuaHanS')),
+      than: xh.length ? HM.xepHang(xh.map(function (r) {
+          return { ten: r.name, gt: r.quaHan, phu: 'Level ' + r.cap, attr: 'data-nv="' + r.id + '"',
+            mau: HB.mau('no'), phuV: r.tyLeDungHan == null ? '' : HT.fmt.pct(r.tyLeDungHan / 100) };
+        }), { dinhDang: function (v) { return HT.fmt.n(v); } })
+        : HM.trong({ icon: 'check', tieuDe: t('dQhTrong'), moTa: t('kQuaHanS') }) }) +
+    '</div>';
+}
+
+/* =====================================================================
+   TAB 3 — QUY TRÌNH TỪNG LOẠI VIỆC
+   ===================================================================== */
+function veQt(c) {
+  var A = c.A, t = c.t;
+  var ds = A.quyTrinh.list();
+  var nhip = { ngay: t('nhipNgay'), thang: t('nhipThang'), viec: t('nhipViec') };
+  return HM.the({ h2: HM.esc(t('tQt')), p: HM.esc(t('qtMo')), icon: 'list', thoBody: true,
+    than: '<div class="tw"><table class="t"><thead><tr>' +
+      '<th>' + HM.esc(t('tQt')) + '</th><th>' + HM.esc(t('qtKhoi')) + '</th>' +
+      '<th>' + HM.esc(t('qtNhip')) + '</th><th class="num">' + HM.esc(t('dBuoc')) + '</th></tr></thead><tbody>' +
+      ds.map(function (q) {
+        var k = KHOI(A).filter(function (x) { return x.vai === q.vai; })[0];
+        return '<tr class="pick" data-qt="' + HM.esc(q.id) + '">' +
+          '<td><b>' + HM.esc(c.lang === 'en' ? q.en : q.vi) + '</b><div class="t-sub">' + HM.esc(HM.dai(c.lang === 'en' ? (q.moEn || q.mo) : q.mo, 92)) + '</div></td>' +
+          '<td>' + HM.esc(k ? c.song(k, 'vi') : q.vai) + '</td>' +
+          '<td>' + HM.esc(nhip[q.nhip] || q.nhip) + '</td>' +
+          '<td class="num mono">' + HM.esc(t('qtSoBuoc').replace('{n}', q.soBuoc)) + '</td></tr>';
+      }).join('') + '</tbody></table></div>' });
+}
+
+function moQt(c, id) {
+  var q = c.A.quyTrinh.get(id);
+  if (!q) return;
+  c.nganTruot(HTS.soTay(c, id),
+    { tieuDe: c.lang === 'en' ? q.en : q.vi, phu: c.t('qtSoBuoc').replace('{n}', q.buoc.length) });
+}
+
+/* ---- bản in ---- */
+function inRa(c, ds) {
+  var t = c.t, A = c.A;
+  var than = '<h2>' + HM.esc(t('tNguoi')) + '</h2>' +
+    '<table><thead><tr><th>' + HM.esc(t('cNguoi')) + '</th><th>' + HM.esc(t('cCap')) + '</th>' +
+    '<th class="num">' + HM.esc(t('cGiao')) + '</th><th class="num">' + HM.esc(t('cDangLam')) + '</th>' +
+    '<th class="num">' + HM.esc(t('cDungHan')) + '</th><th class="num">' + HM.esc(t('cQuaHan')) + '</th>' +
+    '<th class="num">' + HM.esc(t('cTyLe')) + '</th><th class="num">' + HM.esc(t('cGio')) + '</th>' +
+    '<th>' + HM.esc(t('cMuc')) + '</th></tr></thead><tbody>' +
+    ds.map(function (r) {
+      return '<tr><td>' + HM.esc(r.name) + '</td><td>Level ' + r.cap + '</td>' +
+        '<td class="num">' + HM.esc(HT.fmt.n(r.giao)) + '</td><td class="num">' + HM.esc(HT.fmt.n(r.dangLam)) + '</td>' +
+        '<td class="num">' + HM.esc(HT.fmt.n(r.dungHan)) + '</td><td class="num">' + HM.esc(HT.fmt.n(r.quaHan)) + '</td>' +
+        '<td class="num">' + (r.tyLeDungHan == null ? '—' : HM.esc(HT.fmt.pct(r.tyLeDungHan / 100))) + '</td>' +
+        '<td class="num">' + (r.gioTb == null ? '—' : HM.esc(HT.fmt.n(r.gioTb) + ' ' + t('gio'))) + '</td>' +
+        '<td>' + HM.esc(tenMuc(c, r.muc)) + '</td></tr>';
+    }).join('') + '</tbody></table>' +
+    '<div class="in-ghi">' + HM.esc(t('nguon')) + '</div>';
+  HM.banIn({ tieuDe: t('inTieu'), phu: t('inPhu'), than: than, nguoi: A.staff.me.name });
+}
+
+})();
+
+},
+/* ---- man/hieu-qua-von.js ---- */
+function(){
+/* =====================================================================
+   NỘI BỘ · HIỆU QUẢ SỬ DỤNG VỐN
+   ---------------------------------------------------------------------
+   Tạm ứng là tiền Haustek bỏ ra trước rồi thu lại dần từ doanh thu của
+   chính đối tác ấy. Câu hỏi tài chính thật sự chỉ có ba:
+     · tiền đã đi bao nhiêu, về được bao nhiêu, còn đọng bao nhiêu;
+     · phần còn đọng có kịp về trước khi hợp đồng hết hạn không;
+     · mỗi đồng vốn bỏ ra kéo về bao nhiêu doanh thu.
+
+   Quá khứ đọc thẳng từ bảng chi trả của từng kỳ đã chốt sổ, không ước
+   lượng. Tương lai nối tiếp bằng nhịp thu hồi ba kỳ gần nhất của đúng
+   đối tác đó — nói rõ là dự báo và vẽ bằng nét đứt, để không ai nhầm hai
+   phần với nhau.
+   ===================================================================== */
+"use strict";
+(function () {
+
+var TAB = 'duong';
+var LOC = { loc: 'tatCa' };
+
+HT.dangKy({
+  id: 'hieu-qua-von', nav: 'navVon', nhom: 'nhomTien', icon: 'chart',
+
+  chu: {
+    vi: {
+      nhomTien: 'Tiền', navVon: 'Hiệu quả vốn', h1: 'Hiệu quả sử dụng vốn',
+      mo: 'Tiền tạm ứng đã đi, đã về, còn đọng, và bao giờ về hết. Chỉ Level 1–2 mở được.',
+      gd: 'Ngày giải ngân lấy theo ngày ký hợp đồng — bản mẫu chưa giữ ngày chuyển tiền riêng. Phần quá khứ của đường thu hồi đọc từ bảng chi trả các kỳ đã chốt; phần nét đứt là dự báo theo nhịp ba kỳ gần nhất.',
+
+      kGiaiNgan: 'Đã giải ngân', kGiaiNganS: '{n} hợp đồng có tạm ứng',
+      kDaThu: 'Đã thu hồi', kDaThuS: 'từ doanh thu của chính đối tác',
+      kConDong: 'Vốn còn đọng', kConDongS: '{n} hợp đồng chưa thu hết',
+      kTyLe: 'Tỷ lệ thu hồi', kTrenDong: 'Doanh thu trên mỗi đô vốn',
+      kTrenDongS: 'doanh thu đối tác tạo ra ÷ vốn đã ứng',
+      kHoaVon: 'Thời gian hoà vốn trung bình', kHoaVonS: 'trên {n} hợp đồng đã thu đủ', thang: 'tháng',
+
+      tDuong: 'Đường thu hồi', tHopDong: 'Theo hợp đồng', tLop: 'Lứa ký và tuổi nợ',
+
+      bdLuy: 'Thu hồi luỹ kế', bdKy: 'Thu hồi từng kỳ', duBao: 'dự báo',
+      duongMo: 'Đường liền là tiền đã thu thật, nét đứt là dự báo mười hai tháng tới.',
+      conSau: 'Còn đọng sau 12 tháng tới', conSauMo: 'phần dự báo không thu hồi kịp bằng nhịp hiện tại',
+
+      cDoiTac: 'Đối tác', cLoai: 'Loại', cGiaiNgan: 'Đã ứng', cDaThu: 'Đã thu', cConLai: 'Còn lại',
+      cTyLe: 'Thu hồi', cNhip: 'Nhịp mỗi kỳ', cConThang: 'Còn cần', cHopDong: 'Hợp đồng còn',
+      cTinhTrang: 'Tình trạng', kip: 'Kịp hạn', khongKip: 'Không kịp', xongRoi: 'Đã thu đủ', khongNhip: 'Chưa có nhịp',
+      loaiLabel: 'Label', loaiArtist: 'Nghệ sĩ',
+      locTatCa: 'Mọi hợp đồng', locConNo: 'Còn đọng vốn', locTre: 'Không kịp hạn', locXong: 'Đã thu đủ',
+      hdMo: 'Nhịp là số tiền thu hồi trung bình mỗi kỳ trong ba kỳ chốt gần nhất của chính đối tác đó. Còn cần là số tháng để thu hết phần còn lại theo nhịp ấy.',
+      khongHd: 'Không có hợp đồng nào khớp bộ lọc.',
+
+      cNam: 'Năm ký', cSo: 'Số hợp đồng', lopMo: 'Lứa ký nào thu hồi tốt hơn lứa nào. Lứa mới tất nhiên thu được ít hơn vì mới chạy chưa lâu.',
+      cTuoi: 'Tuổi nợ', cSoHd: 'Hợp đồng', cTien: 'Vốn đọng',
+      tuoiMo: 'Tính từ ngày ký. Vốn đọng quá hai năm thường là hợp đồng ký sai kỳ vọng doanh thu, không phải chậm thu.',
+
+      in: 'Bản in', inTieu: 'Hiệu quả sử dụng vốn', inPhu: 'Tiền tạm ứng đã đi, đã về, còn đọng và dự báo thu hồi.',
+      inTong: 'Số tổng', inHd: 'Hợp đồng còn đọng vốn', inLop: 'Theo lứa ký'
+    },
+    en: {
+      nhomTien: 'Money', navVon: 'Capital efficiency', h1: 'Capital efficiency',
+      mo: 'Advance money out, back, still out, and when the rest lands. Level 1–2 only.',
+      gd: 'The disbursement date is taken from the contract signing date — this prototype does not hold a separate transfer date. The solid part of the recovery curve is read from the payout tables of closed periods; the dashed part is a forecast at the last three periods’ pace.',
+
+      kGiaiNgan: 'Advanced', kGiaiNganS: '{n} contracts carrying an advance',
+      kDaThu: 'Recouped', kDaThuS: 'out of the partner’s own revenue',
+      kConDong: 'Still out', kConDongS: '{n} contracts not yet fully recouped',
+      kTyLe: 'Recovery rate', kTrenDong: 'Revenue per dollar advanced',
+      kTrenDongS: 'partner revenue generated ÷ capital advanced',
+      kHoaVon: 'Average time to full recovery', kHoaVonS: 'across {n} fully recouped contracts', thang: 'months',
+
+      tDuong: 'Recovery curve', tHopDong: 'By contract', tLop: 'Signing cohorts and ageing',
+
+      bdLuy: 'Cumulative recouped', bdKy: 'Recouped per period', duBao: 'forecast',
+      duongMo: 'The solid line is money actually recouped; the dashed line forecasts the next twelve months.',
+      conSau: 'Still out after 12 months', conSauMo: 'the part the current pace does not reach in time',
+
+      cDoiTac: 'Partner', cLoai: 'Kind', cGiaiNgan: 'Advanced', cDaThu: 'Recouped', cConLai: 'Outstanding',
+      cTyLe: 'Recovered', cNhip: 'Pace per period', cConThang: 'Months needed', cHopDong: 'Contract left',
+      cTinhTrang: 'Status', kip: 'On track', khongKip: 'Will not make it', xongRoi: 'Fully recouped', khongNhip: 'No pace yet',
+      loaiLabel: 'Label', loaiArtist: 'Artist',
+      locTatCa: 'All contracts', locConNo: 'Still outstanding', locTre: 'Will not make it', locXong: 'Fully recouped',
+      hdMo: 'Pace is the average amount recouped per period over that partner’s last three closed periods. Months needed is how long the rest takes at that pace.',
+      khongHd: 'No contract matches the filter.',
+
+      cNam: 'Signed', cSo: 'Contracts', lopMo: 'Which signing cohort recovers better. Newer cohorts naturally show less — they have had less time.',
+      cTuoi: 'Age', cSoHd: 'Contracts', cTien: 'Capital out',
+      tuoiMo: 'Measured from the signing date. Capital out beyond two years usually means the deal was signed on the wrong revenue expectation, not that collection is slow.',
+
+      in: 'Print view', inTieu: 'Capital efficiency', inPhu: 'Advance money out, back, still out, and the recovery forecast.',
+      inTong: 'Headline figures', inHd: 'Contracts with capital still out', inLop: 'By signing cohort'
+    }
+  },
+
+  ve: function (root, c) {
+    var A = c.A, t = c.t;
+    var tq = A.von.tongQuan();
+
+    var html = HM.dau({
+      h1: HM.esc(t('h1')), mo: HM.esc(t('mo')),
+      nut: '<button type="button" class="btn sm ghost" data-in>' + HM.icon('file') + HM.esc(t('in')) + '</button>'
+    });
+    html += HM.so([
+      { l: t('kGiaiNgan'), v: c.tien(tq.giaiNgan), s: t('kGiaiNganS').replace('{n}', tq.soHopDong) },
+      { l: t('kDaThu'), v: c.tien(tq.daThu), s: t('kDaThuS'), mau: HB.mau('ok') },
+      { l: t('kConDong'), v: c.tien(tq.conLai), s: t('kConDongS').replace('{n}', tq.soHopDong - tq.daXong),
+        mau: tq.conLai > 0 ? HB.mau('warn') : HB.mau('ok') },
+      { l: t('kTyLe'), v: HT.fmt.pct(tq.tyLeThuHoi / 100), lon: true },
+      { l: t('kTrenDong'), v: '$' + HT.fmt.n1(tq.trenMoiDong), s: t('kTrenDongS'),
+        mau: HB.mau(tq.trenMoiDong >= 1 ? 'ok' : 'warn') },
+      { l: t('kHoaVon'), v: tq.thangHoaVonTb == null ? '—' : tq.thangHoaVonTb + ' ' + t('thang'),
+        s: t('kHoaVonS').replace('{n}', tq.daXong) }
+    ]);
+    html += HM.tabs([
+      { k: 'duong', l: t('tDuong'), icon: 'chart' },
+      { k: 'hd', l: t('tHopDong'), icon: 'list', dem: tq.soHopDong - tq.daXong },
+      { k: 'lop', l: t('tLop'), icon: 'layers' }
+    ], TAB);
+
+    if (TAB === 'duong') html += veDuong(c);
+    if (TAB === 'hd') html += veHopDong(c);
+    if (TAB === 'lop') html += veLop(c);
+
+    root.innerHTML = html;
+    HB.gan(root);
+    HM.bam(root, '[data-tab]', function (el) { TAB = el.getAttribute('data-tab'); c.veLai(); });
+    HM.bam(root, '[data-in]', function () { inRa(c); });
+    HM.doi(root, '[data-loc]', function (el) { LOC.loc = el.value; c.veLai(); });
+  }
+});
+
+function tinhTrang(c, r) {
+  var t = c.t;
+  if (r.conLai <= 0) return { chu: t('xongRoi'), kieu: 'ok' };
+  if (r.conThang == null) return { chu: t('khongNhip'), kieu: 'warn' };
+  return r.kip ? { chu: t('kip'), kieu: '' } : { chu: t('khongKip'), kieu: 'warn' };
+}
+
+/* =====================================================================
+   TAB 1 — ĐƯỜNG THU HỒI: QUÁ KHỨ NỐI TƯƠNG LAI
+   ===================================================================== */
+function veDuong(c) {
+  var A = c.A, t = c.t, P = HB.dayMau();
+  var d = A.von.duong(12);
+  var truc = d.qua.map(function (x) { return x.label; }).concat(d.toi.map(function (x) { return x.label; }));
+  var luy = d.qua.map(function (x) { return x.luyKe; }).concat(d.toi.map(function (x) { return x.luyKe; }));
+  var ky = d.qua.map(function (x) { return x.thuHoi; }).concat(d.toi.map(function (x) { return x.thuHoi; }));
+
+  return '<div class="grid g2">' +
+    HM.the({ h2: HM.esc(t('bdLuy')), p: HM.esc(t('duongMo')),
+      than: HB.o({ loai: 'duong', cao: 250, chuThich: false, dinhDang: 'tien',
+        truc: truc,
+        tieuDeTip: function (i) { return truc[i] + (i >= d.qua.length ? ' · ' + t('duBao') : ''); },
+        chuoi: [{ ten: t('bdLuy'), gt: luy, mau: P[0], dubao: d.qua.length }] }),
+      chan: HM.esc(t('conSau')) + ': <b>' + HM.esc(c.tien(d.conSauCung)) + '</b> · ' + HM.esc(t('conSauMo')) }) +
+    HM.the({ h2: HM.esc(t('bdKy')), p: HM.esc(t('gd')),
+      than: HB.o({ loai: 'cot', cao: 250, chuThich: false, dinhDang: 'tien',
+        truc: truc,
+        tieuDeTip: function (i) { return truc[i] + (i >= d.qua.length ? ' · ' + t('duBao') : ''); },
+        chuoi: [{ ten: t('bdKy'), gt: ky, mau: HB.mau('ok') }] }) }) +
+    '</div>';
+}
+
+/* =====================================================================
+   TAB 2 — TỪNG HỢP ĐỒNG
+   ===================================================================== */
+function veHopDong(c) {
+  var A = c.A, t = c.t;
+  var rows = A.von.bang();
+  var loc = rows.filter(function (r) {
+    if (LOC.loc === 'conNo') return r.conLai > 0;
+    if (LOC.loc === 'tre') return r.conLai > 0 && !r.kip;
+    if (LOC.loc === 'xong') return r.conLai <= 0;
+    return true;
+  });
+
+  var thanh = '<div class="bar"><select class="in" data-loc style="width:auto;height:34px" aria-label="' + HM.esc(t('tHopDong')) + '">' +
+    [['tatCa', t('locTatCa')], ['conNo', t('locConNo')], ['tre', t('locTre')], ['xong', t('locXong')]].map(function (o) {
+      return '<option value="' + o[0] + '"' + (LOC.loc === o[0] ? ' selected' : '') + '>' + HM.esc(o[1]) + '</option>';
+    }).join('') + '</select></div>';
+
+  if (!loc.length) return HM.the({ h2: HM.esc(t('tHopDong')), than: thanh + HM.trong({ icon: 'empty', tieuDe: t('khongHd'), moTa: t('hdMo') }) });
+
+  var than = thanh + '<div class="tw"><table class="t"><thead><tr>' +
+    '<th>' + HM.esc(t('cDoiTac')) + '</th><th>' + HM.esc(t('cLoai')) + '</th>' +
+    '<th class="num">' + HM.esc(t('cGiaiNgan')) + '</th><th class="num">' + HM.esc(t('cDaThu')) + '</th>' +
+    '<th class="num">' + HM.esc(t('cConLai')) + '</th><th class="num">' + HM.esc(t('cTyLe')) + '</th>' +
+    '<th class="num">' + HM.esc(t('cNhip')) + HM.hoi(t('hdMo')) + '</th>' +
+    '<th class="num">' + HM.esc(t('cConThang')) + '</th><th class="num">' + HM.esc(t('cHopDong')) + '</th>' +
+    '<th>' + HM.esc(t('cTinhTrang')) + '</th></tr></thead><tbody>' +
+    loc.slice(0, 200).map(function (r) {
+      var tt = tinhTrang(c, r);
+      return '<tr>' +
+        '<td>' + HM.tenBia({ ten: r.name, seed: r.clientId, phu: r.clientId + ' · ' + HT.fmt.ngay(r.kyHopDong) }) + '</td>' +
+        '<td>' + HM.tag(r.kind === 'label' ? t('loaiLabel') : t('loaiArtist'), '') + '</td>' +
+        '<td class="num mono">' + HM.esc(c.tien(r.giaiNgan)) + '</td>' +
+        '<td class="num mono">' + HM.esc(c.tien(r.daThu)) + '</td>' +
+        '<td class="num mono"><b>' + (r.conLai > 0 ? HM.esc(c.tien(r.conLai)) : '<span class="nil">—</span>') + '</b></td>' +
+        '<td class="num mono">' + HM.esc(HT.fmt.pct(r.tyLe / 100)) + '</td>' +
+        '<td class="num mono muted">' + (r.nhip > 0 ? HM.esc(c.tien(r.nhip)) : '<span class="nil">—</span>') + '</td>' +
+        '<td class="num mono">' + (r.conLai <= 0 ? '<span class="nil">—</span>' : r.conThang == null ? '<span class="neg">∞</span>' : HM.esc(HT.fmt.n(r.conThang))) + '</td>' +
+        '<td class="num mono muted">' + (r.thangConHopDong > 0 ? HM.esc(HT.fmt.n(r.thangConHopDong)) : '<span class="neg">0</span>') + '</td>' +
+        '<td>' + HM.tag(tt.chu, tt.kieu) + '</td></tr>';
+    }).join('') + '</tbody></table></div>';
+  return HM.the({ h2: HM.esc(t('tHopDong')), p: HM.esc(t('hdMo')), thoBody: true, than: than });
+}
+
+/* =====================================================================
+   TAB 3 — LỨA KÝ VÀ TUỔI NỢ
+   ===================================================================== */
+function veLop(c) {
+  var A = c.A, t = c.t, P = HB.dayMau();
+  var lop = A.von.lop(), tuoi = A.von.tuoiNo();
+  return '<div class="grid g2">' +
+    HM.the({ h2: HM.esc(t('tLop')), p: HM.esc(t('lopMo')), thoBody: true,
+      than: '<div class="tw"><table class="t"><thead><tr>' +
+        '<th>' + HM.esc(t('cNam')) + '</th><th class="num">' + HM.esc(t('cSo')) + '</th>' +
+        '<th class="num">' + HM.esc(t('cGiaiNgan')) + '</th><th class="num">' + HM.esc(t('cDaThu')) + '</th>' +
+        '<th class="num">' + HM.esc(t('cConLai')) + '</th><th class="num">' + HM.esc(t('cTyLe')) + '</th></tr></thead><tbody>' +
+        lop.map(function (x) {
+          return '<tr><td><b>' + HM.esc(x.nam) + '</b></td><td class="num mono">' + HM.esc(HT.fmt.n(x.so)) + '</td>' +
+            '<td class="num mono">' + HM.esc(c.tien(x.giaiNgan)) + '</td>' +
+            '<td class="num mono">' + HM.esc(c.tien(x.daThu)) + '</td>' +
+            '<td class="num mono">' + HM.esc(c.tien(x.conLai)) + '</td>' +
+            '<td class="num mono"><b>' + HM.esc(HT.fmt.pct(x.tyLe / 100)) + '</b></td></tr>';
+        }).join('') + '</tbody></table></div>' }) +
+    HM.the({ h2: HM.esc(t('cTuoi')), p: HM.esc(t('tuoiMo')),
+      than: HB.o({ loai: 'thanh', dinhDang: function (v) { return c.tien(v); },
+        hang: tuoi.map(function (b, i) {
+          return { ten: c.lang === 'en' ? b.en : b.vi, gt: b.tien,
+            mau: i >= 3 ? HB.mau('no') : i === 2 ? HB.mau('warn') : P[0],
+            phu: HT.fmt.n(b.so) + ' ' + t('cSoHd').toLowerCase() };
+        }) }) }) +
+    '</div>';
+}
+
+/* ---- bản in ---- */
+function inRa(c) {
+  var A = c.A, t = c.t;
+  var tq = A.von.tongQuan();
+  var rows = A.von.bang().filter(function (r) { return r.conLai > 0; }).slice(0, 60);
+  var lop = A.von.lop();
+  var than = '<h2>' + HM.esc(t('inTong')) + '</h2><dl>' +
+    [[t('kGiaiNgan'), c.tien2(tq.giaiNgan)], [t('kDaThu'), c.tien2(tq.daThu)],
+     [t('kConDong'), c.tien2(tq.conLai)], [t('kTyLe'), HT.fmt.pct(tq.tyLeThuHoi / 100)],
+     [t('kTrenDong'), '$' + HT.fmt.n1(tq.trenMoiDong)],
+     [t('kHoaVon'), tq.thangHoaVonTb == null ? '—' : tq.thangHoaVonTb + ' ' + t('thang')]]
+      .map(function (r) { return '<dt>' + HM.esc(r[0]) + '</dt><dd>' + HM.esc(r[1]) + '</dd>'; }).join('') + '</dl>' +
+    '<h2>' + HM.esc(t('inHd')) + '</h2><table><thead><tr>' +
+      '<th>' + HM.esc(t('cDoiTac')) + '</th><th class="num">' + HM.esc(t('cGiaiNgan')) + '</th>' +
+      '<th class="num">' + HM.esc(t('cDaThu')) + '</th><th class="num">' + HM.esc(t('cConLai')) + '</th>' +
+      '<th class="num">' + HM.esc(t('cConThang')) + '</th><th>' + HM.esc(t('cTinhTrang')) + '</th></tr></thead><tbody>' +
+      rows.map(function (r) {
+        return '<tr><td>' + HM.esc(r.name + ' · ' + r.clientId) + '</td>' +
+          '<td class="num">' + HM.esc(c.tien2(r.giaiNgan)) + '</td>' +
+          '<td class="num">' + HM.esc(c.tien2(r.daThu)) + '</td>' +
+          '<td class="num">' + HM.esc(c.tien2(r.conLai)) + '</td>' +
+          '<td class="num">' + (r.conThang == null ? '—' : HM.esc(String(r.conThang))) + '</td>' +
+          '<td>' + HM.esc(tinhTrang(c, r).chu) + '</td></tr>';
+      }).join('') + '</tbody></table>' +
+    '<h2>' + HM.esc(t('inLop')) + '</h2><table><thead><tr>' +
+      '<th>' + HM.esc(t('cNam')) + '</th><th class="num">' + HM.esc(t('cSo')) + '</th>' +
+      '<th class="num">' + HM.esc(t('cGiaiNgan')) + '</th><th class="num">' + HM.esc(t('cDaThu')) + '</th>' +
+      '<th class="num">' + HM.esc(t('cTyLe')) + '</th></tr></thead><tbody>' +
+      lop.map(function (x) {
+        return '<tr><td>' + HM.esc(x.nam) + '</td><td class="num">' + HM.esc(HT.fmt.n(x.so)) + '</td>' +
+          '<td class="num">' + HM.esc(c.tien2(x.giaiNgan)) + '</td><td class="num">' + HM.esc(c.tien2(x.daThu)) + '</td>' +
+          '<td class="num">' + HM.esc(HT.fmt.pct(x.tyLe / 100)) + '</td></tr>';
+      }).join('') + '</tbody></table>' +
+    '<div class="in-ghi">' + HM.esc(t('gd')) + '</div>';
+  HM.banIn({ tieuDe: t('inTieu'), phu: t('inPhu'), than: than, nguoi: A.staff.me.name });
 }
 
 })();

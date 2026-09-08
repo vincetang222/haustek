@@ -40,6 +40,15 @@ HT.dangKy({
       sbTieu: 'Đối soát một bài theo đường dẫn store', sbMo: 'Mỗi bài đã lên kệ có đường dẫn tới từng nền tảng. Mở link, đọc số của ngày, gõ vào đây. Dùng khi một bài trông lạ, không phải để chạy hằng ngày.',
       sbTim: 'Tìm bài theo tên hoặc ISRC', sbChon: 'Chọn một bài để mở đường dẫn store',
       sbGoiY: 'Bài nghe nhiều nhất bảy ngày qua', sbGoiYMo: 'Chưa gõ gì thì đây là những bài đáng soát trước; gõ tên hoặc ISRC để tìm bài khác.',
+      ckTieu: 'Số công khai trên store', ckKhongTien: 'không dùng để tính tiền',
+      ckMo: 'Số nền tảng hiện công khai trên trang bài. Đây là số CỘNG DỒN từ ngày phát hành, và nền tảng đếm khác với lượt nghe được trả tiền. Dùng để thấy sớm bài đang lên hay bị gỡ, không dùng để tính tiền — tiền vẫn theo báo cáo của nhà phân phối.',
+      ckNt: 'Nền tảng', ckSo: 'Số mới nhất', ckNgayDoc: 'Đọc ngày', ckNhip: 'Bình quân mỗi ngày', ckGo: 'Số đọc được',
+      ckLuu: 'Ghi', ckXoa: 'Bỏ', ckMoLink: 'Mở trang', ckChuaCo: 'chưa đọc lần nào',
+      ckKhongCo: 'Nền tảng này không công bố số ra ngoài',
+      ckLui: 'Số lùi so với lần trước — nền tảng tính lại hoặc bài bị gỡ bớt. Kiểm lại trước khi tin.',
+      ckLan: '{n} lần đọc', ckDa: 'Đã ghi {n}', ckDaXoa: 'Đã bỏ lần đọc ngày {d}',
+      ckChuaLink: 'Bài này chưa có link store nào. Dán link ở trang Phiếu giao việc phát hành trước.',
+      ckTuDong: 'Đọc tự động',
       sbNgay: 'Ngày đối soát', sbLuot: 'Lượt nghe cả bài trong ngày', sbMoLink: 'Mở link',
       sbCoCau: 'Số hệ thống của từng nền tảng suy từ cơ cấu nền tảng của chính bài ấy ở kỳ gần nhất; cơ cấu đổi chậm nên dùng cho một ngày là đủ sát.',
       sbKhongLink: 'Bài này chưa có đường dẫn store nào — thường là chưa lên kệ.',
@@ -93,6 +102,15 @@ HT.dangKy({
       sbTieu: 'Reconcile one track through its store links', sbMo: 'Every released track has a link to each platform. Open it, read the day’s figure, key it in. For when a track looks odd — not for the daily loop.',
       sbTim: 'Search by title or ISRC', sbChon: 'Pick a track to open its store links',
       sbGoiY: 'Most-streamed tracks of the last seven days', sbGoiYMo: 'With no search these are the ones worth checking first; type a title or ISRC to find another.',
+      ckTieu: 'Public figures on the stores', ckKhongTien: 'not used for money',
+      ckMo: 'What the platform shows publicly on the track page. It is CUMULATIVE since release, and platforms count plays differently from royalty-bearing streams. Use it to spot a track rising or being pulled, never to compute money — money still follows the distributor’s report.',
+      ckNt: 'Platform', ckSo: 'Latest figure', ckNgayDoc: 'Read on', ckNhip: 'Average per day', ckGo: 'Figure you read',
+      ckLuu: 'Save', ckXoa: 'Remove', ckMoLink: 'Open page', ckChuaCo: 'never read',
+      ckKhongCo: 'This platform publishes no figure',
+      ckLui: 'The figure went down since last time — the platform recounted, or content was pulled. Check before trusting it.',
+      ckLan: '{n} readings', ckDa: 'Saved {n}', ckDaXoa: 'Removed the reading for {d}',
+      ckChuaLink: 'This track has no store link yet. Paste one on the delivery worksheet first.',
+      ckTuDong: 'Read automatically',
       sbNgay: 'Date', sbLuot: 'The track’s streams that day', sbMoLink: 'Open',
       sbCoCau: 'Each platform’s system figure comes from that track’s own platform mix in the most recent period; the mix moves slowly, so it is close enough for one day.',
       sbKhongLink: 'This track has no store links yet — usually it is not live.',
@@ -230,6 +248,27 @@ HT.dangKy({
         var kq = A.nhapLieu.ghiDoiSoatBai(CHON.bai, CHON.ngay, nt, parseFloat(o.value), A.staff.me.name);
         c.thongBao(t('sbDa').replace('{n}', nt).replace('{t}', kq.title), 'ok');
         HM.quenHet(); c.veLai();
+      } catch (e) { c.thongBao(e.message, 'no'); }
+    });
+    HM.bam(root, '[data-ck-luu]', function (el) {
+      var nt = el.getAttribute('data-ck-luu');
+      var o = root.querySelector('[data-ck="' + nt.replace(/"/g, '\\"') + '"]');
+      if (!o || o.value === '' || CHON.bai == null) return;
+      try {
+        var isrc = A.nhapLieu.baiNgay(CHON.bai, CHON.ngay).isrc;
+        A.soCongKhai.ghi(isrc, nt, CHON.ngay, parseInt(o.value, 10), A.staff.me.name);
+        c.thongBao(t('ckDa').replace('{n}', nt), 'ok'); HM.quenHet(); c.veLai();
+      } catch (e) { c.thongBao(e.message, 'no'); }
+    });
+    HM.bam(root, '[data-ck-xoa]', function (el) {
+      var nt = el.getAttribute('data-ck-xoa');
+      if (CHON.bai == null) return;
+      try {
+        var isrc = A.nhapLieu.baiNgay(CHON.bai, CHON.ngay).isrc;
+        var hang = A.soCongKhai.cua(isrc).find(function (x) { return x.plat === nt; });
+        if (!hang || !hang.moiNhat) return;
+        A.soCongKhai.xoa(isrc, nt, hang.moiNhat.ngay, A.staff.me.name);
+        c.thongBao(t('ckDaXoa').replace('{d}', HT.fmt.ngay(hang.moiNhat.ngay)), 'ok'); HM.quenHet(); c.veLai();
       } catch (e) { c.thongBao(e.message, 'no'); }
     });
     HM.bam(root, '[data-bo-bai-nt]', function (el) {
@@ -399,11 +438,12 @@ function veSoatBai(c) {
 
   var khoi = '';
   if (CHON.bai != null) {
+    khoi += veCongKhai(c);
     var b;
     try { b = A.nhapLieu.baiNgay(CHON.bai, CHON.ngay); } catch (e) { b = null; }
     if (b) {
       var co = b.rows.filter(function (r) { return r.url; });
-      khoi = HM.the({
+      khoi += HM.the({
         h2: HM.esc(b.title), p: HM.esc(b.artist + ' · ' + b.isrc), icon: 'link', thoBody: true,
         than: HM.kv([
           { t: t('sbNgay'), v: HT.fmt.ngay(b.ngay) },
@@ -436,6 +476,56 @@ function veSoatBai(c) {
 
   return HM.the({ h2: HM.esc(t('sbTieu')), p: HM.esc(t('sbMo')), icon: 'link',
     than: thanh + (chon || (CHON.bai == null ? HM.trong({ icon: 'tim', tieuDe: t('sbChon'), moTa: t('sbMo') }) : '')) }) + khoi;
+}
+
+/* =====================================================================
+   SỐ CÔNG KHAI TRÊN STORE — tín hiệu, không phải tiền
+   ---------------------------------------------------------------------
+   Nhân viên mở link store của bài, đọc con số nền tảng đang hiện, gõ vào
+   đây. Con số ấy là CỘNG DỒN, nên bảng tính hiệu hai lần đọc liên tiếp
+   rồi chia số ngày để ra bình quân mỗi ngày.
+
+   Vì sao không nối vào chuỗi chia tiền: nền tảng đếm "lượt phát" khác
+   với lượt nghe được trả tiền, và nhiều nền tảng không công bố gì cả.
+   Nhãn "không dùng để tính tiền" nằm ngay cạnh tiêu đề để không ai
+   nhầm — kể cả người mở trang lần đầu.
+   ===================================================================== */
+function veCongKhai(c) {
+  var A = c.A, t = c.t;
+  var ds;
+  try { ds = A.soCongKhai.cuaBai(CHON.bai); } catch (e) { return ''; }
+  var coLink = ds.some(function (x) { return x.url; });
+
+  return HM.the({
+    h2: HM.esc(t('ckTieu')) + ' ' + HM.tag(t('ckKhongTien'), 'warn'),
+    p: HM.esc(t('ckMo')), icon: 'chart', thoBody: true,
+    than: coLink ? '<div class="tw"><table class="t"><thead><tr>' +
+      '<th>' + HM.esc(t('ckNt')) + '</th>' +
+      '<th class="num">' + HM.esc(t('ckSo')) + '</th>' +
+      '<th class="num">' + HM.esc(t('ckNhip')) + HM.hoi(t('ckMo')) + '</th>' +
+      '<th>' + HM.esc(t('ckNgayDoc')) + '</th>' +
+      '<th>' + HM.esc(t('ckGo')) + '</th></tr></thead><tbody>' +
+      ds.map(function (x) {
+        if (!x.co) return '<tr><td>' + HM.esc(c.lang === 'vi' ? x.plat : x.platEn) + '</td>' +
+          '<td colspan="4" class="muted">' + HM.esc(t('ckKhongCo')) + ' · ' + HM.esc(c.lang === 'vi' ? x.ghi : x.ghiEn) + '</td></tr>';
+        return '<tr' + (x.lui ? ' class="canh"' : '') + '>' +
+          '<td>' + (x.url
+            ? '<a href="' + HM.esc(x.url) + '" target="_blank" rel="noopener">' + HM.esc(c.lang === 'vi' ? x.plat : x.platEn) + '</a>'
+            : HM.esc(c.lang === 'vi' ? x.plat : x.platEn)) +
+            '<div class="t-sub">' + HM.esc(t('ckLan').replace('{n}', x.soLan)) + '</div></td>' +
+          '<td class="num mono"><b>' + (x.moiNhat ? HM.esc(HT.fmt.n(x.moiNhat.so)) : '<span class="nil">' + HM.esc(t('ckChuaCo')) + '</span>') + '</b></td>' +
+          '<td class="num mono">' + (x.moiNgay == null ? '<span class="nil">—</span>'
+            : '<span class="' + (x.lui ? 'neg' : 'pos') + '">' + (x.moiNgay > 0 ? '+' : '') + HM.esc(HT.fmt.n(x.moiNgay)) + '</span>' +
+              (x.lui ? HM.hoi(t('ckLui')) : '')) + '</td>' +
+          '<td class="mono muted">' + (x.moiNhat ? HM.esc(HT.fmt.ngay(x.moiNhat.ngay)) : '<span class="nil">—</span>') + '</td>' +
+          '<td><div class="bar" style="margin:0;gap:6px;flex-wrap:nowrap">' +
+            '<input class="in mono" type="number" min="0" step="1" style="width:118px" data-ck="' + HM.esc(x.plat) + '" placeholder="' + HM.esc(x.moiNhat ? HT.fmt.n(x.moiNhat.so) : '0') + '">' +
+            '<button type="button" class="btn sm pri" data-ck-luu="' + HM.esc(x.plat) + '">' + HM.esc(t('ckLuu')) + '</button>' +
+            (x.moiNhat ? '<button type="button" class="btn sm ghost" data-ck-xoa="' + HM.esc(x.plat) + '">' + HM.esc(t('ckXoa')) + '</button>' : '') +
+          '</div></td></tr>';
+      }).join('') + '</tbody></table></div>'
+      : HM.trong({ icon: 'link', tieuDe: t('ckChuaLink'), moTa: t('ckMo') })
+  });
 }
 
 function goNgay(c, ngay, uoc) {

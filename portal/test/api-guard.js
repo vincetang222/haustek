@@ -414,7 +414,10 @@ check("Hồ sơ phát hành đi đúng thứ tự bốn bước, không nhảy b
     tracks: [{ title: "Một" }, { title: "Hai", isrc: "VNHTK2600999" }] });
   mustThrow(() => A.releases.assignCodes(kq.id, "ops@"), "cấp mã khi chưa tiếp nhận");
   mustThrow(() => A.releases.publish(kq.id, "ops@"), "phát hành khi chưa cấp mã");
-  A.releases.receive(kq.id, "ops@"); A.releases.assignCodes(kq.id, "ops@"); A.releases.publish(kq.id, "ops@", "2026-12-12");
+  A.releases.receive(kq.id, "ops@"); A.releases.assignCodes(kq.id, "ops@");
+  mustThrow(() => A.releases.publish(kq.id, "ops@", "2026-12-12"), "đánh dấu phát hành khi chưa đẩy lên tool nào");
+  A.releases.tool.danhDau(kq.id, "onerpm", { ma: "ONE-1" }, "ops@");
+  A.releases.publish(kq.id, "ops@", "2026-12-12");
   const r = A.releases.get(kq.id);
   must(r.status === "released", "trạng thái cuối: " + r.status);
   must(r.tracks.every(t => /^[A-Z]{2}[A-Z0-9]{3}\d{7}$/.test(t.isrc)), "có track chưa có ISRC hợp lệ");
@@ -1436,6 +1439,135 @@ check("Đối soát theo bài đi qua đúng đường dẫn store của bài �
   must(chan >= 2, "phải có ít nhất hai vai bị chặn khỏi đối soát theo bài");
   nhu("S02");
   return co.length + " đường dẫn · khớp ghi đúng · có người đối soát · gỡ ra sạch · " + chan + " vai bị chặn";
+});
+
+/* ---------------------------------------------------------------------
+   VÒNG 17 — phiếu giao việc phát hành và số công khai trên store
+   ------------------------------------------------------------------- */
+check("Phiếu giao việc: tick tool, chọn store, và không đánh dấu phát hành khi chưa đẩy đi đâu", () => {
+  nhu("S02");
+  const kq = A.releases.createFor("A:" + A1.id, {
+    title: "Thử phiếu giao việc", type: "single", releaseDate: "2026-12-20", genre: "Pop",
+    tracks: [{ title: "Bài thử", producer: "P" }]
+  }, "ops@");
+  A.releases.receive(kq.id, "ops@"); A.releases.assignCodes(kq.id, "ops@");
+  const tools = A.releases.tool.danhSach();
+  must(tools.length >= 4 && tools.some(x => x.id === "onerpm"), "danh sách tool không có OneRPM");
+  must(A.releases.tool.cua(kq.id).every(x => !x.xong), "hồ sơ mới mà đã có tool được tick");
+  A.releases.tool.danhDau(kq.id, "onerpm", { ma: "ONE-42", ghiChu: "42 store" }, "Vận hành");
+  const g = A.releases.tool.cua(kq.id).find(x => x.id === "onerpm");
+  must(g.xong && g.ma === "ONE-42" && g.by && g.at, "tick tool không ghi đủ mã, người và thời điểm");
+  mustThrow(() => A.releases.tool.danhDau(kq.id, "khong-co-tool", {}, "x"), "tick một tool không tồn tại");
+  /* chọn store rồi bỏ chọn thì quay về toàn bộ */
+  const st0 = A.releases.storeCua(kq.id);
+  must(st0.tatCa && st0.so === st0.tong, "hồ sơ mới phải mặc định toàn bộ store");
+  A.releases.datStore(kq.id, ["Spotify", "Apple Music"], "ops@");
+  const st1 = A.releases.storeCua(kq.id);
+  must(!st1.tatCa && st1.so === 2, "chọn hai store mà bảng không ghi nhận: " + st1.so);
+  A.releases.datStore(kq.id, [], "ops@");
+  must(A.releases.storeCua(kq.id).tatCa, "bỏ chọn hết phải quay về toàn bộ store");
+  /* gỡ tick rồi thì không phát hành được nữa */
+  A.releases.tool.boDanhDau(kq.id, "onerpm", "ops@");
+  mustThrow(() => A.releases.publish(kq.id, "ops@"), "đánh dấu phát hành khi đã gỡ hết tick tool");
+  A.releases.tool.danhDau(kq.id, "onerpm", {}, "ops@");
+  A.releases.publish(kq.id, "ops@", "2026-12-20");
+  must(A.releases.get(kq.id).status === "released", "tick tool rồi mà vẫn không phát hành được");
+  return tools.length + " tool · tick ghi đủ vết · store chọn và bỏ chọn · chưa đẩy thì chưa phát hành";
+});
+
+check("Link store dán tay thắng link sinh ra, và dán nhầm cột thì bị chặn", () => {
+  nhu("S02");
+  const r = A.releases.list().find(x => x.tracks.some(t2 => t2.isrc));
+  must(r, "không tìm được hồ sơ nào đã có ISRC");
+  const isrc = r.tracks.find(t2 => t2.isrc).isrc;
+  mustThrow(() => A.releases.link.dat(isrc, "Apple Music", "https://open.spotify.com/track/x", "x"),
+    "dán link Spotify vào cột Apple Music");
+  mustThrow(() => A.releases.link.dat(isrc, "Spotify", "http://open.spotify.com/track/x", "x"), "link http không phải https");
+  mustThrow(() => A.releases.link.dat(isrc, "Nền tảng lạ", "https://x.com/y", "x"), "nền tảng không có");
+  mustThrow(() => A.releases.link.dat("SAI-ISRC", "Spotify", "https://open.spotify.com/track/x", "x"), "ISRC sai định dạng");
+  const u = "https://open.spotify.com/track/4cOdK2wGLETKBW3PvgPWqT";
+  A.releases.link.dat(isrc, "Spotify", u, "Vận hành");
+  const hang = A.releases.link.cua(isrc).find(x => x.plat === "Spotify");
+  must(hang.url === u && hang.by, "link vừa dán không đọc lại được");
+  A.releases.link.bo(isrc, "Spotify", "Vận hành");
+  must(!A.releases.link.cua(isrc).find(x => x.plat === "Spotify").url, "gỡ link mà vẫn còn");
+  /* Bản ghi trong DANH MỤC nối với link qua ISRC. Dán link cho ISRC của một
+     bản ghi thì chính bản ghi ấy phải trả về link dán tay chứ không phải
+     link sinh ra — đây là chỗ nối hai thế giới, dễ vỡ nhất. */
+  const dm = A.nhapLieu.linkNenTang(0);
+  const cu = dm.rows.find(x => x.plat === "Spotify");
+  A.releases.link.dat(dm.isrc, "Spotify", u, "Vận hành");
+  const moi = A.nhapLieu.linkNenTang(0).rows.find(x => x.plat === "Spotify");
+  must(moi && moi.url === u && moi.tay, "bản ghi trong danh mục không lấy link dán tay");
+  must(!cu || cu.url !== u, "link sinh ra trùng link thử, phép kiểm này không chứng minh được gì");
+  A.releases.link.bo(dm.isrc, "Spotify", "Vận hành");
+  const ve = A.nhapLieu.linkNenTang(0).rows.find(x => x.plat === "Spotify");
+  must(!ve || !ve.tay, "gỡ link tay xong mà bản ghi vẫn báo là link tay");
+  return "chặn dán nhầm cột · chặn http · chặn ISRC sai · link tay thắng link sinh · gỡ ra hoàn nguyên";
+});
+
+check("Số công khai là tín hiệu, không phải tiền: ghi vào không đổi một xu nào", () => {
+  nhu("S02");
+  const pi = A.periods.findIndex(p => p.k === approvedKey);
+  const truoc = A.agg("admin", 0, pi, "rec");
+  const nt = A.soCongKhai.nenTang();
+  must(nt.length === 8, "phải nêu rõ cả tám nền tảng lớn");
+  must(nt.filter(x => x.co).length >= 3 && nt.filter(x => !x.co).length >= 3,
+    "phải có cả nền tảng công bố lẫn nền tảng không công bố");
+  must(nt.every(x => x.ghi && x.ghiEn), "nền tảng nào cũng phải nói rõ vì sao có hay không có số");
+  const isrc = A.nhapLieu.baiNgay(0, A.nhapLieu.ngay(3)[1].ngay).isrc;
+  mustThrow(() => A.soCongKhai.ghi(isrc, "Apple Music", "2026-09-01", 100), "ghi số cho nền tảng không công bố");
+  mustThrow(() => A.soCongKhai.ghi(isrc, "Spotify", "2026-09-01", -5), "ghi số âm");
+  mustThrow(() => A.soCongKhai.ghi(isrc, "Spotify", "01/09/2026", 100), "ghi ngày sai định dạng");
+  A.soCongKhai.ghi(isrc, "Spotify", "2026-09-01", 120000, "Vận hành");
+  A.soCongKhai.ghi(isrc, "Spotify", "2026-09-08", 148000, "Vận hành");
+  const h = A.soCongKhai.cua(isrc).find(x => x.plat === "Spotify");
+  must(h.moiNhat.so === 148000 && h.soLan === 2, "hai lần đọc không lưu đủ");
+  must(h.moiNgay === 4000, "bình quân mỗi ngày tính sai: " + h.moiNgay + " (đúng phải là 4000)");
+  /* số lùi phải hiện ra chứ không bị làm tròn thành 0 */
+  A.soCongKhai.ghi(isrc, "Spotify", "2026-09-09", 100000, "Vận hành");
+  must(A.soCongKhai.cua(isrc).find(x => x.plat === "Spotify").lui, "số lùi mà không đánh dấu");
+  /* và đây là điều quan trọng nhất của cả phép kiểm này */
+  const sau = A.agg("admin", 0, pi, "rec");
+  must(truoc.gross === sau.gross && truoc.fee === sau.fee && truoc.artist === sau.artist && truoc.labelCut === sau.labelCut,
+    "ghi số công khai mà tiền đổi — số này không bao giờ được chạm vào chuỗi chia tiền");
+  A.soCongKhai.xoa(isrc, "Spotify", "2026-09-09", "Vận hành");
+  must(!A.soCongKhai.cua(isrc).find(x => x.plat === "Spotify").lui, "xoá lần đọc lỗi mà vẫn còn cờ lùi");
+  return "8 nền tảng có lý do rõ · bình quân 4.000/ngày · số lùi hiện ra · tiền không đổi một xu";
+});
+
+check("Bộ đọc tự động nói thật là chưa nối, không trả số bịa", () => {
+  nhu("S02");
+  const isrc = A.nhapLieu.baiNgay(0, A.nhapLieu.ngay(3)[1].ngay).isrc;
+  const e1 = mustThrow(() => A.soCongKhai.docTuDong(isrc, "Spotify"), "đọc tự động Spotify");
+  must(/API|trang/i.test(e1), "lỗi Spotify phải nói rõ vì sao không đọc được: " + e1);
+  const e2 = mustThrow(() => A.soCongKhai.docTuDong(isrc, "YouTube Music"), "đọc tự động YouTube khi chưa có máy chủ");
+  must(/máy chủ/i.test(e2), "lỗi YouTube phải nói rõ là chưa nối máy chủ: " + e2);
+  mustThrow(() => A.soCongKhai.docTuDong(isrc, "Apple Music"), "đọc tự động nền tảng không công bố");
+  return "Spotify: không có API · YouTube: chưa nối máy chủ · Apple: không công bố";
+});
+
+check("Phiếu giao việc và số công khai không rời cổng nội bộ, và đúng vai mới vào được", () => {
+  const r = A.releases.list()[0];
+  const isrc = A.nhapLieu.baiNgay(0, A.nhapLieu.ngay(3)[1].ngay).isrc;
+  ["S03", "S05", "S07"].forEach(id => {
+    const me = nhu(id);
+    if (!A.quyen.nhom("vanHanh")) {
+      mustThrow(() => A.releases.tool.cua(r.id), "vai " + me.role + " đọc được phiếu giao tool");
+      mustThrow(() => A.releases.link.dat(isrc, "Spotify", "https://open.spotify.com/track/x", "x"), "vai " + me.role + " dán được link");
+    }
+    if (!A.quyen.nhom("theoDoi")) mustThrow(() => A.soCongKhai.cua(isrc), "vai " + me.role + " đọc được số công khai");
+  });
+  nhu("S02");
+  must(H.api.soCongKhai === undefined, "cổng đối tác lộ số công khai");
+  /* Đối tác có mặt tiền hồ sơ phát hành của chính mình — đó là chỗ họ gửi
+     bài lên. Nhưng phiếu giao việc nội bộ thì không được lọt vào đó. */
+  const rl = H.api.releases || {};
+  ["tool", "datStore", "storeCua"].forEach(k => must(rl[k] === undefined, "cổng đối tác lộ " + k + " của phiếu giao"));
+  if (rl.link) must(rl.link.dat === undefined, "cổng đối tác dán được link store");
+  const goi = JSON.stringify(H.api.releases && H.api.releases.mine ? H.api.releases.mine("artist", A1.id) : {});
+  must(goi.indexOf("giaoTool") < 0, "gói hồ sơ của đối tác lộ việc nội bộ của phiếu giao");
+  return "vai sai bị chặn · api không có phiếu giao và số công khai";
 });
 
 check("lockdown() gỡ hẳn mặt tiền admin khỏi trang", () => {

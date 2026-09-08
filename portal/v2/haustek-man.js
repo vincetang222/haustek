@@ -473,7 +473,37 @@ function banIn(o) {
 }
 document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && _inLop) dongIn(); });
 
+/* Chép một chuỗi vào bộ nhớ tạm. Nhân viên ngồi gõ lại metadata sang
+   OneRPM sẽ bấm nút này vài chục lần một hồ sơ, nên nó phải chạy được ở
+   MỌI chỗ: trang thường, file:// và cả khung sandbox của trình xem
+   artifact — chỗ mà navigator.clipboard bị chặn không báo lỗi. Nên thử
+   API mới trước, hỏng thì rơi xuống execCommand trên một textarea tạm. */
+function chep(chu) {
+  var s = String(chu == null ? '' : chu);
+  if (!s) return Promise.resolve(false);
+  function cachCu() {
+    try {
+      var o = document.createElement('textarea');
+      o.value = s;
+      o.setAttribute('readonly', '');
+      o.style.cssText = 'position:fixed;top:-1000px;opacity:0';
+      document.body.appendChild(o);
+      o.select(); o.setSelectionRange(0, s.length);
+      var ok = document.execCommand('copy');
+      document.body.removeChild(o);
+      return !!ok;
+    } catch (e) { return false; }
+  }
+  try {
+    if (navigator.clipboard && navigator.clipboard.writeText)
+      return navigator.clipboard.writeText(s).then(function () { return true; },
+        function () { return cachCu(); });
+  } catch (e) {}
+  return Promise.resolve(cachCu());
+}
+
 global.HM = {
+  chep: chep,
   dau: dau, so: so, the: the, huyHieu: huyHieu, suyHieu: suyHieu, tabs: tabs, trong: trong, ghi: ghi, menu: menu, kv: kv,
   hoi: hoi, banIn: banIn, dongIn: dongIn,
   tag: tag, cham: cham, bam: bam, doi: doi, nhap: nhap, csv: csv,
