@@ -39,25 +39,31 @@
   --raised:  #FFFFFF;
   --card-line: #D3DAE3;   /* viền thẻ đậm hơn: 1,32:1 so với mặt thẻ */
   --ink:     #1A2129;
-  --ink-2:   #5B6672;
-  --faint:   #626B75;
-  --line:    #DFE4EA;
-  --line-2:  #C8D0DA;
-  --head:    #EDF0F4;
-  --zebra:   #F7F9FB;
-  --fill:    #E6EAEF;
-  --band:    #F1F5F8;
-  --sel:     #DEE9F8;
+  /* Vòng 19 · nền của dải đầu cột, dòng chọn và chip đậm thêm một bậc,
+     nên hai mực phụ phải đậm theo, không thì chữ trên chúng tụt xuống
+     dưới AA. Kiểm bằng portal/test/v2-tuong-phan.js, không ước lượng. */
+  --ink-2:   #4F5964;
+  --faint:   #555F6A;
+  /* Vòng 19 · nâng tương phản của KHUNG, không chỉ của chữ. Đường kẻ
+     1,15:1 so với mặt thẻ thì mắt không thấy dòng, và bảng đọc ra phẳng
+     dù chữ vẫn đạt AA. Mỗi lớp dưới đây tách hẳn khỏi lớp trên nó. */
+  --line:    #D2D9E2;   /* kẻ giữa hai dòng — 1,30:1 so với mặt thẻ trắng */
+  --line-2:  #B4BFCC;   /* kẻ dưới đầu cột và trên dòng tổng — 1,62:1 */
+  --head:    #E2E7EE;   /* dải đầu cột — tách rõ khỏi thân bảng */
+  --zebra:   #F3F6FA;
+  --fill:    #DAE1E9;
+  --band:    #EAEFF5;
+  --sel:     #D0E2F6;
 
   /* ---- màu mang nghĩa ---- */
   --accent:     #0C7287;   /* màu dữ liệu chính, suy từ ice blue của brand */
   --accent-2:   #3D9DB1;
   --accent-3:   #7FC3D2;
   --accent-lo:  #DCEEF3;
-  --link:       #0C7287;   /* một màu nhấn cho cả liên kết (taste-skill: max 1 accent) */
+  --link:       #0A6274;   /* liên kết đậm hơn màu dữ liệu một bậc: nó nằm trên cả nền chip và nền dòng chọn */
   --danger:     #C8102E;
   --danger-lo:  #FCEEF0;
-  --ok:         #157A4E;
+  --ok:         #136E46;   /* đậm một bậc để đọc được cả trên nền dải đầu cột và nền dòng tổng */
   --ok-lo:      #E6F4ED;
   --warn:       #A15F00;
   --warn-lo:    #FFF5E4;
@@ -113,13 +119,13 @@
     --ink:     #E8EEF4;
     --ink-2:   #A9B7C4;
     --faint:   #909FAD;
-    --line:    #2A3B4B;
-    --line-2:  #384C5E;
-    --head:    #1E2E3B;
-    --zebra:   #1A2A37;
-    --fill:    #263646;
-    --band:    #1D2E3B;
-    --sel:     #1F3A4D;
+    --line:    #32475A;
+    --line-2:  #445D73;
+    --head:    #21323F;
+    --zebra:   #1B2C39;
+    --fill:    #2C3F51;
+    --band:    #1F3140;
+    --sel:     #234358;
 
     --accent:     #4CB8CE;
     --accent-2:   #6FCADD;
@@ -166,13 +172,13 @@
   --ink:     #E8EEF4;
   --ink-2:   #A9B7C4;
   --faint:   #909FAD;
-  --line:    #233240;
-  --line-2:  #2E4050;
-  --head:    #1A2732;
-  --zebra:   #17232E;
-  --fill:    #22303C;
-  --band:    #1A2934;
-  --sel:     #1B3242;
+  --line:    #2C3E4E;
+  --line-2:  #3C5265;
+  --head:    #1E2C39;
+  --zebra:   #19262F;
+  --fill:    #2A3A48;
+  --band:    #1D2C39;
+  --sel:     #1F3A4C;
 
   --accent:     #4CB8CE;
   --accent-2:   #6FCADD;
@@ -581,9 +587,11 @@ table.t{min-width:720px;border-collapse:separate;border-spacing:0}
 /* Bảng nằm trong khung hai cột không được ép 720px — ép thì cột tiền
    trôi ra ngoài tầm nhìn và người dùng phải cuộn ngang để đọc số. */
 .two table.t,.g2 table.t,.g3 table.t,.drawer table.t{min-width:0}
-table.t th{background:var(--head);font-size:11.5px;font-weight:500;color:var(--ink-2);
-  text-align:left;padding:9px 14px;white-space:nowrap;border-bottom:1px solid var(--line-2);
-  position:relative;letter-spacing:0;text-transform:none}
+/* Đầu cột phải là một tầng riêng, không phải một dòng dữ liệu chữ nhỏ:
+   đậm hơn, tối hơn, và kẻ dưới dày gấp đôi kẻ giữa các dòng. */
+table.t th{background:var(--head);font-size:11.5px;font-weight:600;color:var(--ink);
+  text-align:left;padding:9px 14px;white-space:nowrap;border-bottom:2px solid var(--line-2);
+  position:relative;letter-spacing:.01em;text-transform:none}
 table.t th.s{cursor:pointer;user-select:none}
 table.t th.s:hover{color:var(--ink);background:var(--fill)}
 /* mũi tên mờ báo "cột này sắp được", chỉ hiện khi rê chuột; cột đang sắp dùng .ar */
@@ -596,8 +604,18 @@ table.t th.num,table.t td.num{text-align:right}
 table.t th.sorted{color:var(--ink);background:var(--fill)}
 table.t th .ar{display:inline-block;width:9px;margin-left:5px;opacity:.85;vertical-align:-1px}
 table.t th .ar svg{width:9px;height:9px;stroke:currentColor;fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;display:inline-block}
-table.t td{padding:10px 14px;font-size:13px;border-bottom:1px solid var(--line);
+table.t td{padding:10px 14px;font-size:13px;color:var(--ink);border-bottom:1px solid var(--line);
   vertical-align:middle;transition:background .1s}
+/* .muted và .nil phải thắng được mực chính vừa đặt cho mọi ô, nếu không
+   thì ô cố tình để nhạt lại đậm bằng ô dữ liệu và tầng lớp mất sạch. */
+table.t td.muted,table.t td .muted{color:var(--ink-2)}
+/* Ba tầng trong một dòng, thay vì mọi ô cùng một sắc:
+     · cột đầu là DANH TÍNH — đậm 500, mực chính
+     · cột số là số — mực chính, chữ số đều bề ngang
+     · chữ phụ dưới tên là phụ — mực nhạt
+   Không có ba tầng ấy thì bảng nào cũng đọc ra một mảng xám. */
+table.t tbody td:first-child{font-weight:500}
+table.t tbody td:first-child.mono,table.t tbody td:first-child.num{font-weight:400;color:var(--ink-2)}
 /* Cột có tiêu đề hai dòng giữ tối thiểu 190px để tên không gãy thành năm
    dòng; ô chỉ có nhãn, ảnh, thanh hay mã thì không xuống dòng — bảng rộng
    hơn khung thì cuộn ngang, đã có bóng mép báo. */
@@ -615,8 +633,8 @@ table.t td.num{font-variant-numeric:tabular-nums;white-space:nowrap}
 table.t td.num b{font-weight:600}
 table.t td.band,table.t th.band{background:var(--band)}
 table.t tbody tr:hover td.band{background:var(--fill)}
-table.t tfoot td{border-top:1px solid var(--line-2);border-bottom:0;font-weight:600;
-  background:var(--head)}
+table.t tfoot td{border-top:2px solid var(--line-2);border-bottom:0;font-weight:600;
+  background:var(--head);color:var(--ink)}
 /* sọc xen kẽ chỉ khi bảng tự xin (.zebra): bảng rất rộng, nhiều cột số */
 table.t.zebra tbody tr:nth-child(even) td{background:var(--zebra)}
 /* mật độ chặt: người dùng nội bộ quét hàng trăm dòng */
@@ -1384,7 +1402,11 @@ table.t td.num,table.t th.num,.page-kpi .v,.kpi .v,.kv dd,.mono{font-variant-num
 .roi-chia{height:1px;background:var(--line);margin:12px 0}
 .say-list{margin:0;padding-left:18px;font-size:12.5px;color:var(--ink-2);line-height:1.6}
 .say-list li+li{margin-top:7px}
-table.t tr.sum td{background:var(--fill);border-top:1px solid var(--line-2)}
+/* Dòng tổng đóng bảng lại: nền đậm hơn thân, kẻ trên dày, chữ đậm — đọc
+   lướt cũng thấy ngay đâu là dòng cộng. */
+table.t tr.sum td{background:var(--fill);border-top:2px solid var(--line-2);border-bottom:0;
+  font-weight:600;color:var(--ink)}
+table.t tbody tr.sum:hover td{background:var(--fill)}
 
 /* ---- thang cấp trong Tổ chức ---- */
 /* Sáu bậc nằm ngang, bậc cao đậm hơn bậc thấp. Bậc chưa có ai thì nhạt

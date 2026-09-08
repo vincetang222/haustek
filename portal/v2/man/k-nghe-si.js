@@ -150,7 +150,7 @@ HT.dangKy({
     });
     HM.bam(root, '[data-xuat]', function () {
       HM.csv('nghe-si-' + me.clientId + '-' + c.kyKey + '.csv',
-        [c.lang === 'vi' ? 'Mã nghệ sĩ' : 'Artist ID', c.lang === 'vi' ? 'Tên' : 'Name', t('cBai'), t('cLuot'), t('cGop'), t('cNsHuong'), t('cLabel'), t('diemProducer')],
+        [c.lang === 'vi' ? 'Mã nghệ sĩ' : 'Artist ID', c.lang === 'vi' ? 'Tên' : 'Name', t('cBai'), t('cLuot'), t('cGop'), t('cNsHuong'), t('cLabel')],
         rows.map(function (x) { return [x.clientId, x.name, x.tracks, x.streams, x.revenue.toFixed(2), x.artist.toFixed(2), x.labelCut.toFixed(2)]; }));
     });
     HM.bam(root, '[data-ns]', function (el) { moNgheSi(c, r.rows.filter(function (x) { return x.artistId === +el.getAttribute('data-ns'); })[0]); });

@@ -14,7 +14,7 @@
 "use strict";
 (function () {
 
-var LOC = { metric: 'revenue' };
+var LOC = { metric: 'revenue', timDuoi: '' };
 
 HT.dangKy({
   id: 'k-nen-tang', nav: 'navNenTang', nhom: 'nhomBai', icon: 'shop',
@@ -36,7 +36,14 @@ HT.dangKy({
       chuaKy: 'Chưa có kỳ nào đã xét duyệt',
       chuaKyMo: 'Số liệu theo nền tảng chỉ hiển thị sau khi Haustek xét duyệt kỳ đầu tiên có doanh thu của bạn.',
       tacQuyen: 'Chỉ doanh thu bản ghi. Tác quyền báo cáo theo quý và không tách theo nền tảng nên không có ở đây.',
-      kyKhac: 'Kỳ đang chọn ({a}) chưa có trong báo cáo theo nền tảng, nên các ô số ở trên là của kỳ {b}.'
+      kyKhac: 'Kỳ đang chọn ({a}) chưa có trong báo cáo theo nền tảng, nên các ô số ở trên là của kỳ {b}.',
+      duoiH2: 'Trong "Nền tảng khác" có gì', cNt: 'Nền tảng', cLuot: 'Lượt nghe', duoiCua: 'Của bạn',
+      duoiMo: 'Từng nền tảng nhỏ của kỳ {k}, xếp theo số bạn được hưởng.',
+      duoiHoi: 'Bài của bạn lên hơn hai trăm nền tảng ngoài tám nền tảng lớn. Bảng phía trên gộp chúng thành một dòng cho dễ đọc; bảng này bóc dòng ấy ra. Cộng lại đúng bằng dòng "Nền tảng khác", không thiếu đồng nào.',
+      duoiTim: 'Tìm tên nền tảng…',
+      duoiTong: 'Cộng {n} nền tảng', duoiLoc: 'Cộng {n} nền tảng đang lọc',
+      duoiKhong: 'Không có nền tảng nào khớp', duoiKhongMo: 'Xoá bớt chữ trong ô tìm để xem lại cả danh sách.',
+      duoiChua: 'Kỳ này chưa có số để bóc'
     },
     en: {
       navNenTang: 'Platforms', h1: 'Platforms',
@@ -54,7 +61,14 @@ HT.dangKy({
       chuaKy: 'No approved period yet',
       chuaKyMo: 'Per-platform figures appear once Haustek approves your first earning period.',
       tacQuyen: 'Recording revenue only. Publishing is quarterly and not split by platform, so it is not here.',
-      kyKhac: 'The selected period ({a}) is not in the platform report yet, so the figures above are for {b}.'
+      kyKhac: 'The selected period ({a}) is not in the platform report yet, so the figures above are for {b}.',
+      duoiH2: 'What is inside "Other platforms"', cNt: 'Platform', cLuot: 'Streams', duoiCua: 'Yours',
+      duoiMo: 'Every smaller platform in {k}, by what you earned.',
+      duoiHoi: 'Your tracks reach more than two hundred platforms beyond the big eight. The table above folds them into one line so it stays readable; this one unfolds it. The total matches the "Other platforms" row exactly.',
+      duoiTim: 'Search platform name…',
+      duoiTong: '{n} platforms', duoiLoc: '{n} platforms in this filter',
+      duoiKhong: 'No platform matches', duoiKhongMo: 'Clear some of the search text to see the whole list again.',
+      duoiChua: 'No figures to unfold for this period'
     }
   },
 
@@ -161,6 +175,8 @@ HT.dangKy({
       chan: HM.esc(t('ghiChuBang'))
     });
 
+    html += veDuoi(c, ky);
+
     root.innerHTML = html;
     HB.gan(root);
 
@@ -168,7 +184,49 @@ HT.dangKy({
     HM.bam(root, '[data-xuat]', function () {
       HTS.csvMaTran('nen-tang-' + me.clientId + '-' + metric + '.csv', d, metric);
     });
+    HM.nhap(root, '[data-tim-duoi]', function (el) {
+      LOC.timDuoi = el.value;
+      var o = root.querySelector('#k-nt-duoi'); if (o) o.innerHTML = bangDuoi(c, ky);
+    });
   }
 });
+
+/* ---------------------------------------------------------------
+   Bảng trên gộp hơn hai trăm nền tảng nhỏ vào một dòng cho dễ đọc.
+   Đối tác vẫn có quyền biết dòng ấy gồm những gì — tiền của họ nằm
+   trong đó. Bóc ra ở đây, cùng một phép chia nên tổng khớp.
+   --------------------------------------------------------------- */
+function veDuoi(c, ky) {
+  var t = c.t;
+  return HM.the({
+    h2: HM.esc(t('duoiH2')), p: HM.esc(t('duoiMo').replace('{k}', ky.label)), thoBody: true,
+    hanhDong: HM.hoi(t('duoiHoi')),
+    than: '<div class="bar" style="padding:10px 14px 0">' +
+        '<input class="in" type="search" data-tim-duoi placeholder="' + HM.esc(t('duoiTim')) + '" value="' + HM.esc(LOC.timDuoi) + '" style="max-width:260px">' +
+      '</div><div id="k-nt-duoi">' + bangDuoi(c, ky) + '</div>'
+  });
+}
+function bangDuoi(c, ky) {
+  var api = c.api, me = c.phien.me, t = c.t;
+  var d;
+  try { d = api.platformTail(me.role, me.partyId, ky.k); } catch (e) { return HM.trong({ icon: 'shop', tieuDe: t('duoiChua'), moTa: '' }); }
+  var q = (LOC.timDuoi || '').trim().toLowerCase();
+  var ds = q ? d.rows.filter(function (r) { return r.name.toLowerCase().indexOf(q) >= 0; }) : d.rows;
+  if (!ds.length) return HM.trong({ icon: 'shop', tieuDe: t('duoiKhong'), moTa: t('duoiKhongMo') });
+  var max = ds[0].mine || 1;
+  var tongLoc = ds.reduce(function (s2, r) { return s2 + r.mine; }, 0);
+  return '<div class="tw" style="max-height:400px;overflow:auto">' +
+    '<table class="t"><thead><tr><th>' + HM.esc(t('cNt')) + '</th><th class="num">' + HM.esc(t('duoiCua')) +
+      '</th><th class="num">' + HM.esc(t('cLuot')) + '</th></tr></thead><tbody>' +
+    ds.map(function (r, i) {
+      return '<tr><td>' + HM.tenBia({ ten: r.name, seed: r.name, phu: (i + 1) + '/' + d.coSo }) + '</td>' +
+        '<td class="num">' + HM.oThanh(r.mine, max, { chu: HT.fmt.usd(r.mine) }) + '</td>' +
+        '<td class="num mono">' + HM.esc(HT.fmt.n(r.streams)) + '</td></tr>';
+    }).join('') +
+    '<tr class="sum"><td><b>' + HM.esc(q ? t('duoiLoc').replace('{n}', ds.length) : t('duoiTong').replace('{n}', d.coSo)) + '</b></td>' +
+      '<td class="num mono"><b>' + HM.esc(HT.fmt.usd(tongLoc)) + '</b></td>' +
+      '<td class="num mono"><b>' + HM.esc(HT.fmt.n(ds.reduce(function (s2, r) { return s2 + r.streams; }, 0))) + '</b></td></tr>' +
+    '</tbody></table></div>';
+}
 
 })();

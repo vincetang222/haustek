@@ -48,7 +48,7 @@ gọi `HAUSTEK.lockdown()` **trước khi** chạy bất cứ trang nào, và kh
 |---|---|---|
 | Tổng quan | `man/tong-quan.js` | Kỳ này đóng được chưa, tiền chia đi đâu, còn gì treo |
 | **Tác quyền** | `man/xuat-ban.js` | Tác phẩm (ISWC) tách khỏi bản ghi (ISRC), tác giả và tỷ lệ, và đăng ký với mười bảy hội tác quyền. Bốn tab: tiền đang để trên bàn (lãnh thổ có doanh thu mà chưa đăng ký ở hội của lãnh thổ ấy); việc còn phải làm xếp theo tiền; bảng tác phẩm có ngăn chi tiết sửa được tác giả, tỷ lệ và trạng thái từng hội; nhập bảng xuất của Sentric. Tổng tỷ lệ tác giả phải đúng 100% và phải có ISWC mới gửi đăng ký được. Vận hành, kế toán và giám đốc |
-| **Phiếu giao việc** | `man/phieu-giao.js` | Chỗ nhân viên chép metadata sang OneRPM và các tool khác. Bốn tab: Metadata xếp đúng thứ tự năm bước của OneRPM, mỗi trường một nút chép; Tool là bảng tick đã đẩy lên đâu, ai đẩy, tool trả về mã gì; Store chọn nền tảng sẽ phân phối tới; Link dán đường dẫn store thật của từng bài sau khi lên kệ, khoá theo ISRC, dán nhầm cột bị chặn tại chỗ. Chưa tick tool nào thì không đánh dấu phát hành được. Chỉ vận hành và giám đốc |
+| **Phiếu giao việc** | `man/phieu-giao.js` | Chỗ nhân viên chép metadata sang OneRPM và các tool khác. Bốn tab: Metadata xếp đúng thứ tự năm bước của OneRPM, mỗi trường một nút chép; Tool là bảng tick đã đẩy lên đâu, ai đẩy, tool trả về mã gì; Store chọn nền tảng sẽ phân phối tới; Link dán đường dẫn store thật của từng bài sau khi lên kệ, khoá theo ISRC, dán nhầm cột bị chặn tại chỗ. Chưa tick tool nào thì không đánh dấu phát hành được. **Vận hành thấy nút; giám đốc chỉ thấy tiến độ** — dải ô số chỗ tắc, cột đọng bao nhiêu ngày, ai chạm gần nhất — vì giám đốc xét duyệt chứ không làm tác vụ hằng ngày |
 | **Nhập số liệu** | `man/nhap-so-lieu.js` | Chỗ điều phối viên ngồi mỗi ngày. Năm tab: lượt nghe hằng ngày (ngày nào nguồn chưa về thì gõ tổng vào), doanh thu theo kỳ × nguồn (gõ tổng lấy trên báo cáo OneRPM / Warner / Believe / YouTube CMS), doanh thu theo từng bài (khi báo cáo có dòng riêng), nhật ký nhập có nút gỡ. Số gõ tay đè lên số máy sinh |
 | Nhập báo cáo | `man/nap-du-lieu.js` | Kỳ nào thiếu nguồn nào: bảng 12 kỳ × 4 nguồn |
 | Khớp ISRC | `man/khop-isrc.js` | Tiền chưa có chủ nằm ở đâu, khớp về ai |
@@ -59,7 +59,7 @@ gọi `HAUSTEK.lockdown()` **trước khi** chạy bất cứ trang nào, và kh
 | Tạm ứng | `man/tam-ung.js` | Ai còn nợ, thu hồi tới đâu, còn mấy kỳ nữa |
 | Tỷ lệ chia | `man/ty-le.js` | Bảng tỷ lệ có ngày hiệu lực, đổi từ kỳ nào |
 | Danh mục | `man/danh-muc.js` | 50.000 bản ghi, tìm được, lọc bản có vấn đề; mở ra xem dòng tiền, quy trình phát hành, trạng thái từng nền tảng, lượt nghe và doanh thu theo nền tảng theo tháng |
-| Nền tảng | `man/nen-tang.js` | Toàn danh mục: từng nền tảng mang về bao nhiêu lượt nghe, bao nhiêu tiền mỗi kỳ; kỳ thiếu nguồn nào thì cột đó bằng 0 |
+| Nền tảng | `man/nen-tang.js` | Toàn danh mục: từng nền tảng mang về bao nhiêu lượt nghe, bao nhiêu tiền mỗi kỳ; kỳ thiếu nguồn nào thì cột đó bằng 0. Thẻ *Trong "Nền tảng khác" có gì* bóc riêng 210 nền tảng nhỏ, có ô tìm và xuất CSV |
 | Bàn làm việc | `man/ban-lam-viec.js` | Trang đầu theo vai: giám đốc (thẻ *Chờ xét duyệt* duyệt / từ chối tại chỗ, đội kinh doanh, dự báo), vận hành, kinh doanh (KPI, chỉ tiêu, *Đề xuất của tôi* và nút đề xuất tạm ứng / hợp đồng), hỗ trợ (ticket, khiếu nại), kế toán (rút tiền, bảng kê, *Cần kiểm số*) |
 | Đối tác | `man/doi-tac.js` | Quản lý tài khoản đối tác: người phụ trách, doanh thu quý, phân loại, hợp đồng, trạng thái; ngăn hồ sơ có nút *Đề xuất tạm ứng* / *Đề xuất hợp đồng* mở hộp thoại tính ROI sống |
 | Hỗ trợ | `man/ho-tro.js` | Hàng đợi yêu cầu hỗ trợ: hạn, ưu tiên, người phụ trách, trả lời |
@@ -88,7 +88,7 @@ mục 4b). Mọi trang tiền ở đây dùng khoá `revenue` / `mine`; tầng A
 | Nghệ sĩ | `man/k-nghe-si.js` | Chỉ label: từng nghệ sĩ trong roster mang về bao nhiêu, phần nghệ sĩ, phần label |
 | Hệ thống label | `man/k-he-thong.js` | Chỉ label mẹ: từng label con và nghệ sĩ bên dưới, cây label, xem cổng của label con với tư cách người được uỷ quyền |
 | Danh mục bài hát | `man/k-danh-muc.js` | Mọi bài hát kể cả bài chưa ra tiền: bước nào của quy trình phát hành, đã lên nền tảng nào (đường dẫn), còn thiếu gì |
-| Nền tảng | `man/k-nen-tang.js` | Từng nền tảng mang về bao nhiêu lượt nghe, bao nhiêu tiền mỗi tháng, cho cả tài khoản |
+| Nền tảng | `man/k-nen-tang.js` | Từng nền tảng mang về bao nhiêu lượt nghe, bao nhiêu tiền mỗi tháng, cho cả tài khoản; bóc được cả dòng "Nền tảng khác" ra từng nền tảng nhỏ |
 | Dự báo | `man/k-du-bao.js` | Lượt nghe hằng ngày × mức trả của nền tảng: dự kiến kỳ đang mở và kỳ sau, tăng trưởng, bài tăng mạnh |
 | Ví & rút tiền | `man/k-vi.js` | Số dư khả dụng, rút tiền, tài khoản nhận tiền, lịch sử, khoản ghi theo kỳ, nhịp báo cáo |
 | Hỗ trợ | `man/k-ho-tro.js` | Gửi và theo dõi yêu cầu hỗ trợ; khiếu nại bản quyền Haustek đang xử lý thay bạn |
@@ -228,8 +228,16 @@ node test/v2-luong.js                                   # chuỗi vận hành: n
 node test/v2-tuong-phan.js                              # tương phản WCAG AA đo trên trang đã render, hai chế độ
 node test/v2-tieng-anh.js                               # bật EN thì khung không còn tiếng Việt
 node test/api-guard.js                                  # ranh giới quyền và chuỗi tiền
+node test/chuoi-thieu.js                                # đọc tĩnh: khoá gọi mà chưa khai, khoá lệch một thứ tiếng
+node test/goi-du-trang.js                               # bản gói có đúng mọi trang của hai cổng
+node test/roi-cong-thuc.js                              # công thức ROI đối chiếu bảng tính gốc
+node test/roi-man.js                                    # trang ROI trên mặt: số, dải kết luận, cảnh báo rủi ro
+node test/vong19-man.js                                 # vòng 19: khoá lọt, vai giao việc, rủi ro, nền tảng nhỏ, bảng hết phẳng
 node dung-goi.js && node test/v2-nhu-artifact.js && node test/v2-khong-mang.js   # bản gói chạy trong trình xem, không mạng
 ```
+
+Chạy trọn bộ trước khi công bố; `vong15-man.js` … `vong19-man.js` là bài kiểm
+riêng của từng vòng, giữ lại để vòng sau không phá vòng trước.
 
 Ba bài đầu cần Chromium ở `/opt/pw-browsers/chromium-1194/` và bộ font thật ở
 `/tmp/fonts-local.css` (xem `test/README.md`) — thiếu font thì trang render bằng font
@@ -368,6 +376,128 @@ Cổng đối tác không có và không nên có: bảng tính này đọc ra p
 giữ lại, phí môi giới và biên lợi nhuận. Đối tác muốn biết mình ứng được bao
 nhiêu thì vẫn dùng `k-tam-ung`, chạy trên `advanceOfferOf()` đã lược sạch.
 
+## Vòng 19: ứng theo số tháng, cảnh báo rủi ro, nền tảng nhỏ, giao việc theo vai
+
+### 1 · Khoản ứng đo bằng SỐ THÁNG doanh thu, không phải phần trăm
+
+Trước vòng này, trần tạm ứng là một tỷ lệ phần trăm của thu nhập ròng mười
+hai tháng dự kiến (60 / 45 / 30% theo hạng). Cách nói ấy sai với thị trường:
+đối tác ứng **12 đến 18 tháng thu nhập**, và họ nghĩ bằng tháng chứ không
+nghĩ bằng phần trăm.
+
+| Hạng rủi ro | Trần | Nghĩa là |
+|---|---|---|
+| A | **18 tháng** | thu nhập đều, tăng, không dồn vào một bài, đủ 6 kỳ có số |
+| B | **15 tháng** | ở giữa |
+| C | **12 tháng** | dao động lớn, giảm mạnh, dồn vào một bài, hoặc dưới 3 kỳ có số |
+
+`advanceCalc()` trả thêm ba trường: `capThang` (trần theo tháng),
+`monthlyForward` (thu nhập ròng một tháng đã chỉnh theo đà tăng), và
+`ungThang` (khoản đang xét bằng bao nhiêu tháng). Trần đúng bằng
+`monthlyForward × capThang`, api-guard kiểm tới từng đô la.
+
+**Phí ứng 12% là chuyện khác hẳn** và không được lẫn vào: nó cộng vào khoản
+phải thu hồi, không phải quy mô khoản ứng.
+
+### 2 · Cảnh báo rủi ro: sàn ROI 20%, mốc 12 tháng, trần 28 tháng
+
+Một khoản ứng lãi 18% mà mười tám tháng mới về đủ thì trên giấy vẫn là số
+dương — nhưng đó là mười tám tháng vốn nằm im. `roiRuiRo(roi, thang)` chấm
+ba mức, và trang ROI bày thẻ cảnh báo **ngay dưới dải ô số, trước mọi bảng**:
+
+| Mức | Khi nào |
+|---|---|
+| `ok` | ROI ≥ 20% và hoàn vốn trong 12 tháng |
+| `canh` · Cần cân nhắc | ROI < 20% **hoặc** hoàn vốn quá 12 tháng |
+| `cao` · Rủi ro cao | hoàn vốn quá **28 tháng**, hoặc không hoàn vốn trong kỳ hạn |
+
+Cảnh báo nói cả con số lẫn ngưỡng ("ROI 12%, dưới sàn 20%" · "Hoàn vốn ở
+tháng 41, quá trần 28 tháng"), hai thứ tiếng. `dealRoiScenarios()` cũng chấm
+cho cả bốn kịch bản cộng lại, hiện ở dòng tổng.
+
+**Cảnh báo bị giấu đúng những vai đã bị giấu ROI.** Câu "ROI 12%, dưới sàn
+20%" nói thẳng con số, nên `ruiRo` nằm trong `CALC_AN` của kinh doanh và kế
+toán — nếu không thì cảnh báo trở thành lối rò số qua cửa sau. Giám đốc thấy
+đủ; api-guard kiểm cả ba vai.
+
+### 3 · Hơn hai trăm nền tảng nhỏ: bóc ra được, cộng lại khớp
+
+Tám nền tảng lớn đứng riêng, 210 nền tảng còn lại gộp thành một dòng "Nền
+tảng khác". Gộp thì bảng mới đọc được — nhưng gộp xong mà không có chỗ nào
+bóc ra thì không ai trả lời được câu đơn giản nhất: *tháng này Deezer về bao
+nhiêu*.
+
+`platformTail(role, partyId, pIdx)` bóc đúng dòng ấy cho một kỳ. Nó **lấy
+chính con số của dòng "Nền tảng khác" làm mốc rồi chia xuống**, chứ không
+tính lại theo đường khác rồi hy vọng hai bên gặp nhau: tổng khớp tới từng
+xu và từng lượt nghe, api-guard kiểm.
+
+Thẻ *Trong "Nền tảng khác" có gì* có ở cả hai cổng — trang Nền tảng nội bộ
+(doanh thu gộp, lượt nghe, tỷ trọng đuôi, xuất CSV) và trang Nền tảng của
+đối tác (chỉ số ròng của họ, không có gộp, không có phí). Cả hai có ô tìm
+theo tên.
+
+### 4 · Giao việc: giám đốc xét duyệt, vận hành làm
+
+Giám đốc **đa số là xét duyệt**, không tick từng tool hay dán từng link.
+Phiếu giao việc vì thế đổi mặt theo vai qua một cờ duy nhất (`coLam()`),
+không rải điều kiện khắp nơi rồi sót một chỗ:
+
+| | Vận hành | Giám đốc |
+|---|---|---|
+| Dải ô số tiến độ | — | **có**: chưa đẩy tool nào · chờ dán link · đọng lâu nhất · đang theo dõi |
+| Cột "Đọng (ngày)" và "Chạm gần nhất" | — | **có** |
+| Nút chép từng ô metadata, chép cả khối | có | — |
+| Nút đánh dấu đã đẩy tool | có | — |
+| Ô dán link, nút lưu / bỏ link | có | — (link hiện thành liên kết đọc được) |
+| Tick chọn store, nút lưu danh sách | có | — (khoá) |
+
+Giám đốc vẫn đọc được **toàn bộ** tình trạng: tool nào xong, ai làm, lúc
+nào, link nào đã có. Chỉ mất nút bấm.
+
+### 5 · Bảng hết phẳng: tăng tương phản của khung, không chỉ của chữ
+
+Chữ đạt WCAG AA mà bảng vẫn đọc ra một mảng xám, vì **đường kẻ** giữa hai
+dòng chỉ 1,15:1 so với mặt thẻ. Vòng này nâng cả khung:
+
+* đường kẻ giữa hai dòng **1,30:1**, kẻ dưới đầu cột và trên dòng tổng dày
+  **2px** thay vì 1px
+* dải đầu cột tách hẳn khỏi mặt thẻ, chữ đầu cột **đậm 600** và dùng mực
+  chính thay vì mực phụ
+* ba tầng trong một dòng: cột đầu là **danh tính** (đậm 500, mực chính), cột
+  số là **số** (mực chính, chữ số đều bề ngang), dòng nhỏ dưới tên là **phụ**
+  (mực nhạt)
+* dòng tổng đóng bảng lại: nền đậm hơn thân, kẻ trên dày, chữ đậm
+
+Nền đậm thêm một bậc thì chữ trên nền ấy phải đậm theo, nếu không nó tụt
+xuống dưới AA — `--ink-2`, `--faint`, `--link` và `--ok` đều đã chỉnh lại và
+`v2-tuong-phan.js` xác nhận cả hai chế độ vẫn sạch. `vong19-man.js` đo trực
+tiếp trên trang: độ tương phản của dải đầu cột, độ dày kẻ, độ đậm chữ đầu cột.
+
+### 6 · Hai chỗ tên khoá lọt ra màn hình, và bài kiểm chặn tái diễn
+
+Trang Phiếu giao việc in ra chữ `cachMo`, `c1`, `dsTool` — mười một khoá
+chưa khai. Trang Nghệ sĩ xuất CSV với đầu cột `diemProducer`, một chuỗi đã
+bỏ từ vòng 13. Không bài kiểm nào bắt được, vì `t('k')` không khai thì trả
+lại chính tên khoá chứ không ném lỗi.
+
+`portal/test/chuoi-thieu.js` đọc tĩnh cả 45 trang: bóc `chu.vi` / `chu.en`
+(gỡ được cả kiểu `chu: CHU`), thu mọi lời gọi `t('…')` của chính trang ấy
+(không tính `HTS.t` / `HTM.t`), rồi báo khoá **gọi mà chưa khai**, khoá
+**chỉ có một thứ tiếng**, và khoá khai mà không dùng. 2.941 khoá tiếng Việt,
+sạch. `vong19-man.js` kiểm thêm trên mặt: phần tử nào có nội dung là một
+định danh camelCase thì đó là khoá lọt (trừ tên nền tảng thật như
+`iHeartRadio`, lấy từ chính danh sách store của lõi).
+
+### 7 · Ba chỗ nhỏ
+
+* **Link ADA** đúng là `https://www.ada-music.com/`.
+* **Sentric và Believe chung công ty chủ quản nhưng hoạt động tách bạch**:
+  hợp đồng riêng, người phụ trách riêng, kỳ báo cáo riêng. Có tài khoản
+  Believe **không** có nghĩa là có sẵn đường vào Sentric.
+* Chú thích rời được thu vào dấu **?** cạnh tiêu đề ở trang Tạm ứng nội bộ,
+  ngăn Tạm ứng của đối tác, và thẻ danh sách store trong Phiếu giao việc.
+
 ## Vòng 18: tác quyền — tác phẩm, đăng ký với hội, và tiền đang để trên bàn
 
 Mảng này **khác hẳn** bản ghi, và lẫn hai thứ ấy là lỗi tốn tiền nhất trong
@@ -430,9 +560,10 @@ thì **trả lại kèm lý do** chứ không nuốt.
 Thứ tự nên hỏi Sentric khi lên thật:
 
 1. **Có API hoặc giao file SFTP cho khách label không** — hỏi người phụ trách
-   tài khoản. Sentric thuộc cùng tập đoàn với Believe (bên phân phối của
-   Haustek), nên nhiều khả năng đi chung một đầu mối; điều này **cần xác nhận
-   lại với họ**, đừng coi là đã chắc.
+   tài khoản. Sentric và Believe **chung công ty chủ quản nhưng hoạt động
+   tách bạch**: hợp đồng riêng, người phụ trách riêng, kỳ báo cáo riêng, số
+   liệu không chảy qua nhau. Đừng cho rằng có tài khoản Believe là có sẵn
+   đường vào Sentric — phải mở đầu mối riêng.
 2. Không có API thì **xuất CSV theo kỳ**, máy chủ Haustek tự tải mỗi tháng.
 3. Cuối cùng mới là **dán tay** như hàm hiện nay.
 

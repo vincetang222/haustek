@@ -111,6 +111,10 @@ HT.dangKy({
       cKb: 'Kịch bản', cUng: 'Khoản ứng', cDt: 'Doanh thu tháng', cKyHan: 'Kỳ hạn', cThuHoi: 'Thu hồi', cRoi: 'ROI kỳ hạn', cRoiNam: 'ROI năm', cKl: 'Kết luận',
       tong: 'Cộng cả bốn', klDat: 'Đạt', klCanXem: 'Cần cân nhắc', klKhong: 'Chưa đạt', klThieu: 'Còn thiếu số',
       lyDo: 'Vì sao', ganDoiTac: 'Lấy số từ đối tác', datLai: 'Đặt lại', chonDoiTac: 'Đối tác (tên hoặc mã)',
+      rrH2: 'Cảnh báo rủi ro',
+      rrHoi: 'Hai ngưỡng do ban giám đốc chốt: ROI cả kỳ hạn phải từ {r} trở lên, và tiền phải về đủ trong {a} tháng. Quá {b} tháng, hoặc không hoàn vốn trong kỳ hạn, là mức không nên ký. Vượt một ngưỡng thì cần cân nhắc, vượt trần thì ghi rủi ro cao.',
+      rrRoi: 'ROI thực cả kỳ hạn', rrThang: 'Tiền về đủ ở tháng', rrKhong: 'không hoàn vốn',
+      rrSan: 'sàn {r}', rrTran: 'ngưỡng {a} tháng · trần {b} tháng',
       daLay: 'Đã lấy số của {t}', khongThay: 'Không tìm thấy đối tác “{q}”', chuaCoSo: '{t} chưa có kỳ nào có số để lấy',
       daDatLai: 'Đã đặt lại về số mẫu', taoDx: 'Tạo đề xuất tạm ứng',
       soSanh: 'Hai thang ROI trong phần mềm', soSanhP: 'Trang này và trang Xét duyệt trả lời hai câu khác nhau, đừng so thẳng hai con số.',
@@ -164,6 +168,10 @@ HT.dangKy({
       cKb: 'Scenario', cUng: 'Advance', cDt: 'Monthly income', cKyHan: 'Term', cThuHoi: 'Recoup', cRoi: 'ROI / term', cRoiNam: 'ROI / year', cKl: 'Verdict',
       tong: 'All four', klDat: 'Passes', klCanXem: 'Worth a look', klKhong: 'Below target', klThieu: 'Figures missing',
       lyDo: 'Why', ganDoiTac: 'Pull from a partner', datLai: 'Reset', chonDoiTac: 'Partner (name or id)',
+      rrH2: 'Risk warning',
+      rrHoi: 'Two thresholds set by the board: ROI over the term must reach {r}, and the money must be back within {a} months. Past {b} months, or never paying back inside the term, is a deal not to sign. One threshold breached means take a second look; past the ceiling it is logged as high risk.',
+      rrRoi: 'Real ROI over the term', rrThang: 'Money back in month', rrKhong: 'never pays back',
+      rrSan: 'floor {r}', rrTran: '{a}-month mark · {b}-month ceiling',
       daLay: 'Pulled {t}’s figures', khongThay: 'No partner matching “{q}”', chuaCoSo: '{t} has no periods with figures yet',
       daDatLai: 'Reset to the sample figures', taoDx: 'Create an advance proposal',
       soSanh: 'Two ROI scales in the software', soSanhP: 'This page and Approvals answer different questions; do not compare the two numbers directly.',
@@ -246,6 +254,26 @@ HT.dangKy({
         { l: t('ung'), v: c.tien(k.advance), s: t('ungS') }
       ]);
 
+      /* Cảnh báo rủi ro đứng ngay dưới dải ô số, trước mọi bảng: giám đốc
+         đọc kết luận trước, muốn biết vì sao thì đọc tiếp xuống dưới. */
+      if (k.ruiRo.muc !== 'ok') {
+        var rr = k.ruiRo, caoQua = rr.muc === 'cao';
+        h += HM.the({
+          dai: { kieu: caoQua ? 'no' : 'warn', icon: 'alert', chu: HM.esc(c.lang === 'en' ? rr.nhan.en : rr.nhan.vi) },
+          h2: HM.esc(t('rrH2')),
+          hanhDong: HM.hoi(t('rrHoi').replace('{r}', HT.fmt.pct(rr.roiSan)).replace('{a}', rr.thangTot).replace('{b}', rr.thangToiDa)),
+          than: HM.kv([
+            { t: t('rrRoi') + ' · ' + t('rrSan').replace('{r}', HT.fmt.pct(rr.roiSan)),
+              v: rr.roi == null ? '—' : HT.fmt.pct(rr.roi), manh: true,
+              mau: rr.roi != null && rr.roi < rr.roiSan ? 'neg' : '' },
+            { t: t('rrThang') + ' · ' + t('rrTran').replace('{a}', rr.thangTot).replace('{b}', rr.thangToiDa),
+              v: rr.thang == null ? t('rrKhong') : rr.thang + ' ' + t('thang'), manh: true,
+              mau: rr.thang == null || rr.thang > rr.thangTot ? 'neg' : '' }
+          ]),
+          chan: rr.y.length ? HM.esc(rr.y.map(function (x) { return c.lang === 'en' ? x.en : x.vi; }).join(' · ')) : ''
+        });
+      }
+
       h += HM.the({ dai: { kieu: k.recommendation === 'approve' ? 'ok' : k.recommendation === 'review' ? 'warn' : 'no',
           icon: k.recommendation === 'approve' ? 'check' : 'alert', chu: HM.esc(chuKl) },
         h2: HM.esc(t('dongTien')), p: HM.esc(t('dongTienP')),
@@ -296,7 +324,9 @@ HT.dangKy({
             }).join('') +
             '<tr class="sum"><td><b>' + HM.esc(t('tong')) + '</b></td><td></td><td class="num mono"><b>' + HM.esc(c.tien(kb.tong.advance)) +
             '</b></td><td></td><td></td><td class="num band mono"><b>' + (kb.tong.roi == null ? '—' : kb.tong.roi.toFixed(2) + '×') + '</b></td><td></td>' +
-            '<td>' + HM.esc(kb.moKhoa + ' ' + t('moRoi') + (kb.khoaLai ? ' · ' + kb.khoaLai + ' ' + t('khoaRoi') : '')) + '</td><td></td></tr>' +
+            '<td>' + HM.esc(kb.moKhoa + ' ' + t('moRoi') + (kb.khoaLai ? ' · ' + kb.khoaLai + ' ' + t('khoaRoi') : '')) + '</td>' +
+            '<td>' + (kb.tong.ruiRo.muc === 'ok' ? '<span class="nil">—</span>'
+              : HM.tag(c.lang === 'en' ? kb.tong.ruiRo.nhan.en : kb.tong.ruiRo.nhan.vi, kb.tong.ruiRo.muc === 'cao' ? 'no' : 'warn')) + '</td></tr>' +
             '</tbody></table></div>' });
       }
 

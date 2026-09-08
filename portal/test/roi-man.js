@@ -33,8 +33,15 @@ const doc = p => p.evaluate(() => {
   document.querySelectorAll('#roi-kq table.t tbody tr').forEach(tr => {
     ra.bang.push([...tr.querySelectorAll('td')].map(td => td.textContent.trim()));
   });
-  const dai = document.querySelector('#roi-kq .ribbon');
+  /* Từ vòng 19 khu kết quả có HAI dải: thẻ cảnh báo rủi ro đứng trước,
+     thẻ kết luận dòng tiền đứng sau. Lấy đúng dải của thẻ kết luận, đừng
+     lấy dải đầu tiên gặp được. */
+  const the = [...document.querySelectorAll('#roi-kq .card')];
+  const kl = the.find(x => /Dòng tiền|Monthly cash/i.test((x.querySelector('h2') || {}).textContent || ''));
+  const dai = kl ? kl.querySelector('.ribbon') : null;
   ra.dai = dai ? dai.textContent.trim() : null;
+  const rr = the.find(x => /Cảnh báo rủi ro|Risk warning/i.test((x.querySelector('h2') || {}).textContent || ''));
+  ra.daiRuiRo = rr && rr.querySelector('.ribbon') ? rr.querySelector('.ribbon').textContent.trim() : null;
   ra.bd = document.querySelectorAll('#roi-kq .bd svg').length;
   ra.rong = document.querySelector('#roi-kq').textContent.trim().length;
   return ra;

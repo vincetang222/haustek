@@ -1690,6 +1690,120 @@ check("Tác quyền không rời cổng nội bộ, và tác giả chỉ thấy 
   return "hai vai bị chặn · api không có mặt tiền nội bộ · tác giả chỉ thấy tác phẩm mình đứng tên";
 });
 
+/* ===================== VÒNG 19: ỨNG THEO SỐ THÁNG · CẢNH BÁO RỦI RO ===================== */
+check("Khoản ứng đo bằng SỐ THÁNG doanh thu (12–18), không phải phần trăm", () => {
+  nhu("S01");
+  const pk = A.parties.list().rows[0].partyKey;
+  const c0 = A.advanceCalc(pk, 0, 0.12);
+  must(c0.capThang === 12 || c0.capThang === 15 || c0.capThang === 18,
+    "trần tạm ứng phải là 12 / 15 / 18 tháng, đang là " + c0.capThang);
+  must(c0.monthlyForward > 0, "chưa có thu nhập ròng một tháng để nhân ra trần");
+  /* trần đúng bằng số tháng × thu nhập ròng một tháng dự kiến, sai số làm tròn 1 đô */
+  must(Math.abs(c0.maxAdvance - c0.monthlyForward * c0.capThang) <= 1,
+    "trần " + c0.maxAdvance + " không bằng " + c0.capThang + " × " + c0.monthlyForward);
+  /* hạng tốt hơn thì được nhiều tháng hơn, và không hạng nào vượt 18 hay dưới 12 */
+  const bac = A.parties.list().rows.slice(0, 30).map(x => A.advanceCalc(x.partyKey, 0, 0.12))
+    .filter(x => x.monthlyForward > 0);
+  must(bac.length > 0, "không có đối tác nào để kiểm");
+  must(bac.every(x => x.capThang >= 12 && x.capThang <= 18), "có hạng nằm ngoài khoảng 12–18 tháng");
+  must(bac.every(x => (x.grade === "A" ? x.capThang === 18 : x.grade === "B" ? x.capThang === 15 : x.capThang === 12)),
+    "số tháng không khớp hạng rủi ro");
+  /* ứng đúng trần thì ungThang phải bằng capThang: người đọc biết mình đang ứng mấy tháng */
+  const cT = A.advanceCalc(pk, c0.maxAdvance, 0.12);
+  must(Math.abs(cT.ungThang - cT.capThang) <= 0.1, "ứng đúng trần mà không ra đúng số tháng");
+  /* phí ứng 12% là một thứ KHÁC, không được lẫn vào số tháng */
+  must(cT.feePct === 0.12 && Math.abs(cT.repayment - cT.amount * 1.12) < 0.01, "phí ứng không còn là 12% cộng thêm");
+  return c0.capThang + " tháng cho hạng " + c0.grade + " · trần = tháng × ròng · phí 12% tách riêng";
+});
+
+check("Cảnh báo rủi ro: ROI dưới 20% hoặc hoàn vốn quá 12 tháng thì phải kêu, quá 28 tháng là mức không nên ký", () => {
+  nhu("S01");
+  const nen = { monthlyIncome: 3300, artistShare: 0.74, termMonths: 60, exclusivityMonths: 36 };
+  /* khoản nhỏ, về nhanh, lãi dày → trong ngưỡng */
+  const tot = A.roi.tinh(Object.assign({}, nen, { cashAdvance: 3000 }));
+  must(tot.ruiRo.muc === "ok", "khoản ứng nhỏ về nhanh mà vẫn bị kêu: " + tot.ruiRo.muc);
+  must(tot.paybackMonth <= 12, "mẫu 'tốt' phải hoàn vốn trong 12 tháng mới có nghĩa");
+  /* khoản vừa, hoàn vốn quá 12 tháng → cảnh báo */
+  const vua = A.roi.tinh(Object.assign({}, nen, { cashAdvance: 40000 }));
+  must(vua.paybackMonth > 12 && vua.paybackMonth <= 28, "mẫu 'vừa' phải rơi vào khoảng 12–28 tháng");
+  must(vua.ruiRo.muc === "canh", "hoàn vốn " + vua.paybackMonth + " tháng mà không cảnh báo");
+  /* khoản lớn, quá 28 tháng → rủi ro cao */
+  const to = A.roi.tinh(Object.assign({}, nen, { cashAdvance: 120000 }));
+  must(to.paybackMonth == null || to.paybackMonth > 28, "mẫu 'to' phải vượt trần 28 tháng");
+  must(to.ruiRo.muc === "cao", "vượt trần 28 tháng mà chỉ ghi " + to.ruiRo.muc);
+  /* ngưỡng đúng như ban giám đốc chốt, và lý do phải nói ra chứ không im */
+  must(to.ruiRo.roiSan === 0.2 && to.ruiRo.thangTot === 12 && to.ruiRo.thangToiDa === 28, "ngưỡng bị đổi");
+  must(to.ruiRo.y.length > 0 && to.ruiRo.y.every(x => x.vi && x.en), "cảnh báo không kèm lý do đủ hai thứ tiếng");
+  /* ROI dưới sàn 20% cũng phải kêu, kể cả khi tiền về sớm */
+  const mong = A.roi.tinh({ monthlyIncome: 3300, cashAdvance: 3000, artistShare: 0.99, termMonths: 12, exclusivityMonths: 12 });
+  must(mong.roiNet != null && mong.roiNet < 0.2, "mẫu 'lãi mỏng' chưa dưới sàn 20%");
+  must(mong.ruiRo.muc !== "ok", "ROI " + mong.roiNet + " dưới sàn mà không kêu");
+  return "ok / cảnh báo / rủi ro cao đúng ba mốc · sàn 20% · 12 và 28 tháng";
+});
+
+check("Cảnh báo rủi ro của tạm ứng không lọt sang vai đã bị giấu ROI", () => {
+  nhu("S01");
+  const pk = A.parties.list().rows[0].partyKey;
+  const mg = A.advanceCalc(pk, 5000, 0.12);
+  must(mg.ruiRo && mg.ruiRo.muc, "giám đốc mất cảnh báo rủi ro");
+  ["S03", "S07"].forEach(id => {
+    const me = nhu(id);
+    const c = A.advanceCalc(pk, 5000, 0.12);
+    must(c.roi === undefined, "vai " + me.role + " lẽ ra không thấy roi");
+    must(c.ruiRo === undefined, "vai " + me.role + " đọc được ROI qua cảnh báo rủi ro");
+    must(JSON.stringify(c).indexOf("dưới sàn") < 0, "câu cảnh báo mang số ROI vẫn lọt cho " + me.role);
+  });
+  nhu("S01");
+  return "giám đốc thấy · kinh doanh và kế toán không đọc được ROI qua cửa sau";
+});
+
+check("Nền tảng nhỏ bóc ra được, cộng lại khớp đúng dòng \"Nền tảng khác\"", () => {
+  nhu("S01");
+  const bao = A.platformReport();
+  const j = bao.rows.length - 1;
+  must(bao.rows[j].name === "Nền tảng khác", "dòng cuối không phải rổ gom");
+  const k = bao.periods.map((p, i) => i).filter(i => bao.periods[i].open).pop();
+  const duoi = A.platformTail(bao.periods[k].k);
+  must(duoi.rows.length > 100, "chỉ bóc ra " + duoi.rows.length + " nền tảng, rổ gom phải có hơn hai trăm");
+  must(duoi.coSo <= duoi.tatCa, "đếm sai số nền tảng có số");
+  /* cộng lại phải khớp tới từng xu, nếu không thì bảng này nói dối */
+  const tG = duoi.rows.reduce((s2, r) => s2 + r.revenue, 0);
+  const tS = duoi.rows.reduce((s2, r) => s2 + r.streams, 0);
+  must(Math.abs(tG - bao.rows[j].revenue[k]) < 0.005, "tiền lệch: " + tG + " ≠ " + bao.rows[j].revenue[k]);
+  must(tS === bao.rows[j].streams[k], "lượt nghe lệch: " + tS + " ≠ " + bao.rows[j].streams[k]);
+  must(duoi.rows.every((r, i) => i === 0 || duoi.rows[i - 1].revenue >= r.revenue), "danh sách chưa xếp theo tiền");
+  /* tên nền tảng lớn không được lẫn vào rổ đuôi, kẻo đếm hai lần */
+  const lon = bao.rows.slice(0, j).map(r => r.name);
+  must(!duoi.rows.some(r => lon.indexOf(r.name) >= 0), "nền tảng lớn lọt vào rổ đuôi");
+  return duoi.coSo + "/" + duoi.tatCa + " nền tảng nhỏ · tiền và lượt cộng lại khớp tới xu";
+});
+
+check("Đối tác bóc được rổ nền tảng nhỏ của chính mình, không thấy của người khác và không thấy số gộp", () => {
+  const pk = A.accounts.list().find(a => a.role === "artist" && a.partyKey).partyKey;
+  const id = +pk.slice(2);
+  const d = H.api.platformTail("artist", id, approvedKey);
+  must(d.rows.length > 0, "đối tác không bóc được nền tảng nào");
+  const tM = d.rows.reduce((s2, r) => s2 + r.mine, 0);
+  must(Math.abs(tM - d.total.mine) < 0.005, "tổng của đối tác lệch dòng gộp");
+  /* số ròng của đối tác phải khớp đúng dòng "Nền tảng khác" ở báo cáo của họ */
+  const bao = H.api.platformReport("artist", id);
+  const j = bao.rows.length - 1;
+  const k = bao.periods.findIndex(p => p.k === approvedKey);
+  must(k >= 0, "kỳ đã duyệt không có trong báo cáo của đối tác");
+  must(Math.abs(d.total.mine - bao.rows[j].mine[k]) < 0.005, "số ròng bóc ra lệch báo cáo của chính đối tác");
+  /* gói không được mang phí hay biên; và không đọc được rổ của người khác */
+  const goi = JSON.stringify(d);
+  ["\"fee\"", "\"gross\"", "\"bien\""].forEach(x => must(goi.indexOf(x) < 0, "gói nền tảng nhỏ lộ " + x));
+  mustThrow(() => H.api.platformTail("artist", id, openKey), "bóc rổ ở kỳ chưa chốt sổ");
+  /* Danh mục ai người nấy: hai nghệ sĩ khác nhau không thể ra cùng một rổ.
+     (api tin cặp vai + partyId như mọi hàm khác — phiên trên máy chủ mới là
+     nơi chốt danh tính; ở đây chỉ kiểm PHẠM VI có bị trộn không.) */
+  const khac = A.accounts.list().find(a => a.role === "artist" && a.partyKey && +a.partyKey.slice(2) !== id);
+  const d2 = H.api.platformTail("artist", +khac.partyKey.slice(2), approvedKey);
+  must(Math.abs(d2.total.mine - d.total.mine) > 0.005, "hai nghệ sĩ ra cùng một rổ: phạm vi đang bị trộn");
+  return d.rows.length + " nền tảng · khớp báo cáo của chính họ · kỳ chưa chốt bị chặn · phạm vi không trộn";
+});
+
 check("lockdown() gỡ hẳn mặt tiền admin khỏi trang", () => {
   must(!!H.admin, "chưa lockdown mà admin đã mất");
   H.lockdown();

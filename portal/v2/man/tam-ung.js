@@ -130,15 +130,15 @@ HT.dangKy({
       }) +
       HM.the({
         h2: c.lang === 'vi' ? 'Tiến độ chung' : 'Overall progress',
+        hanhDong: HM.hoi(c.lang === 'vi'
+          ? 'Khoản ứng ở đây không tính lãi và không có hạn hoàn trả: thu hồi dần từ phần đối tác được hưởng mỗi kỳ cho tới khi đủ. Hợp đồng thật có lãi hay có hạn thì phải bổ sung ở lõi trước, không sửa riêng ở trang này. Quy mô khoản ứng tính bằng SỐ THÁNG thu nhập ròng dự kiến (12 tới 18 tháng tuỳ hạng rủi ro), không phải theo phần trăm.'
+          : 'Advances here bear no interest and have no due date: they are recouped from the partner\u2019s share each period until met. If the real contracts carry interest or a due date, that belongs in the core, not in this page alone. An advance is sized in MONTHS of projected net earnings (12 to 18, by risk grade), not as a percentage.'),
         than: HB.o({ loai: 'vong', cao: 180,
           giua: { v: HT.fmt.pct(tongGoc ? tongThu / tongGoc : 0, 0), l: c.lang === 'vi' ? 'đã thu hồi' : 'recovered' },
           phan: [
             { ten: t('daThu'), gt: tongThu, mau: P[6] },
             { ten: t('conLai'), gt: A.advances.total(), mau: P[4] }
-          ] }) +
-          '<div class="hint" style="margin-top:12px">' + HM.esc(c.lang === 'vi'
-            ? 'Trong mô hình này, tạm ứng không tính lãi và không có thời hạn hoàn trả. Nếu hợp đồng thực tế có lãi hoặc có thời hạn thì phải bổ sung tại đây.'
-            : 'Advances bear no interest and have no due date in this model. If the real contracts have either, this is where it must be added.') + '</div>'
+          ] })
       }) + '</div>';
 
     html += '<div class="bar">' +

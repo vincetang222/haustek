@@ -1252,6 +1252,47 @@ function platformReport(role, partyId, pList) {
   };
 }
 
+/* Hơn hai trăm nền tảng đuôi gộp lại thành một dòng thì bảng mới đọc
+   được, nhưng người phụ trách vẫn phải trả lời được câu "tháng này Deezer
+   bao nhiêu". Hàm này bóc đúng dòng ấy ra cho MỘT kỳ.
+
+   Tổng của danh sách bóc ra luôn khớp đúng dòng "Nền tảng khác" của báo
+   cáo, vì nó lấy chính con số ấy làm mốc rồi chia xuống — không tính lại
+   theo đường khác rồi hy vọng hai bên gặp nhau. */
+function platformTail(role, partyId, pIdx) {
+  const bao = platformReport(role, partyId, [pIdx]);
+  const dong = bao.rows[N_PLAT - 1];
+  const tongG = dong.revenue[0], tongS = dong.streams[0], tongM = dong.mine[0];
+  const sc = scopeOf(role, partyId, "rec"), n = sc ? sc.length : N;
+  const cap = Math.max(1, Math.min(n, 9000)), step = Math.max(1, Math.floor(n / cap));
+  const T = TAIL_W.length;
+  const accG = new Float64Array(T), accS = new Float64Array(T), accM = new Float64Array(T);
+  const rev = new Float64Array(N_PLAT), st = new Float64Array(N_PLAT);
+  let sg = 0, ss = 0, sm = 0;
+  for (let k = 0; k < n; k += step) {
+    const i = sc ? sc[k] : k;
+    const g = grossRec(i, pIdx);
+    if (g <= 0) continue;
+    const r = revenueOf(i, pIdx, role), m = mineOf(i, pIdx, role, partyId, "rec");
+    splitStores(i, pIdx, rev); splitStreams(i, pIdx, rev, st);
+    const duoi = rev[N_PLAT - 1];
+    const dG = splitDim(i, duoi * (r / g), TAIL_W, pIdx);
+    const dM = splitDim(i, duoi * (m / g), TAIL_W, pIdx);
+    const dS = splitDim(i, st[N_PLAT - 1], TAIL_W, pIdx);
+    for (let j = 0; j < T; j++) { accG[j] += dG[j]; accS[j] += dS[j]; accM[j] += dM[j]; }
+    sg += duoi * (r / g); ss += st[N_PLAT - 1]; sm += duoi * (m / g);
+  }
+  const gv = khopTong(Array.from(accG, v => v * (sg > 0 ? tongG / sg : 0)), tongG, cents);
+  const sv = khopTong(Array.from(accS, v => v * (ss > 0 ? tongS / ss : 0)), tongS, Math.round);
+  const mv = khopTong(Array.from(accM, v => v * (sm > 0 ? tongM / sm : 0)), tongM, cents);
+  const rows = TAIL_NAMES.map((nm, j) => ({ name: nm, revenue: gv[j], streams: sv[j], mine: mv[j] }))
+    .filter(x => x.revenue > 0.004 || x.streams > 0);
+  rows.sort((a, b) => b.revenue - a.revenue || b.streams - a.streams);
+  return { period: { k: PERIODS[pIdx].k, label: PERIODS[pIdx].label, open: !!state.approved[PERIODS[pIdx].k] },
+    rows, coSo: rows.length, tatCa: TAIL_NAMES.length,
+    total: { revenue: tongG, streams: tongS, mine: tongM } };
+}
+
 /* Nhịp báo cáo của từng nhóm nền tảng: cái mà đối tác cần biết để hiểu vì
    sao tiền về ví không đều. Tên nguồn nội bộ không lộ ra: chỉ có tên nền
    tảng. TikTok trả theo quý (ghi nhận của Haustek); phần còn lại theo tháng. */
@@ -3110,8 +3151,44 @@ function thongKe(arr) {
   const sd = Math.sqrt(arr.reduce((s, v) => s + (v - mean) * (v - mean), 0) / n);
   return { mean, cv: mean > 0 ? sd / mean : 0 };
 }
+/* ---------------------------------------------------------------
+   CẢNH BÁO RỦI RO CHO MỌI KHOẢN ỨNG
+   Một khoản ứng lãi 18% mà mười tám tháng mới về đủ thì trên giấy vẫn
+   là số dương, nhưng đó là mười tám tháng vốn nằm im. Giám đốc cần thấy
+   điều ấy ngay cạnh con số, không phải tự nhẩm. Ngưỡng: ROI dưới 20%
+   hoặc hoàn vốn quá 12 tháng thì cảnh báo; quá 28 tháng, hoặc không
+   hoàn vốn trong kỳ hạn, là mức không nên ký.
+   --------------------------------------------------------------- */
+const ROI_RUI_RO = { roiSan: 0.20, thangTot: 12, thangToiDa: 28 };
+function roiRuiRo(roi, thang, ng) {
+  ng = { roiSan: ng && ng.roiSan != null ? +ng.roiSan : ROI_RUI_RO.roiSan,
+         thangTot: ng && ng.thangTot != null ? +ng.thangTot : ROI_RUI_RO.thangTot,
+         thangToiDa: ng && ng.thangToiDa != null ? +ng.thangToiDa : ROI_RUI_RO.thangToiDa };
+  const thap   = roi != null && roi < ng.roiSan;
+  const khong  = thang == null;
+  const dai    = !khong && thang > ng.thangTot;
+  const quaDai = !khong && thang > ng.thangToiDa;
+  const y = [];
+  if (thap) y.push({ vi: "ROI " + Math.round(roi * 100) + "%, dưới sàn " + Math.round(ng.roiSan * 100) + "%",
+                     en: "ROI " + Math.round(roi * 100) + "%, below the " + Math.round(ng.roiSan * 100) + "% floor" });
+  if (khong) y.push({ vi: "Không hoàn vốn trong kỳ hạn", en: "Never pays back inside the term" });
+  else if (quaDai) y.push({ vi: "Hoàn vốn ở tháng " + thang + ", quá trần " + ng.thangToiDa + " tháng",
+                            en: "Pays back in month " + thang + ", past the " + ng.thangToiDa + "-month ceiling" });
+  else if (dai) y.push({ vi: "Hoàn vốn ở tháng " + thang + ", quá mốc " + ng.thangTot + " tháng",
+                         en: "Pays back in month " + thang + ", past the " + ng.thangTot + "-month mark" });
+  const muc = khong || quaDai ? "cao" : (thap || dai) ? "canh" : "ok";
+  return { muc, roi: roi == null ? null : Math.round(roi * 1e4) / 1e4, thang, y,
+    nhan: muc === "cao" ? { vi: "Rủi ro cao", en: "High risk" } : muc === "canh" ? { vi: "Cần cân nhắc", en: "Needs a second look" } : { vi: "Trong ngưỡng", en: "Within thresholds" },
+    roiSan: ng.roiSan, thangTot: ng.thangTot, thangToiDa: ng.thangToiDa };
+}
+
 const ADVANCE_FEE = 0.12;              /* phí tạm ứng mặc định 12% (Amuse 10–20%) */
-const ADVANCE_CAP = { A: 0.6, B: 0.45, C: 0.3 };
+
+/* KHOẢN ỨNG ĐO BẰNG SỐ THÁNG DOANH THU, KHÔNG PHẢI PHẦN TRĂM.
+   Thị trường ứng cho đối tác 12 đến 18 tháng thu nhập ròng: hạng A được
+   18 tháng, B 15, C 12. Phần trăm 12% ở trên là PHÍ ỨNG, một thứ khác
+   hẳn, không được lẫn với số tháng. */
+const ADVANCE_THANG = { A: 18, B: 15, C: 12 };
 function advanceCalc(partyKey, amount, feePct) {
   amount = Math.round((+amount || 0) * 100) / 100;
   feePct = feePct == null ? ADVANCE_FEE : Math.max(0, Math.min(0.5, +feePct));
@@ -3128,7 +3205,10 @@ function advanceCalc(partyKey, amount, feePct) {
   const conc = partyConcentration(partyKey);
   const grade = (st.cv > 0.45 || (growth != null && growth < -0.2) || conc > 0.6 || coSo.length < 3) ? "C"
     : (st.cv < 0.2 && (growth == null || growth >= -0.05) && conc < 0.35 && coSo.length >= 6) ? "A" : "B";
-  const maxAdvance = Math.round(projected12 * ADVANCE_CAP[grade]);
+  const monthlyForward = cents(projected12 / 12);        /* thu nhập ròng một tháng, đã chỉnh theo đà tăng */
+  const capThang  = ADVANCE_THANG[grade];
+  const maxAdvance = Math.round(monthlyForward * capThang);
+  const ungThang  = monthlyForward > 0 && amount > 0 ? Math.round(amount / monthlyForward * 10) / 10 : null;
   const repayment = cents(amount * (1 + feePct));
   const recoupMonths = monthlyNet > 0 && amount > 0 ? Math.round(repayment / monthlyNet * 10) / 10 : null;
   const feeIncome = cents(amount * feePct);
@@ -3139,11 +3219,11 @@ function advanceCalc(partyKey, amount, feePct) {
   const coverage = repayment > 0 ? projected12 / repayment : null;
   const reasons = [];
   if (grade === "C") reasons.push({ vi: "Hạng rủi ro C: dao động lớn, giảm mạnh, tập trung vào một bài hoặc quá ít kỳ có số", en: "Risk grade C: volatile, falling, concentrated on one track or too few periods" });
-  if (amount > maxAdvance) reasons.push({ vi: "Vượt mức nên ứng " + fmt.usd0(maxAdvance) + " (" + Math.round(ADVANCE_CAP[grade] * 100) + "% thu nhập ròng 12 tháng dự kiến)", en: "Above the suggested cap " + fmt.usd0(maxAdvance) + " (" + Math.round(ADVANCE_CAP[grade] * 100) + "% of projected 12-month net)" });
+  if (amount > maxAdvance) reasons.push({ vi: "Vượt mức nên ứng " + fmt.usd0(maxAdvance) + " (" + capThang + " tháng thu nhập ròng dự kiến)" + (ungThang ? ", khoản này bằng " + ungThang + " tháng" : ""), en: "Above the suggested cap " + fmt.usd0(maxAdvance) + " (" + capThang + " months of projected net)" + (ungThang ? "; this one is " + ungThang + " months" : "") });
   if (recoupMonths != null && recoupMonths > 12) reasons.push({ vi: "Thu hồi mất " + recoupMonths + " tháng, quá 12 tháng", en: "Recoupment takes " + recoupMonths + " months, over 12" });
   if (recoupMonths == null) reasons.push({ vi: "Chưa có thu nhập ròng để thu hồi", en: "No net earnings to recoup from" });
   const recommendation = !reasons.length ? "approve" : (grade !== "C" && amount <= maxAdvance * 1.25 && recoupMonths != null && recoupMonths <= 18) ? "review" : "decline";
-  return { partyKey, amount, feePct, repayment, monthlyNet, monthlyGross, monthlyKeep, margin, growth, roiFee: roiFee == null ? null : Math.round(roiFee * 1000) / 1000, cv: Math.round(st.cv * 1000) / 1000, concentration: Math.round(conc * 1000) / 1000, periods: coSo.length,
+  return { partyKey, amount, feePct, repayment, monthlyNet, monthlyGross, monthlyKeep, margin, growth, monthlyForward, capThang, ungThang, ruiRo: roiRuiRo(roi, recoupMonths), roiFee: roiFee == null ? null : Math.round(roiFee * 1000) / 1000, cv: Math.round(st.cv * 1000) / 1000, concentration: Math.round(conc * 1000) / 1000, periods: coSo.length,
     projected12, grade, maxAdvance, recoupMonths, feeIncome, retainedDuringRecoup: retained, roi: Math.round(roi * 1000) / 1000, roiAnnual: roiAnnual == null ? null : Math.round(roiAnnual * 1000) / 1000, coverage: coverage == null ? null : Math.round(coverage * 100) / 100,
     recommendation, reasons, series: ser };
 }
@@ -3152,11 +3232,11 @@ function advanceOfferOf(partyKey) {
   const c = advanceCalc(partyKey, 0, ADVANCE_FEE);
   const vd = c.maxAdvance > 0 ? advanceCalc(partyKey, c.maxAdvance, ADVANCE_FEE) : null;
   const eligible = c.maxAdvance >= 100 && c.grade !== "C";
-  return { monthlyNet: c.monthlyNet, projected12: c.projected12, periods: c.periods, growth: c.growth, grade: c.grade, maxAdvance: c.maxAdvance, feePct: ADVANCE_FEE,
+  return { monthlyNet: c.monthlyNet, projected12: c.projected12, periods: c.periods, growth: c.growth, grade: c.grade, maxAdvance: c.maxAdvance, capThang: c.capThang, feePct: ADVANCE_FEE,
     example: vd ? { amount: vd.amount, repayment: vd.repayment, recoupMonths: vd.recoupMonths } : null, eligible,
-    reason: eligible ? null : (c.grade === "C" ? { vi: "Thu nhập còn dao động hoặc chưa đủ kỳ có số; hãy đề nghị lại sau 3 kỳ.", en: "Earnings are still volatile or too few periods have figures; try again after three periods." } : { vi: "Thu nhập ròng 12 tháng dự kiến chưa đủ để tạm ứng.", en: "Projected 12-month net is not yet enough for an advance." }),
-    note: "Số tối đa = " + Math.round(ADVANCE_CAP[c.grade] * 100) + "% thu nhập ròng 12 tháng dự kiến. Phí " + Math.round(ADVANCE_FEE * 100) + "% cộng vào khoản phải thu hồi; thu hồi từ phần bạn được hưởng mỗi kỳ cho đến khi đủ.",
-    noteEn: "Maximum = " + Math.round(ADVANCE_CAP[c.grade] * 100) + "% of projected 12-month net. A " + Math.round(ADVANCE_FEE * 100) + "% advance charge is added to the amount to recoup; recouped from your share each period until met." };
+    reason: eligible ? null : (c.grade === "C" ? { vi: "Thu nhập còn dao động hoặc chưa đủ kỳ có số; hãy đề nghị lại sau 3 kỳ.", en: "Earnings are still volatile or too few periods have figures; try again after three periods." } : { vi: "Thu nhập ròng hằng tháng chưa đủ để ứng trước.", en: "Monthly net is not yet enough for an advance." }),
+    note: "Số tối đa = " + c.capThang + " tháng thu nhập ròng dự kiến của bạn. Phí ứng " + Math.round(ADVANCE_FEE * 100) + "% cộng vào khoản phải thu hồi; thu hồi từ phần bạn được hưởng mỗi kỳ cho đến khi đủ.",
+    noteEn: "Maximum = " + c.capThang + " months of your projected net. A " + Math.round(ADVANCE_FEE * 100) + "% advance charge is added to the amount to recoup; recouped from your share each period until met." };
 }
 function contractCalc(partyKey, terms) {
   terms = terms || {};
@@ -3309,7 +3389,8 @@ function dealRoiCalc(d) {
     recouped, shortfall,
     roiNet: roiNet == null ? null : Math.round(roiNet * 1e4) / 1e4,
     roiNetYearly: roiNetYearly == null ? null : Math.round(roiNetYearly * 1e4) / 1e4,
-    paybackMonth, nguongRoi, nguongThuHoi, dat, reasons, recommendation, series };
+    paybackMonth, nguongRoi, nguongThuHoi, dat, reasons, recommendation, series,
+    ruiRo: roiRuiRo(roiNet, paybackMonth, { roiSan: d.roiSan, thangTot: d.ruiRoThangTot, thangToiDa: d.ruiRoThangToiDa }) };
 }
 
 /* Bốn kịch bản như bốn sheet: danh mục nền, rồi ba mốc thưởng.
@@ -3360,9 +3441,11 @@ function dealRoiScenarios(d) {
   const ungTong = mo.reduce((s, x) => s + x.calc.advance, 0);
   const veTong  = mo.reduce((s, x) => s + x.calc.netForCompany, 0);
   const thieu   = mo.reduce((s, x) => s + x.calc.shortfall, 0);
+  const roiTong = ungTong > 0 ? Math.round((veTong - thieu) / ungTong * 1e4) / 1e4 : null;
+  const thangTong = mo.reduce((m, x) => m == null || x.calc.paybackMonth == null ? null : Math.max(m, x.troi + x.calc.paybackMonth), 0);
   return { rows: ra, moKhoa: mo.length, khoaLai: ra.length - mo.length,
     tong: { advance: cents(ungTong), netForCompany: cents(veTong), shortfall: cents(thieu),
-      roi: ungTong > 0 ? Math.round((veTong - thieu) / ungTong * 1e4) / 1e4 : null } };
+      roi: roiTong, thang: thangTong, ruiRo: roiRuiRo(roiTong, thangTong) } };
 }
 
 /* Nối bảng tính với một đối tác đang có trên hệ thống: lấy doanh thu gộp
@@ -3525,7 +3608,7 @@ const TOOL_GOC = [
   { id: "believe", ten: "Believe Music", web: "https://backstage.believe.com",
     mo: "Phân phối theo hợp đồng riêng. Cùng tập đoàn với Sentric bên tác quyền",
     moEn: "Distribution under a separate agreement. Same group as Sentric on the publishing side" },
-  { id: "ada",     ten: "ADA (Warner Music)", web: "https://www.adamusic.com",
+  { id: "ada",     ten: "ADA (Warner Music)", web: "https://www.ada-music.com/",
     mo: "Phân phối qua Warner · hợp đồng riêng theo bản phát hành",
     moEn: "Distribution through Warner · per-release agreement" },
   { id: "yt-cms",  ten: "YouTube CMS", web: "https://studio.youtube.com",
@@ -5459,7 +5542,7 @@ const QUYEN_HAM = {
   campaigns: "chienDich", campaignsFor: "chienDich",
   splits: "chiaSe", splitsFor: "chiaSe", setSplit: "chiaSe", removeSplit: "chiaSe", acceptSplit: "chiaSe",
   quality: "danhMuc", qualityFor: "danhMuc", setAlertStatus: "danhMuc", metadataReport: "danhMuc", metadataReportFor: "danhMuc",
-  catalogue: "danhMuc", platformReport: "danhMuc", catalogueReleases: "danhMuc", releases: "danhMuc",
+  catalogue: "danhMuc", platformReport: "danhMuc", platformTail: "danhMuc", catalogueReleases: "danhMuc", releases: "danhMuc",
   "releases.receive": "vanHanh", "releases.assignCodes": "vanHanh", "releases.publish": "vanHanh", "releases.returnFix": "vanHanh", "releases.createFor": "phatHanhHo",
   deliveries: "vanHanh", bulk: "vanHanh", ingest: "vanHanh", platformRates: "vanHanh",
   nhapLieu: "nhapLieu", quyTrinh: "quyTrinh", hieuSuat: "hieuSuat", von: "von",
@@ -5520,9 +5603,11 @@ function boQuyen(a) {
 /* Bản tính ROI: giám đốc thấy hết; kế toán thấy số tiền ra vào nhưng không
    thấy biên / phần Haustek giữ / ROI; kinh doanh thấy số của đối tác mình
    và khuyến nghị, không thấy phí thu về. */
+/* "ruiRo" nói thẳng ROI ra chữ ("ROI 18%, dưới sàn 20%") nên phải giấu ở
+   đúng những vai đã bị giấu ROI, không thì cảnh báo trở thành lối rò số. */
 const CALC_AN = {
-  accounting: ["roi", "roiAnnual", "roiFee", "margin", "marginNew", "monthlyKeep", "retainedDuringRecoup", "retainedNow", "retainedNew", "delta"],
-  sales: ["roi", "roiAnnual", "roiFee", "margin", "marginNew", "monthlyKeep", "retainedDuringRecoup", "retainedNow", "retainedNew", "delta", "feeIncome"],
+  accounting: ["roi", "roiAnnual", "roiFee", "ruiRo", "margin", "marginNew", "monthlyKeep", "retainedDuringRecoup", "retainedNow", "retainedNew", "delta"],
+  sales: ["roi", "roiAnnual", "roiFee", "ruiRo", "margin", "marginNew", "monthlyKeep", "retainedDuringRecoup", "retainedNow", "retainedNew", "delta", "feeIncome"],
   ops: null, support: null
 };
 function seriesChoVai(ser, role) {
@@ -5657,6 +5742,7 @@ const admin = {
   platformNames: PLAT_NAMES, platformNamesEn: PLAT_NAMES_EN, platformSpm: PLAT_SPM,
   splitStores, splitStreams, trackMatrix,
   platformReport: pList => platformReport("admin", 0, pList || PERIODS.map(p => p.idx)),
+  platformTail: ky => platformTail("admin", 0, typeof ky === "number" ? ky : pIndexOf(ky)),
   asset: i => assetOf(i, "admin", 0), assetSummary, deliveryOf, releaseDateOf, deliveryNames: DELIV_NAMES, othersCount: OTHERS_N,
   catalogue: opts => catalogueOf("admin", 0, opts),
   labelChildren, labelTree: (labelId, pIdx) => labelTreeOf(labelId, pIdx), labelSlice,
@@ -6889,6 +6975,11 @@ const api = {
   },
   /* Lượt nghe và doanh thu theo từng nền tảng, từng kỳ đã xét duyệt, cho cả
      tài khoản. Cột nào cộng lại cũng bằng con số ở trang Tổng quan. */
+  platformTail(role, partyId, periodKey) {
+    assertParty(role, partyId);
+    return scrub(platformTail(role, partyId, requireApproved(periodKey)));
+  },
+
   platformReport(role, partyId) {
     assertParty(role, partyId);
     const pList = [];

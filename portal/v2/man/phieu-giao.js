@@ -15,6 +15,10 @@
 (function () {
 
 var CHON = { hs: null, tab: 'meta', tim: '', loc: 'lam' };
+/* Người đang mở trang có làm việc hằng ngày không (vận hành) hay chỉ xét
+   duyệt (giám đốc). Đặt một lần ở đầu mỗi lần vẽ vì dong() được gọi ba
+   chục chỗ trong veMeta, không đáng truyền thêm tham số qua từng chỗ. */
+var LAM = true;
 
 HT.dangKy({
   id: 'phieu-giao', nav: 'nav', nhom: 'nhomVanHanh', icon: 'up',
@@ -73,7 +77,17 @@ HT.dangKy({
       ckCo: 'có công bố', ckKhong: 'không công bố',
       daDatLink: 'Đã lưu link {n}', daBoLink: 'Đã bỏ link {n}',
       chuaPh: 'Hồ sơ chưa đánh dấu phát hành. Dán link được, nhưng thường đợi bài lên kệ đã.',
-      xong: 'xong', conThieu: 'còn {n}'
+      xong: 'xong', conThieu: 'còn {n}',
+      dsTool: 'Tool phân phối đang dùng',
+      dsToolMo: 'Mỗi hồ sơ phải đẩy lên ít nhất một tool trước khi đánh dấu phát hành.',
+      dsToolHoi: 'Danh sách này do quản trị đặt ở trang Cấu hình. Thêm hay bỏ một tool sẽ đổi cột "Đã đẩy tool" của mọi hồ sơ, không đổi những gì đã đánh dấu trước đó.',
+      moGd: 'Trang này bày tiến độ giao việc phát hành để bạn biết chỗ nào đang tắc và hỏi ai. Thao tác từng bước — chép metadata, tick tool, dán link — là việc hằng ngày của vận hành nên không có nút ở đây.',
+      gdChuaTool: 'Chưa đẩy tool nào', gdChuaToolS: 'hồ sơ đã nhận mà chưa lên tool',
+      gdChoLink: 'Chờ dán link', gdChoLinkS: 'đã phát hành, đối tác chưa có link',
+      gdLau: 'Đọng lâu nhất', gdLauS: 'không có hồ sơ nào treo', gdNgay: 'ngày',
+      gdTong: 'Đang theo dõi', gdTongS: 'hồ sơ trong phiếu giao việc',
+      cDong: 'Đọng (ngày)', cAiLam: 'Chạm gần nhất',
+      storeHoi: 'Bảng liệt kê 8 nền tảng lớn và 24 store tiếp theo. {n} store còn lại đi theo mặc định của nhà phân phối, không cần tick từng cái.'
     },
     en: {
       nav: 'Delivery worksheet', h1: 'Release delivery worksheet',
@@ -118,7 +132,17 @@ HT.dangKy({
       ckCo: 'published', ckKhong: 'not published',
       daDatLink: 'Saved the {n} link', daBoLink: 'Removed the {n} link',
       chuaPh: 'This submission is not marked released yet. You can still paste links, but usually you wait for it to go live.',
-      xong: 'done', conThieu: '{n} left'
+      xong: 'done', conThieu: '{n} left',
+      dsTool: 'Distribution tools in use',
+      dsToolMo: 'Every submission must reach at least one tool before it can be marked released.',
+      dsToolHoi: 'Admins maintain this list on the Settings page. Adding or removing a tool changes the "Tools done" column on every submission; it does not change what was already ticked.',
+      moGd: 'This page shows how release delivery is progressing, so you can see what is stuck and who to ask. The step-by-step work — copying metadata, ticking tools, pasting links — is the operations team\u2019s daily job, so there are no action buttons here.',
+      gdChuaTool: 'No tool yet', gdChuaToolS: 'received but not on any tool',
+      gdChoLink: 'Awaiting links', gdChoLinkS: 'released, partner has no links',
+      gdLau: 'Longest sitting', gdLauS: 'nothing is stuck', gdNgay: 'days',
+      gdTong: 'Being tracked', gdTongS: 'submissions on the worksheet',
+      cDong: 'Sitting (days)', cAiLam: 'Last touched by',
+      storeHoi: 'The list covers the 8 major platforms and the next 24 stores. The remaining {n} follow the distributor default and need no ticking.'
     }
   },
 
@@ -127,7 +151,8 @@ HT.dangKy({
     var hs = CHON.hs ? A.releases.get(CHON.hs) : null;
     if (CHON.hs && !hs) CHON.hs = null;
 
-    var html = HM.dau({ h1: HM.esc(t('h1')), mo: HM.esc(t('mo')) });
+    LAM = coLam(c);
+    var html = HM.dau({ h1: HM.esc(t('h1')), mo: HM.esc(LAM ? t('mo') : t('moGd')) });
     html += hs ? veHoSo(c, hs) : veDanhSach(c);
     root.innerHTML = html;
 
@@ -135,7 +160,6 @@ HT.dangKy({
     HM.bam(root, '[data-loc]', function (el) { CHON.loc = el.getAttribute('data-loc'); c.veLai(); });
     HM.bam(root, '[data-hs]', function (el) { CHON.hs = el.getAttribute('data-hs'); CHON.tab = 'meta'; c.veLai(); });
     HM.bam(root, '[data-ve-ds]', function () { CHON.hs = null; c.veLai(); });
-    HM.bam(root, '[data-di-ph]', function () { c.di('phat-hanh'); });
     HM.bam(root, '[data-tab]', function (el) { CHON.tab = el.getAttribute('data-tab'); c.veLai(); });
 
     HM.bam(root, '[data-chep]', function (el) {
@@ -155,7 +179,7 @@ HT.dangKy({
       });
     });
 
-    if (!hs) return;
+    if (!hs || !coLam(c)) return;
     ganTool(root, c, hs);
     ganStore(root, c, hs);
     ganLink(root, c, hs);
@@ -163,8 +187,19 @@ HT.dangKy({
 });
 
 /* ================================================================= */
+/* ---------------------------------------------------------------
+   AI LÀM, AI DUYỆT
+   Giám đốc mở trang này để biết việc đang tới đâu và chỗ nào đang tắc,
+   chứ không tick từng tool hay dán từng link — đó là việc hằng ngày của
+   vận hành. Một cờ duy nhất quyết định trang bày nút thao tác hay chỉ
+   bày tình trạng, thay vì rải điều kiện khắp nơi rồi sót một chỗ.
+   --------------------------------------------------------------- */
+function coLam(c) {
+  try { return c.A.staff.me.role !== 'mgmt'; } catch (e) { return true; }
+}
+
 function veDanhSach(c) {
-  var A = c.A, t = c.t;
+  var A = c.A, t = c.t, lam = coLam(c);
   var tatCa = A.releases.list().filter(function (r) { return r.status !== 'submitted' && r.status !== 'returned'; });
   var ds = tatCa;
   if (CHON.loc === 'lam') ds = ds.filter(function (r) { return r.status !== 'released' || !linkXong(A, r); });
@@ -174,7 +209,29 @@ function veDanhSach(c) {
     return (r.id + ' ' + r.title + ' ' + r.artistName).toLowerCase().indexOf(q) >= 0;
   });
 
-  var html = '<div class="bar">' +
+  /* Giám đốc cần thấy chỗ tắc trước khi thấy danh sách: bao nhiêu hồ sơ
+     chưa đẩy tool nào, bao nhiêu đã phát hành mà chưa có link cho đối
+     tác, và hồ sơ đọng lâu nhất là bao nhiêu ngày. */
+  var html = '';
+  if (!lam) {
+    var chuaTool = 0, choLink = 0, dongLau = 0, hsLau = null;
+    tatCa.forEach(function (r) {
+      var xg = A.releases.tool.cua(r.id).filter(function (x) { return x.xong; }).length;
+      if (!xg && r.status !== 'released') chuaTool++;
+      if (r.status === 'released' && !linkXong(A, r)) choLink++;
+      var n = soNgayDong(A, r);
+      if (n != null && (r.status !== 'released' || !linkXong(A, r)) && n > dongLau) { dongLau = n; hsLau = r; }
+    });
+    html += HM.so([
+      { l: t('gdChuaTool'), v: String(chuaTool), mau: chuaTool ? HB.mau('no') : HB.mau('ok'), s: t('gdChuaToolS') },
+      { l: t('gdChoLink'), v: String(choLink), mau: choLink ? HB.mau('warn') : HB.mau('ok'), s: t('gdChoLinkS') },
+      { l: t('gdLau'), v: dongLau ? dongLau + ' ' + t('gdNgay') : '—', mau: dongLau > 14 ? HB.mau('no') : dongLau > 7 ? HB.mau('warn') : '',
+        s: hsLau ? hsLau.id : t('gdLauS') },   /* mã hồ sơ, không phải tên bài: mã mới tra được và không đổi theo ngôn ngữ */
+      { l: t('gdTong'), v: String(tatCa.length), s: t('gdTongS') }
+    ]);
+  }
+
+  html += '<div class="bar">' +
     '<div class="srch">' + HM.icon('tim') + '<input type="search" data-tim value="' + HM.esc(CHON.tim) + '" placeholder="' + HM.esc(t('tim')) + '"></div>' +
     [['lam', t('lLam')], ['link', t('lLink')], ['het', t('lHet')]].map(function (b) {
       return '<button type="button" class="pill' + (CHON.loc === b[0] ? ' on' : '') + '" data-loc="' + b[0] + '">' + HM.esc(b[1]) + '</button>';
@@ -185,34 +242,31 @@ function veDanhSach(c) {
     than: ds.length ? '<div class="tw"><table class="t"><thead><tr>' +
       '<th>' + HM.esc(t('cMa')) + '</th><th>' + HM.esc(t('cTen')) + '</th>' +
       '<th>' + HM.esc(t('cTt')) + '</th><th>' + HM.esc(t('cTool')) + '</th><th>' + HM.esc(t('cLink')) + '</th>' +
+      (lam ? '' : '<th class="num">' + HM.esc(t('cDong')) + '</th><th>' + HM.esc(t('cAiLam')) + '</th>') +
       '</tr></thead><tbody>' + ds.map(function (r) {
         var tool = A.releases.tool.cua(r.id), xong = tool.filter(function (x) { return x.xong; }).length;
         var lk = A.releases.link.conThieu(r.id);
+        var ngay = soNgayDong(A, r), treo = r.status !== 'released' || !lk.xong;
         return '<tr class="pick" data-hs="' + HM.esc(r.id) + '">' +
           '<td class="mono">' + HM.esc(r.id) + '</td>' +
           '<td>' + HM.tenBia({ bia: r.id, ten: r.title, phu: r.artistName + ' · ' + t('tongTrack').replace('{n}', r.tracks.length) }) + '</td>' +
           '<td>' + HM.tag(nhanTt(c, r.status), r.status === 'released' ? 'ok' : r.status === 'coded' ? 'warn' : 'info') + '</td>' +
           '<td>' + (xong ? HM.tag(xong + '/' + tool.length, xong === tool.length ? 'ok' : 'warn') : HM.tag('0/' + tool.length, 'no')) + '</td>' +
-          '<td>' + (lk.xong ? HM.tag(t('xong'), 'ok') : HM.tag(t('conThieu').replace('{n}', lk.thieu), lk.co ? 'warn' : '')) + '</td></tr>';
+          '<td>' + (lk.xong ? HM.tag(t('xong'), 'ok') : HM.tag(t('conThieu').replace('{n}', lk.thieu), lk.co ? 'warn' : '')) + '</td>' +
+          (lam ? '' :
+            '<td class="num mono' + (treo && ngay != null && ngay > 14 ? ' neg' : '') + '">' + (ngay == null ? '<span class="nil">—</span>' : ngay) + '</td>' +
+            '<td class="muted">' + HM.esc(aiLam(r) || '—') + '</td>') +
+          '</tr>';
       }).join('') + '</tbody></table></div>'
       : HM.trong({ icon: 'file', tieuDe: t('khong'), moTa: t('khongMo') })
   });
 
-  /* Hai thẻ dưới đây luôn hiện, kể cả khi bảng trống. Người mở trang lần
-     đầu — hoặc mở đúng hôm không có hồ sơ nào — vẫn phải hiểu trang này
-     dùng để làm gì và công ty đang đẩy bài lên những tool nào. */
-  html += '<div class="grid g2">' +
-    HM.the({
-      h2: HM.esc(t('cachTieu')), p: HM.esc(t('cachMo')), icon: 'list',
-      hanhDong: '<button type="button" class="btn sm ghost" data-di-ph>' + HM.esc(t('moPh')) + '</button>',
-      than: HM.kv([
-        { t: t('c1'), v: t('c1Mo') },
-        { t: t('c2'), v: t('c2Mo') },
-        { t: t('c3'), v: t('c3Mo') }
-      ])
-    }) +
+  /* Thẻ này luôn hiện, kể cả khi bảng trống: người mở trang lần đầu vẫn
+     phải thấy công ty đang đẩy bài lên những tool nào. */
+  html +=
     HM.the({
       h2: HM.esc(t('dsTool')), p: HM.esc(t('dsToolMo')), icon: 'up', thoBody: true,
+      hanhDong: HM.hoi(t('dsToolHoi')),
       than: '<div class="tw"><table class="t"><tbody>' +
         A.releases.tool.danhSach().map(function (x) {
           return '<tr><td>' + HM.tenBia({ ten: x.ten, seed: x.id, phu: c.lang === 'vi' ? x.mo : (x.moEn || x.mo) }) + '</td>' +
@@ -220,8 +274,23 @@ function veDanhSach(c) {
               ? '<a class="btn sm ghost" href="' + HM.esc(x.web) + '" target="_blank" rel="noopener">' + HM.esc(t('mo')) + '</a>'
               : '') + '</td></tr>';
         }).join('') + '</tbody></table></div>'
-    }) + '</div>';
+    });
   return html;
+}
+/* Bao nhiêu ngày kể từ lần cuối hồ sơ nhúc nhích. Không có mốc thời gian
+   thì trả null chứ không đoán bừa ra số 0. */
+function soNgayDong(A, r) {
+  var moc = r.updatedAt || r.createdAt;
+  if (!moc) return null;
+  var a = new Date(String(moc).slice(0, 10)), b = new Date(A.asOf());
+  if (isNaN(a) || isNaN(b)) return null;
+  return Math.max(0, Math.round((b - a) / 86400000));
+}
+/* Người chạm hồ sơ gần nhất — đó là người giám đốc hỏi khi việc đọng. */
+function aiLam(r) {
+  var h = r.history || [];
+  for (var i = h.length - 1; i >= 0; i--) if (h[i].by && h[i].by.indexOf('@') > 0) return h[i].by.split('@')[0];
+  return null;
 }
 function nhanTt(c, s) {
   var vi = { received: 'Đã tiếp nhận', coded: 'Đã cấp mã', released: 'Đã phát hành' };
@@ -272,14 +341,14 @@ function dong(nhan, gt, o) {
   return '<tr>' +
     '<th style="width:38%;text-align:left;font-weight:500">' + HM.esc(nhan) + (o.hoi ? HM.hoi(o.hoi) : '') + '</th>' +
     '<td class="' + (o.mono ? 'mono' : '') + '">' + (co ? HM.esc(v) : '<span class="nil">—</span>') + '</td>' +
-    '<td style="width:1%">' + (co
+    (LAM ? '<td style="width:1%">' + (co
       ? '<button type="button" class="btn sm ghost" data-chep="' + HM.esc(v) + '" data-nhan="' + HM.esc(nhan) + '">' + HM.icon('copy') + '</button>'
-      : '') + '</td></tr>';
+      : '') + '</td>' : '') + '</tr>';
 }
 function khoi(c, id, tieu, mo, than) {
   return HM.the({
     h2: HM.esc(tieu), p: HM.esc(mo), icon: 'file', thoBody: true,
-    hanhDong: '<button type="button" class="btn sm" data-chep-khoi="' + id + '">' + HM.icon('copy') + HM.esc(c.t('chepHet')) + '</button>',
+    hanhDong: coLam(c) ? '<button type="button" class="btn sm" data-chep-khoi="' + id + '">' + HM.icon('copy') + HM.esc(c.t('chepHet')) + '</button>' : '',
     than: '<div class="tw" data-khoi="' + id + '"><table class="t">' + than + '</table></div>'
   });
 }
@@ -331,12 +400,12 @@ function veMeta(c, r) {
 
 /* ================================================================= */
 function veTool(c, r, tool) {
-  var t = c.t;
+  var t = c.t, lam = coLam(c);
   return HM.the({
     h2: HM.esc(t('tTool')), p: HM.esc(t('toolMo')), icon: 'up', thoBody: true,
     than: '<div class="tw"><table class="t"><thead><tr>' +
       '<th>' + HM.esc(t('cTn')) + '</th><th>' + HM.esc(t('cMaTr')) + '</th>' +
-      '<th>' + HM.esc(t('cAi')) + '</th><th></th></tr></thead><tbody>' +
+      '<th>' + HM.esc(t('cAi')) + '</th>' + (lam ? '<th></th>' : '') + '</tr></thead><tbody>' +
       tool.map(function (x) {
         return '<tr' + (x.xong ? '' : ' class="canh"') + '>' +
           '<td><div class="t-ttl">' + HM.esc(x.ten) + ' ' + HM.tag(x.xong ? t('daDay') : t('chuaDay'), x.xong ? 'ok' : 'no') +
@@ -346,10 +415,10 @@ function veTool(c, r, tool) {
             (x.ghiChu ? '<div class="t-sub">' + HM.esc(x.ghiChu) + '</div>' : '') + '</td>' +
           '<td class="mono">' + (x.ma ? HM.esc(x.ma) : '<span class="nil">—</span>') + '</td>' +
           '<td class="mono muted">' + (x.at ? HM.esc(x.by + ' · ' + HT.fmt.luc(x.at)) : '<span class="nil">—</span>') + '</td>' +
-          '<td><div class="btnrow" style="flex-wrap:nowrap">' + (x.xong
+          (lam ? '<td><div class="btnrow" style="flex-wrap:nowrap">' + (x.xong
             ? '<button type="button" class="btn sm ghost" data-tool-bo="' + x.id + '">' + HM.esc(t('boDanhDau')) + '</button>'
             : '<button type="button" class="btn sm pri" data-tool="' + x.id + '">' + HM.esc(t('danhDau')) + '</button>') +
-          '</div></td></tr>';
+          '</div></td>' : '') + '</tr>';
       }).join('') + '</tbody></table></div>'
   });
 }
@@ -380,19 +449,17 @@ function ganTool(root, c, r) {
 
 /* ================================================================= */
 function veStore(c, r, st) {
-  var t = c.t;
+  var t = c.t, lam = coLam(c), khoa = lam ? '' : ' disabled';
   return HM.the({
     h2: HM.esc(t('tStore')), p: HM.esc(t('storeMo')), icon: 'shop', thoBody: true,
-    hanhDong: '<button type="button" class="btn sm pri" data-store-luu>' + HM.esc(t('storeLuu')) + '</button>',
-    than: '<div class="bar"><label class="tickrow"><input type="checkbox" data-store-het' + (st.tatCa ? ' checked' : '') + '> ' + HM.esc(t('storeTatCa')) + '</label></div>' +
+    hanhDong: HM.hoi(t('storeHoi').replace('{n}', st.tong)) +
+      (lam ? '<button type="button" class="btn sm pri" data-store-luu>' + HM.esc(t('storeLuu')) + '</button>' : ''),
+    than: '<div class="bar"><label class="tickrow"><input type="checkbox" data-store-het' + (st.tatCa ? ' checked' : '') + khoa + '> ' + HM.esc(t('storeTatCa')) + '</label></div>' +
       '<div class="fldrow" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:6px">' +
       st.rows.map(function (x) {
-        return '<label class="tickrow"><input type="checkbox" data-store="' + HM.esc(x.name) + '"' + (x.chon ? ' checked' : '') + '> ' +
+        return '<label class="tickrow"><input type="checkbox" data-store="' + HM.esc(x.name) + '"' + (x.chon ? ' checked' : '') + khoa + '> ' +
           (x.lon ? '<b>' + HM.esc(x.name) + '</b>' : HM.esc(x.name)) + '</label>';
-      }).join('') + '</div>' +
-      '<p class="say">' + HM.esc(c.lang === 'vi'
-        ? 'Bảng này liệt kê 8 nền tảng lớn và 24 store tiếp theo; ' + st.tong + ' store còn lại đi theo mặc định của nhà phân phối.'
-        : 'This lists the 8 major platforms and the next 24 stores; the remaining ' + st.tong + ' follow the distributor’s default.') + '</p>'
+      }).join('') + '</div>'
   });
 }
 function ganStore(root, c, r) {
@@ -414,7 +481,7 @@ function ganStore(root, c, r) {
 
 /* ================================================================= */
 function veLink(c, r) {
-  var A = c.A, t = c.t;
+  var A = c.A, t = c.t, lam = coLam(c);
   var coMa = r.tracks.some(function (x) { return !!x.isrc; });
   if (!coMa) return HM.the({ than: HM.trong({ icon: 'link', tieuDe: t('linkChuaMa'), moTa: t('linkMo') }) });
 
@@ -428,18 +495,20 @@ function veLink(c, r) {
       h2: HM.esc(tr.pos + '. ' + tr.title), p: HM.esc(tr.isrc + ' · ' + t('linkMo')), icon: 'link', thoBody: true,
       than: '<div class="tw"><table class="t"><thead><tr>' +
         '<th>' + HM.esc(t('cNt')) + '</th><th>' + HM.esc(t('cLinkCot')) + '</th>' +
-        '<th>' + HM.esc(t('cCk')) + '</th><th></th></tr></thead><tbody>' +
+        '<th>' + HM.esc(t('cCk')) + '</th>' + (lam ? '<th></th>' : '') + '</tr></thead><tbody>' +
         rows.map(function (x) {
           return '<tr>' +
             '<td>' + HM.esc(c.lang === 'vi' ? x.plat : x.platEn) + '</td>' +
-            '<td><input class="in mono" style="min-width:230px" data-link="' + HM.esc(tr.isrc + '|' + x.plat) + '" value="' + HM.esc(x.url || '') + '" placeholder="https://…">' +
+            '<td>' + (lam
+              ? '<input class="in mono" style="min-width:230px" data-link="' + HM.esc(tr.isrc + '|' + x.plat) + '" value="' + HM.esc(x.url || '') + '" placeholder="https://…">'
+              : (x.url ? '<a class="mono" href="' + HM.esc(x.url) + '" target="_blank" rel="noopener">' + HM.esc(HM.dai(x.url, 52)) + '</a>' : '<span class="nil">—</span>')) +
               (x.at ? '<div class="t-sub">' + HM.esc(x.by + ' · ' + HT.fmt.luc(x.at)) + '</div>' : '') + '</td>' +
             '<td>' + HM.tag(x.congKhai ? t('ckCo') : t('ckKhong'), x.congKhai ? 'ok' : '') + '</td>' +
-            '<td><div class="btnrow" style="flex-wrap:nowrap">' +
+            (lam ? '<td><div class="btnrow" style="flex-wrap:nowrap">' +
               '<button type="button" class="btn sm pri" data-link-luu="' + HM.esc(tr.isrc + '|' + x.plat) + '">' + HM.esc(t('linkDan')) + '</button>' +
               (x.url ? '<a class="btn sm ghost" href="' + HM.esc(x.url) + '" target="_blank" rel="noopener">' + HM.esc(t('linkMoRa')) + '</a>' +
                 '<button type="button" class="btn sm ghost" data-link-bo="' + HM.esc(tr.isrc + '|' + x.plat) + '">' + HM.esc(t('linkBo')) + '</button>' : '') +
-            '</div></td></tr>';
+            '</div></td>' : '') + '</tr>';
         }).join('') + '</tbody></table></div>'
     });
   });

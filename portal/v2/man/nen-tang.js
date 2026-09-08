@@ -15,7 +15,7 @@
 "use strict";
 (function () {
 
-var LOC = { metric: 'revenue' };
+var LOC = { metric: 'revenue', timDuoi: '' };
 
 HT.dangKy({
   id: 'nen-tang', nav: 'navNenTang', nhom: 'nhomDuLieu', icon: 'shop',
@@ -40,7 +40,14 @@ HT.dangKy({
       bangMo: 'Mỗi cột là một kỳ báo cáo. Cột cộng dọc bằng đúng doanh thu gộp của kỳ đó ở trang Tổng quan.',
       ghiChu: 'Kỳ chưa xét duyệt hiện số đã nhập tới nay. Chưa nhập TikTok thì cột TikTok bằng 0 vì thiếu báo cáo, không phải không có doanh thu.',
       chuaNhap: 'chưa nhập báo cáo cho kỳ này', khongLuot: 'chưa có lượt nghe',
-      luotNghe: 'lượt nghe', khac: 'Nền tảng khác', xuat: 'Xuất CSV'
+      luotNghe: 'lượt nghe', khac: 'Nền tảng khác', xuat: 'Xuất CSV',
+      duoiH2: 'Trong "Nền tảng khác" có gì',
+      duoiMo: 'Từng nền tảng nhỏ của kỳ {k}, xếp theo doanh thu gộp.',
+      duoiHoi: 'Tám nền tảng lớn đứng riêng ở bảng trên; hơn hai trăm nền tảng còn lại gộp thành một dòng cho bảng đọc được. Bảng này bóc đúng dòng ấy ra, dùng chung một phép chia nên tổng ở đây luôn khớp dòng "Nền tảng khác" phía trên. Tỷ trọng tính trên tổng của riêng phần đuôi, không phải trên toàn danh mục.',
+      duoiTim: 'Tìm tên nền tảng…', duoiTy: 'Tỷ trọng đuôi',
+      duoiTong: 'Cộng {n} nền tảng', duoiLoc: 'Cộng {n} nền tảng đang lọc',
+      duoiKhong: 'Không có nền tảng nào khớp', duoiKhongMo: 'Xoá bớt chữ trong ô tìm để xem lại cả danh sách.',
+      duoiChua: 'Kỳ này chưa có số để bóc'
     },
     en: {
       themNt: 'Add a platform', ntThem: 'Platforms being connected', ntThemMo: 'Platforms added by hand: connecting, testing, live or paused. Revenue arrives only once period reports come in.', fTenNt: 'Platform name', fLoaiNt: 'Kind', fVung: 'Region', fTt: 'Status', fNhip: 'Reporting cadence', fLh: 'Platform contact', fChu: 'Owner (Operations)', fGhiNt: 'Note', daThemNt: 'Added platform {t}', daDoi: 'Status updated', ttConnecting: 'Connecting', ttTesting: 'Testing', ttLive: 'Live', ttPaused: 'Paused', cNt: 'Platform', cChu: 'Owner', cTuNgay: 'Since', lStreaming: 'Streaming', lDownload: 'Download store', lVideo: 'Video', lSocial: 'Social', lTelco: 'Telco', nMonthly: 'Monthly', nQuarterly: 'Quarterly', khongNt: 'No platform added by hand yet',
@@ -61,7 +68,14 @@ HT.dangKy({
       bangMo: 'Each column is a reporting period. Columns add up to that period’s gross on the Overview page.',
       ghiChu: 'Unapproved periods show what is loaded so far. Without the TikTok feed the TikTok column is 0: missing feed, not zero earnings.',
       chuaNhap: 'not loaded for this period', khongLuot: 'no streams yet',
-      luotNghe: 'streams', khac: 'Other platforms', xuat: 'Export CSV'
+      luotNghe: 'streams', khac: 'Other platforms', xuat: 'Export CSV',
+      duoiH2: 'What is inside "Other platforms"',
+      duoiMo: 'Every smaller platform in {k}, by gross revenue.',
+      duoiHoi: 'The eight largest platforms get their own rows above; the two hundred-odd others are folded into one line so the table stays readable. This table unfolds that line using the same split, so the total here always matches the "Other platforms" row above. The share is of the tail alone, not of the whole catalogue.',
+      duoiTim: 'Search platform name…', duoiTy: 'Share of tail',
+      duoiTong: '{n} platforms', duoiLoc: '{n} platforms in this filter',
+      duoiKhong: 'No platform matches', duoiKhongMo: 'Clear some of the search text to see the whole list again.',
+      duoiChua: 'No figures to unfold for this period'
     }
   },
 
@@ -170,17 +184,71 @@ HT.dangKy({
       chan: HM.esc(t('ghiChu'))
     });
 
+    html += veDuoi(c);
     html += veNenTangThem(c);
     root.innerHTML = html;
     HB.gan(root);
 
     HM.bam(root, '[data-mx]', function (el) { LOC.metric = el.getAttribute('data-mx'); c.veLai(); });
+    HM.nhap(root, '[data-tim-duoi]', function (el) { LOC.timDuoi = el.value; veLaiDuoi(c, root); });
+    HM.bam(root, '[data-csv-duoi]', function () {
+      var d = A.platformTail(c.kyKey);
+      HM.csv('nen-tang-nho-' + c.kyKey + '.csv',
+        [c.lang === 'vi' ? 'Nền tảng' : 'Platform', c.lang === 'vi' ? 'Doanh thu gộp' : 'Gross revenue', c.lang === 'vi' ? 'Lượt nghe' : 'Streams'],
+        d.rows.map(function (r) { return [r.name, r.revenue.toFixed(2), r.streams]; }));
+    });
     HM.bam(root, '[data-csv]', function () { HTS.csvMaTran('nen-tang-' + LOC.metric + '.csv', data, LOC.metric); });
     HM.bam(root, '[data-di]', function (el) { c.di(el.getAttribute('data-di')); });
     HM.bam(root, '[data-them-nt]', function () { hoiNenTang(c); });
     HM.doi(root, '[data-nt-tt]', function (el) { try { A.platforms.setStatus(el.getAttribute('data-nt-tt'), el.value, A.staff.me.email); c.thongBao(t('daDoi'), 'ok'); c.veLai(); } catch (e) { c.thongBao(e.message, 'no'); } });
   }
 });
+
+/* ---------------------------------------------------------------
+   Dòng "Nền tảng khác" của bảng trên gom hơn hai trăm nền tảng nhỏ.
+   Gộp thì bảng mới đọc được, nhưng gộp xong mà không có chỗ nào bóc ra
+   thì người phụ trách không trả lời được câu hỏi đơn giản nhất: tháng
+   này Deezer về bao nhiêu. Thẻ này là chỗ ấy.
+   --------------------------------------------------------------- */
+function veDuoi(c) {
+  var t = c.t;
+  return HM.the({
+    h2: HM.esc(t('duoiH2')), p: HM.esc(t('duoiMo').replace('{k}', c.ky.label)), icon: 'shop', thoBody: true,
+    hanhDong: HM.hoi(t('duoiHoi')) +
+      '<button type="button" class="btn sm ghost" data-csv-duoi>' + HM.icon('down2') + HM.esc(t('xuat')) + '</button>',
+    than: '<div class="bar" style="padding:10px 14px 0">' +
+        '<input class="in" type="search" data-tim-duoi placeholder="' + HM.esc(t('duoiTim')) + '" value="' + HM.esc(LOC.timDuoi) + '" style="max-width:280px">' +
+      '</div><div id="nt-duoi">' + bangDuoi(c) + '</div>'
+  });
+}
+function veLaiDuoi(c, root) {
+  var o = root.querySelector('#nt-duoi');
+  if (o) o.innerHTML = bangDuoi(c);
+}
+function bangDuoi(c) {
+  var A = c.A, t = c.t, vi = c.lang === 'vi';
+  var d;
+  try { d = A.platformTail(c.kyKey); } catch (e) { return HM.trong({ icon: 'shop', tieuDe: t('duoiChua'), moTa: e.message }); }
+  var q = (LOC.timDuoi || '').trim().toLowerCase();
+  var ds = q ? d.rows.filter(function (r) { return r.name.toLowerCase().indexOf(q) >= 0; }) : d.rows;
+  if (!ds.length) return HM.trong({ icon: 'shop', tieuDe: t('duoiKhong'), moTa: t('duoiKhongMo') });
+  var max = ds[0].revenue || 1;
+  var tongLoc = ds.reduce(function (s2, r) { return s2 + r.revenue; }, 0);
+  return '<div class="tw" style="max-height:420px;overflow:auto">' +
+    '<table class="t"><thead><tr><th>' + HM.esc(t('cNt')) + '</th><th class="num">' + HM.esc(t('kGop')) +
+      '</th><th class="num">' + HM.esc(t('kLuot')) + '</th><th class="num">' + HM.esc(t('duoiTy')) + '</th></tr></thead><tbody>' +
+    ds.map(function (r, i) {
+      return '<tr><td>' + HM.tenBia({ ten: r.name, seed: r.name, phu: (i + 1) + '/' + d.coSo }) + '</td>' +
+        '<td class="num">' + HM.oThanh(r.revenue, max, { chu: c.tien(r.revenue) }) + '</td>' +
+        '<td class="num mono">' + HM.esc(HT.fmt.n(r.streams)) + '</td>' +
+        '<td class="num mono">' + HM.esc(HT.fmt.pct(d.total.revenue > 0 ? r.revenue / d.total.revenue : 0, 2)) + '</td></tr>';
+    }).join('') +
+    '<tr class="sum"><td><b>' + HM.esc(q ? t('duoiLoc').replace('{n}', ds.length) : t('duoiTong').replace('{n}', d.coSo)) + '</b></td>' +
+      '<td class="num mono"><b>' + HM.esc(c.tien(tongLoc)) + '</b></td>' +
+      '<td class="num mono"><b>' + HM.esc(HT.fmt.n(ds.reduce(function (s2, r) { return s2 + r.streams; }, 0))) + '</b></td>' +
+      '<td class="num mono"><b>' + HM.esc(HT.fmt.pct(d.total.revenue > 0 ? tongLoc / d.total.revenue : 0, 2)) + '</b></td></tr>' +
+    '</tbody></table></div>';
+}
 
 function veNenTangThem(c) {
   var A = c.A, t = c.t, vi = c.lang === 'vi';
