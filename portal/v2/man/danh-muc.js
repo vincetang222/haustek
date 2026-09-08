@@ -17,8 +17,49 @@
 "use strict";
 (function () {
 
-var LOC = { tim: '', loai: '', chu: '', coTien: true, maPhu: false, vanDe: false, thieu: false,
+var LOC = { tab: 'ban-ghi', tim: '', loai: '', chu: '', coTien: true, maPhu: false, vanDe: false, thieu: false,
             sap: 'gross', huong: -1, trang: 0, co: 25 };
+
+/* Chất lượng lượt nghe là SỐ LIỆU CỦA BÀI HÁT, nên nó nằm trong trang quản
+   lý bài hát chứ không đứng riêng: cảnh báo lượt nghe bất thường gom theo
+   tài khoản, và sức khoẻ metadata toàn danh mục. Chữ để trong từ điển
+   riêng thay vì trộn vào chu: khoá của hai phần trùng tên nhau khá nhiều
+   (tim, khong, cTk…), trộn vào là đè mất. */
+var CLOC = { tab: 'tk', muc: 'all', tt: 'open', pk: null, tim: '', trang: 0, co: 25 };
+var CL = {
+  vi: { h1: 'Chất lượng lượt nghe',
+      mo: 'Cảnh báo lượt nghe bất thường theo tài khoản, bài bị nền tảng gắn cờ và sức khoẻ metadata.',
+      kCb: 'Cảnh báo', kCbS: '{a} nghiêm trọng · {b} cảnh báo · {c} theo dõi · {n} bài đã quét', kCo: 'Bài bị nền tảng gắn cờ', kCoS: 'lượt nghe đã bị gỡ khỏi báo cáo', kGo: 'Lượt nghe bị gỡ', kTk: 'Tài khoản nhiều bài tăng đồng loạt', kTkS: 'kiểu tách nhỏ để lách ngưỡng', kMo: 'Đang mở', kMoS: '{n} đang khiếu nại', kMd: 'Điểm metadata trung bình', kMdS: '{n} bản ghi thiếu mã quan trọng',
+      tabTk: 'Theo tài khoản', tabCb: 'Cảnh báo', tabMd: 'Sức khoẻ metadata',
+      cTk: 'Tài khoản', cMau: 'Kiểu', cAlerts: 'Cảnh báo', cNt: 'Nghiêm trọng', cCo: 'Bị gắn cờ', cGo: 'Lượt nghe bị gỡ', cMo: 'Đang mở',
+      mucAll: 'Mọi mức', mucCritical: 'Nghiêm trọng', mucWarn: 'Cảnh báo', mucWatch: 'Theo dõi', ttAll: 'Mọi trạng thái', ttOpen: 'Đang mở', ttDisputed: 'Đang khiếu nại', ttConfirmed: 'Đã xác nhận', ttResolved: 'Đã gỡ',
+      tim: 'Tìm bài, ISRC, tài khoản…', dangLoc: 'Đang xem tài khoản', boLoc: 'Bỏ lọc',
+      xacNhan: 'Xác nhận gian lận', go: 'Gỡ cảnh báo', hoiXn: 'Xác nhận gian lận cho “{t}”?', hoiXnMo: 'Lượt nghe của bài bị giữ lại trong kỳ đang mở; đối tác thấy trạng thái này ở cổng của họ.', hoiGo: 'Gỡ cảnh báo cho “{t}”', hoiGoMo: 'Ghi lý do (chiến dịch hợp lệ, playlist biên tập, sự kiện) để lần sau không hỏi lại.', ghiChu: 'Ghi chú', daXn: 'Đã xác nhận gian lận', daGo: 'Đã gỡ cảnh báo',
+      khong: 'Không có cảnh báo nào khớp bộ lọc', khongMo: 'Đổi bộ lọc phía trên.', khongTk: 'Không có tài khoản nào có cảnh báo',
+      mdThieu: 'Mục còn thiếu nhiều nhất', mdThieuMo: 'Số bản ghi thiếu từng mục toàn danh mục (đã nhân theo mẫu).', mdBang: 'Bản ghi bị giữ lại hoặc dưới điểm A', mdBangMo: 'Bấm một bản ghi để xem từng mục và cách sửa.' },
+  en: { h1: 'Stream quality',
+      mo: 'Unusual-stream alerts by account, tracks platforms have flagged, and metadata health.',
+      kCb: 'Alerts', kCbS: '{a} critical · {b} warning · {c} watch · {n} tracks scanned', kCo: 'Flagged by platforms', kCoS: 'streams already removed from reports', kGo: 'Streams removed', kTk: 'Accounts with many small lifts', kTkS: 'spreading streams thin to dodge thresholds', kMo: 'Open', kMoS: '{n} disputed', kMd: 'Average metadata score', kMdS: '{n} recordings missing key identifiers',
+      tabTk: 'By account', tabCb: 'Alerts', tabMd: 'Metadata health',
+      cTk: 'Account', cMau: 'Pattern', cAlerts: 'Alerts', cNt: 'Critical', cCo: 'Flagged', cGo: 'Streams removed', cMo: 'Open',
+      mucAll: 'Any level', mucCritical: 'Critical', mucWarn: 'Warning', mucWatch: 'Watch', ttAll: 'Any status', ttOpen: 'Open', ttDisputed: 'Disputed', ttConfirmed: 'Confirmed', ttResolved: 'Cleared',
+      tim: 'Search track, ISRC, account…', dangLoc: 'Showing account', boLoc: 'Clear',
+      xacNhan: 'Confirm fraud', go: 'Clear alert', hoiXn: 'Confirm fraud on “{t}”?', hoiXnMo: 'The track’s streams are held in the open period; the partner sees this status in their portal.', hoiGo: 'Clear the alert on “{t}”', hoiGoMo: 'Note the reason (legitimate campaign, editorial playlist, event) so it is not asked again.', ghiChu: 'Note', daXn: 'Fraud confirmed', daGo: 'Alert cleared',
+      khong: 'No alerts match the filters', khongMo: 'Change the filters above.', khongTk: 'No accounts with alerts',
+      mdThieu: 'Most common gaps', mdThieuMo: 'Recordings missing each item across the catalogue (scaled from the sample).', mdBang: 'Recordings held or below grade A', mdBangMo: 'Click a recording to see each item and how to fix it.' }
+};
+function tc(k) { var d = CL[HT.lang] || CL.vi; return d[k] != null ? d[k] : k; }
+
+/* Hai tab cha của trang: danh sách bản ghi, và chất lượng lượt nghe. */
+function tabCha(c) {
+  var A = c.A, vi = c.lang === 'vi';
+  var dem = 0; try { dem = A.quality().counts.alerts || 0; } catch (e) {}
+  return HM.tabs([{ k: 'ban-ghi', l: vi ? 'Bản ghi' : 'Recordings', icon: 'disc' },
+                  { k: 'chat-luong', l: vi ? 'Chất lượng lượt nghe' : 'Stream quality', icon: 'alert', dem: dem || undefined }], LOC.tab);
+}
+function ganTabCha(root, c) {
+  HM.bam(root, '[data-tab]', function (el) { LOC.tab = el.getAttribute('data-tab'); c.veLai(); });
+}
 
 /* Hồ sơ bản ghi dùng chung (HTS) định dạng ngày bằng HT.fmt.date, nhưng
    khung hiện chỉ có HT.fmt.ngay. Gán tạm ở đây để ngăn bản ghi mở được;
@@ -74,6 +115,7 @@ HT.dangKy({
   },
 
   ve: function (root, c) {
+    if (LOC.tab === 'chat-luong') return veChatLuong(root, c);
     var A = c.A, t = c.t, pi = c.ky.idx;
 
     /* ---- lọc: chạy trên chỉ số, không dựng đối tượng ----
@@ -137,7 +179,8 @@ HT.dangKy({
        theo dấu mốc trạng thái, không phụ thuộc kỳ đang chọn. */
     var vande = HM.nho(A, 'vande', function () { return A.catalogue({ stage: 'issue', limit: 1 }).counts; });
 
-    var html = HM.dau({
+    var html = '';
+    html += HM.dau({
       h1: HM.esc(t('h1')), mo: HM.esc(t('mo')),
       nut: A.quyen.nhom('phatHanhHo') && HT.taoHoSoHo ? '<button type="button" class="btn pri" data-them-bai>' + HM.icon('file') + HM.esc(t('themBai')) + '</button>' : '',
       so: [
@@ -244,7 +287,8 @@ HT.dangKy({
         }).join('') + '</select> ' + HM.esc(c.CHU[c.lang].rows) + '</div>'
     });
 
-    root.innerHTML = html;
+    root.innerHTML = tabCha(c) + html;
+    ganTabCha(root, c);
 
     HM.nhap(root, '[data-tim]', function (el) { LOC.tim = el.value; LOC.trang = 0; c.veLai(); }, 260);
     HM.doi(root, '[data-loai]', function (el) { LOC.loai = el.value; LOC.trang = 0; c.veLai(); });
@@ -409,6 +453,104 @@ function moBanGhi(c, i) {
       { k: 'thongtin', l: c.t('tabTt'), html: ttHtml }
     ])
   });
+}
+
+
+
+/* ---------------------------------------------------------------------
+   TAB CHẤT LƯỢNG LƯỢT NGHE
+   Gộp từ trang riêng cũ: số liệu lượt nghe là số liệu của bài hát nên
+   thuộc về trang quản lý bài hát. Vận hành nhìn theo TÀI KHOẢN trước,
+   theo bài sau — vụ tách 660.000 lượt/ngày thành nhiều bài nhỏ để lách
+   ngưỡng từng bài chỉ lộ ra khi gom theo tài khoản.
+   --------------------------------------------------------------------- */
+function veChatLuong(root, c) {
+    var A = c.A, P = HB.dayMau();
+    var q = HM.nho(A, 'chat-luong:q', function () { return A.quality(); });
+    var md = HM.nho(A, 'chat-luong:md', function () { return A.metadataReport(); });
+    var k = q.counts, lifts = q.cases.filter(function (x) { return x.pattern === 'many-small-lifts'; }).length;
+    var html = '';
+    html += HM.so([
+      { l: tc('kCb'), v: HT.fmt.n(k.alerts), lon: true, s: tc('kCbS').replace('{a}', k.critical).replace('{b}', k.warn).replace('{c}', k.watch).replace('{n}', HT.fmt.n(k.tracksChecked)) },
+      { l: tc('kCo'), v: HT.fmt.n(k.flagged), s: tc('kCoS'), mau: k.flagged ? HB.mau('no') : '' },
+      { l: tc('kGo'), v: HT.fmt.n(k.removedStreams) },
+      { l: tc('kTk'), v: HT.fmt.n(lifts), s: tc('kTkS'), mau: lifts ? HB.mau('warn') : '' },
+      { l: tc('kMo'), v: HT.fmt.n(k.open), s: tc('kMoS').replace('{n}', k.disputed) },
+      { l: tc('kMd'), v: String(md.counts.avg), s: tc('kMdS').replace('{n}', HT.fmt.n(md.counts.blocking)), mau: md.counts.avg >= 90 ? HB.mau('ok') : HB.mau('warn') }
+    ]);
+    html += HM.tabs([{ k: 'tk', l: tc('tabTk'), dem: q.cases.length }, { k: 'cb', l: tc('tabCb'), dem: k.alerts }, { k: 'md', l: tc('tabMd'), dem: md.counts.blocking || undefined }], CLOC.tab).split('data-tab=').join('data-cltab=');
+
+    if (CLOC.tab === 'tk') {
+      html += HM.the({ thoBody: true,
+        than: !q.cases.length ? HM.trong({ icon: 'check', tieuDe: tc('khongTk'), moTa: '' }) :
+          '<div class="tw"><table class="t"><thead><tr><th>' + HM.esc(tc('cTk')) + '</th><th>' + HM.esc(tc('cMau')) + '</th><th class="num">' + HM.esc(tc('cAlerts')) + '</th><th class="num">' + HM.esc(tc('cNt')) + '</th><th class="num">' + HM.esc(tc('cCo')) + '</th><th class="num band">' + HM.esc(tc('cGo')) + '</th><th class="num">' + HM.esc(tc('cMo')) + '</th></tr></thead><tbody>' +
+          q.cases.map(function (x) {
+            return '<tr class="pick" data-pk="' + HM.esc(x.partyKey) + '"><td>' + HM.tenBia({ ten: x.name, seed: x.clientId, phu: x.clientId + ' · ' + x.partyKey }) + '</td>' +
+              '<td>' + HM.tag(c.song(x, 'patternLabel'), x.pattern === 'many-small-lifts' ? 'warn' : x.pattern === 'dsp-flag' ? 'no' : x.pattern === 'critical' ? 'no' : '') + '</td>' +
+              '<td class="num"><b>' + HT.fmt.n(x.alerts) + '</b></td><td class="num">' + (x.critical ? '<span class="neg">' + x.critical + '</span>' : '<span class="nil">—</span>') + '</td>' +
+              '<td class="num">' + (x.flagged ? '<span class="neg">' + x.flagged + '</span>' : '<span class="nil">—</span>') + '</td>' +
+              '<td class="num band">' + (x.removedStreams ? '<b>' + HM.esc(HT.fmt.n(x.removedStreams)) + '</b>' : '<span class="nil">—</span>') + '</td>' +
+              '<td class="num">' + HT.fmt.n(x.open) + '</td></tr>';
+          }).join('') + '</tbody></table></div>',
+        chan: HM.esc(c.song(q, 'note')) });
+    } else if (CLOC.tab === 'cb') {
+      var qq = CLOC.tim.trim().toLowerCase();
+      var rows = q.rows.filter(function (r) {
+        if (CLOC.pk && r.partyKey !== CLOC.pk) return false;
+        if (CLOC.muc !== 'all' && r.severity !== CLOC.muc) return false;
+        if (CLOC.tt !== 'all' && r.status !== CLOC.tt) return false;
+        if (qq && (r.title + ' ' + r.isrc + ' ' + r.artist + ' ' + A.partyName(r.partyKey)).toLowerCase().indexOf(qq) < 0) return false;
+        return true;
+      });
+      var pt = HTM.phanTrang(rows, CLOC);
+      html += '<div class="bar">' +
+        (CLOC.pk ? '<span class="chip on">' + HM.esc(tc('dangLoc') + ': ' + A.partyName(CLOC.pk)) + ' <button type="button" data-bo-pk title="' + HM.esc(tc('boLoc')) + '">' + HM.icon('x') + '</button></span>' : '') +
+        [['all', tc('mucAll')], ['critical', tc('mucCritical')], ['warn', tc('mucWarn')], ['watch', tc('mucWatch')]].map(function (x) { return '<button type="button" class="pill' + (CLOC.muc === x[0] ? ' on' : '') + '" data-muc="' + x[0] + '">' + HM.esc(x[1]) + '</button>'; }).join('') +
+        '<span class="muted">·</span>' +
+        [['all', tc('ttAll')], ['open', tc('ttOpen')], ['disputed', tc('ttDisputed')], ['confirmed', tc('ttConfirmed')], ['resolved', tc('ttResolved')]].map(function (x) { return '<button type="button" class="pill' + (CLOC.tt === x[0] ? ' on' : '') + '" data-tt="' + x[0] + '">' + HM.esc(x[1]) + '</button>'; }).join('') +
+        '<div class="sp"></div><div class="srch">' + HM.icon('tim') + '<input type="search" data-tim placeholder="' + HM.esc(tc('tim')) + '" value="' + HM.esc(CLOC.tim) + '"></div></div>';
+      html += HM.the({ thoBody: true,
+        than: !rows.length ? HM.trong({ icon: 'empty', tieuDe: tc('khong'), moTa: tc('khongMo') })
+          : HTM.bangCanhBao(pt.page, { noiBo: true, tenTk: function (pk) { return A.partyName(pk); },
+              nut: function (r) { return r.status === 'open' || r.status === 'disputed' ? '<div class="btnrow" style="flex-wrap:nowrap"><button type="button" class="btn sm dang" data-xn="' + r.trackId + '">' + HM.esc(tc('xacNhan')) + '</button><button type="button" class="btn sm" data-go="' + r.trackId + '">' + HM.esc(tc('go')) + '</button></div>' : '<span class="nil">—</span>'; } }) + pt.chan,
+        chan: HM.esc(c.song(q, 'note')) });
+    } else {
+      var thieu = md.byCheck.filter(function (x) { return x.missing > 0; });
+      var pm = HTM.phanTrang(md.rows, CLOC);
+      html += '<div class="grid g3">' +
+        HM.the({ h2: HM.esc(tc('mdThieu')), p: HM.esc(tc('mdThieuMo')),
+          than: HB.o({ loai: 'thanh', dinhDang: 'so', hang: thieu.map(function (x) { return { ten: c.song(x, 'label'), gt: x.missing, mau: ['iswc', 'ipi', 'splits'].indexOf(x.k) >= 0 ? HB.mau('no') : P[0] }; }) }) }) +
+        HM.the({ h2: HM.esc(tc('mdBang')), p: HM.esc(tc('mdBangMo')), thoBody: true, than: HTM.bangMeta(pm.page, { noiBo: true, tenTk: function (pk) { return A.partyName(pk); } }) + pm.chan, chan: HM.esc(c.song(md, 'note')) }) +
+        '</div>';
+    }
+    root.innerHTML = tabCha(c) + html;
+    HB.gan(root);
+    HTM.ganTrang(root, CLOC, c.veLai);
+    HM.bam(root, '[data-cltab]', function (el) { CLOC.tab = el.getAttribute('data-cltab'); CLOC.trang = 0; c.veLai(); });
+    HM.bam(root, '[data-muc]', function (el) { CLOC.muc = el.getAttribute('data-muc'); CLOC.trang = 0; c.veLai(); });
+    HM.bam(root, '[data-tt]', function (el) { CLOC.tt = el.getAttribute('data-tt'); CLOC.trang = 0; c.veLai(); });
+    HM.bam(root, '[data-bo-pk]', function () { CLOC.pk = null; CLOC.trang = 0; c.veLai(); });
+    HM.bam(root, 'tr[data-pk]', function (el) { CLOC.pk = el.getAttribute('data-pk'); CLOC.tab = 'cb'; CLOC.tt = 'all'; CLOC.trang = 0; c.veLai(); });
+    HM.nhap(root, '[data-tim]', function (el) { CLOC.tim = el.value; c.veLai(); var i = root.querySelector('[data-tim]'); if (i) { i.focus(); i.setSelectionRange(i.value.length, i.value.length); } });
+    function hanhDong(id, status, tieuDe, moTa, xong) {
+      var r = q.rows.filter(function (x) { return x.trackId === id; })[0];
+      c.hoiThoai({ tieuDe: tieuDe.replace('{t}', r ? r.title : id), moTa: HM.esc(moTa),
+        than: (r ? HTM.tinHieu(r) : '') + '<label class="fld" style="margin-top:12px">' + HM.esc(tc('ghiChu')) + '</label><textarea class="in" rows="3" data-o="note"></textarea>', dong: status === 'confirmed' ? tc('xacNhan') : tc('go') })
+      .then(function (f) {
+        if (!f) return;
+        try { A.setAlertStatus(id, status, f.note, A.staff.me.name); c.thongBao(xong, 'ok'); c.veLai(); }
+        catch (err) { c.thongBao(err.message, 'no'); }
+      });
+    }
+    HM.bam(root, '[data-xn]', function (el, e) { e.stopPropagation(); hanhDong(+el.getAttribute('data-xn'), 'confirmed', tc('hoiXn'), tc('hoiXnMo'), tc('daXn')); });
+    HM.bam(root, '[data-go]', function (el, e) { e.stopPropagation(); hanhDong(+el.getAttribute('data-go'), 'resolved', tc('hoiGo'), tc('hoiGoMo'), tc('daGo')); });
+    HM.bam(root, 'tr[data-cl], tr[data-md]', function (el, e) {
+      if (e.target.closest('button')) return;
+      var id = +(el.getAttribute('data-cl') || el.getAttribute('data-md')), a;
+      try { a = A.asset(id); } catch (err) { return; }
+      HTS.moNgan(c, a, { noiBo: true, tien: c.tien2, tien0: c.tien, playlists: A.playlistsOf(id), tabDau: 'cl' });
+    });
+    ganTabCha(root, c);
 }
 
 })();

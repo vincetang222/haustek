@@ -31,7 +31,7 @@ HT.dangKy({
       daThem: 'Đã thêm {t}', daChuyen: 'Đã chuyển {t}', daKhoa: 'Đã khoá {t}', daMo: 'Đã mở lại {t}',
       cTaiSan: 'Lớp tài sản', cBoPhan: 'Bộ phận phụ trách', cSo: 'Số lượng', cGiao: 'Giao đích danh', giaoMo: 'Tài khoản đối tác giao ở trang Đối tác; nền tảng giao ở trang Nền tảng; ticket và khiếu nại giao ở trang Hỗ trợ và Quản lý quyền.',
       qMo: 'Quyền không khai riêng cho từng người: khối nào mở màn nào, gọi nhóm hàm nào; chức danh từ Trưởng bộ phận trở lên thấy cả bộ phận thay vì chỉ phần mình.',
-      cMan: 'Màn', cap: 'Cấp', capMo: 'Trưởng bộ phận trở lên thấy cả bộ phận'
+      cMan: 'Trang', cap: 'Level', capMo: 'Level 1–2 thấy cả bộ phận', thang: 'Thang cấp', thangMo: 'Số nhỏ là cấp cao. Hệ thống dừng ở Level 6, sâu hơn thì không ai biết ai báo cáo cho ai.', soNguoi: 'người'
     },
     en: {
       nhomHeThong: 'System', navToChuc: 'Organisation', h1: 'Organisation',
@@ -47,7 +47,7 @@ HT.dangKy({
       daThem: 'Added {t}', daChuyen: 'Moved {t}', daKhoa: 'Locked {t}', daMo: 'Reactivated {t}',
       cTaiSan: 'Asset class', cBoPhan: 'Unit in charge', cSo: 'Count', cGiao: 'Assigned by name', giaoMo: 'Partner accounts are assigned on Partners; platforms on Platforms; tickets and claims on Support and Rights.',
       qMo: 'Permissions are not set per person: a unit opens screens and calls function groups; heads of department and above see the whole department instead of only their own share.',
-      cMan: 'Screen', cap: 'Level', capMo: 'Head of department and above see the whole department'
+      cMan: 'Screen', cap: 'Level', capMo: 'Level 1–2 see the whole department', thang: 'Levels', thangMo: 'Lower number is more senior. The ladder stops at Level 6; deeper than that and nobody knows who reports to whom.', soNguoi: 'people'
     }
   },
 
@@ -75,7 +75,7 @@ HT.dangKy({
 });
 
 function chipNs(x, vi) {
-  var cd = x.cap >= 2 ? ' truong' : '';
+  var cd = x.cap <= 2 ? ' truong' : '';
   return '<button type="button" class="chip' + cd + '" data-ns="' + HM.esc(x.id) + '" title="' + HM.esc(vi ? x.title : x.titleEn) + '"><span class="av">' + HM.esc(HM.hashChu ? x.name.split(' ').slice(-1)[0].charAt(0) : x.name.charAt(0)) + '</span>' + HM.esc(x.name) + '</button>';
 }
 function veNhiemVu(ds, vi) {
@@ -101,7 +101,7 @@ function veToi(c, toi) {
 function veSoDo(c, cay, toi) {
   var t = c.t, vi = c.lang === 'vi';
   return '<div class="org">' + cay.khoi.map(function (k) {
-    var truong = k.nhanSu.filter(function (x) { return x.cap >= 2; });
+    var truong = k.nhanSu.filter(function (x) { return x.cap <= 2; });
     return '<div class="org-k' + (toi.khoi && toi.khoi.id === k.id ? ' me' : '') + '">' +
       '<div class="org-kh"><div><h3>' + HM.esc(vi ? k.vi : k.en) + '</h3><div class="sub">' + HM.esc(k.nhanSu.length + ' ' + t('soNs').toLowerCase() + ' · ' + k.man.length + ' ' + t('man') + ' · ' + k.nhom.length + ' ' + t('nhom')) + '</div></div></div>' +
       '<ul class="org-cn">' + (vi ? k.chucNang.vi : k.chucNang.en).map(function (x) { return '<li>' + HM.esc(x) + '</li>'; }).join('') + '</ul>' +
@@ -119,14 +119,31 @@ function veNhanSu(c, cay) {
   var A = c.A, t = c.t, vi = c.lang === 'vi', me = A.staff.me, q = LOC.tim.trim().toLowerCase();
   var ds = A.toChuc.nhanSu().filter(function (x) { return !q || (x.name + ' ' + x.email + ' ' + x.title).toLowerCase().indexOf(q) >= 0; });
   var ts = A.toChuc.taiSan().filter(function (a) { return ['taiKhoanDoiTac', 'nenTang', 'ticket', 'khieuNai'].indexOf(a.id) >= 0; });
-  return '<div class="bar"><div class="srch">' + HM.icon('tim') + '<input type="search" data-tim placeholder="' + HM.esc(t('cTen')) + '…" value="' + HM.esc(LOC.tim) + '"></div></div>' +
+  /* Thang cấp hiện thành một hàng bậc: mỗi bậc một viên, kèm số người đang
+     ở bậc đó. Nhìn một cái là thấy tổ chức đang phình ở tầng nào. */
+  var bac = A.quyen.capBac();
+  var demBac = {};
+  A.toChuc.nhanSu().forEach(function (x) { demBac[x.cap] = (demBac[x.cap] || 0) + 1; });
+  var gom = [];
+  bac.forEach(function (b) { var g = gom.filter(function (y) { return y.cap === b.cap; })[0];
+    if (g) g.ten.push(vi ? b.vi : b.en); else gom.push({ cap: b.cap, ten: [vi ? b.vi : b.en] }); });
+  var thang = HM.the({ h2: HM.esc(t('thang')), p: HM.esc(t('thangMo')), icon: 'tree',
+    than: '<div class="bac-row">' + gom.map(function (g) {
+      var n = demBac[g.cap] || 0;
+      return '<div class="bac' + (g.cap <= 2 ? ' cao' : '') + (n ? '' : ' rong') + '">' +
+        '<div class="bac-n">' + HM.esc(t('cap')) + ' ' + g.cap + '</div>' +
+        '<div class="bac-t">' + HM.esc(g.ten.join(' · ')) + '</div>' +
+        '<div class="bac-d">' + HT.fmt.n(n) + ' ' + HM.esc(t('soNguoi')) + '</div></div>';
+    }).join('') + '</div>' });
+  return thang +
+    '<div class="bar"><div class="srch">' + HM.icon('tim') + '<input type="search" data-tim placeholder="' + HM.esc(t('cTen')) + '…" value="' + HM.esc(LOC.tim) + '"></div></div>' +
     HM.the({ thoBody: true, than: '<div class="tw"><table class="t"><thead><tr><th>' + HM.esc(t('cTen')) + '</th><th>' + HM.esc(t('cKhoi')) + '</th><th>' + HM.esc(t('cTo')) + '</th><th>' + HM.esc(t('cCd')) + '</th><th>' + HM.esc(t('cTs')) + '</th><th>' + HM.esc(t('cTt')) + '</th></tr></thead><tbody>' +
       ds.map(function (x) {
         var k = cay.khoi.filter(function (y) { return y.id === x.boPhan; })[0], to = k ? k.to.filter(function (y) { return y.id === x.to; })[0] : null;
         var giu = ts.map(function (a) { var n = demGiu(A, a.id, x.id); return n ? HT.fmt.n(n) + ' ' + (vi ? a.vi : a.en).toLowerCase() : null; }).filter(Boolean).join(' · ');
         return '<tr class="pick" data-ns="' + HM.esc(x.id) + '"><td>' + HM.tenBia({ ten: x.name, seed: x.email, phu: x.email + (x.id === me.id ? ' · ' + (vi ? 'bạn' : 'you') : '') }) + '</td>' +
           '<td>' + HM.esc(k ? (vi ? k.vi : k.en) : x.boPhan) + '</td><td>' + HM.esc(to ? (vi ? to.vi : to.en) : '—') + '</td>' +
-          '<td>' + HM.esc(vi ? x.title.split(' · ')[0] : x.titleEn.split(' · ')[0]) + (x.cap >= 2 ? ' <span class="tag ok">' + HM.esc(t('cap')) + ' ' + x.cap + '</span>' : '') + '</td>' +
+          '<td>' + HM.esc(vi ? x.title.split(' · ')[0] : x.titleEn.split(' · ')[0]) + ' <span class="tag ' + (x.cap <= 2 ? 'ok' : '') + '">' + HM.esc(t('cap')) + ' ' + x.cap + '</span>' + '</td>' +
           '<td style="font-size:12.5px">' + (giu || '<span class="nil">—</span>') + '</td>' +
           '<td>' + HM.tag(x.active ? t('dangLam') : t('daKhoa'), x.active ? 'ok' : '') + '</td></tr>';
       }).join('') + '</tbody></table></div>' });
@@ -213,7 +230,7 @@ function moNhanSu(c, cay, id) {
   var k = cay.khoi.filter(function (y) { return y.id === x.boPhan; })[0], to = k ? k.to.filter(function (y) { return y.id === x.to; })[0] : null;
   var ts = A.toChuc.taiSan().filter(function (a) { return ['taiKhoanDoiTac', 'nenTang', 'ticket', 'khieuNai'].indexOf(a.id) >= 0; }).map(function (a) { return { a: a, n: demGiu(A, a.id, x.id) }; }).filter(function (y) { return y.n; });
   c.nganTruot(
-    HM.kv([{ t: t('fEmail'), v: x.email }, x.phone ? { t: t('fDt'), v: x.phone } : null, { t: t('cKhoi'), v: k ? (vi ? k.vi : k.en) : x.boPhan }, { t: t('cTo'), v: to ? (vi ? to.vi : to.en) : '—' }, { t: t('cCd'), v: (vi ? x.title : x.titleEn).split(' · ')[0] + (x.cap >= 2 ? ' · ' + t('capMo') : '') }, { t: t('cTt'), v: x.active ? t('dangLam') : t('daKhoa') }]) +
+    HM.kv([{ t: t('fEmail'), v: x.email }, x.phone ? { t: t('fDt'), v: x.phone } : null, { t: t('cKhoi'), v: k ? (vi ? k.vi : k.en) : x.boPhan }, { t: t('cTo'), v: to ? (vi ? to.vi : to.en) : '—' }, { t: t('cCd'), v: (vi ? x.title : x.titleEn).split(' · ')[0] + ' · ' + t('cap') + ' ' + x.cap + (x.cap <= 2 ? ' · ' + t('capMo') : '') }, { t: t('cTt'), v: x.active ? t('dangLam') : t('daKhoa') }]) +
     '<h4 class="sec">' + HM.esc(t('cTs')) + '</h4>' + (ts.length ? '<div class="org-ts">' + ts.map(function (y) { return '<span><b>' + HT.fmt.n(y.n) + '</b> ' + HM.esc(vi ? y.a.vi : y.a.en) + '</span>'; }).join('') + '</div>' : '<p class="say">' + HM.esc(t('chuaCo')) + '</p>') +
     (to && to.nhiemVu.length ? '<h4 class="sec">' + HM.esc(t('nhiemVu')) + '</h4>' + veNhiemVu(to.nhiemVu, vi) : '') +
     (mgmt ? '<div class="btnrow" style="margin-top:16px"><button type="button" class="btn pri" data-chuyen>' + HM.esc(t('chuyen')) + '</button><button type="button" class="btn" data-sua>' + HM.esc(t('sua')) + '</button>' +

@@ -84,7 +84,8 @@ HT.dangKy({
       lMoiGioi: 'Phí môi giới', hMoiGioi: 'Phần trăm trên hoa hồng Haustek cả kỳ hạn.',
       lSoBan: 'Số bản phát hành', lGio: 'Giờ mỗi bản', lDonGia: 'Đơn giá giờ', gio: 'giờ',
       lNguongRoi: 'Ngưỡng ROI đạt', lNguongThuHoi: 'Ngưỡng tháng thu hồi',
-      mocTt: 'Ba mốc thưởng', mocP: 'Nghệ sĩ đạt mốc doanh thu tháng thì ứng thêm. Kỳ hạn còn lại trừ đi số tháng đã trôi.',
+      mocTt: 'Ba mốc thưởng', mocP: 'Mốc chỉ mở khi khoản ứng ngay trước đã hoà vốn: gốc hoà vốn xong mới tới mốc 1, mốc 1 hoà vốn xong mới tới mốc 2. Haustek không ôm hai khoản chưa thu hồi cùng lúc.',
+      lTrongMo: 'Hạn chót, không phải lịch trả: hoà vốn muộn hơn số này thì mốc không mở.', cMo: 'Mở khoá', moRoi: 'mở', khoaRoi: 'khoá', khoaVi: 'Vì sao khoá', hoaVonO: 'mở ở tháng {n}',
       moc: 'Mốc {i}', lReach: 'Doanh thu tháng đạt mốc', lHeSo: 'Hệ số ứng', hHeSo: 'Khoản ứng = doanh thu tại mốc × hệ số.', lTrong: 'Trong vòng', batMoc: 'Tính thêm ba mốc thưởng',
       kq: 'Kết quả', roiKy: 'ROI cả kỳ hạn', roiKyS: 'hoa hồng cả kỳ hạn ÷ khoản ứng · ô J5',
       roiNam: 'ROI mỗi năm', roiNamS: 'ô K5', thuHoi: 'Thu hồi xong sau', thuHoiS: 'ô I3 · bảng gốc để dấu âm',
@@ -122,7 +123,8 @@ HT.dangKy({
       lMoiGioi: 'Finder’s fee', hMoiGioi: 'Percentage of Haustek’s commission over the term.',
       lSoBan: 'Releases', lGio: 'Hours per release', lDonGia: 'Cost per hour', gio: 'hours',
       lNguongRoi: 'ROI target', lNguongThuHoi: 'Recoupment target',
-      mocTt: 'Three triggers', mocP: 'Reaching a monthly-income milestone unlocks another advance. The remaining term drops by the months elapsed.',
+      mocTt: 'Three triggers', mocP: 'A trigger only unlocks once the advance before it has broken even: the base first, then trigger 1, then trigger 2. Haustek never carries two unrecouped advances at once.',
+      lTrongMo: 'A deadline, not a payment date: break even later than this and the trigger never unlocks.', cMo: 'Unlocked', moRoi: 'open', khoaRoi: 'locked', khoaVi: 'Why locked', hoaVonO: 'opens in month {n}',
       moc: 'Trigger {i}', lReach: 'Monthly income at the milestone', lHeSo: 'Advance multiple', hHeSo: 'Advance = income at the milestone × multiple.', lTrong: 'Within', batMoc: 'Include the three triggers',
       kq: 'Result', roiKy: 'ROI over the term', roiKyS: 'commission over the term ÷ advance · cell J5',
       roiNam: 'ROI per year', roiNamS: 'cell K5', thuHoi: 'Recouped after', thuHoiS: 'cell I3 · negative in the original',
@@ -187,7 +189,7 @@ HT.dangKy({
               return '<div class="roi-moc"><div class="roi-moc-t">' + HM.esc(t('moc').replace('{i}', i)) + '</div><div class="fldrow two-up">' +
                 o('t' + i + 'r', t('lReach'), { hau: '$', step: '100' }) +
                 o('t' + i + 'x', t('lHeSo'), { hau: '×', step: '0.5', hint: i === 1 ? t('hHeSo') : '' }) +
-                o('t' + i + 'm', t('lTrong'), { hau: t('thang'), step: '1' }) +
+                o('t' + i + 'm', t('lTrong'), { hau: t('thang'), step: '1', hint: i === 1 ? t('lTrongMo') : '' }) +
               '</div></div>';
             }).join('') : '') }) +
       '</div>' +
@@ -247,21 +249,28 @@ HT.dangKy({
         h += HM.the({ h2: HM.esc(t('bang')), p: HM.esc(t('bangP')),
           than: '<div class="tw"><table class="t"><thead><tr><th>' + HM.esc(t('cKb')) + '</th><th class="num">' + HM.esc(t('cDt')) + '</th><th class="num">' + HM.esc(t('cUng')) +
             '</th><th class="num">' + HM.esc(t('cKyHan')) + '</th><th class="num">' + HM.esc(t('cThuHoi')) + '</th><th class="num band">' + HM.esc(t('cRoi')) +
-            '</th><th class="num">' + HM.esc(t('cRoiNam')) + '</th><th>' + HM.esc(t('cKl')) + '</th></tr></thead><tbody>' +
+            '</th><th class="num">' + HM.esc(t('cRoiNam')) + '</th><th>' + HM.esc(t('cMo')) + '</th><th>' + HM.esc(t('cKl')) + '</th></tr></thead><tbody>' +
             kb.rows.map(function (r) {
               var x = r.calc, kl = x.recommendation;
-              return '<tr><td>' + HM.esc(c.lang === 'en' ? r.en : r.vi) + '</td>' +
+              var khoa = r.moKhoa === false;
+              return '<tr' + (khoa ? ' class="mo"' : '') + '><td>' + HM.esc(c.lang === 'en' ? r.en : r.vi) +
+                (r.hoaVonTruoc != null && r.moKhoa ? '<div class="t-sub">' + HM.esc(t('hoaVonO').replace('{n}', r.troi)) + '</div>' : '') +
+                (khoa && r.lyDoKhoa ? '<div class="t-sub">' + HM.esc(c.lang === 'en' ? r.lyDoKhoa.en : r.lyDoKhoa.vi) + '</div>' : '') + '</td>' +
                 '<td class="num mono">' + HM.esc(c.tien(x.monthlyIncome)) + '</td>' +
                 '<td class="num mono">' + HM.esc(c.tien(x.advance)) + '</td>' +
                 '<td class="num mono">' + x.termMonths + '</td>' +
                 '<td class="num mono">' + (x.recoupWhole == null ? '—' : x.recoupWhole) + '</td>' +
                 '<td class="num band mono"><b>' + (x.roiAfterCosts == null ? '—' : x.roiAfterCosts.toFixed(2) + '×') + '</b></td>' +
                 '<td class="num mono">' + (x.roiAfterCostsYearly == null ? '—' : HM.esc(HT.fmt.pct(x.roiAfterCostsYearly))) + '</td>' +
-                '<td>' + HM.tag(kl === 'approve' ? t('klDat') : kl === 'review' ? t('klCanXem') : kl === 'incomplete' ? t('klThieu') : t('klKhong'),
-                  kl === 'approve' ? 'ok' : kl === 'review' ? 'warn' : 'no') + '</td></tr>';
+                '<td>' + (r.id === 'catalog' ? '<span class="nil">—</span>'
+                  : HM.tag(khoa ? t('khoaRoi') : t('moRoi'), khoa ? 'no' : 'ok')) + '</td>' +
+                '<td>' + (khoa ? '<span class="nil">—</span>'
+                  : HM.tag(kl === 'approve' ? t('klDat') : kl === 'review' ? t('klCanXem') : kl === 'incomplete' ? t('klThieu') : t('klKhong'),
+                    kl === 'approve' ? 'ok' : kl === 'review' ? 'warn' : 'no')) + '</td></tr>';
             }).join('') +
             '<tr class="sum"><td><b>' + HM.esc(t('tong')) + '</b></td><td></td><td class="num mono"><b>' + HM.esc(c.tien(kb.tong.advance)) +
-            '</b></td><td></td><td></td><td class="num band mono"><b>' + (kb.tong.roi == null ? '—' : kb.tong.roi.toFixed(2) + '×') + '</b></td><td></td><td></td></tr>' +
+            '</b></td><td></td><td></td><td class="num band mono"><b>' + (kb.tong.roi == null ? '—' : kb.tong.roi.toFixed(2) + '×') + '</b></td><td></td>' +
+            '<td>' + HM.esc(kb.moKhoa + ' ' + t('moRoi') + (kb.khoaLai ? ' · ' + kb.khoaLai + ' ' + t('khoaRoi') : '')) + '</td><td></td></tr>' +
             '</tbody></table></div>' });
       }
 

@@ -653,6 +653,9 @@ function chay(cauHinh) {
     /* gõ #hash của màn bị cấm: về màn đầu tiên được phép và sửa luôn địa chỉ, không bắn hashchange */
     if (man.id !== id) { try { history.replaceState(null, '', '#' + man.id); } catch (e) {} }
     manHienTai = man.id;
+    /* HM.the và HM.so lấy icon mặc định của huy hiệu từ đây, nên mọi thẻ có
+       mốc thị giác mà không phải sửa từng trang. */
+    HT.manNay = man;
     var c = ctx();
 
     $('[data-ten]').textContent = c.t(cauHinh.ten);

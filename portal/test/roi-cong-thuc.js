@@ -110,21 +110,48 @@ muc("ngân sách cộng vào khoản phải thu hồi");
   must(co.roiTerm < khong.roiTerm, "ứng nhiều hơn thì ROI phải thấp hơn");
 }
 
-/* --------- bốn kịch bản --------- */
-muc("bốn kịch bản");
+/* --------- bốn kịch bản: mốc thưởng mở khoá theo HOÀ VỐN --------- */
+muc("bốn kịch bản · mốc thưởng mở theo hoà vốn");
 {
-  const kb = A.roi.kichBan({ monthlyIncome: 3300, cashAdvance: 50000, artistShare: 0.74, termMonths: 60, exclusivityMonths: 36,
-    triggers: [{ reach: 3000, multiplier: 16.67, withinMonths: 18 }, { reach: 5000, multiplier: 12, withinMonths: 12 }, { reach: 8000, multiplier: 10, withinMonths: 12 }] });
+  const nen = { monthlyIncome: 3300, cashAdvance: 50000, artistShare: 0.74, termMonths: 60, exclusivityMonths: 36 };
+  const kb = A.roi.kichBan(Object.assign({}, nen, { triggers: [
+    { reach: 3000, multiplier: 16.67, withinMonths: 24 },
+    { reach: 5000, multiplier: 12, withinMonths: 24 },
+    { reach: 8000, multiplier: 10, withinMonths: 24 } ] }));
   must(kb.rows.length === 4, "phải có bốn dòng");
-  must(kb.rows[0].id === "catalog", "dòng đầu là danh mục nền");
-  gan("mốc 1: kỳ hạn còn lại 60 − 18", kb.rows[1].calc.termMonths, 42);
-  gan("mốc 2: kỳ hạn còn lại 60 − 30", kb.rows[2].calc.termMonths, 30);
-  gan("mốc 3: kỳ hạn còn lại 60 − 42", kb.rows[3].calc.termMonths, 18);
-  gan("mốc 2: độc quyền còn lại 36 − 30", kb.rows[2].calc.exclusivityMonths, 6);
+  must(kb.rows[0].id === "catalog" && kb.rows[0].moKhoa, "dòng đầu là danh mục nền và luôn mở");
+  must(kb.rows.every(r => r.moKhoa), "cả ba mốc phải mở với cửa sổ 24 tháng");
+
+  /* mốc i mở đúng ở tháng hoà vốn của khoản ứng NGAY TRƯỚC, và tháng trôi
+     cộng dồn từ các lần hoà vốn đó chứ không từ cửa sổ khai trong hợp đồng */
+  gan("mốc 1 mở ở tháng hoà vốn của khoản gốc", kb.rows[1].hoaVonTruoc, kb.rows[0].calc.paybackMonth, 0);
+  gan("tháng trôi của mốc 1", kb.rows[1].troi, kb.rows[0].calc.paybackMonth, 0);
+  gan("mốc 2 mở ở tháng hoà vốn của mốc 1", kb.rows[2].hoaVonTruoc, kb.rows[1].calc.paybackMonth, 0);
+  gan("tháng trôi của mốc 2 là cộng dồn", kb.rows[2].troi, kb.rows[1].troi + kb.rows[1].calc.paybackMonth, 0);
+  gan("mốc 3 mở ở tháng hoà vốn của mốc 2", kb.rows[3].hoaVonTruoc, kb.rows[2].calc.paybackMonth, 0);
+  gan("kỳ hạn còn lại của mốc 1", kb.rows[1].calc.termMonths, 60 - kb.rows[1].troi, 0);
+  gan("kỳ hạn còn lại của mốc 3", kb.rows[3].calc.termMonths, 60 - kb.rows[3].troi, 0);
   gan("mốc 3: khoản ứng = 8000 × 10", kb.rows[3].calc.advance, 80000);
-  must(kb.tong.advance === kb.rows.reduce((s, r) => s + r.calc.advance, 0), "tổng khoản ứng phải khớp");
-  const trong = A.roi.kichBan({ monthlyIncome: 3300, cashAdvance: 50000, artistShare: 0.74, termMonths: 60 });
-  must(trong.rows.length === 1, "không nhập mốc thì chỉ có một dòng");
+  must(kb.tong.advance === kb.rows.filter(r => r.moKhoa).reduce((s, r) => s + r.calc.advance, 0), "tổng khoản ứng chỉ cộng các mốc đã mở");
+
+  /* cửa sổ hẹp hơn thời gian hoà vốn: mốc đó khoá, và mọi mốc sau khoá theo */
+  const hep = A.roi.kichBan(Object.assign({}, nen, { triggers: [
+    { reach: 3000, multiplier: 16.67, withinMonths: 6 },
+    { reach: 5000, multiplier: 12, withinMonths: 24 } ] }));
+  must(hep.rows[0].moKhoa, "danh mục nền vẫn phải mở");
+  must(!hep.rows[1].moKhoa && /muộn hơn hạn/.test(hep.rows[1].lyDoKhoa.vi), "mốc 1 phải khoá vì hoà vốn muộn hơn cửa sổ");
+  must(!hep.rows[2].moKhoa && /Mốc trước/.test(hep.rows[2].lyDoKhoa.vi), "mốc 2 phải khoá dây chuyền theo mốc 1");
+  must(hep.rows[1].calc.advance === 0 && hep.rows[2].calc.advance === 0, "mốc bị khoá không được mang khoản ứng");
+  gan("tổng khoản ứng chỉ còn khoản gốc", hep.tong.advance, 50000);
+  must(hep.moKhoa === 1 && hep.khoaLai === 2, "đếm mở / khoá sai");
+
+  /* khoản gốc không bao giờ hoà vốn thì không mốc nào mở */
+  const xau = A.roi.kichBan({ monthlyIncome: 300, cashAdvance: 50000, artistShare: 0.74, termMonths: 24,
+    triggers: [{ reach: 3000, multiplier: 10, withinMonths: 24 }] });
+  must(!xau.rows[1].moKhoa && /không hoà vốn/.test(xau.rows[1].lyDoKhoa.vi), "gốc không hoà vốn thì mốc 1 phải khoá");
+
+  const trong = A.roi.kichBan(nen);
+  must(trong.rows.length === 1 && trong.khoaLai === 0, "không nhập mốc thì chỉ có một dòng");
 }
 
 /* --------- số biên --------- */

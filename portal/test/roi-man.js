@@ -93,12 +93,26 @@ const doc = p => p.evaluate(() => {
   await p.check('input[data-r="moc"]');
   await p.waitForTimeout(700);
   must(await p.$('#roi-t1r') !== null, 'bật mốc thì hiện ba khối nhập');
-  await dien(p, { t1r: 3000, t1x: 16.67, t1m: 18, t2r: 5000, t2x: 12, t2m: 12, t3r: 8000, t3x: 10, t3m: 12 });
+  /* Cửa sổ rộng để cả ba mốc mở: mốc chỉ mở khi khoản ứng ngay trước đã
+     hoà vốn, nên cửa sổ phải dài hơn thời gian hoà vốn đó. */
+  await dien(p, { t1r: 3000, t1x: 16.67, t1m: 36, t2r: 5000, t2x: 12, t2m: 36, t3r: 8000, t3x: 10, t3m: 36 });
   r = await doc(p);
   must(r.bang.length === 5, 'bảng có bốn kịch bản cộng một dòng tổng', 'thấy ' + r.bang.length + ' dòng');
-  must(r.bang[0][0] === 'Danh mục' && r.bang[3][0] === 'Mốc thưởng 3', 'đúng tên bốn kịch bản', JSON.stringify(r.bang.map(x => x[0])));
-  must(r.bang[1][3] === '42' && r.bang[3][3] === '18', 'kỳ hạn còn lại trừ dần theo tháng đã trôi', r.bang[1][3] + ' / ' + r.bang[3][3]);
+  must(/^Danh mục/.test(r.bang[0][0]) && /^Mốc thưởng 3/.test(r.bang[3][0]), 'đúng tên bốn kịch bản', JSON.stringify(r.bang.map(x => x[0])));
+  /* kỳ hạn còn lại trừ theo THÁNG HOÀ VỐN thật, không theo cửa sổ khai */
+  must(+r.bang[1][3] < 60 && +r.bang[2][3] < +r.bang[1][3] && +r.bang[3][3] < +r.bang[2][3],
+    'kỳ hạn còn lại phải giảm dần qua từng mốc', r.bang.slice(1, 4).map(function (x) { return x[3]; }).join(' / '));
+  must(/mở ở tháng/.test(r.bang[1][0]), 'dòng mốc 1 phải ghi tháng mở khoá', r.bang[1][0]);
   must(r.bang[3][2] === '$80,000', 'mốc 3 ứng 8.000 × 10', r.bang[3][2]);
+
+  /* cửa sổ hẹp hơn thời gian hoà vốn: mốc khoá, và mốc sau khoá dây chuyền */
+  await dien(p, { t1m: 6 });
+  r = await doc(p);
+  must(/khoá/.test(r.bang[1][7]), 'mốc 1 phải hiện là khoá khi cửa sổ hẹp', r.bang[1][7]);
+  must(/muộn hơn hạn/.test(r.bang[1][0]), 'dòng mốc 1 phải nêu lý do khoá', r.bang[1][0]);
+  must(/Mốc trước/.test(r.bang[2][0]), 'mốc 2 phải khoá dây chuyền', r.bang[2][0]);
+  must(r.bang[1][2] === '$0' && r.bang[2][2] === '$0', 'mốc bị khoá không mang khoản ứng', r.bang[1][2] + ' / ' + r.bang[2][2]);
+  await dien(p, { t1m: 36 });
   must(!/undefined|NaN/.test(JSON.stringify(r.bang)), 'bảng kịch bản không có undefined hay NaN');
 
   console.log('\n### số rỗng và số rác');

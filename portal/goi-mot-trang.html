@@ -172,20 +172,23 @@
      trái, ghi chú dưới bảng), và ở cỡ đó chuẩn WCAG AA đòi 4,5:1. Bộ màu
      ban đầu chỉ đạt 3,1:1 trên nền thẻ trắng — nhìn thì "nhã", đọc thì
      không ra, nhất là trên laptop nghiêng màn. */
-  --bg:      #F2F4F7;
+  /* Nền trang tối hơn một bậc so với trước (#F2F4F7): thẻ trắng nổi hẳn
+     lên thay vì chìm. Tương phản nền-trang với mặt-thẻ lên 1,10:1 → 1,17:1,
+     đủ để mắt tách khối mà không thành hai mảng loang. */
+  --bg:      #EBEEF3;
   --card:    #FFFFFF;
   --raised:  #FFFFFF;
-  --card-line: #E1E6EC;   /* viền mảnh của thẻ, ngả lạnh theo màu nhấn */
+  --card-line: #D3DAE3;   /* viền thẻ đậm hơn: 1,32:1 so với mặt thẻ */
   --ink:     #1A2129;
   --ink-2:   #5B6672;
   --faint:   #626B75;
-  --line:    #E6E9ED;
-  --line-2:  #D5DAE0;
-  --head:    #F2F4F6;
-  --zebra:   #FAFBFC;
-  --fill:    #ECEEF1;
-  --band:    #F7F9FA;
-  --sel:     #E6EEFA;
+  --line:    #DFE4EA;
+  --line-2:  #C8D0DA;
+  --head:    #EDF0F4;
+  --zebra:   #F7F9FB;
+  --fill:    #E6EAEF;
+  --band:    #F1F5F8;
+  --sel:     #DEE9F8;
 
   /* ---- màu mang nghĩa ---- */
   --accent:     #0C7287;   /* màu dữ liệu chính, suy từ ice blue của brand */
@@ -214,7 +217,9 @@
   /* Bóng hai lớp: một lớp tiếp xúc rất gần, một lớp toả rộng và mờ. Một
      bóng phẳng 1px khiến mọi thẻ trông như dán lên nền; hai lớp thì thẻ
      "đứng" lên khỏi nền mà vẫn nhẹ. */
-  --shadow:   0 1px 2px rgba(20,32,44,.04);
+  /* Bóng hai tầng: một đường sát mép để tách thẻ khỏi nền, một quầng mềm
+     bên dưới để thẻ có chiều. Một tầng .04 như trước gần như vô hình. */
+  --shadow:   0 1px 1px rgba(20,32,44,.05), 0 2px 6px -1px rgba(20,32,44,.07);
   --shadow-2: 0 2px 6px rgba(20,32,44,.06), 0 14px 36px -12px rgba(20,32,44,.18);
   --shadow-lift: 0 2px 8px -4px rgba(12,114,135,.35);
   --hero-wash: linear-gradient(135deg, rgba(12,114,135,.10), rgba(12,114,135,0) 55%);
@@ -243,19 +248,19 @@
     --on-chrome-2: #A6B5C2;
     --on-chrome-3: #82939F;
 
-    --bg:      #0E1820;
-    --card:    #15212B;
-    --raised:  #1A2833;
+    --bg:      #0B141B;
+    --card:    #172532;
+    --raised:  #1E2E3B;
     --ink:     #E8EEF4;
     --ink-2:   #A9B7C4;
     --faint:   #909FAD;
-    --line:    #233240;
-    --line-2:  #2E4050;
-    --head:    #1A2732;
-    --zebra:   #17232E;
-    --fill:    #22303C;
-    --band:    #1A2934;
-    --sel:     #1B3242;
+    --line:    #2A3B4B;
+    --line-2:  #384C5E;
+    --head:    #1E2E3B;
+    --zebra:   #1A2A37;
+    --fill:    #263646;
+    --band:    #1D2E3B;
+    --sel:     #1F3A4D;
 
     --accent:     #4CB8CE;
     --accent-2:   #6FCADD;
@@ -278,7 +283,7 @@
     --on-danger: #350810;
     --danger-chrome: #FF8FA1;
 
-    --shadow:   0 1px 2px rgba(0,0,0,.32);
+    --shadow:   0 1px 1px rgba(0,0,0,.34), 0 2px 6px -1px rgba(0,0,0,.30);
     --shadow-2: 0 10px 30px rgba(0,0,0,.45);
 
     color-scheme: dark;
@@ -562,11 +567,39 @@ details.hoc>div{margin-top:10px}
    khung cuộn, nên đầu cột dính (position:sticky) bám theo trang được. */
 .card{background:var(--card);border-radius:var(--r);box-shadow:var(--shadow);overflow:clip;
   margin-bottom:14px;border:1px solid var(--card-line)}
-.card-h{display:flex;align-items:flex-start;gap:14px;padding:16px 18px 0;flex-wrap:wrap}
-.card-h h2{font-size:15px;font-weight:600;letter-spacing:-.008em;text-wrap:balance}
-.card-h p{font-size:12.5px;color:var(--faint);margin-top:2px}
+/* Đầu thẻ có một dải nền nhạt và một đường kẻ dưới: mắt tách được "đây là
+   nhãn của khối" khỏi "đây là nội dung" mà không cần đọc. Không có dải này
+   thì tiêu đề và số liệu nằm trên cùng một mặt phẳng trắng — chính là chỗ
+   trông phẳng. */
+.card-h{display:flex;align-items:center;gap:12px;padding:11px 14px;flex-wrap:wrap;
+  background:var(--head);border-bottom:1px solid var(--card-line)}
 .card-h .sp{flex:1}
 .card-b{padding:16px 18px}
+
+/* ---- huy hiệu tiêu đề: tên khối nằm TRONG huy hiệu ---- */
+/* Huy hiệu là một viên có icon và tên, nền tô theo loại khối. Nó vừa là
+   nhãn vừa là mốc thị giác: liếc một cái là biết khối này nói về tiền, về
+   cảnh báo hay về việc đang chạy. */
+.cbadge{display:inline-flex;align-items:center;gap:7px;min-width:0;
+  height:26px;padding:0 11px 0 9px;border-radius:13px;
+  font-size:13px;font-weight:600;letter-spacing:-.006em;
+  background:var(--cb-bg,var(--fill));color:var(--cb-ink,var(--ink));
+  border:1px solid var(--cb-line,transparent)}
+.cbadge svg{width:14px;height:14px;flex:none;stroke:currentColor;fill:none;stroke-width:1.8;
+  stroke-linecap:round;stroke-linejoin:round;opacity:.9}
+.cbadge span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cb-accent{--cb-bg:var(--accent-lo);--cb-ink:var(--accent);--cb-line:var(--accent-3)}
+.cb-ok    {--cb-bg:var(--ok-lo);    --cb-ink:var(--ok);    --cb-line:color-mix(in srgb,var(--ok) 34%,transparent)}
+.cb-warn  {--cb-bg:var(--warn-lo);  --cb-ink:var(--warn);  --cb-line:color-mix(in srgb,var(--warn) 34%,transparent)}
+.cb-no    {--cb-bg:var(--danger-lo);--cb-ink:var(--danger);--cb-line:color-mix(in srgb,var(--danger) 34%,transparent)}
+.cb-tho   {--cb-bg:var(--fill);     --cb-ink:var(--ink);   --cb-line:var(--line-2)}
+/* Số đếm trong ngoặc ở tiêu đề thẻ dùng .muted. KHÔNG được pha mờ nó:
+   pha 72% trên nền tô của huy hiệu chỉ còn 1,53:1, dưới xa chuẩn AA cho
+   chữ 13px. Muốn nó nhẹ hơn thì giảm ĐỘ ĐẬM, giữ nguyên màu. */
+.cbadge .muted{color:inherit;font-weight:500}
+/* Dấu ? đứng NGOÀI huy hiệu: nằm trong thì nó ăn theo màu tô và trông như
+   một phần của nhãn, bấm nhầm suốt. */
+.card-h .help{margin-left:-4px}
 .card-f{padding:12px 18px;border-top:1px solid var(--line);font-size:12.5px;color:var(--ink-2);
   display:flex;align-items:center;gap:14px;flex-wrap:wrap}
 .grid{display:grid;gap:14px;margin-bottom:14px}
@@ -586,17 +619,26 @@ details.hoc>div{margin-top:10px}
    (5 ô, 196px ở 1280px) hoặc trong một thẻ (152px) — cỡ chữ theo vw
    không biết điều đó, và "$3.426.998" 30px tràn sang ô bên cạnh.
    Con số 10 ký tự rộng ≈ 5,8 lần cỡ chữ, ô trừ lề 36px: cỡ = (ô − 36) / 5,8. */
-.kpi{padding:15px 18px;border-left:1px solid var(--line);container-type:inline-size;min-width:0}
+.kpi{padding:13px 16px 15px;border-left:1px solid var(--line-2);container-type:inline-size;min-width:0}
 .kpi:first-child{border-left:0}
-.kpi .l{font-size:12px;color:var(--faint);margin-bottom:5px;letter-spacing:.01em}
+/* Nhãn ô số cũng là huy hiệu, nhưng nhỏ và nhạt hơn huy hiệu thẻ: nếu tô
+   đậm bằng nhau thì cả dải ô số thành một hàng viên sặc sỡ, đọc mệt hơn
+   là không có gì. */
+.kpi .l{display:inline-flex;align-items:center;gap:6px;max-width:100%;
+  height:21px;padding:0 9px;margin-bottom:7px;border-radius:11px;
+  background:var(--fill);color:var(--ink-2);
+  font-size:11.5px;font-weight:600;letter-spacing:.005em;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.kpi .l svg{width:12px;height:12px;flex:none;stroke:currentColor;fill:none;stroke-width:1.9;
+  stroke-linecap:round;stroke-linejoin:round;opacity:.85}
 /* Số lớn đứng một mình dùng chữ số tỉ lệ (không tabular): tabular cho mỗi
    chữ số bề rộng của số 0, nên "121" ở cỡ 30px nhìn rời rạc. Tabular chỉ
    dành cho cột số phải thẳng hàng. */
 .kpi .v{font-size:clamp(17px,calc(17cqi - 6px),22px);font-weight:600;font-variant-numeric:tabular-nums;
   letter-spacing:-.015em;white-space:nowrap}
 .kpi .s{font-size:11.5px;color:var(--ink-2);margin-top:4px}
-.kpi.hero{background:var(--card);position:relative;box-shadow:inset 3px 0 0 var(--accent)}
-.kpi.hero .l{color:var(--ink-2)}
+.kpi.hero{background:var(--band);position:relative;box-shadow:inset 3px 0 0 var(--accent)}
+.kpi.hero .l{background:var(--accent-lo);color:var(--accent)}
 .kpi.hero .v{font-size:clamp(20px,calc(17cqi - 6px),28px);letter-spacing:-.02em;color:var(--accent)}
 .kpi .v.dai{font-size:clamp(15px,calc(13cqi - 6px),19px)}
 .kpi.hero .v.dai{font-size:clamp(18px,calc(14.5cqi - 6px),26px)}
@@ -1484,6 +1526,22 @@ table.t td.num,table.t th.num,.page-kpi .v,.kpi .v,.kv dd,.mono{font-variant-num
 .say-list{margin:0;padding-left:18px;font-size:12.5px;color:var(--ink-2);line-height:1.6}
 .say-list li+li{margin-top:7px}
 table.t tr.sum td{background:var(--fill);border-top:1px solid var(--line-2)}
+
+/* ---- thang cấp trong Tổ chức ---- */
+/* Sáu bậc nằm ngang, bậc cao đậm hơn bậc thấp. Bậc chưa có ai thì nhạt
+   hẳn: tổ chức đang thiếu tầng nào nhìn ra ngay. */
+.bac-row{display:grid;gap:8px;grid-template-columns:repeat(auto-fit,minmax(min(100%,132px),1fr))}
+.bac{border:1px solid var(--line-2);border-radius:10px;padding:10px 12px;background:var(--band)}
+.bac.cao{border-color:var(--accent-3);background:var(--accent-lo)}
+.bac.rong{opacity:.55}
+.bac-n{font-size:11.5px;font-weight:600;color:var(--ink-2);letter-spacing:.01em}
+.bac.cao .bac-n{color:var(--accent)}
+.bac-t{font-size:13px;font-weight:600;color:var(--ink);margin-top:3px;line-height:1.3}
+.bac-d{font-size:11.5px;color:var(--faint);margin-top:4px;font-variant-numeric:tabular-nums}
+/* Dòng kịch bản bị khoá: mờ đi nhưng vẫn đọc được, vì lý do khoá nằm ngay
+   trong dòng — ẩn hẳn thì người dùng không biết vì sao mốc không có số. */
+table.t tr.mo td{opacity:.62}
+table.t tr.mo td:first-child{opacity:1}
 
 
 
@@ -3225,11 +3283,22 @@ const staffByRole = role => STAFF.filter(s => s.role === role);
    (của mình hay cả bộ phận) suy ra từ cấp chức danh. Nhân sự nằm trong
    state nên thêm / chuyển / khoá đều giữ lại được.
    ===================================================================== */
+const CAP_TOI_DA = 6;      /* Level 6 là thực tập sinh, sâu nhất hệ thống chấp nhận */
+const CAP_TRUONG = 2;      /* từ Level 2 trở lên là cấp quản lý: thấy cả bộ phận */
+const CAP_THAP = CAP_TOI_DA;
 const CHUC_DANH = [
-  { id: "giam-doc",       cap: 3, vi: "Giám đốc",       en: "Managing director" },
-  { id: "truong-bo-phan", cap: 2, vi: "Trưởng bộ phận", en: "Head of department" },
-  { id: "chuyen-vien",    cap: 1, vi: "Chuyên viên",    en: "Specialist" },
-  { id: "nhan-vien",      cap: 0, vi: "Nhân viên",      en: "Staff" }
+  /* Thang cấp theo lối doanh nghiệp: SỐ NHỎ LÀ CẤP CAO. Level 1 là giám
+     đốc, Level 6 là thực tập sinh — hệ thống có lớn đến đâu cũng dừng ở 6,
+     vì quá sáu tầng thì không ai còn biết ai báo cáo cho ai.
+     Cách đánh số này ngược với bản cũ (0 thấp, 3 cao), nên mọi phép so
+     phải đảo dấu: "trưởng bộ phận trở lên" giờ là cap <= 2. */
+  { id: "giam-doc",       cap: 1, vi: "Giám đốc",        en: "Managing director" },
+  { id: "quan-ly",        cap: 2, vi: "Quản lý",         en: "Manager" },
+  { id: "truong-bo-phan", cap: 2, vi: "Trưởng bộ phận",  en: "Head of department" },
+  { id: "truong-nhom",    cap: 3, vi: "Trưởng nhóm",     en: "Team lead" },
+  { id: "chuyen-vien",    cap: 4, vi: "Chuyên viên",     en: "Specialist" },
+  { id: "nhan-vien",      cap: 5, vi: "Nhân viên",       en: "Staff" },
+  { id: "thuc-tap",       cap: 6, vi: "Thực tập sinh",   en: "Intern" }
 ];
 /* Lớp tài sản: thứ công ty quản lý và giao cho bộ phận. dem() đếm sống;
    gan(staffId) đếm phần đang giao đích danh cho một người. */
@@ -3247,7 +3316,7 @@ const TAI_SAN = [
   { id: "ticket",         vi: "Ticket hỗ trợ",     en: "Support tickets", man: "ho-tro", dem: () => state.tickets.length, gan: id => state.tickets.filter(t => t.assignee === id).length },
   { id: "khieuNai",       vi: "Khiếu nại bản quyền", en: "Rights claims", man: "quyen", dem: () => state.claims.length, gan: id => state.claims.filter(c => c.assignee === id).length }
 ];
-const MAN_TAT_CA = ["ban-lam-viec", "to-chuc", "ho-tro", "tong-quan", "theo-doi", "chat-luong", "nap-du-lieu", "khop-isrc", "doi-chieu", "phat-hanh", "giao-nhan", "sua-hang-loat", "bang-gia", "chien-dich", "quyen", "muc-tra", "chia-se", "xet-duyet", "roi", "nen-tang", "ke-toan", "chi-tra", "tam-ung", "ty-le", "doi-tac", "danh-muc", "quan-tri"];
+const MAN_TAT_CA = ["ban-lam-viec", "to-chuc", "ho-tro", "tong-quan", "theo-doi", "nap-du-lieu", "khop-isrc", "doi-chieu", "phat-hanh", "chien-dich", "quyen", "muc-tra", "chia-se", "xet-duyet", "roi", "nen-tang", "ke-toan", "chi-tra", "tam-ung", "ty-le", "doi-tac", "danh-muc", "quan-tri"];
 const NHOM_TAT_CA = ["tong", "tien", "doiSoat", "doiTac", "doiTacTao", "deXuat", "deXuatTao", "vanHanh", "danhMuc", "theoDoi", "chienDich", "chiaSe", "khieuNai", "hoTro", "quanTri", "phatHanhHo", "nhanSu", "toChuc"];
 const doiTacSapHetHan = me => partiesList({ status: "renew", manager: me && me.role === "sales" && !laTruong(me) ? me.id : undefined }).total;
 const TO_CHUC = [
@@ -3262,7 +3331,7 @@ const TO_CHUC = [
   { id: "van-hanh", vai: "ops", vi: "Vận hành", en: "Operations",
     chucNang: { vi: ["Tiếp nhận hồ sơ phát hành, kiểm metadata, cấp ISRC / UPC", "Giao bản ghi tới nền tảng, theo dõi trạng thái lên kệ", "Nạp báo cáo kỳ, khớp ISRC, đối soát trước xét duyệt", "Mức trả nền tảng, danh mục, chất lượng lượt nghe"],
                 en: ["Receive release files, check metadata, assign ISRC / UPC", "Deliver recordings to platforms, track go-live", "Load period reports, match ISRC, reconcile before approval", "Platform rates, catalogue, stream quality"] },
-    man: ["ban-lam-viec", "to-chuc", "ho-tro", "doi-chieu", "chien-dich", "theo-doi", "nap-du-lieu", "khop-isrc", "giao-nhan", "sua-hang-loat", "bang-gia", "muc-tra", "danh-muc", "nen-tang", "chat-luong", "phat-hanh", "quyen"],
+    man: ["ban-lam-viec", "to-chuc", "ho-tro", "doi-chieu", "chien-dich", "theo-doi", "nap-du-lieu", "khop-isrc", "muc-tra", "danh-muc", "nen-tang", "phat-hanh", "quyen"],
     nhom: ["doiSoat", "vanHanh", "danhMuc", "theoDoi", "chienDich", "khieuNai", "hoTro", "phatHanhHo", "toChuc"],
     taiSan: ["danhMuc", "hoSoPhatHanh", "nenTang", "baoCaoKy"],
     to: [
@@ -3270,9 +3339,6 @@ const TO_CHUC = [
         { id: "tiep-nhan", vi: "Hồ sơ mới chờ tiếp nhận", en: "New files awaiting intake", man: "phat-hanh", dem: () => state.releases.filter(r => r.status === "submitted").length },
         { id: "cap-ma", vi: "Hồ sơ chờ cấp mã", en: "Files awaiting codes", man: "phat-hanh", dem: () => state.releases.filter(r => r.status === "received").length },
         { id: "thieu-muc", vi: "Hồ sơ còn thiếu mục bắt buộc", en: "Files missing required items", man: "phat-hanh", dem: () => state.releases.filter(r => (r.status === "submitted" || r.status === "received") && kiemHoSo(r).thieuBatBuoc > 0).length } ] },
-      { id: "giao-nhan", vi: "Giao nhận nền tảng", en: "Platform delivery", nhiemVu: [
-        { id: "giao-cho", vi: "Yêu cầu giao nhận đang chờ", en: "Delivery requests in queue", man: "giao-nhan", dem: () => state.deliveries.filter(d => d.status !== "done" && d.status !== "failed").length },
-        { id: "nen-tang-moi", vi: "Nền tảng đang kết nối", en: "Platforms being connected", man: "nen-tang", dem: () => state.platformsExtra.filter(p => p.status !== "live").length } ] },
       { id: "du-lieu", vi: "Dữ liệu & đối soát", en: "Data & reconciliation", nhiemVu: [
         { id: "nap-thieu", vi: "Nguồn báo cáo còn thiếu ở kỳ hiện tại", en: "Feeds missing in the current period", man: "nap-du-lieu", dem: () => missingFeeds(P - 1).length },
         { id: "khop-isrc", vi: "Dòng chờ khớp ISRC", en: "Rows awaiting ISRC match", man: "khop-isrc", dem: () => state.queue.filter(q => q.status === "pending").length },
@@ -3309,7 +3375,7 @@ const TO_CHUC = [
   { id: "ho-tro", vai: "support", vi: "Hỗ trợ", en: "Support",
     chucNang: { vi: ["Cửa trước cho mọi yêu cầu của đối tác, chuyển đúng bộ phận", "Khiếu nại bản quyền, Content ID, cài đặt video", "Tra cứu hồ sơ phát hành và chất lượng lượt nghe"],
                 en: ["Front door for partner requests, route to the right department", "Rights claims, Content ID, video settings", "Look up release files and stream quality"] },
-    man: ["ban-lam-viec", "to-chuc", "ho-tro", "chat-luong", "phat-hanh", "quyen"],
+    man: ["ban-lam-viec", "to-chuc", "ho-tro", "danh-muc", "phat-hanh", "quyen"],
     nhom: ["danhMuc", "khieuNai", "hoTro", "toChuc"],
     taiSan: ["ticket", "khieuNai"],
     to: [
@@ -3329,9 +3395,9 @@ function khoiTatCa() {
 }
 const khoiCua = id => khoiTatCa().find(k => k.id === id) || null;
 const toCua = (khoiId, toId) => { const k = khoiCua(khoiId); return k ? (k.to.find(t => t.id === toId) || null) : null; };
-const chucDanhCua = id => CHUC_DANH.find(c => c.id === id) || CHUC_DANH[3];
-const capCua = s => s ? chucDanhCua(s.chucDanh).cap : 0;
-function laTruong(s) { return capCua(s || _me) >= 2; }
+const chucDanhCua = id => CHUC_DANH.find(c => c.id === id) || CHUC_DANH.find(c => c.id === "nhan-vien");
+const capCua = s => s ? chucDanhCua(s.chucDanh).cap : CAP_THAP;
+function laTruong(s) { return capCua(s || _me) <= CAP_TRUONG; }
 function tenChucVu(s, lang) {
   const k = khoiCua(s.boPhan), t = k ? k.to.find(x => x.id === s.to) : null, cd = chucDanhCua(s.chucDanh);
   if (lang === "en") return cd.en + (t ? " · " + t.en : k ? " · " + k.en : "");
@@ -3343,7 +3409,7 @@ const VI_TRI_MAU = {
   S01: ["ban-giam-doc", "dieu-hanh", "giam-doc"], S02: ["van-hanh", "phat-hanh", "truong-bo-phan"],
   S03: ["kinh-doanh", "doi-tac", "chuyen-vien"], S04: ["kinh-doanh", "doi-tac", "truong-bo-phan"],
   S05: ["ho-tro", "cskh", "truong-bo-phan"], S06: ["ho-tro", "ban-quyen", "chuyen-vien"], S07: ["tai-chinh", "ke-toan", "truong-bo-phan"],
-  S08: ["van-hanh", "giao-nhan", "nhan-vien"], S09: ["van-hanh", "du-lieu", "chuyen-vien"], S10: ["tai-chinh", "thanh-toan", "nhan-vien"]
+  S08: ["van-hanh", "phat-hanh", "nhan-vien"], S09: ["van-hanh", "du-lieu", "chuyen-vien"], S10: ["tai-chinh", "thanh-toan", "thuc-tap"]
 };
 const NHAN_SU_THEM = [
   { id: "S08", email: "delivery@haustek-group.com", name: "Ngô Giao Nhận", role: "ops", title: "Giao nhận nền tảng", titleEn: "Platform delivery" },
@@ -3610,6 +3676,7 @@ function dailyStreams(i, back) {
 }
 /* mức trả gộp USD trên 1.000 lượt nghe của từng nền tảng, từ 3 kỳ đã xét duyệt gần nhất */
 let _rateCacheKey = null, _rateCacheVal = null;
+const cents4 = v => Math.round(v * 10000) / 10000;
 function platformRates() {
   const ov = state.rateOverride || {};
   const key = Object.keys(state.approved).join(",") + "|" + JSON.stringify(ov);
@@ -3621,7 +3688,11 @@ function platformRates() {
   _rateCacheKey = key;
   _rateCacheVal = PLAT_NAMES.map((n, j) => {
     const derived = accS[j] > 0 ? accR[j] / accS[j] * 1000 : 0, o = ov[n];
-    return { name: n, nameEn: PLAT_NAMES_EN[j], per1k: o ? o.per1k : derived, derived, source: o ? "override" : "derived", at: o ? o.at : null, note: o ? o.note : "" };
+    const per1k = o ? o.per1k : derived;                       /* nền tảng trả về Haustek */
+    const khach = o && o.khach != null ? o.khach : per1k;      /* Haustek trả đối tác */
+    return { name: n, nameEn: PLAT_NAMES_EN[j], per1k, khach, bien: cents4(per1k - khach),
+      bienPct: per1k > 0 ? Math.round((per1k - khach) / per1k * 1000) / 1000 : 0,
+      derived, source: o ? "override" : "derived", at: o ? o.at : null, note: o ? o.note : "" };
   });
   return _rateCacheVal;
 }
@@ -4228,17 +4299,16 @@ function notificationsOf(role, partyId) {
     const tk = state.tickets.filter(t => t.status !== "done");
     if (tk.length) push("tk:open", isoDate(ASOF), "info", tk.length + " yêu cầu hỗ trợ đang mở", tk.length + " open support tickets", "", "", "ho-tro");
     const q = qualityReport("admin", 0);
-    if (q.counts.flagged) push("dsp:all", q.asOf, "critical", q.counts.flagged + " bài bị nền tảng gắn cờ lượt nghe giả", q.counts.flagged + " tracks flagged for artificial streams", fmt.num(q.counts.removedStreams) + " lượt nghe bị gỡ khỏi báo cáo", fmt.num(q.counts.removedStreams) + " streams removed from reports", "chat-luong");
+    if (q.counts.flagged) push("dsp:all", q.asOf, "critical", q.counts.flagged + " bài bị nền tảng gắn cờ lượt nghe giả", q.counts.flagged + " tracks flagged for artificial streams", fmt.num(q.counts.removedStreams) + " lượt nghe bị gỡ khỏi báo cáo", fmt.num(q.counts.removedStreams) + " streams removed from reports", "danh-muc");
     const cases = q.cases.filter(c => c.pattern === "many-small-lifts");
-    if (cases.length) push("q:lift", q.asOf, "warn", cases.length + " tài khoản có nhiều bài tăng đồng loạt", cases.length + " accounts with many small lifts at once", "Kiểu tách nhỏ để lách ngưỡng (vụ Michael Smith 2024).", "Spreading streams thinly to stay under thresholds (Smith case, 2024).", "chat-luong");
+    if (cases.length) push("q:lift", q.asOf, "warn", cases.length + " tài khoản có nhiều bài tăng đồng loạt", cases.length + " accounts with many small lifts at once", "Kiểu tách nhỏ để lách ngưỡng (vụ Michael Smith 2024).", "Spreading streams thinly to stay under thresholds (Smith case, 2024).", "danh-muc");
     const ph = state.releases.filter(r => r.status === "submitted");
     if (ph.length) push("ph:sub", isoDate(ASOF), "info", ph.length + " hồ sơ phát hành chờ tiếp nhận", ph.length + " releases awaiting intake", "", "", "phat-hanh");
     const dx = proposalCounts();
     if (dx.pending) push("dx:cho", isoDate(ASOF), "warn", dx.pending + " đề xuất chờ xét duyệt (" + dx.checked + " đã kiểm số)", dx.pending + " proposals awaiting approval (" + dx.checked + " checked)", "Tạm ứng và hợp đồng: giám đốc duyệt, kế toán kiểm.", "Advances and contracts: director approves, accounting checks.", "xet-duyet");
     const gn = state.deliveries.filter(d => d.status !== "done");
-    if (gn.length) push("gn:open", isoDate(ASOF), "info", gn.length + " yêu cầu giao nhận nền tảng đang mở", gn.length + " open delivery requests", "", "", "giao-nhan");
     const md = metadataReport("admin", 0);
-    if (md.counts.blocking) push("md:block", md.asOf, "warn", md.counts.blocking + " bản ghi thiếu mã quan trọng (ISWC / IPI)", md.counts.blocking + " recordings missing key identifiers (ISWC / IPI)", "Giữ lại trước khi giao; xem Sức khoẻ metadata.", "Held before delivery; see Metadata health.", "chat-luong");
+    if (md.counts.blocking) push("md:block", md.asOf, "warn", md.counts.blocking + " bản ghi thiếu mã quan trọng (ISWC / IPI)", md.counts.blocking + " recordings missing key identifiers (ISWC / IPI)", "Giữ lại trước khi giao; xem Sức khoẻ metadata.", "Held before delivery; see Metadata health.", "danh-muc");
   }
   const read = lazyState("notifRead", {})[partyKey || "admin"] || {};
   out.forEach(n => { n.read = !!read[n.id]; });
@@ -4598,32 +4668,57 @@ function dealRoiCalc(d) {
     paybackMonth, nguongRoi, nguongThuHoi, dat, reasons, recommendation, series };
 }
 
-/* Bốn kịch bản như bốn sheet: danh mục nền, rồi ba mốc thưởng. Mỗi mốc đạt
-   thì ứng thêm, doanh thu tháng lên mức của mốc, và kỳ hạn cùng độc quyền
-   còn lại trừ đi số tháng đã trôi (bảng tính ghi tay =57-18, =33-18). */
+/* Bốn kịch bản như bốn sheet: danh mục nền, rồi ba mốc thưởng.
+
+   MỐC THƯỞNG MỞ KHOÁ THEO HOÀ VỐN, KHÔNG THEO LỊCH. Khoản ứng gốc phải
+   hoà vốn xong thì mốc 1 mới được ứng; mốc 1 hoà vốn xong mới tới mốc 2;
+   mốc 2 hoà vốn xong mới tới mốc 3. Đây là cách duy nhất giữ cho Haustek
+   không ôm hai khoản ứng chưa thu hồi cùng lúc trên một đối tác.
+
+   "Trong vòng N tháng" của mỗi mốc vì thế là HẠN CHÓT chứ không phải lịch
+   trả: hoà vốn muộn hơn N tháng thì mốc đó không mở, và mọi mốc sau nó
+   cũng không mở theo. Kỳ hạn còn lại của mốc trừ đi số tháng đã trôi tính
+   dồn từ các lần hoà vốn trước, không phải từ cửa sổ khai trong hợp đồng. */
 function dealRoiScenarios(d) {
   d = d || {};
   const nen = dealRoiCalc(d);
-  const ra = [{ id: "catalog", vi: "Danh mục", en: "Catalogue", troi: 0, calc: nen }];
-  let troi = 0;
+  const ra = [{ id: "catalog", vi: "Danh mục", en: "Catalogue", troi: 0, moKhoa: true, calc: nen }];
+  const kyHan = d.termMonths == null ? ROI_MAC_DINH.termMonths : roiThang(d.termMonths, ROI_MAC_DINH.termMonths);
+  const docQuyen = d.exclusivityMonths == null ? ROI_MAC_DINH.exclusivityMonths : roiThang(d.exclusivityMonths, ROI_MAC_DINH.exclusivityMonths);
+  let troi = 0, khoa = false, truoc = nen;
   (Array.isArray(d.triggers) ? d.triggers : []).slice(0, 3).forEach((t, i) => {
     t = t || {};
     const reach = Math.max(0, cents(roiSo(t.reach, 0)));
     const heSo  = Math.max(0, roiSo(t.multiplier, 0));
-    const trong = roiThang(t.withinMonths, 0);
-    troi += trong;
+    const hanCho = roiThang(t.withinMonths, 0);
     const ung = t.advance != null && t.advance !== "" ? Math.max(0, cents(roiSo(t.advance, 0))) : cents(reach * heSo);
-    const con = d.termMonths == null ? ROI_MAC_DINH.termMonths : roiThang(d.termMonths, ROI_MAC_DINH.termMonths);
-    const conDq = d.exclusivityMonths == null ? ROI_MAC_DINH.exclusivityMonths : roiThang(d.exclusivityMonths, ROI_MAC_DINH.exclusivityMonths);
-    const calc = dealRoiCalc(Object.assign({}, d, { monthlyIncome: reach || nen.monthlyIncome, cashAdvance: ung, advance: ung,
-      marketing: 0, production: 0, termMonths: Math.max(1, con - troi), exclusivityMonths: Math.max(0, conDq - troi), triggers: null }));
-    ra.push({ id: "trigger" + (i + 1), vi: "Mốc thưởng " + (i + 1), en: "Trigger " + (i + 1), reach, multiplier: heSo, withinMonths: trong, troi, calc });
+    /* tháng hoà vốn của KHOẢN ỨNG NGAY TRƯỚC: đó là lúc mốc này được mở */
+    const hv = truoc.paybackMonth;
+    let lyDo = null;
+    if (khoa) lyDo = { vi: "Mốc trước chưa mở nên mốc này cũng không", en: "The previous trigger never unlocked" };
+    else if (hv == null) lyDo = { vi: "Khoản ứng trước không hoà vốn trong kỳ hạn", en: "The previous advance never breaks even inside its term" };
+    else if (hanCho > 0 && hv > hanCho) lyDo = { vi: "Hoà vốn ở tháng " + hv + ", muộn hơn hạn " + hanCho + " tháng", en: "Breaks even in month " + hv + ", past the " + hanCho + "-month window" };
+    const moKhoa = !lyDo;
+    if (moKhoa) troi += hv;
+    const conKyHan = Math.max(0, kyHan - troi);
+    if (moKhoa && conKyHan < 1) lyDo = { vi: "Hết kỳ hạn hợp đồng trước khi tới mốc này", en: "The deal term runs out before this trigger" };
+    const thuc = moKhoa && !lyDo;
+    if (!thuc) khoa = true;
+    const calc = thuc
+      ? dealRoiCalc(Object.assign({}, d, { monthlyIncome: reach || nen.monthlyIncome, cashAdvance: ung, advance: ung,
+          marketing: 0, production: 0, termMonths: Math.max(1, conKyHan), exclusivityMonths: Math.max(0, docQuyen - troi), triggers: null }))
+      : dealRoiCalc({ monthlyIncome: 0, cashAdvance: 0 });
+    ra.push({ id: "trigger" + (i + 1), vi: "Mốc thưởng " + (i + 1), en: "Trigger " + (i + 1),
+      reach, multiplier: heSo, withinMonths: hanCho, troi, moKhoa: thuc, hoaVonTruoc: hv, lyDoKhoa: lyDo, ungDeXuat: ung, calc });
+    if (thuc) truoc = calc;
   });
-  const ungTong = ra.reduce((s, x) => s + x.calc.advance, 0);
-  const veTong  = ra.reduce((s, x) => s + x.calc.netForCompany, 0);
-  const thieu   = ra.reduce((s, x) => s + x.calc.shortfall, 0);
-  return { rows: ra, tong: { advance: cents(ungTong), netForCompany: cents(veTong), shortfall: cents(thieu),
-    roi: ungTong > 0 ? Math.round((veTong - thieu) / ungTong * 1e4) / 1e4 : null } };
+  const mo = ra.filter(x => x.moKhoa);
+  const ungTong = mo.reduce((s, x) => s + x.calc.advance, 0);
+  const veTong  = mo.reduce((s, x) => s + x.calc.netForCompany, 0);
+  const thieu   = mo.reduce((s, x) => s + x.calc.shortfall, 0);
+  return { rows: ra, moKhoa: mo.length, khoaLai: ra.length - mo.length,
+    tong: { advance: cents(ungTong), netForCompany: cents(veTong), shortfall: cents(thieu),
+      roi: ungTong > 0 ? Math.round((veTong - thieu) / ungTong * 1e4) / 1e4 : null } };
 }
 
 /* Nối bảng tính với một đối tác đang có trên hệ thống: lấy doanh thu gộp
@@ -4767,12 +4862,21 @@ function platformRatesFull() {
   const ov = lazyState("rateOverride", {});
   return platformRates().map((r, j) => Object.assign({}, r, { refVn: VN_REF_PER1K[j] != null ? VN_REF_PER1K[j] : null, override: ov[r.name] || null }));
 }
-function setPlatformRate(name, per1k, note, by) {
+/* Hai mức cho mỗi nền tảng, và chúng KHÁC NHAU:
+     per1k — nền tảng trả về cho Haustek (ví dụ 4,40 USD / 1.000 lượt)
+     khach — Haustek trả cho đối tác   (ví dụ 4,00 USD / 1.000 lượt)
+   Chênh lệch là biên của Haustek. Đây là số nhạy nhất trong sản phẩm: đối
+   tác chỉ được thấy mức của chính họ, không bao giờ thấy mức nền tảng trả
+   hay biên. Cổng đối tác đã lược ở scrub(); trang nội bộ chặn theo cấp. */
+function setPlatformRate(name, per1k, note, by, khach) {
   if (PLAT_NAMES.indexOf(name) < 0) throw new Error("Không có nền tảng " + name);
-  per1k = Math.round(+per1k * 10000) / 10000;
+  per1k = cents4(+per1k);
   if (!(per1k > 0 && per1k < 100)) throw new Error("Mức trả phải là số dương dưới 100 USD / 1.000 lượt");
-  lazyState("rateOverride", {})[name] = { per1k, note: note || "", by: by || "", at: nowISO() };
-  _rateCacheKey = null; audit.log("rate.platform", name + " → " + per1k + " USD/1.000" + (note ? " · " + note : ""), by); store.save();
+  let kh = khach == null || khach === "" ? per1k : cents4(+khach);
+  if (!(kh > 0 && kh < 100)) throw new Error("Mức trả đối tác phải là số dương dưới 100 USD / 1.000 lượt");
+  if (kh > per1k) throw new Error("Mức trả đối tác không được cao hơn mức nền tảng trả về (" + per1k + ")");
+  lazyState("rateOverride", {})[name] = { per1k, khach: kh, note: note || "", by: by || "", at: nowISO() };
+  _rateCacheKey = null; audit.log("rate.platform", name + " → nền tảng " + per1k + " · đối tác " + kh + " USD/1.000" + (note ? " · " + note : ""), by); store.save();
   return platformRatesFull();
 }
 function clearPlatformRate(name, by) {
@@ -5383,7 +5487,9 @@ const QUYEN_HAM = {
   quality: "danhMuc", qualityFor: "danhMuc", setAlertStatus: "danhMuc", metadataReport: "danhMuc", metadataReportFor: "danhMuc",
   catalogue: "danhMuc", platformReport: "danhMuc", catalogueReleases: "danhMuc", releases: "danhMuc",
   "releases.receive": "vanHanh", "releases.assignCodes": "vanHanh", "releases.publish": "vanHanh", "releases.returnFix": "vanHanh", "releases.createFor": "phatHanhHo",
-  deliveries: "vanHanh", bulk: "vanHanh", ingest: "vanHanh", platformRates: "vanHanh", platformRatesFull: "vanHanh", setPlatformRate: "vanHanh", clearPlatformRate: "vanHanh", importPlatformRates: "vanHanh",
+  deliveries: "vanHanh", bulk: "vanHanh", ingest: "vanHanh", platformRates: "vanHanh",
+  /* Mức trả đầy đủ mang biên của Haustek: chỉ nhóm "tong" (giám đốc) mới gọi. */
+  platformRatesFull: "tong", setPlatformRate: "tong", clearPlatformRate: "tong", importPlatformRates: "tong",
   proposals: "deXuat", "proposals.proposeAdvance": "deXuatTao", "proposals.proposeContract": "deXuatTao", advanceCalc: "deXuat", contractCalc: "deXuat", partySeries: "deXuat", advanceOfferOf: "deXuat",
   roi: "deXuat",
   tickets: "hoTro", claims: "khieuNai", videoSettings: "khieuNai",
@@ -5393,7 +5499,19 @@ const QUYEN_HAM = {
 };
 function vaiHienTai() { return _me ? _me.role : null; }
 function coQuyenNhom(nhom, role) { role = role || vaiHienTai(); const g = QUYEN_NHOM[nhom]; return role === "mgmt" || !!(g && g.vai.includes(role)); }
-function manCoQuyen(id, role) { role = role || vaiHienTai(); const v = QUYEN_MAN[id]; return !v ? true : (role === "mgmt" || v.includes(role)); }
+/* Vài trang chỉ mở cho cấp quản lý trở lên, bất kể thuộc khối nào: trưởng
+   bộ phận kinh doanh cũng là quản lý, nên chặn theo VAI thì chặn nhầm.
+   Số là cấp thấp nhất còn được vào (nhỏ là cao). */
+const MAN_CAP = { "to-chuc": CAP_TRUONG, "muc-tra": CAP_TRUONG };
+function manCoQuyen(id, role, cap) {
+  role = role || vaiHienTai();
+  cap = cap == null ? capCua(_me) : cap;
+  const v = QUYEN_MAN[id];
+  if (v && role !== "mgmt" && !v.includes(role)) return false;
+  const c = MAN_CAP[id];
+  if (c != null && cap > c) return false;
+  return true;
+}
 function chanQuyen(ten, nhom) {
   if (coQuyenNhom(nhom)) return;
   const e = new Error("Không có quyền: " + ten + " (vai " + vaiHienTai() + " · cần " + QUYEN_NHOM[nhom].vai.join(" / ") + ")");
@@ -5519,7 +5637,8 @@ const quyenXuat = {
   man: id => manCoQuyen(id), nhom: g => coQuyenNhom(g),
   bang: () => ({ man: QUYEN_MAN, nhom: QUYEN_NHOM, khoi: TO_CHUC.map(k => ({ id: k.id, vai: k.vai, vi: k.vi, en: k.en, man: k.man.slice(), nhom: k.nhom.slice() })) }),
   cap: () => capCua(_me), truong: () => laTruong(),
-  cua: role => ({ man: Object.keys(QUYEN_MAN).filter(id => manCoQuyen(id, role)), nhom: Object.keys(QUYEN_NHOM).filter(g => coQuyenNhom(g, role)) })
+  cua: role => { const capTot = Math.min.apply(null, STAFF.concat(state.staff || []).filter(x => x.role === role).map(capCua).concat([CAP_THAP])); return { man: Object.keys(QUYEN_MAN).filter(id => manCoQuyen(id, role, capTot)), nhom: Object.keys(QUYEN_NHOM).filter(g => coQuyenNhom(g, role)) }; },
+  capToiDa: CAP_TOI_DA, capTruong: CAP_TRUONG, capBac: () => CHUC_DANH.map(c => ({ id: c.id, cap: c.cap, vi: c.vi, en: c.en })).sort((a, b) => a.cap - b.cap)
 };
 
 const demAnToan = (f, me) => { try { const v = f(me); return typeof v === "number" && isFinite(v) ? v : 0; } catch (e) { return 0; } };
@@ -5869,8 +5988,10 @@ const admin = {
   staff: {
     list() { return STAFF.slice(); },
     get: staffById, byRole: staffByRole,
-    get me() { return _me; },
-    setMe(id) { const s = staffById(id); if (s) _me = s; return _me; },
+    /* Kèm cấp và nhãn cấp: giao diện và phép kiểm đều hỏi "người này Level
+       mấy" liên tục, tra lại qua chức danh mỗi lần thì dễ quên. */
+    get me() { return _me ? Object.assign({}, _me, { cap: capCua(_me), capTen: chucDanhCua(_me.chucDanh), truong: laTruong(_me) }) : _me; },
+    setMe(id) { const s = staffById(id); if (s) _me = s; return this.me; },
     targets: STAFF_TARGET
   },
   parties: { list: opts => partiesListChoVai(opts), managerOf: pk => staffById(state.partyManager[pk]) || null,
@@ -7588,6 +7709,9 @@ function chay(cauHinh) {
     /* gõ #hash của màn bị cấm: về màn đầu tiên được phép và sửa luôn địa chỉ, không bắn hashchange */
     if (man.id !== id) { try { history.replaceState(null, '', '#' + man.id); } catch (e) {} }
     manHienTai = man.id;
+    /* HM.the và HM.so lấy icon mặc định của huy hiệu từ đây, nên mọi thẻ có
+       mốc thị giác mà không phải sửa từng trang. */
+    HT.manNay = man;
     var c = ctx();
 
     $('[data-ten]').textContent = c.t(cauHinh.ten);
@@ -8506,7 +8630,7 @@ function so(list) {
   return '<div class="kpis">' + list.map(function (k) {
     return '<div class="kpi' + (k.lon ? ' hero' : '') + '"' +
       (k.tip ? ' data-tip="' + esc(k.tip) + '"' : '') + '>' +
-      '<div class="l">' + esc(k.l) + '</div>' +
+      '<div class="l">' + (k.icon === false ? '' : icon(k.icon || suyHieu(k.l).icon)) + esc(k.l) + '</div>' +
       /* số dài (từ 12 ký tự, cỡ hàng tỷ) hạ cỡ chữ một bậc để không tràn ô ở khung hẹp */
       '<div class="v' + (!k.html && String(k.v == null ? '' : k.v).length >= 12 ? ' dai' : '') + '"' + (k.mau ? ' style="color:' + k.mau + '"' : '') + '>' + (k.html || esc(k.v)) + '</div>' +
       (k.s ? '<div class="s">' + (k.sHtml ? k.s : esc(k.s)) + '</div>' : '') +
@@ -8518,12 +8642,53 @@ function so(list) {
 }
 
 /* ---- thẻ ---- */
+/* Tiêu đề khối nằm TRONG một huy hiệu có icon và nền tô theo loại.
+   o.mau: 'accent' | 'ok' | 'warn' | 'no' | 'tho' — bỏ trống thì suy từ tên
+   o.icon: tên icon — bỏ trống thì cũng suy từ tên
+
+   Vì sao suy từ tên chứ không bắt mỗi thẻ tự khai: hơn hai trăm thẻ trong
+   sản phẩm, khai tay thì vừa sót vừa lệch nhau. Suy từ tên cho mỗi thẻ một
+   mốc thị giác đúng nghĩa ngay, mà thẻ nào cần khác vẫn khai đè được.
+   Bảng dưới đọc theo THỨ TỰ: từ khoá hẹp đứng trước từ khoá rộng, vì
+   "quá hạn thanh toán" phải ra cảnh báo chứ không ra tiền. */
+var HIEU = [
+  [/quá hạn|chậm|vấn đề|lỗi|từ chối|rủi ro|cảnh báo|bất thường|khiếu nại|tranh chấp|thiếu|chưa khớp|gian lận/i, 'alert', 'no'],
+  [/chờ|cần |đang xử lý|hàng đợi|sắp|tồn|chưa /i, 'clock', 'warn'],
+  [/đã duyệt|đã xong|hoàn tất|đạt|thành công|đã chuyển|đã trả|đã ghi/i, 'check', 'ok'],
+  [/roi|dự báo|tăng trưởng|xu hướng|chỉ tiêu|hiệu quả|so sánh|phân bổ|thống kê|biểu đồ/i, 'chart', 'accent'],
+  [/doanh thu|tiền|thanh toán|chi trả|tạm ứng|ứng |ví |phí|thuế|tỷ giá|hoá đơn|số dư|mức trả|giá /i, 'cash', 'accent'],
+  [/tỷ lệ|chia sẻ|chia |quy đổi|đổi /i, 'swap', 'accent'],
+  [/bảng kê|báo cáo|hồ sơ|phát hành|tài liệu|chứng từ|file|xuất /i, 'file', 'accent'],
+  [/kế toán|sổ |bút toán|nhật ký/i, 'book', 'accent'],
+  [/bài hát|bản ghi|danh mục|track|album|đĩa|lượt nghe|playlist/i, 'disc', 'accent'],
+  [/nền tảng|cửa hàng|kênh|store|spotify|apple|youtube/i, 'shop', 'accent'],
+  [/đối tác|nghệ sĩ|label|khách|nhân sự|đội |nhân viên|người |tài khoản|liên hệ/i, 'user', 'accent'],
+  [/tổ chức|cây |khối |bộ phận|phân quyền|quyền/i, 'tree', 'accent'],
+  [/kỳ |tháng|quý|năm|lịch|thời hạn|hạn /i, 'cal', 'accent'],
+  [/ticket|hỗ trợ|yêu cầu|đề nghị/i, 'ask', 'accent'],
+  [/chiến dịch|quảng bá|marketing/i, 'globe', 'accent'],
+  [/cài đặt|cấu hình|quản trị|hệ thống/i, 'gear', 'accent'],
+  [/danh sách|bảng |dòng |chi tiết/i, 'list', 'accent'],
+  [/nhiệm vụ|việc |quy trình|bước/i, 'layers', 'accent']
+];
+function suyHieu(chu) {
+  var t = String(chu || '').replace(/<[^>]*>/g, ' ');
+  for (var i = 0; i < HIEU.length; i++) if (HIEU[i][0].test(t)) return { icon: HIEU[i][1], mau: HIEU[i][2] };
+  return { icon: (HT.manNay && HT.manNay.icon) || 'grid', mau: 'accent' };
+}
+function huyHieu(chu, o) {
+  o = o || {};
+  var g = suyHieu(chu);
+  var ic = o.icon === false ? '' : icon(o.icon || g.icon);
+  return '<h2 class="cbadge cb-' + (o.mau || g.mau) + '">' + ic + '<span>' + chu + '</span></h2>';
+}
 function the(o) {
   return '<div class="card"' + (o.id ? ' id="' + esc(o.id) + '"' : '') + '>' +
     (o.dai ? '<div class="ribbon ' + o.dai.kieu + '">' + icon(o.dai.icon || 'info') +
       '<span>' + o.dai.chu + '</span></div>' : '') +
-    (o.h2 || o.hanhDong ? '<div class="card-h"><div style="min-width:0"><h2>' + (o.h2 || '') + giup(o.p) + '</h2>' +
-      '</div><div class="sp"></div>' +
+    (o.h2 || o.hanhDong ? '<div class="card-h">' +
+      (o.h2 ? huyHieu(o.h2, o) + giup(o.p) : '') +
+      '<div class="sp"></div>' +
       (o.hanhDong ? '<div class="btnrow">' + o.hanhDong + '</div>' : '') + '</div>' : '') +
     (o.thoBody ? o.than : '<div class="card-b">' + (o.than || '') + '</div>') +
     (o.chan ? '<div class="card-f">' + o.chan + '</div>' : '') + '</div>';
@@ -8828,7 +8993,7 @@ function xepHang(rows, o) {
 }
 
 global.HM = {
-  dau: dau, so: so, the: the, tabs: tabs, trong: trong, ghi: ghi, menu: menu, kv: kv,
+  dau: dau, so: so, the: the, huyHieu: huyHieu, suyHieu: suyHieu, tabs: tabs, trong: trong, ghi: ghi, menu: menu, kv: kv,
   tag: tag, cham: cham, bam: bam, doi: doi, nhap: nhap, csv: csv,
   lech: lech, lechHtml: lechHtml, dai: dai, esc: esc, icon: icon,
   nho: nho, quenHet: quenHet, moc: moc,
@@ -11273,148 +11438,6 @@ function dungBang(root, c, d, pl) {
 })();
 
 },
-/* ---- man/chat-luong.js ---- */
-function(){
-/* =====================================================================
-   NỘI BỘ · CHẤT LƯỢNG LƯỢT NGHE & METADATA (bàn chống gian lận)
-   ---------------------------------------------------------------------
-   Vận hành nhìn theo TÀI KHOẢN trước, theo bài sau: vụ Michael Smith
-   (2024) tách 660.000 lượt/ngày thành nhiều bài nhỏ để lách ngưỡng từng
-   bài, nên gom theo tài khoản mới thấy. Mỗi cảnh báo có bằng chứng (năm
-   tín hiệu), diễn biến, và hai thao tác: xác nhận gian lận hoặc gỡ cảnh
-   báo, đều ghi nhật ký. Bài bị nền tảng gắn cờ thì lượt nghe bị gỡ khỏi
-   báo cáo, nên kỳ sau doanh thu của bài đó thấp hơn.
-   Tab thứ ba là sức khoẻ metadata toàn danh mục: thiếu ISWC / IPI thì
-   giữ lại trước khi giao.
-   ===================================================================== */
-"use strict";
-(function () {
-
-var LOC = { tab: 'tk', muc: 'all', tt: 'open', pk: null, tim: '', trang: 0 };
-
-HT.dangKy({
-  id: 'chat-luong', nav: 'navChatLuong', nhom: 'nhomVanHanh', icon: 'alert',
-  dem: function (c) { try { return c.A.quality().counts.flagged || null; } catch (e) { return null; } },
-
-  chu: {
-    vi: {
-      navChatLuong: 'Chất lượng lượt nghe', h1: 'Chất lượng lượt nghe',
-      mo: 'Cảnh báo lượt nghe bất thường theo tài khoản, bài bị nền tảng gắn cờ và sức khoẻ metadata.',
-      kCb: 'Cảnh báo', kCbS: '{a} nghiêm trọng · {b} cảnh báo · {c} theo dõi · {n} bài đã quét', kCo: 'Bài bị nền tảng gắn cờ', kCoS: 'lượt nghe đã bị gỡ khỏi báo cáo', kGo: 'Lượt nghe bị gỡ', kTk: 'Tài khoản nhiều bài tăng đồng loạt', kTkS: 'kiểu tách nhỏ để lách ngưỡng', kMo: 'Đang mở', kMoS: '{n} đang khiếu nại', kMd: 'Điểm metadata trung bình', kMdS: '{n} bản ghi thiếu mã quan trọng',
-      tabTk: 'Theo tài khoản', tabCb: 'Cảnh báo', tabMd: 'Sức khoẻ metadata',
-      cTk: 'Tài khoản', cMau: 'Kiểu', cAlerts: 'Cảnh báo', cNt: 'Nghiêm trọng', cCo: 'Bị gắn cờ', cGo: 'Lượt nghe bị gỡ', cMo: 'Đang mở',
-      mucAll: 'Mọi mức', mucCritical: 'Nghiêm trọng', mucWarn: 'Cảnh báo', mucWatch: 'Theo dõi', ttAll: 'Mọi trạng thái', ttOpen: 'Đang mở', ttDisputed: 'Đang khiếu nại', ttConfirmed: 'Đã xác nhận', ttResolved: 'Đã gỡ',
-      tim: 'Tìm bài, ISRC, tài khoản…', dangLoc: 'Đang xem tài khoản', boLoc: 'Bỏ lọc',
-      xacNhan: 'Xác nhận gian lận', go: 'Gỡ cảnh báo', hoiXn: 'Xác nhận gian lận cho “{t}”?', hoiXnMo: 'Lượt nghe của bài bị giữ lại trong kỳ đang mở; đối tác thấy trạng thái này ở cổng của họ.', hoiGo: 'Gỡ cảnh báo cho “{t}”', hoiGoMo: 'Ghi lý do (chiến dịch hợp lệ, playlist biên tập, sự kiện) để lần sau không hỏi lại.', ghiChu: 'Ghi chú', daXn: 'Đã xác nhận gian lận', daGo: 'Đã gỡ cảnh báo',
-      khong: 'Không có cảnh báo nào khớp bộ lọc', khongMo: 'Đổi bộ lọc phía trên.', khongTk: 'Không có tài khoản nào có cảnh báo',
-      mdThieu: 'Mục còn thiếu nhiều nhất', mdThieuMo: 'Số bản ghi thiếu từng mục toàn danh mục (đã nhân theo mẫu).', mdBang: 'Bản ghi bị giữ lại hoặc dưới điểm A', mdBangMo: 'Bấm một bản ghi để xem từng mục và cách sửa.'
-    },
-    en: {
-      navChatLuong: 'Stream quality', h1: 'Stream quality',
-      mo: 'Unusual-stream alerts by account, tracks platforms have flagged, and metadata health.',
-      kCb: 'Alerts', kCbS: '{a} critical · {b} warning · {c} watch · {n} tracks scanned', kCo: 'Flagged by platforms', kCoS: 'streams already removed from reports', kGo: 'Streams removed', kTk: 'Accounts with many small lifts', kTkS: 'spreading streams thin to dodge thresholds', kMo: 'Open', kMoS: '{n} disputed', kMd: 'Average metadata score', kMdS: '{n} recordings missing key identifiers',
-      tabTk: 'By account', tabCb: 'Alerts', tabMd: 'Metadata health',
-      cTk: 'Account', cMau: 'Pattern', cAlerts: 'Alerts', cNt: 'Critical', cCo: 'Flagged', cGo: 'Streams removed', cMo: 'Open',
-      mucAll: 'Any level', mucCritical: 'Critical', mucWarn: 'Warning', mucWatch: 'Watch', ttAll: 'Any status', ttOpen: 'Open', ttDisputed: 'Disputed', ttConfirmed: 'Confirmed', ttResolved: 'Cleared',
-      tim: 'Search track, ISRC, account…', dangLoc: 'Showing account', boLoc: 'Clear',
-      xacNhan: 'Confirm fraud', go: 'Clear alert', hoiXn: 'Confirm fraud on “{t}”?', hoiXnMo: 'The track’s streams are held in the open period; the partner sees this status in their portal.', hoiGo: 'Clear the alert on “{t}”', hoiGoMo: 'Note the reason (legitimate campaign, editorial playlist, event) so it is not asked again.', ghiChu: 'Note', daXn: 'Fraud confirmed', daGo: 'Alert cleared',
-      khong: 'No alerts match the filters', khongMo: 'Change the filters above.', khongTk: 'No accounts with alerts',
-      mdThieu: 'Most common gaps', mdThieuMo: 'Recordings missing each item across the catalogue (scaled from the sample).', mdBang: 'Recordings held or below grade A', mdBangMo: 'Click a recording to see each item and how to fix it.'
-    }
-  },
-
-  ve: function (root, c) {
-    var A = c.A, t = c.t, P = HB.dayMau();
-    var q = HM.nho(A, 'chat-luong:q', function () { return A.quality(); });
-    var md = HM.nho(A, 'chat-luong:md', function () { return A.metadataReport(); });
-    var k = q.counts, lifts = q.cases.filter(function (x) { return x.pattern === 'many-small-lifts'; }).length;
-    var html = HM.dau({ h1: HM.esc(t('h1')), mo: HM.esc(t('mo')) });
-    html += HM.so([
-      { l: t('kCb'), v: HT.fmt.n(k.alerts), lon: true, s: t('kCbS').replace('{a}', k.critical).replace('{b}', k.warn).replace('{c}', k.watch).replace('{n}', HT.fmt.n(k.tracksChecked)) },
-      { l: t('kCo'), v: HT.fmt.n(k.flagged), s: t('kCoS'), mau: k.flagged ? HB.mau('no') : '' },
-      { l: t('kGo'), v: HT.fmt.n(k.removedStreams) },
-      { l: t('kTk'), v: HT.fmt.n(lifts), s: t('kTkS'), mau: lifts ? HB.mau('warn') : '' },
-      { l: t('kMo'), v: HT.fmt.n(k.open), s: t('kMoS').replace('{n}', k.disputed) },
-      { l: t('kMd'), v: String(md.counts.avg), s: t('kMdS').replace('{n}', HT.fmt.n(md.counts.blocking)), mau: md.counts.avg >= 90 ? HB.mau('ok') : HB.mau('warn') }
-    ]);
-    html += HM.tabs([{ k: 'tk', l: t('tabTk'), dem: q.cases.length }, { k: 'cb', l: t('tabCb'), dem: k.alerts }, { k: 'md', l: t('tabMd'), dem: md.counts.blocking || undefined }], LOC.tab);
-
-    if (LOC.tab === 'tk') {
-      html += HM.the({ thoBody: true,
-        than: !q.cases.length ? HM.trong({ icon: 'check', tieuDe: t('khongTk'), moTa: '' }) :
-          '<div class="tw"><table class="t"><thead><tr><th>' + HM.esc(t('cTk')) + '</th><th>' + HM.esc(t('cMau')) + '</th><th class="num">' + HM.esc(t('cAlerts')) + '</th><th class="num">' + HM.esc(t('cNt')) + '</th><th class="num">' + HM.esc(t('cCo')) + '</th><th class="num band">' + HM.esc(t('cGo')) + '</th><th class="num">' + HM.esc(t('cMo')) + '</th></tr></thead><tbody>' +
-          q.cases.map(function (x) {
-            return '<tr class="pick" data-pk="' + HM.esc(x.partyKey) + '"><td>' + HM.tenBia({ ten: x.name, seed: x.clientId, phu: x.clientId + ' · ' + x.partyKey }) + '</td>' +
-              '<td>' + HM.tag(c.song(x, 'patternLabel'), x.pattern === 'many-small-lifts' ? 'warn' : x.pattern === 'dsp-flag' ? 'no' : x.pattern === 'critical' ? 'no' : '') + '</td>' +
-              '<td class="num"><b>' + HT.fmt.n(x.alerts) + '</b></td><td class="num">' + (x.critical ? '<span class="neg">' + x.critical + '</span>' : '<span class="nil">—</span>') + '</td>' +
-              '<td class="num">' + (x.flagged ? '<span class="neg">' + x.flagged + '</span>' : '<span class="nil">—</span>') + '</td>' +
-              '<td class="num band">' + (x.removedStreams ? '<b>' + HM.esc(HT.fmt.n(x.removedStreams)) + '</b>' : '<span class="nil">—</span>') + '</td>' +
-              '<td class="num">' + HT.fmt.n(x.open) + '</td></tr>';
-          }).join('') + '</tbody></table></div>',
-        chan: HM.esc(c.song(q, 'note')) });
-    } else if (LOC.tab === 'cb') {
-      var qq = LOC.tim.trim().toLowerCase();
-      var rows = q.rows.filter(function (r) {
-        if (LOC.pk && r.partyKey !== LOC.pk) return false;
-        if (LOC.muc !== 'all' && r.severity !== LOC.muc) return false;
-        if (LOC.tt !== 'all' && r.status !== LOC.tt) return false;
-        if (qq && (r.title + ' ' + r.isrc + ' ' + r.artist + ' ' + A.partyName(r.partyKey)).toLowerCase().indexOf(qq) < 0) return false;
-        return true;
-      });
-      var pt = HTM.phanTrang(rows, LOC);
-      html += '<div class="bar">' +
-        (LOC.pk ? '<span class="chip on">' + HM.esc(t('dangLoc') + ': ' + A.partyName(LOC.pk)) + ' <button type="button" data-bo-pk title="' + HM.esc(t('boLoc')) + '">' + HM.icon('x') + '</button></span>' : '') +
-        [['all', t('mucAll')], ['critical', t('mucCritical')], ['warn', t('mucWarn')], ['watch', t('mucWatch')]].map(function (x) { return '<button type="button" class="pill' + (LOC.muc === x[0] ? ' on' : '') + '" data-muc="' + x[0] + '">' + HM.esc(x[1]) + '</button>'; }).join('') +
-        '<span class="muted">·</span>' +
-        [['all', t('ttAll')], ['open', t('ttOpen')], ['disputed', t('ttDisputed')], ['confirmed', t('ttConfirmed')], ['resolved', t('ttResolved')]].map(function (x) { return '<button type="button" class="pill' + (LOC.tt === x[0] ? ' on' : '') + '" data-tt="' + x[0] + '">' + HM.esc(x[1]) + '</button>'; }).join('') +
-        '<div class="sp"></div><div class="srch">' + HM.icon('tim') + '<input type="search" data-tim placeholder="' + HM.esc(t('tim')) + '" value="' + HM.esc(LOC.tim) + '"></div></div>';
-      html += HM.the({ thoBody: true,
-        than: !rows.length ? HM.trong({ icon: 'empty', tieuDe: t('khong'), moTa: t('khongMo') })
-          : HTM.bangCanhBao(pt.page, { noiBo: true, tenTk: function (pk) { return A.partyName(pk); },
-              nut: function (r) { return r.status === 'open' || r.status === 'disputed' ? '<div class="btnrow" style="flex-wrap:nowrap"><button type="button" class="btn sm dang" data-xn="' + r.trackId + '">' + HM.esc(t('xacNhan')) + '</button><button type="button" class="btn sm" data-go="' + r.trackId + '">' + HM.esc(t('go')) + '</button></div>' : '<span class="nil">—</span>'; } }) + pt.chan,
-        chan: HM.esc(c.song(q, 'note')) });
-    } else {
-      var thieu = md.byCheck.filter(function (x) { return x.missing > 0; });
-      var pm = HTM.phanTrang(md.rows, LOC);
-      html += '<div class="grid g3">' +
-        HM.the({ h2: HM.esc(t('mdThieu')), p: HM.esc(t('mdThieuMo')),
-          than: HB.o({ loai: 'thanh', dinhDang: 'so', hang: thieu.map(function (x) { return { ten: c.song(x, 'label'), gt: x.missing, mau: ['iswc', 'ipi', 'splits'].indexOf(x.k) >= 0 ? HB.mau('no') : P[0] }; }) }) }) +
-        HM.the({ h2: HM.esc(t('mdBang')), p: HM.esc(t('mdBangMo')), thoBody: true, than: HTM.bangMeta(pm.page, { noiBo: true, tenTk: function (pk) { return A.partyName(pk); } }) + pm.chan, chan: HM.esc(c.song(md, 'note')) }) +
-        '</div>';
-    }
-    root.innerHTML = html;
-    HB.gan(root);
-    HTM.ganTrang(root, LOC, c.veLai);
-    HM.bam(root, '[data-tab]', function (el) { LOC.tab = el.getAttribute('data-tab'); LOC.trang = 0; c.veLai(); });
-    HM.bam(root, '[data-muc]', function (el) { LOC.muc = el.getAttribute('data-muc'); LOC.trang = 0; c.veLai(); });
-    HM.bam(root, '[data-tt]', function (el) { LOC.tt = el.getAttribute('data-tt'); LOC.trang = 0; c.veLai(); });
-    HM.bam(root, '[data-bo-pk]', function () { LOC.pk = null; LOC.trang = 0; c.veLai(); });
-    HM.bam(root, 'tr[data-pk]', function (el) { LOC.pk = el.getAttribute('data-pk'); LOC.tab = 'cb'; LOC.tt = 'all'; LOC.trang = 0; c.veLai(); });
-    HM.nhap(root, '[data-tim]', function (el) { LOC.tim = el.value; c.veLai(); var i = root.querySelector('[data-tim]'); if (i) { i.focus(); i.setSelectionRange(i.value.length, i.value.length); } });
-    function hanhDong(id, status, tieuDe, moTa, xong) {
-      var r = q.rows.filter(function (x) { return x.trackId === id; })[0];
-      c.hoiThoai({ tieuDe: tieuDe.replace('{t}', r ? r.title : id), moTa: HM.esc(moTa),
-        than: (r ? HTM.tinHieu(r) : '') + '<label class="fld" style="margin-top:12px">' + HM.esc(t('ghiChu')) + '</label><textarea class="in" rows="3" data-o="note"></textarea>', dong: status === 'confirmed' ? t('xacNhan') : t('go') })
-      .then(function (f) {
-        if (!f) return;
-        try { A.setAlertStatus(id, status, f.note, A.staff.me.name); c.thongBao(xong, 'ok'); c.veLai(); }
-        catch (err) { c.thongBao(err.message, 'no'); }
-      });
-    }
-    HM.bam(root, '[data-xn]', function (el, e) { e.stopPropagation(); hanhDong(+el.getAttribute('data-xn'), 'confirmed', t('hoiXn'), t('hoiXnMo'), t('daXn')); });
-    HM.bam(root, '[data-go]', function (el, e) { e.stopPropagation(); hanhDong(+el.getAttribute('data-go'), 'resolved', t('hoiGo'), t('hoiGoMo'), t('daGo')); });
-    HM.bam(root, 'tr[data-cl], tr[data-md]', function (el, e) {
-      if (e.target.closest('button')) return;
-      var id = +(el.getAttribute('data-cl') || el.getAttribute('data-md')), a;
-      try { a = A.asset(id); } catch (err) { return; }
-      HTS.moNgan(c, a, { noiBo: true, tien: c.tien2, tien0: c.tien, playlists: A.playlistsOf(id), tabDau: 'cl' });
-    });
-  }
-});
-
-})();
-
-},
 /* ---- man/chia-se.js ---- */
 function(){
 /* =====================================================================
@@ -11943,7 +11966,8 @@ HT.dangKy({
       lMoiGioi: 'Phí môi giới', hMoiGioi: 'Phần trăm trên hoa hồng Haustek cả kỳ hạn.',
       lSoBan: 'Số bản phát hành', lGio: 'Giờ mỗi bản', lDonGia: 'Đơn giá giờ', gio: 'giờ',
       lNguongRoi: 'Ngưỡng ROI đạt', lNguongThuHoi: 'Ngưỡng tháng thu hồi',
-      mocTt: 'Ba mốc thưởng', mocP: 'Nghệ sĩ đạt mốc doanh thu tháng thì ứng thêm. Kỳ hạn còn lại trừ đi số tháng đã trôi.',
+      mocTt: 'Ba mốc thưởng', mocP: 'Mốc chỉ mở khi khoản ứng ngay trước đã hoà vốn: gốc hoà vốn xong mới tới mốc 1, mốc 1 hoà vốn xong mới tới mốc 2. Haustek không ôm hai khoản chưa thu hồi cùng lúc.',
+      lTrongMo: 'Hạn chót, không phải lịch trả: hoà vốn muộn hơn số này thì mốc không mở.', cMo: 'Mở khoá', moRoi: 'mở', khoaRoi: 'khoá', khoaVi: 'Vì sao khoá', hoaVonO: 'mở ở tháng {n}',
       moc: 'Mốc {i}', lReach: 'Doanh thu tháng đạt mốc', lHeSo: 'Hệ số ứng', hHeSo: 'Khoản ứng = doanh thu tại mốc × hệ số.', lTrong: 'Trong vòng', batMoc: 'Tính thêm ba mốc thưởng',
       kq: 'Kết quả', roiKy: 'ROI cả kỳ hạn', roiKyS: 'hoa hồng cả kỳ hạn ÷ khoản ứng · ô J5',
       roiNam: 'ROI mỗi năm', roiNamS: 'ô K5', thuHoi: 'Thu hồi xong sau', thuHoiS: 'ô I3 · bảng gốc để dấu âm',
@@ -11981,7 +12005,8 @@ HT.dangKy({
       lMoiGioi: 'Finder’s fee', hMoiGioi: 'Percentage of Haustek’s commission over the term.',
       lSoBan: 'Releases', lGio: 'Hours per release', lDonGia: 'Cost per hour', gio: 'hours',
       lNguongRoi: 'ROI target', lNguongThuHoi: 'Recoupment target',
-      mocTt: 'Three triggers', mocP: 'Reaching a monthly-income milestone unlocks another advance. The remaining term drops by the months elapsed.',
+      mocTt: 'Three triggers', mocP: 'A trigger only unlocks once the advance before it has broken even: the base first, then trigger 1, then trigger 2. Haustek never carries two unrecouped advances at once.',
+      lTrongMo: 'A deadline, not a payment date: break even later than this and the trigger never unlocks.', cMo: 'Unlocked', moRoi: 'open', khoaRoi: 'locked', khoaVi: 'Why locked', hoaVonO: 'opens in month {n}',
       moc: 'Trigger {i}', lReach: 'Monthly income at the milestone', lHeSo: 'Advance multiple', hHeSo: 'Advance = income at the milestone × multiple.', lTrong: 'Within', batMoc: 'Include the three triggers',
       kq: 'Result', roiKy: 'ROI over the term', roiKyS: 'commission over the term ÷ advance · cell J5',
       roiNam: 'ROI per year', roiNamS: 'cell K5', thuHoi: 'Recouped after', thuHoiS: 'cell I3 · negative in the original',
@@ -12046,7 +12071,7 @@ HT.dangKy({
               return '<div class="roi-moc"><div class="roi-moc-t">' + HM.esc(t('moc').replace('{i}', i)) + '</div><div class="fldrow two-up">' +
                 o('t' + i + 'r', t('lReach'), { hau: '$', step: '100' }) +
                 o('t' + i + 'x', t('lHeSo'), { hau: '×', step: '0.5', hint: i === 1 ? t('hHeSo') : '' }) +
-                o('t' + i + 'm', t('lTrong'), { hau: t('thang'), step: '1' }) +
+                o('t' + i + 'm', t('lTrong'), { hau: t('thang'), step: '1', hint: i === 1 ? t('lTrongMo') : '' }) +
               '</div></div>';
             }).join('') : '') }) +
       '</div>' +
@@ -12106,21 +12131,28 @@ HT.dangKy({
         h += HM.the({ h2: HM.esc(t('bang')), p: HM.esc(t('bangP')),
           than: '<div class="tw"><table class="t"><thead><tr><th>' + HM.esc(t('cKb')) + '</th><th class="num">' + HM.esc(t('cDt')) + '</th><th class="num">' + HM.esc(t('cUng')) +
             '</th><th class="num">' + HM.esc(t('cKyHan')) + '</th><th class="num">' + HM.esc(t('cThuHoi')) + '</th><th class="num band">' + HM.esc(t('cRoi')) +
-            '</th><th class="num">' + HM.esc(t('cRoiNam')) + '</th><th>' + HM.esc(t('cKl')) + '</th></tr></thead><tbody>' +
+            '</th><th class="num">' + HM.esc(t('cRoiNam')) + '</th><th>' + HM.esc(t('cMo')) + '</th><th>' + HM.esc(t('cKl')) + '</th></tr></thead><tbody>' +
             kb.rows.map(function (r) {
               var x = r.calc, kl = x.recommendation;
-              return '<tr><td>' + HM.esc(c.lang === 'en' ? r.en : r.vi) + '</td>' +
+              var khoa = r.moKhoa === false;
+              return '<tr' + (khoa ? ' class="mo"' : '') + '><td>' + HM.esc(c.lang === 'en' ? r.en : r.vi) +
+                (r.hoaVonTruoc != null && r.moKhoa ? '<div class="t-sub">' + HM.esc(t('hoaVonO').replace('{n}', r.troi)) + '</div>' : '') +
+                (khoa && r.lyDoKhoa ? '<div class="t-sub">' + HM.esc(c.lang === 'en' ? r.lyDoKhoa.en : r.lyDoKhoa.vi) + '</div>' : '') + '</td>' +
                 '<td class="num mono">' + HM.esc(c.tien(x.monthlyIncome)) + '</td>' +
                 '<td class="num mono">' + HM.esc(c.tien(x.advance)) + '</td>' +
                 '<td class="num mono">' + x.termMonths + '</td>' +
                 '<td class="num mono">' + (x.recoupWhole == null ? '—' : x.recoupWhole) + '</td>' +
                 '<td class="num band mono"><b>' + (x.roiAfterCosts == null ? '—' : x.roiAfterCosts.toFixed(2) + '×') + '</b></td>' +
                 '<td class="num mono">' + (x.roiAfterCostsYearly == null ? '—' : HM.esc(HT.fmt.pct(x.roiAfterCostsYearly))) + '</td>' +
-                '<td>' + HM.tag(kl === 'approve' ? t('klDat') : kl === 'review' ? t('klCanXem') : kl === 'incomplete' ? t('klThieu') : t('klKhong'),
-                  kl === 'approve' ? 'ok' : kl === 'review' ? 'warn' : 'no') + '</td></tr>';
+                '<td>' + (r.id === 'catalog' ? '<span class="nil">—</span>'
+                  : HM.tag(khoa ? t('khoaRoi') : t('moRoi'), khoa ? 'no' : 'ok')) + '</td>' +
+                '<td>' + (khoa ? '<span class="nil">—</span>'
+                  : HM.tag(kl === 'approve' ? t('klDat') : kl === 'review' ? t('klCanXem') : kl === 'incomplete' ? t('klThieu') : t('klKhong'),
+                    kl === 'approve' ? 'ok' : kl === 'review' ? 'warn' : 'no')) + '</td></tr>';
             }).join('') +
             '<tr class="sum"><td><b>' + HM.esc(t('tong')) + '</b></td><td></td><td class="num mono"><b>' + HM.esc(c.tien(kb.tong.advance)) +
-            '</b></td><td></td><td></td><td class="num band mono"><b>' + (kb.tong.roi == null ? '—' : kb.tong.roi.toFixed(2) + '×') + '</b></td><td></td><td></td></tr>' +
+            '</b></td><td></td><td></td><td class="num band mono"><b>' + (kb.tong.roi == null ? '—' : kb.tong.roi.toFixed(2) + '×') + '</b></td><td></td>' +
+            '<td>' + HM.esc(kb.moKhoa + ' ' + t('moRoi') + (kb.khoaLai ? ' · ' + kb.khoaLai + ' ' + t('khoaRoi') : '')) + '</td><td></td></tr>' +
             '</tbody></table></div>' });
       }
 
@@ -12192,12 +12224,14 @@ function(){
 (function () {
 
 HT.dangKy({
-  id: 'muc-tra', nav: 'navMucTra', nhom: 'nhomTien', icon: 'chart',
+  id: 'muc-tra', nav: 'navMucTra', nhom: 'nhomTien', icon: 'cash',
 
   chu: {
     vi: {
       navMucTra: 'Mức trả nền tảng', h1: 'Mức trả nền tảng',
-      mo: 'USD gộp trên 1.000 lượt của từng nền tảng, dùng cho dự báo. Mặc định suy từ 3 kỳ gần nhất; nhập số thật để ghi đè.',
+      mo: 'Hai mức cho mỗi nền tảng: nền tảng trả về Haustek, và Haustek trả đối tác. Chênh lệch là biên. Trang này chỉ Level 1–2 mở được.',
+      mat: 'Tuyệt mật', matMo: 'Biên của Haustek trên từng nền tảng nằm ở đây. Đối tác không bao giờ thấy hai cột bên phải, kể cả qua gói dữ liệu của cổng.',
+      cKhach: 'Trả đối tác', cBien: 'Biên Haustek', lKhach: 'Mức trả đối tác (USD / 1.000)', kBien: 'Biên trung bình', kBienS: 'trên {n} nền tảng đã đặt hai mức',
       kTron: 'Mức trả trộn', kTronS: 'USD / 1.000 lượt, theo cơ cấu lượt nghe 3 kỳ', kGhiDe: 'Nền tảng đã nhập số thật', kGhiDeS: 'trong {n} nền tảng', kDuBao: 'Dự báo doanh thu kỳ mở', kDuBaoS: 'đổi theo mức trả ngay', kVn: 'Tham chiếu thị trường VN', kVnS: 'Spotify, USD / 1.000',
       cNt: 'Nền tảng', cSuy: 'Suy từ báo cáo', cVn: 'Tham chiếu VN', cDung: 'Đang dùng', cNguon: 'Nguồn', cNhap: 'Nhập số thật', cThaoTac: 'Thao tác',
       nguonSuy: 'báo cáo 3 kỳ', nguonNhap: 'nhập tay', luu: 'Lưu', bo: 'Bỏ ghi đè', daLuu: 'Đã lưu {n}: {v} USD / 1.000', daBo: 'Đã bỏ ghi đè {n}',
@@ -12208,7 +12242,9 @@ HT.dangKy({
     },
     en: {
       navMucTra: 'Platform payout rates', h1: 'Platform payout rates',
-      mo: 'Gross USD per 1,000 streams per platform, used by forecasts. Derived from the last three reports; enter real figures to override.',
+      mo: 'Two rates per platform: what the platform pays Haustek, and what Haustek pays the partner. The gap is the margin. Level 1–2 only.',
+      mat: 'Strictly confidential', matMo: 'Haustek’s per-platform margin lives here. Partners never see the two right-hand columns, not even through the portal’s data payloads.',
+      cKhach: 'Paid to partner', cBien: 'Haustek margin', lKhach: 'Partner rate (USD / 1,000)', kBien: 'Average margin', kBienS: 'across {n} platforms with both rates set',
       kTron: 'Blended rate', kTronS: 'USD / 1,000 streams, weighted by 3-period stream mix', kGhiDe: 'Platforms with real figures', kGhiDeS: 'of {n} platforms', kDuBao: 'Open-period revenue forecast', kDuBaoS: 'moves with the rates', kVn: 'Vietnam market reference', kVnS: 'Spotify, USD / 1,000',
       cNt: 'Platform', cSuy: 'Derived from reports', cVn: 'VN reference', cDung: 'In use', cNguon: 'Source', cNhap: 'Enter real figure', cThaoTac: 'Actions',
       nguonSuy: '3-period reports', nguonNhap: 'entered', luu: 'Save', bo: 'Clear override', daLuu: 'Saved {n}: {v} USD / 1,000', daBo: 'Cleared override for {n}',
@@ -12226,20 +12262,26 @@ HT.dangKy({
     var tron = f && f.byPlatform.length ? f.byPlatform.reduce(function (s, x) { return s + x.per1k * x.share; }, 0)
       : (rows.length ? rows.reduce(function (s, r) { return s + r.per1k; }, 0) / rows.length : 0);
     var html = HM.dau({ h1: HM.esc(t('h1')), mo: HM.esc(t('mo')) });
+    var coHai = rows.filter(function (r) { return r.source === 'override' && r.bien > 0; });
+    var bienTb = coHai.length ? coHai.reduce(function (a, r) { return a + r.bienPct; }, 0) / coHai.length : 0;
+    html += HM.ghi({ kieu: 'warn', icon: 'alert', tieuDe: HM.esc(t('mat')), than: HM.esc(t('matMo')) });
     html += HM.so([
       { l: t('kTron'), v: HT.fmt.usd(tron), lon: true, s: t('kTronS') },
+      { l: t('kBien'), v: bienTb ? HT.fmt.pct(bienTb) : '—', s: t('kBienS').replace('{n}', coHai.length), mau: bienTb ? HB.mau('ok') : '' },
       { l: t('kGhiDe'), v: HT.fmt.n(ov), s: t('kGhiDeS').replace('{n}', rows.length), mau: ov ? HB.mau('ok') : '' },
       f ? { l: t('kDuBao').replace('{k}', f.openPeriod), v: c.tien(f.projected.revenue), s: t('kDuBaoS') } : null,
       { l: t('kVn'), v: HT.fmt.usd(A.vnRef[0]), s: t('kVnS') }
     ].filter(Boolean));
     html += HM.the({ thoBody: true,
-      than: '<div class="tw"><table class="t"><thead><tr><th>' + HM.esc(t('cNt')) + '</th><th class="num">' + HM.esc(t('cSuy')) + '</th><th class="num">' + HM.esc(t('cVn')) + '</th><th class="num band">' + HM.esc(t('cDung')) + '</th><th>' + HM.esc(t('cNguon')) + '</th><th>' + HM.esc(t('cNhap')) + '</th><th>' + HM.esc(t('cThaoTac')) + '</th></tr></thead><tbody>' +
+      than: '<div class="tw"><table class="t"><thead><tr><th>' + HM.esc(t('cNt')) + '</th><th class="num">' + HM.esc(t('cSuy')) + '</th><th class="num">' + HM.esc(t('cVn')) + '</th><th class="num">' + HM.esc(t('cDung')) + '</th><th class="num band">' + HM.esc(t('cKhach')) + '</th><th class="num">' + HM.esc(t('cBien')) + '</th><th>' + HM.esc(t('cNguon')) + '</th><th>' + HM.esc(t('cNhap')) + '</th><th>' + HM.esc(t('cThaoTac')) + '</th></tr></thead><tbody>' +
         rows.map(function (r) {
           return '<tr><td>' + HM.tenBia({ ten: c.song(r, 'name'), seed: r.name, phu: r.source === 'override' && r.at ? HT.fmt.ngay(String(r.at).slice(0, 10)) + (r.note ? ' · ' + r.note : '') : '' }) + '</td>' +
             '<td class="num mono">' + HM.esc(HT.fmt.usd(r.derived)) + '</td><td class="num mono muted">' + (r.refVn != null ? HM.esc(HT.fmt.usd(r.refVn)) : '—') + '</td>' +
-            '<td class="num band"><b>' + HM.esc(HT.fmt.usd(r.per1k)) + '</b></td>' +
+            '<td class="num mono"><b>' + HM.esc(HT.fmt.usd(r.per1k)) + '</b></td>' +
+            '<td class="num band mono"><b>' + HM.esc(HT.fmt.usd(r.khach)) + '</b></td>' +
+            '<td class="num mono">' + (r.bien > 0 ? '<span class="pos">' + HM.esc(HT.fmt.usd(r.bien)) + ' · ' + HM.esc(HT.fmt.pct(r.bienPct)) + '</span>' : '<span class="nil">—</span>') + '</td>' +
             '<td>' + HM.tag(r.source === 'override' ? t('nguonNhap') : t('nguonSuy'), r.source === 'override' ? 'ok' : '') + '</td>' +
-            '<td><div class="bar" style="margin:0;gap:6px;flex-wrap:nowrap"><input class="in mono" type="number" step="0.01" min="0.01" max="99" style="width:96px" data-gia="' + HM.esc(r.name) + '" value="' + (r.source === 'override' ? r.per1k : '') + '" placeholder="' + HM.esc(HT.fmt.usd(r.refVn != null ? r.refVn : r.derived).replace('$', '')) + '"><input class="in" style="width:150px" data-ghi="' + HM.esc(r.name) + '" placeholder="' + HM.esc(t('ghiChu')) + '" value="' + HM.esc(r.source === 'override' ? (r.note || '') : '') + '"></div></td>' +
+            '<td><div class="bar" style="margin:0;gap:6px;flex-wrap:nowrap"><input class="in mono" type="number" step="0.0001" min="0.0001" max="99" style="width:86px" data-gia="' + HM.esc(r.name) + '" value="' + (r.source === 'override' ? r.per1k : '') + '" placeholder="' + HM.esc(HT.fmt.usd(r.refVn != null ? r.refVn : r.derived).replace('$', '')) + '" title="' + HM.esc(t('cDung')) + '"><input class="in mono" type="number" step="0.0001" min="0.0001" max="99" style="width:86px" data-khach="' + HM.esc(r.name) + '" value="' + (r.source === 'override' ? r.khach : '') + '" placeholder="' + HM.esc(t('cKhach')) + '" title="' + HM.esc(t('lKhach')) + '"><input class="in" style="width:118px" data-ghi="' + HM.esc(r.name) + '" placeholder="' + HM.esc(t('ghiChu')) + '" value="' + HM.esc(r.source === 'override' ? (r.note || '') : '') + '"></div></td>' +
             '<td><div class="btnrow" style="flex-wrap:nowrap"><button type="button" class="btn sm pri" data-luu="' + HM.esc(r.name) + '">' + HM.esc(t('luu')) + '</button>' + (r.source === 'override' ? '<button type="button" class="btn sm ghost" data-bo="' + HM.esc(r.name) + '">' + HM.esc(t('bo')) + '</button>' : '') + '</div></td></tr>';
         }).join('') + '</tbody></table></div>',
       chan: HM.esc(t('note')) });
@@ -12252,8 +12294,11 @@ HT.dangKy({
     root.innerHTML = html;
     HB.gan(root);
     HM.bam(root, '[data-luu]', function (el) {
-      var n = el.getAttribute('data-luu'), v = root.querySelector('[data-gia="' + n.replace(/"/g, '\\"') + '"]').value, ghi = root.querySelector('[data-ghi="' + n.replace(/"/g, '\\"') + '"]').value;
-      try { A.setPlatformRate(n, parseFloat(String(v).replace(',', '.')), ghi, A.staff.me.name); c.thongBao(t('daLuu').replace('{n}', n).replace('{v}', v), 'ok'); c.veLai(); }
+      var n = el.getAttribute('data-luu');
+      var q = function (k) { return root.querySelector('[data-' + k + '="' + n.replace(/"/g, '\\"') + '"]'); };
+      var v = q('gia').value, kh = q('khach').value, ghi = q('ghi').value;
+      var so = function (x) { return x === '' ? null : parseFloat(String(x).replace(',', '.')); };
+      try { A.setPlatformRate(n, so(v), ghi, A.staff.me.name, so(kh)); c.thongBao(t('daLuu').replace('{n}', n).replace('{v}', v), 'ok'); c.veLai(); }
       catch (e) { c.thongBao(e.message, 'no'); }
     });
     HM.bam(root, '[data-bo]', function (el) { var n = el.getAttribute('data-bo'); A.clearPlatformRate(n, A.staff.me.name); c.thongBao(t('daBo').replace('{n}', n), 'ok'); c.veLai(); });
@@ -13874,591 +13919,6 @@ function taoHoSoHo(c, partyKey) {
   });
 }
 HT.taoHoSoHo = taoHoSoHo;
-
-})();
-
-},
-/* ---- man/giao-nhan.js ---- */
-function(){
-/* =====================================================================
-   NỘI BỘ · GIAO NHẬN NỀN TẢNG
-   ---------------------------------------------------------------------
-   Gửi mới hoặc gửi lại (redeliver) danh mục tới từng nền tảng. Một yêu
-   cầu có tên, đối tượng giao (theo label, danh sách UPC, file UPC, hay
-   chọn bản phát hành) và danh sách nền tảng. Bên phải là các yêu cầu đã
-   tạo, để tra lại tiến độ và đổi trạng thái.
-   ===================================================================== */
-"use strict";
-(function () {
-
-var LOC = { ten: '', loai: 'producer', giaTri: '', dem: '', nt: null, tim: '', tt: '' };
-var TT = ['queued', 'sending', 'done', 'failed', 'cancelled'];
-var KIEU_TT = { queued: 'info', sending: 'warn', done: 'ok', failed: 'no', cancelled: '' };
-
-HT.dangKy({
-  id: 'giao-nhan', nav: 'navGiaoNhan', nhom: 'nhomVanHanh', icon: 'swap',
-  dem: function (c) { try { var n = c.A.deliveries.list().filter(function (x) { return x.status === 'queued' || x.status === 'sending'; }).length; return n ? String(n) : ''; } catch (e) { return ''; } },
-
-  chu: {
-    vi: {
-      navGiaoNhan: 'Giao nhận nền tảng', h1: 'Giao nhận nền tảng',
-      mo: 'Gửi mới hoặc gửi lại danh mục tới nền tảng: chọn đối tượng, chọn nền tảng, đặt tên yêu cầu.',
-      kCho: 'Đang chờ gửi', kGui: 'Đang gửi', kXong: 'Đã xong', kLoi: 'Lỗi', kBanGhi: 'bản ghi × nền tảng đang chờ',
-      taoMoi: 'Yêu cầu giao nhận mới', taoMoiMo: 'Mỗi yêu cầu gửi một tập bản ghi tới một hoặc nhiều nền tảng; nền tảng xác nhận thì trạng thái ở Danh mục tự cập nhật.',
-      hTen: 'Tên yêu cầu', hTenMo: 'Ví dụ: Giao lại catalog Nightform sang Apple Music', hDoiTuong: 'Giao theo',
-      producer: 'Theo label / nhà sản xuất', 'upc-list': 'Theo danh sách UPC', 'upc-file': 'Theo file UPC', albums: 'Chọn bản phát hành',
-      hProducer: 'Mã đối tác (label hoặc nghệ sĩ)', hProducerMo: 'Toàn bộ bản ghi của đối tác này sẽ được giao.',
-      hUpcList: 'Danh sách UPC', hUpcListMo: 'Mỗi dòng một UPC, hoặc cách nhau bằng dấu phẩy.',
-      hUpcFile: 'Tên file UPC (.csv)', hUpcFileMo: 'Bản mẫu chỉ ghi tên file; hệ thống thật đọc file để đếm UPC.', hSoDong: 'Số UPC trong file',
-      hAlbums: 'Mã bản phát hành (HSTK-…)', hAlbumsMo: 'Mỗi dòng một mã hồ sơ phát hành.',
-      hNenTang: 'Nền tảng', chonHet: 'Chọn tất cả', boHet: 'Bỏ chọn', daChon: '{n} nền tảng đã chọn',
-      gui: 'Tạo yêu cầu giao nhận', daTao: 'Đã tạo yêu cầu {id}',
-      daCo: 'Yêu cầu đã tạo', daCoMo: 'Tra lại tiến độ, đổi trạng thái hoặc mở chi tiết.', tim: 'Tìm mã hoặc tên yêu cầu…', moiTt: 'Mọi trạng thái',
-      cMa: 'Mã', cTen: 'Yêu cầu', cDoiTuong: 'Đối tượng', cNt: 'Nền tảng', cTienDo: 'Tiến độ', cTt: 'Trạng thái', cNguoi: 'Người tạo', cLuc: 'Tạo lúc',
-      queued: 'Chờ gửi', sending: 'Đang gửi', done: 'Đã xong', failed: 'Lỗi', cancelled: 'Đã huỷ',
-      batDau: 'Bắt đầu gửi', danhDauXong: 'Đánh dấu đã xong', danhDauLoi: 'Đánh dấu lỗi', huy: 'Huỷ yêu cầu', guiLai: 'Gửi lại',
-      daDoi: 'Đã cập nhật trạng thái', khong: 'Chưa có yêu cầu nào', khongMo: 'Tạo yêu cầu đầu tiên ở thẻ bên trái.',
-      dGiaTri: 'Giá trị', dSo: 'Số bản ghi', dTong: 'Tổng lượt gửi (bản ghi × nền tảng)', dDaGui: 'Đã gửi', dCapNhat: 'Cập nhật lần cuối',
-      huyHoi: 'Huỷ yêu cầu {id}?', huyHoiMo: 'Các bản ghi chưa gửi sẽ không được gửi nữa. Bản ghi đã gửi giữ nguyên trên nền tảng.'
-    },
-    en: {
-      navGiaoNhan: 'Platform delivery', h1: 'Platform delivery',
-      mo: 'Deliver or redeliver catalogue to platforms: pick what, pick where, name the request.',
-      kCho: 'Queued', kGui: 'Sending', kXong: 'Done', kLoi: 'Failed', kBanGhi: 'recording × platform pending',
-      taoMoi: 'New delivery request', taoMoiMo: 'Each request sends a set of recordings to one or more platforms; on confirmation the Catalogue status updates itself.',
-      hTen: 'Request name', hTenMo: 'e.g. Redeliver the Nightform catalogue to Apple Music', hDoiTuong: 'Deliver by',
-      producer: 'By label / producer', 'upc-list': 'By UPC list', 'upc-file': 'By UPC file', albums: 'Pick releases',
-      hProducer: 'Client ID (label or artist)', hProducerMo: 'Every recording of this partner will be delivered.',
-      hUpcList: 'UPC list', hUpcListMo: 'One UPC per line, or comma-separated.',
-      hUpcFile: 'UPC file name (.csv)', hUpcFileMo: 'The prototype records the file name; the real system reads it to count UPCs.', hSoDong: 'UPCs in the file',
-      hAlbums: 'Release IDs (HSTK-…)', hAlbumsMo: 'One release submission ID per line.',
-      hNenTang: 'Platforms', chonHet: 'Select all', boHet: 'Clear', daChon: '{n} platforms selected',
-      gui: 'Create delivery request', daTao: 'Request {id} created',
-      daCo: 'Existing requests', daCoMo: 'Check progress, change status or open details.', tim: 'Search ID or name…', moiTt: 'Any status',
-      cMa: 'ID', cTen: 'Request', cDoiTuong: 'Subject', cNt: 'Platforms', cTienDo: 'Progress', cTt: 'Status', cNguoi: 'Created by', cLuc: 'Created',
-      queued: 'Queued', sending: 'Sending', done: 'Done', failed: 'Failed', cancelled: 'Cancelled',
-      batDau: 'Start sending', danhDauXong: 'Mark done', danhDauLoi: 'Mark failed', huy: 'Cancel request', guiLai: 'Resend',
-      daDoi: 'Status updated', khong: 'No requests yet', khongMo: 'Create the first one in the card on the left.',
-      dGiaTri: 'Value', dSo: 'Recordings', dTong: 'Total sends (recordings × platforms)', dDaGui: 'Sent', dCapNhat: 'Last updated',
-      huyHoi: 'Cancel request {id}?', huyHoiMo: 'Unsent recordings will not be sent. Recordings already sent stay on the platform.'
-    }
-  },
-
-  ve: function (root, c) {
-    var A = c.A, t = c.t, vi = c.lang === 'vi', me = A.staff.me;
-    var ds = A.deliveries.list();
-    if (LOC.nt === null) LOC.nt = {};
-    var dem = { queued: 0, sending: 0, done: 0, failed: 0, cancelled: 0 }, choGui = 0;
-    ds.forEach(function (x) { dem[x.status] = (dem[x.status] || 0) + 1; if (x.status === 'queued' || x.status === 'sending') choGui += Math.max(0, x.progress.total - x.progress.sent); });
-
-    var html = HM.dau({
-      h1: HM.esc(t('h1')), mo: HM.esc(t('mo')),
-      so: [
-        { l: t('kCho'), v: HT.fmt.n(dem.queued) },
-        { l: t('kGui'), v: HT.fmt.n(dem.sending), mau: dem.sending ? HB.mau('warn') : '' },
-        { l: t('kXong'), v: HT.fmt.n(dem.done) },
-        { l: t('kLoi'), v: HT.fmt.n(dem.failed), mau: dem.failed ? HB.mau('no') : '' }
-      ]
-    });
-
-    /* ---- biểu mẫu ---- */
-    var soNt = Object.keys(LOC.nt).filter(function (k) { return LOC.nt[k]; }).length;
-    var oGiaTri = '';
-    if (LOC.loai === 'producer') {
-      oGiaTri = '<label class="fld"><span>' + HM.esc(t('hProducer')) + '</span><input class="in" data-gia-tri list="ds-doi-tac" value="' + HM.esc(LOC.giaTri) + '" placeholder="HTK-L001"></label>' +
-        '<datalist id="ds-doi-tac">' + A.parties.list({}).rows.slice(0, 200).map(function (r) { return '<option value="' + HM.esc(r.clientId) + '">' + HM.esc(r.name) + '</option>'; }).join('') + '</datalist>' +
-        '<div class="hint">' + HM.esc(t('hProducerMo')) + '</div>';
-    } else if (LOC.loai === 'upc-list') {
-      oGiaTri = '<label class="fld"><span>' + HM.esc(t('hUpcList')) + '</span><textarea class="in" data-gia-tri rows="5" placeholder="880012345678">' + HM.esc(LOC.giaTri) + '</textarea></label>' +
-        '<div class="hint">' + HM.esc(t('hUpcListMo')) + '</div>';
-    } else if (LOC.loai === 'upc-file') {
-      oGiaTri = '<label class="fld"><span>' + HM.esc(t('hUpcFile')) + '</span><input class="in" data-gia-tri value="' + HM.esc(LOC.giaTri) + '" placeholder="redeliver-0904.csv"></label>' +
-        '<label class="fld"><span>' + HM.esc(t('hSoDong')) + '</span><input class="in" data-dem type="number" min="1" value="' + HM.esc(LOC.dem) + '"></label>' +
-        '<div class="hint">' + HM.esc(t('hUpcFileMo')) + '</div>';
-    } else {
-      oGiaTri = '<label class="fld"><span>' + HM.esc(t('hAlbums')) + '</span><textarea class="in" data-gia-tri rows="4" placeholder="HSTK-2608-001">' + HM.esc(LOC.giaTri) + '</textarea></label>' +
-        '<div class="hint">' + HM.esc(t('hAlbumsMo')) + '</div>';
-    }
-    var theTao = HM.the({
-      h2: HM.esc(t('taoMoi')), p: HM.esc(t('taoMoiMo')),
-      than: '<label class="fld"><span>' + HM.esc(t('hTen')) + '</span><input class="in" data-gn-ten value="' + HM.esc(LOC.ten) + '" placeholder="' + HM.esc(t('hTenMo')) + '"></label>' +
-        '<div class="fld"><span>' + HM.esc(t('hDoiTuong')) + '</span><div class="chips">' + A.deliveries.subjects.map(function (s) {
-          return '<button type="button" class="pill' + (LOC.loai === s.id ? ' on' : '') + '" data-loai="' + s.id + '">' + HM.esc(t(s.id)) + '</button>';
-        }).join('') + '</div></div>' +
-        oGiaTri +
-        '<div class="fld"><span>' + HM.esc(t('hNenTang')) + ' · ' + HM.esc(t('daChon').replace('{n}', soNt)) + '</span>' +
-          '<div class="checks">' + A.platformNames.map(function (n) {
-            return '<label><input type="checkbox" data-nt="' + HM.esc(n) + '"' + (LOC.nt[n] ? ' checked' : '') + '> ' + HM.esc(n) + '</label>';
-          }).join('') + '</div>' +
-          '<div class="btnrow" style="margin-top:8px"><button type="button" class="btn sm" data-chon-het>' + HM.esc(t('chonHet')) + '</button>' +
-          '<button type="button" class="btn sm ghost" data-bo-het>' + HM.esc(t('boHet')) + '</button></div></div>' +
-        '<div class="btnrow" style="margin-top:14px"><button type="button" class="btn pri" data-gui>' + HM.icon('swap') + HM.esc(t('gui')) + '</button></div>'
-    });
-
-    /* ---- danh sách ---- */
-    var q = LOC.tim.trim().toLowerCase();
-    var loc = ds.filter(function (x) {
-      if (LOC.tt && x.status !== LOC.tt) return false;
-      return !q || x.id.toLowerCase().indexOf(q) >= 0 || x.name.toLowerCase().indexOf(q) >= 0;
-    });
-    var theDs = HM.the({
-      h2: HM.esc(t('daCo')) + ' <span class="muted">(' + ds.length + ')</span>', p: HM.esc(t('daCoMo')),
-      thoBody: true,
-      than: '<div class="bar" style="padding:0 18px 12px">' +
-        '<div class="srch">' + HM.icon('tim') + '<input type="search" data-tim placeholder="' + HM.esc(t('tim')) + '" value="' + HM.esc(LOC.tim) + '"></div>' +
-        '<select class="in" data-tt style="width:auto;height:34px"><option value="">' + HM.esc(t('moiTt')) + '</option>' +
-          TT.map(function (k) { return '<option value="' + k + '"' + (LOC.tt === k ? ' selected' : '') + '>' + HM.esc(t(k)) + '</option>'; }).join('') + '</select></div>' +
-        (loc.length ? '<div class="tw"><table class="t"><thead><tr><th>' + HM.esc(t('cTen')) + '</th><th>' + HM.esc(t('cDoiTuong')) + '</th><th>' + HM.esc(t('cNt')) + '</th>' +
-          '<th style="width:140px">' + HM.esc(t('cTienDo')) + '</th><th>' + HM.esc(t('cTt')) + '</th></tr></thead><tbody>' +
-          loc.map(function (x) {
-            var pct = x.progress.total ? x.progress.sent / x.progress.total * 100 : 0;
-            return '<tr class="pick" data-mo="' + HM.esc(x.id) + '">' +
-              '<td><div class="t-ttl">' + HM.esc(HM.dai(x.name, 46)) + '</div><div class="t-sub">' + HM.esc(x.id + ' · ' + HT.fmt.luc(x.createdAt) + ' · ' + x.by) + '</div></td>' +
-              '<td>' + HM.esc(t(x.subject.type)) + '<div class="t-sub">' + HM.esc(HT.fmt.n(x.subject.count) + (vi ? ' bản ghi' : ' recordings')) + '</div></td>' +
-              '<td><div class="chips">' + x.platforms.map(function (n) { return '<span class="chip q">' + HM.esc(n) + '</span>'; }).join('') + '</div></td>' +
-              '<td><div class="meter"><i style="width:' + pct.toFixed(0) + '%;background:' + (x.status === 'failed' ? 'var(--danger)' : x.status === 'done' ? 'var(--ok)' : 'var(--accent)') + '"></i></div>' +
-                '<div class="hint">' + HM.esc(HT.fmt.n(x.progress.sent) + ' / ' + HT.fmt.n(x.progress.total)) + '</div></td>' +
-              '<td>' + HM.tag(t(x.status), KIEU_TT[x.status]) + '</td></tr>';
-          }).join('') + '</tbody></table></div>'
-        : HM.trong({ icon: 'swap', tieuDe: t('khong'), moTa: t('khongMo') }))
-    });
-
-    html += '<div class="grid g31" style="grid-template-columns:minmax(0,5fr) minmax(0,7fr)">' + theTao + theDs + '</div>';
-    root.innerHTML = html;
-    HB.gan(root);
-
-    HM.nhap(root, '[data-gn-ten]', function (el) { LOC.ten = el.value; });
-    HM.nhap(root, '[data-gia-tri]', function (el) { LOC.giaTri = el.value; });
-    HM.nhap(root, '[data-dem]', function (el) { LOC.dem = el.value; });
-    HM.bam(root, '[data-loai]', function (el) { LOC.loai = el.getAttribute('data-loai'); LOC.giaTri = ''; c.veLai(); });
-    HM.doi(root, '[data-nt]', function (el) { LOC.nt[el.getAttribute('data-nt')] = el.checked; var s = root.querySelector('.fld .checks'); if (s) { var n = Object.keys(LOC.nt).filter(function (k) { return LOC.nt[k]; }).length; s.parentNode.querySelector('span').textContent = t('hNenTang') + ' · ' + t('daChon').replace('{n}', n); } });
-    HM.bam(root, '[data-chon-het]', function () { A.platformNames.forEach(function (n) { LOC.nt[n] = true; }); c.veLai(); });
-    HM.bam(root, '[data-bo-het]', function () { LOC.nt = {}; c.veLai(); });
-    HM.bam(root, '[data-gui]', function () {
-      var nt = A.platformNames.filter(function (n) { return LOC.nt[n]; });
-      var count = LOC.loai === 'upc-file' ? (+LOC.dem || 0) : LOC.loai === 'producer' ? demBanGhi(A, LOC.giaTri) : 0;
-      try {
-        var d = A.deliveries.create({ name: LOC.ten, subject: { type: LOC.loai, value: LOC.giaTri.trim(), count: count || undefined }, platforms: nt }, me.email);
-        c.thongBao(t('daTao').replace('{id}', d.id), 'ok');
-        LOC.ten = ''; LOC.giaTri = ''; LOC.dem = ''; LOC.nt = {};
-        c.veLai();
-      } catch (e) { c.thongBao(e.message, 'no'); }
-    });
-    HM.nhap(root, '[data-tim]', function (el) { LOC.tim = el.value; c.veLai(); });
-    HM.doi(root, '[data-tt]', function (el) { LOC.tt = el.value; c.veLai(); });
-    HM.bam(root, '[data-mo]', function (el) { moYeuCau(c, el.getAttribute('data-mo')); });
-  }
-});
-
-/* Số bản ghi của một đối tác, để yêu cầu "theo label" biết tổng lượt gửi. */
-function demBanGhi(A, clientId) {
-  var r = null;
-  A.parties.list({ q: clientId }).rows.forEach(function (x) { if (x.clientId.toLowerCase() === String(clientId).trim().toLowerCase()) r = x; });
-  return r ? r.tracks : 0;
-}
-
-function moYeuCau(c, id) {
-  var A = c.A, t = c.t, vi = c.lang === 'vi', me = A.staff.me;
-  var x = null; A.deliveries.list().forEach(function (y) { if (y.id === id) x = y; });
-  if (!x) return;
-  var pct = x.progress.total ? x.progress.sent / x.progress.total * 100 : 0;
-  var nut = [];
-  if (x.status === 'queued') nut.push(['sending', t('batDau'), 'pri'], ['cancelled', t('huy'), 'ghost']);
-  if (x.status === 'sending') nut.push(['done', t('danhDauXong'), 'pri'], ['failed', t('danhDauLoi'), '']);
-  if (x.status === 'failed') nut.push(['queued', t('guiLai'), 'pri']);
-  c.nganTruot(
-    HM.so([
-      { l: t('cTienDo'), v: HT.fmt.pct(pct / 100), lon: true, s: HT.fmt.n(x.progress.sent) + ' / ' + HT.fmt.n(x.progress.total) },
-      { l: t('cTt'), html: HM.tag(t(x.status), KIEU_TT[x.status]) }
-    ]) +
-    '<div class="meter" style="margin:10px 0 14px"><i style="width:' + pct.toFixed(0) + '%"></i></div>' +
-    HM.kv([
-      { t: t('cDoiTuong'), v: t(x.subject.type) },
-      { t: t('dGiaTri'), v: x.subject.value || '—' },
-      { t: t('dSo'), v: HT.fmt.n(x.subject.count) },
-      { t: t('cNt'), v: x.platforms.join(', ') },
-      { t: t('dTong'), v: HT.fmt.n(x.progress.total) },
-      { t: t('cNguoi'), v: x.by },
-      { t: t('cLuc'), v: HT.fmt.luc(x.createdAt) },
-      { t: t('dCapNhat'), v: HT.fmt.luc(x.updatedAt) }
-    ]) +
-    (nut.length ? '<div class="btnrow" style="margin-top:14px">' + nut.map(function (n) {
-      return '<button type="button" class="btn sm ' + n[2] + '" data-tt-moi="' + n[0] + '">' + HM.esc(n[1]) + '</button>';
-    }).join('') + '</div>' : ''),
-    { tieuDe: x.name, phu: x.id,
-      khiMo: function (dr) {
-        HM.bam(dr, '[data-tt-moi]', function (el) {
-          var tt = el.getAttribute('data-tt-moi');
-          var doi = function () {
-            try { A.deliveries.setStatus(id, tt, me.email); c.thongBao(t('daDoi'), 'ok'); c.dongNgan(); c.veLai(); }
-            catch (e) { c.thongBao(e.message, 'no'); }
-          };
-          if (tt === 'cancelled') c.xacNhan(t('huyHoi').replace('{id}', id), HM.esc(t('huyHoiMo')), t('huy'), true).then(function (ok) { if (ok) doi(); });
-          else doi();
-        });
-      } });
-}
-
-})();
-
-},
-/* ---- man/sua-hang-loat.js ---- */
-function(){
-/* =====================================================================
-   NỘI BỘ · SỬA HÀNG LOẠT
-   ---------------------------------------------------------------------
-   Bốn thao tác trên nhiều bản phát hành cùng lúc, nhận diện bằng UPC:
-   khoá / mở khoá, đổi giá album, đổi ngày phát hành số, đổi giá track.
-   Mỗi lần gửi là một yêu cầu có mã, nằm trong "Tổng quan yêu cầu" bên
-   phải để tra lại, áp dụng hay huỷ. Hệ thống thật đẩy yêu cầu này tới
-   đơn vị phân phối; bản mẫu chỉ lưu và đổi trạng thái.
-   ===================================================================== */
-"use strict";
-(function () {
-
-var LOC = { action: 'lock', upcs: '', giaTri: '', ghi: '', tim: '', tt: '' };
-var TT = ['queued', 'done', 'cancelled'];
-var KIEU_TT = { queued: 'info', done: 'ok', cancelled: '' };
-var ICON = { lock: 'gear', price: 'cash', 'release-date': 'cal', 'track-price': 'disc' };
-
-HT.dangKy({
-  id: 'sua-hang-loat', nav: 'navSuaHl', nhom: 'nhomVanHanh', icon: 'list',
-  dem: function (c) { try { var n = c.A.bulk.list().filter(function (x) { return x.status === 'queued'; }).length; return n ? String(n) : ''; } catch (e) { return ''; } },
-
-  chu: {
-    vi: {
-      navSuaHl: 'Sửa hàng loạt', h1: 'Sửa hàng loạt',
-      mo: 'Khoá / mở khoá, đổi giá album, ngày phát hành số, giá track cho nhiều bản phát hành theo danh sách UPC.',
-      kCho: 'Chờ áp dụng', kXong: 'Đã áp dụng', kUpc: 'UPC đang chờ', kTong: 'Tổng yêu cầu',
-      congCu: 'Công cụ', chonCongCu: 'Chọn thao tác',
-      lock: 'Khoá / mở khoá bản phát hành', price: 'Đổi giá album', 'release-date': 'Đổi ngày phát hành số', 'track-price': 'Đổi giá track',
-      lockMo: 'Bản phát hành bị khoá không sửa được metadata và không gửi thêm nền tảng cho tới khi mở khoá.',
-      priceMo: 'Giá bán album trên các nền tảng bán tải về. Nền tảng streaming không dùng giá này.',
-      'release-dateMo': 'Ngày phát hành số mới áp dụng cho mọi nền tảng. Ngày đã qua nghĩa là phát hành ngay.',
-      'track-priceMo': 'Giá bán từng track trên các bản phát hành có UPC trong danh sách.',
-      hUpc: 'Danh sách UPC', hUpcMo: 'Mỗi dòng một UPC, hoặc cách nhau bằng dấu phẩy. {n} UPC hợp lệ.',
-      hLock: 'Thao tác', khoa: 'Khoá', moKhoa: 'Mở khoá',
-      hGia: 'Giá album (USD)', hGiaTrack: 'Giá track (USD)', hNgay: 'Ngày phát hành số mới', hGhi: 'Ghi chú (tuỳ chọn)',
-      gui: 'Tạo yêu cầu', daTao: 'Đã tạo yêu cầu {id} cho {n} UPC',
-      tongQuan: 'Tổng quan yêu cầu', tongQuanMo: 'Mọi yêu cầu sửa hàng loạt đã tạo, mới nhất trước.', tim: 'Tìm mã yêu cầu hoặc UPC…', moiTt: 'Mọi trạng thái',
-      cYeuCau: 'Yêu cầu', cUpc: 'UPC', cGiaTri: 'Giá trị', cTt: 'Trạng thái', cNguoi: 'Người tạo', cLuc: 'Tạo lúc',
-      queued: 'Chờ áp dụng', done: 'Đã áp dụng', cancelled: 'Đã huỷ',
-      apDung: 'Áp dụng', huy: 'Huỷ yêu cầu', daDoi: 'Đã cập nhật trạng thái',
-      huyHoi: 'Huỷ yêu cầu {id}?', huyHoiMo: 'Yêu cầu chưa được áp dụng nên huỷ không ảnh hưởng gì tới bản phát hành.',
-      apHoi: 'Áp dụng yêu cầu {id}?', apHoiMo: 'Thay đổi được đẩy tới đơn vị phân phối cho {n} UPC. Không hoàn tác được từ đây.',
-      khong: 'Chưa có yêu cầu nào', khongMo: 'Tạo yêu cầu đầu tiên ở thẻ bên trái.',
-      dUpc: 'UPC trong yêu cầu', dGhi: 'Ghi chú', dCapNhat: 'Cập nhật lần cuối', khongGhi: 'không có'
-    },
-    en: {
-      navSuaHl: 'Bulk edit', h1: 'Bulk edit',
-      mo: 'Lock or unlock, change album price, release date or track price across releases by UPC list.',
-      kCho: 'Queued', kXong: 'Applied', kUpc: 'UPCs waiting', kTong: 'Requests',
-      congCu: 'Tools', chonCongCu: 'Choose an action',
-      lock: 'Lock or unlock releases', price: 'Change album price', 'release-date': 'Change digital release date', 'track-price': 'Change track price',
-      lockMo: 'A locked release cannot have its metadata edited or be delivered to more platforms until it is unlocked.',
-      priceMo: 'Album price on download stores. Streaming platforms ignore it.',
-      'release-dateMo': 'The new digital release date applies to every platform. A past date means release now.',
-      'track-priceMo': 'Per-track price on the releases whose UPC is in the list.',
-      hUpc: 'UPC list', hUpcMo: 'One UPC per line, or comma-separated. {n} valid UPCs.',
-      hLock: 'Action', khoa: 'Lock', moKhoa: 'Unlock',
-      hGia: 'Album price (USD)', hGiaTrack: 'Track price (USD)', hNgay: 'New digital release date', hGhi: 'Note (optional)',
-      gui: 'Create request', daTao: 'Request {id} created for {n} UPCs',
-      tongQuan: 'Request overview', tongQuanMo: 'Every bulk edit request, newest first.', tim: 'Search request ID or UPC…', moiTt: 'Any status',
-      cYeuCau: 'Request', cUpc: 'UPCs', cGiaTri: 'Value', cTt: 'Status', cNguoi: 'Created by', cLuc: 'Created',
-      queued: 'Queued', done: 'Applied', cancelled: 'Cancelled',
-      apDung: 'Apply', huy: 'Cancel request', daDoi: 'Status updated',
-      huyHoi: 'Cancel request {id}?', huyHoiMo: 'It has not been applied, so cancelling changes nothing on the releases.',
-      apHoi: 'Apply request {id}?', apHoiMo: 'The change is pushed to the distributor for {n} UPCs. It cannot be undone from here.',
-      khong: 'No requests yet', khongMo: 'Create the first one in the card on the left.',
-      dUpc: 'UPCs in the request', dGhi: 'Note', dCapNhat: 'Last updated', khongGhi: 'none'
-    }
-  },
-
-  ve: function (root, c) {
-    var A = c.A, t = c.t, vi = c.lang === 'vi', me = A.staff.me, P = HB.dayMau();
-    var ds = A.bulk.list();
-    var cho = ds.filter(function (x) { return x.status === 'queued'; });
-    var upcs = LOC.upcs.split(/[\s,;]+/).filter(Boolean);
-
-    var html = HM.dau({
-      h1: HM.esc(t('h1')), mo: HM.esc(t('mo')),
-      so: [
-        { l: t('kCho'), v: HT.fmt.n(cho.length), mau: cho.length ? HB.mau('warn') : '' },
-        { l: t('kUpc'), v: HT.fmt.n(cho.reduce(function (a, x) { return a + x.count; }, 0)) },
-        { l: t('kXong'), v: HT.fmt.n(ds.filter(function (x) { return x.status === 'done'; }).length) },
-        { l: t('kTong'), v: HT.fmt.n(ds.length) }
-      ]
-    });
-
-    /* ---- công cụ ---- */
-    var oGiaTri = '';
-    if (LOC.action === 'lock') {
-      oGiaTri = '<div class="fld"><span>' + HM.esc(t('hLock')) + '</span><div class="chips">' +
-        [['lock', t('khoa')], ['unlock', t('moKhoa')]].map(function (x) {
-          return '<button type="button" class="pill' + ((LOC.giaTri || 'lock') === x[0] ? ' on' : '') + '" data-gia-tri-chon="' + x[0] + '">' + HM.esc(x[1]) + '</button>';
-        }).join('') + '</div></div>';
-    } else if (LOC.action === 'release-date') {
-      oGiaTri = '<label class="fld"><span>' + HM.esc(t('hNgay')) + '</span><input class="in" type="date" data-gia-tri value="' + HM.esc(LOC.giaTri) + '"></label>';
-    } else {
-      oGiaTri = '<label class="fld"><span>' + HM.esc(LOC.action === 'price' ? t('hGia') : t('hGiaTrack')) + '</span><input class="in" type="number" step="0.01" min="0" data-gia-tri value="' + HM.esc(LOC.giaTri) + '" placeholder="9.99"></label>';
-    }
-    var theTao = HM.the({
-      h2: HM.esc(t('congCu')), p: HM.esc(t('chonCongCu')),
-      than: '<div class="chips" style="margin-bottom:14px">' + A.bulk.actions.map(function (a) {
-          return '<button type="button" class="pill' + (LOC.action === a.id ? ' on' : '') + '" data-action="' + a.id + '">' + HM.icon(ICON[a.id] || 'list') + ' ' + HM.esc(t(a.id)) + '</button>';
-        }).join('') + '</div>' +
-        '<p class="say">' + HM.esc(t(LOC.action + 'Mo')) + '</p>' +
-        '<label class="fld"><span>' + HM.esc(t('hUpc')) + '</span><textarea class="in mono" data-upcs rows="6" placeholder="880012345678&#10;880012345679">' + HM.esc(LOC.upcs) + '</textarea></label>' +
-        '<div class="hint" data-dem-upc>' + HM.esc(t('hUpcMo').replace('{n}', HT.fmt.n(upcs.length))) + '</div>' +
-        oGiaTri +
-        '<label class="fld"><span>' + HM.esc(t('hGhi')) + '</span><input class="in" data-ghi value="' + HM.esc(LOC.ghi) + '"></label>' +
-        '<div class="btnrow" style="margin-top:14px"><button type="button" class="btn pri" data-gui' + (upcs.length ? '' : ' disabled') + '>' + HM.icon('check') + HM.esc(t('gui')) + '</button></div>'
-    });
-
-    /* ---- tổng quan yêu cầu ---- */
-    var q = LOC.tim.trim().toLowerCase();
-    var loc = ds.filter(function (x) {
-      if (LOC.tt && x.status !== LOC.tt) return false;
-      return !q || x.id.toLowerCase().indexOf(q) >= 0 || x.upcs.some(function (u) { return u.indexOf(q) >= 0; });
-    });
-    var theDs = HM.the({
-      h2: HM.esc(t('tongQuan')) + ' <span class="muted">(' + ds.length + ')</span>', p: HM.esc(t('tongQuanMo')),
-      thoBody: true,
-      than: '<div class="bar" style="padding:0 18px 12px">' +
-        '<div class="srch">' + HM.icon('tim') + '<input type="search" data-tim placeholder="' + HM.esc(t('tim')) + '" value="' + HM.esc(LOC.tim) + '"></div>' +
-        '<select class="in" data-tt style="width:auto;height:34px"><option value="">' + HM.esc(t('moiTt')) + '</option>' +
-          TT.map(function (k) { return '<option value="' + k + '"' + (LOC.tt === k ? ' selected' : '') + '>' + HM.esc(t(k)) + '</option>'; }).join('') + '</select></div>' +
-        (loc.length ? '<div class="tw"><table class="t"><thead><tr><th>' + HM.esc(t('cYeuCau')) + '</th><th class="num">' + HM.esc(t('cUpc')) + '</th><th>' + HM.esc(t('cGiaTri')) + '</th><th>' + HM.esc(t('cTt')) + '</th><th>' + HM.esc(vi ? 'Thao tác' : 'Actions') + '</th></tr></thead><tbody>' +
-          loc.map(function (x) {
-            return '<tr class="pick" data-mo="' + HM.esc(x.id) + '">' +
-              '<td><div class="t-ttl">' + HM.icon(ICON[x.action] || 'list') + ' ' + HM.esc(t(x.action)) + '</div><div class="t-sub">' + HM.esc(x.id + ' · ' + HT.fmt.luc(x.createdAt) + ' · ' + x.by) + '</div></td>' +
-              '<td class="num">' + HM.esc(HT.fmt.n(x.count)) + '</td>' +
-              '<td class="mono">' + HM.esc(giaTriChu(c, x)) + '</td>' +
-              '<td>' + HM.tag(t(x.status), KIEU_TT[x.status]) + '</td>' +
-              '<td>' + (x.status === 'queued' ? '<div class="btnrow"><button type="button" class="btn sm pri" data-ap="' + HM.esc(x.id) + '">' + HM.esc(t('apDung')) + '</button>' +
-                '<button type="button" class="btn sm ghost" data-huy="' + HM.esc(x.id) + '">' + HM.icon('x') + '</button></div>' : '') + '</td></tr>';
-          }).join('') + '</tbody></table></div>'
-        : HM.trong({ icon: 'list', tieuDe: t('khong'), moTa: t('khongMo') }))
-    });
-
-    html += '<div class="grid g31" style="grid-template-columns:minmax(0,5fr) minmax(0,7fr)">' + theTao + theDs + '</div>';
-    root.innerHTML = html;
-    HB.gan(root);
-
-    HM.bam(root, '[data-action]', function (el) { LOC.action = el.getAttribute('data-action'); LOC.giaTri = ''; c.veLai(); });
-    HM.nhap(root, '[data-upcs]', function (el) {
-      LOC.upcs = el.value;
-      var n = LOC.upcs.split(/[\s,;]+/).filter(Boolean).length;
-      var d = root.querySelector('[data-dem-upc]'); if (d) d.textContent = t('hUpcMo').replace('{n}', HT.fmt.n(n));
-      var b = root.querySelector('[data-gui]'); if (b) b.disabled = !n;
-    });
-    HM.nhap(root, '[data-gia-tri]', function (el) { LOC.giaTri = el.value; });
-    HM.doi(root, '[data-gia-tri]', function (el) { LOC.giaTri = el.value; });
-    HM.bam(root, '[data-gia-tri-chon]', function (el) { LOC.giaTri = el.getAttribute('data-gia-tri-chon'); c.veLai(); });
-    HM.nhap(root, '[data-ghi]', function (el) { LOC.ghi = el.value; });
-    HM.bam(root, '[data-gui]', function () {
-      try {
-        var r = A.bulk.create({ action: LOC.action, upcs: LOC.upcs, value: LOC.action === 'lock' ? (LOC.giaTri || 'lock') : LOC.giaTri, note: LOC.ghi }, me.email);
-        c.thongBao(t('daTao').replace('{id}', r.id).replace('{n}', HT.fmt.n(r.count)), 'ok');
-        LOC.upcs = ''; LOC.giaTri = ''; LOC.ghi = '';
-        c.veLai();
-      } catch (e) { c.thongBao(e.message, 'no'); }
-    });
-    HM.nhap(root, '[data-tim]', function (el) { LOC.tim = el.value; c.veLai(); });
-    HM.doi(root, '[data-tt]', function (el) { LOC.tt = el.value; c.veLai(); });
-    HM.bam(root, '[data-ap]', function (el, e) { e.stopPropagation(); apDung(c, el.getAttribute('data-ap')); });
-    HM.bam(root, '[data-huy]', function (el, e) { e.stopPropagation(); huy(c, el.getAttribute('data-huy')); });
-    HM.bam(root, '[data-mo]', function (el, e) { if (e.target.closest('button')) return; moYeuCau(c, el.getAttribute('data-mo')); });
-  }
-});
-
-function giaTriChu(c, x) {
-  var t = c.t;
-  if (x.action === 'lock') return /unlock/i.test(String(x.value)) ? t('moKhoa') : t('khoa');
-  if (x.action === 'release-date') return x.value ? HT.fmt.date(x.value) : '—';
-  var n = parseFloat(String(x.value || '').replace(',', '.'));
-  return isNaN(n) ? (x.value || '—') : HT.fmt.usd(n);
-}
-function timYc(A, id) { var r = null; A.bulk.list().forEach(function (x) { if (x.id === id) r = x; }); return r; }
-
-function apDung(c, id) {
-  var A = c.A, t = c.t, me = A.staff.me, x = timYc(A, id);
-  if (!x) return;
-  c.xacNhan(t('apHoi').replace('{id}', id), HM.esc(t('apHoiMo').replace('{n}', HT.fmt.n(x.count))), t('apDung'), false).then(function (ok) {
-    if (!ok) return;
-    try { A.bulk.setStatus(id, 'done', me.email); c.thongBao(t('daDoi'), 'ok'); c.dongNgan(); c.veLai(); }
-    catch (e) { c.thongBao(e.message, 'no'); }
-  });
-}
-function huy(c, id) {
-  var A = c.A, t = c.t, me = A.staff.me;
-  c.xacNhan(t('huyHoi').replace('{id}', id), HM.esc(t('huyHoiMo')), t('huy'), true).then(function (ok) {
-    if (!ok) return;
-    try { A.bulk.setStatus(id, 'cancelled', me.email); c.thongBao(t('daDoi'), 'ok'); c.dongNgan(); c.veLai(); }
-    catch (e) { c.thongBao(e.message, 'no'); }
-  });
-}
-
-function moYeuCau(c, id) {
-  var A = c.A, t = c.t, x = timYc(A, id);
-  if (!x) return;
-  c.nganTruot(
-    HM.so([
-      { l: t('cUpc'), v: HT.fmt.n(x.count), lon: true },
-      { l: t('cGiaTri'), v: giaTriChu(c, x) },
-      { l: t('cTt'), html: HM.tag(t(x.status), KIEU_TT[x.status]) }
-    ]) +
-    HM.kv([
-      { t: t('cYeuCau'), v: t(x.action), manh: true },
-      { t: t('cNguoi'), v: x.by },
-      { t: t('cLuc'), v: HT.fmt.luc(x.createdAt) },
-      { t: t('dCapNhat'), v: HT.fmt.luc(x.updatedAt) },
-      { t: t('dGhi'), v: x.note || t('khongGhi') }
-    ]) +
-    (x.status === 'queued' ? '<div class="btnrow" style="margin-top:12px"><button type="button" class="btn sm pri" data-ap="' + HM.esc(x.id) + '">' + HM.esc(t('apDung')) + '</button>' +
-      '<button type="button" class="btn sm ghost" data-huy="' + HM.esc(x.id) + '">' + HM.esc(t('huy')) + '</button></div>' : '') +
-    '<h4 class="sec">' + HM.esc(t('dUpc')) + '</h4>' +
-    '<div class="chips">' + x.upcs.map(function (u) { return '<span class="chip q mono">' + HM.esc(u) + '</span>'; }).join('') + '</div>',
-    { tieuDe: x.id, phu: t(x.action),
-      khiMo: function (dr) {
-        HM.bam(dr, '[data-ap]', function (el) { apDung(c, el.getAttribute('data-ap')); });
-        HM.bam(dr, '[data-huy]', function (el) { huy(c, el.getAttribute('data-huy')); });
-      } });
-}
-
-})();
-
-},
-/* ---- man/bang-gia.js ---- */
-function(){
-/* =====================================================================
-   NỘI BỘ · BẢNG GIÁ NỀN TẢNG
-   ---------------------------------------------------------------------
-   Nhóm giá (price tier) của các nền tảng bán tải về: chọn một nhóm thì
-   thấy giá album và giá track theo từng nền tảng và tiền tệ. Nền tảng
-   streaming không dùng giá; bảng này chỉ áp cho iTunes, Amazon, Beatport,
-   7digital, Qobuz, Bandcamp. Muốn đổi nhóm giá cho nhiều bản phát hành
-   thì sang Sửa hàng loạt (đổi giá album / đổi giá track theo UPC).
-   Số liệu là bảng giá mẫu để thấy hình dạng; hệ thống thật lấy từ hợp
-   đồng với từng nền tảng.
-   ===================================================================== */
-"use strict";
-(function () {
-
-var LOC = { nhom: 'front', loai: 'album' };
-var NHOM = [
-  { id: 'front',  ten: 'Front · mới phát hành', en: 'Front · new release', mo: 'Áp dụng cho bản phát hành mới trong 6 tháng đầu.', moEn: 'For new releases in their first 6 months.',
-    album: { USD: 9.99, EUR: 9.99, GBP: 7.99, JPY: 1528, VND: 149000, BRL: 34.9, AUD: 16.99 }, track: { USD: 1.29, EUR: 1.29, GBP: 0.99, JPY: 255, VND: 19000, BRL: 3.9, AUD: 2.19 } },
-  { id: 'mid',    ten: 'Mid · phổ thông', en: 'Mid · standard', mo: 'Mức mặc định cho phần lớn danh mục.', moEn: 'Default tier for most of the catalogue.',
-    album: { USD: 7.99, EUR: 7.99, GBP: 6.99, JPY: 1222, VND: 119000, BRL: 27.9, AUD: 13.99 }, track: { USD: 0.99, EUR: 0.99, GBP: 0.79, JPY: 204, VND: 15000, BRL: 2.9, AUD: 1.69 } },
-  { id: 'back',   ten: 'Back · catalog cũ', en: 'Back · deep catalogue', mo: 'Bản phát hành trên 2 năm, bán theo giá thấp để giữ doanh số.', moEn: 'Releases older than 2 years, priced low to keep sales moving.',
-    album: { USD: 5.99, EUR: 5.99, GBP: 4.99, JPY: 917, VND: 89000, BRL: 20.9, AUD: 10.99 }, track: { USD: 0.69, EUR: 0.69, GBP: 0.59, JPY: 153, VND: 12000, BRL: 1.9, AUD: 1.19 } },
-  { id: 'budget', ten: 'Budget · khuyến mại', en: 'Budget · promotion', mo: 'Đợt khuyến mại ngắn hạn, cần vận hành bật và tắt bằng tay.', moEn: 'Short promotions, switched on and off by operations.',
-    album: { USD: 3.99, EUR: 3.99, GBP: 3.49, JPY: 611, VND: 59000, BRL: 13.9, AUD: 6.99 }, track: { USD: 0.49, EUR: 0.49, GBP: 0.39, JPY: 102, VND: 9000, BRL: 1.4, AUD: 0.89 } }
-];
-var NEN_TANG = [
-  { n: 'iTunes / Apple Music', tien: ['USD', 'EUR', 'GBP', 'JPY', 'VND', 'BRL', 'AUD'] },
-  { n: 'Amazon Music', tien: ['USD', 'EUR', 'GBP', 'JPY', 'BRL', 'AUD'] },
-  { n: 'Beatport', tien: ['USD', 'EUR', 'GBP'] },
-  { n: '7digital', tien: ['USD', 'EUR', 'GBP', 'AUD'] },
-  { n: 'Qobuz', tien: ['USD', 'EUR', 'GBP'] },
-  { n: 'Bandcamp', tien: ['USD', 'EUR', 'GBP', 'AUD'] }
-];
-var TIEN = ['USD', 'EUR', 'GBP', 'JPY', 'VND', 'BRL', 'AUD'];
-function dinhGia(v, tt) {
-  if (v == null) return null;
-  if (tt === 'VND') return HT.fmt.n(v) + ' ₫';
-  if (tt === 'JPY') return '¥' + HT.fmt.n(v);
-  var ky = { USD: '$', EUR: '€', GBP: '£', BRL: 'R$', AUD: 'A$' }[tt] || (tt + ' ');
-  return ky + v.toFixed(2);
-}
-
-HT.dangKy({
-  id: 'bang-gia', nav: 'navBangGia', nhom: 'nhomVanHanh', icon: 'cash',
-
-  chu: {
-    vi: {
-      themGia: 'Thêm dòng giá', giaTay: 'Giá nhập tay', giaTayMo: 'Giá do vận hành nhập, đè lên bảng mẫu ở đúng ô nền tảng · nhóm · tiền tệ.', fLoaiGia: 'Áp cho', fGia: 'Giá', fHieuLuc: 'Hiệu lực từ', daThemGia: 'Đã lưu dòng giá', nhapTay: 'Giá nhập tay', xoa: 'Xoá',
-      navBangGia: 'Bảng giá nền tảng', h1: 'Bảng giá nền tảng',
-      mo: 'Nhóm giá album và track của các nền tảng bán tải về, theo từng nền tảng và tiền tệ.',
-      chonNhom: 'Chọn nhóm giá', album: 'Giá album', track: 'Giá track',
-      cNt: 'Nền tảng', khongBan: 'không bán', apDung: 'Áp dụng nhóm giá cho UPC', apDungMo: 'Sang trang Sửa hàng loạt, chọn đổi giá album hoặc đổi giá track và dán danh sách UPC.',
-      soNt: 'Nền tảng bán tải về', soTien: 'Tiền tệ', nhomHienTai: 'Nhóm đang xem',
-      ghiChu: 'Bảng giá mẫu. Hệ thống thật lấy giá từ hợp đồng với từng nền tảng, có lịch sử theo ngày hiệu lực.',
-      soSanh: 'So sánh bốn nhóm giá', soSanhMo: 'Giá bằng USD của từng nhóm. Hai thước đo khác cỡ nên vẽ hai biểu đồ, không chồng lên nhau.'
-    },
-    en: {
-      themGia: 'Add a price row', giaTay: 'Prices entered by hand', giaTayMo: 'Entered by operations; overrides the sample grid for that store · tier · currency.', fLoaiGia: 'Applies to', fGia: 'Price', fHieuLuc: 'Effective from', daThemGia: 'Price row saved', nhapTay: 'Entered by hand', xoa: 'Remove',
-      navBangGia: 'Store pricing', h1: 'Store pricing',
-      mo: 'Album and track price tiers on download stores, per store and currency.',
-      chonNhom: 'Pick a price tier', album: 'Album price', track: 'Track price',
-      cNt: 'Store', khongBan: 'not sold', apDung: 'Apply tier to UPCs', apDungMo: 'Go to Bulk edit, choose album price or track price and paste the UPC list.',
-      soNt: 'Download stores', soTien: 'Currencies', nhomHienTai: 'Tier shown',
-      ghiChu: 'Sample grid. The real system takes prices from each store agreement, with a dated history.',
-      soSanh: 'Compare the four tiers', soSanhMo: 'USD prices per tier. Two measures of different size, so two charts rather than one stacked bar.'
-    }
-  },
-
-  ve: function (root, c) {
-    var t = c.t, vi = c.lang === 'vi', P = HB.dayMau();
-    var nhom = NHOM.filter(function (x) { return x.id === LOC.nhom; })[0] || NHOM[0];
-    var gia = nhom[LOC.loai], A = c.A;
-    var them = A.pricing.list();
-    var giaThem = function (nt, tt) { var x = them.filter(function (y) { return y.store === nt && y.tier === nhom.id && y.currency === tt && y.kind === LOC.loai; })[0]; return x ? x.price : null; };
-    var html = HM.dau({
-      h1: HM.esc(t('h1')), mo: HM.esc(t('mo')),
-      nut: A.quyen.nhom('vanHanh') ? '<button type="button" class="btn pri" data-them-gia>' + HM.icon('cash') + HM.esc(t('themGia')) + '</button>' : '',
-      so: [{ l: t('soNt'), v: HT.fmt.n(NEN_TANG.length) }, { l: t('soTien'), v: HT.fmt.n(TIEN.length) }, { l: t('nhomHienTai'), v: vi ? nhom.ten : nhom.en }]
-    });
-    html += '<div class="bar">' +
-      '<span class="muted" style="font-size:13px">' + HM.esc(t('chonNhom')) + '</span>' +
-      NHOM.map(function (x) { return '<button type="button" class="pill' + (LOC.nhom === x.id ? ' on' : '') + '" data-nhom="' + x.id + '">' + HM.esc(vi ? x.ten : x.en) + '</button>'; }).join('') +
-      '<div class="sp"></div>' +
-      [['album', t('album')], ['track', t('track')]].map(function (x) { return '<button type="button" class="pill' + (LOC.loai === x[0] ? ' on' : '') + '" data-loai="' + x[0] + '">' + HM.esc(x[1]) + '</button>'; }).join('') +
-      '<button type="button" class="btn sm pri" data-di="sua-hang-loat">' + HM.icon('list') + HM.esc(t('apDung')) + '</button></div>';
-
-    html += HM.the({
-      h2: HM.esc((vi ? nhom.ten : nhom.en) + ' · ' + t(LOC.loai)), p: HM.esc(vi ? nhom.mo : nhom.moEn),
-      thoBody: true,
-      than: '<div class="tw"><table class="t"><thead><tr><th>' + HM.esc(t('cNt')) + '</th>' + TIEN.map(function (tt) { return '<th class="num">' + tt + '</th>'; }).join('') + '</tr></thead><tbody>' +
-        NEN_TANG.map(function (nt) {
-          return '<tr><td><div class="t-ttl">' + HM.esc(nt.n) + '</div><div class="t-sub" style="font-family:var(--f)">' + nt.tien.length + ' ' + HM.esc(t('soTien').toLowerCase()) + '</div></td>' +
-            TIEN.map(function (tt) { var g2 = giaThem(nt.n, tt); return '<td class="num">' + (g2 != null ? '<b class="pos" title="' + HM.esc(t('nhapTay')) + '">' + HM.esc(dinhGia(g2, tt)) + '</b>' : nt.tien.indexOf(tt) >= 0 ? '<b>' + HM.esc(dinhGia(gia[tt], tt)) + '</b>' : '<span class="nil">' + HM.esc(t('khongBan')) + '</span>') + '</td>'; }).join('') + '</tr>';
-        }).join('') + '</tbody></table></div>',
-      chan: HM.esc(t('apDungMo') + ' ' + t('ghiChu'))
-    });
-
-    html += HM.the({
-      h2: HM.esc(t('soSanh')), p: HM.esc(t('soSanhMo')),
-      than: '<div class="grid g2">' + [['album', P[0]], ['track', P[1]]].map(function (k) {
-        return '<div><h4 class="sec">' + HM.esc(t(k[0])) + ' · USD</h4>' +
-          HB.o({ loai: 'cot', cao: 180, dinhDang: function (v) { return '$' + Number(v).toFixed(2); }, hienGiaTri: true, truc: NHOM.map(function (x) { return x.id.charAt(0).toUpperCase() + x.id.slice(1); }),
-            tieuDeTip: function (i) { return vi ? NHOM[i].ten : NHOM[i].en; },
-            chuoi: [{ ten: t(k[0]), gt: NHOM.map(function (x) { return x[k[0]].USD; }), mau: k[1] }] }) + '</div>';
-      }).join('') + '</div>'
-    });
-
-    if (them.length) html += HM.the({ h2: HM.esc(t('giaTay')) + ' <span class="muted">(' + them.length + ')</span>', p: HM.esc(t('giaTayMo')), thoBody: true,
-      than: '<div class="tw"><table class="t" style="min-width:0"><thead><tr><th>' + HM.esc(t('cNt')) + '</th><th>' + HM.esc(t('chonNhom')) + '</th><th>' + HM.esc(t('fLoaiGia')) + '</th><th class="num">' + HM.esc(t('fGia')) + '</th><th>' + HM.esc(t('fHieuLuc')) + '</th><th></th></tr></thead><tbody>' +
-        them.map(function (x) { var nh = NHOM.filter(function (y) { return y.id === x.tier; })[0]; return '<tr><td>' + HM.esc(x.store) + '</td><td>' + HM.esc(nh ? (vi ? nh.ten : nh.en) : x.tier) + '</td><td>' + HM.esc(t(x.kind)) + '</td><td class="num"><b>' + HM.esc(dinhGia(x.price, x.currency)) + '</b></td><td class="mono">' + HM.esc(HT.fmt.ngay(x.effective)) + '</td><td>' + (A.quyen.nhom('vanHanh') ? '<button type="button" class="btn sm ghost" data-xoa-gia="' + HM.esc([x.store, x.tier, x.currency, x.kind].join('|')) + '">' + HM.esc(t('xoa')) + '</button>' : '') + '</td></tr>'; }).join('') + '</tbody></table></div>' });
-    root.innerHTML = html;
-    HB.gan(root);
-    HM.bam(root, '[data-them-gia]', function () {
-      HTM.hoiForm(c, { tieuDe: t('themGia'), dong: t('themGia'), fields: [
-        { k: 'store', l: t('cNt'), kieu: 'select', opts: NEN_TANG.map(function (x) { return [x.n, x.n]; }), kbb: false }, { k: 'tier', l: t('chonNhom'), kieu: 'select', opts: NHOM.map(function (x) { return [x.id, vi ? x.ten : x.en]; }), v: LOC.nhom, kbb: false },
-        { k: 'kind', l: t('fLoaiGia'), kieu: 'select', opts: [['album', t('album')], ['track', t('track')]], v: LOC.loai, kbb: false }, { k: 'currency', l: t('soTien'), kieu: 'select', opts: TIEN.map(function (x) { return [x, x]; }), kbb: false },
-        { k: 'price', l: t('fGia'), kieu: 'number', min: 0, step: 0.01, req: true }, { k: 'effective', l: t('fHieuLuc'), kieu: 'date', v: new Date().toISOString().slice(0, 10), kbb: false }
-      ] }).then(function (f) {
-        if (!f) return;
-        try { A.pricing.add(f, A.staff.me.email); c.thongBao(t('daThemGia'), 'ok'); c.veLai(); } catch (e) { c.thongBao(e.message, 'no'); }
-      });
-    });
-    HM.bam(root, '[data-xoa-gia]', function (el) { var p = el.getAttribute('data-xoa-gia').split('|'); try { A.pricing.remove({ store: p[0], tier: p[1], currency: p[2], kind: p[3] }, A.staff.me.email); c.veLai(); } catch (e) { c.thongBao(e.message, 'no'); } });
-    HM.bam(root, '[data-nhom]', function (el) { LOC.nhom = el.getAttribute('data-nhom'); c.veLai(); });
-    HM.bam(root, '[data-loai]', function (el) { LOC.loai = el.getAttribute('data-loai'); c.veLai(); });
-    HM.bam(root, '[data-di]', function (el) { c.di(el.getAttribute('data-di')); });
-  }
-});
 
 })();
 
@@ -16623,8 +16083,49 @@ function(){
 "use strict";
 (function () {
 
-var LOC = { tim: '', loai: '', chu: '', coTien: true, maPhu: false, vanDe: false, thieu: false,
+var LOC = { tab: 'ban-ghi', tim: '', loai: '', chu: '', coTien: true, maPhu: false, vanDe: false, thieu: false,
             sap: 'gross', huong: -1, trang: 0, co: 25 };
+
+/* Chất lượng lượt nghe là SỐ LIỆU CỦA BÀI HÁT, nên nó nằm trong trang quản
+   lý bài hát chứ không đứng riêng: cảnh báo lượt nghe bất thường gom theo
+   tài khoản, và sức khoẻ metadata toàn danh mục. Chữ để trong từ điển
+   riêng thay vì trộn vào chu: khoá của hai phần trùng tên nhau khá nhiều
+   (tim, khong, cTk…), trộn vào là đè mất. */
+var CLOC = { tab: 'tk', muc: 'all', tt: 'open', pk: null, tim: '', trang: 0, co: 25 };
+var CL = {
+  vi: { h1: 'Chất lượng lượt nghe',
+      mo: 'Cảnh báo lượt nghe bất thường theo tài khoản, bài bị nền tảng gắn cờ và sức khoẻ metadata.',
+      kCb: 'Cảnh báo', kCbS: '{a} nghiêm trọng · {b} cảnh báo · {c} theo dõi · {n} bài đã quét', kCo: 'Bài bị nền tảng gắn cờ', kCoS: 'lượt nghe đã bị gỡ khỏi báo cáo', kGo: 'Lượt nghe bị gỡ', kTk: 'Tài khoản nhiều bài tăng đồng loạt', kTkS: 'kiểu tách nhỏ để lách ngưỡng', kMo: 'Đang mở', kMoS: '{n} đang khiếu nại', kMd: 'Điểm metadata trung bình', kMdS: '{n} bản ghi thiếu mã quan trọng',
+      tabTk: 'Theo tài khoản', tabCb: 'Cảnh báo', tabMd: 'Sức khoẻ metadata',
+      cTk: 'Tài khoản', cMau: 'Kiểu', cAlerts: 'Cảnh báo', cNt: 'Nghiêm trọng', cCo: 'Bị gắn cờ', cGo: 'Lượt nghe bị gỡ', cMo: 'Đang mở',
+      mucAll: 'Mọi mức', mucCritical: 'Nghiêm trọng', mucWarn: 'Cảnh báo', mucWatch: 'Theo dõi', ttAll: 'Mọi trạng thái', ttOpen: 'Đang mở', ttDisputed: 'Đang khiếu nại', ttConfirmed: 'Đã xác nhận', ttResolved: 'Đã gỡ',
+      tim: 'Tìm bài, ISRC, tài khoản…', dangLoc: 'Đang xem tài khoản', boLoc: 'Bỏ lọc',
+      xacNhan: 'Xác nhận gian lận', go: 'Gỡ cảnh báo', hoiXn: 'Xác nhận gian lận cho “{t}”?', hoiXnMo: 'Lượt nghe của bài bị giữ lại trong kỳ đang mở; đối tác thấy trạng thái này ở cổng của họ.', hoiGo: 'Gỡ cảnh báo cho “{t}”', hoiGoMo: 'Ghi lý do (chiến dịch hợp lệ, playlist biên tập, sự kiện) để lần sau không hỏi lại.', ghiChu: 'Ghi chú', daXn: 'Đã xác nhận gian lận', daGo: 'Đã gỡ cảnh báo',
+      khong: 'Không có cảnh báo nào khớp bộ lọc', khongMo: 'Đổi bộ lọc phía trên.', khongTk: 'Không có tài khoản nào có cảnh báo',
+      mdThieu: 'Mục còn thiếu nhiều nhất', mdThieuMo: 'Số bản ghi thiếu từng mục toàn danh mục (đã nhân theo mẫu).', mdBang: 'Bản ghi bị giữ lại hoặc dưới điểm A', mdBangMo: 'Bấm một bản ghi để xem từng mục và cách sửa.' },
+  en: { h1: 'Stream quality',
+      mo: 'Unusual-stream alerts by account, tracks platforms have flagged, and metadata health.',
+      kCb: 'Alerts', kCbS: '{a} critical · {b} warning · {c} watch · {n} tracks scanned', kCo: 'Flagged by platforms', kCoS: 'streams already removed from reports', kGo: 'Streams removed', kTk: 'Accounts with many small lifts', kTkS: 'spreading streams thin to dodge thresholds', kMo: 'Open', kMoS: '{n} disputed', kMd: 'Average metadata score', kMdS: '{n} recordings missing key identifiers',
+      tabTk: 'By account', tabCb: 'Alerts', tabMd: 'Metadata health',
+      cTk: 'Account', cMau: 'Pattern', cAlerts: 'Alerts', cNt: 'Critical', cCo: 'Flagged', cGo: 'Streams removed', cMo: 'Open',
+      mucAll: 'Any level', mucCritical: 'Critical', mucWarn: 'Warning', mucWatch: 'Watch', ttAll: 'Any status', ttOpen: 'Open', ttDisputed: 'Disputed', ttConfirmed: 'Confirmed', ttResolved: 'Cleared',
+      tim: 'Search track, ISRC, account…', dangLoc: 'Showing account', boLoc: 'Clear',
+      xacNhan: 'Confirm fraud', go: 'Clear alert', hoiXn: 'Confirm fraud on “{t}”?', hoiXnMo: 'The track’s streams are held in the open period; the partner sees this status in their portal.', hoiGo: 'Clear the alert on “{t}”', hoiGoMo: 'Note the reason (legitimate campaign, editorial playlist, event) so it is not asked again.', ghiChu: 'Note', daXn: 'Fraud confirmed', daGo: 'Alert cleared',
+      khong: 'No alerts match the filters', khongMo: 'Change the filters above.', khongTk: 'No accounts with alerts',
+      mdThieu: 'Most common gaps', mdThieuMo: 'Recordings missing each item across the catalogue (scaled from the sample).', mdBang: 'Recordings held or below grade A', mdBangMo: 'Click a recording to see each item and how to fix it.' }
+};
+function tc(k) { var d = CL[HT.lang] || CL.vi; return d[k] != null ? d[k] : k; }
+
+/* Hai tab cha của trang: danh sách bản ghi, và chất lượng lượt nghe. */
+function tabCha(c) {
+  var A = c.A, vi = c.lang === 'vi';
+  var dem = 0; try { dem = A.quality().counts.alerts || 0; } catch (e) {}
+  return HM.tabs([{ k: 'ban-ghi', l: vi ? 'Bản ghi' : 'Recordings', icon: 'disc' },
+                  { k: 'chat-luong', l: vi ? 'Chất lượng lượt nghe' : 'Stream quality', icon: 'alert', dem: dem || undefined }], LOC.tab);
+}
+function ganTabCha(root, c) {
+  HM.bam(root, '[data-tab]', function (el) { LOC.tab = el.getAttribute('data-tab'); c.veLai(); });
+}
 
 /* Hồ sơ bản ghi dùng chung (HTS) định dạng ngày bằng HT.fmt.date, nhưng
    khung hiện chỉ có HT.fmt.ngay. Gán tạm ở đây để ngăn bản ghi mở được;
@@ -16680,6 +16181,7 @@ HT.dangKy({
   },
 
   ve: function (root, c) {
+    if (LOC.tab === 'chat-luong') return veChatLuong(root, c);
     var A = c.A, t = c.t, pi = c.ky.idx;
 
     /* ---- lọc: chạy trên chỉ số, không dựng đối tượng ----
@@ -16743,7 +16245,8 @@ HT.dangKy({
        theo dấu mốc trạng thái, không phụ thuộc kỳ đang chọn. */
     var vande = HM.nho(A, 'vande', function () { return A.catalogue({ stage: 'issue', limit: 1 }).counts; });
 
-    var html = HM.dau({
+    var html = '';
+    html += HM.dau({
       h1: HM.esc(t('h1')), mo: HM.esc(t('mo')),
       nut: A.quyen.nhom('phatHanhHo') && HT.taoHoSoHo ? '<button type="button" class="btn pri" data-them-bai>' + HM.icon('file') + HM.esc(t('themBai')) + '</button>' : '',
       so: [
@@ -16850,7 +16353,8 @@ HT.dangKy({
         }).join('') + '</select> ' + HM.esc(c.CHU[c.lang].rows) + '</div>'
     });
 
-    root.innerHTML = html;
+    root.innerHTML = tabCha(c) + html;
+    ganTabCha(root, c);
 
     HM.nhap(root, '[data-tim]', function (el) { LOC.tim = el.value; LOC.trang = 0; c.veLai(); }, 260);
     HM.doi(root, '[data-loai]', function (el) { LOC.loai = el.value; LOC.trang = 0; c.veLai(); });
@@ -17015,6 +16519,104 @@ function moBanGhi(c, i) {
       { k: 'thongtin', l: c.t('tabTt'), html: ttHtml }
     ])
   });
+}
+
+
+
+/* ---------------------------------------------------------------------
+   TAB CHẤT LƯỢNG LƯỢT NGHE
+   Gộp từ trang riêng cũ: số liệu lượt nghe là số liệu của bài hát nên
+   thuộc về trang quản lý bài hát. Vận hành nhìn theo TÀI KHOẢN trước,
+   theo bài sau — vụ tách 660.000 lượt/ngày thành nhiều bài nhỏ để lách
+   ngưỡng từng bài chỉ lộ ra khi gom theo tài khoản.
+   --------------------------------------------------------------------- */
+function veChatLuong(root, c) {
+    var A = c.A, P = HB.dayMau();
+    var q = HM.nho(A, 'chat-luong:q', function () { return A.quality(); });
+    var md = HM.nho(A, 'chat-luong:md', function () { return A.metadataReport(); });
+    var k = q.counts, lifts = q.cases.filter(function (x) { return x.pattern === 'many-small-lifts'; }).length;
+    var html = '';
+    html += HM.so([
+      { l: tc('kCb'), v: HT.fmt.n(k.alerts), lon: true, s: tc('kCbS').replace('{a}', k.critical).replace('{b}', k.warn).replace('{c}', k.watch).replace('{n}', HT.fmt.n(k.tracksChecked)) },
+      { l: tc('kCo'), v: HT.fmt.n(k.flagged), s: tc('kCoS'), mau: k.flagged ? HB.mau('no') : '' },
+      { l: tc('kGo'), v: HT.fmt.n(k.removedStreams) },
+      { l: tc('kTk'), v: HT.fmt.n(lifts), s: tc('kTkS'), mau: lifts ? HB.mau('warn') : '' },
+      { l: tc('kMo'), v: HT.fmt.n(k.open), s: tc('kMoS').replace('{n}', k.disputed) },
+      { l: tc('kMd'), v: String(md.counts.avg), s: tc('kMdS').replace('{n}', HT.fmt.n(md.counts.blocking)), mau: md.counts.avg >= 90 ? HB.mau('ok') : HB.mau('warn') }
+    ]);
+    html += HM.tabs([{ k: 'tk', l: tc('tabTk'), dem: q.cases.length }, { k: 'cb', l: tc('tabCb'), dem: k.alerts }, { k: 'md', l: tc('tabMd'), dem: md.counts.blocking || undefined }], CLOC.tab).split('data-tab=').join('data-cltab=');
+
+    if (CLOC.tab === 'tk') {
+      html += HM.the({ thoBody: true,
+        than: !q.cases.length ? HM.trong({ icon: 'check', tieuDe: tc('khongTk'), moTa: '' }) :
+          '<div class="tw"><table class="t"><thead><tr><th>' + HM.esc(tc('cTk')) + '</th><th>' + HM.esc(tc('cMau')) + '</th><th class="num">' + HM.esc(tc('cAlerts')) + '</th><th class="num">' + HM.esc(tc('cNt')) + '</th><th class="num">' + HM.esc(tc('cCo')) + '</th><th class="num band">' + HM.esc(tc('cGo')) + '</th><th class="num">' + HM.esc(tc('cMo')) + '</th></tr></thead><tbody>' +
+          q.cases.map(function (x) {
+            return '<tr class="pick" data-pk="' + HM.esc(x.partyKey) + '"><td>' + HM.tenBia({ ten: x.name, seed: x.clientId, phu: x.clientId + ' · ' + x.partyKey }) + '</td>' +
+              '<td>' + HM.tag(c.song(x, 'patternLabel'), x.pattern === 'many-small-lifts' ? 'warn' : x.pattern === 'dsp-flag' ? 'no' : x.pattern === 'critical' ? 'no' : '') + '</td>' +
+              '<td class="num"><b>' + HT.fmt.n(x.alerts) + '</b></td><td class="num">' + (x.critical ? '<span class="neg">' + x.critical + '</span>' : '<span class="nil">—</span>') + '</td>' +
+              '<td class="num">' + (x.flagged ? '<span class="neg">' + x.flagged + '</span>' : '<span class="nil">—</span>') + '</td>' +
+              '<td class="num band">' + (x.removedStreams ? '<b>' + HM.esc(HT.fmt.n(x.removedStreams)) + '</b>' : '<span class="nil">—</span>') + '</td>' +
+              '<td class="num">' + HT.fmt.n(x.open) + '</td></tr>';
+          }).join('') + '</tbody></table></div>',
+        chan: HM.esc(c.song(q, 'note')) });
+    } else if (CLOC.tab === 'cb') {
+      var qq = CLOC.tim.trim().toLowerCase();
+      var rows = q.rows.filter(function (r) {
+        if (CLOC.pk && r.partyKey !== CLOC.pk) return false;
+        if (CLOC.muc !== 'all' && r.severity !== CLOC.muc) return false;
+        if (CLOC.tt !== 'all' && r.status !== CLOC.tt) return false;
+        if (qq && (r.title + ' ' + r.isrc + ' ' + r.artist + ' ' + A.partyName(r.partyKey)).toLowerCase().indexOf(qq) < 0) return false;
+        return true;
+      });
+      var pt = HTM.phanTrang(rows, CLOC);
+      html += '<div class="bar">' +
+        (CLOC.pk ? '<span class="chip on">' + HM.esc(tc('dangLoc') + ': ' + A.partyName(CLOC.pk)) + ' <button type="button" data-bo-pk title="' + HM.esc(tc('boLoc')) + '">' + HM.icon('x') + '</button></span>' : '') +
+        [['all', tc('mucAll')], ['critical', tc('mucCritical')], ['warn', tc('mucWarn')], ['watch', tc('mucWatch')]].map(function (x) { return '<button type="button" class="pill' + (CLOC.muc === x[0] ? ' on' : '') + '" data-muc="' + x[0] + '">' + HM.esc(x[1]) + '</button>'; }).join('') +
+        '<span class="muted">·</span>' +
+        [['all', tc('ttAll')], ['open', tc('ttOpen')], ['disputed', tc('ttDisputed')], ['confirmed', tc('ttConfirmed')], ['resolved', tc('ttResolved')]].map(function (x) { return '<button type="button" class="pill' + (CLOC.tt === x[0] ? ' on' : '') + '" data-tt="' + x[0] + '">' + HM.esc(x[1]) + '</button>'; }).join('') +
+        '<div class="sp"></div><div class="srch">' + HM.icon('tim') + '<input type="search" data-tim placeholder="' + HM.esc(tc('tim')) + '" value="' + HM.esc(CLOC.tim) + '"></div></div>';
+      html += HM.the({ thoBody: true,
+        than: !rows.length ? HM.trong({ icon: 'empty', tieuDe: tc('khong'), moTa: tc('khongMo') })
+          : HTM.bangCanhBao(pt.page, { noiBo: true, tenTk: function (pk) { return A.partyName(pk); },
+              nut: function (r) { return r.status === 'open' || r.status === 'disputed' ? '<div class="btnrow" style="flex-wrap:nowrap"><button type="button" class="btn sm dang" data-xn="' + r.trackId + '">' + HM.esc(tc('xacNhan')) + '</button><button type="button" class="btn sm" data-go="' + r.trackId + '">' + HM.esc(tc('go')) + '</button></div>' : '<span class="nil">—</span>'; } }) + pt.chan,
+        chan: HM.esc(c.song(q, 'note')) });
+    } else {
+      var thieu = md.byCheck.filter(function (x) { return x.missing > 0; });
+      var pm = HTM.phanTrang(md.rows, CLOC);
+      html += '<div class="grid g3">' +
+        HM.the({ h2: HM.esc(tc('mdThieu')), p: HM.esc(tc('mdThieuMo')),
+          than: HB.o({ loai: 'thanh', dinhDang: 'so', hang: thieu.map(function (x) { return { ten: c.song(x, 'label'), gt: x.missing, mau: ['iswc', 'ipi', 'splits'].indexOf(x.k) >= 0 ? HB.mau('no') : P[0] }; }) }) }) +
+        HM.the({ h2: HM.esc(tc('mdBang')), p: HM.esc(tc('mdBangMo')), thoBody: true, than: HTM.bangMeta(pm.page, { noiBo: true, tenTk: function (pk) { return A.partyName(pk); } }) + pm.chan, chan: HM.esc(c.song(md, 'note')) }) +
+        '</div>';
+    }
+    root.innerHTML = tabCha(c) + html;
+    HB.gan(root);
+    HTM.ganTrang(root, CLOC, c.veLai);
+    HM.bam(root, '[data-cltab]', function (el) { CLOC.tab = el.getAttribute('data-cltab'); CLOC.trang = 0; c.veLai(); });
+    HM.bam(root, '[data-muc]', function (el) { CLOC.muc = el.getAttribute('data-muc'); CLOC.trang = 0; c.veLai(); });
+    HM.bam(root, '[data-tt]', function (el) { CLOC.tt = el.getAttribute('data-tt'); CLOC.trang = 0; c.veLai(); });
+    HM.bam(root, '[data-bo-pk]', function () { CLOC.pk = null; CLOC.trang = 0; c.veLai(); });
+    HM.bam(root, 'tr[data-pk]', function (el) { CLOC.pk = el.getAttribute('data-pk'); CLOC.tab = 'cb'; CLOC.tt = 'all'; CLOC.trang = 0; c.veLai(); });
+    HM.nhap(root, '[data-tim]', function (el) { CLOC.tim = el.value; c.veLai(); var i = root.querySelector('[data-tim]'); if (i) { i.focus(); i.setSelectionRange(i.value.length, i.value.length); } });
+    function hanhDong(id, status, tieuDe, moTa, xong) {
+      var r = q.rows.filter(function (x) { return x.trackId === id; })[0];
+      c.hoiThoai({ tieuDe: tieuDe.replace('{t}', r ? r.title : id), moTa: HM.esc(moTa),
+        than: (r ? HTM.tinHieu(r) : '') + '<label class="fld" style="margin-top:12px">' + HM.esc(tc('ghiChu')) + '</label><textarea class="in" rows="3" data-o="note"></textarea>', dong: status === 'confirmed' ? tc('xacNhan') : tc('go') })
+      .then(function (f) {
+        if (!f) return;
+        try { A.setAlertStatus(id, status, f.note, A.staff.me.name); c.thongBao(xong, 'ok'); c.veLai(); }
+        catch (err) { c.thongBao(err.message, 'no'); }
+      });
+    }
+    HM.bam(root, '[data-xn]', function (el, e) { e.stopPropagation(); hanhDong(+el.getAttribute('data-xn'), 'confirmed', tc('hoiXn'), tc('hoiXnMo'), tc('daXn')); });
+    HM.bam(root, '[data-go]', function (el, e) { e.stopPropagation(); hanhDong(+el.getAttribute('data-go'), 'resolved', tc('hoiGo'), tc('hoiGoMo'), tc('daGo')); });
+    HM.bam(root, 'tr[data-cl], tr[data-md]', function (el, e) {
+      if (e.target.closest('button')) return;
+      var id = +(el.getAttribute('data-cl') || el.getAttribute('data-md')), a;
+      try { a = A.asset(id); } catch (err) { return; }
+      HTS.moNgan(c, a, { noiBo: true, tien: c.tien2, tien0: c.tien, playlists: A.playlistsOf(id), tabDau: 'cl' });
+    });
+    ganTabCha(root, c);
 }
 
 })();
@@ -19188,7 +18790,7 @@ HT.dangKy({
       daThem: 'Đã thêm {t}', daChuyen: 'Đã chuyển {t}', daKhoa: 'Đã khoá {t}', daMo: 'Đã mở lại {t}',
       cTaiSan: 'Lớp tài sản', cBoPhan: 'Bộ phận phụ trách', cSo: 'Số lượng', cGiao: 'Giao đích danh', giaoMo: 'Tài khoản đối tác giao ở trang Đối tác; nền tảng giao ở trang Nền tảng; ticket và khiếu nại giao ở trang Hỗ trợ và Quản lý quyền.',
       qMo: 'Quyền không khai riêng cho từng người: khối nào mở màn nào, gọi nhóm hàm nào; chức danh từ Trưởng bộ phận trở lên thấy cả bộ phận thay vì chỉ phần mình.',
-      cMan: 'Màn', cap: 'Cấp', capMo: 'Trưởng bộ phận trở lên thấy cả bộ phận'
+      cMan: 'Trang', cap: 'Level', capMo: 'Level 1–2 thấy cả bộ phận', thang: 'Thang cấp', thangMo: 'Số nhỏ là cấp cao. Hệ thống dừng ở Level 6, sâu hơn thì không ai biết ai báo cáo cho ai.', soNguoi: 'người'
     },
     en: {
       nhomHeThong: 'System', navToChuc: 'Organisation', h1: 'Organisation',
@@ -19204,7 +18806,7 @@ HT.dangKy({
       daThem: 'Added {t}', daChuyen: 'Moved {t}', daKhoa: 'Locked {t}', daMo: 'Reactivated {t}',
       cTaiSan: 'Asset class', cBoPhan: 'Unit in charge', cSo: 'Count', cGiao: 'Assigned by name', giaoMo: 'Partner accounts are assigned on Partners; platforms on Platforms; tickets and claims on Support and Rights.',
       qMo: 'Permissions are not set per person: a unit opens screens and calls function groups; heads of department and above see the whole department instead of only their own share.',
-      cMan: 'Screen', cap: 'Level', capMo: 'Head of department and above see the whole department'
+      cMan: 'Screen', cap: 'Level', capMo: 'Level 1–2 see the whole department', thang: 'Levels', thangMo: 'Lower number is more senior. The ladder stops at Level 6; deeper than that and nobody knows who reports to whom.', soNguoi: 'people'
     }
   },
 
@@ -19232,7 +18834,7 @@ HT.dangKy({
 });
 
 function chipNs(x, vi) {
-  var cd = x.cap >= 2 ? ' truong' : '';
+  var cd = x.cap <= 2 ? ' truong' : '';
   return '<button type="button" class="chip' + cd + '" data-ns="' + HM.esc(x.id) + '" title="' + HM.esc(vi ? x.title : x.titleEn) + '"><span class="av">' + HM.esc(HM.hashChu ? x.name.split(' ').slice(-1)[0].charAt(0) : x.name.charAt(0)) + '</span>' + HM.esc(x.name) + '</button>';
 }
 function veNhiemVu(ds, vi) {
@@ -19258,7 +18860,7 @@ function veToi(c, toi) {
 function veSoDo(c, cay, toi) {
   var t = c.t, vi = c.lang === 'vi';
   return '<div class="org">' + cay.khoi.map(function (k) {
-    var truong = k.nhanSu.filter(function (x) { return x.cap >= 2; });
+    var truong = k.nhanSu.filter(function (x) { return x.cap <= 2; });
     return '<div class="org-k' + (toi.khoi && toi.khoi.id === k.id ? ' me' : '') + '">' +
       '<div class="org-kh"><div><h3>' + HM.esc(vi ? k.vi : k.en) + '</h3><div class="sub">' + HM.esc(k.nhanSu.length + ' ' + t('soNs').toLowerCase() + ' · ' + k.man.length + ' ' + t('man') + ' · ' + k.nhom.length + ' ' + t('nhom')) + '</div></div></div>' +
       '<ul class="org-cn">' + (vi ? k.chucNang.vi : k.chucNang.en).map(function (x) { return '<li>' + HM.esc(x) + '</li>'; }).join('') + '</ul>' +
@@ -19276,14 +18878,31 @@ function veNhanSu(c, cay) {
   var A = c.A, t = c.t, vi = c.lang === 'vi', me = A.staff.me, q = LOC.tim.trim().toLowerCase();
   var ds = A.toChuc.nhanSu().filter(function (x) { return !q || (x.name + ' ' + x.email + ' ' + x.title).toLowerCase().indexOf(q) >= 0; });
   var ts = A.toChuc.taiSan().filter(function (a) { return ['taiKhoanDoiTac', 'nenTang', 'ticket', 'khieuNai'].indexOf(a.id) >= 0; });
-  return '<div class="bar"><div class="srch">' + HM.icon('tim') + '<input type="search" data-tim placeholder="' + HM.esc(t('cTen')) + '…" value="' + HM.esc(LOC.tim) + '"></div></div>' +
+  /* Thang cấp hiện thành một hàng bậc: mỗi bậc một viên, kèm số người đang
+     ở bậc đó. Nhìn một cái là thấy tổ chức đang phình ở tầng nào. */
+  var bac = A.quyen.capBac();
+  var demBac = {};
+  A.toChuc.nhanSu().forEach(function (x) { demBac[x.cap] = (demBac[x.cap] || 0) + 1; });
+  var gom = [];
+  bac.forEach(function (b) { var g = gom.filter(function (y) { return y.cap === b.cap; })[0];
+    if (g) g.ten.push(vi ? b.vi : b.en); else gom.push({ cap: b.cap, ten: [vi ? b.vi : b.en] }); });
+  var thang = HM.the({ h2: HM.esc(t('thang')), p: HM.esc(t('thangMo')), icon: 'tree',
+    than: '<div class="bac-row">' + gom.map(function (g) {
+      var n = demBac[g.cap] || 0;
+      return '<div class="bac' + (g.cap <= 2 ? ' cao' : '') + (n ? '' : ' rong') + '">' +
+        '<div class="bac-n">' + HM.esc(t('cap')) + ' ' + g.cap + '</div>' +
+        '<div class="bac-t">' + HM.esc(g.ten.join(' · ')) + '</div>' +
+        '<div class="bac-d">' + HT.fmt.n(n) + ' ' + HM.esc(t('soNguoi')) + '</div></div>';
+    }).join('') + '</div>' });
+  return thang +
+    '<div class="bar"><div class="srch">' + HM.icon('tim') + '<input type="search" data-tim placeholder="' + HM.esc(t('cTen')) + '…" value="' + HM.esc(LOC.tim) + '"></div></div>' +
     HM.the({ thoBody: true, than: '<div class="tw"><table class="t"><thead><tr><th>' + HM.esc(t('cTen')) + '</th><th>' + HM.esc(t('cKhoi')) + '</th><th>' + HM.esc(t('cTo')) + '</th><th>' + HM.esc(t('cCd')) + '</th><th>' + HM.esc(t('cTs')) + '</th><th>' + HM.esc(t('cTt')) + '</th></tr></thead><tbody>' +
       ds.map(function (x) {
         var k = cay.khoi.filter(function (y) { return y.id === x.boPhan; })[0], to = k ? k.to.filter(function (y) { return y.id === x.to; })[0] : null;
         var giu = ts.map(function (a) { var n = demGiu(A, a.id, x.id); return n ? HT.fmt.n(n) + ' ' + (vi ? a.vi : a.en).toLowerCase() : null; }).filter(Boolean).join(' · ');
         return '<tr class="pick" data-ns="' + HM.esc(x.id) + '"><td>' + HM.tenBia({ ten: x.name, seed: x.email, phu: x.email + (x.id === me.id ? ' · ' + (vi ? 'bạn' : 'you') : '') }) + '</td>' +
           '<td>' + HM.esc(k ? (vi ? k.vi : k.en) : x.boPhan) + '</td><td>' + HM.esc(to ? (vi ? to.vi : to.en) : '—') + '</td>' +
-          '<td>' + HM.esc(vi ? x.title.split(' · ')[0] : x.titleEn.split(' · ')[0]) + (x.cap >= 2 ? ' <span class="tag ok">' + HM.esc(t('cap')) + ' ' + x.cap + '</span>' : '') + '</td>' +
+          '<td>' + HM.esc(vi ? x.title.split(' · ')[0] : x.titleEn.split(' · ')[0]) + ' <span class="tag ' + (x.cap <= 2 ? 'ok' : '') + '">' + HM.esc(t('cap')) + ' ' + x.cap + '</span>' + '</td>' +
           '<td style="font-size:12.5px">' + (giu || '<span class="nil">—</span>') + '</td>' +
           '<td>' + HM.tag(x.active ? t('dangLam') : t('daKhoa'), x.active ? 'ok' : '') + '</td></tr>';
       }).join('') + '</tbody></table></div>' });
@@ -19370,7 +18989,7 @@ function moNhanSu(c, cay, id) {
   var k = cay.khoi.filter(function (y) { return y.id === x.boPhan; })[0], to = k ? k.to.filter(function (y) { return y.id === x.to; })[0] : null;
   var ts = A.toChuc.taiSan().filter(function (a) { return ['taiKhoanDoiTac', 'nenTang', 'ticket', 'khieuNai'].indexOf(a.id) >= 0; }).map(function (a) { return { a: a, n: demGiu(A, a.id, x.id) }; }).filter(function (y) { return y.n; });
   c.nganTruot(
-    HM.kv([{ t: t('fEmail'), v: x.email }, x.phone ? { t: t('fDt'), v: x.phone } : null, { t: t('cKhoi'), v: k ? (vi ? k.vi : k.en) : x.boPhan }, { t: t('cTo'), v: to ? (vi ? to.vi : to.en) : '—' }, { t: t('cCd'), v: (vi ? x.title : x.titleEn).split(' · ')[0] + (x.cap >= 2 ? ' · ' + t('capMo') : '') }, { t: t('cTt'), v: x.active ? t('dangLam') : t('daKhoa') }]) +
+    HM.kv([{ t: t('fEmail'), v: x.email }, x.phone ? { t: t('fDt'), v: x.phone } : null, { t: t('cKhoi'), v: k ? (vi ? k.vi : k.en) : x.boPhan }, { t: t('cTo'), v: to ? (vi ? to.vi : to.en) : '—' }, { t: t('cCd'), v: (vi ? x.title : x.titleEn).split(' · ')[0] + ' · ' + t('cap') + ' ' + x.cap + (x.cap <= 2 ? ' · ' + t('capMo') : '') }, { t: t('cTt'), v: x.active ? t('dangLam') : t('daKhoa') }]) +
     '<h4 class="sec">' + HM.esc(t('cTs')) + '</h4>' + (ts.length ? '<div class="org-ts">' + ts.map(function (y) { return '<span><b>' + HT.fmt.n(y.n) + '</b> ' + HM.esc(vi ? y.a.vi : y.a.en) + '</span>'; }).join('') + '</div>' : '<p class="say">' + HM.esc(t('chuaCo')) + '</p>') +
     (to && to.nhiemVu.length ? '<h4 class="sec">' + HM.esc(t('nhiemVu')) + '</h4>' + veNhiemVu(to.nhiemVu, vi) : '') +
     (mgmt ? '<div class="btnrow" style="margin-top:16px"><button type="button" class="btn pri" data-chuyen>' + HM.esc(t('chuyen')) + '</button><button type="button" class="btn" data-sua>' + HM.esc(t('sua')) + '</button>' +

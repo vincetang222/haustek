@@ -916,7 +916,7 @@ check("Vận hành: không có tiền — ví, bảng kê, dự báo doanh thu, 
   must(!A.quyen.man("chi-tra") && !A.quyen.man("doi-tac") && A.quyen.man("phat-hanh") && A.quyen.man("muc-tra"), "ma trận màn cho vận hành sai");
   return "ví / dự báo / đề xuất chặn · dự báo lượt nghe sạch";
 });
-check("Hỗ trợ: đọc hồ sơ phát hành và chất lượng, không xử lý hồ sơ, không tạo đề xuất, không thấy đối tác trong tìm nhanh", () => {
+check("Hỗ trợ: đọc hồ sơ phát hành và danh mục, không xử lý hồ sơ, không tạo đề xuất, không thấy đối tác hay tiền", () => {
   nhu("S05");
   must(A.releases.list().length >= 0 && A.quality().rows.length >= 0, "hỗ trợ mất quyền đọc");
   const r = A.releases.list().find(x => x.status === "submitted");
@@ -925,7 +925,12 @@ check("Hỗ trợ: đọc hồ sơ phát hành và chất lượng, không xử 
   mustThrow(() => A.setPlatformRate("Spotify", 1, "", "x"), "mức trả");
   const kq = A.search("night", 8);
   must(kq.parties.length === 0 && kq.docs.every(d => A.quyen.man(d.di)), "tìm nhanh cho hỗ trợ lộ đối tác / hồ sơ ngoài quyền");
-  must(!A.quyen.man("danh-muc") && A.quyen.man("quyen") && A.quyen.man("ho-tro"), "ma trận màn cho hỗ trợ sai");
+  /* Chất lượng lượt nghe từ vòng 14 là một tab TRONG trang Danh mục, vì
+     đó là số liệu của bài hát. Hỗ trợ vốn đã có nhóm hàm danhMuc để đọc
+     quality(), nên giờ mở được cả trang; họ vẫn không sửa được gì ở đó. */
+  must(A.quyen.man("danh-muc") && A.quyen.nhom("danhMuc"), "hỗ trợ phải mở được Danh mục để tới tab Chất lượng lượt nghe");
+  must(A.quyen.man("quyen") && A.quyen.man("ho-tro"), "ma trận màn cho hỗ trợ sai");
+  must(!A.quyen.man("muc-tra") && !A.quyen.man("ke-toan") && !A.quyen.man("doi-tac"), "hỗ trợ không được thấy tiền hay sổ đối tác");
   return "đọc được, không sửa; tìm nhanh không có đối tác";
 });
 check("Chuông và tìm nhanh chỉ dẫn tới màn mà vai đó mở được", () => {
@@ -1027,10 +1032,12 @@ check("Nhân sự nằm trong state: giám đốc thêm / chuyển / khoá; vai 
   nhu("S02"); mustThrow(() => A.toChuc.themKhoi({ vi: "Khối lạ", vai: "ops" }, "x"), "vận hành thêm khối");
   nhu("S01");
   const x = A.toChuc.themNhanSu({ name: "Phan Thử Việc", email: "thuviec@haustek-group.com", boPhan: "kinh-doanh", to: "marketing", chucDanh: "chuyen-vien" }, "x");
-  must(x.role === "sales" && x.cap === 1 && /Marketing/.test(x.title), "vai / chức vụ không suy ra từ khối");
+  /* Thang cấp: SỐ NHỎ LÀ CẤP CAO. Chuyên viên là Level 4, trưởng bộ phận Level 2. */
+  must(x.role === "sales" && x.cap === 4 && /Marketing/.test(x.title), "vai / chức vụ không suy ra từ khối");
   must(A.staff.get(x.id) && A.state().staff.some(s => s.id === x.id), "nhân sự mới không vào state");
   const y = A.toChuc.chuyenNhanSu(x.id, { boPhan: "van-hanh", to: "du-lieu", chucDanh: "truong-bo-phan" }, "x");
   must(y.role === "ops" && y.cap === 2, "chuyển khối không đổi vai");
+  must(A.quyen.capToiDa === 6 && A.quyen.capBac()[0].cap === 1 && A.quyen.capBac().slice(-1)[0].cap === 6, "thang cấp phải chạy từ Level 1 đến Level 6");
   const k = A.toChuc.themKhoi({ vi: "Pháp chế", vai: "support", chucNang: "Hợp đồng", taiSan: "khieuNai" }, "x");
   must(k.vai === "support" && k.man.length === A.quyen.bang().khoi.find(z => z.vai === "support").man.length, "khối mới không thừa hưởng hồ sơ quyền");
   A.toChuc.khoaNhanSu(x.id, false, "x"); must(!A.toChuc.nhanSu().find(z => z.id === x.id).active, "không khoá được");
@@ -1091,6 +1098,68 @@ check("Hồ sơ phát hành đầy đủ: bảng kiểm tách bắt buộc / khu
   must(H.api.releases("artist", A1.id).submissions.find(x => x.id === r.id).kiem.diem === 100, "đối tác không thấy bảng kiểm");
   nhu("S01");
   return r.id + " · kiểm " + k1.kiem.batBuoc + " mục bắt buộc, " + (k1.kiem.tong - k1.kiem.batBuoc) + " khuyến nghị";
+});
+
+/* Mức trả nền tảng giữ HAI số: nền tảng trả về Haustek, và Haustek trả
+   đối tác. Chênh lệch là biên — số nhạy nhất trong sản phẩm. Phép kiểm này
+   là hàng rào: biên không được rời khỏi tay Level 1–2. */
+check("Biên mức trả nền tảng không rời cổng nội bộ và không xuống dưới Level 2", () => {
+  nhu("S01");
+  const r0 = A.platformRatesFull();
+  const nt = r0[0].name;
+  A.setPlatformRate(nt, 4.4, "OneRPM tháng 8", "Giám đốc", 4.0);
+  const r = A.platformRatesFull().find(x => x.name === nt);
+  must(Math.abs(r.per1k - 4.4) < 1e-6 && Math.abs(r.khach - 4.0) < 1e-6, "hai mức không lưu đúng");
+  must(Math.abs(r.bien - 0.4) < 1e-6 && Math.abs(r.bienPct - 0.0909) < 0.001, "biên tính sai");
+  mustThrow(() => A.setPlatformRate(nt, 4.0, "", "x", 4.4), "mức trả đối tác cao hơn mức nền tảng trả về");
+  /* mặc định: không nhập mức đối tác thì hai mức bằng nhau, biên bằng 0 */
+  A.setPlatformRate(nt, 4.4, "", "Giám đốc");
+  must(A.platformRatesFull().find(x => x.name === nt).bien === 0, "bỏ trống mức đối tác phải cho biên 0");
+  A.setPlatformRate(nt, 4.4, "OneRPM tháng 8", "Giám đốc", 4.0);
+
+  /* cấp dưới Level 2 không mở được trang, và vai không phải giám đốc không gọi được hàm */
+  ["S02", "S03", "S05", "S07"].forEach(id => { const me = nhu(id);
+    must(!A.quyen.man("muc-tra") || me.cap <= A.quyen.capTruong, "Level " + me.cap + " vẫn mở được Mức trả nền tảng");
+    mustThrow(() => A.platformRatesFull(), "vai " + me.role + " đọc được mức trả đầy đủ");
+    mustThrow(() => A.setPlatformRate("Spotify", 1, "", "x", 1), "vai " + me.role + " đặt được mức trả"); });
+  nhu("S01");
+
+  /* cổng đối tác: không gói nào mang khach, bien hay bienPct */
+  /* quét MỌI hàm của cổng đối tác nhận (role, partyId): gói nào cũng phải sạch */
+  const goiDs = [];
+  Object.keys(H.api).forEach(k => {
+    const f = H.api[k];
+    if (typeof f !== "function" || f.length < 2) return;
+    ["artist", "label"].forEach(vai => {
+      const id = vai === "artist" ? A1.id : L1.id;
+      try { goiDs.push(f.call(H.api, vai, id)); } catch (e) {}
+    });
+  });
+  must(goiDs.length > 10, "quét được quá ít gói của cổng đối tác (" + goiDs.length + ")");
+  const goi = JSON.stringify(goiDs);
+  ["\"khach\"", "\"bien\"", "\"bienPct\""].forEach(k => must(goi.indexOf(k) < 0, "cổng đối tác lộ " + k));
+  must(H.api.platformRatesFull === undefined && H.api.setPlatformRate === undefined, "cổng đối tác có mặt đặt mức trả");
+  return nt + " · nền tảng " + H.fmt.usd(4.4) + " → đối tác " + H.fmt.usd(4.0) + " · biên 9,1%";
+});
+
+/* Trang Tổ chức chặn theo CẤP chứ không theo vai: trưởng bộ phận kinh
+   doanh cũng là quản lý và phải vào được, còn chuyên viên cùng vai thì
+   không. Chặn theo vai sẽ chặn nhầm cả hai chiều. */
+check("Cây tổ chức chỉ mở cho Level 1–2, mọi khối; cấp dưới bị chặn dù cùng vai", () => {
+  const truong = nhu("S04");   /* kinh doanh · trưởng bộ phận */
+  must(truong.cap === 2 && A.quyen.man("to-chuc"), "trưởng bộ phận kinh doanh phải vào được cây tổ chức");
+  const cv = nhu("S03");       /* kinh doanh · chuyên viên, CÙNG vai với S04 */
+  must(cv.role === truong.role, "hai người thử phải cùng vai thì phép kiểm mới có nghĩa");
+  must(cv.cap === 4 && !A.quyen.man("to-chuc"), "chuyên viên cùng vai vẫn vào được cây tổ chức");
+  const gd = nhu("S01");
+  must(gd.cap === 1 && A.quyen.man("to-chuc"), "giám đốc phải vào được");
+  ["S02", "S05", "S07"].forEach(id => { const me = nhu(id);
+    must(A.quyen.man("to-chuc") === (me.cap <= A.quyen.capTruong), "vai " + me.role + " Level " + me.cap + " sai cổng cây tổ chức"); });
+  nhu("S01");
+  const bac = A.quyen.capBac();
+  must(bac[0].id === "giam-doc" && bac.slice(-1)[0].id === "thuc-tap", "thang cấp phải bắt đầu ở giám đốc và kết ở thực tập sinh");
+  must(bac.every(b => b.cap >= 1 && b.cap <= 6), "cấp phải nằm trong 1–6");
+  return "Level 1–2 vào được · Level 4 bị chặn · thang " + bac.length + " bậc";
 });
 
 check("Bảng tính ROI hợp đồng: ba vai có quyền đề xuất dùng được, vận hành và hỗ trợ bị chặn, cổng đối tác không có", () => {

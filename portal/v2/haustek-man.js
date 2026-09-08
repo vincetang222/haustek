@@ -39,7 +39,7 @@ function so(list) {
   return '<div class="kpis">' + list.map(function (k) {
     return '<div class="kpi' + (k.lon ? ' hero' : '') + '"' +
       (k.tip ? ' data-tip="' + esc(k.tip) + '"' : '') + '>' +
-      '<div class="l">' + esc(k.l) + '</div>' +
+      '<div class="l">' + (k.icon === false ? '' : icon(k.icon || suyHieu(k.l).icon)) + esc(k.l) + '</div>' +
       /* số dài (từ 12 ký tự, cỡ hàng tỷ) hạ cỡ chữ một bậc để không tràn ô ở khung hẹp */
       '<div class="v' + (!k.html && String(k.v == null ? '' : k.v).length >= 12 ? ' dai' : '') + '"' + (k.mau ? ' style="color:' + k.mau + '"' : '') + '>' + (k.html || esc(k.v)) + '</div>' +
       (k.s ? '<div class="s">' + (k.sHtml ? k.s : esc(k.s)) + '</div>' : '') +
@@ -51,12 +51,53 @@ function so(list) {
 }
 
 /* ---- thẻ ---- */
+/* Tiêu đề khối nằm TRONG một huy hiệu có icon và nền tô theo loại.
+   o.mau: 'accent' | 'ok' | 'warn' | 'no' | 'tho' — bỏ trống thì suy từ tên
+   o.icon: tên icon — bỏ trống thì cũng suy từ tên
+
+   Vì sao suy từ tên chứ không bắt mỗi thẻ tự khai: hơn hai trăm thẻ trong
+   sản phẩm, khai tay thì vừa sót vừa lệch nhau. Suy từ tên cho mỗi thẻ một
+   mốc thị giác đúng nghĩa ngay, mà thẻ nào cần khác vẫn khai đè được.
+   Bảng dưới đọc theo THỨ TỰ: từ khoá hẹp đứng trước từ khoá rộng, vì
+   "quá hạn thanh toán" phải ra cảnh báo chứ không ra tiền. */
+var HIEU = [
+  [/quá hạn|chậm|vấn đề|lỗi|từ chối|rủi ro|cảnh báo|bất thường|khiếu nại|tranh chấp|thiếu|chưa khớp|gian lận/i, 'alert', 'no'],
+  [/chờ|cần |đang xử lý|hàng đợi|sắp|tồn|chưa /i, 'clock', 'warn'],
+  [/đã duyệt|đã xong|hoàn tất|đạt|thành công|đã chuyển|đã trả|đã ghi/i, 'check', 'ok'],
+  [/roi|dự báo|tăng trưởng|xu hướng|chỉ tiêu|hiệu quả|so sánh|phân bổ|thống kê|biểu đồ/i, 'chart', 'accent'],
+  [/doanh thu|tiền|thanh toán|chi trả|tạm ứng|ứng |ví |phí|thuế|tỷ giá|hoá đơn|số dư|mức trả|giá /i, 'cash', 'accent'],
+  [/tỷ lệ|chia sẻ|chia |quy đổi|đổi /i, 'swap', 'accent'],
+  [/bảng kê|báo cáo|hồ sơ|phát hành|tài liệu|chứng từ|file|xuất /i, 'file', 'accent'],
+  [/kế toán|sổ |bút toán|nhật ký/i, 'book', 'accent'],
+  [/bài hát|bản ghi|danh mục|track|album|đĩa|lượt nghe|playlist/i, 'disc', 'accent'],
+  [/nền tảng|cửa hàng|kênh|store|spotify|apple|youtube/i, 'shop', 'accent'],
+  [/đối tác|nghệ sĩ|label|khách|nhân sự|đội |nhân viên|người |tài khoản|liên hệ/i, 'user', 'accent'],
+  [/tổ chức|cây |khối |bộ phận|phân quyền|quyền/i, 'tree', 'accent'],
+  [/kỳ |tháng|quý|năm|lịch|thời hạn|hạn /i, 'cal', 'accent'],
+  [/ticket|hỗ trợ|yêu cầu|đề nghị/i, 'ask', 'accent'],
+  [/chiến dịch|quảng bá|marketing/i, 'globe', 'accent'],
+  [/cài đặt|cấu hình|quản trị|hệ thống/i, 'gear', 'accent'],
+  [/danh sách|bảng |dòng |chi tiết/i, 'list', 'accent'],
+  [/nhiệm vụ|việc |quy trình|bước/i, 'layers', 'accent']
+];
+function suyHieu(chu) {
+  var t = String(chu || '').replace(/<[^>]*>/g, ' ');
+  for (var i = 0; i < HIEU.length; i++) if (HIEU[i][0].test(t)) return { icon: HIEU[i][1], mau: HIEU[i][2] };
+  return { icon: (HT.manNay && HT.manNay.icon) || 'grid', mau: 'accent' };
+}
+function huyHieu(chu, o) {
+  o = o || {};
+  var g = suyHieu(chu);
+  var ic = o.icon === false ? '' : icon(o.icon || g.icon);
+  return '<h2 class="cbadge cb-' + (o.mau || g.mau) + '">' + ic + '<span>' + chu + '</span></h2>';
+}
 function the(o) {
   return '<div class="card"' + (o.id ? ' id="' + esc(o.id) + '"' : '') + '>' +
     (o.dai ? '<div class="ribbon ' + o.dai.kieu + '">' + icon(o.dai.icon || 'info') +
       '<span>' + o.dai.chu + '</span></div>' : '') +
-    (o.h2 || o.hanhDong ? '<div class="card-h"><div style="min-width:0"><h2>' + (o.h2 || '') + giup(o.p) + '</h2>' +
-      '</div><div class="sp"></div>' +
+    (o.h2 || o.hanhDong ? '<div class="card-h">' +
+      (o.h2 ? huyHieu(o.h2, o) + giup(o.p) : '') +
+      '<div class="sp"></div>' +
       (o.hanhDong ? '<div class="btnrow">' + o.hanhDong + '</div>' : '') + '</div>' : '') +
     (o.thoBody ? o.than : '<div class="card-b">' + (o.than || '') + '</div>') +
     (o.chan ? '<div class="card-f">' + o.chan + '</div>' : '') + '</div>';
@@ -361,7 +402,7 @@ function xepHang(rows, o) {
 }
 
 global.HM = {
-  dau: dau, so: so, the: the, tabs: tabs, trong: trong, ghi: ghi, menu: menu, kv: kv,
+  dau: dau, so: so, the: the, huyHieu: huyHieu, suyHieu: suyHieu, tabs: tabs, trong: trong, ghi: ghi, menu: menu, kv: kv,
   tag: tag, cham: cham, bam: bam, doi: doi, nhap: nhap, csv: csv,
   lech: lech, lechHtml: lechHtml, dai: dai, esc: esc, icon: icon,
   nho: nho, quenHet: quenHet, moc: moc,

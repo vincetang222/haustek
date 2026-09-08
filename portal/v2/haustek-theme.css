@@ -31,20 +31,23 @@
      trái, ghi chú dưới bảng), và ở cỡ đó chuẩn WCAG AA đòi 4,5:1. Bộ màu
      ban đầu chỉ đạt 3,1:1 trên nền thẻ trắng — nhìn thì "nhã", đọc thì
      không ra, nhất là trên laptop nghiêng màn. */
-  --bg:      #F2F4F7;
+  /* Nền trang tối hơn một bậc so với trước (#F2F4F7): thẻ trắng nổi hẳn
+     lên thay vì chìm. Tương phản nền-trang với mặt-thẻ lên 1,10:1 → 1,17:1,
+     đủ để mắt tách khối mà không thành hai mảng loang. */
+  --bg:      #EBEEF3;
   --card:    #FFFFFF;
   --raised:  #FFFFFF;
-  --card-line: #E1E6EC;   /* viền mảnh của thẻ, ngả lạnh theo màu nhấn */
+  --card-line: #D3DAE3;   /* viền thẻ đậm hơn: 1,32:1 so với mặt thẻ */
   --ink:     #1A2129;
   --ink-2:   #5B6672;
   --faint:   #626B75;
-  --line:    #E6E9ED;
-  --line-2:  #D5DAE0;
-  --head:    #F2F4F6;
-  --zebra:   #FAFBFC;
-  --fill:    #ECEEF1;
-  --band:    #F7F9FA;
-  --sel:     #E6EEFA;
+  --line:    #DFE4EA;
+  --line-2:  #C8D0DA;
+  --head:    #EDF0F4;
+  --zebra:   #F7F9FB;
+  --fill:    #E6EAEF;
+  --band:    #F1F5F8;
+  --sel:     #DEE9F8;
 
   /* ---- màu mang nghĩa ---- */
   --accent:     #0C7287;   /* màu dữ liệu chính, suy từ ice blue của brand */
@@ -73,7 +76,9 @@
   /* Bóng hai lớp: một lớp tiếp xúc rất gần, một lớp toả rộng và mờ. Một
      bóng phẳng 1px khiến mọi thẻ trông như dán lên nền; hai lớp thì thẻ
      "đứng" lên khỏi nền mà vẫn nhẹ. */
-  --shadow:   0 1px 2px rgba(20,32,44,.04);
+  /* Bóng hai tầng: một đường sát mép để tách thẻ khỏi nền, một quầng mềm
+     bên dưới để thẻ có chiều. Một tầng .04 như trước gần như vô hình. */
+  --shadow:   0 1px 1px rgba(20,32,44,.05), 0 2px 6px -1px rgba(20,32,44,.07);
   --shadow-2: 0 2px 6px rgba(20,32,44,.06), 0 14px 36px -12px rgba(20,32,44,.18);
   --shadow-lift: 0 2px 8px -4px rgba(12,114,135,.35);
   --hero-wash: linear-gradient(135deg, rgba(12,114,135,.10), rgba(12,114,135,0) 55%);
@@ -102,19 +107,19 @@
     --on-chrome-2: #A6B5C2;
     --on-chrome-3: #82939F;
 
-    --bg:      #0E1820;
-    --card:    #15212B;
-    --raised:  #1A2833;
+    --bg:      #0B141B;
+    --card:    #172532;
+    --raised:  #1E2E3B;
     --ink:     #E8EEF4;
     --ink-2:   #A9B7C4;
     --faint:   #909FAD;
-    --line:    #233240;
-    --line-2:  #2E4050;
-    --head:    #1A2732;
-    --zebra:   #17232E;
-    --fill:    #22303C;
-    --band:    #1A2934;
-    --sel:     #1B3242;
+    --line:    #2A3B4B;
+    --line-2:  #384C5E;
+    --head:    #1E2E3B;
+    --zebra:   #1A2A37;
+    --fill:    #263646;
+    --band:    #1D2E3B;
+    --sel:     #1F3A4D;
 
     --accent:     #4CB8CE;
     --accent-2:   #6FCADD;
@@ -137,7 +142,7 @@
     --on-danger: #350810;
     --danger-chrome: #FF8FA1;
 
-    --shadow:   0 1px 2px rgba(0,0,0,.32);
+    --shadow:   0 1px 1px rgba(0,0,0,.34), 0 2px 6px -1px rgba(0,0,0,.30);
     --shadow-2: 0 10px 30px rgba(0,0,0,.45);
 
     color-scheme: dark;
@@ -421,11 +426,39 @@ details.hoc>div{margin-top:10px}
    khung cuộn, nên đầu cột dính (position:sticky) bám theo trang được. */
 .card{background:var(--card);border-radius:var(--r);box-shadow:var(--shadow);overflow:clip;
   margin-bottom:14px;border:1px solid var(--card-line)}
-.card-h{display:flex;align-items:flex-start;gap:14px;padding:16px 18px 0;flex-wrap:wrap}
-.card-h h2{font-size:15px;font-weight:600;letter-spacing:-.008em;text-wrap:balance}
-.card-h p{font-size:12.5px;color:var(--faint);margin-top:2px}
+/* Đầu thẻ có một dải nền nhạt và một đường kẻ dưới: mắt tách được "đây là
+   nhãn của khối" khỏi "đây là nội dung" mà không cần đọc. Không có dải này
+   thì tiêu đề và số liệu nằm trên cùng một mặt phẳng trắng — chính là chỗ
+   trông phẳng. */
+.card-h{display:flex;align-items:center;gap:12px;padding:11px 14px;flex-wrap:wrap;
+  background:var(--head);border-bottom:1px solid var(--card-line)}
 .card-h .sp{flex:1}
 .card-b{padding:16px 18px}
+
+/* ---- huy hiệu tiêu đề: tên khối nằm TRONG huy hiệu ---- */
+/* Huy hiệu là một viên có icon và tên, nền tô theo loại khối. Nó vừa là
+   nhãn vừa là mốc thị giác: liếc một cái là biết khối này nói về tiền, về
+   cảnh báo hay về việc đang chạy. */
+.cbadge{display:inline-flex;align-items:center;gap:7px;min-width:0;
+  height:26px;padding:0 11px 0 9px;border-radius:13px;
+  font-size:13px;font-weight:600;letter-spacing:-.006em;
+  background:var(--cb-bg,var(--fill));color:var(--cb-ink,var(--ink));
+  border:1px solid var(--cb-line,transparent)}
+.cbadge svg{width:14px;height:14px;flex:none;stroke:currentColor;fill:none;stroke-width:1.8;
+  stroke-linecap:round;stroke-linejoin:round;opacity:.9}
+.cbadge span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cb-accent{--cb-bg:var(--accent-lo);--cb-ink:var(--accent);--cb-line:var(--accent-3)}
+.cb-ok    {--cb-bg:var(--ok-lo);    --cb-ink:var(--ok);    --cb-line:color-mix(in srgb,var(--ok) 34%,transparent)}
+.cb-warn  {--cb-bg:var(--warn-lo);  --cb-ink:var(--warn);  --cb-line:color-mix(in srgb,var(--warn) 34%,transparent)}
+.cb-no    {--cb-bg:var(--danger-lo);--cb-ink:var(--danger);--cb-line:color-mix(in srgb,var(--danger) 34%,transparent)}
+.cb-tho   {--cb-bg:var(--fill);     --cb-ink:var(--ink);   --cb-line:var(--line-2)}
+/* Số đếm trong ngoặc ở tiêu đề thẻ dùng .muted. KHÔNG được pha mờ nó:
+   pha 72% trên nền tô của huy hiệu chỉ còn 1,53:1, dưới xa chuẩn AA cho
+   chữ 13px. Muốn nó nhẹ hơn thì giảm ĐỘ ĐẬM, giữ nguyên màu. */
+.cbadge .muted{color:inherit;font-weight:500}
+/* Dấu ? đứng NGOÀI huy hiệu: nằm trong thì nó ăn theo màu tô và trông như
+   một phần của nhãn, bấm nhầm suốt. */
+.card-h .help{margin-left:-4px}
 .card-f{padding:12px 18px;border-top:1px solid var(--line);font-size:12.5px;color:var(--ink-2);
   display:flex;align-items:center;gap:14px;flex-wrap:wrap}
 .grid{display:grid;gap:14px;margin-bottom:14px}
@@ -445,17 +478,26 @@ details.hoc>div{margin-top:10px}
    (5 ô, 196px ở 1280px) hoặc trong một thẻ (152px) — cỡ chữ theo vw
    không biết điều đó, và "$3.426.998" 30px tràn sang ô bên cạnh.
    Con số 10 ký tự rộng ≈ 5,8 lần cỡ chữ, ô trừ lề 36px: cỡ = (ô − 36) / 5,8. */
-.kpi{padding:15px 18px;border-left:1px solid var(--line);container-type:inline-size;min-width:0}
+.kpi{padding:13px 16px 15px;border-left:1px solid var(--line-2);container-type:inline-size;min-width:0}
 .kpi:first-child{border-left:0}
-.kpi .l{font-size:12px;color:var(--faint);margin-bottom:5px;letter-spacing:.01em}
+/* Nhãn ô số cũng là huy hiệu, nhưng nhỏ và nhạt hơn huy hiệu thẻ: nếu tô
+   đậm bằng nhau thì cả dải ô số thành một hàng viên sặc sỡ, đọc mệt hơn
+   là không có gì. */
+.kpi .l{display:inline-flex;align-items:center;gap:6px;max-width:100%;
+  height:21px;padding:0 9px;margin-bottom:7px;border-radius:11px;
+  background:var(--fill);color:var(--ink-2);
+  font-size:11.5px;font-weight:600;letter-spacing:.005em;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.kpi .l svg{width:12px;height:12px;flex:none;stroke:currentColor;fill:none;stroke-width:1.9;
+  stroke-linecap:round;stroke-linejoin:round;opacity:.85}
 /* Số lớn đứng một mình dùng chữ số tỉ lệ (không tabular): tabular cho mỗi
    chữ số bề rộng của số 0, nên "121" ở cỡ 30px nhìn rời rạc. Tabular chỉ
    dành cho cột số phải thẳng hàng. */
 .kpi .v{font-size:clamp(17px,calc(17cqi - 6px),22px);font-weight:600;font-variant-numeric:tabular-nums;
   letter-spacing:-.015em;white-space:nowrap}
 .kpi .s{font-size:11.5px;color:var(--ink-2);margin-top:4px}
-.kpi.hero{background:var(--card);position:relative;box-shadow:inset 3px 0 0 var(--accent)}
-.kpi.hero .l{color:var(--ink-2)}
+.kpi.hero{background:var(--band);position:relative;box-shadow:inset 3px 0 0 var(--accent)}
+.kpi.hero .l{background:var(--accent-lo);color:var(--accent)}
 .kpi.hero .v{font-size:clamp(20px,calc(17cqi - 6px),28px);letter-spacing:-.02em;color:var(--accent)}
 .kpi .v.dai{font-size:clamp(15px,calc(13cqi - 6px),19px)}
 .kpi.hero .v.dai{font-size:clamp(18px,calc(14.5cqi - 6px),26px)}
@@ -1343,3 +1385,19 @@ table.t td.num,table.t th.num,.page-kpi .v,.kpi .v,.kv dd,.mono{font-variant-num
 .say-list{margin:0;padding-left:18px;font-size:12.5px;color:var(--ink-2);line-height:1.6}
 .say-list li+li{margin-top:7px}
 table.t tr.sum td{background:var(--fill);border-top:1px solid var(--line-2)}
+
+/* ---- thang cấp trong Tổ chức ---- */
+/* Sáu bậc nằm ngang, bậc cao đậm hơn bậc thấp. Bậc chưa có ai thì nhạt
+   hẳn: tổ chức đang thiếu tầng nào nhìn ra ngay. */
+.bac-row{display:grid;gap:8px;grid-template-columns:repeat(auto-fit,minmax(min(100%,132px),1fr))}
+.bac{border:1px solid var(--line-2);border-radius:10px;padding:10px 12px;background:var(--band)}
+.bac.cao{border-color:var(--accent-3);background:var(--accent-lo)}
+.bac.rong{opacity:.55}
+.bac-n{font-size:11.5px;font-weight:600;color:var(--ink-2);letter-spacing:.01em}
+.bac.cao .bac-n{color:var(--accent)}
+.bac-t{font-size:13px;font-weight:600;color:var(--ink);margin-top:3px;line-height:1.3}
+.bac-d{font-size:11.5px;color:var(--faint);margin-top:4px;font-variant-numeric:tabular-nums}
+/* Dòng kịch bản bị khoá: mờ đi nhưng vẫn đọc được, vì lý do khoá nằm ngay
+   trong dòng — ẩn hẳn thì người dùng không biết vì sao mốc không có số. */
+table.t tr.mo td{opacity:.62}
+table.t tr.mo td:first-child{opacity:1}

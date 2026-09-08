@@ -42,7 +42,7 @@ gọi `HAUSTEK.lockdown()` **trước khi** chạy bất cứ trang nào, và kh
 > `localStorage` thì trang nào cùng gốc cũng đọc được. Xem tab **Quản trị → Ranh giới
 > hai cổng** để biết cái gì thật sự chặn được và cái gì không.
 
-## Hai mươi sáu trang nội bộ
+## Hai mươi hai trang nội bộ
 
 | Trang | File | Trả lời câu gì |
 |---|---|---|
@@ -58,14 +58,11 @@ gọi `HAUSTEK.lockdown()` **trước khi** chạy bất cứ trang nào, và kh
 | Danh mục | `man/danh-muc.js` | 50.000 bản ghi, tìm được, lọc bản có vấn đề; mở ra xem dòng tiền, quy trình phát hành, trạng thái từng nền tảng, lượt nghe và doanh thu theo nền tảng theo tháng |
 | Nền tảng | `man/nen-tang.js` | Toàn danh mục: từng nền tảng mang về bao nhiêu lượt nghe, bao nhiêu tiền mỗi kỳ; kỳ thiếu nguồn nào thì cột đó bằng 0 |
 | Bàn làm việc | `man/ban-lam-viec.js` | Trang đầu theo vai: giám đốc (thẻ *Chờ xét duyệt* duyệt / từ chối tại chỗ, đội kinh doanh, dự báo), vận hành, kinh doanh (KPI, chỉ tiêu, *Đề xuất của tôi* và nút đề xuất tạm ứng / hợp đồng), hỗ trợ (ticket, khiếu nại), kế toán (rút tiền, bảng kê, *Cần kiểm số*) |
-| Giao nhận nền tảng | `man/giao-nhan.js` | Tạo và theo dõi yêu cầu giao bản ghi tới nền tảng (theo label, UPC, bản phát hành) |
-| Sửa hàng loạt | `man/sua-hang-loat.js` | Khoá / mở khoá, đổi giá, đổi ngày phát hành, đổi giá track cho danh sách UPC |
 | Đối tác | `man/doi-tac.js` | Quản lý tài khoản đối tác: người phụ trách, doanh thu quý, phân loại, hợp đồng, trạng thái; ngăn hồ sơ có nút *Đề xuất tạm ứng* / *Đề xuất hợp đồng* mở hộp thoại tính ROI sống |
 | Hỗ trợ | `man/ho-tro.js` | Hàng đợi yêu cầu hỗ trợ: hạn, ưu tiên, người phụ trách, trả lời |
 | Quản lý quyền | `man/quyen.js` | Xung đột Content ID và khiếu nại trên nền tảng; cài đặt video theo tài khoản |
 | Theo dõi | `man/theo-doi.js` | Bài hát, tài khoản, bản phát hành đang lên trong cửa sổ 7 / 28 / 60 ngày; yêu thích (lưu trình duyệt, có Lưu / Khôi phục), top hits, đang bùng nổ, số playlist và video ngắn |
-| Bảng giá nền tảng | `man/bang-gia.js` | Nhóm giá của các nền tảng bán tải về: giá album và track theo nền tảng và tiền tệ, nối sang Sửa hàng loạt |
-| Chất lượng lượt nghe | `man/chat-luong.js` | Cảnh báo lượt nghe bất thường gom theo tài khoản (kiểu tách nhỏ để lách ngưỡng), năm tín hiệu có bằng chứng, bài bị nền tảng gắn cờ kèm số lượt nghe bị gỡ khỏi báo cáo, xác nhận / gỡ có nhật ký; sức khoẻ metadata toàn danh mục |
+| Chất lượng lượt nghe | tab trong `man/danh-muc.js` | Cảnh báo lượt nghe bất thường gom theo tài khoản (kiểu tách nhỏ để lách ngưỡng), năm tín hiệu có bằng chứng, bài bị nền tảng gắn cờ kèm số lượt nghe bị gỡ khỏi báo cáo, xác nhận / gỡ có nhật ký; sức khoẻ metadata toàn danh mục |
 | Chia sẻ tác quyền | `man/chia-se.js` | Splits của mọi tài khoản: ai được chia bao nhiêu, lời mời chưa nhận, thu hồi còn dở; xác nhận thay có nhật ký |
 | Chiến dịch | `man/chien-dich.js` | Liên kết thông minh / pre-save, pitch playlist, quảng cáo trả phí của mọi tài khoản, phễu kết quả và chi tiết |
 | Xét duyệt | `man/xet-duyet.js` | Đề xuất tạm ứng và hợp đồng: kinh doanh hoặc đối tác đề xuất, kế toán kiểm số, giám đốc duyệt / từ chối / trả lại. Mỗi đề xuất chụp bản tính lúc tạo: thu nhập ròng 12 kỳ, tăng trưởng, độ dao động, tập trung bài đầu, mức ứng tối đa theo hạng rủi ro, khoản thu hồi, thời gian thu hồi, phí ứng thu về, phần Haustek giữ trong thời gian thu hồi, ROI; hợp đồng so phần Haustek giữ theo phí hiện tại và phí đề xuất. Duyệt xong tự ghi sổ tạm ứng hoặc áp phí mới từ kỳ mở kế tiếp |
@@ -254,14 +251,16 @@ chứ không phải ở từng màn. Ba lớp, cùng một nguồn:
 |---|:-:|:-:|:-:|:-:|:-:|
 | Bàn làm việc, Hỗ trợ | ✓ | ✓ | ✓ | ✓ | ✓ |
 | Tổng quan, Tỷ lệ chia, Quản trị | ✓ | | | | |
+| Tổ chức | Level 1–2 mọi khối, không phân theo vai ||||
 | Kế toán, Thanh toán, Tạm ứng, Chia sẻ tác quyền | ✓ | ✓ | | | |
 | Đối soát & xét duyệt kỳ | ✓ | ✓ | | ✓ | |
 | Xét duyệt | ✓ | ✓ (kiểm số) | ✓ (đề xuất của mình) | | |
 | Tính ROI hợp đồng | ✓ | ✓ | ✓ | | |
 | Đối tác | ✓ | | ✓ (của mình) | | |
 | Chiến dịch | ✓ | | ✓ | ✓ | |
-| Theo dõi, Nhập báo cáo, Khớp ISRC, Giao nhận, Sửa hàng loạt, Bảng giá, Mức trả, Danh mục, Nền tảng | ✓ | | | ✓ | |
-| Chất lượng lượt nghe, Phát hành (hỗ trợ chỉ đọc), Quản lý quyền | ✓ | | | ✓ | ✓ |
+| Theo dõi, Nhập báo cáo, Khớp ISRC, Danh mục, Nền tảng | ✓ | | | ✓ | |
+| Mức trả nền tảng (biên Haustek) | ✓ | | | | |
+| Danh mục (có tab Chất lượng lượt nghe), Phát hành (hỗ trợ chỉ đọc), Quản lý quyền | ✓ | | | ✓ | ✓ |
 
 Trang Quản trị có tab *Phân quyền theo vai* vẽ đúng ma trận này. Cổng đối
 tác đã phân quyền theo tài khoản từ vòng 1: label chỉ thấy label và nghệ sĩ
@@ -363,6 +362,72 @@ một thẻ nhắc lại điều đó.
 Cổng đối tác không có và không nên có: bảng tính này đọc ra phần Haustek
 giữ lại, phí môi giới và biên lợi nhuận. Đối tác muốn biết mình ứng được bao
 nhiêu thì vẫn dùng `k-tam-ung`, chạy trên `advanceOfferOf()` đã lược sạch.
+
+## Vòng 14: hết phẳng, sáu cấp tổ chức, hai mức trả, mốc theo hoà vốn
+
+**Huy hiệu tiêu đề.** Tên mỗi khối nằm TRONG một huy hiệu có icon và nền tô,
+thay vì là một dòng chữ đen trên nền trắng. Đầu thẻ có dải nền và đường kẻ
+dưới, nên mắt tách được "nhãn của khối" khỏi "nội dung" mà không cần đọc.
+Nhãn ô số cũng thành huy hiệu, nhỏ và nhạt hơn.
+
+Icon và màu **suy từ chính tên khối** (`HM.suyHieu`) chứ không bắt mỗi thẻ
+tự khai: sản phẩm có hơn hai trăm thẻ, khai tay thì vừa sót vừa lệch nhau.
+Bảng từ khoá đọc theo thứ tự, từ hẹp trước từ rộng, để "quá hạn thanh toán"
+ra cảnh báo chứ không ra tiền. Thẻ nào cần khác vẫn khai đè `icon` / `mau`.
+
+Tương phản nâng một bậc: nền trang tối hơn (`#F2F4F7` → `#EBEEF3`), viền thẻ
+đậm hơn, bóng hai tầng thay cho một tầng `.04` gần như vô hình, và chế độ tối
+tách tầng rõ hơn. Một cái bẫy gặp ngay: số đếm trong ngoặc ở tiêu đề thẻ pha
+mờ 72% trên nền tô của huy hiệu chỉ còn **1,53:1** — bài đo tương phản bắt
+được; muốn nhẹ hơn thì giảm độ đậm chứ không giảm màu.
+
+**Bốn trang bỏ đi.** Giao nhận nền tảng, Sửa hàng loạt, Bảng giá nền tảng:
+chưa cần ở giai đoạn này. Chất lượng lượt nghe không bỏ mà **gộp vào Danh
+mục bài hát** thành một tab — số liệu lượt nghe là số liệu của bài hát, để
+riêng một trang thì không ai hiểu nó là gì. Nội bộ còn 22 trang.
+
+**Sáu cấp tổ chức, số nhỏ là cấp cao.**
+
+| Level | Chức danh |
+|:-:|---|
+| 1 | Giám đốc |
+| 2 | Quản lý · Trưởng bộ phận |
+| 3 | Trưởng nhóm |
+| 4 | Chuyên viên |
+| 5 | Nhân viên |
+| 6 | Thực tập sinh |
+
+Hệ thống dừng ở Level 6: sâu hơn thì không ai còn biết ai báo cáo cho ai.
+Cách đánh số này NGƯỢC với bản cũ (0 thấp, 3 cao) nên mọi phép so đã đảo
+dấu — `laTruong` giờ là `cap <= 2`.
+
+Trang Tổ chức chặn theo **cấp**, không theo vai (`MAN_CAP`): trưởng bộ phận
+kinh doanh cũng là quản lý và phải vào được, còn chuyên viên cùng vai thì
+không. Chặn theo vai sẽ chặn nhầm cả hai chiều. Tab Nhân sự có một hàng sáu
+bậc kèm số người mỗi bậc, bậc trống thì nhạt hẳn.
+
+**Mức trả nền tảng giữ hai số, và là chỗ nhạy nhất sản phẩm.**
+
+| | Ví dụ |
+|---|---|
+| `per1k` nền tảng trả về Haustek | 4,40 USD / 1.000 lượt |
+| `khach` Haustek trả đối tác | 4,00 USD / 1.000 lượt |
+| biên | 0,40 · 9,1% |
+
+Trang chỉ Level 1–2 mở được, và `platformRatesFull` / `setPlatformRate` chuyển
+sang nhóm hàm `tong` (giám đốc). `api-guard` quét **mọi hàm của cổng đối tác
+nhận (role, partyId)** và đòi không gói nào mang `khach`, `bien` hay `bienPct`.
+
+Còn một câu chưa chốt: mức trả đối tác hiện được **ghi và hiển thị**, chưa nối
+vào đường tính tiền thật — tiền trả đối tác vẫn đi theo phần trăm phí Haustek.
+Hai cơ chế biên chồng nhau thì trả thiếu, nên phải chốt cái nào thắng.
+
+**Mốc thưởng mở khoá theo hoà vốn, không theo lịch.** Khoản ứng gốc hoà vốn
+xong thì mốc 1 mới được ứng; mốc 1 hoà vốn xong mới tới mốc 2. Đây là cách
+duy nhất giữ cho Haustek không ôm hai khoản ứng chưa thu hồi cùng lúc trên
+một đối tác. "Trong vòng N tháng" vì thế là **hạn chót** chứ không phải lịch
+trả: hoà vốn muộn hơn N thì mốc đó không mở, và mọi mốc sau khoá theo dây
+chuyền. Bảng bốn kịch bản hiện cột *Mở khoá* kèm lý do khoá ngay trong dòng.
 
 ## Vòng 13: bỏ hai cơ chế không có thật, chốt tỷ giá và phí chuyển tiền
 
