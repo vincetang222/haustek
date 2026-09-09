@@ -3666,6 +3666,7 @@ const staffByRole = role => STAFF.filter(s => s.role === role);
 const CAP_TOI_DA = 6;      /* Level 6 là thực tập sinh, sâu nhất hệ thống chấp nhận */
 const CAP_TRUONG = 2;      /* từ Level 2 trở lên là cấp quản lý: thấy cả bộ phận */
 const CAP_THAP = CAP_TOI_DA;
+const CAP_GIAM_DOC = 1;    /* bảng giá nền tảng chỉ Level 1 mở được, không phải Level 1–2 */
 const CHUC_DANH = [
   /* Thang cấp theo lối doanh nghiệp: SỐ NHỎ LÀ CẤP CAO. Level 1 là giám
      đốc, Level 6 là thực tập sinh — hệ thống có lớn đến đâu cũng dừng ở 6,
@@ -3697,7 +3698,7 @@ const TAI_SAN = [
   { id: "khieuNai",       vi: "Khiếu nại bản quyền", en: "Rights claims", man: "quyen", dem: () => state.claims.length, gan: id => state.claims.filter(c => c.assignee === id).length }
 ];
 const MAN_TAT_CA = ["ban-lam-viec", "to-chuc", "ho-tro", "tong-quan", "theo-doi", "nhap-so-lieu", "nap-du-lieu", "khop-isrc", "doi-chieu", "phat-hanh", "chien-dich", "quyen", "muc-tra", "chia-se", "xet-duyet", "roi", "nen-tang", "ke-toan", "chi-tra", "tam-ung", "ty-le", "doi-tac", "danh-muc", "quan-tri", "hieu-suat", "hieu-qua-von", "phieu-giao", "xuat-ban"];
-const NHOM_TAT_CA = ["tong", "tien", "doiSoat", "doiTac", "doiTacTao", "deXuat", "deXuatTao", "vanHanh", "nhapLieu", "danhMuc", "theoDoi", "chienDich", "chiaSe", "khieuNai", "hoTro", "quanTri", "phatHanhHo", "nhanSu", "toChuc", "von", "hieuSuat", "quyTrinh", "tacQuyen"];
+const NHOM_TAT_CA = ["tong", "tien", "doiSoat", "chotKy", "kiemSo", "doiTac", "doiTacTao", "deXuat", "deXuatTao", "vanHanh", "nhapLieu", "danhMuc", "theoDoi", "chienDich", "chiaSe", "khieuNai", "hoTro", "quanTri", "phatHanhHo", "nhanSu", "toChuc", "von", "hieuSuat", "quyTrinh", "tacQuyen"];
 const doiTacSapHetHan = me => partiesList({ status: "renew", manager: me && me.role === "sales" && !laTruong(me) ? me.id : undefined }).total;
 const TO_CHUC = [
   { id: "ban-giam-doc", vai: "mgmt", vi: "Ban giám đốc", en: "Management",
@@ -3709,9 +3710,9 @@ const TO_CHUC = [
       { id: "duyet-ky", vi: "Xét duyệt kỳ đã đủ điều kiện", en: "Approve periods that are ready", man: "doi-chieu", dem: () => PERIODS.filter(p => !state.approved[p.k]).length },
       { id: "nhan-su", vi: "Nhân sự chưa gắn tổ / chức danh", en: "People without a team or title", man: "to-chuc", dem: () => STAFF.filter(x => x.active !== false && (!x.to || !x.chucDanh)).length } ] }] },
   { id: "van-hanh", vai: "ops", vi: "Vận hành", en: "Operations",
-    chucNang: { vi: ["Tiếp nhận hồ sơ phát hành, kiểm metadata, cấp ISRC / UPC", "Giao bản ghi tới nền tảng, theo dõi trạng thái lên kệ", "Nạp báo cáo kỳ, khớp ISRC, đối soát trước xét duyệt", "Mức trả nền tảng, danh mục, chất lượng lượt nghe"],
-                en: ["Receive release files, check metadata, assign ISRC / UPC", "Deliver recordings to platforms, track go-live", "Load period reports, match ISRC, reconcile before approval", "Platform rates, catalogue, stream quality"] },
-    man: ["ban-lam-viec", "to-chuc", "ho-tro", "doi-chieu", "chien-dich", "theo-doi", "nhap-so-lieu", "nap-du-lieu", "khop-isrc", "muc-tra", "danh-muc", "nen-tang", "phat-hanh", "phieu-giao", "xuat-ban", "quyen"],
+    chucNang: { vi: ["Tiếp nhận hồ sơ phát hành, kiểm metadata, cấp ISRC / UPC", "Giao bản ghi tới nền tảng, theo dõi trạng thái lên kệ", "Nạp báo cáo kỳ, khớp ISRC, đối soát trước khi giám đốc chốt", "Danh mục, chất lượng lượt nghe"],
+                en: ["Receive release files, check metadata, assign ISRC / UPC", "Deliver recordings to platforms, track go-live", "Load period reports, match ISRC, reconcile before the director closes", "Catalogue, stream quality"] },
+    man: ["ban-lam-viec", "to-chuc", "ho-tro", "doi-chieu", "chien-dich", "theo-doi", "nhap-so-lieu", "nap-du-lieu", "khop-isrc", "danh-muc", "nen-tang", "phat-hanh", "phieu-giao", "xuat-ban", "quyen"],
     nhom: ["doiSoat", "vanHanh", "nhapLieu", "danhMuc", "theoDoi", "chienDich", "khieuNai", "hoTro", "phatHanhHo", "toChuc", "quyTrinh", "tacQuyen"],
     taiSan: ["danhMuc", "hoSoPhatHanh", "nenTang", "baoCaoKy"],
     to: [
@@ -3742,7 +3743,7 @@ const TO_CHUC = [
     chucNang: { vi: ["Chi trả theo kỳ, xử lý rút tiền, bảng kê PDF", "Sổ tạm ứng và thu hồi", "Kiểm số đề xuất trước khi giám đốc duyệt", "Sổ kế toán, thuế khấu trừ, bút toán điều chỉnh"],
                 en: ["Period payouts, withdrawals, PDF statements", "Advance ledger and recoupment", "Check proposal figures before management approval", "Ledger, withholding tax, adjustments"] },
     man: ["ban-lam-viec", "to-chuc", "ho-tro", "ke-toan", "chi-tra", "tam-ung", "chia-se", "doi-chieu", "xet-duyet", "roi", "nhap-so-lieu", "hieu-qua-von", "xuat-ban"],
-    nhom: ["tien", "doiSoat", "deXuat", "chiaSe", "hoTro", "toChuc", "nhapLieu", "von", "quyTrinh", "tacQuyen"],
+    nhom: ["tien", "doiSoat", "kiemSo", "deXuat", "chiaSe", "hoTro", "toChuc", "nhapLieu", "von", "quyTrinh", "tacQuyen"],
     taiSan: ["vi", "tamUng", "bangKe"],
     to: [
       { id: "thanh-toan", vi: "Thanh toán", en: "Payments", nhiemVu: [
@@ -3750,6 +3751,8 @@ const TO_CHUC = [
         { id: "bang-ke", vi: "Bảng kê chưa đính ở kỳ mới nhất đã duyệt", en: "Statements missing for the latest approved period", man: "chi-tra", dem: () => { const ap = PERIODS.filter(p => state.approved[p.k]); const k = ap.length ? ap[ap.length - 1].k : null; return k ? Math.max(0, mainParties().length - Object.keys(state.statements[k] || {}).length) : 0; } } ] },
       { id: "ke-toan", vi: "Kế toán", en: "Accounting", nhiemVu: [
         { id: "kiem-so", vi: "Đề xuất chờ kiểm số", en: "Proposals awaiting figure check", man: "xet-duyet", dem: () => proposalsOf().filter(p => p.status === "submitted").length },
+        { id: "sai-lech", vi: "Nguồn báo cáo lệch, chờ kiểm", en: "Feeds with a variance awaiting a check", man: "doi-chieu",
+          dem: () => { let n = 0; for (let p = 0; p < P; p++) { if (state.approved[PERIODS[p].k]) continue; FEEDS.forEach((f, j) => { const t = feedTotals(p, j); if (t && Math.abs(t.diff) > 0.5 && !state.variance[PERIODS[p].k + ":" + j]) n++; }); } return n; } },
         { id: "tam-ung", vi: "Tạm ứng còn phải thu hồi", en: "Advances still recouping", man: "tam-ung", dem: () => Object.keys(state.advances || {}).filter(k => (state.advances[k].balance || 0) > 0).length },
         { id: "but-toan", vi: "Bút toán điều chỉnh tháng này", en: "Adjustments this month", man: "ke-toan", dem: () => state.adjustments.filter(a => String(a.at || "").slice(0, 7) === nowISO().slice(0, 7)).length } ] } ] },
   { id: "ho-tro", vai: "support", vi: "Hỗ trợ", en: "Support",
@@ -7228,12 +7231,19 @@ const VAI_NB = ["mgmt", "accounting", "sales", "ops", "support"];
 const NHOM_MO = {
   tong:      { vi: "Số toàn công ty: dự báo doanh thu, chỉ tiêu, tỷ lệ chia, giải thích số", en: "Company-wide figures: revenue forecast, targets, rate shares, explanations" },
   tien:      { vi: "Tiền ra vào: ví, rút tiền, bảng kê, tạm ứng, tài khoản ngân hàng, bút toán", en: "Money in and out: wallets, withdrawals, statements, advances, bank details, adjustments" },
-  doiSoat:   { vi: "Báo cáo kỳ, đối soát, xét duyệt kỳ, hàng đợi ISRC, tỷ giá", en: "Period reports, reconciliation, period approval, ISRC queue, FX" },
+  doiSoat:   { vi: "Báo cáo kỳ, đối soát, hàng đợi ISRC — ĐỌC và ĐỐI CHIẾU, không chốt", en: "Period reports, reconciliation, ISRC queue — read and check, not close" },
+  /* Tách khỏi doiSoat ở vòng 21. Người gõ số không được là người khoá sổ:
+     gộp chung thì vận hành vừa nhập doanh thu vừa chốt kỳ, và không còn ai
+     đứng ngoài để phát hiện số sai. Chốt kỳ và khoá tỷ giá đều làm tiền
+     chuyển đi, nên cả hai nằm ở đây. */
+  chotKy:    { vi: "Chốt kỳ, huỷ chốt, khoá tỷ giá — việc của giám đốc", en: "Close a period, revoke a close, lock the FX rate — the director's call" },
+  /* Người nạp file không được là người bỏ qua sai lệch của chính file ấy. */
+  kiemSo:    { vi: "Bỏ qua sai lệch của một nguồn báo cáo sau khi đã kiểm", en: "Waive a feed's variance after checking it" },
   doiTac:    { vi: "Sổ đối tác đầy đủ (doanh thu quý, hợp đồng); chuyên viên chỉ tài khoản mình, trưởng bộ phận cả bộ phận", en: "Full partner ledger; specialists see own accounts, heads see the whole department" },
   doiTacTao: { vi: "Thêm đối tác mới (label, nghệ sĩ) và hợp đồng", en: "Add new partners (labels, artists) and contracts" },
   deXuat:    { vi: "Đề xuất tạm ứng / hợp đồng; bảng tính ROI hợp đồng; bản tính lược theo vai", en: "Advance / contract proposals; deal ROI calculator; calculation trimmed per role" },
   deXuatTao: { vi: "Tạo đề xuất", en: "Create proposals" },
-  vanHanh:   { vi: "Phát hành, giao nhận, sửa hàng loạt, nạp báo cáo, mức trả, nền tảng, bảng giá", en: "Releases, deliveries, bulk edits, report ingest, rates, platforms, pricing" },
+  vanHanh:   { vi: "Phát hành, giao nhận, sửa hàng loạt, nạp báo cáo, nền tảng", en: "Releases, deliveries, bulk edits, report ingest, platforms" },
   nhapLieu:  { vi: "Gõ doanh thu từ báo cáo nền tảng và sửa lượt nghe hằng ngày", en: "Key in revenue from platform reports and correct daily streams" },
   von:       { vi: "Hiệu quả sử dụng vốn: tiền đã ứng, đã thu hồi, còn đọng, dự báo thu hồi", en: "Capital efficiency: money advanced, recouped, still out, recovery forecast" },
   hieuSuat:  { vi: "Hiệu suất từng nhân viên: việc đã giao, đúng hạn, quá hạn, thời gian xử lý", en: "Per-person performance: work assigned, on time, overdue, handling time" },
@@ -7267,7 +7277,9 @@ const QUYEN_HAM = {
   "parties.setManager": "tong",
   agg: "doiSoat", grossRec: "doiSoat", grossPub: "doiSoat", grossRecByFeed: "doiSoat", grossOf: "doiSoat", splitRec: "doiSoat", splitDim: "doiSoat", splitStores: "doiSoat", mineOf: "doiSoat",
   earnedByParty: "doiSoat", previewPayout: "doiSoat", payoutOf: "doiSoat", recon: "doiSoat", feedTotals: "doiSoat", approvalChecks: "doiSoat", canApprove: "doiSoat",
-  approve: "doiSoat", revoke: "doiSoat", queue: "doiSoat", missingFeeds: "doiSoat", "fx.lock": "doiSoat", audit: "doiSoat", "ingest.acceptVariance": "doiSoat",
+  approve: "chotKy", revoke: "chotKy", "fx.lock": "chotKy",
+  "ingest.acceptVariance": "kiemSo",
+  queue: "doiSoat", missingFeeds: "doiSoat", audit: "doiSoat",
   wallet: "tien", credits: "tien", statementsOf: "tien", withdrawals: "tien", statements: "tien", bank: "tien", advances: "tien", advanceBalance: "tien", withdrawalQuote: "tien", phiChuyen: "tien",
   catalogueFor: "doiTac",
   dailyTrends: "theoDoi", dailyTrendsFor: "theoDoi", playlists: "theoDoi", playlistsFor: "theoDoi",
@@ -7285,7 +7297,10 @@ const QUYEN_HAM = {
   quality: "danhMuc", qualityFor: "danhMuc", setAlertStatus: "danhMuc", metadataReport: "danhMuc", metadataReportFor: "danhMuc",
   catalogue: "danhMuc", platformReport: "danhMuc", platformTail: "danhMuc", catalogueReleases: "danhMuc", releases: "danhMuc",
   "releases.receive": "vanHanh", "releases.assignCodes": "vanHanh", "releases.publish": "vanHanh", "releases.returnFix": "vanHanh", "releases.createFor": "phatHanhHo",
-  deliveries: "vanHanh", bulk: "vanHanh", ingest: "vanHanh", platformRates: "vanHanh",
+  deliveries: "vanHanh", bulk: "vanHanh", ingest: "vanHanh",
+  /* Bảng giá là số của giám đốc, kể cả mức suy từ báo cáo: đọc được mức
+     suy là đọc được luôn khach và bienGia nằm cùng gói. */
+  platformRates: "tong",
   nhapLieu: "nhapLieu", quyTrinh: "quyTrinh", hieuSuat: "hieuSuat", von: "von",
   /* Mức trả đầy đủ mang biên của Haustek: chỉ nhóm "tong" (giám đốc) mới gọi. */
   platformRatesFull: "tong", setPlatformRate: "tong", clearPlatformRate: "tong", importPlatformRates: "tong", mucTraTacDong: "tong",
@@ -7301,7 +7316,7 @@ function coQuyenNhom(nhom, role) { role = role || vaiHienTai(); const g = QUYEN_
 /* Vài trang chỉ mở cho cấp quản lý trở lên, bất kể thuộc khối nào: trưởng
    bộ phận kinh doanh cũng là quản lý, nên chặn theo VAI thì chặn nhầm.
    Số là cấp thấp nhất còn được vào (nhỏ là cao). */
-const MAN_CAP = { "to-chuc": CAP_TRUONG, "muc-tra": CAP_TRUONG, "hieu-suat": CAP_TRUONG, "hieu-qua-von": CAP_TRUONG };
+const MAN_CAP = { "to-chuc": CAP_TRUONG, "muc-tra": CAP_GIAM_DOC, "hieu-suat": CAP_TRUONG, "hieu-qua-von": CAP_TRUONG };
 function manCoQuyen(id, role, cap) {
   role = role || vaiHienTai();
   cap = cap == null ? capCua(_me) : cap;
@@ -14755,6 +14770,11 @@ function(){
 
 HT.dangKy({
   id: 'muc-tra', nav: 'navMucTra', nhom: 'nhomTien', icon: 'cash',
+  /* Bảng giá là quyết định thương mại của giám đốc, không phải việc vận
+     hành. Trước vòng 21 trưởng bộ phận phát hành mở được trang này: nút
+     lưu thì hỏng, nhưng cả bảng giá chào khách và chênh lệch thì đọc
+     được sạch. Khoá ở đây và khoá luôn ở lõi (MAN_CAP + nhóm tong). */
+  vai: ['mgmt'],
 
   chu: {
     vi: {
@@ -17410,6 +17430,10 @@ HT.dangKy({
 
   ve: function (root, c) {
     var A = c.A, t = c.t, pi = c.ky.idx, pk = c.kyKey;
+    /* Chốt kỳ, huỷ chốt và khoá tỷ giá là việc của giám đốc. Vận hành và
+       kế toán vẫn đọc được toàn bộ đối soát — họ cần để làm việc — nhưng
+       không có nút, vì người gõ số không được là người khoá sổ. */
+    var coChot = A.quyen.nhom('chotKy');
     var r = A.recon(pi);
     var dk = A.approvalChecks(pi);
     var duyet = A.isApproved(pk);
@@ -17438,19 +17462,19 @@ HT.dangKy({
           (ap.overrides && ap.overrides.length
             ? '<br><span class="neg">' + HM.esc(c.lang === 'vi' ? 'Ngoại lệ đã ghi nhận: ' : 'Overrode: ') +
               HM.esc(ap.overrides.join(', ')) + '</span>' : ''),
-        nut: '<button type="button" class="btn sm dang" data-thuhoi>' + HM.esc(t('thuHoi')) + '</button>' });
+        nut: coChot ? '<button type="button" class="btn sm dang" data-thuhoi>' + HM.esc(t('thuHoi')) + '</button>' : '' });
     } else if (!hong.length) {
       html += HM.ghi({ kieu: 'ok',
         tieuDe: HM.esc(c.lang === 'vi' ? 'Đủ bốn điều kiện, kỳ ' + c.ky.label + ' có thể xét duyệt' : 'All four conditions met — ' + c.ky.label + ' can be approved'),
         than: HM.esc(c.lang === 'vi'
           ? 'Sau khi xét duyệt, hệ thống ghi bảng thanh toán vào sổ, thu hồi tạm ứng, chuyển phần dưới ngưỡng sang kỳ sau, và mở kỳ này cho label và nghệ sĩ xem.'
           : 'On approval the payout table is written, advances are recouped, sub-threshold amounts carry forward, and labels and artists can see the period.'),
-        nut: '<button type="button" class="btn go" data-duyet>' + HM.icon('check') + HM.esc(t('duyetKy')) + '</button>' });
+        nut: coChot ? '<button type="button" class="btn go" data-duyet>' + HM.icon('check') + HM.esc(t('duyetKy')) + '</button>' : '' });
     } else {
       html += HM.ghi({ kieu: 'warn',
         tieuDe: HM.esc(c.lang === 'vi' ? hong.length + ' điều kiện chưa đạt' : hong.length + ' conditions not met'),
         than: hong.map(function (x) { return '<b>' + HM.esc(c.song(x, 'label')) + '</b>' + (c.lang === 'vi' ? ' · ' : ' — ') + HM.esc(c.song(x, 'detail')); }).join('<br>'),
-        nut: '<button type="button" class="btn sm dang" data-boqua>' + HM.esc(t('boQua')) + '</button>' });
+        nut: coChot ? '<button type="button" class="btn sm dang" data-boqua>' + HM.esc(t('boQua')) + '</button>' : '' });
     }
 
     html += HM.tabs([
@@ -17521,7 +17545,7 @@ function veDoi(c, r) {
                  : '<span class="pos">' + HM.esc(t('khop')) + '</span>') + '</td>' +
         (coViec ? '<td>' + (x.accepted
           ? HM.tag(t('daGhiNhan'), 'info')
-          : (lech && !duyet ? '<button type="button" class="btn sm dang" data-ghinhan="' + x.feed.id + '">' +
+          : (lech && !duyet && A.quyen.nhom('kiemSo') ? '<button type="button" class="btn sm dang" data-ghinhan="' + x.feed.id + '">' +
               HM.esc(t('ghiNhan')) + '</button>' : '')) + '</td>' : '') + '</tr>';
     }).join('') + '</tbody>' +
     '<tfoot><tr><td>' + (c.lang === 'vi' ? 'Tổng cả kỳ' : 'Period total') + '</td>' +
@@ -17644,7 +17668,7 @@ function veTg(c) {
       p: c.lang === 'vi'
         ? 'Thông lệ ngành là giữ nguyên đồng tiền gốc của từng nền tảng, đến lúc thanh toán mới quy đổi. Bản mẫu tính bằng USD và chốt một tỷ giá cho mỗi kỳ lúc xét duyệt. Đây là câu hỏi cần chốt số 4.'
         : 'Industry practice is to keep each platform’s source currency and convert at payout. The prototype computes in USD and locks one rate per period at approval — this is open question 4.',
-      hanhDong: duyet ? '' : '<button type="button" class="btn sm pri" data-chottg>' +
+      hanhDong: duyet || !c.A.quyen.nhom('chotKy') ? '' : '<button type="button" class="btn sm pri" data-chottg>' +
         HM.esc(khoa ? (c.lang === 'vi' ? 'Đổi tỷ giá đã chốt' : 'Change locked rate') : t('chotTg')) + '</button>',
       than: HM.kv([
         { t: c.lang === 'vi' ? 'Tỷ giá hiện hành' : 'Working rate', v: HT.fmt.n(f.rate) + ' ₫ / USD' },

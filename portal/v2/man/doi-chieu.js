@@ -62,6 +62,10 @@ HT.dangKy({
 
   ve: function (root, c) {
     var A = c.A, t = c.t, pi = c.ky.idx, pk = c.kyKey;
+    /* Chốt kỳ, huỷ chốt và khoá tỷ giá là việc của giám đốc. Vận hành và
+       kế toán vẫn đọc được toàn bộ đối soát — họ cần để làm việc — nhưng
+       không có nút, vì người gõ số không được là người khoá sổ. */
+    var coChot = A.quyen.nhom('chotKy');
     var r = A.recon(pi);
     var dk = A.approvalChecks(pi);
     var duyet = A.isApproved(pk);
@@ -90,19 +94,19 @@ HT.dangKy({
           (ap.overrides && ap.overrides.length
             ? '<br><span class="neg">' + HM.esc(c.lang === 'vi' ? 'Ngoại lệ đã ghi nhận: ' : 'Overrode: ') +
               HM.esc(ap.overrides.join(', ')) + '</span>' : ''),
-        nut: '<button type="button" class="btn sm dang" data-thuhoi>' + HM.esc(t('thuHoi')) + '</button>' });
+        nut: coChot ? '<button type="button" class="btn sm dang" data-thuhoi>' + HM.esc(t('thuHoi')) + '</button>' : '' });
     } else if (!hong.length) {
       html += HM.ghi({ kieu: 'ok',
         tieuDe: HM.esc(c.lang === 'vi' ? 'Đủ bốn điều kiện, kỳ ' + c.ky.label + ' có thể xét duyệt' : 'All four conditions met — ' + c.ky.label + ' can be approved'),
         than: HM.esc(c.lang === 'vi'
           ? 'Sau khi xét duyệt, hệ thống ghi bảng thanh toán vào sổ, thu hồi tạm ứng, chuyển phần dưới ngưỡng sang kỳ sau, và mở kỳ này cho label và nghệ sĩ xem.'
           : 'On approval the payout table is written, advances are recouped, sub-threshold amounts carry forward, and labels and artists can see the period.'),
-        nut: '<button type="button" class="btn go" data-duyet>' + HM.icon('check') + HM.esc(t('duyetKy')) + '</button>' });
+        nut: coChot ? '<button type="button" class="btn go" data-duyet>' + HM.icon('check') + HM.esc(t('duyetKy')) + '</button>' : '' });
     } else {
       html += HM.ghi({ kieu: 'warn',
         tieuDe: HM.esc(c.lang === 'vi' ? hong.length + ' điều kiện chưa đạt' : hong.length + ' conditions not met'),
         than: hong.map(function (x) { return '<b>' + HM.esc(c.song(x, 'label')) + '</b>' + (c.lang === 'vi' ? ' · ' : ' — ') + HM.esc(c.song(x, 'detail')); }).join('<br>'),
-        nut: '<button type="button" class="btn sm dang" data-boqua>' + HM.esc(t('boQua')) + '</button>' });
+        nut: coChot ? '<button type="button" class="btn sm dang" data-boqua>' + HM.esc(t('boQua')) + '</button>' : '' });
     }
 
     html += HM.tabs([
@@ -173,7 +177,7 @@ function veDoi(c, r) {
                  : '<span class="pos">' + HM.esc(t('khop')) + '</span>') + '</td>' +
         (coViec ? '<td>' + (x.accepted
           ? HM.tag(t('daGhiNhan'), 'info')
-          : (lech && !duyet ? '<button type="button" class="btn sm dang" data-ghinhan="' + x.feed.id + '">' +
+          : (lech && !duyet && A.quyen.nhom('kiemSo') ? '<button type="button" class="btn sm dang" data-ghinhan="' + x.feed.id + '">' +
               HM.esc(t('ghiNhan')) + '</button>' : '')) + '</td>' : '') + '</tr>';
     }).join('') + '</tbody>' +
     '<tfoot><tr><td>' + (c.lang === 'vi' ? 'Tổng cả kỳ' : 'Period total') + '</td>' +
@@ -296,7 +300,7 @@ function veTg(c) {
       p: c.lang === 'vi'
         ? 'Thông lệ ngành là giữ nguyên đồng tiền gốc của từng nền tảng, đến lúc thanh toán mới quy đổi. Bản mẫu tính bằng USD và chốt một tỷ giá cho mỗi kỳ lúc xét duyệt. Đây là câu hỏi cần chốt số 4.'
         : 'Industry practice is to keep each platform’s source currency and convert at payout. The prototype computes in USD and locks one rate per period at approval — this is open question 4.',
-      hanhDong: duyet ? '' : '<button type="button" class="btn sm pri" data-chottg>' +
+      hanhDong: duyet || !c.A.quyen.nhom('chotKy') ? '' : '<button type="button" class="btn sm pri" data-chottg>' +
         HM.esc(khoa ? (c.lang === 'vi' ? 'Đổi tỷ giá đã chốt' : 'Change locked rate') : t('chotTg')) + '</button>',
       than: HM.kv([
         { t: c.lang === 'vi' ? 'Tỷ giá hiện hành' : 'Working rate', v: HT.fmt.n(f.rate) + ' ₫ / USD' },

@@ -233,6 +233,7 @@ node test/goi-du-trang.js                               # bản gói có đúng 
 node test/roi-cong-thuc.js                              # công thức ROI đối chiếu bảng tính gốc
 node test/roi-man.js                                    # trang ROI trên mặt: số, dải kết luận, cảnh báo rủi ro
 node test/vong19-man.js                                 # vòng 19: khoá lọt, vai giao việc, rủi ro, nền tảng nhỏ, bảng hết phẳng
+node test/vong21-man.js                                 # vòng 21: tách bạch nhiệm vụ — ai thấy gì, ai bấm được gì
 node dung-goi.js && node test/v2-nhu-artifact.js && node test/v2-khong-mang.js   # bản gói chạy trong trình xem, không mạng
 ```
 
@@ -272,7 +273,11 @@ chứ không phải ở từng màn. Ba lớp, cùng một nguồn:
 | Đối tác | ✓ | | ✓ (của mình) | | |
 | Chiến dịch | ✓ | | ✓ | ✓ | |
 | Theo dõi, Nhập báo cáo, Khớp ISRC, Danh mục, Nền tảng | ✓ | | | ✓ | |
-| Mức trả nền tảng (chênh lệch bảng giá) | ✓ | | | | |
+| Đối soát — ĐỌC (chốt kỳ thì không) | ✓ | ✓ | | ✓ | |
+| Mức trả nền tảng (bảng giá, chênh lệch bảng giá) — **chỉ Level 1** | ✓ | | | | |
+| Chốt kỳ, huỷ chốt, khoá tỷ giá (`chotKy`) — **chỉ giám đốc** | ✓ | | | | |
+| Bỏ qua sai lệch nguồn báo cáo (`kiemSo`) | ✓ | ✓ | | | |
+| Gõ số liệu kỳ (`nhapLieu`) | ✓ | ✓ | | ✓ | |
 | Danh mục (có tab Chất lượng lượt nghe), Phát hành (hỗ trợ chỉ đọc), Quản lý quyền | ✓ | | | ✓ | ✓ |
 
 Trang Quản trị có tab *Phân quyền theo vai* vẽ đúng ma trận này. Cổng đối
@@ -375,6 +380,80 @@ một thẻ nhắc lại điều đó.
 Cổng đối tác không có và không nên có: bảng tính này đọc ra phần Haustek
 giữ lại, phí môi giới và biên lợi nhuận. Đối tác muốn biết mình ứng được bao
 nhiêu thì vẫn dùng `k-tam-ung`, chạy trên `advanceOfferOf()` đã lược sạch.
+
+## Vòng 21: tách bạch nhiệm vụ — không vai nào cầm quá nhiều
+
+Ba chỗ một vai vừa làm vừa duyệt, hoặc biết nhiều hơn phần việc của mình.
+
+### 1 · Bảng giá nền tảng: chỉ giám đốc
+
+Trưởng bộ phận phát hành (Level 2, vai vận hành) **mở được** trang Mức trả
+nền tảng. Nút lưu thì hỏng — `setPlatformRate` đã ở nhóm `tong` — nhưng cả
+**giá Haustek chào khách** lẫn **chênh lệch bảng giá** thì đọc được sạch.
+Đó là hai số nhạy nhất sản phẩm, và chặn nút mà không chặn mắt là chưa chặn.
+
+Khoá bốn lớp:
+
+| Lớp | Trước | Nay |
+|---|---|---|
+| Khối vận hành có trang `muc-tra` | có | **bỏ** |
+| `MAN_CAP["muc-tra"]` | Level 1–2 | **Level 1** |
+| `HT.dangKy({vai})` của trang | không đặt | **`['mgmt']`** |
+| `platformRates()` (kể cả mức suy từ báo cáo) | nhóm `vanHanh` | **nhóm `tong`** |
+
+Mức *suy từ báo cáo* cũng phải khoá: nó nằm cùng gói với `khach` và
+`bienGia`, đọc được một là đọc được cả ba. Chức năng khối vận hành cũng bỏ
+dòng "Mức trả nền tảng" — mô tả sai thì người ta lại cấp quyền theo nó.
+
+### 2 · Người gõ số không phải người chốt sổ
+
+Nhóm `doiSoat` gộp cả **đọc** báo cáo kỳ lẫn **chốt** kỳ. Vận hành có nhóm
+ấy, và cũng có `nhapLieu`. Nghĩa là **cùng một người gõ doanh thu vào rồi
+tự khoá sổ trên con số mình vừa gõ** — không còn ai đứng ngoài để phát hiện
+số sai. Kế toán cũng thế.
+
+Tách ra hai nhóm mới:
+
+| Nhóm | Hàm | Ai giữ |
+|---|---|---|
+| `chotKy` | `approve`, `revoke`, `fx.lock` | **chỉ giám đốc** |
+| `kiemSo` | `ingest.acceptVariance` | kế toán + giám đốc |
+| `doiSoat` (còn lại) | đọc, đối chiếu, hàng đợi ISRC | vận hành, kế toán, giám đốc |
+
+Chuỗi ba tay khác nhau:
+
+```
+gõ số      →  vận hành     (nhapLieu)
+kiểm lệch  →  kế toán      (kiemSo)      ← không phải người nạp file
+chốt kỳ    →  giám đốc     (chotKy)      ← không phải người gõ số
+```
+
+`fx.lock` nằm cùng `chotKy` vì khoá tỷ giá cũng làm tiền chuyển đi khác.
+`ingest.acceptVariance` sang `kiemSo` vì **người nạp file không được là
+người bỏ qua sai lệch của chính file mình nạp**.
+
+Trang Đối soát giữ nguyên cho mọi vai — họ cần đọc để làm việc — chỉ **mất
+nút**: một cờ `coChot` ở đầu hàm vẽ, không rải điều kiện khắp nơi.
+
+### 3 · Điều còn lại: giám đốc vẫn nắm hết
+
+`coQuyenNhom()` cho `mgmt` đi qua mọi nhóm vô điều kiện, nên giám đốc vẫn
+vừa gõ được số vừa chốt được kỳ. Đó là thiết kế cố ý — giám đốc là điểm
+leo thang cuối — nhưng nói ra để không ai tưởng đã kín: **ranh giới vòng
+này bảo vệ là ranh giới giữa các vai vận hành**, không phải trần quyền của
+người đứng đầu.
+
+### Bài kiểm
+
+`api-guard` thêm một phép đi hết ba tay: vận hành gõ được số nhưng
+`approve` / `revoke` / `fx.lock` / `acceptVariance` đều ném lỗi, mà vẫn đọc
+được `agg`; kế toán kiểm được lệch nhưng không chốt được; kinh doanh và hỗ
+trợ không chạm vào số của kỳ; và `chotKy` chỉ có đúng một vai.
+
+`vong21-man.js` kiểm trên mặt, 29 phép: bốn vai không thấy Mức trả ở điều
+hướng **và gõ thẳng hash cũng không vào**; vận hành mở Đối soát đọc được
+hết nhưng không có nút chốt, nút khoá tỷ giá, nút bỏ qua sai lệch — kiểm
+đúng vào kỳ đang có sai lệch, nếu không thì phép kiểm rỗng nghĩa.
 
 ## Vòng 20: phí Haustek và streaming rate là hai thứ khác hẳn nhau
 

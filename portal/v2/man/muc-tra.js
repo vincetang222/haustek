@@ -14,6 +14,11 @@
 
 HT.dangKy({
   id: 'muc-tra', nav: 'navMucTra', nhom: 'nhomTien', icon: 'cash',
+  /* Bảng giá là quyết định thương mại của giám đốc, không phải việc vận
+     hành. Trước vòng 21 trưởng bộ phận phát hành mở được trang này: nút
+     lưu thì hỏng, nhưng cả bảng giá chào khách và chênh lệch thì đọc
+     được sạch. Khoá ở đây và khoá luôn ở lõi (MAN_CAP + nhóm tong). */
+  vai: ['mgmt'],
 
   chu: {
     vi: {

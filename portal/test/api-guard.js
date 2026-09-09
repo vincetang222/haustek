@@ -916,9 +916,58 @@ check("Vận hành: không có tiền — ví, bảng kê, dự báo doanh thu, 
   const fs = A.forecastStreams();
   must(fs.projected.streams > 0 && fs.projected.revenue === undefined && JSON.stringify(fs).indexOf("revenue") < 0, "dự báo lượt nghe cho vận hành vẫn mang doanh thu");
   must(A.agg("admin", 0, 0, "rec").gross >= 0 && Array.isArray(A.deliveries.list()), "vận hành mất báo cáo kỳ / giao nhận");
-  must(!A.quyen.man("chi-tra") && !A.quyen.man("doi-tac") && A.quyen.man("phat-hanh") && A.quyen.man("muc-tra"), "ma trận màn cho vận hành sai");
+  must(!A.quyen.man("chi-tra") && !A.quyen.man("doi-tac") && A.quyen.man("phat-hanh"), "ma trận màn cho vận hành sai");
+  /* Bảng giá nền tảng là quyết định của giám đốc. Vận hành nạp báo cáo và
+     đối soát, nhưng không được thấy giá Haustek chào khách — mở được trang
+     là biết luôn cả bảng giá lẫn chênh lệch. */
+  must(!A.quyen.man("muc-tra"), "vận hành vẫn mở được trang Mức trả nền tảng");
+  mustThrow(() => A.platformRates(), "vận hành đọc được bảng giá nền tảng");
+  mustThrow(() => A.platformRatesFull(), "vận hành đọc được bảng giá đầy đủ");
+  mustThrow(() => A.setPlatformRate("Spotify", 1, "", "x", 1), "vận hành đặt được mức trả");
   return "ví / dự báo / đề xuất chặn · dự báo lượt nghe sạch";
 });
+/* Tách bạch nhiệm vụ: không vai nào vừa gõ số vừa chốt sổ, và không ai
+   vừa nạp file vừa tự bỏ qua sai lệch của chính file mình nạp. Đây là ranh
+   giới quan trọng nhất trong sản phẩm sau ranh giới nội bộ ↔ đối tác: mất
+   nó là mất luôn khả năng phát hiện số sai, vì không còn ai đứng ngoài. */
+check("Người gõ số không phải người chốt sổ, người nạp file không phải người bỏ qua sai lệch", () => {
+  const pi = A.periods.findIndex(p => !A.isApproved(p.k));
+  must(pi >= 0, "cần một kỳ chưa chốt để thử");
+
+  /* Vận hành: gõ số ĐƯỢC, chốt kỳ KHÔNG, bỏ qua sai lệch KHÔNG */
+  const vh = nhu("S02");
+  must(vh.role === "ops", "phải thử bằng vai vận hành");
+  must(A.quyen.nhom("nhapLieu"), "vận hành mất quyền gõ số liệu");
+  must(!A.quyen.nhom("chotKy"), "vận hành vừa gõ số vừa chốt được kỳ");
+  must(!A.quyen.nhom("kiemSo"), "vận hành tự bỏ qua được sai lệch của file mình nạp");
+  mustThrow(() => A.approve(pi, "x", "", true), "vận hành chốt được kỳ");
+  mustThrow(() => A.revoke(pi, "x"), "vận hành huỷ được chốt kỳ");
+  mustThrow(() => A.fx.lock(pi, 26000), "vận hành khoá được tỷ giá");
+  mustThrow(() => A.ingest.acceptVariance(pi, 0, "x"), "vận hành bỏ qua được sai lệch");
+  /* nhưng vẫn phải ĐỌC được đối soát, nếu không thì không làm việc được */
+  must(A.quyen.nhom("doiSoat") && A.agg("admin", 0, pi, "rec").gross >= 0, "vận hành mất quyền đọc đối soát");
+
+  /* Kế toán: kiểm số ĐƯỢC, chốt kỳ KHÔNG */
+  const kt = nhu("S07");
+  must(kt.role === "accounting", "phải thử bằng vai kế toán");
+  must(A.quyen.nhom("kiemSo"), "kế toán mất quyền kiểm và bỏ qua sai lệch");
+  must(!A.quyen.nhom("chotKy"), "kế toán vừa kiểm số vừa chốt được kỳ");
+  mustThrow(() => A.approve(pi, "x", "", true), "kế toán chốt được kỳ");
+
+  /* Kinh doanh và hỗ trợ không đụng tới số của kỳ */
+  ["S03", "S05"].forEach(id => {
+    const me = nhu(id);
+    must(!A.quyen.nhom("nhapLieu") && !A.quyen.nhom("chotKy") && !A.quyen.nhom("kiemSo"),
+      "vai " + me.role + " chạm được vào số liệu kỳ");
+  });
+
+  /* Giám đốc là người duy nhất chốt */
+  nhu("S01");
+  must(A.quyen.nhom("chotKy"), "giám đốc mất quyền chốt kỳ");
+  must(A.quyen.bang().nhom.chotKy.vai.join() === "mgmt", "nhóm chốt kỳ không còn riêng của giám đốc: " + A.quyen.bang().nhom.chotKy.vai.join());
+  return "gõ số → vận hành · kiểm sai lệch → kế toán · chốt kỳ → giám đốc · ba tay khác nhau";
+});
+
 check("Hỗ trợ: đọc hồ sơ phát hành và danh mục, không xử lý hồ sơ, không tạo đề xuất, không thấy đối tác hay tiền", () => {
   nhu("S05");
   must(A.releases.list().length >= 0 && A.quality().rows.length >= 0, "hỗ trợ mất quyền đọc");
