@@ -1246,21 +1246,26 @@ check("Bảng tính ROI hợp đồng: ba vai có quyền đề xuất dùng đ�
 /* ---------------------------------------------------------------------
    VÒNG 15 — lớp nhập tay, quy trình, hiệu suất, hiệu quả vốn
    --------------------------------------------------------------------- */
-check("Nhập số liệu: vận hành và kế toán gõ được, kinh doanh và hỗ trợ bị chặn, cổng đối tác không có", () => {
-  ["S02", "S07"].forEach(id => {
-    const me = nhu(id);
-    must(A.quyen.man("nhap-so-lieu"), "vai " + me.role + " không mở được trang nhập số liệu");
-    must(Array.isArray(A.nhapLieu.bang()), "vai " + me.role + " không đọc được bảng kỳ × nguồn");
-  });
-  ["S03", "S05"].forEach(id => {
+check("Nhập số liệu: chỉ vận hành gõ được; kế toán, kinh doanh, hỗ trợ đều bị chặn", () => {
+  /* Vòng QC: kế toán từng vừa gõ được số vừa bỏ qua được sai lệch của
+     chính số ấy. Tách ra rồi — vận hành gõ, kế toán kiểm ở Đối soát,
+     giám đốc chốt kỳ. Ba tay, không tay nào làm hai việc. */
+  const me2 = nhu("S02");
+  must(A.quyen.man("nhap-so-lieu"), "vận hành không mở được trang nhập số liệu");
+  must(Array.isArray(A.nhapLieu.bang()), "vận hành không đọc được bảng kỳ × nguồn");
+  ["S07", "S03", "S05"].forEach(id => {
     const me = nhu(id);
     must(!A.quyen.man("nhap-so-lieu"), "vai " + me.role + " vẫn mở được trang nhập số liệu");
     mustThrow(() => A.nhapLieu.ghiKy(0, 0, 100, { nguon: "onerpm" }), "gõ doanh thu với vai " + me.role);
   });
+  nhu("S07");
+  must(A.quyen.nhom("kiemSo"), "kế toán mất quyền bỏ qua sai lệch");
   nhu("S02");
+  must(!A.quyen.nhom("kiemSo"), "vận hành vừa gõ số vừa bỏ qua được sai lệch của chính mình");
+  must(!A.quyen.nhom("chotKy"), "vận hành chốt được kỳ");
   must(H.api.nhapLieu === undefined && H.api.quyTrinh === undefined && H.api.hieuSuat === undefined && H.api.von === undefined,
     "cổng đối tác lộ lớp nhập tay hoặc quy trình hoặc hiệu suất hoặc vốn");
-  return "2 vai gõ được · 2 vai bị chặn · api không có";
+  return "vận hành gõ · kế toán kiểm · giám đốc chốt · api không có";
 });
 
 check("Số gõ tay thắng số ước tính, và gỡ ra thì số cũ quay lại", () => {

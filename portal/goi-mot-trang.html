@@ -2294,8 +2294,12 @@ function releaseVisible(r, role, partyId) {
    localStorage là kênh chính. Mở bằng file:// trên Safari thì localStorage
    bị chặn — nên có thêm đường xuất/nhập một file JSON nhỏ.
    --------------------------------------------------------------------- */
+/* Đếm mọi lần trạng thái đổi. store.save() và audit.log() đều bấm vào đây,
+   và mọi đường ghi của lõi đi qua ít nhất một trong hai. */
+let GHI_VER = 0;
 const store = {
   save() {
+    GHI_VER++;
     try { localStorage.setItem(CFG.STORE_KEY, JSON.stringify(state)); return true; }
     catch (e) { return false; }
   },
@@ -2405,7 +2409,8 @@ function norm(s) {
    bảng mỗi lần thì trang đứng hình — nên dựng chỉ mục một lần rồi nhớ
    kết quả, và xoá bộ nhớ đệm mỗi khi bảng tỷ lệ đổi. */
 let _sched = null, _rateCache = new Map();
-function invalidateRates() { _sched = null; _rateCache.clear(); }
+let TYLE_VER = 0;
+function invalidateRates() { _sched = null; _rateCache.clear(); TYLE_VER++; }
 function schedIndex() {
   if (_sched) return _sched;
   _sched = new Map();
@@ -2534,6 +2539,53 @@ let NET_VER = null;
 let NHAP_VER = 0;                    /* tăng mỗi lần số gõ tay hoặc khớp tay đổi */
 function mucTraVer() {
   return NHAP_VER + "|" + JSON.stringify(state.rateOverride || {});
+}
+/* Một chuỗi đại diện cho mọi thứ có thể làm CON SỐ TIỀN đổi: số gõ tay,
+   bảng giá nền tảng, bảng tỷ lệ hợp đồng, danh sách khớp ISRC, và những kỳ
+   đã chốt. Bộ nhớ đệm nào cũng phải khoá theo chuỗi này. Khoá thiếu một
+   thành phần là đúng cái lỗi vòng QC bắt được: đổi bảng giá xong, chuỗi
+   thu nhập 12 kỳ dùng để tính tạm ứng vẫn là số cũ, không ai biết. */
+/* ---------------------------------------------------------------------
+   Đệm cho hàm ĐỌC nặng dùng chung ở mọi trang (chuông thông báo, dự báo,
+   KPI kinh doanh, kiểm điều kiện chốt kỳ). Trước khi có nó, mỗi lần bấm
+   sang trang khác là chạy lại toàn bộ, dù không có gì đổi.
+
+   Khoá gồm GHI_VER (mọi đường ghi đều bấm) và duLieuVer() (mọi thứ làm
+   con số tiền đổi), nên đệm rụng ngay khi có gì đó thật sự đổi.
+
+   Trả BẢN SAO nông, kể cả mảng ở tầng một: trang nào sắp xếp tại chỗ trên
+   kết quả cũng không đụng được vào bản trong đệm.
+   --------------------------------------------------------------------- */
+function saoNong(v) {
+  if (Array.isArray(v)) return v.slice();
+  if (v && typeof v === "object" && v.constructor === Object) {
+    const o = {};
+    Object.keys(v).forEach(k => { const x = v[k]; o[k] = Array.isArray(x) ? x.slice() : x; });
+    return o;
+  }
+  return v;
+}
+const _doc = new Map();
+let _docVer = "";
+function nhoDoc(ten, khoa, tinh) {
+  /* Dọn theo PHIÊN BẢN chứ không theo kích thước: riêng feedTotals đã là
+     12 kỳ × 3 nguồn, cộng thêm điều kiện chốt kỳ, danh mục theo bộ lọc và
+     mọi thứ nhân với năm vai — để ngưỡng nhỏ là đệm tự đập chính nó. */
+  const ver = duLieuVer();
+  if (_docVer !== ver) { _doc.clear(); _docVer = ver; }
+  const k = ten + "\u0000" + khoa;
+  if (_doc.has(k)) return saoNong(_doc.get(k));
+  if (_doc.size > 2000) _doc.clear();
+  const v = tinh();
+  _doc.set(k, v);
+  return saoNong(v);
+}
+function duLieuVer() {
+  /* Ba bộ đếm, không đọc lại trạng thái: hàm này chạy ở MỌI lần tra đệm,
+     nên nó mà đi đếm khoá của state.match thì phần tiết kiệm được lại mất
+     hết vào chính nó. GHI_VER bắt mọi đường ghi (store.save và audit.log),
+     NHAP_VER bắt số gõ tay, TYLE_VER bắt bảng tỷ lệ và bảng giá nền tảng. */
+  return GHI_VER + "." + NHAP_VER + "." + TYLE_VER;
 }
 /* mức trả đối tác theo CHỈ SỐ nền tảng, null nghĩa là nền tảng đó chưa nhập */
 function khachTheoNenTang() {
@@ -2815,7 +2867,26 @@ function revenueAgg(a, role) {
   return role === "label" ? cents(a.ghiNhan - a.fee) : a.artist;
 }
 
+/* agg quét cả danh mục trong phạm vi, nên một trang gọi nó cho mười hai kỳ
+   là mười hai lần quét. Kết quả chỉ phụ thuộc (vai, đối tác, kỳ, luồng) và
+   duLieuVer(), nên đệm lại được. Trả BẢN SAO: gói này toàn số, sao chép gần
+   như không tốn gì, và người gọi có sửa cũng không đụng vào đệm. */
+const _agg = new Map();
+let _aggVer = "";
 function agg(role, partyId, p, stream) {
+  const ver = duLieuVer();
+  if (_aggVer !== ver) { _agg.clear(); _aggVer = ver; }
+  const khoa = role + "|" + partyId + "|" + p + "|" + stream;
+  const cu = _agg.get(khoa);
+  if (cu) return Object.assign({}, cu);
+  /* 428 đối tác × 12 kỳ vượt xa mọi ngưỡng nhỏ, mà bảng chi trả quét đúng
+     tổ hợp ấy — để ngưỡng thấp là đệm tự đập chính nó. */
+  if (_agg.size > 12000) _agg.clear();
+  const v = aggTinh(role, partyId, p, stream);
+  _agg.set(khoa, v);
+  return Object.assign({}, v);
+}
+function aggTinh(role, partyId, p, stream) {
   const sc = scopeOf(role, partyId, stream), n = sc ? sc.length : N;
   let total = 0, gross = 0, ghiNhan = 0, fee = 0, labelCut = 0, artist = 0, streams = 0, tracks = 0;
   for (let k = 0; k < n; k++) {
@@ -2927,6 +2998,9 @@ function trackMatrix(i, pList, role, partyId) {
    danh mục cho nội bộ). Lấy mẫu như breakdown() rồi chuẩn hoá về đúng
    tổng của kỳ, nên cột nào cộng lại cũng bằng con số ở trang Tổng quan. */
 function platformReport(role, partyId, pList) {
+  return nhoDoc("platformReport", role + "|" + partyId + "|" + (pList || []).join(","), () => platformReportTinh(role, partyId, pList));
+}
+function platformReportTinh(role, partyId, pList) {
   const sc = scopeOf(role, partyId, "rec"), n = sc ? sc.length : N;
   const cap = Math.max(1, Math.min(n, 9000)), step = Math.max(1, Math.floor(n / cap));
   const rows = PLAT_NAMES.map((nm, j) => ({ name: nm, nameEn: PLAT_NAMES_EN[j], revenue: [], streams: [], mine: [] }));
@@ -2968,6 +3042,9 @@ function platformReport(role, partyId, pList) {
    cáo, vì nó lấy chính con số ấy làm mốc rồi chia xuống — không tính lại
    theo đường khác rồi hy vọng hai bên gặp nhau. */
 function platformTail(role, partyId, pIdx) {
+  return nhoDoc("platformTail", role + "|" + partyId + "|" + pIdx, () => platformTailTinh(role, partyId, pIdx));
+}
+function platformTailTinh(role, partyId, pIdx) {
   const bao = platformReport(role, partyId, [pIdx]);
   const dong = bao.rows[N_PLAT - 1];
   const tongG = dong.revenue[0], tongS = dong.streams[0], tongM = dong.mine[0];
@@ -3259,10 +3336,34 @@ function assetOf(i, role, partyId) {
    gửi xuống trình duyệt nhỏ. */
 function catalogueOf(role, partyId, opts) {
   opts = opts || {};
+  /* Lật trang KHÔNG được nằm trong khoá đệm: dựng 50.000 dòng rồi cắt lấy
+     25 là phần nặng, mà nó giống hệt nhau ở mọi trang của cùng một bộ lọc.
+     Đệm theo (vai, đối tác, lọc, sắp xếp), rồi cắt trang trên bản đã đệm —
+     nhờ vậy trang 2 trở đi gần như không tốn gì. */
+  const loc = { q: opts.q || "", stage: opts.stage || "", sort: opts.sort || "", dir: opts.dir || "" };
+  const kq = nhoDoc("catalogue", role + "|" + partyId + "|" + JSON.stringify(loc), () => catalogueTinh(role, partyId, loc));
+  const offset = Math.max(0, opts.offset | 0), limit = Math.min(200, Math.max(1, opts.limit || 25));
+  return { total: kq.rows.length, counts: kq.counts, offset, limit, rows: kq.rows.slice(offset, offset + limit) };
+}
+function catalogueTinh(role, partyId, opts) {
   const sc = scopeOf(role, partyId, "rec"), n = sc ? sc.length : N;
   const q = (opts.q || "").trim().toLowerCase();
   const daDuyet = [];
   for (let p = 0; p < P; p++) if (state.approved[PERIODS[p].k]) daDuyet.push(p);
+  /* Doanh thu và lượt nghe cộng dồn của TỪNG bản ghi qua mọi kỳ đã duyệt:
+     phần nặng nhất của danh mục, và là phần KHÔNG phụ thuộc bộ lọc hay
+     trang đang xem. Tách ra đệm riêng để lọc, sắp xếp và lật trang vẫn
+     chạy tươi mà không phải quét lại 50.000 bản ghi mỗi lần. */
+  const doiDuThu = nhoDoc("catalogue.congDon", role + "|" + partyId, () => {
+    const a = new Array(n);
+    for (let k = 0; k < n; k++) {
+      const i = sc ? sc[k] : k;
+      let g = 0, st = 0;
+      for (const p of daDuyet) { g += revenueOf(i, p, role); st += recStreams[i * P + p]; }
+      a[k] = [g, st];
+    }
+    return a;
+  });
   const rows = [], counts = { all: n, live: 0, processing: 0, issue: 0, missing: 0 };
   for (let k = 0; k < n; k++) {
     const i = sc ? sc[k] : k;
@@ -3272,8 +3373,8 @@ function catalogueOf(role, partyId, opts) {
     if (opts.stage === "missing" ? !s.missing : (opts.stage && s.stage !== opts.stage)) continue;
     if (q && !(tTitle[i].toLowerCase().includes(q) || tIsrc[i].toLowerCase().includes(q)
                || ARTISTS[tArtist[i]].name.toLowerCase().includes(q))) continue;
-    let g = 0, st = 0;
-    for (const p of daDuyet) { g += revenueOf(i, p, role); st += recStreams[i * P + p]; }
+    const lt = doiDuThu[k];
+    const g = lt[0], st = lt[1];
     rows.push({ id: i, title: tTitle[i], isrc: tIsrc[i], type: TYPES[tType[i]], artist: ARTISTS[tArtist[i]].name,
       label: tLabel[i] >= 0 ? LABELS[tLabel[i]].name : null,
       releaseDate: s.releaseDate, releasePeriod: PERIODS[tRel[i]].label,
@@ -3284,8 +3385,7 @@ function catalogueOf(role, partyId, opts) {
     const A = a[key], B = b[key];
     return typeof A === "string" ? A.localeCompare(B, "vi") * dir : ((A || 0) - (B || 0)) * dir;
   });
-  const offset = Math.max(0, opts.offset | 0), limit = Math.min(200, Math.max(1, opts.limit || 25));
-  return { total: rows.length, counts, offset, limit, rows: rows.slice(offset, offset + limit) };
+  return { rows, counts };
 }
 
 /* =====================================================================
@@ -3357,7 +3457,10 @@ function labelTreeOf(labelId, p) {
    tới từng xu; nếu không, hoặc là parser sai, hoặc là file thiếu dòng —
    cả hai đều không được để lọt sang bước duyệt kỳ.
    ===================================================================== */
-function feedTotals(pIdx, fId) {
+/* Quét cả 50.000 bản ghi cho MỘT ô (kỳ × nguồn). Đối soát, điều kiện chốt
+   kỳ và bộ đếm điều hướng đều gọi nó, nên không đệm là quét đi quét lại. */
+function feedTotals(pIdx, fId) { return nhoDoc("feedTotals", pIdx + "|" + fId, () => feedTotalsTinh(pIdx, fId)); }
+function feedTotalsTinh(pIdx, fId) {
   const pk = PERIODS[pIdx].k;
   let attributed = 0;
   for (let i = 0; i < N; i++) attributed += grossRecByFeed(i, pIdx, fId);
@@ -3400,7 +3503,8 @@ function recon(pIdx) {
 /* =====================================================================
    16. DUYỆT KỲ — cánh cửa duy nhất mở số liệu cho khách
    ===================================================================== */
-function approvalChecks(pIdx) {
+function approvalChecks(pIdx) { return nhoDoc("approvalChecks", pIdx, () => approvalChecksTinh(pIdx)); }
+function approvalChecksTinh(pIdx) {
   const pk = PERIODS[pIdx].k;
   const miss = missingFeeds(pIdx);
   const r = recon(pIdx);
@@ -3431,7 +3535,9 @@ function approvalChecks(pIdx) {
                                     : "Not locked — VND figures will drift with today’s rate" }
   ];
 }
-function canApprove(pIdx) { return approvalChecks(pIdx).every(c => c.ok); }
+/* Sáu kỳ × mỗi lần vẽ điều hướng: đệm lại, vì điều kiện chốt chỉ đổi khi
+   trạng thái đổi. */
+function canApprove(pIdx) { return nhoDoc("canApprove", pIdx, () => approvalChecks(pIdx).every(c => c.ok)); }
 
 /* Kỳ phải đóng theo thứ tự. Phần tiền dưới ngưỡng chi trả được dồn từ kỳ
    này sang kỳ sau, và tạm ứng thu hồi dần qua từng kỳ — duyệt nhảy cóc thì
@@ -3742,8 +3848,11 @@ const TO_CHUC = [
   { id: "tai-chinh", vai: "accounting", vi: "Tài chính", en: "Finance",
     chucNang: { vi: ["Chi trả theo kỳ, xử lý rút tiền, bảng kê PDF", "Sổ tạm ứng và thu hồi", "Kiểm số đề xuất trước khi giám đốc duyệt", "Sổ kế toán, thuế khấu trừ, bút toán điều chỉnh"],
                 en: ["Period payouts, withdrawals, PDF statements", "Advance ledger and recoupment", "Check proposal figures before management approval", "Ledger, withholding tax, adjustments"] },
-    man: ["ban-lam-viec", "to-chuc", "ho-tro", "ke-toan", "chi-tra", "tam-ung", "chia-se", "doi-chieu", "xet-duyet", "roi", "nhap-so-lieu", "hieu-qua-von", "xuat-ban"],
-    nhom: ["tien", "doiSoat", "kiemSo", "deXuat", "chiaSe", "hoTro", "toChuc", "nhapLieu", "von", "quyTrinh", "tacQuyen"],
+    /* Không có nhap-so-lieu và không có nhóm nhapLieu: tay nào gõ số vào
+       thì tay ấy không được bỏ qua sai lệch của chính mình. Vận hành gõ,
+       tài chính kiểm ở Đối soát, giám đốc chốt kỳ. */
+    man: ["ban-lam-viec", "to-chuc", "ho-tro", "ke-toan", "chi-tra", "tam-ung", "chia-se", "doi-chieu", "xet-duyet", "roi", "hieu-qua-von", "xuat-ban"],
+    nhom: ["tien", "doiSoat", "kiemSo", "deXuat", "chiaSe", "hoTro", "toChuc", "von", "quyTrinh", "tacQuyen"],
     taiSan: ["vi", "tamUng", "bangKe"],
     to: [
       { id: "thanh-toan", vi: "Thanh toán", en: "Payments", nhiemVu: [
@@ -3917,7 +4026,8 @@ function partiesList(opts) {
   if (opts.status === "no-account") out = out.filter(r => !r.hasAccount);
   return { total: out.length, counts, rows: out, homNay };
 }
-function salesKpi(staffId, pIdx) {
+function salesKpi(staffId, pIdx) { return nhoDoc("salesKpi", staffId + "|" + pIdx, () => salesKpiTinh(staffId, pIdx)); }
+function salesKpiTinh(staffId, pIdx) {
   const st = staffById(staffId);
   const mine = partiesList({ manager: staffId }).rows;
   const qNay = lastQuarterIdx();
@@ -4085,7 +4195,10 @@ function platformRates() {
   });
   return _rateCacheVal;
 }
-function forecastOf(role, partyId) {
+/* Dự báo quét sáu nghìn bản ghi × sáu mươi ngày. Nó nằm trên thanh trên
+   cùng nên chạy lại ở MỌI lần đổi trang, dù không có gì đổi. */
+function forecastOf(role, partyId) { return nhoDoc("forecast", role + "|" + partyId, () => forecastTinh(role, partyId)); }
+function forecastTinh(role, partyId) {
   const sc = scopeOf(role, partyId, "rec"), n = sc ? sc.length : N;
   const cap = Math.max(1, Math.min(n, 6000)), step = Math.max(1, Math.floor(n / cap));
   const scale = step;
@@ -4269,6 +4382,9 @@ function demoOf(role, partyId) {
 }
 /* ---- xu hướng ngày: một cửa sổ N ngày, gộp theo nhiều chiều ---- */
 function dailyTrends(role, partyId, days, top) {
+  return nhoDoc("dailyTrends", role + "|" + partyId + "|" + days + "|" + top, () => dailyTrendsTinh(role, partyId, days, top));
+}
+function dailyTrendsTinh(role, partyId, days, top) {
   top = top || 25;
   const W = Math.max(7, Math.min(days || 28, N_DAYS));
   const sc = scopeOf(role, partyId, "rec"), n = sc ? sc.length : N;
@@ -4386,7 +4502,8 @@ function splitsOf(i, role, partyId) {
   });
   return { trackId: i, partyKey: partyKeyOfTrack(i), title: tTitle[i], isrc: tIsrc[i], artist: ARTISTS[tArtist[i]].name, ownerPct: Math.max(0, 100 - sum), collaborators, hasSplits: collaborators.length > 0, lifetimeMine: mine };
 }
-function splitsReport(role, partyId) {
+function splitsReport(role, partyId) { return nhoDoc("splits", role + "|" + partyId, () => splitsReportTinh(role, partyId)); }
+function splitsReportTinh(role, partyId) {
   const sc = scopeOf(role, partyId, "rec"), n = sc ? sc.length : N;
   const step = n > 4000 ? Math.ceil(n / 4000) : 1;
   const rows = []; const emails = new Set(); let invited = 0, paid = 0, recouping = 0;
@@ -4493,7 +4610,8 @@ function qualityOf(i) {
     last7: Math.round(last7 * (spikeMul > 1 ? spikeMul : 1)), baselinePerDay: Math.round(mean), listeners7: listenersOf(i, last7), severity: dsp ? "critical" : severity, hits, signals, dsp,
     status: st ? st.status : "open", note: st ? st.note : "", history: st ? st.history : [], firstSeen: isoDate(new Date(ASOF.getTime() - Math.floor(hash(i, 112) * 6) * 864e5)) };
 }
-function qualityReport(role, partyId) {
+function qualityReport(role, partyId) { return nhoDoc("quality", role + "|" + partyId, () => qualityReportTinh(role, partyId)); }
+function qualityReportTinh(role, partyId) {
   const sc = scopeOf(role, partyId, "rec"), n = sc ? sc.length : N;
   const step = n > 6000 ? Math.ceil(n / 6000) : 1;
   const rows = [];
@@ -4676,7 +4794,12 @@ function withdrawalQuote(partyKey, amount) {
 }
 
 /* ---- thông báo: sự kiện mới, mỗi vấn đề một dòng, ba mức ---- */
+/* Chuông thông báo quét việc, hồ sơ, yêu cầu rút tiền, đề xuất — ở mọi
+   lần vẽ lại khung, hai lần một lượt (huy hiệu và bảng). */
 function notificationsOf(role, partyId) {
+  return nhoDoc("notifications", role + "|" + partyId + "|" + (_me ? _me.id : ""), () => notificationsTinh(role, partyId));
+}
+function notificationsTinh(role, partyId) {
   const out = [];
   const partyKey = role === "label" ? "L:" + partyId : role === "artist" ? "A:" + partyId : null;
   const cut = isoDate(new Date(ASOF.getTime() - 45 * 864e5));
@@ -4839,7 +4962,7 @@ function campaignsOf(role, partyId) {
    ===================================================================== */
 const _ebp = new Map();
 function earnedByPartyCached(p) {
-  const key = p + "|" + state.rates.length + "|" + Object.keys(state.match).length + "|" + Object.keys(state.approved).length;
+  const key = p + "|" + duLieuVer();
   let v = _ebp.get(key);
   if (!v) { if (_ebp.size > 40) _ebp.clear(); v = earnedByParty(p); _ebp.set(key, v); }
   return v;
@@ -5742,12 +5865,12 @@ function setPlatformRate(name, per1k, note, by, khach) {
      đếm và cảnh báo. Chặn ở đây là ngầm coi bảng giá như cách chia biên,
      tức là lại lẫn nó với phí hợp đồng. */
   lazyState("rateOverride", {})[name] = { per1k, khach: kh, note: note || "", by: by || "", at: nowISO() };
-  _rateCacheKey = null; audit.log("rate.platform", name + " → nền tảng " + per1k + " · đối tác " + kh + " USD/1.000" + (note ? " · " + note : ""), by); store.save();
+  _rateCacheKey = null; TYLE_VER++; audit.log("rate.platform", name + " → nền tảng " + per1k + " · đối tác " + kh + " USD/1.000" + (note ? " · " + note : ""), by); store.save();
   return platformRatesFull();
 }
 function clearPlatformRate(name, by) {
   const ov = lazyState("rateOverride", {}); delete ov[name];
-  _rateCacheKey = null; audit.log("rate.platform.clear", name, by); store.save();
+  _rateCacheKey = null; TYLE_VER++; audit.log("rate.platform.clear", name, by); store.save();
   return platformRatesFull();
 }
 /* Dán CSV "Nền tảng,USD/1000" (chấp nhận ; hoặc tab, dấu phẩy thập phân). */
@@ -5956,6 +6079,7 @@ function seedOps() {
 
 const audit = {
   log(action, detail, by) {
+    GHI_VER++;
     state.audit.unshift({ at: nowISO(), action, detail, by: by || "mgmt@haustek-group.com" });
     if (state.audit.length > 400) state.audit.length = 400;
   },
@@ -7278,6 +7402,9 @@ const QUYEN_HAM = {
   agg: "doiSoat", grossRec: "doiSoat", grossPub: "doiSoat", grossRecByFeed: "doiSoat", grossOf: "doiSoat", splitRec: "doiSoat", splitDim: "doiSoat", splitStores: "doiSoat", mineOf: "doiSoat",
   earnedByParty: "doiSoat", previewPayout: "doiSoat", payoutOf: "doiSoat", recon: "doiSoat", feedTotals: "doiSoat", approvalChecks: "doiSoat", canApprove: "doiSoat",
   approve: "chotKy", revoke: "chotKy", "fx.lock": "chotKy",
+  /* Kế toán gõ tỷ giá Vietcombank vào; giám đốc mới đóng nó vào một kỳ.
+     Để hở fx.set là để hở mọi con số VND của mọi kỳ chưa chốt. */
+  "fx.set": "tien",
   "ingest.acceptVariance": "kiemSo",
   queue: "doiSoat", missingFeeds: "doiSoat", audit: "doiSoat",
   wallet: "tien", credits: "tien", statementsOf: "tien", withdrawals: "tien", statements: "tien", bank: "tien", advances: "tien", advanceBalance: "tien", withdrawalQuote: "tien", phiChuyen: "tien",
@@ -7286,7 +7413,7 @@ const QUYEN_HAM = {
   "soCongKhai.cua": "theoDoi", "soCongKhai.cuaBai": "theoDoi", "soCongKhai.ghi": "theoDoi", "soCongKhai.xoa": "theoDoi",
   "xuatBan.tacPham": "tacQuyen", "xuatBan.chiTiet": "tacQuyen", "xuatBan.ghi": "tacQuyen",
   "xuatBan.datDangKy": "tacQuyen", "xuatBan.boDangKy": "tacQuyen", "xuatBan.viecConLai": "tacQuyen",
-  "xuatBan.tongQuan": "tacQuyen", "xuatBan.nhapSentric": "tacQuyen",
+  "xuatBan.tongQuan": "tacQuyen", "xuatBan._tongQuan": "tacQuyen", "xuatBan.nhapSentric": "tacQuyen",
   "soCongKhai.docTuDong": "theoDoi", "soCongKhai.canDoc": "theoDoi",
   "releases.tool.cua": "vanHanh", "releases.tool.danhDau": "vanHanh", "releases.tool.boDanhDau": "vanHanh",
   "releases.tool.them": "quanTri", "releases.tool.bo": "quanTri",
@@ -7307,10 +7434,24 @@ const QUYEN_HAM = {
   proposals: "deXuat", "proposals.proposeAdvance": "deXuatTao", "proposals.proposeContract": "deXuatTao", advanceCalc: "deXuat", contractCalc: "deXuat", partySeries: "deXuat", advanceOfferOf: "deXuat",
   roi: "deXuat",
   tickets: "hoTro", claims: "khieuNai", videoSettings: "khieuNai",
-  accounts: "quanTri", answers: "quanTri", reset: "quanTri", refresh: "quanTri", store: "quanTri",
+  accounts: "quanTri", answers: "quanTri", reset: "quanTri", store: "quanTri",
+  /* Đọc cây tổ chức là quyền "toChuc"; sửa người là quyền "nhanSu" ở dưới.
+     Khai cả phần đọc thì thành viên mới thêm vào toChuc sau này mặc định
+     đã có người gác, thay vì lọt ra ngoài không ai biết. */
+  toChuc: "toChuc",
   "parties.create": "doiTacTao", platforms: "vanHanh", campaignCreate: "chienDich", campaignSetStatus: "chienDich", claimCreate: "khieuNai", ledger: "tien", pricing: "vanHanh",
   "toChuc.themKhoi": "nhanSu", "toChuc.suaKhoi": "nhanSu", "toChuc.themTo": "nhanSu", "toChuc.themNhanSu": "nhanSu", "toChuc.suaNhanSu": "nhanSu", "toChuc.chuyenNhanSu": "nhanSu", "toChuc.khoaNhanSu": "nhanSu", "toChuc.ganTaiSan": "nhanSu"
 };
+/* Thành viên CỐ Ý để mở trong một đối tượng đã gác: toàn là hàm đọc mà vai
+   nào cũng cần (danh sách đối tác để tra tên, tỷ giá để hiển thị, danh mục
+   hội tác quyền). Viết ra thành danh sách để phép kiểm phân biệt được "đã
+   cân nhắc rồi" với "quên gác", chứ không phải để nới quyền. */
+const QUYEN_MO = [
+  "parties.list", "parties.managerOf", "parties.signedAt", "parties.contractEnd",
+  "fx.get", "fx.ngayChot", "fx.rateFor",
+  "soCongKhai.nenTang",
+  "xuatBan.hoi", "xuatBan.vaiTacGia", "xuatBan.hoiTheoLanhTho"
+];
 function vaiHienTai() { return _me ? _me.role : null; }
 function coQuyenNhom(nhom, role) { role = role || vaiHienTai(); const g = QUYEN_NHOM[nhom]; return role === "mgmt" || !!(g && g.vai.includes(role)); }
 /* Vài trang chỉ mở cho cấp quản lý trở lên, bất kể thuộc khối nào: trưởng
@@ -7451,6 +7592,10 @@ function forecastStreamsOf() {
 const quyenXuat = {
   vai: () => vaiHienTai(), vaiTatCa: VAI_NB.slice(),
   man: id => manCoQuyen(id), nhom: g => coQuyenNhom(g),
+  /* Bảng hàm → nhóm, để soát được ma trận: quy tắc trỏ vào nhóm không tồn
+     tại, hay trỏ vào hàm không còn nữa, đều là lỗ hổng im lặng. */
+  ham: () => Object.assign({}, QUYEN_HAM),
+  mo: () => QUYEN_MO.slice(),
   bang: () => ({ man: QUYEN_MAN, nhom: QUYEN_NHOM, khoi: TO_CHUC.map(k => ({ id: k.id, vai: k.vai, vi: k.vi, en: k.en, man: k.man.slice(), nhom: k.nhom.slice() })) }),
   cap: () => capCua(_me), truong: () => laTruong(),
   cua: role => { const capTot = Math.min.apply(null, STAFF.concat(state.staff || []).filter(x => x.role === role).map(capCua).concat([CAP_THAP])); return { man: Object.keys(QUYEN_MAN).filter(id => manCoQuyen(id, role, capTot)), nhom: Object.keys(QUYEN_NHOM).filter(g => coQuyenNhom(g, role)) }; },
@@ -7462,6 +7607,9 @@ const nhanSuGon = x => ({ id: x.id, name: x.name, email: x.email, phone: x.phone
 const maKhoi = ten => chuoi(ten).toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/đ/g, "d").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 32);
 const admin = {
   cfg: CFG,
+  /* Chuỗi đổi mỗi khi có gì đó làm con số tiền đổi. Màn hình dùng nó để
+     đệm bộ đếm nặng của mình mà không sợ hiện số cũ. */
+  ver: () => duLieuVer(),
   get distributor() { return DISTRIBUTOR || KHONG_CO_BI_MAT; },
   /* Chỉ intranet.html gọi. Gọi xong, hai giá trị này có mặt trong bộ nhớ
      của TRANG ADMIN — và chỉ trang đó. */
@@ -7938,7 +8086,7 @@ const admin = {
     viecConLai(gioiHan) {
       chanQuyen("xuatBan.viecConLai", "tacQuyen");
       const n = Math.max(5, Math.min(200, gioiHan || 40));
-      if (TQ_NHO && TQ_NHO.n >= n) return TQ_NHO.kq;
+      if (TQ_NHO && TQ_NHO.ver === TQ_VER && TQ_NHO.n >= n) return TQ_NHO.kq;
       const ix = dungTpIndex(), p = kyTqGanNhat();
       const thieuIswc = [], lechTyLe = [], hong = [], trenBan = [];
       let tongTrenBan = 0, soTp = 0;
@@ -7967,13 +8115,20 @@ const admin = {
                hong: hong.length * buoc, trenBan: trenBan.length * buoc },
         tongTrenBan: cents(tongTrenBan * buoc)
       };
-      TQ_NHO = { n, kq };
+      TQ_NHO = { n, kq, ver: TQ_VER };
       return kq;
     },
 
     /* ---- Tổng quan cho bảng đầu trang ---- */
     tongQuan() {
       chanQuyen("xuatBan.tongQuan", "tacQuyen");
+      const tq = this;
+      return nhoDoc("xuatBan.tongQuan", TQ_VER, () => tq._tongQuan());
+    },
+    /* Phần tính của tongQuan. Gạch dưới ở đầu tên: boQuyen chỉ bọc hàm,
+       còn phép kiểm ma trận đọc danh sách cố ý mở, nên tên này phải nằm
+       trong QUYEN_MO — nó vẫn nằm sau cửa tongQuan đã gác. */
+    _tongQuan() {
       const v = this.viecConLai(5);
       const p = kyTqGanNhat(), pk = PERIODS[p].k;
       let pubKy = 0;

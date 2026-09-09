@@ -234,6 +234,10 @@ node test/roi-cong-thuc.js                              # công thức ROI đố
 node test/roi-man.js                                    # trang ROI trên mặt: số, dải kết luận, cảnh báo rủi ro
 node test/vong19-man.js                                 # vòng 19: khoá lọt, vai giao việc, rủi ro, nền tảng nhỏ, bảng hết phẳng
 node test/vong21-man.js                                 # vòng 21: tách bạch nhiệm vụ — ai thấy gì, ai bấm được gì
+node test/qc-bat-bien.js                                # QC: bất biến chuỗi tiền trên mọi kỳ, mọi đối tác
+node test/qc-quyen.js                                   # QC: ma trận quyền tự nhất quán, không quy tắc nào mồ côi
+node test/qc-vai-quet.js                                # QC: từng vai mở hết trang của mình, không trang nào đòi quyền vai ấy không có
+node test/qc-dem-nho.js                                 # QC: đệm không được thiu — đổi thứ nó phụ thuộc thì số phải đổi theo
 node dung-goi.js && node test/v2-nhu-artifact.js && node test/v2-khong-mang.js   # bản gói chạy trong trình xem, không mạng
 ```
 
@@ -380,6 +384,128 @@ một thẻ nhắc lại điều đó.
 Cổng đối tác không có và không nên có: bảng tính này đọc ra phần Haustek
 giữ lại, phí môi giới và biên lợi nhuận. Đối tác muốn biết mình ứng được bao
 nhiêu thì vẫn dùng `k-tam-ung`, chạy trên `advanceOfferOf()` đã lược sạch.
+
+## Vòng QC: soát lại toàn bộ logic và mã, tối ưu cho vận hành trơn tru
+
+Không thêm tính năng nào. Ba hướng soát, mỗi hướng để lại một bộ kiểm chạy
+được, và **năm lỗi thật** tìm được từ đó:
+
+1. `fx.set` không ai gác — mọi vai nội bộ đổi được tỷ giá USD→VND;
+2. nhóm `toChuc` là quyền suông — cây tổ chức đọc tự do;
+3. quy tắc `refresh` mồ côi — trỏ vào hàm không nằm trên mặt tiền admin;
+4. kế toán vừa gõ số vào vừa bỏ qua được sai lệch của chính số ấy;
+5. đệm thu nhập 12 kỳ **thiu sau khi đổi bảng giá** — đúng con số đi vào
+   quyết định ứng bao nhiêu tháng doanh thu.
+
+### QC 1 · Bất biến của chuỗi tiền — `qc-bat-bien.js`
+
+api-guard kiểm **ranh giới**: ai được thấy gì. Bài này kiểm **số**: cùng một
+đồng tiền đi qua bao nhiêu đường thì cộng lại vẫn phải ra bấy nhiêu. Chạy hết
+mọi kỳ × mọi đối tác chứ không lấy mẫu, vì lỗi cộng tiền thường chỉ hiện ở
+đúng một kỳ hoặc đúng một đối tác lạ.
+
+| Bất biến | Phạm vi |
+|---|---|
+| gộp thật = gộp ghi nhận + chênh lệch bảng giá | 12 kỳ |
+| gộp ghi nhận = phí + phần label + phần nghệ sĩ | 12 kỳ, cân tới 5 xu |
+| cộng từng bài trong danh mục = tổng các kỳ đã duyệt | 428 đối tác · 50.000 lượt bài |
+| bảng chi trả cân, không dòng nào âm vô lý | 10 kỳ đã duyệt |
+| số ở cổng đối tác = số nội bộ của chính họ | 428 đối tác |
+| ví: số dư = đã ghi − đã rút | 40 ví |
+| bật bảng giá, đổi, tắt → mọi số về đúng chỗ cũ | 12 kỳ |
+| không hàm nào của mặt tiền admin trả NaN hay Infinity | 16 hàm |
+
+**Danh mục trả doanh thu CỘNG DỒN qua mọi kỳ đã duyệt, và theo góc nhìn của
+vai**: nghệ sĩ thấy phần nghệ sĩ, label thấy phần sau phí (label giữ + nghệ sĩ
+của label). Không phải `agg().total`. Ba khái niệm gần nhau, tên khác nhau,
+và lẫn chúng chính là gốc của lỗi vòng 20.
+
+### QC 2 · Ma trận quyền — `qc-quyen.js` (Node) + `qc-vai-quet.js` (trình duyệt)
+
+Phân quyền hỏng thì thường không kêu:
+
+- quy tắc trỏ vào **nhóm không tồn tại** → lúc CHẶN mới vỡ, mà chặn là đường
+  ít ai đi;
+- quy tắc trỏ vào **tên hàm gõ sai** → hàm thật chạy tự do;
+- **nhóm không quy tắc nào trỏ tới** → quyền suông, hàm lẽ ra nó gác đang hở;
+- trang mới **quên khai** vào danh sách → mọi vai đều thấy.
+
+`qc-quyen.js` soát cả bốn hướng trên bảng thật (`A.quyen.ham()`,
+`A.quyen.mo()`, `A.quyen.bang()`), và đọc tĩnh thêm một hướng nữa: **mọi lời
+gọi `A.*` trong 45 trang phải trỏ vào hàm có thật** — gõ sai tên hàm chỉ vỡ
+khi có người mở đúng trang đó, đúng tab đó, có khi hàng tháng sau. `qc-vai-quet.js` đăng nhập lần lượt từng
+vai, mở **hết** trang vai ấy thấy, bấm hết tab, và tính `Không có quyền` là
+lỗi nặng — nó nghĩa là ma trận tự mâu thuẫn: trang được cấp mà hàm bên trong
+lại không. **283 phép kiểm · 67 lượt mở trang · 0 lỗi.**
+
+Ba lỗ tìm được và đã bịt:
+
+| Chỗ hở | Hậu quả | Đã sửa |
+|---|---|---|
+| `fx.set` không ai gác | mọi vai nội bộ đổi được tỷ giá USD→VND của mọi kỳ chưa chốt | vào nhóm `tien` (kế toán); `fx.lock` vẫn là `chotKy` (giám đốc) |
+| nhóm `toChuc` có vai, không quy tắc nào trỏ tới | cây tổ chức đọc tự do, dù trang bị khoá theo cấp | `toChuc: "toChuc"` cho phần đọc; sửa người vẫn là `nhanSu` |
+| `refresh: "quanTri"` | quy tắc mồ côi — `refresh` nằm ở `api`, không ở `admin` | bỏ |
+
+Và một chỗ **tách bạch nhiệm vụ** còn sót từ vòng 21: kế toán vừa có
+`nhapLieu` (gõ số vào) vừa có `kiemSo` (bỏ qua sai lệch). Cùng một tay gõ số
+sai rồi xoá dấu vết của chính mình. Đã bỏ `nhap-so-lieu` và `nhapLieu` khỏi
+khối tài chính: **vận hành gõ · kế toán kiểm ở Đối soát · giám đốc chốt kỳ.**
+
+Những hàm đọc **cố ý** để mở (danh sách đối tác để tra tên, tỷ giá để hiển
+thị, danh mục hội tác quyền) nay nằm trong `QUYEN_MO` — viết ra thành danh
+sách để phép kiểm phân biệt được "đã cân nhắc rồi" với "quên gác".
+
+### QC 3 · Hiệu năng — `qc-dem-nho.js`
+
+Đo trước đã. Mỗi lần đổi trang chạy lại nguyên khối việc dùng chung, dù không
+có gì đổi: chuông thông báo (2 lần), dự báo, KPI kinh doanh, điều kiện chốt kỳ
+(6 lần). Riêng phần ấy đã là ~600 ms.
+
+Cách sửa: một chuỗi phiên bản duy nhất cho mọi thứ có thể làm con số đổi —
+
+```
+duLieuVer() = số gõ tay | bảng giá nền tảng | bảng tỷ lệ | khớp ISRC | kỳ đã chốt
+GHI_VER     = đếm mọi lần trạng thái được ghi (store.save và audit.log)
+```
+
+— rồi đệm các hàm ĐỌC nặng theo chuỗi ấy: `agg`, `forecast`, `notifications`,
+`salesKpi`, `canApprove`, `approvalChecks`, `feedTotals`, `platformReport`,
+`platformTail`, `quality`, `splits`, `dailyTrends`, tổng quan Xuất bản.
+Đệm trả **bản sao nông**, kể cả mảng ở tầng một, nên trang nào sắp xếp tại chỗ
+trên kết quả cũng không đụng được vào bản trong đệm.
+
+| | trước | sau (lần đầu) | sau (quay lại) |
+|---|---|---|---|
+| Tổng quan | 927 ms | 487 ms | ~30 ms |
+| Nền tảng | 877 ms | 520 ms | 83 ms |
+| Danh mục | 686 ms | 397 ms | 253 ms |
+| Mức trả | 491 ms | 378 ms | 43 ms |
+| sàn chung mọi trang | 244 ms | ~35 ms | ~7 ms |
+
+Danh mục có thêm một chỗ riêng: nó dựng 50.000 dòng rồi cắt lấy 25. Việc ấy
+giống hệt nhau ở mọi trang của cùng một bộ lọc, nên **lật trang không nằm
+trong khoá đệm** — chỉ (vai, đối tác, bộ lọc, sắp xếp) mới nằm. Lật trang từ
+**155 ms xuống 0,3 ms**; đổi bộ lọc vẫn tính lại một lần, đúng như phải thế.
+
+**Đệm mở ra một rủi ro tệ hơn chậm: hiện số cũ mà không ai biết.** Và vòng này
+bắt được đúng một ca như thế, có từ trước: `earnedByPartyCached` khoá theo
+`state.rates.length` chứ không theo bảng giá, nên **đổi bảng giá nền tảng
+xong, chuỗi thu nhập 12 kỳ dùng để tính tạm ứng vẫn là số cũ** — đúng con số
+đi vào quyết định ứng bao nhiêu tháng doanh thu.
+
+`qc-dem-nho.js` khoá chuyện đó lại. Mỗi hàm có đệm phải chứng minh hai chiều:
+
+- đổi bảng giá thì `agg`, Mức trả tác động, chuỗi thu nhập 12 kỳ, dự báo
+  **đổi theo**; trả bảng giá về chỗ cũ thì số cũng về chỗ cũ;
+- đổi bảng giá **không được** làm tiền *nền tảng trả về* nhúc nhích — đó là
+  chuyện của nền tảng, bảng giá của Haustek không đụng tới được. Nửa còn lại
+  của bài học vòng 20: hai khái niệm khác nhau thì phải phản ứng khác nhau.
+
+Thêm: gõ số mới thì đối soát và điều kiện chốt kỳ theo kịp; có việc hỗ trợ mới
+thì chuông đếm lại; đổi người đăng nhập thì thông báo đổi theo người; và
+**hàm có đệm phải là hàm ĐỌC** — gọi 17 hàm ấy hai lượt, `A.ver()` không được
+nhúc nhích. Đệm một hàm có ghi là hỏng theo hai đường cùng lúc: lần sau không
+chạy nữa nên việc không xảy ra, mà mỗi lần chạy lại tự làm chính đệm rụng.
 
 ## Vòng 21: tách bạch nhiệm vụ — không vai nào cầm quá nhiều
 
