@@ -463,6 +463,38 @@ Hai phép kiểm luôn phải đúng: `gộp ghi nhận = phí + trả đối t�
   nên lọt một trong hai là đối tác suy ngược ra được nền tảng trả Haustek bao
   nhiêu. Chặn cứng ở `scrub()`.
 
+### Chênh lệch tính riêng trong sổ kế toán
+
+Hai dòng thu nhập nằm ở **hai tài khoản khác nhau**, vì hai thứ khác nhau
+quyết định chúng và chúng sửa được độc lập:
+
+| TK | Tên | Do cái gì quyết định |
+|---|---|---|
+| **511** | Doanh thu cung cấp dịch vụ (phí dịch vụ Haustek) | phần trăm trong hợp đồng |
+| **5118** | Chênh lệch bảng giá nền tảng | bảng giá của công ty |
+
+Bút toán ghi nhận doanh thu kỳ vì thế có năm dòng, không phải bốn. Bên Nợ
+là số **nền tảng trả về**; ba dòng Có đầu chia theo **gộp ghi nhận**; phần
+lệch giữa hai bên là chênh lệch bảng giá, đứng riêng ở 5118:
+
+```
+Nợ  131  Phải thu từ nền tảng             $153.977,46
+Có  511  Phí dịch vụ theo hợp đồng         $22.254,24
+Có  3311 Phải trả label                    $26.611,57
+Có  3312 Phải trả nghệ sĩ                  $99.492,95
+Có  5118 Chênh lệch bảng giá                $5.618,70
+                                          ────────────
+                        Tổng Nợ = Tổng Có $153.977,46
+```
+
+Chênh lệch **âm** thì dòng 5118 chuyển sang bên **Nợ** — một khoản giảm trừ
+doanh thu, không phải một khoản phí — và sổ vẫn cân.
+
+**Kế toán thấy tổng, không thấy bảng giá.** Họ phải đọc được tổng chênh lệch
+để ghi sổ, nhưng bảng giá từng nền tảng vẫn là số Level 1–2: `agg()` trả
+`bienGia` cho mọi vai nội bộ, còn `mucTraTacDong()` và `platformRatesFull()`
+vẫn chặn ở nhóm `tong`. api-guard kiểm cả hai chiều.
+
 ### Bài kiểm giữ cho lỗi không quay lại
 
 `api-guard` có hai phép mới, và phép quan trọng nhất là phép chứng minh phí
@@ -481,6 +513,10 @@ Cùng với: chào đúng mức thực tế thì chênh lệch về 0 **nhưng p
 (nếu phí biến mất theo thì phí đang là chênh lệch trá hình); chào cao hơn thì
 chênh lệch âm **nhưng phí vẫn dương** (hai dòng đã tách rời); và chào cao hơn
 mức nền tảng trả về thì lưu được, chỉ số 0 và số âm mới bị chặn.
+
+Một phép riêng cho sổ kế toán: ba dòng Có phải cân với **gộp ghi nhận**, và
+nếu chúng đã cân với **gộp thật** thì chênh lệch đang bị nhét vào phí và tài
+khoản 5118 không còn lý do tồn tại.
 
 ## Vòng 19: ứng theo số tháng, cảnh báo rủi ro, nền tảng nhỏ, giao việc theo vai
 

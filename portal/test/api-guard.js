@@ -1387,6 +1387,46 @@ check("Bảng giá quy ra gộp ghi nhận, RỒI phí hợp đồng cắt trên
   return "gộp thật đứng yên · chuỗi cân trên gộp ghi nhận · tỷ lệ phí không đổi theo bảng giá · hai dòng thu nhập tách rời";
 });
 
+check("Chênh lệch bảng giá vào sổ kế toán ở tài khoản RIÊNG, không nhập vào phí", () => {
+  nhu("S01");
+  const pi = A.periods.findIndex(p => p.k === approvedKey);
+  must(!A.platformRatesFull().some(r => r.override), "một phép kiểm trước để sót bảng giá");
+  const suy = A.platformRatesFull().find(r => r.name === "Spotify");
+  const nen = Math.round(suy.derived * 10000) / 10000;
+  A.setPlatformRate("Spotify", nen, "kiểm thử", "test", Math.round(nen * 0.85 * 10000) / 10000);
+  const a = A.agg("admin", 0, pi, "rec");
+
+  /* Bút toán 1 của trang Kế toán: Nợ 131 = gộp thật; Có 511 + 3311 + 3312
+     = gộp ghi nhận; phần lệch là chênh lệch bảng giá, ghi ở 5118. Nếu ba
+     dòng Có kia đã cân với gộp THẬT thì chênh lệch đang bị nhét vào phí
+     và tài khoản 5118 không còn lý do tồn tại. */
+  const co = Math.round((a.fee + a.labelCut + a.artist) * 100) / 100;
+  must(Math.abs(co - a.ghiNhan) < 2, "ba dòng Có phải cân với gộp GHI NHẬN: " + co + " ≠ " + a.ghiNhan);
+  must(Math.abs(a.gross - co) > 1, "ba dòng Có đang cân với gộp THẬT: chênh lệch bị nhét vào phí");
+  must(Math.abs(a.gross - co - a.bienGia) < 2, "thêm dòng 5118 vào mà sổ vẫn không cân");
+  must(a.bienGia > 1, "chào thấp hơn mức nền tảng mà chênh lệch không dương");
+
+  /* Chào cao hơn: chênh lệch âm, dòng 5118 đổi sang bên Nợ, sổ vẫn cân */
+  A.setPlatformRate("Spotify", nen, "kiểm thử", "test", Math.round(nen * 1.3 * 10000) / 10000);
+  const b = A.agg("admin", 0, pi, "rec");
+  must(b.bienGia < -1, "chào cao hơn mà chênh lệch không âm: " + b.bienGia);
+  const co2 = Math.round((b.fee + b.labelCut + b.artist) * 100) / 100;
+  must(Math.abs(b.gross - co2 - b.bienGia) < 2, "chênh lệch âm mà sổ không cân");
+  must(b.fee > 1, "chênh lệch âm mà phí cũng âm theo: hai tài khoản chưa tách rời");
+
+  /* Kế toán phải đọc được TỔNG chênh lệch để ghi sổ, nhưng không được thấy
+     bảng giá từng nền tảng — đó vẫn là số Level 1–2. */
+  const kt = nhu("S07");
+  must(kt.role === "accounting", "phải thử bằng vai kế toán");
+  const c = A.agg("admin", 0, pi, "rec");
+  must(typeof c.bienGia === "number", "kế toán không đọc được tổng chênh lệch để ghi sổ");
+  mustThrow(() => A.mucTraTacDong(pi), "kế toán đọc được bảng giá từng nền tảng");
+  mustThrow(() => A.platformRatesFull(), "kế toán đọc được bảng giá đầy đủ");
+  nhu("S01");
+  A.clearPlatformRate("Spotify", "test");
+  return "Nợ 131 gộp thật · Có 511+3311+3312 gộp ghi nhận · 5118 giữ phần lệch · kế toán thấy tổng, không thấy bảng giá";
+});
+
 check("Chào cao hơn mức nền tảng trả về là hợp lệ, không phải lỗi nhập liệu", () => {
   nhu("S01");
   const suy = A.platformRatesFull().find(r => r.name === "Apple Music");

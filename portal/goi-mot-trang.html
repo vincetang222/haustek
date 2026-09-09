@@ -18172,6 +18172,12 @@ var TK = {
   '131': { ten: 'Phải thu của khách hàng (đối tác phân phối, nền tảng)', loai: 'ts' },
   '138': { ten: 'Phải thu khác (tạm ứng cho nghệ sĩ, label)', loai: 'ts' },
   '511': { ten: 'Doanh thu cung cấp dịch vụ (phí dịch vụ Haustek)', loai: 'dt' },
+  /* Chênh lệch bảng giá là dòng thu nhập THỨ HAI của Haustek và phải nằm
+     ở tài khoản riêng: nó do bảng giá quyết định, còn 511 do phí trong
+     hợp đồng quyết định. Nhập chung một tài khoản là hết đọc được mình
+     lãi nhờ đâu. Dương thì ghi Có, âm thì ghi Nợ — một khoản giảm trừ
+     doanh thu, không phải một khoản phí. */
+  '5118': { ten: 'Chênh lệch bảng giá nền tảng', loai: 'dt' },
   '3311': { ten: 'Phải trả label', loai: 'no' },
   '3312': { ten: 'Phải trả nghệ sĩ', loai: 'no' },
   '3314': { ten: 'Phải trả tác giả (tác quyền)', loai: 'no' },
@@ -18185,7 +18191,7 @@ HT.dangKy({
     vi: {
       dcTieuDe: 'Bút toán điều chỉnh', dcMo: 'Khoản ghi tay ngoài báo cáo nền tảng: điều chỉnh, chi phí thu hộ, khoản thu khác, hoàn trả. Ghi vào kỳ đang mở, có diễn giải và người ghi.', themBt: 'Thêm bút toán', cMa: 'Mã', cKy: 'Kỳ', cDt: 'Đối tác', cLoai: 'Loại', cTien: 'Số tiền', cDienGiai: 'Diễn giải', cNguoi: 'Người ghi', khongBt: 'Kỳ này chưa có bút toán điều chỉnh', fKy: 'Kỳ', fDt: 'Đối tác (mã hoặc tên)', fDtHint: 'Bỏ trống nếu là bút toán chung.', fLoaiBt: 'Loại', fTien: 'Số tiền (USD, âm là trừ)', fDienGiai: 'Diễn giải', fRef: 'Chứng từ', daGhi: 'Đã ghi bút toán {id}', khongDt: 'Không tìm thấy đối tác', xoa: 'Xoá',
       nhomTien: 'Tài chính', navKeToan: 'Kế toán', h1: 'Kế toán',
-      mo: 'Doanh thu kỳ ghi vào tài khoản nào, bên nào nợ bên nào, phần nào chưa có người thụ hưởng.',
+      mo: 'Doanh thu kỳ ghi vào tài khoản nào, bên nào nợ bên nào, phần nào chưa có người thụ hưởng. Haustek có hai dòng thu nhập và chúng nằm ở hai tài khoản khác nhau: phí dịch vụ theo hợp đồng ở 511, chênh lệch bảng giá ở 5118.',
       tBut: 'Bút toán kỳ', tCn: 'Công nợ bên thụ hưởng', tUng: 'Tạm ứng phải thu',
       tGhi: 'Ghi nhận doanh thu 12 kỳ', tThue: 'Thuế và khấu trừ',
       no: 'Nợ', co: 'Có', tk: 'TK', dienGiai: 'Diễn giải', soTien: 'Số tiền',
@@ -18206,13 +18212,13 @@ HT.dangKy({
       ungGoc: 'Số đã tạm ứng', ungDaThu: 'Đã thu hồi', ungConLai: 'Còn phải thu hồi', ungKy: 'Số kỳ còn lại',
       giaiThichUng: 'Tạm ứng là khoản Haustek trả trước: tài sản phải thu, không phải chi phí; tất toán khi đối tác đủ doanh thu thu hồi.',
       chuaLam: 'Bản mẫu chưa mô hình hoá',
-      dtGop: 'Doanh thu gộp', dtPhi: 'Doanh thu phí dịch vụ Haustek', dtPhaiTra: 'Phải trả các bên',
+      dtGop: 'Nền tảng trả về', dtPhi: 'Phí dịch vụ theo hợp đồng', dtChenh: 'Chênh lệch bảng giá', dtPhaiTra: 'Phải trả các bên',
       bienPhi: 'Tỷ lệ phí trên doanh thu gộp'
     },
     en: {
       dcTieuDe: 'Adjustments', dcMo: 'Manual entries outside platform reports: adjustments, recoverable costs, other income, reversals. Booked into an open period with a note and author.', themBt: 'Add an entry', cMa: 'Id', cKy: 'Period', cDt: 'Partner', cLoai: 'Kind', cTien: 'Amount', cDienGiai: 'Note', cNguoi: 'By', khongBt: 'No adjustments in this period yet', fKy: 'Period', fDt: 'Partner (id or name)', fDtHint: 'Leave empty for a general entry.', fLoaiBt: 'Kind', fTien: 'Amount (USD, negative deducts)', fDienGiai: 'Note', fRef: 'Reference', daGhi: 'Booked {id}', khongDt: 'Partner not found', xoa: 'Remove',
       nhomTien: 'Money', navKeToan: 'Accounting', h1: 'Accounting',
-      mo: 'What the period’s revenue was booked as, who owes whom, and what has no owner yet.',
+      mo: 'What the period’s revenue was booked as, who owes whom, and what has no owner yet. Haustek has two income lines and they sit in two different accounts: the contract fee in 511, the rate spread in 5118.',
       tBut: 'Period journal', tCn: 'Payee ledger', tUng: 'Advances receivable',
       tGhi: '12-period recognition', tThue: 'Tax & withholding',
       no: 'Dr', co: 'Cr', tk: 'A/C', dienGiai: 'Narrative', soTien: 'Amount',
@@ -18233,7 +18239,7 @@ HT.dangKy({
       ungGoc: 'Advanced', ungDaThu: 'Recouped', ungConLai: 'Outstanding', ungKy: 'Periods left',
       giaiThichUng: 'An advance is money paid up front: a receivable, not a cost; it clears when the payee earns enough.',
       chuaLam: 'Not modelled in the prototype',
-      dtGop: 'Gross revenue', dtPhi: 'Haustek fee revenue', dtPhaiTra: 'Payable to parties',
+      dtGop: 'Platforms paid in', dtPhi: 'Contract fee revenue', dtChenh: 'Rate spread', dtPhaiTra: 'Payable to parties',
       bienPhi: 'Fee as share of gross'
     }
   },
@@ -18249,6 +18255,8 @@ HT.dangKy({
       so: [
         { l: t('dtGop'), v: c.tien(s.gross + s.pubGross) },
         { l: t('dtPhi'), v: c.tien(s.fee + s.pubFee) },
+        { l: t('dtChenh'), v: c.tien(s.bienGia),
+          mau: s.bienGia < 0 ? HB.mau('no') : s.bienGia > 0 ? HB.mau('ok') : '' },
         { l: t('dtPhaiTra'), v: c.tien(s.labelCut + s.artist + s.pubWriter) }
       ]
     });
@@ -18309,7 +18317,8 @@ function soLieu(A, pi, pk) {
 
     return {
       pi: pi, pk: pk, duyet: duyet,
-      gross: rec.gross, fee: rec.fee, labelCut: rec.labelCut,
+      gross: rec.gross, ghiNhan: rec.ghiNhan, bienGia: rec.bienGia,
+      fee: rec.fee, labelCut: rec.labelCut,
       artist: rec.artist,
       streams: rec.streams, tracks: rec.tracks,
       pubGross: pub.gross, pubFee: pubFee, pubWriter: lam(pub.gross - pubFee),
@@ -18335,16 +18344,27 @@ function veButToan(c, s) {
 
   var bt = [];
 
+  /* Bên Nợ là số NỀN TẢNG TRẢ VỀ; ba dòng Có dưới là số đã quy theo bảng
+     giá. Hai số ấy không bằng nhau khi bảng giá khác mức nền tảng trả,
+     và phần lệch chính là chênh lệch bảng giá — nó phải có dòng riêng,
+     không được nhập vào phí. */
+  var dongBut1 = [
+    { no: true, tk: '131', mo: c.lang === 'vi' ? 'Phải thu từ nền tảng, kỳ ' + c.ky.label : 'Receivable from platforms, ' + c.ky.label, gt: s.gross },
+    { no: false, tk: '511', mo: c.lang === 'vi' ? 'Phí dịch vụ theo hợp đồng, tính trên doanh thu ghi nhận ' + c.tien(s.ghiNhan) : 'Contract fee, on recognised revenue ' + HT.fmt.usd0(s.ghiNhan), gt: s.fee },
+    { no: false, tk: '3311', mo: c.lang === 'vi' ? 'Phần label được hưởng, cộng phần Haustek theo hợp đồng độc lập' : 'Label share, plus extra Haustek share on independents', gt: s.labelCut },
+    { no: false, tk: '3312', mo: c.lang === 'vi' ? 'Phần nghệ sĩ được hưởng' : 'Artist share', gt: s.artist }
+  ];
+  if (Math.abs(s.bienGia) > 0.004) {
+    dongBut1.push({ no: s.bienGia < 0, tk: '5118', gt: Math.abs(s.bienGia),
+      mo: c.lang === 'vi'
+        ? (s.bienGia > 0 ? 'Nền tảng trả về nhiều hơn giá đã chào khách' : 'Giá đã chào khách cao hơn số nền tảng trả về, Haustek bù phần chênh')
+        : (s.bienGia > 0 ? 'Platforms paid in more than the rate quoted to clients' : 'The quoted rate exceeds what platforms paid in; Haustek covers the gap') });
+  }
   bt.push(butToan(t('but1'),
     c.lang === 'vi'
-      ? 'Doanh thu từ ba nguồn báo cáo, đã khớp tới từng bản ghi. Phí dịch vụ Haustek là doanh thu của công ty; ba khoản còn lại là nợ phải trả, chưa phải khoản đã thanh toán.'
-      : 'Revenue from the three feeds, matched to recordings. The Haustek fee is company revenue; the other two are liabilities, not costs already paid.',
-    [
-      { no: true, tk: '131', mo: c.lang === 'vi' ? 'Phải thu doanh thu kỳ ' + c.ky.label : 'Receivable, ' + c.ky.label, gt: s.gross },
-      { no: false, tk: '511', mo: c.lang === 'vi' ? 'Phí dịch vụ Haustek ' + HT.fmt.pct(A.cfg.HAUSTEK_FEE) : 'Haustek fee ' + HT.fmt.pct(A.cfg.HAUSTEK_FEE), gt: s.fee },
-      { no: false, tk: '3311', mo: c.lang === 'vi' ? 'Phần label được hưởng, cộng phần Haustek theo hợp đồng độc lập' : 'Label share, plus extra Haustek share on independents', gt: s.labelCut },
-      { no: false, tk: '3312', mo: c.lang === 'vi' ? 'Phần nghệ sĩ được hưởng' : 'Artist share', gt: s.artist }
-    ]));
+      ? 'Doanh thu từ ba nguồn báo cáo, đã khớp tới từng bản ghi. Bên Nợ là số nền tảng trả về; bên Có chia theo bảng giá rồi mới trừ phí hợp đồng. Phần lệch giữa hai bên là chênh lệch bảng giá, ghi riêng ở tài khoản 5118 chứ không nhập vào phí.'
+      : 'Revenue from the three feeds, matched to recordings. The debit is what platforms paid in; the credits follow the price list, then the contract fee. The gap between the two sides is the rate spread, booked separately to 5118, never folded into the fee.',
+    dongBut1));
 
   if (s.pubCo && s.pubGross > 0.004) {
     bt.push(butToan(t('but2'),
