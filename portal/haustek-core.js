@@ -75,7 +75,12 @@ let FORBIDDEN = ["grossRate", "distributor", "nhà phân phối", "phân phối"
                  /* Đối tác chỉ thấy số NET của mình. Doanh thu gộp, phí dịch vụ
                     và phần Haustek nằm trong bảng kê PDF mà Haustek gửi riêng,
                     không nằm trong bất kỳ gói dữ liệu nào của cổng đối tác. */
-                 "gross", "haustekFee", "counterpartShare", "doanh thu gộp", "phí dịch vụ", "service fee"];
+                 "gross", "haustekFee", "counterpartShare", "doanh thu gộp", "phí dịch vụ", "service fee",
+                 /* Vòng 20: gộp ghi nhận theo bảng giá và chênh lệch bảng giá cũng
+                    là số nội bộ. bienGia = gộp thật − gộp ghi nhận, nên lọt một
+                    trong hai là đối tác suy ngược ra được nền tảng trả Haustek
+                    bao nhiêu. */
+                 "ghiNhan", "bienGia"];
 
 /* ---------------------------------------------------------------------
    2. BỘ SINH SỐ CÓ HẠT GIỐNG
@@ -806,30 +811,45 @@ function feeOf(i, periodKey) {
 }
 demHopDong();   /* state đã nạp ở mục 9 phía trên */
 /* =====================================================================
-   MỨC TRẢ NỀN TẢNG QUYẾT ĐỊNH TIỀN TRẢ ĐỐI TÁC  (chốt vòng 16)
+   HAI THỨ KHÁC HẲN NHAU, VÀ CHÚNG ÁP THEO THỨ TỰ  (sửa lại ở vòng 20)
    ---------------------------------------------------------------------
-   Trước vòng này, phần đối tác được hưởng luôn là doanh thu gộp trừ phần
-   trăm phí Haustek. Nhưng cách Haustek bán hàng là một BẢNG GIÁ: "nền
-   tảng trả tôi 0,0044 trên 1.000 lượt, tôi trả anh 0,004". Nên nền tảng
-   nào đã nhập mức trả đối tác thì tiền của đối tác trên nền tảng ấy là
+   Vòng 16 gộp nhầm hai khái niệm làm một, và cái nhầm ấy đi thẳng vào
+   chuỗi tiền. Ghi lại cho rõ, vì đây là chỗ dễ nhầm lại nhất:
 
-       lượt nghe của nền tảng đó ÷ 1.000 × mức trả
+     1. STREAMING RATE — giá Haustek đưa ra cho từng nền tảng, tính bằng
+        USD trên 1.000 lượt. Đây là bảng giá của công ty: nó nói một
+        nghìn lượt trên nền tảng ấy ĐƯỢC GHI NHẬN là bao nhiêu tiền cho
+        đối tác. Không phải cách chia tiền, mà là cách ĐỊNH GIÁ lượt nghe.
 
-   chứ không phải phần trăm nữa. Nền tảng chưa nhập mức thì giữ nguyên
-   đường phần trăm, nên bật dần từng nền tảng được, không phải bật hết
-   một lượt.
+     2. PHÍ HAUSTEK — phần trăm thoả thuận trong hợp đồng với TỪNG khách
+        hàng. Đây mới là cách chia tiền, và nó khác nhau theo từng hợp
+        đồng trong khi bảng giá thì chung cho cả công ty.
 
-   Hai điều cố ý KHÔNG làm:
-     · không chặn trên: nếu tháng đó nền tảng trả về ít hơn mức đã hứa với
-       đối tác thì phần Haustek giữ là số ÂM. Đó là sự thật của tháng ấy;
-       giấu đi bằng cách kẹp về 0 là để người ký hợp đồng không bao giờ
-       biết mình hứa lỗ. Màn Mức trả nền tảng đếm và cảnh báo.
-     · không đụng tới tỷ lệ label / nghệ sĩ: mức trả quyết định TỔNG về
-       phía đối tác, còn chia đôi bên trong vẫn theo hợp đồng như cũ.
+   Hai thứ ấy áp THEO THỨ TỰ, bảng giá trước rồi phí sau:
+
+       gộp ghi nhận = Σ (lượt nghe nền tảng j ÷ 1.000 × giá nền tảng j)
+       phí Haustek  = gộp ghi nhận × phí% của hợp đồng
+       đối tác nhận = gộp ghi nhận − phí Haustek
+
+   Nền tảng nào chưa có giá thì phần của nền tảng ấy lấy thẳng doanh thu
+   gộp thật làm số ghi nhận, nên bật dần từng nền tảng được.
+
+   Haustek do đó có HAI dòng thu nhập, và phải đọc được tách rời:
+
+       phí hợp đồng        = gộp ghi nhận × phí%          (luôn dương)
+       chênh lệch bảng giá = gộp thật − gộp ghi nhận      (âm được)
+
+   Chênh lệch âm nghĩa là tháng ấy nền tảng trả về ít hơn giá mình đã
+   chào. Đó là sự thật của tháng ấy; kẹp về 0 là để người ký bảng giá
+   không bao giờ biết mình chào lỗ. Màn Mức trả nền tảng đếm và cảnh báo.
+
+   Điều cố ý KHÔNG làm: không đụng tới tỷ lệ label / nghệ sĩ. Bảng giá và
+   phí quyết định TỔNG về phía đối tác; chia đôi bên trong vẫn theo hợp
+   đồng như cũ.
 
    Tính theo từng bài thì tốn: mỗi bài phải bóc doanh thu và lượt nghe ra
    chín nền tảng. Nên dựng sẵn cả kỳ một lần rồi nhớ, và chỉ dựng khi có
-   ít nhất một nền tảng đã nhập mức — chưa nhập thì đường cũ chạy y như
+   ít nhất một nền tảng đã nhập giá — chưa nhập thì đường cũ chạy y như
    trước, không chậm đi một nhịp nào.
    ===================================================================== */
 let NET_KY = new Array(CFG.N_PERIODS).fill(null);
@@ -853,42 +873,49 @@ function coMucTraKhach() {
   for (const k in ov) if (ov[k] && ov[k].khach > 0) return true;
   return false;
 }
-function dungNetKy(p) {
+/* Doanh thu GHI NHẬN của từng bài trong kỳ: bảng giá quy lượt nghe ra
+   tiền. Chưa có giá cho nền tảng nào thì phần ấy lấy gộp thật. Hàm này
+   KHÔNG biết gì về phí — phí là chuyện của hợp đồng, cắt ở bước sau. */
+function dungGhiNhanKy(p) {
   const kh = khachTheoNenTang();
   const rev = new Float64Array(N_PLAT), st = new Float64Array(N_PLAT);
   const out = new Float64Array(N);
-  const pk = PERIODS[p].k;
   for (let i = 0; i < N; i++) {
     const g = grossRec(i, p);
     if (g <= 0) { out[i] = 0; continue; }
     splitStores(i, p, rev); splitStreams(i, p, rev, st);
-    const conLai = 1 - feeOf(i, pk);
-    let net = 0;
+    let ghi = 0;
     for (let j = 0; j < N_PLAT; j++) {
-      net += kh[j] != null ? st[j] / 1000 * kh[j] : rev[j] * conLai;
+      ghi += kh[j] != null ? st[j] / 1000 * kh[j] : rev[j];
     }
-    out[i] = net;
+    out[i] = ghi;
   }
   return out;
 }
-/* null = nền tảng chưa ai nhập mức, cứ đi đường phần trăm như cũ */
-function netKhachCua(i, p) {
+/* null = chưa nền tảng nào có giá, gộp ghi nhận bằng đúng gộp thật */
+function ghiNhanCua(i, p) {
   if (!coMucTraKhach()) return null;
   const ver = mucTraVer();
   if (NET_VER !== ver) { NET_KY = new Array(CFG.N_PERIODS).fill(null); NET_VER = ver; }
-  if (!NET_KY[p]) NET_KY[p] = dungNetKy(p);
+  if (!NET_KY[p]) NET_KY[p] = dungGhiNhanKy(p);
   return NET_KY[p][i];
 }
 
+/* Thứ tự: bảng giá quy ra gộp ghi nhận, RỒI phí hợp đồng cắt trên số ấy.
+   Phí không bao giờ là số dư — đổi bảng giá thì phí đổi theo vì gốc đổi,
+   nhưng TỶ LỆ phí vẫn đúng bằng phí% trong hợp đồng. */
 function splitRec(i, gross, periodKey, pIdx) {
   const r = rates.rateFor(partyKeyOfTrack(i), periodKey);
   const p = pIdx == null ? pIndexOf(periodKey) : pIdx;
-  const kh = p >= 0 ? netKhachCua(i, p) : null;
-  const net = kh == null ? cents(gross - cents(gross * feeOf(i, periodKey))) : cents(kh);
-  const fee = cents(gross - net);
+  const gn = p >= 0 ? ghiNhanCua(i, p) : null;
+  const ghiNhan = gn == null ? gross : cents(gn);
+  const phiPct = feeOf(i, periodKey);
+  const fee = cents(ghiNhan * phiPct);
+  const net = cents(ghiNhan - fee);
   const artistBase = cents(net * r);
   const labelCut = cents(net - artistBase);
-  return { gross, fee, net, labelCut, artist: artistBase, rate: r, theoMucTra: kh != null };
+  return { gross, ghiNhan, bienGia: cents(gross - ghiNhan), phiPct,
+    fee, net, labelCut, artist: artistBase, rate: r, theoMucTra: gn != null };
 }
 
 /* =====================================================================
@@ -1105,12 +1132,15 @@ function revenueOf(i, p, role) {
 /* Cùng khái niệm ở cấp tổng hợp một kỳ */
 function revenueAgg(a, role) {
   if (role === "admin") return a.gross;
-  return role === "label" ? cents(a.gross - a.fee) : a.artist;
+  /* Label thấy phần sau phí. Gốc để trừ phí là gộp GHI NHẬN chứ không
+     phải gộp thật: chênh lệch bảng giá là chuyện giữa Haustek và nền
+     tảng, không nằm trong dòng tiền của đối tác. */
+  return role === "label" ? cents(a.ghiNhan - a.fee) : a.artist;
 }
 
 function agg(role, partyId, p, stream) {
   const sc = scopeOf(role, partyId, stream), n = sc ? sc.length : N;
-  let total = 0, gross = 0, fee = 0, labelCut = 0, artist = 0, streams = 0, tracks = 0;
+  let total = 0, gross = 0, ghiNhan = 0, fee = 0, labelCut = 0, artist = 0, streams = 0, tracks = 0;
   for (let k = 0; k < n; k++) {
     const i = sc ? sc[k] : k;
     const g = grossOf(i, p, stream);
@@ -1118,15 +1148,16 @@ function agg(role, partyId, p, stream) {
     tracks++;
     if (stream === "rec") {
       const s = splitRec(i, g, PERIODS[p].k);
-      gross += g; fee += s.fee; labelCut += s.labelCut; artist += s.artist;
+      gross += g; ghiNhan += s.ghiNhan; fee += s.fee; labelCut += s.labelCut; artist += s.artist;
       streams += recStreams[i * P + p];
       total += role === "admin" ? s.gross : (role === "label" ? s.labelCut : s.artist);
     } else {
-      gross += g; fee += g * CFG.PUB_FEE;
+      gross += g; ghiNhan += g; fee += g * CFG.PUB_FEE;
       total += role === "admin" ? g : g * (1 - CFG.PUB_FEE) * writerShare(i, partyId);
     }
   }
-  return { total: cents(total), gross: cents(gross), fee: cents(fee), labelCut: cents(labelCut),
+  return { total: cents(total), gross: cents(gross), ghiNhan: cents(ghiNhan),
+           bienGia: cents(gross - ghiNhan), fee: cents(fee), labelCut: cents(labelCut),
            artist: cents(artist), streams, tracks };
 }
 
@@ -2364,9 +2395,12 @@ function platformRates() {
   _rateCacheVal = PLAT_NAMES.map((n, j) => {
     const derived = accS[j] > 0 ? accR[j] / accS[j] * 1000 : 0, o = ov[n];
     const per1k = o ? o.per1k : derived;                       /* nền tảng trả về Haustek */
-    const khach = o && o.khach != null ? o.khach : per1k;      /* Haustek trả đối tác */
-    return { name: n, nameEn: PLAT_NAMES_EN[j], per1k, khach, bien: cents4(per1k - khach),
-      bienPct: per1k > 0 ? Math.round((per1k - khach) / per1k * 1000) / 1000 : 0,
+    const khach = o && o.khach != null ? o.khach : per1k;      /* giá Haustek chào khách */
+    /* Tên là bienGia, không phải bien: đây là chênh lệch BẢNG GIÁ, một
+       trong hai dòng thu nhập của Haustek. Dòng kia là phí hợp đồng, và
+       nó không nằm ở đây vì nó thuộc về từng khách chứ không thuộc nền tảng. */
+    return { name: n, nameEn: PLAT_NAMES_EN[j], per1k, khach, bienGia: cents4(per1k - khach),
+      bienGiaPct: per1k > 0 ? Math.round((per1k - khach) / per1k * 1000) / 1000 : 0,
       derived, source: o ? "override" : "derived", at: o ? o.at : null, note: o ? o.note : "" };
   });
   return _rateCacheVal;
@@ -2424,7 +2458,9 @@ function forecastOf(role, partyId) {
       const share = platShare[j] / tongShare;
       const s7 = last7 * share, s28 = last28 * share;
       return { name: r.name, nameEn: r.nameEn, share, streams7: Math.round(s7), streams28: Math.round(s28),
-        per1k: cents(r.per1k * factorR), per1kMine: cents(r.per1k * factor), projectedStreams: Math.round(projStreams * share),
+        /* Cả hai đều là số THEO VAI trên 1.000 lượt, không phải mức nền
+           tảng trả về Haustek. Bỏ tên per1k đi để không ai đọc nhầm. */
+        tren1k: cents(r.per1k * factorR), netTren1k: cents(r.per1k * factor), projectedStreams: Math.round(projStreams * share),
         projectedRevenue: cents(projStreams * share * r.per1k / 1000 * factorR), projectedMine: cents(projStreams * share * r.per1k / 1000 * factor) };
     }).filter(x => x.share > 0.0005).sort((a, b) => b.projectedStreams - a.projectedStreams),
     projected: { streams: projStreams, revenue: cents(projStreams * blendedR), mine: cents(projStreams * blended), monthToDate: Math.round(mtd), monthToDateRevenue: cents(mtd * blendedR), monthToDateMine: cents(mtd * blended) },
@@ -2895,7 +2931,10 @@ function explainPeriod(role, partyId, pk) {
      đừng để người đọc tưởng đó là số bình quân suy ra. Mức hiện ở đây vẫn
      là mức CỦA NGƯỜI XEM (đã nhân tỷ lệ hợp đồng), không phải mức gốc. */
   const khGia = khachTheoNenTang();
-  const platforms = PLAT_NAMES.map((nm, j) => ({ name: nm, nameEn: PLAT_NAMES_EN[j], streams: Math.round(accS[j]), per1k: accS[j] > 0 ? cents(accR[j] / accS[j] * 1000 * (gross > 0 ? mine / gross : 0)) : 0, amount: cents(accR[j] * (gross > 0 ? mine / gross : 0)), bangGia: khGia[j] != null })).filter(x => x.streams > 0).sort((a, b) => b.amount - a.amount);
+  /* netTren1k, KHÔNG phải per1k: đây là số RÒNG của chính đối tác trên
+     1.000 lượt, không phải mức nền tảng trả về Haustek. Hai số ấy trước
+     đây cùng mang tên per1k, và trùng tên là bước đầu của lẫn nghĩa. */
+  const platforms = PLAT_NAMES.map((nm, j) => ({ name: nm, nameEn: PLAT_NAMES_EN[j], streams: Math.round(accS[j]), netTren1k: accS[j] > 0 ? cents(accR[j] / accS[j] * 1000 * (gross > 0 ? mine / gross : 0)) : 0, amount: cents(accR[j] * (gross > 0 ? mine / gross : 0)), bangGia: khGia[j] != null })).filter(x => x.streams > 0).sort((a, b) => b.amount - a.amount);
   const steps = [];
   steps.push({ k: "streams", label: "Lượt nghe nền tảng báo về", labelEn: "Streams reported by platforms", value: Math.round(streams), kind: "so", detail: tracks * step + " bản ghi · " + platforms.length + " nền tảng", detailEn: tracks * step + " recordings · " + platforms.length + " platforms" });
   const soBangGia = platforms.filter(x => x.bangGia).length;
@@ -3946,15 +3985,23 @@ function platformRatesFull() {
 }
 /* Hai mức cho mỗi nền tảng, và chúng KHÁC NHAU:
      per1k — nền tảng trả về cho Haustek (ví dụ 4,40 USD / 1.000 lượt)
-     khach — Haustek trả cho đối tác   (ví dụ 4,00 USD / 1.000 lượt)
-   Chênh lệch là biên của Haustek. Đây là số nhạy nhất trong sản phẩm: đối
-   tác chỉ được thấy mức của chính họ, không bao giờ thấy mức nền tảng trả
-   hay biên. Cổng đối tác đã lược ở scrub(); trang nội bộ chặn theo cấp. */
+     khach — giá Haustek chào khách     (ví dụ 4,00 USD / 1.000 lượt)
+   Chênh lệch giữa hai mức là CHÊNH LỆCH BẢNG GIÁ, không phải phí Haustek.
+   Phí Haustek là phần trăm trong hợp đồng của từng khách, cắt trên số đã
+   quy theo bảng giá. Đây là số nhạy nhất trong sản phẩm: đối tác không
+   bao giờ thấy mức nền tảng trả hay chênh lệch bảng giá. Cổng đối tác đã
+   lược ở scrub(); trang nội bộ chặn theo cấp. */
 /* =====================================================================
    TÁC ĐỘNG CỦA BẢNG GIÁ LÊN MỘT KỲ
    ---------------------------------------------------------------------
-   Người ký bảng giá cần thấy ngay: đặt mức này thì kỳ vừa rồi Haustek
-   giữ lại bao nhiêu, nền tảng nào âm. Mang biên nên chỉ nhóm "tong".
+   Người ký bảng giá cần thấy ngay hai dòng thu nhập TÁCH RỜI của kỳ vừa
+   rồi, vì chúng do hai thứ khác nhau quyết định và sửa được độc lập:
+
+       phí hợp đồng        = gộp ghi nhận × phí%   (đổi khi sửa hợp đồng)
+       chênh lệch bảng giá = gộp thật − gộp ghi nhận (đổi khi sửa bảng giá)
+
+   Gộp lại thành một con số "biên" là đúng cái nhầm của vòng 16. Mang cả
+   hai nên chỉ nhóm "tong".
    ===================================================================== */
 function mucTraTacDong(pIdx) {
   chanQuyen("mucTraTacDong", "tong");
@@ -3963,30 +4010,43 @@ function mucTraTacDong(pIdx) {
   const step = N > 6000 ? Math.ceil(N / 6000) : 1;
   const rev = new Float64Array(N_PLAT), st = new Float64Array(N_PLAT);
   const accR = new Float64Array(N_PLAT), accS = new Float64Array(N_PLAT);
+  /* Phí bình quân có trọng số theo doanh thu: mỗi hợp đồng một phí riêng,
+     nên không thể lấy CFG.HAUSTEK_FEE làm đại diện cho cả kỳ. */
+  let gopPhi = 0, gopAll = 0;
+  const pk = PERIODS[pIdx].k;
   for (let i = 0; i < N; i += step) {
-    if (grossRec(i, pIdx) <= 0) continue;
+    const g = grossRec(i, pIdx);
+    if (g <= 0) continue;
     splitStores(i, pIdx, rev); splitStreams(i, pIdx, rev, st);
     for (let j = 0; j < N_PLAT; j++) { accR[j] += rev[j] * step; accS[j] += st[j] * step; }
+    gopAll += g * step; gopPhi += g * feeOf(i, pk) * step;
   }
+  const phiTb = gopAll > 0 ? gopPhi / gopAll : CFG.HAUSTEK_FEE;
   const rows = PLAT_NAMES.map((nm, j) => {
     const gop = cents(accR[j]), luot = Math.round(accS[j]);
     const theo = kh[j] != null;
-    const traTheoMuc = theo ? cents(luot / 1000 * kh[j]) : null;
-    const traTheoPhanTram = cents(gop * (1 - CFG.HAUSTEK_FEE));
-    const tra = theo ? traTheoMuc : traTheoPhanTram;
+    /* bảng giá quy ra gộp ghi nhận; chưa có giá thì ghi nhận bằng gộp thật */
+    const ghi = theo ? cents(luot / 1000 * kh[j]) : gop;
+    const phi = cents(ghi * phiTb);            /* dòng thu nhập 1 */
+    const bienGia = cents(gop - ghi);          /* dòng thu nhập 2, âm được */
     return { name: nm, nameEn: PLAT_NAMES_EN[j], streams: luot, gross: gop,
       khach: theo ? kh[j] : null, theoMucTra: theo,
       thucTe1k: luot > 0 ? cents4(gop / luot * 1000) : 0,
-      tra, traTheoPhanTram, bien: cents(gop - tra),
-      bienPct: gop > 0 ? Math.round((gop - tra) / gop * 1000) / 1000 : 0,
-      am: gop - tra < -0.004 };
+      ghiNhan: ghi, phi, bienGia, tra: cents(ghi - phi),
+      bienGiaPct: gop > 0 ? Math.round(bienGia / gop * 1000) / 1000 : 0,
+      am: bienGia < -0.004 };
   }).filter(r => r.streams > 0).sort((a, b) => b.gross - a.gross);
   const gop = cents(rows.reduce((x, r) => x + r.gross, 0));
+  const ghi = cents(rows.reduce((x, r) => x + r.ghiNhan, 0));
+  const phi = cents(rows.reduce((x, r) => x + r.phi, 0));
   const tra = cents(rows.reduce((x, r) => x + r.tra, 0));
-  const cu = cents(rows.reduce((x, r) => x + r.traTheoPhanTram, 0));
+  const bienGia = cents(gop - ghi);
   return { pIdx, ky: PERIODS[pIdx].k, label: PERIODS[pIdx].label, rows,
-    gross: gop, tra, bien: cents(gop - tra), bienPct: gop > 0 ? Math.round((gop - tra) / gop * 1000) / 1000 : 0,
-    theoPhanTram: cu, lech: cents(tra - cu), soAm: rows.filter(r => r.am).length,
+    gross: gop, ghiNhan: ghi, phi, phiPct: Math.round(phiTb * 1000) / 1000, tra,
+    bienGia, bienGiaPct: gop > 0 ? Math.round(bienGia / gop * 1000) / 1000 : 0,
+    giuLai: cents(phi + bienGia),
+    giuLaiPct: gop > 0 ? Math.round((phi + bienGia) / gop * 1000) / 1000 : 0,
+    soAm: rows.filter(r => r.am).length,
     soTheoMuc: rows.filter(r => r.theoMucTra).length, uocLuong: step > 1 };
 }
 
@@ -3996,7 +4056,11 @@ function setPlatformRate(name, per1k, note, by, khach) {
   if (!(per1k > 0 && per1k < 100)) throw new Error("Mức trả phải là số dương dưới 100 USD / 1.000 lượt");
   let kh = khach == null || khach === "" ? per1k : cents4(+khach);
   if (!(kh > 0 && kh < 100)) throw new Error("Mức trả đối tác phải là số dương dưới 100 USD / 1.000 lượt");
-  if (kh > per1k) throw new Error("Mức trả đối tác không được cao hơn mức nền tảng trả về (" + per1k + ")");
+  /* KHÔNG chặn kh > per1k. Chào cao hơn mức nền tảng trả về là một quyết
+     định thương mại có thật — giành khách, hoặc đặt cược nền tảng sẽ trả
+     tốt hơn — và tháng nào lỗ thì chênh lệch bảng giá âm, trang Mức trả
+     đếm và cảnh báo. Chặn ở đây là ngầm coi bảng giá như cách chia biên,
+     tức là lại lẫn nó với phí hợp đồng. */
   lazyState("rateOverride", {})[name] = { per1k, khach: kh, note: note || "", by: by || "", at: nowISO() };
   _rateCacheKey = null; audit.log("rate.platform", name + " → nền tảng " + per1k + " · đối tác " + kh + " USD/1.000" + (note ? " · " + note : ""), by); store.save();
   return platformRatesFull();

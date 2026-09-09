@@ -1113,11 +1113,10 @@ check("Biên mức trả nền tảng không rời cổng nội bộ và không 
   A.setPlatformRate(nt, 4.4, "OneRPM tháng 8", "Giám đốc", 4.0);
   const r = A.platformRatesFull().find(x => x.name === nt);
   must(Math.abs(r.per1k - 4.4) < 1e-6 && Math.abs(r.khach - 4.0) < 1e-6, "hai mức không lưu đúng");
-  must(Math.abs(r.bien - 0.4) < 1e-6 && Math.abs(r.bienPct - 0.0909) < 0.001, "biên tính sai");
-  mustThrow(() => A.setPlatformRate(nt, 4.0, "", "x", 4.4), "mức trả đối tác cao hơn mức nền tảng trả về");
-  /* mặc định: không nhập mức đối tác thì hai mức bằng nhau, biên bằng 0 */
+  must(Math.abs(r.bienGia - 0.4) < 1e-6 && Math.abs(r.bienGiaPct - 0.0909) < 0.001, "chênh lệch bảng giá tính sai");
+  /* mặc định: không nhập giá chào thì hai mức bằng nhau, chênh lệch bằng 0 */
   A.setPlatformRate(nt, 4.4, "", "Giám đốc");
-  must(A.platformRatesFull().find(x => x.name === nt).bien === 0, "bỏ trống mức đối tác phải cho biên 0");
+  must(A.platformRatesFull().find(x => x.name === nt).bienGia === 0, "bỏ trống giá chào phải cho chênh lệch 0");
   A.setPlatformRate(nt, 4.4, "OneRPM tháng 8", "Giám đốc", 4.0);
 
   /* cấp dưới Level 2 không mở được trang, và vai không phải giám đốc không gọi được hàm */
@@ -1140,14 +1139,14 @@ check("Biên mức trả nền tảng không rời cổng nội bộ và không 
   });
   must(goiDs.length > 10, "quét được quá ít gói của cổng đối tác (" + goiDs.length + ")");
   const goi = JSON.stringify(goiDs);
-  ["\"khach\"", "\"bien\"", "\"bienPct\""].forEach(k => must(goi.indexOf(k) < 0, "cổng đối tác lộ " + k));
+  ["\"khach\"", "\"bienGia\"", "\"bienGiaPct\"", "\"ghiNhan\"", "\"per1k\""].forEach(k => must(goi.indexOf(k) < 0, "cổng đối tác lộ " + k));
   must(H.api.platformRatesFull === undefined && H.api.setPlatformRate === undefined, "cổng đối tác có mặt đặt mức trả");
   /* Mức trả nay chảy thẳng vào tiền đối tác, nên phép kiểm này phải dọn sau
      mình: bỏ quên một bảng giá 4,00 USD ở đây là mọi phép kiểm phía sau tính
      tiền trên một mức bịa ra. */
   A.clearPlatformRate(nt, "guard");
   must(!A.platformRatesFull().find(x => x.name === nt).override, "dọn bảng giá không sạch");
-  return nt + " · nền tảng " + H.fmt.usd(4.4) + " → đối tác " + H.fmt.usd(4.0) + " · biên 9,1% · dọn sạch sau khi thử";
+  return nt + " · nền tảng " + H.fmt.usd(4.4) + " → chào " + H.fmt.usd(4.0) + " · chênh lệch bảng giá 9,1% · dọn sạch sau khi thử";
 });
 
 /* Trang Tổ chức chặn theo CẤP chứ không theo vai: trưởng bộ phận kinh
@@ -1316,49 +1315,93 @@ check("Hiệu suất và hiệu quả vốn chỉ mở từ Level 2 trở lên, 
 /* ---------------------------------------------------------------------
    VÒNG 16 — bảng giá nền tảng quyết định tiền, và đối soát lượt nghe
    --------------------------------------------------------------------- */
-check("Bảng giá nền tảng quyết định tiền trả đối tác, gộp không đổi, gỡ ra thì hoàn nguyên", () => {
+check("Bảng giá quy ra gộp ghi nhận, RỒI phí hợp đồng cắt trên số ấy — phí không bao giờ là số dư", () => {
   nhu("S01");
   const pi = A.periods.findIndex(p => p.k === approvedKey);
   must(pi >= 0, "không tìm được kỳ đã duyệt để thử");
-  /* Mức trả nay là đầu vào của tiền thật, nên trước khi đo phải chắc bàn sạch:
+  /* Bảng giá là đầu vào của tiền thật, nên trước khi đo phải chắc bàn sạch:
      một phép kiểm phía trên bỏ quên bảng giá là mọi số dưới đây vô nghĩa. */
   must(!A.platformRatesFull().some(r => r.override), "một phép kiểm trước để sót bảng giá");
   const truoc = A.agg("admin", 0, pi, "rec");
+  /* chưa có bảng giá: gộp ghi nhận phải bằng đúng gộp thật, chênh lệch bằng 0 */
+  must(Math.abs(truoc.ghiNhan - truoc.gross) < 1, "chưa có bảng giá mà gộp ghi nhận đã lệch gộp thật");
+  must(Math.abs(truoc.bienGia) < 1, "chưa có bảng giá mà đã có chênh lệch bảng giá");
+
   const suy = A.platformRatesFull().find(r => r.name === "Spotify");
   must(suy && suy.derived > 0, "không đọc được mức suy từ báo cáo của Spotify");
   const nen = Math.round(suy.derived * 10000) / 10000;
-  const traKhach = Math.round(nen * 0.875 * 10000) / 10000;      /* trả 87,5% mức nền tảng */
-  A.setPlatformRate("Spotify", nen, "kiểm thử", "test", traKhach);
+  const chao = Math.round(nen * 0.875 * 10000) / 10000;      /* chào 87,5% mức nền tảng trả về */
+  A.setPlatformRate("Spotify", nen, "kiểm thử", "test", chao);
   const sau = A.agg("admin", 0, pi, "rec");
-  must(Math.abs(truoc.gross - sau.gross) < 1, "đặt bảng giá mà doanh thu GỘP đổi: " + truoc.gross + " ≠ " + sau.gross);
-  must(Math.abs(sau.gross - sau.fee - sau.artist - sau.labelCut) < 2, "chuỗi không còn cộng đúng sau khi đặt bảng giá");
-  must(sau.artist + sau.labelCut !== truoc.artist + truoc.labelCut, "đặt bảng giá mà phần về đối tác không đổi chút nào");
-  /* tác động phải nói rõ nền tảng nào theo bảng giá, nền tảng nào theo phần trăm */
+
+  /* 1. Bảng giá không đụng tới doanh thu gộp THẬT — đó là số nền tảng trả về */
+  must(Math.abs(truoc.gross - sau.gross) < 1, "đặt bảng giá mà doanh thu GỘP THẬT đổi: " + truoc.gross + " ≠ " + sau.gross);
+  /* 2. Bảng giá kéo gộp GHI NHẬN xuống, và chênh lệch bằng đúng hiệu hai số */
+  must(sau.ghiNhan < truoc.ghiNhan - 1, "chào thấp hơn mà gộp ghi nhận không giảm");
+  must(Math.abs(sau.bienGia - (sau.gross - sau.ghiNhan)) < 1, "chênh lệch bảng giá không bằng gộp thật trừ gộp ghi nhận");
+  /* 3. PHÍ LÀ % HỢP ĐỒNG TRÊN GỘP GHI NHẬN, không phải số dư của gộp thật.
+        Đây chính là chỗ vòng 16 làm sai và vòng 20 sửa. */
+  must(Math.abs(sau.ghiNhan - sau.fee - sau.artist - sau.labelCut) < 2,
+    "chuỗi phải cân trên GỘP GHI NHẬN: " + sau.ghiNhan + " ≠ " + (sau.fee + sau.artist + sau.labelCut));
+  must(sau.gross - sau.fee - sau.artist - sau.labelCut > 1,
+    "chuỗi cân trên gộp THẬT nghĩa là phí lại đang là số dư");
+  const tyLePhi = sau.fee / sau.ghiNhan;
+  must(tyLePhi > 0.05 && tyLePhi < 0.5, "tỷ lệ phí ra ngoài khoảng hợp đồng: " + tyLePhi);
+  must(Math.abs(tyLePhi - truoc.fee / truoc.ghiNhan) < 0.005,
+    "đổi bảng giá mà TỶ LỆ phí đổi theo — phí đang bị bảng giá quyết định");
+
+  /* 4. Hai dòng thu nhập tách rời và cộng lại đúng bằng phần Haustek giữ */
   const td = A.mucTraTacDong(pi);
   const sp = td.rows.find(r => r.name === "Spotify");
-  must(sp && sp.theoMucTra && sp.khach === traKhach, "bảng tác động không ghi nhận Spotify chạy theo bảng giá");
-  must(td.rows.filter(r => !r.theoMucTra).every(r => Math.abs(r.bienPct - 0.15) < 0.02),
-    "nền tảng chưa đặt mức phải giữ nguyên biên 15% theo phần trăm");
-  must(Math.abs(td.gross - td.tra - td.bien) < 2, "tổng bảng tác động không cân");
-  /* Mức suy ở bảng giá là bình quân ba kỳ đã duyệt gần nhất, không phải mức
-     của riêng kỳ này. Muốn ép biên về 0 thì phải trả đúng mức thực tế của kỳ
-     đang xét, và đó cũng là con số trang Mức trả bày ra cạnh ô nhập. */
+  must(sp && sp.theoMucTra && sp.khach === chao, "bảng tác động không ghi nhận Spotify chạy theo bảng giá");
+  must(sp.bienGia > 0, "chào thấp hơn mức nền tảng mà chênh lệch bảng giá không dương");
+  must(Math.abs(td.giuLai - (td.phi + td.bienGia)) < 2, "phần giữ lại không bằng phí cộng chênh lệch bảng giá");
+  must(Math.abs(td.gross - td.ghiNhan - td.bienGia) < 2, "tổng bảng tác động không cân");
+  must(Math.abs(td.ghiNhan - td.phi - td.tra) < 2, "gộp ghi nhận không bằng phí cộng phần trả đối tác");
+  /* nền tảng chưa có giá: ghi nhận đúng bằng gộp thật, chênh lệch bằng 0 */
+  must(td.rows.filter(r => !r.theoMucTra).every(r => Math.abs(r.bienGia) < 0.02),
+    "nền tảng chưa có giá mà đã sinh chênh lệch bảng giá");
+
+  /* 5. Chào đúng mức thực tế của kỳ thì chênh lệch về 0, nhưng PHÍ VẪN CÒN.
+        Nếu phí biến mất theo thì phí lại đang là chênh lệch trá hình. */
   const thuc = sp.thucTe1k;
   must(thuc > 0, "không đọc được mức thực tế của Spotify trong kỳ này");
   A.setPlatformRate("Spotify", thuc, "kiểm thử", "test", thuc);
   const sp0 = A.mucTraTacDong(pi).rows.find(r => r.name === "Spotify");
-  must(Math.abs(sp0.bien) < 2 && !sp0.am, "trả bằng đúng mức thực tế mà biên không về 0: " + sp0.bien);
-  /* biên âm không bị giấu: hứa trả cao hơn mức nền tảng trả về thì phải hiện ra */
+  must(Math.abs(sp0.bienGia) < 2 && !sp0.am, "chào bằng đúng mức thực tế mà chênh lệch không về 0: " + sp0.bienGia);
+  must(sp0.phi > 1, "chênh lệch về 0 mà phí cũng biến mất: phí đang là chênh lệch trá hình");
+
+  /* 6. Chào cao hơn mức nền tảng trả về là hợp lệ, và chênh lệch âm phải hiện ra */
   const cao = Math.round(thuc * 1.2 * 10000) / 10000;
   A.setPlatformRate("Spotify", cao, "kiểm thử", "test", cao);
   const td2 = A.mucTraTacDong(pi);
   const sp1 = td2.rows.find(r => r.name === "Spotify");
-  must(sp1.am && sp1.bien < 0 && sp1.bienPct < -0.15, "hứa trả cao hơn mức nền tảng mà biên không âm: " + sp1.bienPct);
+  must(sp1.am && sp1.bienGia < 0 && sp1.bienGiaPct < -0.15, "chào cao hơn mức nền tảng mà chênh lệch không âm: " + sp1.bienGiaPct);
+  must(sp1.phi > 1, "chênh lệch âm mà phí cũng âm theo: hai dòng chưa tách rời");
   must(td2.soAm >= 1, "bảng tác động không đếm nền tảng đang âm");
+
   A.clearPlatformRate("Spotify", "test");
   const lai = A.agg("admin", 0, pi, "rec");
   must(Math.abs(lai.fee - truoc.fee) < 1 && Math.abs(lai.artist - truoc.artist) < 1, "gỡ bảng giá xong số không quay về như cũ");
-  return "gộp giữ nguyên · chuỗi cân · nền tảng khác vẫn 15% · trả đúng mức thì biên 0 · trả cao hơn thì âm · gỡ ra hoàn nguyên";
+  must(Math.abs(lai.bienGia) < 1, "gỡ bảng giá xong chênh lệch không về 0");
+  return "gộp thật đứng yên · chuỗi cân trên gộp ghi nhận · tỷ lệ phí không đổi theo bảng giá · hai dòng thu nhập tách rời";
+});
+
+check("Chào cao hơn mức nền tảng trả về là hợp lệ, không phải lỗi nhập liệu", () => {
+  nhu("S01");
+  const suy = A.platformRatesFull().find(r => r.name === "Apple Music");
+  const nen = Math.round(suy.derived * 10000) / 10000;
+  /* Chặn kh > per1k là ngầm coi bảng giá như cách chia biên, tức là lại lẫn
+     nó với phí hợp đồng. Quyết định thương mại ấy là của người ký. */
+  A.setPlatformRate("Apple Music", nen, "chào cao để giành khách", "test", Math.round(nen * 1.3 * 10000) / 10000);
+  const r = A.platformRatesFull().find(x => x.name === "Apple Music");
+  must(r.override && r.khach > r.per1k, "không lưu được giá chào cao hơn mức nền tảng trả về");
+  A.clearPlatformRate("Apple Music", "test");
+  /* nhưng số vô lý thì vẫn chặn */
+  mustThrow(() => A.setPlatformRate("Apple Music", nen, "", "test", 0), "giá chào bằng 0");
+  mustThrow(() => A.setPlatformRate("Apple Music", nen, "", "test", -1), "giá chào âm");
+  mustThrow(() => A.setPlatformRate("Apple Music", 0, "", "test", nen), "mức nền tảng bằng 0");
+  return "chào cao hơn thì lưu được · số 0 và số âm vẫn bị chặn";
 });
 
 check("Bảng giá và tác động của nó không rời cổng nội bộ, và chỉ giám đốc gọi được", () => {

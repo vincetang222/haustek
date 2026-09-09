@@ -130,7 +130,7 @@ HT.dangKy({
           bp.map(function (r) {
             return '<tr><td>' + HM.esc(c.song(r, 'name')) + '</td><td class="num">' + HM.esc(HT.fmt.n(r.streams28)) + '</td>' +
               '<td class="num">' + HM.esc(HT.fmt.pct(r.share)) + '</td>' +
-              '<td class="num mono">' + HM.esc(HT.fmt.usd(la ? r.per1k : r.per1kMine)) + '</td>' +
+              '<td class="num mono">' + HM.esc(HT.fmt.usd(la ? r.tren1k : r.netTren1k)) + '</td>' +
               '<td class="num">' + HM.esc(HT.fmt.n(r.projectedStreams)) + '</td>' +
               '<td class="num band"><b>' + HM.esc(HT.fmt.usd0(la ? r.projectedRevenue : r.projectedMine)) + '</b></td>' +
               (la ? '<td class="num">' + HM.esc(HT.fmt.usd0(r.projectedMine)) + '</td>' : '') + '</tr>';

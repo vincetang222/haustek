@@ -46,8 +46,8 @@ const chu = p => p.evaluate(() => document.querySelector('main').textContent);
   await den(p, 'muc-tra');
   let mat = await chu(p);
   must(mat.indexOf('Đặt mức này thì kỳ') >= 0, 'trang có khối "đặt mức này thì kỳ … ra sao"');
-  must((await p.$$('main table.t tbody tr.tong')).length >= 1, 'bảng tác động có dòng tổng');
-  must(mat.indexOf('Chưa nền tảng nào nhập mức trả đối tác') >= 0, 'chưa nhập mức thì nói rõ vẫn chia theo phần trăm');
+  must((await p.$$('main table.t tbody tr.sum')).length >= 1, 'bảng tác động có dòng tổng');
+  must(mat.indexOf('Chưa nền tảng nào có giá chào') >= 0, 'chưa có giá chào thì nói rõ gộp ghi nhận bằng gộp thật');
   must((await p.$$('main [data-khach]')).length >= 8, 'mỗi nền tảng có một ô nhập mức trả đối tác');
 
   /* mức thực tế của kỳ chốt gần nhất, để gõ một con số có nghĩa */
@@ -86,7 +86,7 @@ const chu = p => p.evaluate(() => document.querySelector('main').textContent);
   await p.click(q('luu'));
   await p.waitForTimeout(900);
   mat = await chu(p);
-  must(mat.indexOf('đang trả đối tác nhiều hơn số nền tảng trả về') >= 0, 'có cảnh báo nền tảng đang âm');
+  must(mat.indexOf('đang chào cao hơn số nền tảng trả về') >= 0, 'có cảnh báo chênh lệch bảng giá âm');
   must((await p.$$('main table.t tbody tr.canh')).length >= 1, 'dòng âm được đánh dấu');
   must((await p.$$('main table.t .neg')).length >= 1, 'số âm hiện màu âm');
 

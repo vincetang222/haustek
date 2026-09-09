@@ -70,7 +70,7 @@ gọi `HAUSTEK.lockdown()` **trước khi** chạy bất cứ trang nào, và kh
 | Chiến dịch | `man/chien-dich.js` | Liên kết thông minh / pre-save, pitch playlist, quảng cáo trả phí của mọi tài khoản, phễu kết quả và chi tiết |
 | Xét duyệt | `man/xet-duyet.js` | Đề xuất tạm ứng và hợp đồng: kinh doanh hoặc đối tác đề xuất, kế toán kiểm số, giám đốc duyệt / từ chối / trả lại. Mỗi đề xuất chụp bản tính lúc tạo: thu nhập ròng 12 kỳ, tăng trưởng, độ dao động, tập trung bài đầu, mức ứng tối đa theo hạng rủi ro, khoản thu hồi, thời gian thu hồi, phí ứng thu về, phần Haustek giữ trong thời gian thu hồi, ROI; hợp đồng so phần Haustek giữ theo phí hiện tại và phí đề xuất. Duyệt xong tự ghi sổ tạm ứng hoặc áp phí mới từ kỳ mở kế tiếp |
 | Tính ROI | `man/roi.js` | Dựng lại bảng tính ROI_Haustek.xlsx: nhập doanh thu danh mục mỗi tháng, khoản ứng (tiền mặt cộng ngân sách truyền thông và sản xuất nếu thu hồi được), tỷ lệ nghệ sĩ hưởng, phần vẫn trả nghệ sĩ trong lúc thu hồi, kỳ hạn, độc quyền, phí môi giới, chi phí bản phát hành. Ra: hoa hồng Haustek mỗi tháng (ô D3), phần giữ lại để thu hồi (G3), số tháng thu hồi (I3), hoa hồng cả kỳ hạn (D5), ROI kỳ hạn (J5), ROI mỗi năm (K5), ROI sau chi phí (J12), phần chưa thu hồi khi hết hạn và ROI thực. Bốn kịch bản: danh mục nền và ba mốc thưởng. Số nhập tay nên chạy được cho đối tác chưa có trên hệ thống; có sẵn thì bấm *Lấy số từ đối tác* |
-| Mức trả nền tảng | `man/muc-tra.js` | USD gộp trên 1.000 lượt của từng nền tảng, suy từ báo cáo 3 kỳ và hiệu chỉnh theo thị trường Việt Nam; nhập số thật từng nền tảng hoặc dán CSV để ghi đè, dự báo và giải thích số đổi theo ngay |
+| Mức trả nền tảng | `man/muc-tra.js` | Bảng giá của công ty: nền tảng trả về bao nhiêu trên 1.000 lượt, và Haustek chào khách bao nhiêu. Bảng giá quy lượt nghe ra doanh thu ghi nhận, rồi phí % hợp đồng mới cắt trên số ấy — hai thứ khác hẳn nhau. Khối tác động bày năm số của kỳ gần nhất và hai dòng thu nhập tách rời: phí hợp đồng và chênh lệch bảng giá |
 | **Hiệu suất** | `man/hieu-suat.js` | Từng người: đã giao, đang làm, đúng hạn, quá hạn, thời gian xử lý trung bình, mức. Bấm một người ra dòng việc của họ, biểu đồ theo tháng, việc đang mở kèm bước quy trình còn dở, và ô đánh giá cuối năm. Tab thứ ba là sổ tay quy trình của cả sáu loại việc. Chỉ Level 1–2 |
 | **Hiệu quả vốn** | `man/hieu-qua-von.js` | Tiền tạm ứng đã đi, đã về, còn đọng; đường thu hồi quá khứ nối tiếp dự báo mười hai tháng bằng nét đứt; từng hợp đồng có nhịp thu hồi, số tháng còn cần và có kịp hạn hợp đồng không; lứa ký và tuổi nợ. Chỉ Level 1–2 |
 | Quản trị | `man/quan-tri.js` | Tài khoản, nhật ký, câu hỏi treo, dữ liệu, ranh giới |
@@ -272,7 +272,7 @@ chứ không phải ở từng màn. Ba lớp, cùng một nguồn:
 | Đối tác | ✓ | | ✓ (của mình) | | |
 | Chiến dịch | ✓ | | ✓ | ✓ | |
 | Theo dõi, Nhập báo cáo, Khớp ISRC, Danh mục, Nền tảng | ✓ | | | ✓ | |
-| Mức trả nền tảng (biên Haustek) | ✓ | | | | |
+| Mức trả nền tảng (chênh lệch bảng giá) | ✓ | | | | |
 | Danh mục (có tab Chất lượng lượt nghe), Phát hành (hỗ trợ chỉ đọc), Quản lý quyền | ✓ | | | ✓ | ✓ |
 
 Trang Quản trị có tab *Phân quyền theo vai* vẽ đúng ma trận này. Cổng đối
@@ -375,6 +375,112 @@ một thẻ nhắc lại điều đó.
 Cổng đối tác không có và không nên có: bảng tính này đọc ra phần Haustek
 giữ lại, phí môi giới và biên lợi nhuận. Đối tác muốn biết mình ứng được bao
 nhiêu thì vẫn dùng `k-tam-ung`, chạy trên `advanceOfferOf()` đã lược sạch.
+
+## Vòng 20: phí Haustek và streaming rate là hai thứ khác hẳn nhau
+
+Đây là sửa một lỗi mô hình, không phải thêm tính năng. Vòng 16 gộp nhầm hai
+khái niệm, và cái nhầm ấy đi thẳng vào chuỗi tiền.
+
+### Cái nhầm
+
+| | Là gì | Ai quyết định | Đổi khi nào |
+|---|---|---|---|
+| **Streaming rate** | giá Haustek đưa ra cho mỗi nền tảng, USD / 1.000 lượt | bảng giá của **công ty**, chung cho mọi khách | ký lại với nền tảng, hoặc đổi chính sách giá |
+| **Phí Haustek** | phần trăm thoả thuận trong hợp đồng | **từng khách một** | ký lại hợp đồng với khách ấy |
+
+Vòng 16 viết:
+
+```js
+const net = kh == null ? gross - gross * feeOf(i) : kh;   // kh = lượt ÷ 1000 × rate
+const fee = gross - net;                                   // ← phí thành SỐ DƯ
+```
+
+Hễ một nền tảng có giá, **phí hợp đồng thôi không còn là phần trăm đã ký** —
+nó thành phần còn lại sau khi trừ bảng giá. Ba hệ quả:
+
+* Trang Mức trả tự định nghĩa "biên là chênh lệch hai mức", tức là coi bảng
+  giá chính là cách Haustek ăn tiền.
+* `setPlatformRate` chặn `khách > nền tảng`. Chặn ấy chỉ có nghĩa nếu bảng giá
+  là cách chia biên; nếu nó là điều khoản thương mại thì chào cao hơn tháng ấy
+  thu về là **rủi ro cần cảnh báo**, không phải lỗi nhập liệu.
+* Hai số cùng tên `per1k`: mức nền tảng trả về Haustek, và số ròng của đối tác
+  trên 1.000 lượt. Trùng tên là bước đầu của lẫn nghĩa.
+
+### Mô hình đúng: hai thứ áp THEO THỨ TỰ
+
+Bảng giá trước, phí sau. Thứ tự ngược lại không đứng được — hai số sẽ không
+cộng lại thành gộp và một trong hai lại thành số dư.
+
+```
+gộp ghi nhận = Σ (lượt nghe nền tảng j ÷ 1.000 × giá nền tảng j)
+phí Haustek  = gộp ghi nhận × phí% của hợp đồng
+đối tác nhận = gộp ghi nhận − phí Haustek
+```
+
+Nền tảng nào chưa có giá thì phần của nền tảng ấy lấy thẳng gộp thật làm số
+ghi nhận, nên bật dần từng nền tảng được.
+
+**Haustek do đó có hai dòng thu nhập, và chúng phải đọc được tách rời:**
+
+| Dòng | Công thức | Dấu | Sửa gì thì nó đổi |
+|---|---|---|---|
+| Phí hợp đồng | gộp ghi nhận × phí% | luôn dương | ký lại hợp đồng |
+| Chênh lệch bảng giá | gộp thật − gộp ghi nhận | **âm được** | đổi bảng giá |
+
+Gộp hai số ấy thành một con số "biên" là mất khả năng biết mình lãi nhờ đâu:
+nhờ phí đã ký, hay nhờ chào thấp hơn số nền tảng trả về.
+
+### Trên một kỳ thật
+
+Đặt giá Spotify bằng 85% mức nền tảng trả về, kỳ 08/2025:
+
+```
+gộp thật              $155.994
+gộp ghi nhận          $149.426
+  phí hợp đồng         $22.414   (15,0% — bình quân có trọng số của các hợp đồng)
+  trả đối tác         $127.012
+chênh lệch bảng giá     $6.568
+Haustek giữ            $28.982  =  $22.414 + $6.568
+```
+
+Hai phép kiểm luôn phải đúng: `gộp ghi nhận = phí + trả đối tác`, và
+`gộp thật = gộp ghi nhận + chênh lệch bảng giá`.
+
+### Những gì đã đổi
+
+* `splitRec()` trả thêm `ghiNhan`, `bienGia`, `phiPct`; `fee` nay là
+  `ghiNhan × phiPct`, **không bao giờ** là số dư.
+* `agg()` mang theo `ghiNhan` và `bienGia`; `revenueAgg()` cho label trừ phí
+  trên **gộp ghi nhận** chứ không trên gộp thật.
+* `mucTraTacDong()` trả `ghiNhan`, `phi`, `phiPct`, `bienGia`, `giuLai` — và
+  `phiPct` là **bình quân có trọng số theo doanh thu** của các hợp đồng, không
+  phải `CFG.HAUSTEK_FEE` lấy làm đại diện.
+* `setPlatformRate()` bỏ chặn `khách > nền tảng`; số 0 và số âm vẫn chặn.
+* Đổi tên cho hết trùng nghĩa: `bien` → `bienGia`, và `per1k` của đối tác →
+  `netTren1k` (dự báo: `tren1k` / `netTren1k`). Từ nay `per1k` **chỉ** có
+  nghĩa "nền tảng trả về Haustek".
+* `FORBIDDEN` thêm `ghiNhan` và `bienGia`: `bienGia = gộp thật − gộp ghi nhận`,
+  nên lọt một trong hai là đối tác suy ngược ra được nền tảng trả Haustek bao
+  nhiêu. Chặn cứng ở `scrub()`.
+
+### Bài kiểm giữ cho lỗi không quay lại
+
+`api-guard` có hai phép mới, và phép quan trọng nhất là phép chứng minh phí
+**không** phải số dư:
+
+```js
+must(Math.abs(sau.ghiNhan - sau.fee - sau.artist - sau.labelCut) < 2,
+  "chuỗi phải cân trên GỘP GHI NHẬN");
+must(sau.gross - sau.fee - sau.artist - sau.labelCut > 1,
+  "chuỗi cân trên gộp THẬT nghĩa là phí lại đang là số dư");
+must(Math.abs(tyLePhi - truoc.fee / truoc.ghiNhan) < 0.005,
+  "đổi bảng giá mà TỶ LỆ phí đổi theo — phí đang bị bảng giá quyết định");
+```
+
+Cùng với: chào đúng mức thực tế thì chênh lệch về 0 **nhưng phí vẫn còn**
+(nếu phí biến mất theo thì phí đang là chênh lệch trá hình); chào cao hơn thì
+chênh lệch âm **nhưng phí vẫn dương** (hai dòng đã tách rời); và chào cao hơn
+mức nền tảng trả về thì lưu được, chỉ số 0 và số âm mới bị chặn.
 
 ## Vòng 19: ứng theo số tháng, cảnh báo rủi ro, nền tảng nhỏ, giao việc theo vai
 
@@ -734,43 +840,25 @@ Hai câu trả lời của người dùng, làm thành hai đường đi thật.
 
 > *"Mức trả: tôi nhập tay vào sau → từ đó bạn có thể tính tiền chi trả cho đối tác."*
 
-Trước vòng này, hai mức trong bảng giá (`per1k` nền tảng trả về, `khach` Haustek
-trả đối tác) chỉ dùng cho **dự báo**. Tiền thật vẫn chia theo tỷ lệ hợp đồng.
-Nhập một con số rồi không thấy gì đổi thì không ai tin con số ấy.
+Trước vòng này, hai mức trong bảng giá (`per1k` nền tảng trả về, `khach` giá
+Haustek chào khách) chỉ dùng cho **dự báo**. Tiền thật vẫn chia theo tỷ lệ hợp
+đồng. Nhập một con số rồi không thấy gì đổi thì không ai tin con số ấy. Nay
+bảng giá là đầu vào của tiền thật.
 
-Nay `splitRec()` đọc bảng giá trước:
+> **Vòng 16 làm đúng việc này nhưng làm SAI cách.** Nó để bảng giá *thay chỗ*
+> phí hợp đồng, biến phí thành số dư. **Vòng 20 sửa lại** — đọc mục
+> *"Vòng 20"* để lấy mô hình đúng; phần dưới đây giữ nguyên để hiểu vì sao
+> tính năng tồn tại, không phải để chép công thức.
 
-```
-Nền tảng ĐÃ có mức trả đối tác  →  tiền đối tác = lượt nghe ÷ 1.000 × mức trả
-Nền tảng CHƯA có mức            →  giữ nguyên: gộp × (1 − phí Haustek)
-```
-
-Cộng lại theo từng bản ghi ra `net`; phần còn lại là `fee` — phần Haustek giữ.
-Ba điều đã cân nhắc và viết thẳng vào chú thích trong lõi:
-
-* **Doanh thu GỘP không đổi.** Bảng giá chỉ quyết định số tiền *chảy sang phía
-  đối tác*, không đụng vào số nền tảng trả về.
-* **Tỷ lệ hợp đồng label ↔ nghệ sĩ không đụng đến.** Bảng giá quyết định tổng
-  về phía đối tác; chia tổng ấy giữa label và nghệ sĩ vẫn theo hợp đồng.
-* **Không chặn trên.** Hứa trả cao hơn số nền tảng trả về thì phần Haustek giữ
-  âm, và màn hiện đúng số âm ấy màu đỏ. Giấu đi thì tháng sau mới biết lỗ.
-
-Chi phí: đường này chỉ bật khi đã có ít nhất một mức trả đối tác
+Chi phí: đường này chỉ bật khi đã có ít nhất một giá chào
 (`coMucTraKhach()`), và kết quả mỗi kỳ được nhớ theo phiên bản
 (`NHAP_VER` + bảng ghi đè). Đo trên 50.000 bản ghi: 14ms → 131ms lần đầu,
 80ms các lần sau.
 
-**Trang Mức trả** có thêm khối *"Đặt mức này thì kỳ … ra sao"*: từng nền tảng
-với lượt nghe, mức thực tế trên 1.000, nền tảng trả về bao nhiêu, trả đối tác
-bao nhiêu, Haustek giữ bao nhiêu, và nhãn *Bảng giá* / *Phần trăm*. Bốn ô số
-đầu khối, trong đó có **lệch so với cách tính cũ**. Nền tảng nào âm thì dòng
-đỏ và có cảnh báo đếm rõ bao nhiêu nền tảng.
-
-**Bảng kê phía đối tác** — trong bảng "Giải thích con số" — gắn nhãn *bảng giá*
-lên đúng nền tảng đang chạy theo mức đã ký, và dòng mức trả bình quân nói rõ
-"*n* nền tảng chạy theo bảng giá đã ký; số còn lại theo tỷ lệ hợp đồng".
-Đối tác vẫn **không** thấy mức nền tảng trả về hay biên — `api-guard` quét mọi
-gói của cổng đối tác để bảo đảm điều đó.
+**Trang Mức trả** có thêm khối *"Đặt mức này thì kỳ … ra sao"*, và
+**Bảng kê phía đối tác** gắn nhãn *bảng giá* lên đúng nền tảng đang chạy theo
+giá đã chào. Đối tác **không** thấy mức nền tảng trả về hay chênh lệch bảng
+giá — `api-guard` quét mọi gói của cổng đối tác để bảo đảm điều đó.
 
 ### 2 · Đối soát lượt nghe hằng ngày qua đường dẫn store
 
@@ -963,16 +1051,21 @@ bậc kèm số người mỗi bậc, bậc trống thì nhạt hẳn.
 | | Ví dụ |
 |---|---|
 | `per1k` nền tảng trả về Haustek | 4,40 USD / 1.000 lượt |
-| `khach` Haustek trả đối tác | 4,00 USD / 1.000 lượt |
-| biên | 0,40 · 9,1% |
+| `khach` giá Haustek chào khách | 4,00 USD / 1.000 lượt |
+| `bienGia` chênh lệch bảng giá | 0,40 · 9,1% |
+
+Chênh lệch ấy **không phải** phí Haustek — phí là phần trăm trong hợp đồng của
+từng khách, cắt trên doanh thu đã quy theo bảng giá. Xem mục *Vòng 20*.
 
 Trang chỉ Level 1–2 mở được, và `platformRatesFull` / `setPlatformRate` chuyển
 sang nhóm hàm `tong` (giám đốc). `api-guard` quét **mọi hàm của cổng đối tác
-nhận (role, partyId)** và đòi không gói nào mang `khach`, `bien` hay `bienPct`.
+nhận (role, partyId)** và đòi không gói nào mang `khach`, `per1k`, `ghiNhan`,
+`bienGia` hay `bienGiaPct`.
 
-Còn một câu chưa chốt: mức trả đối tác hiện được **ghi và hiển thị**, chưa nối
-vào đường tính tiền thật — tiền trả đối tác vẫn đi theo phần trăm phí Haustek.
-Hai cơ chế biên chồng nhau thì trả thiếu, nên phải chốt cái nào thắng.
+Câu "hai cơ chế biên chồng nhau thì trả thiếu, phải chốt cái nào thắng" của
+vòng 14 nay đã có lời đáp, và lời đáp là **không cái nào thắng cái nào**:
+chúng là hai thứ khác nhau và áp theo thứ tự — bảng giá quy ra doanh thu ghi
+nhận, phí hợp đồng cắt trên số ấy. Xem mục *Vòng 20*.
 
 **Mốc thưởng mở khoá theo hoà vốn, không theo lịch.** Khoản ứng gốc hoà vốn
 xong thì mốc 1 mới được ứng; mốc 1 hoà vốn xong mới tới mốc 2. Đây là cách

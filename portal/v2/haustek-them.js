@@ -190,7 +190,7 @@ function giaiThich(ex, opts) {
   (ex.platforms && ex.platforms.length ? '<h4 class="sec" style="margin-top:14px">' + esc(t('gtNt')) + '</h4><div class="tw"><table class="t" style="min-width:0"><thead><tr><th>' + esc(t('cNt')) + '</th><th class="num">' + esc(t('cLuotN')) + '</th><th class="num">' + esc(t('cMucTra')) + '</th><th class="num">' + esc(t('cTien')) + '</th></tr></thead><tbody>' +
     ex.platforms.map(function (p) { return '<tr><td>' + esc(song(p, 'name')) +
       (p.bangGia ? ' ' + HM.tag(t('gtBangGia'), 'ok') : '') +
-      '</td><td class="num">' + esc(n(p.streams)) + '</td><td class="num mono">' + esc(HT.fmt.usd(p.per1k)) + '</td><td class="num"><b>' + esc(tien(p.amount)) + '</b></td></tr>'; }).join('') +
+      '</td><td class="num">' + esc(n(p.streams)) + '</td><td class="num mono">' + esc(HT.fmt.usd(p.netTren1k)) + '</td><td class="num"><b>' + esc(tien(p.amount)) + '</b></td></tr>'; }).join('') +
     '</tbody></table></div>' : '') +
   '<p class="hint" style="margin-top:10px">' + esc(song(ex, 'note')) + '</p>';
 }
