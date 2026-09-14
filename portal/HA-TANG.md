@@ -18,6 +18,9 @@ ca kiểm thử** (mỗi phép kiểm trong `test/` dịch thành một test tr�
 | Người trực hệ thống | 5, 9, 10 |
 | Người quyết định ngân sách | 9, 11, 12 |
 
+Tài liệu này tả **lược đồ**. Phần **vật lý và tiền** — byte để ở đâu, máy cỡ
+nào, mỗi tháng tốn bao nhiêu, làm theo thứ tự nào — ở `TRIEN-KHAI.md`.
+
 Quy mô mục tiêu dùng xuyên suốt: **1.000.000 bài** trong danh mục · **350.000
 bài có phát sinh mỗi kỳ** · **60 nền tảng**, trong đó khoảng 9 có tiền trên
 một bài điển hình · **100.000 bên thụ hưởng**, 40.000 bên có tiền mỗi kỳ ·
@@ -443,13 +446,20 @@ Chín điều bắt buộc:
    ghi trong thông báo cho người dùng — lệch một chữ là sai cam kết.
 8. **Người dùng đọc được dòng của chính mình.** RLS:
    `USING (nguoi_dung_id = nguoi_dung_phien())`. Đây là quyền truy cập của
-   chủ thể dữ liệu theo Nghị định 13/2023/NĐ-CP, và làm sẵn thì không phải
+   chủ thể dữ liệu theo luật bảo vệ dữ liệu cá nhân, và làm sẵn thì không phải
    dựng quy trình xử lý yêu cầu thủ công về sau.
 9. **Đăng nhập lạ phải nối vào lệnh rút tiền.** Tài khoản đối tác giữ ví.
    Quy tắc tối thiểu: một lệnh rút tiền đặt trong **24 giờ** sau lần đăng
    nhập đầu tiên từ một `quoc_gia` chưa từng thấy thì **không tự động
    duyệt** — nó vào hàng chờ người kiểm. Nhật ký mà không nối vào chỗ mất
    tiền thì chỉ là một bảng đẹp.
+
+Văn bản pháp lý áp dụng: **phải rà lại**. Theo tra cứu ở vòng 24, Nghị định
+13/2023/NĐ-CP đã bị thay thế bởi Luật 91/2025/QH15 và Nghị định
+356/2025/NĐ-CP từ 01/01/2026, và Nghị định 53/2022/NĐ-CP liệt kê đích danh
+**địa chỉ mạng đăng nhập gần nhất** vào nhóm dữ liệu phải lưu tại Việt Nam —
+tức bảng này rơi thẳng vào nhóm ấy. Chưa có luật sư xác nhận; xem
+`TRIEN-KHAI.md` mục 10 trước khi code phần này.
 
 Ba việc **cố ý chưa làm** ở giai đoạn một: chấm điểm rủi ro từng lần vào,
 dấu vân tay thiết bị, và tra nhà mạng theo thời gian thực. Cái thứ nhất cần

@@ -446,12 +446,32 @@ mình, kèm bốn dòng chính sách ở chân thẻ: ghi để làm gì, cơ s�
 bao lâu, ai trong Haustek đọc được. Bốn dòng ấy **không thu vào dấu ?** —
 một thông báo về xử lý dữ liệu cá nhân mà giấu sau dấu chấm hỏi thì không
 còn là thông báo. Đây là quyền truy cập của chủ thể dữ liệu theo Nghị định
-13/2023/NĐ-CP, làm sẵn thì sau này không phải dựng quy trình thủ công.
+luật bảo vệ dữ liệu cá nhân, làm sẵn thì sau này không phải dựng quy trình
+thủ công. (Vòng 24 tra ra Nghị định 13/2023 đã bị thay thế từ 01/01/2026 —
+`TRIEN-KHAI.md` mục 10 ghi rõ, và cần luật sư xác nhận.)
 
 Gói `dangNhapCuaToi` dựng bằng **danh sách trắng tám trường**, không bao giờ
 `Object.assign` cả dòng: dòng cổng nội bộ mang email `@haustek-group.com` mà
 `scrub()` ném nếu thấy chuỗi ấy, và một khoá tên `ip` trong gói — dù mang
 `null` — là lời mời cho trang khác đọc nó.
+
+### 5 · Hạ tầng thật cho 500.000 bài
+
+Chủ dự án hỏi cùng lượt: "nếu tôi triển khai thật thì hạ tầng cho khoảng
+500.000 bài hát tôi phải lưu ở đâu". Câu trả lời ở `TRIEN-KHAI.md`, và điều
+quyết định cả bài toán nằm ngay trong kho mã này: **Haustek không giữ một byte
+âm thanh nào.** `v2/haustek-hoso.js:183` cho thấy trường WAV là một ô nhập
+**link**, gợi ý sẵn Google Drive; dòng 271 cho thấy link ấy còn không bắt buộc;
+và `HA-TANG.md` mục 6 liệt kê bảy bảng dữ liệu mà không có bảng nào cho audio.
+
+Nên toàn bộ dữ liệu thật của Haustek sau năm năm là **khoảng 100–170 GB**, tức
+một đĩa trên một máy chủ bình thường. Hạ tầng tốn 8–17 triệu đồng một tháng ở
+năm 1 và 46–93 triệu ở năm 5 — chỉ 4% rồi ~13% chi phí công ty; 78–93% là
+lương.
+
+Và khoản lớn hơn cả hoá đơn hạ tầng lại là thứ không ai xếp vào "hạ tầng":
+**phí chuyển tiền cho từng bên thụ hưởng**, 22–220 triệu đồng một kỳ ở quy mô
+năm 5. Cần gạt đã có sẵn trong lõi — ngưỡng thanh toán tối thiểu.
 
 ### 4 · Phần bản thật
 
