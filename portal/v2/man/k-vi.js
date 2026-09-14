@@ -39,6 +39,10 @@ HT.dangKy({
       huyHoi: 'Huỷ yêu cầu rút tiền {id}?', huyHoiMo: 'Số tiền {n} sẽ trở lại số dư khả dụng. Bạn có thể gửi yêu cầu mới bất cứ lúc nào.', daHuy: 'Đã huỷ yêu cầu',
       trongRt: 'Bạn chưa rút tiền lần nào', trongRtMo: 'Khi số dư khả dụng từ ngưỡng tối thiểu trở lên, bạn bấm "Rút tiền" để gửi yêu cầu.',
       ghiKy: 'Khoản ghi vào ví theo kỳ', ghiKyMo: 'Mỗi kỳ được xét duyệt là một lần ghi vào ví. Khấu trừ tạm ứng (nếu có) trừ trước khi ghi.',
+      labelTra: 'Phần bản ghi của bạn do {l} thanh toán theo hợp đồng giữa bạn và label. Ví này chỉ ghi tiền Haustek trả thẳng cho bạn (tác quyền, chia sẻ).',
+      amNo: 'Số dư đang âm {n}: một kỳ đã huỷ chốt và duyệt lại với số thấp hơn số bạn đã rút. Kỳ sau sẽ bù dần; rút tiền tạm dừng cho tới khi số dư dương.',
+      daoChot: 'Điều chỉnh do huỷ chốt kỳ', daoChotMo: 'Kỳ đã ghi vào ví rồi huỷ chốt thì ghi một dòng bù trừ, không xoá. Tổng ví vẫn đúng.',
+      cDong: 'Dòng', dDuyet: 'Ghi vào ví (duyệt lần {n})', dHuy: 'Bù trừ (huỷ chốt lần {n})',
       cKy: 'Kỳ', cDuyet: 'Ngày xét duyệt', cHuong: 'Phần được hưởng', cHuongLb: 'Phần label được hưởng', cTru: 'Khấu trừ tạm ứng', cGhi: 'Ghi vào ví',
       trongKy: 'Chưa có kỳ nào ghi vào ví', trongKyMo: 'Khoản đầu tiên được ghi khi Haustek xét duyệt kỳ đầu tiên có doanh thu của bạn.',
       /* hộp thoại */
@@ -67,6 +71,10 @@ HT.dangKy({
       huyHoi: 'Cancel withdrawal {id}?', huyHoiMo: '{n} returns to your available balance. You can request again any time.', daHuy: 'Request cancelled',
       trongRt: 'No withdrawal yet', trongRtMo: 'Once the available balance reaches the minimum, use “Withdraw” to send a request.',
       ghiKy: 'Credits per period', ghiKyMo: 'Every approved period is one credit. An advance offset (if any) comes off before crediting.',
+      labelTra: 'Your recording share is paid by {l} under your contract with the label. This wallet only holds what Haustek pays you directly (publishing, splits).',
+      amNo: 'Balance is negative by {n}: a period was un-approved and re-approved below what you had already withdrawn. Later periods will make it up; withdrawals pause until the balance is positive.',
+      daoChot: 'Adjustments from un-approved periods', daoChotMo: 'A period credited and then un-approved gets an offsetting line rather than being erased. The wallet total stays right.',
+      cDong: 'Entry', dDuyet: 'Credited (approval {n})', dHuy: 'Reversed (un-approval {n})',
       cKy: 'Period', cDuyet: 'Approved', cHuong: 'Earned', cHuongLb: 'Label keeps', cTru: 'Advance offset', cGhi: 'Credited',
       trongKy: 'Nothing credited yet', trongKyMo: 'The first credit lands when Haustek approves your first earning period.',
       hoiRut: 'Withdraw', hoiRutMo: 'Available {a} · minimum {b}. Haustek sends the transfer within 2 working days of picking the request up.',
@@ -100,7 +108,9 @@ HT.dangKy({
       { l: t('kNguong'), v: HT.fmt.usd0(w.threshold) }
     ]);
 
-    if (duoi) html += HM.ghi({ kieu: 'info', tieuDe: HM.esc(t('duoiNguong').replace('{n}', HT.fmt.usd0(w.threshold))) });
+    if (w.amNo) html += HM.ghi({ kieu: 'warn', tieuDe: HM.esc(t('amNo').replace('{n}', HT.fmt.usd(-w.available))) });
+    else if (duoi) html += HM.ghi({ kieu: 'info', tieuDe: HM.esc(t('duoiNguong').replace('{n}', HT.fmt.usd0(w.threshold))) });
+    if (w.traBoi === 'label') html += HM.ghi({ kieu: 'info', tieuDe: HM.esc(t('labelTra').replace('{l}', w.labelTra || 'label')) });
 
     /* ---- hàng 1: tài khoản · cơ cấu ví · nhịp báo cáo ---- */
     var theNh = HM.the({
@@ -195,6 +205,17 @@ HT.dangKy({
           '<td class="num band">' + HM.esc(HT.fmt.usd(w.totalCredit)) + '</td></tr></tfoot></table></div>'
         : HM.trong({ icon: 'clock', tieuDe: t('trongKy'), moTa: t('trongKyMo') })
     });
+
+    /* ---- bù trừ do huỷ chốt: chỉ hiện khi có ---- */
+    if (w.daoChot) {
+      var dao = w.soCai.filter(function (x) { return x.loai === 'huy' || (x.loai === 'duyet' && x.lan > 1) || w.soCai.some(function (y) { return y.k === x.k && y.loai === 'huy'; }); });
+      html += HM.the({ h2: HM.esc(t('daoChot')), p: HM.esc(t('daoChotMo')), thoBody: true,
+        than: '<div class="tw"><table class="t"><thead><tr><th>' + HM.esc(t('cKy')) + '</th><th>' + HM.esc(t('cDong')) + '</th><th>' + HM.esc(t('cDuyet')) + '</th><th class="num band">' + HM.esc(t('cGhi')) + '</th></tr></thead><tbody>' +
+          dao.map(function (x) {
+            return '<tr><td class="mono">' + HM.esc(x.label) + '</td><td>' + HM.esc((x.loai === 'huy' ? t('dHuy') : t('dDuyet')).replace('{n}', x.lan)) + (x.lyDo ? '<div class="t-sub">' + HM.esc(x.lyDo) + '</div>' : '') + '</td>' +
+              '<td class="mono muted">' + HM.esc(HT.fmt.ngay(x.tai)) + '</td><td class="num band"><b' + (x.credit < 0 ? ' class="neg"' : '') + '>' + HM.esc((x.credit < 0 ? '−' : '') + HT.fmt.usd(Math.abs(x.credit))) + '</b></td></tr>';
+          }).join('') + '</tbody></table></div>' });
+    }
 
     root.innerHTML = html;
     HB.gan(root);

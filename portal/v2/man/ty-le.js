@@ -108,9 +108,7 @@ HT.dangKy({
         HM.esc(t('tim')) + '" value="' + HM.esc(LOC.tim) + '"></div>' +
       '<select class="in" data-loai style="width:auto;height:34px">' +
         '<option value="">' + HM.esc(t('tatCa')) + '</option>' +
-        '<option value="label"' + (LOC.loai === 'label' ? ' selected' : '') + '>Label</option>' +
-        '<option value="artist"' + (LOC.loai === 'artist' ? ' selected' : '') + '>' +
-          HM.esc(c.lang === 'vi' ? 'Nghệ sĩ độc lập' : 'Independent artist') + '</option></select>' +
+        '<option value="label"' + (LOC.loai === 'label' ? ' selected' : '') + '>Label</option></select>' +
       '<button type="button" class="pill' + (LOC.chiDoi ? ' on' : '') + '" data-chidoi>' +
         HM.esc(t('chiDoi')) + ' <b>' + daDoi.length + '</b></button>' +
       '<div class="sp"></div>' +
@@ -266,7 +264,7 @@ function hoiTyLe(c, key) {
         '<input class="in" value="' + HM.esc(A.partyName(key) + ' · ' + A.partyClientId(key)) + '" disabled>' +
         '<input type="hidden" data-o="key" value="' + HM.esc(key) + '">'
       : '<label class="fld">' + (c.lang === 'vi' ? 'Chọn bên thụ hưởng' : 'Pick a payee') + '</label>' +
-        '<input class="in" data-timben placeholder="' + HM.esc(c.lang === 'vi' ? 'Nhập tên label hoặc nghệ sĩ độc lập' : 'Type a label or independent artist') + '">' +
+        '<input class="in" data-timben placeholder="' + HM.esc(c.lang === 'vi' ? 'Nhập tên hoặc mã label' : 'Type a label name or code') + '">' +
         '<input type="hidden" data-o="key" value="">' +
         '<div data-kq style="margin-top:8px;max-height:190px;overflow:auto"></div>') +
       '<div class="fldrow two-up" style="margin-top:14px">' +
@@ -277,8 +275,8 @@ function hoiTyLe(c, key) {
           return '<option value="' + p.k + '"' + (p.k === c.kyKey ? ' selected' : '') + '>' + HM.esc(p.label) + '</option>';
         }).join('') + '</select></div></div>' +
       '<div class="hint">' + HM.esc(c.lang === 'vi'
-        ? 'Con số này là phần bên thụ hưởng được hưởng, tính trên doanh thu sau khi trừ phí dịch vụ Haustek ' + HT.fmt.pct(A.cfg.HAUSTEK_FEE) + '. Phần còn lại là phần label được hưởng, hoặc phần Haustek theo hợp đồng độc lập nếu bên thụ hưởng là nghệ sĩ độc lập.'
-        : 'This is the share the PAYEE keeps, of revenue after the ' + HT.fmt.pct(A.cfg.HAUSTEK_FEE) + ' Haustek fee. The rest goes to the label, or to Haustek for an independent artist.') + '</div>' +
+        ? 'Con số này là phần nghệ sĩ trong label được hưởng, tính trên doanh thu sau khi trừ phí dịch vụ Haustek ' + HT.fmt.pct(A.cfg.HAUSTEK_FEE) + '; phần còn lại là của label. Nghệ sĩ độc lập không có tỷ lệ: họ nhận 100% sau phí.'
+        : 'This is the share the artist keeps, of revenue after the ' + HT.fmt.pct(A.cfg.HAUSTEK_FEE) + ' Haustek fee; the rest is the label’s. Independent artists have no rate: they keep 100% after the fee.') + '</div>' +
       '<label class="fld" style="margin-top:12px">' + HM.esc(c.t('hoiGhi')) + '</label>' +
       '<input class="in" data-o="note" placeholder="' +
         HM.esc(c.lang === 'vi' ? 'Ví dụ: Phụ lục 02 hợp đồng HT-2024-118, ký ngày 12.06.2026' : '') + '">',
@@ -297,11 +295,6 @@ function hoiTyLe(c, key) {
           A.labels.forEach(function (l) {
             if (hit.length < 24 && (l.name.toLowerCase().indexOf(s) >= 0 || l.clientId.toLowerCase().indexOf(s) >= 0))
               hit.push({ key: l.key, ten: l.name, ma: l.clientId, loai: 'Label' });
-          });
-          A.artists.forEach(function (a) {
-            if (hit.length < 24 && a.labelId < 0 &&
-                (a.name.toLowerCase().indexOf(s) >= 0 || a.clientId.toLowerCase().indexOf(s) >= 0))
-              hit.push({ key: a.key, ten: a.name, ma: a.clientId, loai: c.lang === 'vi' ? 'Độc lập' : 'Independent' });
           });
           kq.innerHTML = hit.length
             ? '<div class="bars pick">' + hit.map(function (h) {

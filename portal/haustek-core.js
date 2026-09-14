@@ -42,7 +42,7 @@ const T_BOOT = performance.now();
    --------------------------------------------------------------------- */
 const CFG = {
   VERSION:      "1.4.0",   /* 1.4.0: lược đồ có phiên bản và di trú; ba lớp người / bên thụ hưởng / vai; AAA */
-  LUOC_DO_VER:  2,         /* phiên bản LƯỢC ĐỒ state, tăng bằng DI_TRU — tách khỏi phiên bản ứng dụng */
+  LUOC_DO_VER:  3,         /* phiên bản LƯỢC ĐỒ state, tăng bằng DI_TRU — tách khỏi phiên bản ứng dụng */
   STORE_KEY:    "haustek.portal.v1",
   N_TRACKS:     50000,
   N_PERIODS:    12,
@@ -240,9 +240,9 @@ for (let i = 0; i < CFG.N_ARTISTS; i++) {
     clientId: "HTK-A" + String(i + 1).padStart(4, "0"),
     name,
     labelId: rnd() < 0.55 ? (rnd() * CFG.N_LABELS) | 0 : -1,
-    writer: rnd() < 0.6,
-    indieRate: 0.80 + Math.round(rnd() * 10) / 100
+    writer: rnd() < 0.6
   });
+  rnd();   /* giữ nhịp PRNG: trước đây là indieRate — bỏ ở vòng 22, nghệ sĩ độc lập nhận 100% sau phí */
 }
 
 /* bản ghi: mảng song song cho gọn bộ nhớ */
@@ -389,7 +389,12 @@ function defaultState() {
      không được làm đổi báo cáo các kỳ đã chốt (mục 5.5). --- */
   const first = PERIODS[0].k;
   LABELS.forEach(l => s.rates.push({ partyKey: l.key, rate: l.baseRate, from: first, by: "khởi tạo", at: "2025-08-01" }));
-  ARTISTS.forEach(a => { if (a.labelId < 0) s.rates.push({ partyKey: a.key, rate: a.indieRate, from: first, by: "khởi tạo", at: "2025-08-01" }); });
+  /* Nghệ sĩ độc lập KHÔNG có dòng tỷ lệ: họ nhận trọn phần sau phí (vòng 22,
+     quyết định "lỗi mô hình" — Haustek chỉ lấy phí hợp đồng, không giữ thêm). */
+  /* Hợp đồng mẫu: ba label tự thanh toán cho nghệ sĩ của mình (labelTuTra),
+     để thấy cả hai cách trả tiền trên cùng một bảng chi trả. */
+  s.contracts = s.contracts || {};
+  [5, 6, 7].forEach(id => { if (LABELS[id]) s.contracts["L:" + id] = { labelTuTra: true, note: "Label tự thanh toán cho nghệ sĩ của mình theo hợp đồng riêng" }; });
   /* một label đổi tỷ lệ giữa chừng, để thấy tác dụng của ngày hiệu lực */
   s.rates.push({ partyKey: "L:3", rate: 0.72, from: PERIODS[8].k, by: "khởi tạo", at: "2026-04-02",
                  note: "Phụ lục hợp đồng ký 02.04.2026, áp dụng từ kỳ 04/2026" });
@@ -576,6 +581,14 @@ const DI_TRU = [
       khoiTaoMaDem(s);
     } }
 ];
+DI_TRU.push(
+  { den: 3, mo: "Vòng 22: nghệ sĩ độc lập nhận 100% sau phí — bỏ dòng tỷ lệ A:; tài khoản có ben[] và vai người nhận",
+    chay(s) {
+      if (Array.isArray(s.rates)) s.rates = s.rates.filter(r => !(r && String(r.partyKey)[0] === "A"));
+      (Array.isArray(s.accounts) ? s.accounts : []).forEach(a => {
+        if (!Array.isArray(a.ben)) a.ben = a.partyKey ? [{ key: a.partyKey, vai: a.role === "nhan" ? "nhan" : "chu" }] : [];
+      });
+    } });
 function diTru(s) {
   let ver = +s.luocDoVer || 1;
   DI_TRU.slice().sort((a, b) => a.den - b.den).forEach(m => { if (m.den > ver) { m.chay(s); ver = m.den; } });
@@ -958,6 +971,9 @@ const rates = {
   /* bảng thô cho trang Tỷ lệ (bản sao, không phải tham chiếu vào state) */
   raw() { return state.rates.map(r => Object.assign({}, r)); },
   rateFor(partyKey, periodKey) {
+    /* Nghệ sĩ độc lập: 100% phần sau phí, không có bảng. Chỉ label có tỷ
+       lệ (phần nghệ sĩ trong label được hưởng). */
+    if (partyKey[0] === "A") return 1;
     const ck = partyKey + "|" + periodKey;
     const hit = _rateCache.get(ck);
     if (hit !== undefined) return hit;
@@ -969,6 +985,7 @@ const rates = {
     return v;
   },
   add(partyKey, rate, fromPeriodKey, by, note) {
+    if (String(partyKey)[0] === "A") throw new Error("Nghệ sĩ độc lập nhận 100% sau phí Haustek; tỷ lệ chia chỉ đặt cho label");
     if (!(rate > 0 && rate < 1)) throw new Error("Tỷ lệ phải nằm giữa 0 và 1");
     if (state.approved[fromPeriodKey]) throw new Error("Kỳ " + fromPeriodKey + " đã xét duyệt, không đặt được tỷ lệ mới cho kỳ đã chốt sổ");
     state.rates = state.rates.filter(r => !(r.partyKey === partyKey && r.from === fromPeriodKey));
@@ -984,18 +1001,26 @@ const rates = {
   }
 };
 function partyKeyOfTrack(i) { return tLabel[i] >= 0 ? "L:" + tLabel[i] : "A:" + tArtist[i]; }
+/* Ba loại bên thụ hưởng: L:label · A:nghệ sĩ · N:người nhận (tài khoản
+   đăng nhập nhận tiền chia sẻ mà không phải label hay nghệ sĩ; khoá là
+   "N:" + id tài khoản, mã đối tác HTK-N####). */
+const taiKhoanN = key => state.accounts.find(a => a.id === key.slice(2)) || null;
+const loaiBen = key => key[0] === "L" ? "label" : key[0] === "N" ? "nguoiNhan" : "artist";
 function partyName(key) {
+  if (key[0] === "N") { const a = taiKhoanN(key); return a ? (a.ten || a.email) : key; }
   const id = +key.slice(2);
   return key[0] === "L" ? (LABELS[id] ? LABELS[id].name : key) : (ARTISTS[id] ? ARTISTS[id].name : key);
 }
 /* partyName() trả lại chính cái khoá khi không tra được, nên nó không dùng
    làm phép kiểm "có đối tác này không" được. Đây mới là phép kiểm đó. */
 function coDoiTac(key) {
-  if (typeof key !== "string" || !/^[LA]:\d+$/.test(key)) return false;
+  if (typeof key !== "string" || !/^([LA]:\d+|N:U\d+)$/.test(key)) return false;
+  if (key[0] === "N") return !!taiKhoanN(key);
   const id = +key.slice(2);
   return key[0] === "L" ? !!LABELS[id] : !!ARTISTS[id];
 }
 function partyClientId(key) {
+  if (key[0] === "N") return "HTK-N" + key.slice(3);
   const id = +key.slice(2);
   return key[0] === "L" ? (LABELS[id] ? LABELS[id].clientId : "") : (ARTISTS[id] ? ARTISTS[id].clientId : "");
 }
@@ -1024,6 +1049,10 @@ function feeOf(i, periodKey) {
   return c && c.feePct != null && (!c.fromKey || c.fromKey <= periodKey) ? c.feePct : CFG.HAUSTEK_FEE;
 }
 demHopDong();   /* state đã nạp ở mục 9 phía trên */
+/* Vòng 22, quyết định "theo hợp đồng từng label": mặc định Haustek trả
+   thẳng phần nghệ sĩ (vì thế mới có bảng tỷ lệ label ↔ nghệ sĩ); label ký
+   labelTuTra thì nhận trọn phần sau phí và tự trả nghệ sĩ của mình. */
+function labelTuTra(labelId) { const c = state.contracts && state.contracts["L:" + labelId]; return !!(c && c.labelTuTra); }
 /* =====================================================================
    HAI THỨ KHÁC HẲN NHAU, VÀ CHÚNG ÁP THEO THỨ TỰ  (sửa lại ở vòng 20)
    ---------------------------------------------------------------------
@@ -1362,11 +1391,26 @@ function chanTacQuyenChoLabel(role, stream) {
   if (stream === "pub" && role === "label")
     throw new Error("Tác quyền không đi qua label");
 }
-function writerShare(i, artistId) {
-  if (tW1[i] === artistId) return tW1s[i];
-  if (tW2[i] === artistId) return 1 - tW1s[i];
-  return 0;
+/* Người viết của bài i và phần của mỗi người — MỘT hàm cho cả tổng hợp
+   (agg) lẫn chi trả (earnedByParty), để hai chỗ không bao giờ lệch nhau.
+   Tác phẩm nhập tay từ Sentric (state.tacPham) đè lên hai người viết sinh
+   sẵn khi mọi tác giả trong đó gắn được với một nghệ sĩ. */
+let _tpCount = 0;
+function demTacPham() { _tpCount = state.tacPham ? Object.keys(state.tacPham).length : 0; }
+demTacPham();
+function nguoiVietCua(i) {
+  if (_tpCount) {
+    const w = dungTpIndex().cua[i], gd = state.tacPham[w];
+    if (gd && Array.isArray(gd.tacGia) && gd.tacGia.length && gd.tacGia.every(x => x.artistId >= 0 && ARTISTS[x.artistId])) {
+      const tong = gd.tacGia.reduce((s, x) => s + (+x.tyLe || 0), 0) || 100;
+      return gd.tacGia.map(x => ({ artistId: x.artistId, share: (+x.tyLe || 0) / tong }));
+    }
+  }
+  const out = [{ artistId: tW1[i], share: tW1s[i] }];
+  if (tW2[i] >= 0) out.push({ artistId: tW2[i], share: 1 - tW1s[i] });
+  return out;
 }
+function writerShare(i, artistId) { let s = 0; nguoiVietCua(i).forEach(x => { if (x.artistId === artistId) s += x.share; }); return s; }
 /* số tiền "của người này" trên một bài trong một kỳ */
 function mineOf(i, p, role, partyId, stream) {
   const g = grossOf(i, p, stream);
@@ -2102,12 +2146,23 @@ function revoke(pIdx, why) {
   /* Trả lại đúng trạng thái trước khi duyệt: hoàn phần đã thu hồi tạm ứng
      (không thì kỳ sau thu hồi hai lần) và trả phần dồn về đúng số dồn VÀO
      kỳ này, chứ không phải xoá trắng — xoá trắng là làm mất tiền của người ta. */
-  (state.payouts[pk] || []).forEach(row => {
+  const dong = state.payouts[pk] || [];
+  dong.forEach(row => {
     const adv = state.advances[row.partyKey];
     if (adv && adv.byPeriod) delete adv.byPeriod[pk];
     if (row.carryIn > 0) state.carry[row.partyKey] = row.carryIn;
     else delete state.carry[row.partyKey];
   });
+  /* Huỷ chốt có bù trừ (vòng 22): bảng chi trả đã duyệt không biến mất —
+     nó được cất vào chiTraDao cùng thời điểm, người huỷ và lý do, và sổ
+     cái của mỗi bên hiện hai dòng (+ghi, −huỷ) rồi mới tới dòng duyệt lại.
+     Đối tác đã rút tiền theo lần duyệt cũ thì ví có thể âm cho tới khi kỳ
+     sau bù đủ; rút tiền bị chặn trong lúc đó. */
+  if (!state.chiTraDao || typeof state.chiTraDao !== "object") state.chiTraDao = {};
+  state.chiTraDao[pk] = state.chiTraDao[pk] || [];
+  state.chiTraDao[pk].push({ lan: state.chiTraDao[pk].length + 1, tai: nowISO(), boi: _me ? _me.email : "", lyDo: why || "",
+    duyetLuc: state.approved[pk].at, duyetBoi: state.approved[pk].by,
+    dong: dong.map(r => ({ partyKey: r.partyKey, earned: r.earned, recoup: r.recoup, payable: r.payable, carryIn: r.carryIn, carryOut: r.carryOut, chiaSeRa: r.chiaSeRa || 0, chiaSeVao: r.chiaSeVao || 0 })) });
   delete state.payouts[pk]; delete state.approved[pk];
   state.publishedAt = nowISO();
   audit.log("period.revoke", "Huỷ xét duyệt kỳ " + PERIODS[pIdx].label + (why ? " · " + why : ""));
@@ -2132,9 +2187,13 @@ function earnedByParty(pIdx) {
   for (let i = 0; i < N; i++) {
     const g = grossRec(i, pIdx);
     if (g <= 0) continue;
-    const s = splitRec(i, g, pk);
+    const s = splitRec(i, g, pk, pIdx);
     const lb = tLabel[i];
-    if (lb >= 0) { add("L:" + lb, s.labelCut); add("A:" + tArtist[i], s.artist); }
+    if (lb >= 0) {
+      /* label tự trả: nhận trọn phần sau phí, tự chia cho nghệ sĩ của mình */
+      if (labelTuTra(lb)) add("L:" + lb, cents(s.labelCut + s.artist));
+      else { add("L:" + lb, s.labelCut); add("A:" + tArtist[i], s.artist); }
+    }
     else add("A:" + tArtist[i], s.artist);
   }
   if (pubLoaded(pIdx)) {
@@ -2142,11 +2201,52 @@ function earnedByParty(pIdx) {
       const g = grossPub(i, pIdx);
       if (g <= 0) continue;
       const net = cents(g * (1 - CFG.PUB_FEE));
-      add("A:" + tW1[i], cents(net * tW1s[i]));
-      if (tW2[i] >= 0) add("A:" + tW2[i], cents(net * (1 - tW1s[i])));
+      nguoiVietCua(i).forEach(w => add("A:" + w.artistId, cents(net * w.share)));
     }
   }
   return out;
+}
+/* =====================================================================
+   17b. CHIA SẺ TÁC QUYỀN CÓ HIỆU LỰC — tiền đổi chủ thật ở bảng chi trả
+   ---------------------------------------------------------------------
+   Vòng 22, quyết định "tách ba lớp": người dùng (đăng nhập) ↔ bên thụ
+   hưởng (label / nghệ sĩ / người nhận, mang mã đối tác) ↔ vai trên bài
+   (chủ, cộng tác viên). Một chia sẻ chỉ làm tiền đổi chủ khi người cộng
+   tác đã NHẬN lời mời và đã gắn với một bên thụ hưởng (c.nhan); phần chia
+   trừ vào phần của chủ (label hay nghệ sĩ, theo c.goc) và cộng cho bên
+   nhận ngay trong runPayout, nên ví của hai bên cộng lại vẫn đúng tổng.
+   ===================================================================== */
+const gocChiaSe = (c, i) => c.goc === "label" || c.goc === "artist" ? c.goc : (tLabel[i] >= 0 ? "label" : "artist");
+function chiaSeHieuLuc() {
+  const st = state.splits || {}, out = [];
+  Object.keys(st).forEach(k => {
+    const i = +k; if (!(i >= 0 && i < N)) return;
+    (st[k] || []).forEach(c => { if (c.status === "accepted" && c.nhan && c.pct > 0) out.push({ i, pct: c.pct, goc: gocChiaSe(c, i), recoup: +c.recoup || 0, nhan: c.nhan, email: c.email }); });
+  });
+  return out;
+}
+function chuChiaSe(cs) { return cs.goc === "label" ? "L:" + tLabel[cs.i] : "A:" + tArtist[cs.i]; }
+/* phần gốc mà chia sẻ cắt vào, cho bài i kỳ p */
+function phanGocChiaSe(cs, p) {
+  const g = grossRec(cs.i, p); if (g <= 0) return 0;
+  const s = splitRec(cs.i, g, PERIODS[p].k, p);
+  if (cs.goc === "label") return s.labelCut;
+  /* nghệ sĩ thuộc label tự trả: Haustek không cầm phần này nên không chia được */
+  if (tLabel[cs.i] >= 0 && labelTuTra(tLabel[cs.i])) return 0;
+  return s.artist;
+}
+/* tiền người cộng tác nhận ở kỳ p; có ngưỡng thu hồi thì chủ nhận trước
+   cho tới khi cộng dồn các kỳ đã duyệt vượt ngưỡng */
+function tienChiaSe(cs, p) {
+  const base = phanGocChiaSe(cs, p);
+  if (base <= 0) return 0;
+  if (cs.recoup > 0) {
+    let truoc = 0;
+    for (let q = 0; q < p; q++) if (state.approved[PERIODS[q].k]) truoc += phanGocChiaSe(cs, q);
+    const vuot = Math.max(0, truoc + base - Math.max(cs.recoup, truoc));
+    return cents(Math.min(base, vuot) * cs.pct / 100);
+  }
+  return cents(base * cs.pct / 100);
 }
 /* GHI vào sổ: đặt lượt thu hồi tạm ứng và phần dồn sang kỳ sau. Chỉ được
    gọi từ approve(). Gọi lạc một lần ngoài đó là ghi khống một lượt thu hồi
@@ -2156,6 +2256,17 @@ function earnedByParty(pIdx) {
 function runPayout(pIdx, ghi) {
   const pk = PERIODS[pIdx].k;
   const earned = earnedByParty(pIdx);
+  const ra = new Map(), vao = new Map(), chiTiet = new Map();
+  chiaSeHieuLuc().forEach(cs => {
+    const amt = tienChiaSe(cs, pIdx); if (amt <= 0) return;
+    const chu = chuChiaSe(cs);
+    if ((earned.get(chu) || 0) + 0.005 < amt) return;          /* không bao giờ trừ quá phần chủ có */
+    earned.set(chu, cents(earned.get(chu) - amt));
+    earned.set(cs.nhan, cents((earned.get(cs.nhan) || 0) + amt));
+    ra.set(chu, cents((ra.get(chu) || 0) + amt)); vao.set(cs.nhan, cents((vao.get(cs.nhan) || 0) + amt));
+    if (!chiTiet.has(cs.nhan)) chiTiet.set(cs.nhan, []);
+    chiTiet.get(cs.nhan).push({ i: cs.i, title: tTitle[cs.i], tu: chu, pct: cs.pct, amt });
+  });
   const rows = [];
   earned.forEach((amount, key) => {
     const carryIn = state.carry[key] || 0;
@@ -2170,9 +2281,12 @@ function runPayout(pIdx, ghi) {
       adv.byPeriod = adv.byPeriod || {}; adv.byPeriod[pk] = recoup;
     }
     if (ghi) state.carry[key] = carryOut;
-    rows.push({ partyKey: key, kind: key[0] === "L" ? "label" : "artist",
-                earned: amount, carryIn, recoup, payable, carryOut,
-                advanceLeft: cents(Math.max(bal - recoup, 0)) });
+    const row = { partyKey: key, kind: loaiBen(key),
+                  earned: amount, carryIn, recoup, payable, carryOut,
+                  advanceLeft: cents(Math.max(bal - recoup, 0)) };
+    if (ra.has(key)) row.chiaSeRa = ra.get(key);
+    if (vao.has(key)) { row.chiaSeVao = vao.get(key); row.chiaSe = chiTiet.get(key); }
+    rows.push(row);
   });
   rows.sort((a, b) => b.payable - a.payable);
   return rows;
@@ -2187,7 +2301,7 @@ function seedAccounts() {
   if (state.accounts.length) return;
   const mk = (email, role, partyKey, status) => ({
     id: "U" + String(state.accounts.length + 1).padStart(4, "0"),
-    email, role, partyKey, status: status || "active",
+    email, role, partyKey, ben: partyKey ? [{ key: partyKey, vai: "chu" }] : [], status: status || "active",
     createdAt: "2026-08-01", lastSeen: null, mfa: role === "admin"
   });
   state.accounts.push(mk("mgmt@haustek-group.com", "admin", null));
@@ -2204,6 +2318,10 @@ function seedAccounts() {
   want(a => a.labelId < 0 && !a.writer, 1);
   want(a => a.labelId >= 0 && !a.writer, 1);
   wanted.forEach((i, n) => state.accounts.push(mk("nghesi" + (n + 1) + "@vidu.vn", "artist", ARTISTS[i].key)));
+  /* một nghệ sĩ thuộc label TỰ TRẢ (hợp đồng mẫu L:5–7): ví ở cổng nói rõ
+     "label thanh toán phần này", không phải Haustek */
+  const tuTra = ARTISTS.find(a => [5, 6, 7].includes(a.labelId) && enough(a.id) && !wanted.includes(a.id));
+  if (tuTra) state.accounts.push(mk("nghesi-label@vidu.vn", "artist", tuTra.key));
   state.accounts.push(mk("cho-moi@vidu.vn", "artist", ARTISTS[5].key, "invited"));
   /* Hai label con của label mẫu đầu tiên, để thấy cả góc nhìn label mẹ
      (cây label, xem thay) lẫn góc nhìn label con (tên label mẹ trên hợp đồng). */
@@ -2414,7 +2532,7 @@ const TO_CHUC = [
         { id: "kiem-so", vi: "Đề xuất chờ kiểm số", en: "Proposals awaiting figure check", man: "xet-duyet", dem: () => proposalsOf().filter(p => p.status === "submitted").length },
         { id: "sai-lech", vi: "Nguồn báo cáo lệch, chờ kiểm", en: "Feeds with a variance awaiting a check", man: "doi-chieu",
           dem: () => { let n = 0; for (let p = 0; p < P; p++) { if (state.approved[PERIODS[p].k]) continue; FEEDS.forEach((f, j) => { const t = feedTotals(p, j); if (t && Math.abs(t.diff) > 0.5 && !state.variance[PERIODS[p].k + ":" + j]) n++; }); } return n; } },
-        { id: "tam-ung", vi: "Tạm ứng còn phải thu hồi", en: "Advances still recouping", man: "tam-ung", dem: () => Object.keys(state.advances || {}).filter(k => (state.advances[k].balance || 0) > 0).length },
+        { id: "tam-ung", vi: "Tạm ứng còn phải thu hồi", en: "Advances still recouping", man: "tam-ung", dem: () => Object.keys(state.advances || {}).filter(k => advanceBalance(k) > 0).length },
         { id: "but-toan", vi: "Bút toán điều chỉnh tháng này", en: "Adjustments this month", man: "ke-toan", dem: () => state.adjustments.filter(a => String(a.at || "").slice(0, 7) === nowISO().slice(0, 7)).length } ] } ] },
   { id: "ho-tro", vai: "support", vi: "Hỗ trợ", en: "Support",
     chucNang: { vi: ["Cửa trước cho mọi yêu cầu của đối tác, chuyển đúng bộ phận", "Khiếu nại bản quyền, Content ID, cài đặt video", "Tra cứu hồ sơ phát hành và chất lượng lượt nghe"],
@@ -2491,7 +2609,7 @@ function dongBoNhanSu() {
 function apDungDoiTacThem() {
   (state.extraParties || []).forEach(x => {
     if (x.kind === "label") { if (!LABELS[x.id]) LABELS[x.id] = Object.assign({ key: "L:" + x.id, baseRate: 0.7, isPublisher: false, parentId: -1 }, x, { key: "L:" + x.id }); }
-    else if (!ARTISTS[x.id]) ARTISTS[x.id] = Object.assign({ key: "A:" + x.id, writer: false, indieRate: 0.85, labelId: -1 }, x, { key: "A:" + x.id });
+    else if (!ARTISTS[x.id]) ARTISTS[x.id] = Object.assign({ key: "A:" + x.id, writer: false, labelId: -1 }, x, { key: "A:" + x.id });
   });
 }
 apDungDoiTacThem();
@@ -2567,7 +2685,8 @@ function partiesList(opts) {
       classification: classificationOf(rq.gross),
       signedAt: signed, contractEnd: end, daysToEnd,
       accounts: acc.map(a => a.email), lastSeen: acc.map(a => a.lastSeen).filter(Boolean).sort().pop() || null,
-      bank: !!bank, status, hasAccount: acc.length > 0, daysSinceSigned: Math.round((ASOF - new Date(signed)) / 864e5)
+      bank: !!bank, status, hasAccount: acc.length > 0, daysSinceSigned: Math.round((ASOF - new Date(signed)) / 864e5),
+      labelTuTra: pt.kind !== "artist" && labelTuTra(pt.id)
     };
   });
   let out = rows;
@@ -2627,14 +2746,36 @@ function creditsOf(partyKey) {
   });
   return out;
 }
+/* Sổ cái đầy đủ của một bên: mỗi lần duyệt một dòng +, mỗi lần huỷ chốt
+   một dòng − (bù trừ), rồi dòng duyệt lại. Tổng các dòng = tổng ví. */
+function soCaiCua(partyKey) {
+  const out = [];
+  PERIODS.forEach(p => {
+    ((state.chiTraDao || {})[p.k] || []).forEach(b => {
+      const r = b.dong.find(x => x.partyKey === partyKey); if (!r) return;
+      const credit = cents(r.earned - r.recoup);
+      out.push({ k: p.k, label: p.label, loai: "duyet", lan: b.lan, tai: b.duyetLuc, earned: r.earned, recoup: r.recoup, credit });
+      out.push({ k: p.k, label: p.label, loai: "huy", lan: b.lan, tai: b.tai, earned: -r.earned, recoup: -r.recoup, credit: -credit, lyDo: b.lyDo, boi: b.boi });
+    });
+    if (!state.approved[p.k]) return;
+    const row = (state.payouts[p.k] || []).find(r => r.partyKey === partyKey); if (!row) return;
+    out.push({ k: p.k, label: p.label, loai: "duyet", lan: (((state.chiTraDao || {})[p.k] || []).length) + 1, tai: state.approved[p.k].at, earned: row.earned, recoup: row.recoup, credit: cents(row.earned - row.recoup) });
+  });
+  return out;
+}
 function walletOf(partyKey) {
   const credits = creditsOf(partyKey);
   const totalCredit = cents(credits.reduce((s, c) => s + c.credit, 0));
+  const soCai = soCaiCua(partyKey), daoChot = soCai.filter(x => x.loai === "huy").length;
+  const id = +partyKey.slice(2);
+  const tuTra = partyKey[0] === "A" && ARTISTS[id] && ARTISTS[id].labelId >= 0 && labelTuTra(ARTISTS[id].labelId);
   const ws = state.withdrawals.filter(w => w.partyKey === partyKey).slice().sort((a, b) => (a.requestedAt < b.requestedAt ? 1 : -1));
   const pending = cents(ws.filter(w => w.status === "requested" || w.status === "processing").reduce((s, w) => s + w.amount, 0));
   const paid = cents(ws.filter(w => w.status === "paid").reduce((s, w) => s + w.amount, 0));
   const nextOpen = PERIODS.find(p => !state.approved[p.k]);
-  return { credits, totalCredit, pending, paid, available: cents(Math.max(totalCredit - pending - paid, 0)),
+  const available = cents(totalCredit - pending - paid);
+  return { credits, totalCredit, pending, paid, available, amNo: available < -0.004,
+    soCai, daoChot, traBoi: tuTra ? "label" : "haustek", labelTra: tuTra ? LABELS[ARTISTS[id].labelId].name : null,
     threshold: CFG.PAYOUT_MIN, withdrawals: ws, bank: state.bank[partyKey] || null, cadence: reportCadence(),
     nextPeriod: nextOpen ? { k: nextOpen.k, label: nextOpen.label } : null };
 }
@@ -2644,6 +2785,7 @@ function requestWithdrawal(partyKey, amount, note, by) {
   amount = Math.round(+amount * 100) / 100;
   if (!(amount > 0)) throw new Error("Số tiền rút không hợp lệ");
   if (amount < CFG.PAYOUT_MIN) throw new Error("Số tiền rút tối thiểu là " + fmt.usd0(CFG.PAYOUT_MIN));
+  if (w.amNo) throw new Error("Số dư đang âm " + fmt.usd(-w.available) + " do một kỳ đã huỷ chốt và duyệt lại thấp hơn; chờ kỳ sau bù đủ mới rút được");
   if (amount > w.available + 0.004) throw new Error("Số tiền vượt số dư khả dụng " + fmt.usd(w.available));
   if (!w.bank) throw new Error("Bạn chưa khai thông tin tài khoản nhận tiền");
   const now = nowISO();
@@ -3048,14 +3190,18 @@ function baseSplits(i) {
 }
 function splitsOf(i, role, partyId) {
   const st = lazyState("splits", {});
-  const cols = st[i] ? st[i].slice() : baseSplits(i);
+  /* Mỗi chia sẻ cắt vào phần của ĐÚNG người đặt nó (goc): label thấy chia
+     sẻ label đặt, nghệ sĩ thấy chia sẻ nghệ sĩ đặt; nội bộ thấy cả hai. */
+  const goc = role === "label" ? "label" : role === "artist" ? "artist" : null;
+  const cols = (st[i] ? st[i].slice() : baseSplits(i)).filter(c => !goc || gocChiaSe(c, i) === goc);
   const mine = lifetimeMine(i, role || "admin", partyId || 0);
   let sum = 0;
   const collaborators = cols.map(c => {
     sum += c.pct;
     const earnedRaw = cents(mine * c.pct / 100);
     const recouped = c.recoup ? Math.min(c.recoup, earnedRaw) : 0;
-    return Object.assign({}, c, { earned: earnedRaw, recouped, payable: cents(c.status === "accepted" ? earnedRaw - recouped : 0), recouping: !!c.recoup && recouped < c.recoup });
+    return Object.assign({}, c, { goc: gocChiaSe(c, i), earned: earnedRaw, recouped, payable: cents(c.status === "accepted" ? earnedRaw - recouped : 0), recouping: !!c.recoup && recouped < c.recoup,
+      haustekTra: c.status === "accepted" && !!c.nhan, nhanClientId: c.nhan ? partyClientId(c.nhan) : null });
   });
   return { trackId: i, partyKey: partyKeyOfTrack(i), title: tTitle[i], isrc: tIsrc[i], artist: ARTISTS[tArtist[i]].name, ownerPct: Math.max(0, 100 - sum), collaborators, hasSplits: collaborators.length > 0, lifetimeMine: mine };
 }
@@ -3087,11 +3233,12 @@ function setSplit(role, partyId, trackId, c, by) {
   const pct = Math.round(+c.pct * 10) / 10;
   if (!(pct > 0 && pct <= 100)) throw new Error("Phần trăm phải trong khoảng 0–100");
   const st = lazyState("splits", {});
+  const gocMoi = role === "admin" ? (tLabel[i] >= 0 ? "label" : "artist") : role;
   const cur = (st[i] || baseSplits(i)).filter(x => x.email !== email);
-  const sum = cur.reduce((s, x) => s + x.pct, 0) + pct;
+  const sum = cur.filter(x => gocChiaSe(x, i) === gocMoi).reduce((s, x) => s + x.pct, 0) + pct;
   if (sum > 100) throw new Error("Tổng phần chia vượt 100% (đang là " + sum + "%)");
   const role2 = COLLAB_ROLES.find(r => r.k === c.role) || COLLAB_ROLES[0];
-  cur.push({ name: String(c.name || email.split("@")[0]).trim(), email, role: role2.k, roleLabel: role2.vi, roleLabelEn: role2.en, pct, status: "invited", recoup: Math.max(0, Math.round(+c.recoup || 0)), invitedAt: isoDate(ASOF) });
+  cur.push({ name: String(c.name || email.split("@")[0]).trim(), email, role: role2.k, roleLabel: role2.vi, roleLabelEn: role2.en, pct, status: "invited", recoup: Math.max(0, Math.round(+c.recoup || 0)), invitedAt: isoDate(ASOF), goc: gocMoi });
   st[i] = cur;
   audit.log("split.set", tTitle[i] + " · " + email + " · " + pct + "%", by);
   store.save();
@@ -3106,11 +3253,67 @@ function removeSplit(role, partyId, trackId, email, by) {
   store.save();
   return splitsOf(i, role, partyId);
 }
+/* Tài khoản đăng nhập cho một email cộng tác; chưa có thì cấp một tài
+   khoản "người nhận" (vai nhan, mã HTK-N####) — không có tài khoản thì
+   không có ví để nhận tiền, đúng câu hỏi "mỗi người có phải tạo client ID". */
+function taiKhoanChoChiaSe(email, ten) {
+  let a = state.accounts.find(x => x.email.toLowerCase() === email);
+  if (a) return a;
+  const id = sinhMa("taiKhoan", null, ma => state.accounts.some(x => x.id === ma));
+  a = { id, email, ten: chuoi(ten), role: "nhan", partyKey: "N:" + id, ben: [{ key: "N:" + id, vai: "nhan" }], status: "invited", createdAt: nowISO().slice(0, 10), lastSeen: null, mfa: false };
+  state.accounts.push(a);
+  audit.log("account.add", email + " · nhan · " + a.partyKey + " (cấp cho người cộng tác)");
+  return a;
+}
+/* Bên thụ hưởng nhận tiền chia sẻ của một tài khoản: bên label / nghệ sĩ
+   sẵn có (tiền vào ví đang dùng), không thì bên "người nhận" của chính nó. */
+function benNhanCua(a) {
+  const ds = Array.isArray(a.ben) && a.ben.length ? a.ben : (a.partyKey ? [{ key: a.partyKey }] : []);
+  const b = ds.find(x => /^[LA]:/.test(x.key) && coDoiTac(x.key));
+  return b ? b.key : "N:" + a.id;
+}
+/* Nội bộ xác nhận thay: người cộng tác đã đồng ý qua email / điện thoại.
+   Cấp tài khoản nếu chưa có, gắn bên nhận, và từ kỳ duyệt kế tiếp tiền
+   đổi chủ thật. */
 function acceptSplit(trackId, email, by) {
   const i = +trackId; const st = lazyState("splits", {});
-  st[i] = (st[i] || baseSplits(i)).map(x => x.email === String(email).toLowerCase() ? Object.assign({}, x, { status: "accepted" }) : x);
-  audit.log("split.accept", tTitle[i] + " · " + email, by); store.save();
+  email = String(email || "").trim().toLowerCase();
+  const cur = st[i] || baseSplits(i);
+  const c = cur.find(x => x.email === email);
+  if (!c) throw new Error("Email này không có trong danh sách chia sẻ của bài");
+  const tk = taiKhoanChoChiaSe(email, c.name), nhan = benNhanCua(tk);
+  st[i] = cur.map(x => x.email === email ? Object.assign({}, x, { status: "accepted", taiKhoanId: tk.id, nhan, acceptedAt: isoDate(ASOF), goc: gocChiaSe(x, i) }) : x);
+  _ebp.clear();
+  audit.log("split.accept", tTitle[i] + " · " + email + " → " + partyClientId(nhan), by); store.save();
   return splitsOf(i);
+}
+/* Chính người được mời nhận, từ tài khoản đang đăng nhập ở cổng đối tác. */
+function acceptSplitTuCong(pk, email, trackId) {
+  email = String(email || "").trim().toLowerCase();
+  const a = state.accounts.find(x => x.email.toLowerCase() === email);
+  const ben = a ? (Array.isArray(a.ben) && a.ben.length ? a.ben : (a.partyKey ? [{ key: a.partyKey }] : [])) : [];
+  if (!a || !ben.some(b => b.key === pk)) throw new Error("Email này không thuộc tài khoản đang đăng nhập");
+  const i = +trackId; if (!(i >= 0 && i < N)) throw new Error("Không tìm thấy bản ghi");
+  const st = lazyState("splits", {}), cur = st[i] || baseSplits(i);
+  if (!cur.some(x => x.email === email)) throw new Error("Bạn không được mời cộng tác trên bài này");
+  st[i] = cur.map(x => x.email === email ? Object.assign({}, x, { status: "accepted", taiKhoanId: a.id, nhan: pk, acceptedAt: isoDate(ASOF), goc: gocChiaSe(x, i) }) : x);
+  _ebp.clear();
+  audit.log("split.accept", tTitle[i] + " · " + email + " → " + partyClientId(pk), partyClientId(pk)); store.save();
+  return { ok: true, trackId: i, nhan: partyClientId(pk) };
+}
+/* Lời mời gửi tới email của các tài khoản giữ bên pk, và phần đã nhận. */
+function loiMoiChiaSeCua(pk) {
+  const emails = state.accounts.filter(a => (Array.isArray(a.ben) && a.ben.length ? a.ben : (a.partyKey ? [{ key: a.partyKey }] : [])).some(b => b.key === pk)).map(a => a.email.toLowerCase());
+  const st = state.splits || {}, rows = [];
+  Object.keys(st).forEach(k => {
+    const i = +k; if (!(i >= 0 && i < N)) return;
+    (st[k] || []).forEach(c => {
+      if (!emails.includes(c.email)) return;
+      const chu = gocChiaSe(c, i) === "label" ? "L:" + tLabel[i] : "A:" + tArtist[i];
+      rows.push({ trackId: i, title: tTitle[i], isrc: tIsrc[i], artist: ARTISTS[tArtist[i]].name, chu: partyName(chu), pct: c.pct, role: c.role, roleLabel: c.roleLabel, roleLabelEn: c.roleLabelEn, status: c.status, recoup: c.recoup || 0, email: c.email, nhanClientId: c.nhan ? partyClientId(c.nhan) : null });
+    });
+  });
+  return { rows, invited: rows.filter(r => r.status === "invited").length, accepted: rows.filter(r => r.status === "accepted").length };
 }
 
 /* ---- chất lượng lượt nghe: tín hiệu bất thường tính từ số ngày ---- */
@@ -3308,8 +3511,10 @@ function explainPeriod(role, partyId, pk) {
     steps.push({ k: "mine", label: "= Số tiền của bạn cho kỳ này", labelEn: "= Your earnings for this period", value: cents(mine), kind: "tien", tong: true });
     if (matched) steps.push({ k: "matched", label: "+ Dòng khớp tay cộng thêm", labelEn: "+ Manually matched lines added", value: cents(matched), kind: "tien" });
     if (payout) {
+      if (payout.chiaSeRa > 0) steps.push({ k: "chiaSe", label: "− Chia cho người cộng tác", labelEn: "− Shared with collaborators", value: cents(payout.chiaSeRa), kind: "tien" });
+      if (payout.chiaSeVao > 0) steps.push({ k: "chiaSeVao", label: "+ Nhận từ chia sẻ tác quyền", labelEn: "+ Received from royalty splits", value: cents(payout.chiaSeVao), kind: "tien" });
       if (payout.recoup) steps.push({ k: "recoup", label: "− Thu hồi tạm ứng", labelEn: "− Advance recoupment", value: cents(payout.recoup), kind: "tien" });
-      if (payout.carry) steps.push({ k: "carry", label: "→ Dồn sang kỳ sau (dưới ngưỡng " + fmt.usd0(CFG.PAYOUT_MIN) + ")", labelEn: "→ Carried to next period (below " + fmt.usd0(CFG.PAYOUT_MIN) + ")", value: cents(payout.carry), kind: "tien" });
+      if (payout.carryOut) steps.push({ k: "carry", label: "→ Dồn sang kỳ sau (dưới ngưỡng " + fmt.usd0(CFG.PAYOUT_MIN) + ")", labelEn: "→ Carried to next period (below " + fmt.usd0(CFG.PAYOUT_MIN) + ")", value: cents(payout.carry), kind: "tien" });
       steps.push({ k: "credit", label: "= Ghi vào ví", labelEn: "= Credited to wallet", value: cents(payout.earned - payout.recoup), kind: "tien", tong: true });
     }
   }
@@ -3331,8 +3536,11 @@ function phiChuyenHienTai() {
 }
 function withdrawalQuote(partyKey, amount) {
   amount = Math.round(+amount * 100) / 100;
-  const fxRate = state.fx.rate, vnd = Math.round(amount * fxRate);
-  const individual = partyKey[0] === "A";
+  /* Tỷ giá của kỳ đã duyệt gần nhất — chính là tỷ giá đối tác đã thấy trên
+     bảng kê; state.fx.rate chỉ dùng khi chưa kỳ nào chốt. */
+  const kyCuoi = approvedPeriods().slice(-1)[0];
+  const fxRate = kyCuoi ? fx.rateFor(kyCuoi.k) : state.fx.rate, vnd = Math.round(amount * fxRate);
+  const individual = partyKey[0] !== "L";
   let rate = 0, rule, ruleEn;
   if (individual && vnd >= 2000000) { rate = 0.10; rule = "Cá nhân cư trú, chi trả từ 2.000.000 ₫ mỗi lần: khấu trừ 10% thuế TNCN tại nguồn (Thông tư 111/2013, Điều 25). Haustek cấp chứng từ khấu trừ."; ruleEn = "Resident individual, payment of 2,000,000 ₫ or more: 10% personal income tax withheld at source (Circular 111/2013, Art. 25). Haustek issues a withholding certificate."; }
   else if (individual) { rule = "Cá nhân, dưới 2.000.000 ₫ mỗi lần: không khấu trừ."; ruleEn = "Individual, under 2,000,000 ₫ per payment: no withholding."; }
@@ -5965,7 +6173,7 @@ const QUYEN_HAM = {
      Khai cả phần đọc thì thành viên mới thêm vào toChuc sau này mặc định
      đã có người gác, thay vì lọt ra ngoài không ai biết. */
   toChuc: "toChuc",
-  "parties.create": "doiTacTao", platforms: "vanHanh", campaignCreate: "chienDich", campaignSetStatus: "chienDich", claimCreate: "khieuNai", ledger: "tien",
+  "parties.create": "doiTacTao", "parties.datLabelTuTra": "doiTacTao", platforms: "vanHanh", campaignCreate: "chienDich", campaignSetStatus: "chienDich", claimCreate: "khieuNai", ledger: "tien",
   "toChuc.themKhoi": "nhanSu", "toChuc.suaKhoi": "nhanSu", "toChuc.themTo": "nhanSu", "toChuc.themNhanSu": "nhanSu", "toChuc.suaNhanSu": "nhanSu", "toChuc.chuyenNhanSu": "nhanSu", "toChuc.khoaNhanSu": "nhanSu", "toChuc.ganTaiSan": "nhanSu"
 };
 /* Thành viên CỐ Ý để mở trong một đối tượng đã gác: toàn là hàm đọc mà vai
@@ -5973,7 +6181,7 @@ const QUYEN_HAM = {
    hội tác quyền). Viết ra thành danh sách để phép kiểm phân biệt được "đã
    cân nhắc rồi" với "quên gác", chứ không phải để nới quyền. */
 const QUYEN_MO = [
-  "parties.list", "parties.managerOf", "parties.signedAt", "parties.contractEnd",
+  "parties.list", "parties.managerOf", "parties.signedAt", "parties.contractEnd", "parties.labelTuTra",
   "fx.get", "fx.ngayChot", "fx.rateFor",
   "soCongKhai.nenTang",
   "xuatBan.hoi", "xuatBan.vaiTacGia", "xuatBan.hoiTheoLanhTho"
@@ -6163,7 +6371,7 @@ const admin = {
   questions: QUESTIONS, samplesNeeded: SAMPLES_NEEDED,
   counts: { tracks: N, periods: P, artists: CFG.N_ARTISTS, labels: CFG.N_LABELS, stores: STORES.length, territories: TERR.length },
 
-  pIndexOf, partyName, partyClientId, partyKeyOfTrack,
+  pIndexOf, partyName, partyClientId, coDoiTac, partyKeyOfTrack,
   track(i) {
     return { i, title: tTitle[i], isrc: tIsrc[i], isrcAlt: tIsrcAlt[i], upc: tUpc[i],
              type: TYPES[tType[i]], artistId: tArtist[i], artist: ARTISTS[tArtist[i]].name,
@@ -6191,7 +6399,8 @@ const admin = {
   recon, feedTotals, approvalChecks, canApprove, approve, revoke,
   /* Xem trước bảng chi trả mà KHÔNG đụng vào sổ. Màn hình nào cũng chỉ
      được dùng cái này; bản ghi thật chỉ chạy đúng một lần, lúc duyệt kỳ. */
-  previewPayout: pIdx => runPayout(pIdx, false),
+  /* kỳ đã duyệt thì "xem trước" là chính bảng đã chốt, không tính lại */
+  previewPayout: pIdx => state.approved[PERIODS[pIdx].k] ? (state.payouts[PERIODS[pIdx].k] || []).slice() : runPayout(pIdx, false),
   earnedByParty, advanceBalance,
   isApproved: pk => !!state.approved[pk],
   approvalOf: pk => state.approved[pk] || null,
@@ -6225,15 +6434,39 @@ const admin = {
   },
   accounts: {
     list() { return state.accounts.slice(); },
-    add(email, role, partyKey) {
+    /* Vai tài khoản: admin · label · artist · nhan (người nhận: chỉ có ví
+       để nhận tiền chia sẻ). Một tài khoản giữ nhiều bên thụ hưởng (ben[]);
+       partyKey là bên chính, để cổng đối tác hiện đúng một bên mỗi phiên. */
+    vai: ["admin", "label", "artist", "nhan"],
+    add(email, role, partyKey, o) {
+      o = o || {};
       if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) throw new Error("Email không hợp lệ");
+      if (!["admin", "label", "artist", "nhan"].includes(role)) throw new Error("Vai tài khoản không hợp lệ: " + role);
       if (state.accounts.some(a => a.email.toLowerCase() === email.toLowerCase())) throw new Error("Email này đã có tài khoản");
-      if (role !== "admin" && !partyKey) throw new Error("Tài khoản label hoặc nghệ sĩ phải gắn với một mã bên thụ hưởng");
-      state.accounts.push({ id: sinhMa("taiKhoan", null, ma => state.accounts.some(a => a.id === ma)),
-        email, role, partyKey: role === "admin" ? null : partyKey, status: "invited",
-        createdAt: nowISO().slice(0, 10), lastSeen: null, mfa: role === "admin" });
-      audit.log("account.add", email + " · " + role + (partyKey ? " · " + partyKey + " (" + partyName(partyKey) + ")" : ""));
+      if ((role === "label" || role === "artist") && !partyKey) throw new Error("Tài khoản label hoặc nghệ sĩ phải gắn với một mã bên thụ hưởng");
+      if (partyKey && !coDoiTac(partyKey)) throw new Error("Không có bên thụ hưởng " + partyKey);
+      const id = sinhMa("taiKhoan", null, ma => state.accounts.some(a => a.id === ma));
+      const pk = role === "admin" ? null : role === "nhan" ? "N:" + id : partyKey;
+      state.accounts.push({ id, email, ten: chuoi(o.ten), role, partyKey: pk, ben: pk ? [{ key: pk, vai: role === "nhan" ? "nhan" : "chu" }] : [],
+        status: "invited", createdAt: nowISO().slice(0, 10), lastSeen: null, mfa: role === "admin" });
+      audit.log("account.add", email + " · " + role + (pk ? " · " + pk + " (" + partyName(pk) + ")" : ""));
       store.save();
+    },
+    /* một đăng nhập giữ thêm một bên thụ hưởng (chủ label kiêm nghệ sĩ…) */
+    themBen(id, key, by) {
+      const a = state.accounts.find(x => x.id === id); if (!a) throw new Error("Không có tài khoản " + id);
+      if (!coDoiTac(key) || key[0] === "N") throw new Error("Không có bên thụ hưởng " + key);
+      a.ben = Array.isArray(a.ben) ? a.ben : (a.partyKey ? [{ key: a.partyKey, vai: a.role === "nhan" ? "nhan" : "chu" }] : []);
+      if (a.ben.some(b => b.key === key)) throw new Error("Tài khoản đã giữ bên này");
+      a.ben.push({ key, vai: "chu" });
+      if (!a.partyKey || a.role === "nhan" || a.role === "admin") { a.partyKey = key; a.role = key[0] === "L" ? "label" : "artist"; }
+      audit.log("account.ben", a.email + " + " + key + " (" + partyName(key) + ")", by); store.save(); return a;
+    },
+    boBen(id, key, by) {
+      const a = state.accounts.find(x => x.id === id); if (!a) throw new Error("Không có tài khoản " + id);
+      if (a.partyKey === key) throw new Error("Không bỏ được bên chính của tài khoản; đổi bên chính trước");
+      a.ben = (a.ben || []).filter(b => b.key !== key);
+      audit.log("account.ben.bo", a.email + " − " + key, by); store.save(); return a;
     },
     setStatus(id, status) {
       const a = state.accounts.find(x => x.id === id); if (!a) return;
@@ -6581,7 +6814,7 @@ const admin = {
       }
       moi.nguon = d.nguon === "sentric" ? "sentric" : "tay";
       moi.at = nowISO(); moi.by = by || (_me ? _me.name : "");
-      state.tacPham[tp.id] = moi;
+      state.tacPham[tp.id] = moi; demTacPham(); _ebp.clear();
       tqDoi();
       audit.log("tq.ghi", tp.id + " · " + (moi.ten || tp.ten) + (moi.iswc ? " · " + moi.iswc : ""), by);
       store.save();
@@ -6924,21 +7157,38 @@ const admin = {
       if (share != null && !(share > 0 && share < 1)) throw new Error("Phần đối tác hưởng phải trong khoảng 1–99%");
       const mgr = o.managerId || (vaiHienTai() === "sales" ? _me.id : null);
       if (mgr && !(staffById(mgr) && staffById(mgr).role === "sales")) throw new Error("Người phụ trách phải thuộc Kinh doanh");
+      const feePct = o.feePct != null && o.feePct !== "" ? +o.feePct / 100 : null;
+      if (feePct != null && !(feePct >= 0 && feePct < 1)) throw new Error("Phí Haustek phải trong khoảng 0–99%");
       let rec, pk;
       if (kind === "label") {
         const id = LABELS.length; rec = { id, key: "L:" + id, clientId: "HTK-L" + String(id + 1).padStart(3, "0"), name, baseRate: share != null ? share : 0.7, isPublisher: false, parentId: o.parentId != null && LABELS[+o.parentId] ? +o.parentId : -1, kind: "label", them: true, addedAt: isoDate(ASOF) };
         LABELS.push(rec); pk = rec.key;
+        /* dòng tỷ lệ đầu tiên của label, từ kỳ đang mở — không thì rateFor rơi về 0,8 mặc định mà không ai đặt */
+        const kyMo = PERIODS.find(p => !state.approved[p.k]);
+        state.rates.push({ partyKey: pk, rate: rec.baseRate, from: kyMo ? kyMo.k : PERIODS[P - 1].k, by: by || "admin", at: nowISO(), note: "Khởi tạo khi thêm đối tác" });
+        invalidateRates();
       } else {
-        const id = ARTISTS.length; rec = { id, key: "A:" + id, clientId: "HTK-A" + String(id + 1).padStart(4, "0"), name, labelId: o.labelId != null && LABELS[+o.labelId] ? +o.labelId : -1, writer: !!o.writer, indieRate: share != null ? share : 0.85, kind: "artist", them: true, addedAt: isoDate(ASOF) };
+        const id = ARTISTS.length; rec = { id, key: "A:" + id, clientId: "HTK-A" + String(id + 1).padStart(4, "0"), name, labelId: o.labelId != null && LABELS[+o.labelId] ? +o.labelId : -1, writer: !!o.writer, kind: "artist", them: true, addedAt: isoDate(ASOF) };
         ARTISTS.push(rec); pk = rec.key;
       }
       state.extraParties.push(Object.assign({}, rec));
-      state.contracts[pk] = Object.assign({}, state.contracts[pk] || {}, { from, to: to || addDays(from, 730), share: share != null ? share : undefined, note: chuoi(o.note), signedBy: by || "" });
+      state.contracts[pk] = Object.assign({}, state.contracts[pk] || {}, { from, to: to || addDays(from, 730), share: kind === "label" && share != null ? share : undefined,
+        feePct: feePct != null ? feePct : undefined, labelTuTra: kind === "label" ? !!o.labelTuTra : undefined, note: chuoi(o.note), signedBy: by || "" });
+      demHopDong(); _ebp.clear();
       if (mgr) state.partyManager[pk] = mgr;
       if (chuoi(o.email)) admin.accounts.add(chuoi(o.email), kind, pk);
       audit.log("party.create", pk + " · " + name + " · " + kind + (mgr ? " · " + staffById(mgr).name : ""), by); store.save();
       return { partyKey: pk, kind, name, clientId: rec.clientId, contractFrom: from, contractTo: to || addDays(from, 730), managerId: mgr || null };
     },
+    /* hợp đồng label: label tự trả nghệ sĩ hay Haustek trả thẳng */
+    datLabelTuTra(pk, co, by) {
+      if (String(pk)[0] !== "L" || !coDoiTac(pk)) throw new Error("Chỉ đặt được cho label");
+      const c = (state.contracts[pk] = state.contracts[pk] || {});
+      c.labelTuTra = !!co; demHopDong(); _ebp.clear();
+      audit.log("contract.labelTuTra", partyName(pk) + " → " + (co ? "label tự trả nghệ sĩ" : "Haustek trả thẳng nghệ sĩ"), by); store.save();
+      return { partyKey: pk, labelTuTra: !!co };
+    },
+    labelTuTra: pk => String(pk)[0] === "L" && labelTuTra(+pk.slice(2)),
     setManager(pk, staffId, by) { if (!staffById(staffId)) throw new Error("Không có nhân viên " + staffId); state.partyManager[pk] = staffId; audit.log("party.manager", partyName(pk) + " → " + staffById(staffId).name, by); store.save(); },
     signedAt: signedAtOf, contractEnd: contractEndOf },
   sales: { kpi: (staffId, pIdx) => salesKpiChoVai(staffId, pIdx) },
@@ -6960,7 +7210,7 @@ const admin = {
   },
   statements: {
     list(pk) {
-      const rows = (state.payouts[pk] || []).filter(r => !r.held).map(r => ({ partyKey: r.partyKey, name: partyName(r.partyKey), clientId: partyClientId(r.partyKey), kind: r.kind, earned: r.earned, credit: cents(r.earned - r.recoup), pdf: (state.statements[pk] || {})[r.partyKey] || null }));
+      const rows = (state.payouts[pk] || []).map(r => ({ partyKey: r.partyKey, name: partyName(r.partyKey), clientId: partyClientId(r.partyKey), kind: r.kind, earned: r.earned, credit: cents(r.earned - r.recoup), pdf: (state.statements[pk] || {})[r.partyKey] || null }));
       return { rows, attached: rows.filter(r => r.pdf).length, total: rows.length };
     },
     attach(pk, partyKey, file, by) {
@@ -6973,7 +7223,7 @@ const admin = {
     },
     attachAll(pk, by) {
       let n = 0;
-      (state.payouts[pk] || []).forEach(r => { if (r.held) return; state.statements[pk] = state.statements[pk] || {}; if (!state.statements[pk][r.partyKey]) { state.statements[pk][r.partyKey] = { file: "bang-ke-" + pk + "-" + partyClientId(r.partyKey) + ".pdf", at: nowISO(), by: by || "ketoan@haustek-group.com", size: 140000 + ((hash(n, 121) * 200000) | 0) }; n++; } });
+      (state.payouts[pk] || []).forEach(r => { state.statements[pk] = state.statements[pk] || {}; if (!state.statements[pk][r.partyKey]) { state.statements[pk][r.partyKey] = { file: "bang-ke-" + pk + "-" + partyClientId(r.partyKey) + ".pdf", at: nowISO(), by: by || "ketoan@haustek-group.com", size: 140000 + ((hash(n, 121) * 200000) | 0) }; n++; } });
       audit.log("statement.attachAll", PERIODS[pIndexOf(pk)].label + " · " + n + " bảng kê", by); store.save();
       return n;
     },
@@ -7247,6 +7497,7 @@ const api = {
     const advOpening = state.advances[partyKey] ? state.advances[partyKey].opening : 0;
     const advLeft = advanceBalance(partyKey);
     const payoutRow = (state.payouts[periodKey] || []).find(r => r.partyKey === partyKey) || null;
+    const tuTra = role === "artist" && ARTISTS[partyId].labelId >= 0 && labelTuTra(ARTISTS[partyId].labelId);
 
     /* Chuỗi tiền của đối tác: bắt đầu từ DOANH THU (số sau phí, tức số của
        họ), không bắt đầu từ doanh thu gộp. Phí dịch vụ và các khoản Haustek
@@ -7320,6 +7571,8 @@ const api = {
             source: lockedFx ? (lockedFx.source || state.fx.source) : state.fx.source,
             locked: !!lockedFx },
       total: a.total, revenue: rev, streams: a.streams, tracks: a.tracks,
+      /* ai trả phần này: Haustek (ví ở đây) hay label của bạn (theo hợp đồng label) */
+      traBoi: tuTra ? "label" : "haustek", labelTra: tuTra ? LABELS[ARTISTS[partyId].labelId].name : null,
       paidToArtists: role === "label" ? a.artist : null,
       prevTotal: prev ? prev.total : null, prevStreams: prev ? prev.streams : null,
       prevRevenue: prev ? revenueAgg(prev, role) : null,
@@ -7330,7 +7583,7 @@ const api = {
         recoupedThisPeriod: payoutRow ? payoutRow.recoup : 0,
         periodsLeft: (() => {
           const left = payoutRow ? payoutRow.advanceLeft : advLeft;
-          const rate = payoutRow ? payoutRow.recoup : Math.min(advLeft, a.artist);
+          const rate = payoutRow ? payoutRow.recoup : Math.min(advLeft, role === "label" ? a.labelCut : a.artist);
           return left <= 0 ? 0 : Math.max(1, Math.ceil(left / Math.max(rate, 1)));
         })()
       } : null,
@@ -7512,6 +7765,10 @@ const api = {
   splitsOf(role, partyId, trackId) { assertParty(role, partyId); const sc = scopeOf(role, partyId, "rec"); if (sc && !sc.includes(+trackId)) throw new Error("Không có quyền"); return scrub(splitsOf(+trackId, role, partyId)); },
   setSplit(role, partyId, trackId, c) { assertParty(role, partyId); return scrub(setSplit(role, partyId, trackId, c, partyClientIdOf(role, partyId))); },
   removeSplit(role, partyId, trackId, email) { assertParty(role, partyId); return scrub(removeSplit(role, partyId, trackId, email, partyClientIdOf(role, partyId))); },
+  /* người được mời nhận lời mời từ chính tài khoản của mình; email phải là
+     email đăng nhập đang giữ bên (role, partyId) */
+  acceptSplit(role, partyId, trackId, email) { assertParty(role, partyId); return scrub(acceptSplitTuCong(role === "label" ? "L:" + partyId : "A:" + partyId, email, trackId)); },
+  loiMoiChiaSe(role, partyId) { assertParty(role, partyId); return scrub(loiMoiChiaSeCua(role === "label" ? "L:" + partyId : "A:" + partyId)); },
   quality(role, partyId) { assertParty(role, partyId); return scrub(qualityReport(role, partyId)); },
   disputeAlert(role, partyId, trackId, note) { assertParty(role, partyId); return scrub(setAlertStatus(trackId, "disputed", note, partyClientIdOf(role, partyId), role, partyId)); },
   monetization(role, partyId, trackId) { assertParty(role, partyId); const sc = scopeOf(role, partyId, "rec"); if (sc && !sc.includes(+trackId)) throw new Error("Không có quyền"); return scrub(monetizationOf(+trackId)); },
@@ -7598,7 +7855,7 @@ const api = {
     const name = chuoi(o && o.name); if (!name) throw new Error("Thiếu nghệ danh");
     if (ARTISTS.some(a => a.name.toLowerCase() === name.toLowerCase())) throw new Error("Đã có nghệ sĩ tên này trong hệ thống");
     const id = ARTISTS.length;
-    const rec = { id, key: "A:" + id, clientId: "HTK-A" + String(id + 1).padStart(4, "0"), name, labelId: partyId, writer: !!(o && o.writer), indieRate: 0.85, kind: "artist", them: true, addedAt: isoDate(ASOF),
+    const rec = { id, key: "A:" + id, clientId: "HTK-A" + String(id + 1).padStart(4, "0"), name, labelId: partyId, writer: !!(o && o.writer), kind: "artist", them: true, addedAt: isoDate(ASOF),
       realName: chuoi(o && o.realName), spotify: chuoi(o && o.spotify), apple: chuoi(o && o.apple) };
     ARTISTS.push(rec); state.extraParties.push(Object.assign({}, rec));
     if (chuoi(o && o.email)) { try { admin.accounts.add(chuoi(o.email), "artist", rec.key); } catch (e) { /* email trùng thì bỏ qua, nghệ sĩ vẫn được thêm */ } }
@@ -7964,7 +8221,25 @@ function barChart(canvas, points, opt) {
    Hai kỳ đó chính là việc phải làm ở màn hình "Đối chiếu & duyệt kỳ",
    và cũng là lý do cổng đối tác của label / nghệ sĩ chưa thấy chúng.
    ===================================================================== */
+/* Hai người cộng tác mẫu đã nhận lời mời: một người chỉ là "người nhận"
+   (tài khoản HTK-N…), một người là nghệ sĩ đã có tài khoản — để bảng chi
+   trả có cả hai kiểu bên nhận. Gieo TRƯỚC khi duyệt các kỳ lịch sử. */
+function seedNguoiNhan() {
+  if (state.accounts.some(a => a.role === "nhan")) return;
+  const st = lazyState("splits", {});
+  const indie = state.accounts.filter(a => a.role === "artist" && a.status === "active").map(a => +a.partyKey.slice(2)).filter(id => ARTISTS[id] && ARTISTS[id].labelId < 0);
+  const bai = [];
+  indie.forEach(id => { if (bai.length >= 2) return; const i = idxOf(byArtist, id).find(x => baseSplits(x).length && grossRec(x, P - 3) > 0); if (i != null) bai.push(i); });
+  /* người đầu tiên của mỗi bài không có ngưỡng thu hồi, để tiền đổi chủ ngay từ kỳ đầu */
+  if (bai[0] != null) { st[bai[0]] = baseSplits(bai[0]).map((c, k) => k === 0 ? Object.assign({}, c, { recoup: 0 }) : c); acceptSplit(bai[0], st[bai[0]][0].email, "khởi tạo"); }
+  if (bai[1] != null) {
+    const ns = state.accounts.find(a => a.role === "artist" && a.status === "active" && +a.partyKey.slice(2) !== tArtist[bai[1]]);
+    st[bai[1]] = baseSplits(bai[1]).map((c, k) => k === 0 && ns ? Object.assign({}, c, { name: partyName(ns.partyKey), email: ns.email, recoup: 0 }) : c);
+    acceptSplit(bai[1], st[bai[1]][0].email, "khởi tạo");
+  }
+}
 if (FRESH) {
+  seedNguoiNhan();
   for (let pi = 0; pi <= P - 3; pi++) {
     try {
       fx.lock(pi, 25800 + pi * 30);

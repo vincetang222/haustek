@@ -120,7 +120,8 @@ HT.dangKy({
       return {
         key: r.partyKey, ten: A.partyName(r.partyKey), ma: A.partyClientId(r.partyKey),
         loai: r.kind, earned: r.earned, carryIn: r.carryIn, recoup: r.recoup,
-        payable: r.payable, carryOut: r.carryOut, ung: r.advanceLeft
+        payable: r.payable, carryOut: r.carryOut, ung: r.advanceLeft,
+        chiaSeRa: r.chiaSeRa || 0, chiaSeVao: r.chiaSeVao || 0
       };
     });
     var loc = ds.filter(function (r) {
@@ -229,7 +230,9 @@ HT.dangKy({
         '<option value="">' + HM.esc(t('tatCaLoai')) + '</option>' +
         '<option value="label"' + (LOC.loai === 'label' ? ' selected' : '') + '>Label</option>' +
         '<option value="artist"' + (LOC.loai === 'artist' ? ' selected' : '') + '>' +
-          HM.esc(c.lang === 'vi' ? 'Nghệ sĩ' : 'Artist') + '</option></select>' +
+          HM.esc(c.lang === 'vi' ? 'Nghệ sĩ' : 'Artist') + '</option>' +
+        '<option value="nguoiNhan"' + (LOC.loai === 'nguoiNhan' ? ' selected' : '') + '>' +
+          HM.esc(c.lang === 'vi' ? 'Người nhận chia sẻ' : 'Split payee') + '</option></select>' +
       '<div class="sp"></div>' +
       '<button type="button" class="btn sm pri" data-xuat>' + HM.icon('down2') + HM.esc(t('xuat')) + '</button>' +
       '</div>';
@@ -252,9 +255,11 @@ HT.dangKy({
       ],
       veDong: function (r) {
         return '<td><div class="t-ttl">' + HM.esc(HM.dai(r.ten, 30)) + '</div>' +
-            '<div class="t-sub">' + HM.esc(r.ma) + '</div></td>' +
-          '<td>' + HM.tag(r.loai === 'label' ? 'Label' : (c.lang === 'vi' ? 'Nghệ sĩ' : 'Artist'),
-            r.loai === 'label' ? 'info' : 'link') + '</td>' +
+            '<div class="t-sub">' + HM.esc(r.ma) +
+            (r.chiaSeRa > 0.004 ? ' · ' + HM.esc((c.lang === 'vi' ? 'chia cho cộng tác −' : 'to collaborators −') + c.tien2(r.chiaSeRa)) : '') +
+            (r.chiaSeVao > 0.004 ? ' · ' + HM.esc((c.lang === 'vi' ? 'nhận chia sẻ +' : 'from splits +') + c.tien2(r.chiaSeVao)) : '') + '</div></td>' +
+          '<td>' + HM.tag(r.loai === 'label' ? 'Label' : r.loai === 'nguoiNhan' ? (c.lang === 'vi' ? 'Người nhận' : 'Payee') : (c.lang === 'vi' ? 'Nghệ sĩ' : 'Artist'),
+            r.loai === 'label' ? 'info' : r.loai === 'nguoiNhan' ? 'warn' : 'link') + '</td>' +
           '<td class="num">' + HM.esc(c.tien2(r.earned)) + '</td>' +
           '<td class="num">' + (r.carryIn > 0.004 ? HM.esc(c.tien2(r.carryIn)) : '<span class="nil">—</span>') + '</td>' +
           '<td class="num">' + (r.recoup > 0.004 ? '<span class="neg">−' + HM.esc(c.tien2(r.recoup)) + '</span>' : '<span class="nil">—</span>') + '</td>' +
@@ -557,7 +562,7 @@ function dungBangBk(root, c) {
     ],
     veDong: function (r) {
       return '<td><div class="t-ttl">' + HM.esc(HM.dai(r.name, 30)) + '</div><div class="t-sub">' + HM.esc(r.clientId) + '</div></td>' +
-        '<td>' + HM.tag(r.kind === 'label' ? 'Label' : (c.lang === 'vi' ? 'Nghệ sĩ' : 'Artist'), r.kind === 'label' ? 'info' : 'link') + '</td>' +
+        '<td>' + HM.tag(r.kind === 'label' ? 'Label' : r.kind === 'nguoiNhan' ? (c.lang === 'vi' ? 'Người nhận' : 'Payee') : (c.lang === 'vi' ? 'Nghệ sĩ' : 'Artist'), r.kind === 'label' ? 'info' : r.kind === 'nguoiNhan' ? 'warn' : 'link') + '</td>' +
         '<td class="num">' + HM.esc(c.tien2(r.earned)) + '</td>' +
         '<td class="num band"><b>' + HM.esc(c.tien2(r.credit)) + '</b></td>' +
         '<td>' + (r.pdf

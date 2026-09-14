@@ -190,7 +190,7 @@ function veTaiKhoan(c, tk) {
         HM.esc(t('tim')) + '" value="' + HM.esc(LOC.tim) + '"></div>' +
       '<select class="in" data-vt style="width:auto;height:34px">' +
         '<option value="">' + HM.esc(t('moiVt')) + '</option>' +
-        ['admin', 'label', 'artist'].map(function (v) {
+        ['admin', 'label', 'artist', 'nhan'].map(function (v) {
           return '<option value="' + v + '"' + (LOC.vt === v ? ' selected' : '') + '>' + v + '</option>';
         }).join('') + '</select></div>' +
       '<div class="tw"><table class="t"><thead><tr>' +
@@ -201,10 +201,11 @@ function veTaiKhoan(c, tk) {
       loc.map(function (a) {
         return '<tr><td><div class="t-ttl mono">' + HM.esc(a.email) + '</div>' +
             '<div class="t-sub">' + HM.esc(a.id) + '</div></td>' +
-          '<td>' + HM.tag(a.role, a.role === 'admin' ? 'no' : a.role === 'label' ? 'info' : 'link') + '</td>' +
+          '<td>' + HM.tag(a.role, a.role === 'admin' ? 'no' : a.role === 'label' ? 'info' : a.role === 'nhan' ? 'warn' : 'link') + '</td>' +
           '<td>' + (a.partyKey
             ? '<div class="t-ttl">' + HM.esc(HM.dai(A.partyName(a.partyKey), 26)) + '</div>' +
-              '<div class="t-sub">' + HM.esc(a.partyKey) + ' · ' + HM.esc(A.partyClientId(a.partyKey)) + '</div>' +
+              '<div class="t-sub">' + HM.esc(a.partyKey) + ' · ' + HM.esc(A.partyClientId(a.partyKey)) +
+              ((a.ben || []).length > 1 ? ' · +' + ((a.ben || []).length - 1) + ' ' + HM.esc(c.lang === 'vi' ? 'bên khác' : 'more') : '') + '</div>' +
               nhanLabel(a.partyKey)
             : '<span class="muted">' + HM.esc(c.lang === 'vi' ? 'toàn hệ thống' : 'whole system') + '</span>') + '</td>' +
           '<td>' + HM.tag(a.status === 'active' ? t('hd') : a.status === 'invited' ? t('moi') : t('khoa'),
@@ -531,15 +532,15 @@ function hoiTaiKhoan(c) {
       '<input class="in" data-o="email" type="email" placeholder="ten@vidu.vn">' +
       '<label class="fld" style="margin-top:12px">' + HM.esc(c.t('hoiVt')) + '</label>' +
       '<select class="in" data-o="vt"><option value="artist">artist</option>' +
-      '<option value="label">label</option><option value="admin">admin</option></select>' +
+      '<option value="label">label</option><option value="nhan">' + HM.esc(c.lang === 'vi' ? 'nhan · người nhận chia sẻ' : 'nhan · split payee') + '</option><option value="admin">admin</option></select>' +
       '<label class="fld" style="margin-top:12px">' + HM.esc(c.t('hoiBen')) + '</label>' +
       '<input class="in" data-timben placeholder="' +
       HM.esc(c.lang === 'vi' ? 'Nhập tên hoặc mã bên thụ hưởng' : 'Type a payee name or code') + '">' +
       '<input type="hidden" data-o="key" value="">' +
       '<div data-kq style="margin-top:8px;max-height:180px;overflow:auto"></div>' +
       '<div class="hint">' + HM.esc(c.lang === 'vi'
-        ? 'Vai trò admin không gắn với bên thụ hưởng nào và xem được toàn hệ thống.'
-        : 'An admin account binds to no payee — they see the whole system.') + '</div>',
+        ? 'Vai trò admin không gắn với bên thụ hưởng nào và xem được toàn hệ thống. Vai "nhan" chỉ có ví để nhận tiền chia sẻ, mã HTK-N····.'
+        : 'An admin account binds to no payee — they see the whole system. A "nhan" account only has a wallet for split payouts, code HTK-N····.') + '</div>',
     dong: c.t('themTk'),
     khiMo: function (bg) {
       var o = bg.querySelector('[data-timben]'), kq = bg.querySelector('[data-kq]');
@@ -576,7 +577,7 @@ function hoiTaiKhoan(c) {
   }).then(function (r) {
     if (!r) return;
     try {
-      A.accounts.add(r.email, r.vt, r.vt === 'admin' ? null : r.key);
+      A.accounts.add(r.email, r.vt, r.vt === 'admin' || r.vt === 'nhan' ? null : r.key);
       c.thongBao(c.lang === 'vi' ? 'Đã cấp tài khoản cho ' + r.email : 'Account created', 'ok');
       c.veLai();
     } catch (e) { c.thongBao(e.message, 'no'); }

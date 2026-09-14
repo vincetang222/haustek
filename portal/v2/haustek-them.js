@@ -22,6 +22,7 @@ var CHU = {
     cBai: 'Bài hát', cTk: 'Tài khoản', cMuc: 'Mức', cTinHieu: 'Tín hiệu vượt ngưỡng', cLuot: 'Lượt nghe 7 ngày', cCo: 'Cờ nền tảng', cTt: 'Trạng thái', cThaoTac: 'Thao tác',
     lichSu: 'Diễn biến', chuaCo: 'Chưa có thao tác nào.',
     chuSoHuu: 'Chủ bản ghi', cong: 'Người cộng tác', cPhan: 'Phần chia', cDaChia: 'Đã chia', cThuHoi: 'Thu hồi', them: 'Thêm người', bo: 'Bỏ', nhan: 'Đã nhận', moi: 'Chờ nhận', xacNhanThay: 'Xác nhận thay',
+    haustekTra: 'Haustek trả thẳng · {id}', chuaVi: 'chưa có ví nhận',
     thuHoiCon: 'còn {n} để thu hồi', thuHoiXong: 'đã thu hồi đủ', chuaChia: 'chưa có người cộng tác',
     ngRule: 'Luật trả tiền của nền tảng', datNguong: 'đạt', duoiNguong: 'dưới ngưỡng', uocTinh: 'ước tính', khongNguong: 'không có ngưỡng',
     mdDiem: 'Điểm metadata', mdThieu: 'thiếu {n} mục', mdDu: 'đủ', mdChan: 'giữ lại trước khi giao', mdGoiY: 'Cách sửa',
@@ -46,6 +47,7 @@ var CHU = {
     cBai: 'Track', cTk: 'Account', cMuc: 'Level', cTinHieu: 'Signals over threshold', cLuot: 'Streams, 7 days', cCo: 'Platform flag', cTt: 'Status', cThaoTac: 'Actions',
     lichSu: 'History', chuaCo: 'No actions yet.',
     chuSoHuu: 'Owner', cong: 'Collaborators', cPhan: 'Share', cDaChia: 'Paid out', cThuHoi: 'Recoup', them: 'Add person', bo: 'Remove', nhan: 'Accepted', moi: 'Invited', xacNhanThay: 'Accept on behalf',
+    haustekTra: 'Paid directly by Haustek · {id}', chuaVi: 'no payee wallet yet',
     thuHoiCon: '{n} left to recoup', thuHoiXong: 'fully recouped', chuaChia: 'no collaborators',
     ngRule: 'Platform payout rules', datNguong: 'met', duoiNguong: 'below threshold', uocTinh: 'estimate', khongNguong: 'no threshold',
     mdDiem: 'Metadata score', mdThieu: '{n} missing', mdDu: 'complete', mdChan: 'held before delivery', mdGoiY: 'How to fix',
@@ -128,7 +130,8 @@ function dongCong(cg, o) {
   o = o || {};
   var tt = cg.status === 'accepted' ? HM.tag(t('nhan'), 'ok') : HM.tag(t('moi'), 'warn');
   var th = cg.recoup ? (cg.recouping ? '<span class="muted" style="font-size:11.5px">' + esc(t('thuHoiCon').replace('{n}', HT.fmt.usd0(cg.recoup - cg.recouped))) + '</span>' : '<span class="pos" style="font-size:11.5px">' + esc(t('thuHoiXong')) + '</span>') : '';
-  return '<div class="cong">' + HM.hinh(cg.name, cg.email, 'sm') + '<div class="cong-t"><b>' + esc(cg.name) + '</b><span>' + esc(song(cg, 'roleLabel') + ' · ' + cg.email) + '</span>' + th + '</div>' +
+  var tra = cg.status === 'accepted' ? '<span class="' + (cg.haustekTra ? 'pos' : 'muted') + '" style="font-size:11.5px">' + esc(cg.haustekTra ? t('haustekTra').replace('{id}', cg.nhanClientId || '') : t('chuaVi')) + '</span>' : '';
+  return '<div class="cong">' + HM.hinh(cg.name, cg.email, 'sm') + '<div class="cong-t"><b>' + esc(cg.name) + '</b><span>' + esc(song(cg, 'roleLabel') + ' · ' + cg.email) + '</span>' + th + tra + '</div>' +
     '<div class="cong-r"><b>' + esc(n(cg.pct)) + '%</b>' + tt + (o.nut ? o.nut(cg) : '') + '</div></div>';
 }
 /* bảng chia sẻ; opts: { noiBo, tenTk(partyKey), tien(v), nutCong(row, cg), nutBai(row) } */

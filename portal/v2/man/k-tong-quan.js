@@ -26,7 +26,7 @@ HT.dangKy({
       nhomBai: 'Bài hát', nhomLabel: 'Label', nhomTaiChinh: 'Tài chính', nhomHoTro: 'Hỗ trợ',
       navTong: 'Tổng quan', h1: 'Tổng quan',
       banGhi: 'Doanh thu bản ghi', tacQuyen: 'Tác quyền',
-      veTay: 'Thu nhập kỳ này', veTayLb: 'Phần label được hưởng kỳ này',
+      veTay: 'Thu nhập kỳ này', veTayLb: 'Phần label được hưởng kỳ này', labelTra: 'do {l} thanh toán theo hợp đồng label',
       doanhThu: 'Doanh thu', doanhThuMo: 'phần nghệ sĩ và phần label cộng lại',
       traNs: 'Thanh toán cho nghệ sĩ', cuaDoanhThu: 'của doanh thu',
       luot: 'Lượt nghe', bai: 'Bài hát có doanh thu', baiMo: 'trong kỳ này',
@@ -76,7 +76,7 @@ HT.dangKy({
       nhomBai: 'Tracks', nhomLabel: 'Label', nhomTaiChinh: 'Finance', nhomHoTro: 'Help',
       navTong: 'Overview', h1: 'Overview',
       banGhi: 'Recording revenue', tacQuyen: 'Publishing',
-      veTay: 'Yours this period', veTayLb: 'Label keeps this period',
+      veTay: 'Yours this period', veTayLb: 'Label keeps this period', labelTra: 'paid by {l} under your label contract',
       doanhThu: 'Revenue', doanhThuMo: 'artists’ and label’s parts combined',
       traNs: 'Paid to artists', cuaDoanhThu: 'of revenue',
       luot: 'Streams', bai: 'Earning tracks', baiMo: 'this period',
@@ -185,6 +185,7 @@ HT.dangKy({
     /* ---- ô số: một ô lớn, còn lại mỗi ô một câu ---- */
     html += HM.so([
       { l: la ? t('veTayLb') : t('veTay'), v: HT.fmt.usd(s.total), lon: true,
+        s: s.traBoi === 'label' ? t('labelTra').replace('{l}', s.labelTra || 'label') : undefined,
         tia: kyMo.map(function (x) { return x.value; }),
         d: HM.lech(s.total, s.prevTotal, s.prevLabel) },
       la ? { l: t('doanhThu'), v: HT.fmt.usd0(s.revenue), s: t('doanhThuMo'),

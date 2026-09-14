@@ -381,9 +381,8 @@ function moBanGhi(c, i) {
   var buoc = [
     { l: vi ? 'Doanh thu gộp' : 'Gross', v: sp.gross, kind: 'top' },
     { l: vi ? 'Phí dịch vụ' : 'Fee', v: -sp.fee, kind: 'out', nt: HT.fmt.pct(A.cfg.HAUSTEK_FEE) },
-    { l: tr.label ? 'Label' : 'Haustek', v: -sp.labelCut, kind: 'out',
-      nt: tr.label || (vi ? 'phần Haustek theo hợp đồng độc lập' : 'extra share on independents') }
-  ];
+    tr.label ? { l: 'Label', v: -sp.labelCut, kind: 'out', nt: tr.label } : null
+  ].filter(Boolean);
   if (sp.producer > 0.004) buoc.push({ l: 'Producer', v: -sp.producer, kind: 'out', nt: HT.fmt.pct(tr.producerPts) });
   buoc.push({ l: vi ? 'Nghệ sĩ' : 'Artist', v: sp.artist, kind: 'final' });
 

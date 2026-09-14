@@ -29,7 +29,7 @@ HT.dangKy({
 
   chu: {
     vi: {
-      themDt: 'Thêm đối tác', fLoaiDt: 'Loại đối tác', fTenDt: 'Tên đối tác', fLabelMe: 'Thuộc label', fLabelMeHint: 'Nghệ sĩ độc lập thì để trống.', fTu: 'Ngày ký hợp đồng', fDen: 'Ngày hết hạn', fDenHint: 'Bỏ trống thì mặc định 2 năm.', fPhan: 'Phần đối tác hưởng (%)', fPhanHint: 'Bỏ trống thì dùng mức mặc định của loại đối tác.', fNvPt: 'Người phụ trách', fEmailDt: 'Email đăng nhập cổng', fEmailHint: 'Có email thì cấp luôn tài khoản cổng, trạng thái Đã mời.', fGhiDt: 'Ghi chú hợp đồng', daThemDt: 'Đã thêm {t} · {id}', khongLabel: 'Nghệ sĩ độc lập',
+      themDt: 'Thêm đối tác', fLoaiDt: 'Loại đối tác', fTenDt: 'Tên đối tác', fLabelMe: 'Thuộc label', fLabelMeHint: 'Nghệ sĩ độc lập thì để trống.', fTu: 'Ngày ký hợp đồng', fDen: 'Ngày hết hạn', fDenHint: 'Bỏ trống thì mặc định 2 năm.', fPhan: 'Phần nghệ sĩ trong label hưởng (%)', fPhanHint: 'Chỉ với label. Nghệ sĩ độc lập nhận 100% sau phí Haustek.', fPhi: 'Phí Haustek theo hợp đồng (%)', fPhiHint: 'Bỏ trống thì dùng mức chung.', fTuTra: 'Label tự thanh toán cho nghệ sĩ của mình', fTuTraHint: 'Bật thì Haustek trả trọn phần sau phí cho label; tắt thì Haustek trả thẳng phần nghệ sĩ.', fNvPt: 'Người phụ trách', fEmailDt: 'Email đăng nhập cổng', fEmailHint: 'Có email thì cấp luôn tài khoản cổng, trạng thái Đã mời.', fGhiDt: 'Ghi chú hợp đồng', daThemDt: 'Đã thêm {t} · {id}', khongLabel: 'Nghệ sĩ độc lập',
       nhomDoiTac: 'Đối tác', navDoiTac: 'Đối tác', h1: 'Đối tác',
       mo: 'Label, label con và nghệ sĩ đang ký với Haustek: người phụ trách, hạng, doanh thu quý, hạn hợp đồng, tài khoản cổng.',
       kTong: 'Đối tác', kQuanLy: 'Đang quản lý', kGiaHan: 'Sắp hết hạn hợp đồng', kGiaHanS: 'trong 90 ngày',
@@ -45,7 +45,7 @@ HT.dangKy({
       labelCon: '{n} label con', khong: 'Không có đối tác nào khớp bộ lọc', khongMo: 'Đổi bộ lọc phía trên.',
       /* ngăn */
       dNv: 'Người phụ trách', dDoi: 'Đổi người phụ trách…', daDoi: 'Đã đổi người phụ trách',
-      dKy: 'Ký hợp đồng', dHet: 'Hết hạn hợp đồng', dTyLe: 'Tỷ lệ nghệ sĩ được hưởng', dHang: 'Xếp hạng',
+      dKy: 'Ký hợp đồng', dHet: 'Hết hạn hợp đồng', dTyLe: 'Tỷ lệ nghệ sĩ được hưởng', dHang: 'Xếp hạng', dTra: 'Trả cho nghệ sĩ', traThang: 'Haustek trả thẳng nghệ sĩ', traLabel: 'Label tự trả nghệ sĩ', dTyLeDl: 'Nhận 100% sau phí Haustek', daDoiTra: 'Đã đổi cách trả cho nghệ sĩ',
       dHangMo: 'A từ $150,000 gộp một quý · B từ $40,000 · C còn lại',
       dTk: 'Tài khoản cổng', dNh: 'Tài khoản ngân hàng', coNh: 'đã khai', chuaNh: 'chưa khai',
       dVi: 'Ví của đối tác', viKhaDung: 'Khả dụng', viCho: 'Đang xử lý', viDaRut: 'Đã rút',
@@ -61,7 +61,7 @@ HT.dangKy({
       kdQuyTruoc: 'quý trước'
     },
     en: {
-      themDt: 'Add a partner', fLoaiDt: 'Partner type', fTenDt: 'Partner name', fLabelMe: 'Belongs to label', fLabelMeHint: 'Leave empty for an independent artist.', fTu: 'Contract signed', fDen: 'Contract ends', fDenHint: 'Defaults to 2 years when empty.', fPhan: 'Partner share (%)', fPhanHint: 'Leave empty for the default of this partner type.', fNvPt: 'Account manager', fEmailDt: 'Portal login email', fEmailHint: 'With an email the portal account is created right away as Invited.', fGhiDt: 'Contract note', daThemDt: 'Added {t} · {id}', khongLabel: 'Independent artist',
+      themDt: 'Add a partner', fLoaiDt: 'Partner type', fTenDt: 'Partner name', fLabelMe: 'Belongs to label', fLabelMeHint: 'Leave empty for an independent artist.', fTu: 'Contract signed', fDen: 'Contract ends', fDenHint: 'Defaults to 2 years when empty.', fPhan: 'Artist share within the label (%)', fPhanHint: 'Labels only. Independent artists receive 100% after the Haustek fee.', fPhi: 'Haustek fee under the contract (%)', fPhiHint: 'Leave empty for the standard rate.', fTuTra: 'Label pays its own artists', fTuTraHint: 'On: Haustek pays the label the whole net. Off: Haustek pays the artist share directly.', fNvPt: 'Account manager', fEmailDt: 'Portal login email', fEmailHint: 'With an email the portal account is created right away as Invited.', fGhiDt: 'Contract note', daThemDt: 'Added {t} · {id}', khongLabel: 'Independent artist',
       nhomDoiTac: 'Partners', navDoiTac: 'Partners', h1: 'Partners',
       mo: 'Labels, sub-labels and artists signed with Haustek: manager, class, quarter revenue, contract end, portal account.',
       kTong: 'Partners', kQuanLy: 'Managed', kGiaHan: 'Contracts ending', kGiaHanS: 'within 90 days',
@@ -76,7 +76,7 @@ HT.dangKy({
       conNgay: '{n} days left', daHet: 'expired', chuaCoTk: 'none', chuaDn: 'never logged in', lanCuoi: 'last seen {d}',
       labelCon: '{n} sub-labels', khong: 'No partner matches the filters', khongMo: 'Change the filters above.',
       dNv: 'Account manager', dDoi: 'Change manager…', daDoi: 'Account manager changed',
-      dKy: 'Signed', dHet: 'Contract ends', dTyLe: 'Artist share rate', dHang: 'Classification',
+      dKy: 'Signed', dHet: 'Contract ends', dTyLe: 'Artist share rate', dHang: 'Classification', dTra: 'Artists paid by', traThang: 'Haustek pays artists directly', traLabel: 'Label pays its own artists', dTyLeDl: '100% after the Haustek fee', daDoiTra: 'Artist payment route changed',
       dHangMo: 'A from $150,000 gross a quarter · B from $40,000 · C otherwise',
       dTk: 'Portal account', dNh: 'Bank account', coNh: 'on file', chuaNh: 'missing',
       dVi: 'Partner wallet', viKhaDung: 'Available', viCho: 'In progress', viDaRut: 'Withdrawn',
@@ -128,7 +128,8 @@ HT.dangKy({
         { k: 'labelId', l: t('fLabelMe'), kieu: 'select', opts: [['', t('khongLabel')]].concat(A.labels.map(function (l) { return [l.id, l.name + ' · ' + l.clientId]; })), hint: t('fLabelMeHint') },
         { k: 'managerId', l: t('fNvPt'), kieu: 'select', opts: sales.map(function (x) { return [x.id, x.name]; }), v: me.role === 'sales' ? me.id : (sales[0] ? sales[0].id : ''), kbb: false },
         { k: 'from', l: t('fTu'), kieu: 'date', v: new Date().toISOString().slice(0, 10), kbb: false }, { k: 'to', l: t('fDen'), kieu: 'date', hint: t('fDenHint') },
-        { k: 'share', l: t('fPhan'), kieu: 'number', min: 1, max: 99, step: 1, hint: t('fPhanHint') }, { k: 'email', l: t('fEmailDt'), kieu: 'email', hint: t('fEmailHint') },
+        { k: 'share', l: t('fPhan'), kieu: 'number', min: 1, max: 99, step: 1, hint: t('fPhanHint') }, { k: 'feePct', l: t('fPhi'), kieu: 'number', min: 0, max: 99, step: 0.5, hint: t('fPhiHint') },
+        { k: 'labelTuTra', l: t('fTuTra'), kieu: 'check', hint: t('fTuTraHint') }, { k: 'email', l: t('fEmailDt'), kieu: 'email', hint: t('fEmailHint') },
         { k: 'note', l: t('fGhiDt'), rong: true }
       ] }).then(function (f) {
         if (!f) return;
@@ -304,7 +305,10 @@ function moDoiTac(c, r) {
         : { t: t('dNv'), v: r.managerName || '—' },
       { t: t('dHang'), v: r.classification + ' · ' + t('dHangMo') },
       r.parentId >= 0 && r.kind === 'sublabel' ? { t: t('dCha'), v: A.partyName('L:' + r.parentId) } : null,
-      { t: t('dTyLe'), v: HT.fmt.pct(r.rate) },
+      { t: t('dTyLe'), v: r.kind === 'artist' ? t('dTyLeDl') : HT.fmt.pct(r.rate) },
+      r.kind !== 'artist' ? (A.quyen.nhom('doiTacTao')
+        ? { t: t('dTra'), vHtml: true, v: '<select class="inline-sel" data-tu-tra><option value="0"' + (r.labelTuTra ? '' : ' selected') + '>' + HM.esc(t('traThang')) + '</option><option value="1"' + (r.labelTuTra ? ' selected' : '') + '>' + HM.esc(t('traLabel')) + '</option></select>' }
+        : { t: t('dTra'), v: r.labelTuTra ? t('traLabel') : t('traThang') }) : null,
       { t: t('dKy'), v: r.signedAt ? HT.fmt.date(r.signedAt) : '—' },
       { t: t('dHet'), v: r.contractEnd ? HT.fmt.date(r.contractEnd) + ' · ' + (r.daysToEnd < 0 ? t('daHet') : t('conNgay').replace('{n}', HT.fmt.n(r.daysToEnd))) : '—',
         manh: r.daysToEnd != null && r.daysToEnd <= 90 },
@@ -342,6 +346,10 @@ function moDoiTac(c, r) {
         HB.gan(dr);
         HM.doi(dr, '[data-nv-moi]', function (el) {
           try { A.parties.setManager(pk, el.value, me.email); c.thongBao(t('daDoi'), 'ok'); c.veLai(); }
+          catch (e) { c.thongBao(e.message, 'no'); }
+        });
+        HM.doi(dr, '[data-tu-tra]', function (el) {
+          try { A.parties.datLabelTuTra(pk, el.value === '1', me.email); HM.quenHet(); c.thongBao(t('daDoiTra'), 'ok'); c.veLai(); }
           catch (e) { c.thongBao(e.message, 'no'); }
         });
         HM.bam(dr, '[data-tao-tk]', function () { if (HT.moTicketNoiBo) HT.moTicketNoiBo(c, { partyKey: pk, name: r.name, clientId: r.clientId }); });

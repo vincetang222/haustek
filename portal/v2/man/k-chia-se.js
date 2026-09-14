@@ -34,7 +34,9 @@ HT.dangKy({
       hoiThem: 'Thêm người cộng tác', hoiThemMo: 'Người được mời nhận email; phần chia áp từ kỳ sau khi họ nhận. Tổng không quá 100%.',
       fIsrc: 'ISRC hoặc tên bài hát', fTen: 'Tên người cộng tác', fEmail: 'Email', fVai: 'Vai trò', fPct: 'Phần trăm trên số tiền của bạn', fRecoup: 'Ngưỡng thu hồi (USD, để 0 nếu không)', gui: 'Gửi lời mời',
       daThem: 'Đã gửi lời mời cho {e}', daBo: 'Đã bỏ {e} khỏi bài', khongThayBai: 'Không tìm thấy bài hát khớp “{q}” trong danh mục của bạn',
-      hoiBo: 'Bỏ {e} khỏi “{t}”?', hoiBoMo: 'Phần chia dừng từ kỳ tiếp theo; các kỳ đã chia không đổi.'
+      hoiBo: 'Bỏ {e} khỏi “{t}”?', hoiBoMo: 'Phần chia dừng từ kỳ tiếp theo; các kỳ đã chia không đổi.',
+      moiToi: 'Bạn được mời cộng tác', moiToiMo: 'Chủ bản ghi mời bạn nhận một phần tiền của bài. Nhận lời thì từ kỳ duyệt kế tiếp phần đó vào ví này.',
+      cChu: 'Chủ bản ghi', cVai: 'Vai', nhanLoi: 'Nhận lời', daNhanLoi: 'Đã nhận lời mời trên “{t}”', daNhan: 'Đã nhận', choNhan: 'Chờ bạn nhận'
     },
     en: {
       navChiaSe: 'Royalty splits', h1: 'Royalty splits',
@@ -46,7 +48,9 @@ HT.dangKy({
       hoiThem: 'Add collaborator', hoiThemMo: 'The invitee gets an email; the split applies from the next period after acceptance. Total cannot exceed 100%.',
       fIsrc: 'ISRC or track title', fTen: 'Collaborator name', fEmail: 'Email', fVai: 'Role', fPct: 'Percentage of your earnings', fRecoup: 'Recoupment amount (USD, 0 for none)', gui: 'Send invitation',
       daThem: 'Invitation sent to {e}', daBo: 'Removed {e} from the track', khongThayBai: 'No track matching “{q}” in your catalogue',
-      hoiBo: 'Remove {e} from “{t}”?', hoiBoMo: 'The split stops from the next period; already-paid periods do not change.'
+      hoiBo: 'Remove {e} from “{t}”?', hoiBoMo: 'The split stops from the next period; already-paid periods do not change.',
+      moiToi: 'You are invited to collaborate', moiToiMo: 'A track owner offered you a share of that track. Accept and, from the next approved period, it lands in this wallet.',
+      cChu: 'Owner', cVai: 'Role', nhanLoi: 'Accept', daNhanLoi: 'Accepted the invitation on “{t}”', daNhan: 'Accepted', choNhan: 'Awaiting you'
     }
   },
 
@@ -73,6 +77,17 @@ HT.dangKy({
       [['all', t('locAll')], ['moi', t('locMoi')], ['thuhoi', t('locThuHoi')]].map(function (x) { return '<button type="button" class="pill' + (LOC.loc === x[0] ? ' on' : '') + '" data-loc="' + x[0] + '">' + HM.esc(x[1]) + '</button>'; }).join('') +
       '<div class="srch">' + HM.icon('tim') + '<input type="search" data-tim placeholder="' + HM.esc(t('tim')) + '" value="' + HM.esc(LOC.tim) + '"></div>' +
       '</div>';
+    /* ---- lời mời gửi tới email đăng nhập của tôi ---- */
+    var lm = null; try { lm = api.loiMoiChiaSe(me.role, me.partyId); } catch (e) { lm = null; }
+    if (lm && lm.rows.length) {
+      html += HM.the({ h2: HM.esc(t('moiToi')), p: HM.esc(t('moiToiMo')), thoBody: true,
+        than: '<div class="tw"><table class="t"><thead><tr><th>' + HM.esc(t('cChu')) + '</th><th>' + HM.esc(t('cVai')) + '</th><th class="num">%</th><th></th></tr></thead><tbody>' +
+          lm.rows.map(function (r) {
+            return '<tr><td>' + HM.tenBia({ bia: r.trackId, ten: HM.dai(r.title, 30), phu: r.chu + ' · ' + r.isrc }) + '</td><td>' + HM.esc(c.song(r, 'roleLabel')) + '</td>' +
+              '<td class="num"><b>' + HM.esc(HT.fmt.n(r.pct)) + '%</b></td><td>' + (r.status === 'accepted' ? HM.tag(t('daNhan'), 'ok') :
+                '<button type="button" class="btn sm pri" data-nhan-loi="' + r.trackId + '|' + HM.esc(r.email) + '">' + HM.esc(t('nhanLoi')) + '</button>') + '</td></tr>';
+          }).join('') + '</tbody></table></div>' });
+    }
     html += HM.the({
       thoBody: true,
       than: !d.rows.length ? HM.trong({ icon: 'user', tieuDe: t('trong'), moTa: t('trongMo') })
@@ -86,6 +101,11 @@ HT.dangKy({
     HTM.ganTrang(root, LOC, c.veLai);
     HM.bam(root, '[data-loc]', function (el) { LOC.loc = el.getAttribute('data-loc'); LOC.trang = 0; c.veLai(); });
     HM.nhap(root, '[data-tim]', function (el) { LOC.tim = el.value; c.veLai(); var i = root.querySelector('[data-tim]'); if (i) { i.focus(); i.setSelectionRange(i.value.length, i.value.length); } });
+    HM.bam(root, '[data-nhan-loi]', function (el) {
+      var p = el.getAttribute('data-nhan-loi').split('|'), id = +p[0], email = p.slice(1).join('|');
+      try { api.acceptSplit(me.role, me.partyId, id, email); lamMoi(); c.thongBao(t('daNhanLoi').replace('{t}', (lm.rows.filter(function (x) { return x.trackId === id; })[0] || {}).title || id), 'ok'); c.veLai(); }
+      catch (e) { c.thongBao(e.message, 'no'); }
+    });
     HM.bam(root, '[data-them-moi]', function () { hoiThem(c, d, null); });
     HM.bam(root, '[data-them]', function (el) { hoiThem(c, d, +el.getAttribute('data-them')); });
     HM.bam(root, '[data-bo]', function (el) {
