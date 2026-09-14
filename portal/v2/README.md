@@ -385,6 +385,89 @@ Cổng đối tác không có và không nên có: bảng tính này đọc ra p
 giữ lại, phí môi giới và biên lợi nhuận. Đối tác muốn biết mình ứng được bao
 nhiêu thì vẫn dùng `k-tam-ung`, chạy trên `advanceOfferOf()` đã lược sạch.
 
+## Vòng 24: nhật ký đăng nhập, và hạ tầng lưu trữ cho 500.000 bài
+
+Chủ dự án thấy bên CRM có phần lưu địa chỉ IP mỗi lần người dùng đăng nhập
+và muốn áp dụng. Vòng này làm phần làm được, và nói thẳng phần không làm
+được.
+
+### 1 · Cột Địa chỉ IP có mặt, và luôn trống
+
+Bản mẫu chạy hoàn toàn trong trình duyệt. Trình duyệt biết **tên** của chính
+nó (`navigator.userAgent`) nhưng không biết **địa chỉ** của chính nó — địa
+chỉ là thứ đầu bên kia của kết nối đọc được, mà bản mẫu không có đầu bên
+kia. Muốn có số thì phải hỏi một dịch vụ ngoài, tức gửi dấu vết của người
+dùng ra bên thứ ba để trang trí một bản mẫu; cổng này lại có bài kiểm cấm
+mọi lời gọi mạng (`v2-khong-mang.js`).
+
+Nên cột Địa chỉ IP có mặt trong bảng, và mọi ô đều in **"chưa có · bản
+mẫu"** — không phải dấu gạch, không phải ô trống. Ô trống đọc ra là "lần
+này không bắt được"; dòng chữ đọc ra là "chỗ này không bao giờ bắt được".
+Một ô cảnh báo ở đầu bảng nói vì sao, và ô ấy **không tắt được** (`HM.ghi`
+gọi không kèm khoá `dong`).
+
+`test/dang-nhap.js` phép 1 canh đúng chuyện này: quét cả kho bằng regex bốn
+nhóm số và đòi không dòng nào mang thứ trông như địa chỉ. Phép ấy tồn tại vì
+một vòng sau rất dễ có người thấy cột trống trông như chưa làm xong rồi điền
+`113.161.44.12` vào cho đẹp — và từ giây phút đó mọi ảnh chụp màn hình của
+bản mẫu là một bằng chứng giả.
+
+### 2 · Cái nó ghi được thì đều thật
+
+| Trường | Nguồn | Có thật ở bản mẫu |
+|---|---|---|
+| Thời điểm, số lần | đồng hồ máy | có |
+| Cổng, kết quả | đường vào nào, `assertParty` cho qua hay chặn | có |
+| Người vào, vai, bên | tài khoản mở phiên | có |
+| Thiết bị, trình duyệt, hệ điều hành | `navigator.userAgent` | có |
+| Địa chỉ IP, quốc gia | kết nối tới máy chủ | **không** |
+
+Vào lại trong **30 phút** thì gộp vào dòng cũ và cộng số lần, chứ không đẻ
+dòng mới — không có luật này thì mỗi lần nạp lại trang là một dòng và nhật
+ký đầy trong một buổi. Trần **300 dòng**, thời hạn **180 ngày** rồi tự xoá,
+và mỗi lần dọn thật để lại một dòng ở tab Nhật ký thao tác bên cạnh — bằng
+chứng kiểm được rằng chính sách lưu có chạy.
+
+Lần vào **bị từ chối** cũng được ghi. Bản mẫu không có mật khẩu nên không
+trả lời được "có ai đang dò mật khẩu không", nhưng trả lời được câu hẹp hơn
+mà đúng: "có ai đang thử vào một tài khoản đã bị khoá không".
+
+### 3 · Hai chỗ xem, hai mục đích
+
+**Nội bộ** — tab thứ ba của trang Quản trị, cạnh Nhật ký thao tác. Lọc theo
+cổng và theo kết quả. Quyền `quanTri`: ban giám đốc và hội đồng. Khai theo
+**cấp hàm** chứ không cấp đối tượng, nên `dangNhap.ghi` mở cho mọi vai —
+gác cả cửa ghi thì chỉ giám đốc mới có nhật ký, tức đúng những người cần
+soi nhất lại không để lại dấu vết nào. An toàn được vì `ghi()` **không nhận
+tham số danh tính**: nó đọc thẳng `_me`, nên không ai ghi hộ ai.
+
+**Đối tác** — một thẻ trên trang Hỗ trợ, hai mươi lần gần nhất của chính
+mình, kèm bốn dòng chính sách ở chân thẻ: ghi để làm gì, cơ sở xử lý, giữ
+bao lâu, ai trong Haustek đọc được. Bốn dòng ấy **không thu vào dấu ?** —
+một thông báo về xử lý dữ liệu cá nhân mà giấu sau dấu chấm hỏi thì không
+còn là thông báo. Đây là quyền truy cập của chủ thể dữ liệu theo Nghị định
+13/2023/NĐ-CP, làm sẵn thì sau này không phải dựng quy trình thủ công.
+
+Gói `dangNhapCuaToi` dựng bằng **danh sách trắng tám trường**, không bao giờ
+`Object.assign` cả dòng: dòng cổng nội bộ mang email `@haustek-group.com` mà
+`scrub()` ném nếu thấy chuỗi ấy, và một khoá tên `ip` trong gói — dù mang
+`null` — là lời mời cho trang khác đọc nó.
+
+### 4 · Phần bản thật
+
+`HA-TANG.md` mục 7b tả bảng `nhat_ky_dang_nhap` trên Postgres: `ip inet NOT
+NULL`, cột `ip_nguon` nói địa chỉ từ đâu ra (`X-Forwarded-For` là header máy
+khách tự đặt được, chỉ tin sau proxy của chính mình), `email_thu` ghi email
+**đã gõ** kể cả khi không có tài khoản ấy — vì người ta dò mật khẩu bằng
+những email không tồn tại — `quoc_gia` suy một lần lúc ghi rồi đông cứng,
+phân vùng theo tháng giữ 12 tháng, và RLS cho người dùng đọc dòng của chính
+mình.
+
+Điều quan trọng nhất ở mục ấy không phải lược đồ: **một lệnh rút tiền đặt
+trong 24 giờ sau lần đăng nhập đầu tiên từ một quốc gia chưa từng thấy thì
+không tự động duyệt**. Nhật ký mà không nối vào chỗ mất tiền thì chỉ là một
+bảng đẹp.
+
 ## Vòng 23: cổng người cộng tác, bốn lỗi tiền, và hạ tầng bản chạy thật
 
 Chủ dự án đặt hai việc: làm nốt cổng riêng cho người cộng tác (D7 của vòng

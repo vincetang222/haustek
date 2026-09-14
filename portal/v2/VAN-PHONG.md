@@ -81,6 +81,12 @@ dịch từng chữ từ tiếng Anh. Người đọc là kế toán, chủ labe
 | delivery request | **giao nhận nền tảng**, **yêu cầu giao** | delivery |
 | bulk edit | **sửa hàng loạt** | chỉnh sửa nhiều |
 | pre-save / editorial pitch / marketing campaign | **đặt trước (pre-save)** / **đề xuất playlist biên tập** / **chiến dịch marketing sau phát hành**; bước không mua: **không đăng ký** | — |
+| sign-in log | **nhật ký đăng nhập** (phân biệt với **nhật ký thao tác** — cái ghi người ta VÀO lúc nào, cái ghi người ta LÀM gì) | log đăng nhập, lịch sử login |
+| a sign-in | **lần vào cổng**, **lần đăng nhập** | phiên, session |
+| refused sign-in | **bị từ chối** | fail, thất bại, đăng nhập lỗi |
+| IP address | **địa chỉ IP** (giữ nguyên chữ IP như ISRC, UPC) | IP trần, địa chỉ mạng |
+| device / browser | **thiết bị** / **trình duyệt** | máy, device, browser |
+| retention period | **thời hạn lưu**, **giữ N ngày rồi tự xoá** | retention, lưu trữ |
 
 Giữ nguyên: ISRC, UPC, VCPMC, The MLC, USD, VND, CSV, JSON, tên nền tảng, tên
 riêng, email, mã.

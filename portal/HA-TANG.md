@@ -384,6 +384,80 @@ Hai chỗ RLS **không đủ**, phải chặn ở tầng dịch vụ:
 
 ---
 
+## 7b. Nhật ký đăng nhập
+
+Bản mẫu ghi được ai vào, lúc nào, cổng nào, bằng thiết bị gì. Nó **không**
+ghi được địa chỉ IP, vì trình duyệt biết tên của chính nó nhưng không biết
+địa chỉ của chính nó. Địa chỉ là thứ **đầu bên kia của kết nối** đọc được,
+nên nó xuất hiện đúng lúc có máy chủ, không sớm hơn.
+
+```sql
+CREATE TABLE nhat_ky_dang_nhap (
+  id           bigserial,
+  luc          timestamptz NOT NULL DEFAULT now(),
+  den_luc      timestamptz NOT NULL DEFAULT now(),   -- lần gộp cuối
+  so_lan       int         NOT NULL DEFAULT 1,
+  cong         text        NOT NULL CHECK (cong IN ('doi-tac','noi-bo')),
+  ket          text        NOT NULL CHECK (ket IN ('ok','sai-mat-khau','sai-mfa','bi-khoa','het-han','tu-choi')),
+  nguoi_dung_id bigint     REFERENCES nguoi_dung(id),
+  email_thu    citext,                                -- email ĐÃ GÕ, kể cả khi không có tài khoản
+  ben_id       bigint      REFERENCES ben(id),
+  phien_id     uuid        REFERENCES phien(id),
+  ip           inet        NOT NULL,                  -- KHÔNG NULL trên máy chủ
+  ip_nguon     text        NOT NULL CHECK (ip_nguon IN ('ket-noi','proxy-tin-cay')),
+  quoc_gia     char(2),                               -- suy từ ip lúc ghi, không tra lại sau
+  thiet_bi     text, trinh_duyet text, he_dieu_hanh text,
+  PRIMARY KEY (luc, id)
+) PARTITION BY RANGE (luc);
+```
+
+Chín điều bắt buộc:
+
+1. **`ip inet NOT NULL`, không phải `text`.** Kiểu `inet` so sánh được theo
+   dải (`ip << '113.161.0.0/16'`), chuẩn hoá IPv6 (`::1` và `0:0:...:1` là
+   một), và từ chối rác ngay lúc ghi. Lưu `text` thì mọi truy vấn "có ai
+   khác từ dải này không" thành quét toàn bảng.
+2. **`ip_nguon` nói địa chỉ ấy từ đâu ra.** Sau một proxy hay CDN,
+   `REMOTE_ADDR` là địa chỉ của proxy còn địa chỉ thật nằm trong
+   `X-Forwarded-For` — **mà header ấy máy khách tự đặt được**. Chỉ tin nó
+   khi kết nối đến từ dải proxy của chính mình, và ghi rõ `proxy-tin-cay`.
+   Tin bừa `X-Forwarded-For` là mở cửa cho bất kỳ ai tự khai mình ở đâu
+   cũng được, tức nhật ký an toàn thành vô giá trị.
+3. **Ghi cả lần HỎNG.** Bản mẫu không có mật khẩu nên chỉ có `ok` và
+   `tu-choi`. Trên máy chủ, `sai-mat-khau` là dòng quan trọng nhất trong
+   bảng: nó là thứ duy nhất trả lời "có ai đang dò mật khẩu không".
+4. **`email_thu` ghi email ĐÃ GÕ, không phải email tra ra được.** Người ta
+   dò mật khẩu bằng những email **không có tài khoản**; nếu chỉ ghi khi tra
+   ra `nguoi_dung_id` thì đúng những lần đáng ngờ nhất lại không để lại dấu.
+5. **`quoc_gia` suy một lần lúc ghi và đông cứng.** Bảng ánh xạ địa chỉ →
+   quốc gia thay đổi theo thời gian; tra lại sau hai năm cho ra một nước
+   khác, và một nhật ký đổi nội dung theo thời gian thì không dùng làm bằng
+   chứng được.
+6. **Chỉ ghi thêm.** `REVOKE UPDATE, DELETE ON nhat_ky_dang_nhap FROM PUBLIC`
+   trừ đúng một việc: bước dọn theo thời hạn, và bước ấy `DROP` cả phân
+   vùng chứ không `DELETE` từng dòng.
+7. **Thời hạn lưu là một con số viết ra, không phải "giữ mãi".** Phân vùng
+   theo tháng, giữ **12 tháng** rồi `DROP PARTITION`. Bản mẫu giữ 180 ngày
+   vì `localStorage` nhỏ; máy chủ giữ 12 tháng vì đó là khoảng một cuộc
+   điều tra gian lận thật cần nhìn lại. Con số này phải trùng với con số
+   ghi trong thông báo cho người dùng — lệch một chữ là sai cam kết.
+8. **Người dùng đọc được dòng của chính mình.** RLS:
+   `USING (nguoi_dung_id = nguoi_dung_phien())`. Đây là quyền truy cập của
+   chủ thể dữ liệu theo Nghị định 13/2023/NĐ-CP, và làm sẵn thì không phải
+   dựng quy trình xử lý yêu cầu thủ công về sau.
+9. **Đăng nhập lạ phải nối vào lệnh rút tiền.** Tài khoản đối tác giữ ví.
+   Quy tắc tối thiểu: một lệnh rút tiền đặt trong **24 giờ** sau lần đăng
+   nhập đầu tiên từ một `quoc_gia` chưa từng thấy thì **không tự động
+   duyệt** — nó vào hàng chờ người kiểm. Nhật ký mà không nối vào chỗ mất
+   tiền thì chỉ là một bảng đẹp.
+
+Ba việc **cố ý chưa làm** ở giai đoạn một: chấm điểm rủi ro từng lần vào,
+dấu vân tay thiết bị, và tra nhà mạng theo thời gian thực. Cái thứ nhất cần
+dữ liệu lịch sử chưa có; hai cái sau thu thập nhiều hơn mức cần để trả lời
+câu hỏi đang hỏi, mà dữ liệu cá nhân thu thừa thì chỉ là nợ.
+
+---
+
 ## 8. Cổng người cộng tác
 
 Vai `nguoi_nhan` là **năm dòng trong `trang_cho_loai_ben`**, không phải một

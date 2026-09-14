@@ -514,7 +514,8 @@ const LUOC_DO = {
   alerts:        { kieu: "bang", nhom: "van-hanh",  mo: "trạng thái xử lý cảnh báo lượt nghe" },
   notifRead:     { kieu: "bang", nhom: "van-hanh",  mo: "thông báo đã đọc theo người" },
   answers:       { kieu: "bang", nhom: "van-hanh",  mo: "câu trả lời cho các câu hỏi còn treo" },
-  audit:         { kieu: "mang", nhom: "van-hanh",  mo: "nhật ký thao tác (trần 400 dòng)" }
+  audit:         { kieu: "mang", nhom: "van-hanh",  mo: "nhật ký thao tác (trần 400 dòng)" },
+  dangNhap:      { kieu: "mang", nhom: "van-hanh",  mo: "nhật ký đăng nhập hai cổng (trần 300 dòng · giữ 180 ngày); ip LUÔN null vì bản mẫu chạy trong trình duyệt, không có máy chủ để đọc địa chỉ" }
 };
 function ensureShape(s) {
   Object.keys(LUOC_DO).forEach(k => {
@@ -4968,6 +4969,122 @@ const audit = {
   },
   list(limit) { return state.audit.slice(0, limit || 100).map(a => Object.assign({}, a, { detailEn: dichNhatKy(a.detail), byEn: ghiChuEn(a.by) })); }
 };
+
+/* =====================================================================
+   18c. NHẬT KÝ ĐĂNG NHẬP
+   ---------------------------------------------------------------------
+   Tách hẳn khỏi audit: audit ghi NGƯỜI TA LÀM GÌ, nhật ký này ghi NGƯỜI
+   TA VÀO LÚC NÀO. Hai câu hỏi khác nhau, hai đời sống khác nhau (audit
+   giữ 400 dòng không hạn ngày; nhật ký đăng nhập giữ 300 dòng và xoá
+   theo 180 ngày), nên hai kho.
+
+   MỘT DÒNG có mười lăm trường chia hai nửa. Nửa trên là thứ trình duyệt
+   BIẾT THẬT: thời điểm, cổng, kết quả, ai, vai, bên, thiết bị, trình
+   duyệt, hệ điều hành. Nửa dưới là thứ CHỈ MÁY CHỦ BIẾT: địa chỉ IP.
+   Bản mẫu để null và không đoán.
+
+   Vì sao không có địa chỉ IP: trình duyệt biết TÊN của chính nó
+   (navigator.userAgent) nhưng không biết ĐỊA CHỈ của chính nó. Địa chỉ
+   là thứ đầu bên kia của kết nối đọc được, mà bản mẫu không có đầu bên
+   kia. Muốn có số thì phải hỏi một dịch vụ ngoài — tức là gửi dấu vết
+   của người dùng ra một bên thứ ba để trang trí một bản mẫu, và cổng
+   này có bài kiểm cấm mọi lời gọi mạng. Nên cột ấy trống, và nói rõ là
+   trống.
+   ===================================================================== */
+const DN_TRAN     = 300;   /* trần bản mẫu (localStorage ~5 MB), cắt lúc ghi */
+const DN_GIU_NGAY = 180;   /* chính sách lưu: dòng cũ hơn thì xoá */
+const DN_GOP_PHUT = 30;    /* cùng người + cùng cổng + cùng kết quả trong 30 phút = một lần vào */
+
+const CHINH_SACH_DN = {
+  giuNgay: DN_GIU_NGAY,
+  ipNguon: "khong-co",
+  mucDich: "Để bạn và Haustek phát hiện người lạ vào tài khoản có ví tiền.",
+  mucDichEn: "So that you and Haustek can spot a stranger signing in to an account that holds money.",
+  coSo: "Lợi ích chính đáng về an toàn tài khoản, không phải quảng cáo và không chia sẻ cho bên nào khác.",
+  coSoEn: "A legitimate interest in account security — not advertising, and never shared with anyone else.",
+  aiDoc: "Bạn đọc được dòng của chính bạn. Trong Haustek chỉ ban giám đốc và hội đồng đọc được nhật ký toàn hệ.",
+  aiDocEn: "You can read your own lines. Inside Haustek only management and the board can read the whole log."
+};
+
+/* "yyyy-mm-dd hh:mm:ss" → mốc mili giây. Phải đổi dấu cách thành T và
+   gắn Z: Safari trả NaN cho chuỗi có dấu cách, mà NaN thì so sánh nào
+   cũng sai — luật gộp sẽ im lặng ngừng chạy và mỗi lần nạp lại trang là
+   một dòng mới. Cùng bẫy múi giờ đã ghi ở mục 19b. */
+function dnMoc(s) {
+  const t = Date.parse(String(s || "").replace(" ", "T") + "Z");
+  return isFinite(t) ? t : 0;
+}
+
+/* Suy thiết bị từ navigator. Trả thietBi là SLUG ASCII để trang tự dịch;
+   trinhDuyet và heDieuHanh là TÊN RIÊNG nên không dịch. Chuỗi userAgent
+   thô KHÔNG lưu: đó là một dấu vân tay thiết bị, dài hơn mức cần để trả
+   lời "bằng máy gì". */
+function mayNay() {
+  if (typeof navigator === "undefined" || !navigator.userAgent) {
+    return { thietBi: "khac", trinhDuyet: "", heDieuHanh: "" };
+  }
+  const ua = String(navigator.userAgent);
+  const thietBi = /iPad|Tablet/i.test(ua) ? "may-bang"
+    : /Mobi|Android|iPhone/i.test(ua) ? "dien-thoai"
+    : /Windows|Macintosh|X11|Linux/i.test(ua) ? "may-tinh" : "khac";
+  const trinhDuyet = /Edg\//.test(ua) ? "Edge" : /OPR\/|Opera/.test(ua) ? "Opera"
+    : /Chrome\//.test(ua) ? "Chrome" : /Firefox\//.test(ua) ? "Firefox"
+    : /Safari\//.test(ua) ? "Safari" : "";
+  const heDieuHanh = /Windows/.test(ua) ? "Windows" : /iPhone|iPad|iPod/.test(ua) ? "iOS"
+    : /Macintosh|Mac OS/.test(ua) ? "macOS" : /Android/.test(ua) ? "Android"
+    : /Linux/.test(ua) ? "Linux" : "";
+  return { thietBi, trinhDuyet, heDieuHanh };
+}
+
+/* Xoá dòng quá hạn. Mốc là ĐỒNG HỒ THẬT chứ không phải ASOF: ASOF là
+   mốc dữ liệu mẫu (max(hôm nay, 04/09/2026)), trộn hai thang thì dòng
+   ghi hôm nay bị coi là của năm sau. Idempotent — chạy hai lần cho cùng
+   kết quả. Có xoá thật thì ghi một dòng audit, để chính sách lưu chứng
+   minh được là có chạy. */
+function donNhatKyDangNhap() {
+  const nguong = Date.now() - DN_GIU_NGAY * 86400000;
+  const truoc = state.dangNhap.length;
+  state.dangNhap = state.dangNhap.filter(d => dnMoc(d.at) >= nguong);
+  const bo = truoc - state.dangNhap.length;
+  if (bo > 0) audit.log("dangnhap.don", "Dọn nhật ký đăng nhập: xoá " + bo + " dòng quá " + DN_GIU_NGAY + " ngày", "he-thong");
+  return bo;
+}
+
+/* CỬA GHI DUY NHẤT vào state.dangNhap.
+
+   KHÔNG CÓ tham số ip và sẽ không bao giờ có. Trình duyệt không biết địa
+   chỉ của chính nó, nên bất kỳ giá trị nào truyền vào đây cũng là bịa —
+   và một địa chỉ bịa trong nhật ký an toàn thì tệ hơn hẳn một ô trống,
+   vì ô trống đọc ra là "chưa có", còn con số bịa đọc ra là "đây là bằng
+   chứng". Trên máy chủ, địa chỉ đọc từ kết nối, không bao giờ do máy
+   khách tự khai. */
+function ghiDangNhap(o) {
+  try {
+    o = o || {};
+    const nay = nowISO(), moc = dnMoc(nay), may = mayNay();
+    const cu = state.dangNhap[0];
+    /* Gộp: cùng người, cùng cổng, cùng kết quả, trong DN_GOP_PHUT phút.
+       Cập nhật dòng cũ chứ không bỏ dòng mới — số lần là thông tin. */
+    if (cu && cu.cong === o.cong && cu.ket === o.ket && cu.cua === (o.cua || null)
+        && cu.nhanSu === (o.nhanSu || null) && moc - dnMoc(cu.denLuc || cu.at) < DN_GOP_PHUT * 60000) {
+      cu.denLuc = nay; cu.soLan++; GHI_VER++; store.save(); return null;
+    }
+    const dong = {
+      at: nay, denLuc: nay, soLan: 1,
+      cong: o.cong, ket: o.ket,
+      cua: o.cua || null, nhanSu: o.nhanSu || null,
+      email: o.email || "", vai: o.vai || "", ben: o.ben || null,
+      thietBi: may.thietBi, trinhDuyet: may.trinhDuyet, heDieuHanh: may.heDieuHanh,
+      ip: null, ipNguon: "khong-co"
+    };
+    state.dangNhap.unshift(dong);
+    if (state.dangNhap.length > DN_TRAN) state.dangNhap.length = DN_TRAN;
+    donNhatKyDangNhap();
+    if (o.cua) { const tk = state.accounts.find(a => a.id === o.cua); if (tk) tk.lastSeen = nay.slice(0, 10); }
+    GHI_VER++; store.save();
+    return dong;
+  } catch (e) { return null; }
+}
 /* =====================================================================
    19b. SONG NGỮ CHO CHUỖI SINH TRONG LÕI  (vòng 22)
    ---------------------------------------------------------------------
@@ -5210,7 +5327,9 @@ const NHAT_KY_MAU_EN = [
   [/^Gỡ nguồn (.+?) khỏi kỳ (.+)$/, (m) => "Removed feed " + tenNguonEn(m[1]) + " from period " + m[2]],
   [/^1 USD = (.+?) ₫ · (.+)$/, (m) => "1 USD = " + m[1] + " ₫ · " + m[2]],
   [/^(.+?) → (.+?)% từ kỳ (.+)$/, (m) => m[1] + " → " + m[2] + "% from period " + m[3]],
-  [/^(.+?) \(cấp cho người cộng tác\)$/, (m) => dichNhatKy(m[1]) + " (issued to a collaborator)"]
+  [/^(.+?) \(cấp cho người cộng tác\)$/, (m) => dichNhatKy(m[1]) + " (issued to a collaborator)"],
+  /* Neo hai đầu nên không mẫu nào nuốt được, vì vậy để cuối danh sách. */
+  [/^Dọn nhật ký đăng nhập: xoá (\d+) dòng quá (\d+) ngày$/, (m) => "Purged the sign-in log: removed " + m[1] + " rows older than " + m[2] + " days"]
 ];
 function tenNguonEn(vi) { const f = FEEDS.find(x => x.name === vi); return f ? f.nameEn : (vi === "Báo cáo tác quyền" ? "Publishing report" : vi); }
 function dichNhatKy(detail) {
@@ -6486,6 +6605,10 @@ function esc(s) {
 
 if (!FRESH) { try { seedPartyManager(); seedWithdrawals(); seedTickets(); seedClaims(); seedOps(); seedProposals(); } catch (e) { console.warn("[haustek-core] gieo dữ liệu mẫu: " + e.message); } }
 khoiTaoMaDem(state);   /* bộ đếm mã đi tiếp từ mã lớn nhất đã có, kể cả mã gieo mẫu */
+/* Chính sách lưu chạy mỗi lần nạp, không chỉ lúc ghi: một kho để lâu
+   không ai mở vẫn phải tự hết hạn. Bọc try/catch vì dòng này chạy trước
+   khi giao diện dựng, và một nhật ký hỏng không được làm trắng cổng. */
+try { donNhatKyDangNhap(); } catch (e) {}
 
 /* =====================================================================
    23. MẶT TIỀN CHO ADMIN — chỉ intranet.html được chạm
@@ -6601,6 +6724,11 @@ const QUYEN_HAM = {
   roi: "deXuat",
   tickets: "hoTro", claims: "khieuNai", videoSettings: "khieuNai",
   accounts: "quanTri", answers: "quanTri", reset: "quanTri", store: "quanTri",
+  /* Khai theo CẤP HÀM chứ không cấp đối tượng: khai cấp đối tượng thì
+     nhóm quanTri áp cho cả ghi lẫn list, và vai vận hành sẽ không ghi
+     được dòng đăng nhập của chính mình — tức đúng những người cần soi
+     nhất lại không để lại dấu vết nào. */
+  "dangNhap.list": "quanTri",
   /* Đọc cây tổ chức là quyền "toChuc"; sửa người là quyền "nhanSu" ở dưới.
      Khai cả phần đọc thì thành viên mới thêm vào toChuc sau này mặc định
      đã có người gác, thay vì lọt ra ngoài không ai biết. */
@@ -6616,7 +6744,11 @@ const QUYEN_MO = [
   "parties.list", "parties.managerOf", "parties.signedAt", "parties.contractEnd", "parties.labelTuTra",
   "fx.get", "fx.ngayChot", "fx.rateFor",
   "soCongKhai.nenTang",
-  "xuatBan.hoi", "xuatBan.vaiTacGia", "xuatBan.hoiTheoLanhTho"
+  "xuatBan.hoi", "xuatBan.vaiTacGia", "xuatBan.hoiTheoLanhTho",
+  /* Mọi vai nội bộ phải ghi được dòng đăng nhập của chính mình, và
+     đọc được chính sách lưu — đó là văn bản công khai. An toàn CHỈ VÌ
+     ghi() không nhận tham số danh tính. */
+  "dangNhap.ghi", "dangNhap.chinhSach"
 ];
 function vaiHienTai() { return _me ? _me.role : null; }
 /* AAA — All Access: chỉ hội đồng quản trị. Là chỗ DUY NHẤT trong lõi cho
@@ -6838,6 +6970,21 @@ const admin = {
   approvalOf: pk => state.approved[pk] || null,
   payoutOf: pk => state.payouts[pk] || null,
   rates, fx, ingest, queue, audit, nhapLieu, quyTrinh, hieuSuat, von, mucTraTacDong,
+  /* Nhật ký đăng nhập. Đặt cạnh audit vì hai nhật ký nên đọc liền nhau.
+     ghi() KHÔNG NHẬN THAM SỐ danh tính — lấy thẳng từ _me — nên không ai
+     ghi hộ ai được. Thêm ghi(id) sau này là mở đúng cái cửa mà audit đang
+     để hở. Không có hàm sửa và không có hàm xoá một dòng. */
+  dangNhap: {
+    ghi() { return _me ? ghiDangNhap({ cong: "noi-bo", ket: "ok", nhanSu: _me.id, email: _me.email, vai: _me.role }) : null; },
+    list(loc) {
+      loc = loc || {};
+      let ds = state.dangNhap;
+      if (loc.cong) ds = ds.filter(d => d.cong === loc.cong);
+      if (loc.ket) ds = ds.filter(d => d.ket === loc.ket);
+      return ds.slice(0, loc.gioiHan || 200).map(d => Object.assign({}, d));
+    },
+    chinhSach() { return Object.assign({}, CHINH_SACH_DN); }
+  },
   advances: {
     /* tổng thu hồi tạm ứng theo từng kỳ (mọi bên cộng lại) */
     theoKy() {
@@ -7914,6 +8061,7 @@ const BEN_CO_DANH_MUC = ["label", "artist"];          /* ai sở hữu bản ghi
 const QUYEN_API = {
   /* không nhận danh tính phiên — không gác theo loại bên */
   refresh: BEN_MOI, demoLogins: BEN_MOI, trangCho: BEN_MOI, trangMo: BEN_MOI,
+  moPhien: BEN_MOI, dangNhapCuaToi: BEN_MOI,
 
   /* mọi bên thụ hưởng: danh tính, kỳ, ví, tiền ra, việc hỗ trợ, chia sẻ */
   session: BEN_MOI, periods: BEN_MOI,
@@ -8008,6 +8156,46 @@ const apiGoc = {
                  clientId: who.clientId, status: a.status,
                  kind: isL ? (who.parentId >= 0 ? "sublabel" : "label") : (who.labelId >= 0 ? "artist-label" : "artist-indie") };
       }).filter(Boolean) });
+  },
+
+  /* CỬA VÀO của cổng đối tác. Là phương thức RIÊNG chứ không gắn vào
+     session(): một dòng trong QUYEN_API rẻ hơn nhiều so với việc biến một
+     hàm ĐỌC thành hàm có tác dụng phụ GHI, thứ mà người sửa sau sẽ tưởng
+     là lỗi. Lần vào bị TỪ CHỐI cũng ghi — đó là câu hỏi "có ai đang thử
+     vào một tài khoản đã bị khoá không", và nó trả lời được mà không cần
+     địa chỉ IP. */
+  moPhien(role, partyId) {
+    try { assertParty(role, partyId); }
+    catch (e) {
+      /* Ghép khoá bên bằng tay, KHÔNG gọi benTu: benTu ném với vai lạ, và
+         một vai lạ là đúng thứ đáng ghi nhất. */
+      ghiDangNhap({ cong: "doi-tac", ket: "tu-choi", vai: String(role || ""), ben: String(role || "?") + ":" + String(partyId) });
+      throw e;
+    }
+    const pk = benTu(role, partyId);
+    const tk = state.accounts.find(a => a.partyKey === pk)
+      || state.accounts.find(a => (a.ben || []).some(b => b.key === pk)) || null;
+    const d = ghiDangNhap({ cong: "doi-tac", ket: "ok", cua: tk ? tk.id : null, email: tk ? tk.email : "", vai: role, ben: pk });
+    const dau = state.dangNhap[0] || {};
+    return scrub({ ok: true, at: (d || dau).at || null, soLan: (d || dau).soLan || 1, ipNguon: "khong-co" });
+  },
+
+  /* Quyền của chủ thể dữ liệu: người dùng tự xem lần vào của chính mình,
+     không phải đi xin. Gói dựng bằng DANH SÁCH TRẮNG từng trường, không
+     bao giờ Object.assign cả dòng — dòng cổng nội bộ mang email
+     @haustek-group.com mà scrub() ném nếu thấy chuỗi ấy, và một khoá tên
+     "ip" trong gói (dù mang null) là lời mời cho trang khác đọc nó. */
+  dangNhapCuaToi(role, partyId, gioiHan) {
+    assertParty(role, partyId);
+    const pk = benTu(role, partyId);
+    const ds = state.dangNhap.filter(d => d.cong === "doi-tac" && d.ben === pk);
+    return scrub({
+      rows: ds.slice(0, Math.max(1, Math.min(100, +gioiHan || 20))).map(d => ({
+        at: d.at, denLuc: d.denLuc, soLan: d.soLan, ket: d.ket,
+        thietBi: d.thietBi, trinhDuyet: d.trinhDuyet, heDieuHanh: d.heDieuHanh, ipNguon: d.ipNguon
+      })),
+      tong: ds.length, coIp: 0, chinhSach: Object.assign({}, CHINH_SACH_DN)
+    });
   },
 
   session(role, partyId) {

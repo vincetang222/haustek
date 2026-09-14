@@ -90,6 +90,13 @@ function nạpPhien() {
   var p = api.periods(phienCua.role, phienCua.partyId);
   return { me: s, kys: p.open, cho: p.waiting, kyTacQuyen: p.pubOpen, moiNhat: p.latest };
 }
+/* Cửa vào: ghi một dòng nhật ký đăng nhập trước khi dựng phiên. Nuốt lỗi
+   để không đổi hành vi dựng cổng — nếu mã bên bị từ chối thì moPhien đã
+   kịp ghi một dòng "bị từ chối" rồi mới ném, và nạpPhien() ngay dưới sẽ
+   ném đúng như hôm nay.
+   Ở bản mẫu, vai và mã bên do chính trình duyệt truyền lên. Trên máy chủ
+   chúng đến từ thẻ phiên đã xác thực, còn địa chỉ IP đọc từ kết nối. */
+try { api.moPhien(phienCua.role, phienCua.partyId); } catch (e) {}
 var PHIEN = nạpPhien();
 
 HT.chay({

@@ -173,6 +173,14 @@ Hai trục: **vai** (từ khối trong cây tổ chức) và **cấp** (từ ch�
   nhóm có tên `giamSat`, chỉ giám đốc có. Chỉ hội đồng đưa người vào / ra
   khối hội đồng hay khoá thành viên hội đồng; thành viên cuối không khoá
   được. Bài kiểm `test/aaa.js`, `test/qc-quyen.js`, `test/qc-vai-quet.js`.
+- **Nhật ký đăng nhập** (`state.dangNhap`, vòng 24) tách khỏi `audit`: audit
+  ghi người ta LÀM gì, nhật ký này ghi người ta VÀO lúc nào. Cửa ghi duy
+  nhất là `ghiDangNhap()`, không nằm trên mặt tiền nào; `dangNhap.ghi` mở
+  cho mọi vai (không nhận tham số danh tính, đọc thẳng `_me`), `dangNhap.list`
+  thuộc nhóm `quanTri`. Phía đối tác: `moPhien` ghi, `dangNhapCuaToi` đọc,
+  cả hai `BEN_MOI`. **Trường `ip` luôn null** — bản mẫu không có máy chủ nên
+  không đọc được địa chỉ; bảng `nhat_ky_dang_nhap` của bản thật ở
+  `HA-TANG.md` mục 7b. Bài kiểm `test/dang-nhap.js`.
 
 ## 7. Việc hỗ trợ (ticket)
 

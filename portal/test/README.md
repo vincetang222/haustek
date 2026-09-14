@@ -61,6 +61,7 @@ node portal/test/i18n-loi.js        # mọi lỗi lõi có bản tiếng Anh
 | `cong-nguoi-cong-tac.js` | Vòng 23. Ranh giới của loại bên thụ hưởng thứ ba. Người cộng tác thấy đúng phần của mình (ba cách cộng ra cùng một số, khớp bảng chốt nội bộ tới từng xu) và KHÔNG thấy gì khác: 31 mục thuộc danh mục chủ bài đều bị chặn ở tầng mặt tiền, gói phần chia không mang một trường doanh thu nào. Hai phép quan trọng nhất đòi bảng `QUYEN_API` và `TRANG_CHO_BEN` phủ kín — thêm phương thức hay thêm trang mà quên khai là đỏ ngay, không phải chờ tới lúc có người dùng lọt vào. |
 | `aaa.js` | Vòng 22: vai hội đồng (bod) là đường tắt DUY NHẤT và không có trong bảng nào; giám đốc qua cửa như mọi vai — không gõ số, không bỏ qua sai lệch, không gõ tỷ giá, không tạo hồ sơ thay; `giamSat` là nhóm có tên; chỉ hội đồng đưa người vào / ra khối hội đồng, thành viên cuối không khoá được; nhật ký ghi đúng người. Đọc cả mã nguồn lõi và trang để chắc không còn `role === "mgmt"`. |
 | `tien-ba-lop.js` | Bốn quyết định tiền vòng 22: nghệ sĩ độc lập 100% sau phí; label tự trả theo hợp đồng (`labelTuTra`); ba lớp người dùng ↔ bên thụ hưởng ↔ vai trên bài — người cộng tác nhận lời mời được trả THẬT (trừ chủ, cộng bên nhận, ngưỡng thu hồi), tài khoản người nhận HTK-N được cấp tự động, một đăng nhập nhiều bên; huỷ chốt có bù trừ (sổ cái + rồi −, ví có thể âm và rút bị chặn). Kèm các lỗi lẻ: preview kỳ đã duyệt, tỷ giá báo giá rút tiền, dòng tỷ lệ của label mới, di trú lược đồ 3. |
+| `dang-nhap.js` | Vòng 24. Nhật ký đăng nhập. Phép kiểm số 1 là phép canh chính: quét CẢ KHO bằng regex bốn nhóm số và đòi không dòng nào mang địa chỉ IP — bản mẫu chạy trong trình duyệt nên không đọc được địa chỉ, và một vòng sau rất dễ có người thấy cột trống rồi điền cho đẹp, từ đó mọi ảnh chụp màn hình thành bằng chứng giả. Bảy phép còn lại: gộp trong 30 phút cộng số lần chứ không thêm dòng; lần vào bị chặn cũng để lại dấu; gói của cổng đối tác không mang khoá `ip`, `email`, `cua`, `ben`, `nhanSu`; bên này không đọc được dòng của bên kia; trần 300 dòng cắt ngay lúc ghi; thời hạn 180 ngày chạy hai lần cho cùng kết quả và để lại một dòng nhật ký thao tác chứng minh; vai vận hành ghi được dòng của mình nhưng không đọc được toàn hệ. |
 | `i18n-loi.js` | Đọc mọi `new Error(...)` trong lõi (201 câu) và đòi `HAUSTEK.i18n.loi` dịch được từng câu sang tiếng Anh không còn dấu — thêm lỗi mới mà quên bản dịch là đỏ. |
 
 ## 3. Trình duyệt thật
@@ -143,6 +144,8 @@ node test/v2-hep.js
 node test/v2-bam.js && node test/v2-khach-tk.js && node test/v2-luong.js
 node test/v2-tuong-phan.js && node test/v2-tieng-anh.js && node test/i18n-hai-chieu.js && node test/api-guard.js
 node test/luoc-do.js && node test/ma-dinh-danh.js && node test/ranh-gioi-trang.js
+node test/tien-ba-lop.js && node test/tien-dung-so.js && node test/cong-nguoi-cong-tac.js && node test/dang-nhap.js
+node test/aaa.js && node test/i18n-loi.js && node test/chuoi-thieu.js
 node test/qc-bat-bien.js && node test/qc-quyen.js && node test/qc-vai-quet.js && node test/qc-dem-nho.js
 node test/roi-cong-thuc.js && node test/roi-man.js && node test/vong15-man.js && node test/vong16-man.js \
   && node test/vong17-man.js && node test/vong18-man.js && node test/goi-du-trang.js

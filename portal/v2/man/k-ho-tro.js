@@ -179,6 +179,14 @@ HT.dangKy({
       chan: kn.counts.total - knMo.length > 0 ? HM.esc(HT.fmt.n(kn.counts.total - knMo.length) + ' ' + t('knDaXong')) : ''
     });
 
+    /* Lần đăng nhập gần đây của chính người này. Đặt ở trang Hỗ trợ vì đó
+       là chỗ người ta tới khi thấy chuyện lạ, và nút gửi việc hỗ trợ đã
+       nằm sẵn trên đầu trang. Nuốt lỗi: một thẻ phụ hỏng không được làm
+       trắng cả trang. */
+    var dn = null;
+    try { dn = api.dangNhapCuaToi(me.role, me.partyId, 20); } catch (err) { dn = null; }
+    if (dn) html += veDangNhap(c, dn);
+
     root.innerHTML = html;
     HB.gan(root);
 
@@ -328,5 +336,74 @@ HT.moTicket = function (c, mac) {
     } catch (e) { c.thongBao(e.message, 'no'); }
   });
 };
+
+/* =====================================================================
+   LẦN ĐĂNG NHẬP GẦN ĐÂY CỦA BẠN
+   ---------------------------------------------------------------------
+   Quyền của chủ thể dữ liệu: người dùng tự xem lần vào của chính mình,
+   không phải đi xin. Ba dòng chính sách ở chân thẻ KHÔNG thu vào dấu ? —
+   một thông báo về xử lý dữ liệu cá nhân mà giấu sau dấu chấm hỏi thì
+   không còn là thông báo.
+   ===================================================================== */
+function veDangNhap(c, dn) {
+  var vi = c.lang === 'vi', cs = dn.chinhSach || {};
+
+  function tenMay(d) {
+    var ten = d.thietBi === 'may-tinh' ? (vi ? 'Máy tính' : 'Computer')
+      : d.thietBi === 'dien-thoai' ? (vi ? 'Điện thoại' : 'Phone')
+      : d.thietBi === 'may-bang' ? (vi ? 'Máy tính bảng' : 'Tablet')
+      : (vi ? 'Không nhận ra' : 'Unrecognised');
+    return [ten, d.trinhDuyet, d.heDieuHanh].filter(Boolean).join(' · ');
+  }
+
+  var canh = HM.ghi({
+    kieu: 'warn',
+    tieuDe: HM.esc(vi ? 'Cột Địa chỉ IP trống, và sẽ trống cho tới khi có máy chủ'
+                      : 'The IP address column is empty, and stays empty until there is a server'),
+    than: HM.esc(vi
+      ? 'Bản mẫu chạy hoàn toàn trong trình duyệt, không có máy chủ, nên không đọc được địa chỉ IP. Những gì bảng này ghi được thì đều là thật: thời điểm, thiết bị và trình duyệt. Trên hệ thật, địa chỉ đọc từ kết nối tới máy chủ, không bao giờ do trình duyệt tự khai.'
+      : 'This prototype runs entirely in the browser with no server, so it cannot read an IP address. What the table does record is real: the time, the device and the browser. On the real system the address is read from the connection to the server, never declared by the browser.')
+  });
+
+  var bang = dn.rows.length
+    ? '<div class="tw"><table class="t"><thead><tr>' +
+      '<th style="width:150px">' + (vi ? 'Thời điểm' : 'When') + '</th>' +
+      '<th style="width:110px">' + (vi ? 'Kết quả' : 'Result') + '</th>' +
+      '<th style="width:170px">' + (vi ? 'Địa chỉ IP' : 'IP address') + '</th>' +
+      '<th>' + (vi ? 'Thiết bị' : 'Device') + '</th>' +
+      '<th style="width:80px">' + (vi ? 'Số lần' : 'Times') + '</th></tr></thead><tbody>' +
+      dn.rows.map(function (d) {
+        return '<tr><td class="num mono">' + HM.esc(HT.fmt.luc(d.at)) + '</td>' +
+          '<td>' + HM.tag(d.ket === 'ok' ? (vi ? 'Vào được' : 'Allowed') : (vi ? 'Bị từ chối' : 'Refused'), d.ket === 'ok' ? 'ok' : 'no') + '</td>' +
+          '<td class="mono nil">' + HM.esc(vi ? 'chưa có · bản mẫu' : 'none · prototype') + '</td>' +
+          '<td>' + HM.esc(tenMay(d)) + '</td>' +
+          '<td class="num">' + HT.fmt.n(d.soLan) +
+            (d.soLan > 1 ? '<div class="muted" style="font-size:12px">' + HM.esc(HT.fmt.luc(d.denLuc)) + '</div>' : '') + '</td></tr>';
+      }).join('') + '</tbody></table></div>' +
+      '<p class="say">' + HM.esc(vi
+        ? 'Có một dòng không phải bạn? Gửi một việc hỗ trợ ngay bằng nút ở đầu trang — Haustek sẽ khoá tài khoản và kiểm lại mọi lệnh rút tiền gần đây.'
+        : 'A line that was not you? Open a support request with the button at the top of this page — Haustek will lock the account and re-check every recent withdrawal.') + '</p>'
+    : HM.trong({
+        icon: 'clock',
+        tieuDe: vi ? 'Chưa có lần đăng nhập nào được ghi' : 'No sign-ins recorded yet',
+        moTa: vi ? 'Lần mở cổng tiếp theo bằng tài khoản của bạn sẽ thêm một dòng vào đây.'
+                 : 'The next time you open the portal on your account, a line appears here.'
+      });
+
+  return HM.the({
+    h2: HM.esc(vi ? 'Lần đăng nhập gần đây của bạn' : 'Your recent sign-ins'),
+    p: HM.esc(vi
+      ? 'Hai mươi lần mở cổng gần nhất bằng tài khoản của bạn. Tài khoản này giữ ví tiền, nên một dòng lạ ở đây là việc phải xử lý ngay.'
+      : 'The twenty most recent sign-ins on your account. This account holds a wallet, so an unfamiliar line here needs attention right away.'),
+    thoBody: true,
+    than: canh + bang,
+    chan: HM.kv([
+      { t: vi ? 'Ghi lại để làm gì' : 'Why this is recorded', v: c.song(cs, 'mucDich') },
+      { t: vi ? 'Cơ sở xử lý' : 'Basis for processing', v: c.song(cs, 'coSo') },
+      { t: vi ? 'Giữ bao lâu' : 'Kept for', v: (cs.giuNgay || 0) + (vi ? ' ngày rồi tự xoá' : ' days, then purged') },
+      { t: vi ? 'Ai trong Haustek đọc được' : 'Who at Haustek can read it', v: c.song(cs, 'aiDoc') }
+    ])
+  });
+}
 
 })();

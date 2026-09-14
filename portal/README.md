@@ -18,6 +18,8 @@ Bản v1 (`intranet.html`, `dashboard.html`, `screens/`) đã gỡ ở vòng 22;
 - **`KIEN-TRUC.md`** — kiến trúc: lược đồ state, ranh giới lõi ↔ trang ↔ cổng, hệ mã định danh,
   di trú lược đồ, mô hình người dùng ↔ bên thụ hưởng ↔ vai trên bài, chuỗi tiền, quyền và AAA,
   các quyết định đã chốt. Sửa lõi thì đọc file này trước.
+- **`TRIEN-KHAI.md`** — lưu ở đâu, tốn bao nhiêu, làm theo thứ tự nào: dung lượng thật của
+  500.000 bài, chọn nhà cung cấp, chi phí hằng tháng, lộ trình 12 tháng, và tuần này làm gì.
 - **`HA-TANG.md`** — hạ tầng bản CHẠY THẬT: lược đồ Postgres với khoá và chỉ mục, chốt kỳ là
   giao dịch gì, huỷ chốt ghi gì, đồng thời và idempotency, RLS và bảng dịch từ `test/api-guard.js`
   sang luật thật, ngân sách mili-giây cho từng đường nóng, chín chặng di trú. Rời bản mẫu thì
@@ -102,7 +104,10 @@ trả, ma trận quyền theo vai và cây tổ chức, nhật ký, di trú lư�
 
 **Giả** — bản thân các con số; "nạp file" chỉ bật cờ chứ không đọc file thật.
 
-**Chưa có** — database, đăng nhập thật, quy đổi tiền tệ theo từng nền tảng.
+**Chưa có** — database, đăng nhập thật, quy đổi tiền tệ theo từng nền tảng, và **địa chỉ IP**:
+nhật ký đăng nhập ghi thật thời điểm, cổng, người, thiết bị và trình duyệt, nhưng cột Địa chỉ IP
+in "chưa có · bản mẫu" ở mọi dòng — trình duyệt biết tên của chính nó, không biết địa chỉ của
+chính nó. `test/dang-nhap.js` quét cả kho để cột ấy không bao giờ bị điền cho đẹp.
 
 ## Kiểm tra
 

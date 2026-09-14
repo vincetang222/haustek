@@ -60,6 +60,14 @@
    ===================================================================== */
 var A = HAUSTEK.admin;
 try { var NV = sessionStorage.getItem('haustek.demo.nv'); if (NV) A.staff.setMe(NV); } catch (e) {}
+/* Ghi một dòng nhật ký đăng nhập cho phiên nội bộ đang mở. Đặt ở đây chứ
+   không trong trang vì trang bị cấm mọi đường ghi, và vì trên hệ thật đây
+   đúng là chỗ tương ứng với điểm cuối đăng nhập.
+   Cổng nội bộ của bản mẫu KHÔNG có mật khẩu — ô đổi người ở chân cột trái
+   là một công tắc bản mẫu — nên dòng nó sinh ra không chứng minh được ai
+   thật sự ngồi trước máy. Trên máy chủ, dòng này sinh sau khi kiểm mật
+   khẩu và xác thực hai lớp, và mang theo địa chỉ IP đọc từ kết nối. */
+try { A.dangNhap.ghi(); } catch (e) {}
 A.provideSecrets({
   code: 'DIST-1',
   name: 'Đối tác phân phối chính (tên thật điền khi triển khai)',

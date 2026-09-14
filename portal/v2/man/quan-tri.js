@@ -14,7 +14,7 @@
 (function () {
 
 var TAB = 'taikhoan';
-var LOC = { tim: '', vt: '', viec: '' };
+var LOC = { tim: '', vt: '', viec: '', cong: '', ket: '' };
 
 HT.dangKy({
   id: 'quan-tri', nav: 'navQuanTri', nhom: 'nhomHeThong', icon: 'gear',
@@ -22,7 +22,7 @@ HT.dangKy({
   chu: {
     vi: {
       nhomHeThong: 'Quản trị', navQuanTri: 'Quản trị', h1: 'Quản trị',
-      tTk: 'Tài khoản', tNk: 'Nhật ký thao tác', tCh: 'Câu hỏi cần chốt', tDl: 'Dữ liệu bản mẫu', tBm: 'Phân quyền hai cổng', tPq: 'Phân quyền theo vai',
+      tTk: 'Tài khoản', tNk: 'Nhật ký thao tác', tDn: 'Nhật ký đăng nhập', tCh: 'Câu hỏi cần chốt', tDl: 'Dữ liệu bản mẫu', tBm: 'Phân quyền hai cổng', tPq: 'Phân quyền theo vai',
       pqMo: 'Ma trận này suy ra từ cây tổ chức: mỗi khối mang danh sách màn và nhóm dữ liệu; trưởng bộ phận trở lên thấy cả bộ phận. Gọi sai vai thì máy chủ trả lỗi dù giao diện có giấu nút hay không. Sửa ở trang Tổ chức.', pqMan: 'Màn hình', pqNhom: 'Nhóm dữ liệu', pqVaiCua: 'Vai được cấp',
       soTk: 'Tài khoản', soHd: 'Đang hoạt động', soMoi: 'Đã mời, chưa đăng nhập',
       themTk: 'Cấp tài khoản', tim: 'Tìm theo email hoặc bên thụ hưởng…', moiVt: 'Tất cả vai trò',
@@ -47,7 +47,7 @@ HT.dangKy({
     },
     en: {
       nhomHeThong: 'System', navQuanTri: 'Administration', h1: 'Administration',
-      tTk: 'Accounts', tNk: 'Audit log', tCh: 'Open questions', tDl: 'Prototype data', tBm: 'The boundary', tPq: 'Role permissions',
+      tTk: 'Accounts', tNk: 'Audit log', tDn: 'Sign-in log', tCh: 'Open questions', tDl: 'Prototype data', tBm: 'The boundary', tPq: 'Role permissions',
       pqMo: 'Derived from the org tree: each unit carries its screens and data groups; heads of department and above see the whole department. A wrong-role call is refused whether or not the button is hidden. Edit on the Organisation page.', pqMan: 'Screen', pqNhom: 'Data group', pqVaiCua: 'Granted roles',
       soTk: 'Accounts', soHd: 'Active', soMoi: 'Invited, not yet in',
       themTk: 'Create an account', tim: 'Search email or payee…', moiVt: 'All roles',
@@ -85,9 +85,12 @@ HT.dangKy({
       ]
     });
 
+    var dn = []; try { dn = A.dangNhap.list({ gioiHan: 300 }); } catch (err) { dn = []; }
+
     html += HM.tabs([
       { k: 'taikhoan', l: t('tTk'), icon: 'user', dem: tk.length },
       { k: 'nhatky', l: t('tNk'), icon: 'clock' },
+      { k: 'dangnhap', l: t('tDn'), icon: 'user', dem: dn.length },
       { k: 'cauhoi', l: t('tCh'), icon: 'ask', dem: A.questions.length },
       { k: 'dulieu', l: t('tDl'), icon: 'file' },
       { k: 'bienmoi', l: t('tBm'), icon: 'alert' },
@@ -96,6 +99,7 @@ HT.dangKy({
 
     if (TAB === 'taikhoan') html += veTaiKhoan(c, tk);
     if (TAB === 'nhatky') html += veNhatKy(c);
+    if (TAB === 'dangnhap') html += veDangNhap(c, dn);
     if (TAB === 'cauhoi') html += veCauHoi(c);
     if (TAB === 'dulieu') html += veDuLieu(c);
     if (TAB === 'bienmoi') html += veBienMoi(c);
@@ -108,6 +112,8 @@ HT.dangKy({
     HM.nhap(root, '[data-tim]', function (el) { LOC.tim = el.value; c.veLai(); });
     HM.doi(root, '[data-vt]', function (el) { LOC.vt = el.value; c.veLai(); });
     HM.bam(root, '[data-viec]', function (el) { LOC.viec = el.getAttribute('data-viec'); c.veLai(); });
+    HM.bam(root, '[data-dncong]', function (el) { LOC.cong = el.getAttribute('data-dncong'); c.veLai(); });
+    HM.bam(root, '[data-dnket]', function (el) { LOC.ket = el.getAttribute('data-dnket'); c.veLai(); });
     HM.bam(root, '[data-themtk]', function () { hoiTaiKhoan(c); });
     HM.bam(root, '[data-tt]', function (el) {
       var v = el.getAttribute('data-tt').split('|');
@@ -299,6 +305,99 @@ function veNhatKy(c) {
           '<td class="mono">' + HM.esc(c.song(a, 'by')) + '</td></tr>';
       }).join('') + '</tbody></table></div>',
     chan: HT.fmt.n(ds.length) + (c.lang === 'vi' ? ' dòng · đang hiển thị 150 dòng gần nhất' : ' entries · latest 150 shown')
+  });
+}
+
+/* =====================================================================
+   TAB 2b — NHẬT KÝ ĐĂNG NHẬP
+   ---------------------------------------------------------------------
+   Tab bên cạnh ghi NGƯỜI TA LÀM GÌ; tab này ghi NGƯỜI TA VÀO LÚC NÀO.
+
+   Cột Địa chỉ IP có mặt nhưng luôn trống, và ô cảnh báo trên đầu nói vì
+   sao. Ô ấy KHÔNG truyền khoá dong, nên không tắt vĩnh viễn được: một
+   lời nhắc rằng con số này chưa có thì không được phép biến mất.
+   ===================================================================== */
+function veDangNhap(c, het) {
+  var vi = c.lang === 'vi';
+  var ds = het;
+  if (LOC.cong) ds = ds.filter(function (d) { return d.cong === LOC.cong; });
+  if (LOC.ket) ds = ds.filter(function (d) { return d.ket === LOC.ket; });
+
+  var demCong = { '': het.length, 'doi-tac': 0, 'noi-bo': 0 };
+  var demKet = { '': het.length, ok: 0, 'tu-choi': 0 };
+  het.forEach(function (d) { demCong[d.cong] = (demCong[d.cong] || 0) + 1; demKet[d.ket] = (demKet[d.ket] || 0) + 1; });
+
+  function pill(thuoc, khoa, nhan, dem, dangChon) {
+    return '<button type="button" class="pill' + (dangChon ? ' on' : '') + '" ' + thuoc + '="' + HM.esc(khoa) + '">' +
+      HM.esc(nhan) + ' <b>' + HT.fmt.n(dem || 0) + '</b></button>';
+  }
+  function tenMay(d) {
+    var ten = d.thietBi === 'may-tinh' ? (vi ? 'Máy tính' : 'Computer')
+      : d.thietBi === 'dien-thoai' ? (vi ? 'Điện thoại' : 'Phone')
+      : d.thietBi === 'may-bang' ? (vi ? 'Máy tính bảng' : 'Tablet')
+      : (vi ? 'Không nhận ra' : 'Unrecognised');
+    return [ten, d.trinhDuyet, d.heDieuHanh].filter(Boolean).join(' · ');
+  }
+
+  var canh = HM.ghi({
+    kieu: 'warn',
+    tieuDe: HM.esc(vi ? 'Cột Địa chỉ IP trống, và sẽ trống cho tới khi có máy chủ'
+                      : 'The IP address column is empty, and stays empty until there is a server'),
+    than: HM.esc(vi
+      ? 'Bản mẫu chạy hoàn toàn trong trình duyệt, không có máy chủ, nên không đọc được địa chỉ IP. Trình duyệt biết tên của chính nó nhưng không biết địa chỉ của chính nó — vì vậy cột Thiết bị có số thật còn cột Địa chỉ IP thì không. Trên hệ thật, địa chỉ đọc từ kết nối tới máy chủ, không bao giờ do trình duyệt tự khai; máy chủ điền thêm địa chỉ IP và quốc gia suy ra từ địa chỉ ấy.'
+      : 'This prototype runs entirely in the browser with no server, so it cannot read an IP address. A browser knows its own name but not its own address — which is why the Device column holds real values and the IP address column does not. On the real system the address is read from the connection to the server, never declared by the browser; the server fills in the IP address and the country derived from it.')
+  });
+
+  var loc = '<div class="card-h" style="padding-bottom:12px;gap:7px;flex-wrap:wrap">' +
+    pill('data-dncong', '', vi ? 'Tất cả' : 'All', demCong[''], !LOC.cong) +
+    pill('data-dncong', 'doi-tac', vi ? 'Cổng đối tác' : 'Partner portal', demCong['doi-tac'], LOC.cong === 'doi-tac') +
+    pill('data-dncong', 'noi-bo', vi ? 'Cổng nội bộ' : 'Internal portal', demCong['noi-bo'], LOC.cong === 'noi-bo') +
+    '<span style="flex:1"></span>' +
+    pill('data-dnket', '', vi ? 'Mọi kết quả' : 'Any result', demKet[''], !LOC.ket) +
+    pill('data-dnket', 'ok', vi ? 'Vào được' : 'Allowed', demKet.ok, LOC.ket === 'ok') +
+    pill('data-dnket', 'tu-choi', vi ? 'Bị từ chối' : 'Refused', demKet['tu-choi'], LOC.ket === 'tu-choi') +
+    '</div>';
+
+  var than = canh + loc + (ds.length
+    ? '<div class="tw"><table class="t"><thead><tr>' +
+      '<th style="width:150px">' + (vi ? 'Thời điểm' : 'When') + '</th>' +
+      '<th style="width:120px">' + (vi ? 'Cổng' : 'Portal') + '</th>' +
+      '<th>' + (vi ? 'Người vào' : 'Who') + '</th>' +
+      '<th style="width:100px">' + (vi ? 'Vai trò' : 'Role') + '</th>' +
+      '<th style="width:170px">' + (vi ? 'Địa chỉ IP' : 'IP address') + '</th>' +
+      '<th style="width:200px">' + (vi ? 'Thiết bị' : 'Device') + '</th>' +
+      '<th style="width:80px">' + (vi ? 'Số lần' : 'Times') + '</th></tr></thead><tbody>' +
+      ds.slice(0, 150).map(function (d) {
+        var tuChoi = d.ket === 'tu-choi';
+        return '<tr><td class="num mono">' + HM.esc(HT.fmt.luc(d.at)) + '</td>' +
+          '<td>' + HM.tag(d.cong === 'noi-bo' ? (vi ? 'Nội bộ' : 'Internal') : (vi ? 'Đối tác' : 'Partner'), tuChoi ? 'no' : 'info') +
+            (tuChoi ? ' ' + HM.tag(vi ? 'bị từ chối' : 'refused', 'no') : '') + '</td>' +
+          '<td class="mono">' + HM.esc(d.email || (vi ? '(không rõ)' : '(unknown)')) +
+            (d.cua || d.nhanSu ? '<div class="muted" style="font-size:12px">' + HM.esc(d.cua || d.nhanSu) + (d.ben ? ' · ' + HM.esc(d.ben) : '') + '</div>' : '') + '</td>' +
+          '<td>' + (d.vai ? HM.tag(d.vai, 'info') : '') + '</td>' +
+          '<td class="mono nil">' + HM.esc(vi ? 'chưa có · bản mẫu' : 'none · prototype') + '</td>' +
+          '<td>' + HM.esc(tenMay(d)) + '</td>' +
+          '<td class="num">' + HT.fmt.n(d.soLan) +
+            (d.soLan > 1 ? '<div class="muted" style="font-size:12px">' + HM.esc(HT.fmt.luc(d.denLuc)) + '</div>' : '') + '</td></tr>';
+      }).join('') + '</tbody></table></div>'
+    : HM.trong({
+        icon: 'clock',
+        tieuDe: vi ? 'Nhật ký đăng nhập đang rỗng' : 'The sign-in log is empty',
+        moTa: vi
+          ? 'Nhật ký bắt đầu rỗng: bản mẫu không gieo sẵn lần đăng nhập nào. Đổi tài khoản ở cổng đối tác hoặc đổi nhân viên ở cột trái rồi quay lại — mỗi lần sẽ thêm một dòng.'
+          : 'The log starts empty: the prototype seeds no sign-ins. Switch accounts in the partner portal, or switch staff in the left column, and come back — each switch adds a line.'
+      }));
+
+  return HM.the({
+    h2: vi ? 'Nhật ký đăng nhập' : 'Sign-in log',
+    p: vi
+      ? 'Mỗi lần mở cổng bằng một tài khoản để lại một dòng: ai vào, cổng nào, lúc nào, bằng thiết bị gì. Vào lại trong vòng 30 phút thì gộp vào dòng cũ và cộng số lần. Không dòng nào xoá được.'
+      : 'Every sign-in leaves a line: who, which portal, when, on what device. A return within 30 minutes merges into the existing line and raises its count. No line can be deleted.',
+    thoBody: true,
+    than: than,
+    chan: HT.fmt.n(ds.length) + (vi
+      ? ' dòng · hiển thị 150 dòng gần nhất · trần bản mẫu 300 dòng · giữ 180 ngày rồi tự xoá'
+      : ' entries · latest 150 shown · prototype cap 300 · kept 180 days then purged')
   });
 }
 
