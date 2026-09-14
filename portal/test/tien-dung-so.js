@@ -200,5 +200,56 @@ kiem("mọi khoản tạm ứng: đã thu hồi không vượt gốc", () => {
   return A.advances.list().length + " khoản";
 });
 
+/* ---------------------------------------------------------------------
+   5. Nghệ sĩ độc lập VẪN chia sẻ doanh thu với Haustek
+   ---------------------------------------------------------------------
+   "Độc lập nhận toàn bộ phần sau phí" rất dễ bị đọc thành "Haustek không
+   thu gì của họ". Không phải: phí hợp đồng cắt trước, y như mọi đối tác.
+   Cái họ không có là lớp cắt THỨ HAI (bảng tỷ lệ label ↔ nghệ sĩ), vì
+   không có label đứng giữa. Cổng của họ chỉ hiện số sau phí; đối soát nội
+   bộ phải tách phí ra, không thì không ai nhìn thấy con số ấy.
+   --------------------------------------------------------------------- */
+kiem("Haustek thu phí hợp đồng của nghệ sĩ độc lập, không phải thu 0", () => {
+  const ky = A.periods.filter(p => A.isApproved(p.k)).slice(-1)[0];
+  const d = A.phiTheoLoaiChu(ky.idx);
+  const indie = d.rows.find(r => r.loai === "indie");
+  must(indie, "đối soát không tách riêng nghệ sĩ độc lập");
+  must(indie.gopGhiNhan > 0, "kỳ này nghệ sĩ độc lập không có doanh thu để kiểm");
+  must(indie.phi > 0, "phí thu của nghệ sĩ độc lập bằng 0 — họ phải chia sẻ doanh thu như mọi đối tác");
+  must(indie.phiPct > 1, "tỷ lệ phí của nghệ sĩ độc lập chỉ " + indie.phiPct + "%");
+  const lb = d.rows.find(r => r.loai === "label");
+  must(Math.abs(indie.phiPct - lb.phiPct) < 5, "phí độc lập " + indie.phiPct + "% lệch xa phí label " + lb.phiPct + "%");
+  return "độc lập: gộp " + indie.gopGhiNhan.toFixed(2) + " · phí " + indie.phi.toFixed(2) + " (" + indie.phiPct + "%) · trả họ " + indie.traDoiTac.toFixed(2);
+});
+
+kiem("đối soát cân từng dòng: gộp ghi nhận = phí + trả đối tác", () => {
+  const xau = [];
+  A.periods.forEach(p => {
+    const d = A.phiTheoLoaiChu(p.idx);
+    d.rows.forEach(r => {
+      if (Math.abs(r.gopGhiNhan - (r.phi + r.traDoiTac)) > 0.05)
+        xau.push(p.k + " " + r.loai + ": " + r.gopGhiNhan + " ≠ " + r.phi + " + " + r.traDoiTac);
+    });
+    if (Math.abs(d.tong.gopGhiNhan - (d.tong.phi + d.tong.traDoiTac)) > 0.05)
+      xau.push(p.k + " tổng lệch");
+  });
+  must(!xau.length, xau.slice(0, 3).join(" · "));
+  return A.periods.length + " kỳ × 2 loại chủ bài";
+});
+
+kiem("cổng của nghệ sĩ độc lập không mang một trường phí nào", () => {
+  const ky = A.periods.filter(p => A.isApproved(p.k)).slice(-1)[0];
+  const a = A.artists.find(x => x.labelId < 0);
+  const goi = JSON.stringify([api.summary("artist", a.id, ky.k, "rec"), api.explain("artist", a.id, ky.k)]);
+  ["\"fee\"", "\"feePct\"", "\"gross\"", "\"ghiNhan\"", "\"bienGia\"", "phiHaustek"].forEach(x => {
+    must(goi.indexOf(x) < 0, "gói của nghệ sĩ độc lập mang " + x);
+  });
+  const s = api.summary("artist", a.id, ky.k, "rec");
+  const d = A.phiTheoLoaiChu(ky.idx);
+  must(s.total > 0, "nghệ sĩ này không có tiền ở kỳ " + ky.k);
+  must(s.total < d.rows.find(r => r.loai === "indie").gopGhiNhan, "số cổng hiện lớn hơn cả gộp ghi nhận của nhóm");
+  return "cổng hiện " + s.total.toFixed(2) + " USD, không trường phí nào";
+});
+
 console.log("\n" + pass + " đạt · " + hong.length + " hỏng");
 process.exit(hong.length ? 1 : 0);

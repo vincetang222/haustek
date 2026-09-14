@@ -32,6 +32,9 @@ HT.dangKy({
       tgKhoa: 'Đã chốt', tgChua: 'Chưa chốt',
       xemTruoc: 'Bảng thanh toán nếu xét duyệt kỳ ngay bây giờ',
       seChi: 'Sẽ thanh toán', donSang: 'Chuyển sang kỳ sau', thuTamUng: 'Thu hồi tạm ứng',
+      phiH1: 'Phần Haustek giữ lại của kỳ này',
+      phiMo: 'Phí hợp đồng thu trên gộp ghi nhận, tách theo loại chủ bài. Nghệ sĩ độc lập vẫn chia sẻ doanh thu như mọi đối tác; khác biệt duy nhất là phần sau phí về hết cho họ vì không có label đứng giữa. Cổng đối tác chỉ hiện số sau phí của chính họ, không hiện dòng này.',
+      pcLoai: 'Chủ bài', pcGop: 'Gộp ghi nhận', pcPhi: 'Phí Haustek', pcTra: 'Trả đối tác', pcBen: 'Số bên', pcBai: 'Số bài', pcTong: 'Tổng kỳ',
       benNhan: 'bên thụ hưởng', boQua: 'Xét duyệt kèm ghi nhận ngoại lệ',
       canhBoQua: 'Ngoại lệ ghi vĩnh viễn vào hồ sơ xét duyệt kèm tên người duyệt. Chỉ dùng khi chắc lý do.',
       lyDo: 'Lý do', nguoiDuyet: 'Người xét duyệt'
@@ -49,6 +52,9 @@ HT.dangKy({
       tgKhoa: 'Locked', tgChua: 'Not locked',
       xemTruoc: 'Payout table if approved now',
       seChi: 'Payable', donSang: 'Carried to next period', thuTamUng: 'Recouped against advances',
+      phiH1: 'What Haustek retains this period',
+      phiMo: 'The contract fee charged on recognised gross, split by who owns the track. Independent artists share revenue like every other partner; the only difference is that everything after the fee goes to them, because there is no label in between. The partner portal shows only their own post-fee figure and never this breakdown.',
+      pcLoai: 'Track owner', pcGop: 'Recognised gross', pcPhi: 'Haustek fee', pcTra: 'To partners', pcBen: 'Parties', pcBai: 'Tracks', pcTong: 'Period total',
       benNhan: 'payees', boQua: 'Approve, overriding unmet conditions',
       canhBoQua: 'The override is written permanently to the approval record with your name. Only when you are sure.',
       lyDo: 'Reason', nguoiDuyet: 'Approved by'
@@ -365,6 +371,44 @@ function veXem(c) {
     chan: c.lang === 'vi'
       ? 'Tổng được hưởng của kỳ là ' + HM.esc(c.tien2(tong.earned)) + ', bằng đúng “phần nghệ sĩ được hưởng” cộng “phần label được hưởng” ở trang tổng quan.'
       : 'Total earned this period is ' + HM.esc(c.tien2(tong.earned)) + ' — exactly artists plus labels from the overview.'
+  }) + vePhi(c);
+}
+
+/* Phần Haustek giữ lại, tách theo loại chủ bài. Đối tác không bao giờ thấy
+   bảng này; nội bộ thì phải thấy, vì nó là chỗ duy nhất trả lời "kỳ này
+   Haustek thu của ai bao nhiêu" — kể cả của nghệ sĩ độc lập. */
+function vePhi(c) {
+  var A = c.A, t = c.t;
+  var d = HM.nho(A, 'philoai:' + c.ky.idx, function () { return A.phiTheoLoaiChu(c.ky.idx); });
+  var P = HB.dayMau();
+  return HM.the({
+    h2: HM.esc(t('phiH1')), p: HM.esc(t('phiMo')), thoBody: true,
+    than: '<div class="tw"><table class="t"><thead><tr>' +
+      '<th>' + HM.esc(t('pcLoai')) + '</th>' +
+      '<th class="num">' + HM.esc(t('pcGop')) + '</th>' +
+      '<th class="num">' + HM.esc(t('pcPhi')) + '</th>' +
+      '<th class="num">' + HM.esc(t('pcTra')) + '</th>' +
+      '<th class="num">' + HM.esc(t('pcBen')) + '</th>' +
+      '<th class="num">' + HM.esc(t('pcBai')) + '</th></tr></thead><tbody>' +
+      d.rows.map(function (r) {
+        return '<tr><td><b>' + HM.esc(c.song(r, 'ten')) + '</b></td>' +
+          '<td class="num">' + HM.esc(c.tien2(r.gopGhiNhan)) + '</td>' +
+          '<td class="num band"><b>' + HM.esc(c.tien2(r.phi)) + '</b>' +
+            '<div class="muted" style="font-size:11px">' + HM.esc(HT.fmt.n(r.phiPct) + '%') + '</div></td>' +
+          '<td class="num">' + HM.esc(c.tien2(r.traDoiTac)) + '</td>' +
+          '<td class="num">' + HM.esc(HT.fmt.n(r.soBen)) + '</td>' +
+          '<td class="num">' + HM.esc(HT.fmt.n(r.bai)) + '</td></tr>';
+      }).join('') +
+      '<tr class="tong"><td><b>' + HM.esc(t('pcTong')) + '</b></td>' +
+      '<td class="num"><b>' + HM.esc(c.tien2(d.tong.gopGhiNhan)) + '</b></td>' +
+      '<td class="num band"><b>' + HM.esc(c.tien2(d.tong.phi)) + '</b>' +
+        '<div class="muted" style="font-size:11px">' + HM.esc(HT.fmt.n(d.tong.phiPct) + '%') + '</div></td>' +
+      '<td class="num"><b>' + HM.esc(c.tien2(d.tong.traDoiTac)) + '</b></td>' +
+      '<td class="num">—</td><td class="num">—</td></tr>' +
+      '</tbody></table></div>' +
+      '<div style="padding:12px 14px 2px">' + HB.chia(d.rows.map(function (r, i) {
+        return { ten: c.song(r, 'ten') + ' · ' + (c.lang === 'vi' ? 'phí' : 'fee'), gt: r.phi, mau: P[i] };
+      })) + '</div>'
   });
 }
 

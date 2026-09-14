@@ -983,7 +983,10 @@ const rates = {
   /* bảng thô cho trang Tỷ lệ (bản sao, không phải tham chiếu vào state) */
   raw() { return state.rates.map(r => Object.assign({}, r, { noteEn: r.noteEn || ghiChuEn(r.note), byEn: r.by === "khởi tạo" ? "seed" : r.by })); },
   rateFor(partyKey, periodKey) {
-    /* Nghệ sĩ độc lập: 100% phần sau phí, không có bảng. Chỉ label có tỷ
+    /* Nghệ sĩ độc lập VẪN chia sẻ doanh thu với Haustek: phí hợp đồng
+       (feeOf) đã cắt trước bước này. Cái họ không có là lớp cắt THỨ HAI —
+       bảng tỷ lệ chỉ tồn tại để chia giữa label và nghệ sĩ của label, mà
+       độc lập thì không có label đứng giữa. Chỉ label có tỷ
        lệ (phần nghệ sĩ trong label được hưởng). */
     if (partyKey[0] === "A") return 1;
     const ck = partyKey + "|" + periodKey;
@@ -997,7 +1000,7 @@ const rates = {
     return v;
   },
   add(partyKey, rate, fromPeriodKey, by, note) {
-    if (String(partyKey)[0] === "A") throw new Error("Nghệ sĩ độc lập nhận 100% sau phí Haustek; tỷ lệ chia chỉ đặt cho label");
+    if (String(partyKey)[0] === "A") throw new Error("Nghệ sĩ độc lập nhận toàn bộ phần sau phí Haustek; tỷ lệ chia chỉ đặt cho label");
     if (!(rate > 0 && rate < 1)) throw new Error("Tỷ lệ phải nằm giữa 0 và 1");
     if (state.approved[fromPeriodKey]) throw new Error("Kỳ " + fromPeriodKey + " đã xét duyệt, không đặt được tỷ lệ mới cho kỳ đã chốt sổ");
     state.rates = state.rates.filter(r => !(r.partyKey === partyKey && r.from === fromPeriodKey));
@@ -2202,6 +2205,44 @@ function advanceBalance(partyKey) {
   if (!a) return 0;
   const used = Object.values(a.byPeriod || {}).reduce((s, v) => s + v, 0);
   return cents(Math.max(a.opening - used, 0));
+}
+/* PHÍ HAUSTEK CỦA MỘT KỲ, TÁCH THEO LOẠI CHỦ BÀI.
+   Đối tác chỉ thấy số NET của mình, đúng như thoả thuận — cổng của họ không
+   có chỗ nào hiện phí. Nhưng nội bộ thì đối soát phải nói ra: kỳ này Haustek
+   thu bao nhiêu, thu của ai. Đặc biệt là NGHỆ SĨ ĐỘC LẬP: họ vẫn chia sẻ
+   doanh thu với Haustek như mọi đối tác khác, chỉ khác là phần sau phí về
+   hết cho họ, không có lớp cắt thứ hai như nghệ sĩ thuộc label. Không tách
+   ra ở đây thì rất dễ đọc nhầm thành "Haustek không thu gì của indie". */
+function phiTheoLoaiChu(pIdx) {
+  const pk = PERIODS[pIdx].k;
+  const nhom = {
+    label:  { loai: "label",  ten: "Bài của label",           tenEn: "Label-owned tracks" },
+    indie:  { loai: "indie",  ten: "Nghệ sĩ độc lập",          tenEn: "Independent artists" }
+  };
+  Object.keys(nhom).forEach(k => { nhom[k].gopGhiNhan = 0; nhom[k].phi = 0; nhom[k].traDoiTac = 0; nhom[k].bai = 0; nhom[k].ben = new Set(); });
+  for (let i = 0; i < N; i++) {
+    const g = grossRec(i, pIdx);
+    if (g <= 0) continue;
+    const s = splitRec(i, g, pk, pIdx);
+    const k = tLabel[i] >= 0 ? "label" : "indie";
+    const n = nhom[k];
+    n.gopGhiNhan = cents(n.gopGhiNhan + s.ghiNhan);
+    n.phi = cents(n.phi + s.fee);
+    n.traDoiTac = cents(n.traDoiTac + s.labelCut + s.artist);
+    n.bai++;
+    n.ben.add(tLabel[i] >= 0 ? "L:" + tLabel[i] : "A:" + tArtist[i]);
+  }
+  const ds = Object.keys(nhom).map(k => {
+    const n = nhom[k];
+    return { loai: n.loai, ten: n.ten, tenEn: n.tenEn, gopGhiNhan: n.gopGhiNhan, phi: n.phi,
+      traDoiTac: n.traDoiTac, bai: n.bai, soBen: n.ben.size,
+      phiPct: n.gopGhiNhan > 0 ? Math.round(n.phi / n.gopGhiNhan * 1000) / 10 : 0 };
+  });
+  const tong = ds.reduce((o, x) => ({ gopGhiNhan: cents(o.gopGhiNhan + x.gopGhiNhan), phi: cents(o.phi + x.phi), traDoiTac: cents(o.traDoiTac + x.traDoiTac) }),
+    { gopGhiNhan: 0, phi: 0, traDoiTac: 0 });
+  return { periodKey: pk, rows: ds, tong: Object.assign(tong, { phiPct: tong.gopGhiNhan > 0 ? Math.round(tong.phi / tong.gopGhiNhan * 1000) / 10 : 0 }),
+    note: "Phí hợp đồng Haustek thu trên gộp ghi nhận của kỳ, tách theo loại chủ bài. Nghệ sĩ độc lập vẫn chia sẻ doanh thu như mọi đối tác; phần sau phí về hết cho họ vì không có label đứng giữa. Cổng đối tác chỉ hiện số sau phí của chính họ.",
+    noteEn: "Haustek's contract fee on the period's recognised gross, split by who owns the track. Independent artists share revenue like every other partner; what remains after the fee goes entirely to them because there is no label in between. The partner portal shows only their own net figure." };
 }
 function earnedByParty(pIdx) {
   const out = new Map();
@@ -5025,7 +5066,7 @@ const LOI_EN = {
   "Mức trả đối tác phải là số dương dưới 100 USD / 1.000 lượt": "The partner rate must be positive and under USD 100 per 1,000 streams",
   "Nghệ sĩ này không thuộc label": "This artist is not on the label",
   "Nghệ sĩ này không thuộc label của bạn": "This artist is not on your label",
-  "Nghệ sĩ độc lập nhận 100% sau phí Haustek; tỷ lệ chia chỉ đặt cho label": "Independent artists keep 100% after the Haustek fee; rates are set for labels only",
+  "Nghệ sĩ độc lập nhận toàn bộ phần sau phí Haustek; tỷ lệ chia chỉ đặt cho label": "Independent artists keep everything after the Haustek fee; rates are set for labels only",
   "Ngày bắt đầu / kết thúc phải theo yyyy-mm-dd": "Start / end dates must be yyyy-mm-dd",
   "Ngày hết hạn phải sau ngày ký": "The end date must be after the signing date",
   "Ngày hợp đồng phải theo yyyy-mm-dd": "Contract dates must be yyyy-mm-dd",
@@ -6776,7 +6817,7 @@ const admin = {
   titleOf: i => tTitle[i], isrcOf: i => tIsrc[i], typeOf: i => TYPES[tType[i]],
   artistOf: i => ARTISTS[tArtist[i]], labelOf: i => (tLabel[i] >= 0 ? LABELS[tLabel[i]] : null),
   streamsOf: (i, p) => recStreams[i * P + p],
-  grossRec, grossPub, grossRecByFeed, grossOf, splitRec, splitDim, mineOf, agg, scopeOf,
+  grossRec, grossPub, grossRecByFeed, grossOf, splitRec, splitDim, mineOf, agg, scopeOf, phiTheoLoaiChu,
   /* nền tảng, quy trình phát hành, cây label */
   platformNames: PLAT_NAMES, platformNamesEn: PLAT_NAMES_EN, platformSpm: PLAT_SPM,
   splitStores, splitStreams, trackMatrix,

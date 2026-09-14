@@ -128,7 +128,9 @@ gộp thật (báo cáo nền tảng)
   → phí Haustek theo hợp đồng (contracts[bên].feePct)
   → phần sau phí:
        label:       labelCut + artist theo rates (tỷ lệ nghệ sĩ trong label)
-       độc lập:     100% về nghệ sĩ (rateFor("A:") = 1, không có bảng)     ← D1
+       độc lập:     toàn bộ phần sau phí về nghệ sĩ (rateFor("A:") = 1)   ← D1
+                    (Haustek VẪN thu phí hợp đồng như mọi đối tác; chỉ là
+                     không có label đứng giữa nên không có lớp cắt thứ hai)
   → earnedByParty(kỳ):
        label tự trả (contracts[L:].labelTuTra): label nhận labelCut + artist ← D2
        mặc định: Haustek trả thẳng phần nghệ sĩ
@@ -213,7 +215,7 @@ viết nội bộ là "Haustek", không lộ id / email nhân sự (`giauNhanSu`
 
 | # | Quyết định | Ở đâu |
 |---|---|---|
-| D1 | Nghệ sĩ độc lập nhận 100% phần sau phí; Haustek chỉ lấy phí hợp đồng | `rates.rateFor`, di trú 3 |
+| D1 | Nghệ sĩ độc lập vẫn chia sẻ doanh thu với Haustek theo phí hợp đồng; phần sau phí về hết cho họ, không có lớp cắt thứ hai. Cổng của họ chỉ hiện số sau phí; đối soát nội bộ tách phí ra | `rates.rateFor`, `phiTheoLoaiChu`, di trú 3 |
 | D2 | Nghệ sĩ thuộc label trả theo hợp đồng từng label (`labelTuTra`); mặc định Haustek trả thẳng | `earnedByParty`, `parties.datLabelTuTra` |
 | D3 | Tách ba lớp; người cộng tác đã nhận được trả thật, trừ vào phần của chủ | `chiaSeHieuLuc`, `runPayout`, `acceptSplit` |
 | D4 | Huỷ chốt có bù trừ, không xoá bảng đã duyệt | `revoke`, `soCaiCua`, `chiTraDao` |
