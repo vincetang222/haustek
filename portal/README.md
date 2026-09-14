@@ -9,6 +9,8 @@ Hai trang, một lõi dữ liệu. Mở bằng trình duyệt là chạy, không
 | `haustek-core.js` | cả hai | Lõi dữ liệu — đóng vai database + API |
 | `haustek-ui.css` | cả hai | Bảng màu và các thành phần giao diện |
 | `screens/*.js` | intranet | Mỗi file một màn hình, tự đăng ký vào khung |
+| `crm.html` | A&R và Manager | CRM: lead, cơ hội, khách hàng, duyệt giá, bàn giao deal đã ký sang portal |
+| `CRM-HANDOFF.md` | — | Giao kèo bàn giao CRM → portal, và những gì nó chưa làm |
 
 ## Mười màn hình intranet
 
