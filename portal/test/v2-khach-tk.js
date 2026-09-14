@@ -1,7 +1,7 @@
 /* Cổng khách nhìn rất khác nhau tuỳ người đang đăng nhập: label không có
-   tab tác quyền, nghệ sĩ độc lập có chặng "Haustek giữ thêm", người đang
-   nợ tạm ứng có cả một màn riêng. Quét MỘT tài khoản là quét đúng một
-   trong số đó. Đây quét hết. */
+   tab tác quyền, nghệ sĩ độc lập nhận trọn phần sau phí, nghệ sĩ thuộc
+   label tự trả thấy ghi "label trả", người đang nợ tạm ứng có cả một màn
+   riêng. Quét MỘT tài khoản là quét đúng một trong số đó. Đây quét hết. */
 const { chromium } = require('playwright');
 const dungFontThat = require('./font-that.js');
 

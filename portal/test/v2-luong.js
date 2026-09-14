@@ -103,7 +103,6 @@ const B = 'http://127.0.0.1:8099/v2/';
       if (!A.isApproved(pp.k)) return;
       const rows = A.payoutOf(pp.k) || [];
       rows.forEach(r => {
-        if (r.held) return;
         const trai = c(r.carryIn + r.earned - r.recoup), phai = c(r.payable + r.carryOut);
         if (Math.abs(trai - phai) > 0.02) out.push(pp.label + ' ' + r.partyKey + ': ' + trai + ' ≠ ' + phai);
       });

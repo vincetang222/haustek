@@ -385,6 +385,92 @@ Cổng đối tác không có và không nên có: bảng tính này đọc ra p
 giữ lại, phí môi giới và biên lợi nhuận. Đối tác muốn biết mình ứng được bao
 nhiêu thì vẫn dùng `k-tam-ung`, chạy trên `advanceOfferOf()` đã lược sạch.
 
+## Vòng 22: hạ tầng có tên, hội đồng qua mọi cửa, tiền ba lớp, song ngữ trọn hai chiều
+
+Vòng này đi theo sáu ý của người dùng, gộp thành bốn bậc. Kiến trúc tổng thể
+(tầng, cổng, lược đồ, mã định danh, ba lớp, chuỗi tiền, quyền, ticket, song
+ngữ, quy ước đặt tên, tám quyết định đã chốt D1–D8) nằm ở
+[`../KIEN-TRUC.md`](../KIEN-TRUC.md); phần dưới chỉ ghi cái gì đổi và vì sao.
+
+### 22a · Hạ tầng: lược đồ, di trú, mã định danh, ranh giới trang
+
+Trước vòng này `state` là một object lớn dần theo từng vòng, không ai biết
+nó có bao nhiêu khoá; mã hồ sơ, mã ticket, mã tạm ứng mỗi chỗ tự đếm một
+kiểu; bản v1 (`screens/`, `dashboard.html`, `haustek-ui.css`) vẫn nằm cạnh
+v2 và vẫn được kiểm thử. Bây giờ:
+
+- `LUOC_DO` liệt kê đủ 54 khoá của `state`, mỗi khoá có kiểu; `CFG.LUOC_DO_VER`
+  ghi phiên bản; `DI_TRU` là dãy bước nâng từ bản cũ lên bản mới, chạy khi
+  nạp từ `localStorage`. Thêm khoá mà quên khai là `test/luoc-do.js` đỏ.
+- `MA_DINH_DANH` là bảng tiền tố duy nhất (HSTK-, HT-, RT-, DX-, BT-, CL-, U…);
+  `sinhMa(loai)` là hàm duy nhất phát mã; `khoiTaoMaDem` đọc lại bộ đếm sau
+  khi nạp nên không bao giờ cấp trùng — `test/ma-dinh-danh.js`.
+- `test/ranh-gioi-trang.js` đọc mã nguồn từng trang: trang `k-*` không được
+  chạm `HAUSTEK.admin`, trang nội bộ không được ghi thẳng `localStorage`.
+- Gỡ hẳn bản v1 và ba bài kiểm của nó (`smoke.js`, `flow.js`, `edge.js`).
+  `portal/README.md` viết lại cho v2.
+
+### 22b · AAA: hội đồng qua mọi cửa, giám đốc qua cửa như mọi vai
+
+Người dùng đúng: giám đốc cũng phải qua cửa, và cần một loại tài khoản đi
+qua được hết. Cách làm:
+
+- Khối **hội đồng** (`hoi-dong`) đứng đầu cây tổ chức, vai `bod`, cờ
+  `aaa:true`. `laAAA()` là đường tắt duy nhất, kiểm ở `coQuyenNhom` và
+  `manCoQuyen`; không có bảng nào liệt kê `bod` — thêm trang, thêm nhóm là
+  hội đồng tự có, không phải nhớ cập nhật.
+- **Giám đốc** (`mgmt`) bị bỏ bốn nhóm và một trang mà trước đây có vì tiện:
+  `nhapLieu`, `kiemSo`, `tyGia`, `phatHanhHo` và trang `nhap-so-lieu`.
+  Giám đốc xét duyệt, không gõ số mình duyệt.
+- `giamSat` là nhóm có tên (trước là `role === "mgmt"` rải ở trang); `tyGia`
+  tách khỏi nhóm chốt kỳ, chỉ kế toán có.
+- Chỉ hội đồng đưa người vào / ra khối hội đồng; thành viên cuối cùng không
+  khoá được (`soAAAConLai`). Nhật ký ghi đúng email người làm, kể cả hội đồng.
+- **Ticket thành bình luận + tick** (kiểu Lark) thay cho chat: mỗi ticket
+  một dãy bình luận có trần số dòng và độ dài (`tickets.gioiHan`), tới ai
+  người đó viết rồi tick; hai cổng cùng một dữ liệu, cùng một luật.
+
+`test/aaa.js` — 11 phép, đọc cả mã nguồn để chắc không còn `role === "mgmt"`.
+
+### 22c · Tiền: ba lớp người dùng ↔ bên thụ hưởng ↔ vai trên bài
+
+Câu hỏi của người dùng — "bài có nhiều người, mỗi người phải tạo client ID
+để theo dõi đúng không?" — lộ ra mô hình cũ chỉ có hai lớp. Bốn quyết định
+(D1–D4 trong KIEN-TRUC) đổi chuỗi tiền:
+
+| Trước | Sau |
+|---|---|
+| Nghệ sĩ độc lập bị áp `rateFor` như nghệ sĩ có label, Haustek "giữ thêm" một phần vô cớ | Độc lập nhận **100%** phần sau phí (`rateFor` trả 1 cho `A:`); di trú 3 sửa dữ liệu cũ |
+| Nghệ sĩ thuộc label luôn do Haustek trả thẳng | Theo hợp đồng từng label: `labelTuTra` — label tự trả thì cổng nghệ sĩ ghi "label trả" |
+| Người cộng tác trên bài chỉ là dòng ghi chú, không có tiền | Tách ba lớp: một đăng nhập nhiều bên thụ hưởng (`ben[]`), bên `N:U####` có client ID `HTK-N####`; lời mời chia sẻ → nhận → `runPayout` trả thật, trừ vào phần chủ bài |
+| Huỷ chốt xoá `payouts[pk]` — số đã trả biến mất | Không xoá; ghi dòng đảo `chiTraDao[pk]`, sổ cái (`soCaiCua`) cộng lại, ví có thể **âm** (`amNo`) và chặn rút cho tới khi bù xong |
+
+Cổng nội bộ: `chi-tra` gắn nhãn người nhận và dòng chia sẻ; `doi-tac` cho
+sales đặt `labelTuTra` và phí khi tạo; `xet-duyet` xem trước có kèm chia
+sẻ. Cổng đối tác: `k-chia-se` mời và nhận; `k-vi` ghi "label trả", nợ âm và
+bảng đảo chốt. Cổng riêng cho tài khoản `nhan` **để sau** (D7: nội bộ hoàn
+thiện trước rồi mới trỏ dữ liệu ra cổng đối tác).
+
+`test/tien-ba-lop.js` — 23 phép: độc lập 100%, label tự trả, mời/nhận/trả
+thật, huỷ chốt cân sổ, ví âm chặn rút. `qc-bat-bien.js` và `api-guard.js`
+chỉnh theo mô hình mới, vẫn xanh.
+
+### 22d · Song ngữ trọn hai chiều
+
+Bật EN mà còn tiếng Việt là do lõi ném lỗi, ghi nhật ký, đặt lý do hàng chờ,
+tên thị trường, ghi chú tạm ứng… bằng tiếng Việt, và trang cứ in ra. Cách
+sửa: lõi giữ tiếng Việt làm khoá, xuất `HAUSTEK.i18n` để dịch lúc hiện —
+`loi` (bảng 147 câu + hơn 50 mẫu có phần động), `nhatKy`, `ghiChu`, `lyDo`,
+`lanhTho`; các hàm liệt kê trả thêm trường `…En` (`titleEn`, `noteEn`,
+`whyEn`, `detailEn`, `countryEn`, `nameEn`); khung `thongBao` tự dịch khi
+đang EN; trang dùng `c.song(o,'khoa')` cho mọi chuỗi có bản EN.
+
+Hai bài kiểm giữ cửa: `test/i18n-loi.js` đọc mọi `new Error(...)` trong lõi
+và đòi bản dịch không dấu (205 phép); `test/i18n-hai-chieu.js` chạy trình
+duyệt, đổi ngôn ngữ, đi hết mọi trang và tab của hai cổng, soi mọi text node
+và thuộc tính — bật EN không còn tiếng Việt, bật VI không còn chữ khung
+tiếng Anh, ngưỡng 0.
+
 ## Vòng QC: soát lại toàn bộ logic và mã, tối ưu cho vận hành trơn tru
 
 Không thêm tính năng nào. Ba hướng soát, mỗi hướng để lại một bộ kiểm chạy
