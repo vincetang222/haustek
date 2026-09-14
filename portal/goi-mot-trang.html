@@ -824,6 +824,7 @@ table.t input[type=checkbox]{width:15px;height:15px;accent-color:var(--accent);c
 .tag.warn{background:var(--warn-lo);color:var(--warn);border-color:color-mix(in srgb,var(--warn) 22%,transparent)}
 .tag.info{background:var(--accent-lo);color:var(--accent);border-color:color-mix(in srgb,var(--accent) 22%,transparent)}
 .tag.link{background:var(--sel);color:var(--link);border-color:color-mix(in srgb,var(--link) 22%,transparent)}
+.tag.cau{white-space:normal;line-height:1.35;text-align:left}  /* thẻ mang cả câu (Báo: …) — được gãy dòng ở màn hẹp */
 .dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:6px;flex:none}
 .dot.ok{background:var(--ok)} .dot.no{background:var(--danger)}
 .dot.warn{background:var(--warn)} .dot.off{background:var(--neutral-bar)}
@@ -12754,7 +12755,7 @@ function dongBuoc(c, x, i, o) {
     '<div class="buoc-t">' +
       '<b>' + esc(tenBuoc(c, x)) + '</b>' +
       (x.gio ? '<span class="tag">' + esc(slaChu(c, x.gio)) + '</span>' : '') +
-      (x.bao ? '<span class="tag warn">' + esc((vi ? 'Báo: ' : 'Tell: ') + (vi ? x.bao : (x.baoEn || x.bao))) + '</span>' : '') +
+      (x.bao ? '<span class="tag warn cau">' + esc((vi ? 'Báo: ' : 'Tell: ') + (vi ? x.bao : (x.baoEn || x.bao))) + '</span>' : '') +
       (mo ? '<span class="buoc-m">' + esc(mo) + '</span>' : '') +
       (o.xong && o.at ? '<span class="buoc-x">' + esc((vi ? 'Đã làm · ' : 'Done · ') + HT.fmt.luc(o.at) + (o.by ? ' · ' + o.by : '')) + '</span>' : '') +
       (o.ghiChu ? '<span class="buoc-m">' + esc(o.ghiChu) + '</span>' : '') +
