@@ -609,6 +609,11 @@ function chay(cauHinh) {
     /* Ma trận phân quyền nằm ở lõi (A.quyen.man): màn nào không được cấp cho vai
        đang đăng nhập thì không có trên thanh điều hướng, không mở được qua #hash. */
     if (c.A && c.A.quyen && typeof c.A.quyen.man === 'function' && !c.A.quyen.man(m.id)) return false;
+    /* Cổng đối tác có bảng tương đương ở lõi: trang nào mở cho LOẠI BÊN nào.
+       Bên "người nhận" chỉ có bốn trang; mười bốn trang còn lại không hiện ở
+       cột trái và gõ thẳng #hash cũng không mở được. */
+    if (c.api && typeof c.api.trangMo === 'function' && c.phien && c.phien.me
+        && !c.api.trangMo(c.phien.me.role, m.id)) return false;
     if (m.vai && c.A && c.A.staff && c.A.staff.me && !(c.A.quyen && c.A.quyen.aaa()) && m.vai.indexOf(c.A.staff.me.role) < 0) return false;
     if (!m.khaDung) return true;
     try { return !!m.khaDung(c); } catch (e) { return false; }
@@ -688,6 +693,9 @@ function chay(cauHinh) {
       return '<option value="' + esc(p.k) + '"' + (p.k === kyHienTai ? ' selected' : '') + '>' +
         esc(c.t('period')) + ' ' + esc(p.label) + (p.nhan ? ' · ' + esc(p.nhan) : '') + '</option>';
     }).reverse().join('');
+    /* Cổng nào không có trang nào đọc theo kỳ (cổng người cộng tác) thì ô
+       chọn kỳ là một ô rỗng bấm được nhưng không đổi gì — giấu hẳn. */
+    sel.hidden = !kys.length;
 
     document.querySelectorAll('[data-th]').forEach(function (b) {
       b.classList.toggle('on', b.dataset.th === theme);

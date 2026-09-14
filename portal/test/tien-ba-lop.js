@@ -203,7 +203,14 @@ check("D3 · Một đăng nhập giữ nhiều bên: themBen / boBen; bên chín
   A.accounts.boBen(acc.id, ns.key, "test");
   a2 = st().accounts.find(a => a.id === acc.id); must(a2.ben.length === 1, "boBen sai");
   const dl = H.api.demoLogins().accounts;
-  must(dl.every(x => x.role !== "nhan"), "cổng đối tác chưa được nhận vai người nhận");
+  /* Vòng 23: cổng đối tác NAY nhận vai người nhận (D7 đã làm xong). Bên
+     "người nhận" vào cùng một cửa, nhưng chỉ mở đúng những mục của mình. */
+  const nh = dl.filter(x => x.role === "nhan");
+  must(nh.length > 0, "cổng đối tác chưa thấy tài khoản người nhận nào");
+  const s1 = H.api.session("nhan", nh[0].partyId);
+  must(s1.kind === "nhan" && !s1.hasRecording && s1.trackCount === 0, "phiên người nhận vẫn mang danh mục");
+  mustThrow(() => H.api.catalogue("nhan", nh[0].partyId, {}), /mục này/, "người nhận đọc được danh mục");
+  mustThrow(() => H.api.summary("nhan", nh[0].partyId, A.periods[0].k, "rec"), /mục này/, "người nhận đọc được doanh thu");
   return acc.email + " giữ thêm " + ns.name + " rồi bỏ";
 });
 check("D3 · accounts.add: vai nhan không cần bên; vai lạ bị chặn; bên không tồn tại bị chặn", () => {

@@ -1973,7 +1973,15 @@ for (let i = 0; i < N; i++) {
   let w = ARTISTS[a].writer ? a : ((rnd() * CFG.N_ARTISTS) | 0);
   let guard = 0; while (!ARTISTS[w].writer && guard++ < 12) w = (rnd() * CFG.N_ARTISTS) | 0;
   tW1[i] = w;
-  if (rnd() < 0.3) { tW2[i] = (rnd() * CFG.N_ARTISTS) | 0; tW1s[i] = [0.5, 0.6, 0.65][(rnd() * 3) | 0]; }
+  if (rnd() < 0.3) {
+    /* Người thứ hai phải KHÁC người thứ nhất. Trùng là bài có "hai tác giả"
+       cùng một người: chỉ mục byWriter nạp bài ấy hai lần, nên mọi chỗ cộng
+       theo phạm vi (agg, danh mục, cổng đối tác) đếm tiền tác quyền hai lần
+       trong khi earnedByParty — đường tiền thật — chỉ trả một lần. */
+    let w2 = (rnd() * CFG.N_ARTISTS) | 0;
+    if (w2 === w) w2 = (w2 + 1) % CFG.N_ARTISTS;
+    tW2[i] = w2; tW1s[i] = [0.5, 0.6, 0.65][(rnd() * 3) | 0];
+  }
   else { tW2[i] = -1; tW1s[i] = 1; }
 }
 
@@ -2028,11 +2036,11 @@ const byArtist = buildIndex(i => tArtist[i], CFG.N_ARTISTS);
 const byLabel  = buildIndex(i => tLabel[i],  CFG.N_LABELS);
 const byWriter = (() => {
   const cnt = new Int32Array(CFG.N_ARTISTS);
-  for (let i = 0; i < N; i++) { cnt[tW1[i]]++; if (tW2[i] >= 0) cnt[tW2[i]]++; }
+  for (let i = 0; i < N; i++) { cnt[tW1[i]]++; if (tW2[i] >= 0 && tW2[i] !== tW1[i]) cnt[tW2[i]]++; }
   const off = new Int32Array(CFG.N_ARTISTS + 1);
   for (let i = 0; i < CFG.N_ARTISTS; i++) off[i + 1] = off[i] + cnt[i];
   const arr = new Int32Array(off[CFG.N_ARTISTS]); const cur = off.slice(0, CFG.N_ARTISTS);
-  for (let i = 0; i < N; i++) { arr[cur[tW1[i]]++] = i; if (tW2[i] >= 0) arr[cur[tW2[i]]++] = i; }
+  for (let i = 0; i < N; i++) { arr[cur[tW1[i]]++] = i; if (tW2[i] >= 0 && tW2[i] !== tW1[i]) arr[cur[tW2[i]]++] = i; }
   return { off, arr };
 })();
 const idxOf = (ix, k) => (k >= 0 && k + 1 < ix.off.length ? ix.arr.subarray(ix.off[k], ix.off[k + 1]) : new Int32Array(0));
@@ -2699,6 +2707,12 @@ function partyKeyOfTrack(i) { return tLabel[i] >= 0 ? "L:" + tLabel[i] : "A:" + 
    "N:" + id tài khoản, mã đối tác HTK-N####). */
 const taiKhoanN = key => state.accounts.find(a => a.id === key.slice(2)) || null;
 const loaiBen = key => key[0] === "L" ? "label" : key[0] === "N" ? "nguoiNhan" : "artist";
+/* Bên có DANH MỤC (sở hữu bản ghi) chỉ gồm label và nghệ sĩ. Bên "người
+   nhận" (N:) không sở hữu bài nào, và mã của họ bám tài khoản (N:U0019)
+   chứ không phải số thứ tự — nên mọi chỗ làm +key.slice(2) rồi tra mảng
+   phải lọc bằng vị từ này trước. Thiếu một chỗ là NaN đi thẳng vào chỉ số
+   mảng, đúng cái làm hệ không dựng nổi khi thêm loại bên thứ ba. */
+const benCoDanhMuc = key => key && (key[0] === "L" || key[0] === "A");
 function partyName(key) {
   if (key[0] === "N") { const a = taiKhoanN(key); return a ? (a.ten || a.email) : key; }
   const id = +key.slice(2);
@@ -3100,7 +3114,10 @@ function nguoiVietCua(i) {
     }
   }
   const out = [{ artistId: tW1[i], share: tW1s[i] }];
-  if (tW2[i] >= 0) out.push({ artistId: tW2[i], share: 1 - tW1s[i] });
+  /* Cùng một người đứng cả hai vai trò thì là MỘT dòng 100%, không phải hai
+     dòng cộng lại — hai dòng làm mọi chỗ đếm theo người bị lặp. */
+  if (tW2[i] >= 0 && tW2[i] !== tW1[i]) out.push({ artistId: tW2[i], share: 1 - tW1s[i] });
+  else if (tW2[i] === tW1[i]) out[0].share = 1;
   return out;
 }
 function writerShare(i, artistId) { let s = 0; nguoiVietCua(i).forEach(x => { if (x.artistId === artistId) s += x.share; }); return s; }
@@ -3824,6 +3841,7 @@ function approve(pIdx, by, note, force) {
   state.approved[pk] = { at: nowISO(), by: by || "admin", note: note || "",
                          overrides: failed.map(c => c.id) };
   state.payouts[pk] = runPayout(pIdx, true);
+  xoaDemChiaSe();
   state.publishedAt = nowISO();
   audit.log("period.approve", "Xét duyệt kỳ " + PERIODS[pIdx].label + (failed.length ? " (ghi nhận ngoại lệ: " + failed.map(c => c.label).join(", ") + ")" : ""));
   store.save();
@@ -3857,6 +3875,7 @@ function revoke(pIdx, why) {
     duyetLuc: state.approved[pk].at, duyetBoi: state.approved[pk].by,
     dong: dong.map(r => ({ partyKey: r.partyKey, earned: r.earned, recoup: r.recoup, payable: r.payable, carryIn: r.carryIn, carryOut: r.carryOut, chiaSeRa: r.chiaSeRa || 0, chiaSeVao: r.chiaSeVao || 0 })) });
   delete state.payouts[pk]; delete state.approved[pk];
+  xoaDemChiaSe();
   state.publishedAt = nowISO();
   audit.log("period.revoke", "Huỷ xét duyệt kỳ " + PERIODS[pIdx].label + (why ? " · " + why : ""));
   store.save();
@@ -4493,7 +4512,7 @@ function requestWithdrawal(partyKey, amount, note, by) {
 }
 function seedWithdrawals() {
   if (state.withdrawals.length) return;
-  const parties = state.accounts.filter(a => a.role !== "admin" && a.partyKey && a.status === "active").map(a => a.partyKey);
+  const parties = state.accounts.filter(a => a.role !== "admin" && benCoDanhMuc(a.partyKey) && a.status === "active").map(a => a.partyKey);
   const seen = new Set();
   parties.forEach((pk, n) => {
     if (seen.has(pk)) return; seen.add(pk);
@@ -4526,7 +4545,7 @@ function seedWithdrawals() {
   state.withdrawals.sort((a, b) => (a.requestedAt < b.requestedAt ? 1 : -1));
 }
 function statementsOf(role, partyId) {
-  const partyKey = role === "label" ? "L:" + partyId : "A:" + partyId;
+  const partyKey = benTu(role, partyId);
   return PERIODS.filter(p => state.approved[p.k]).map(p => {
     const a = agg(role, partyId, p.idx, "rec");
     const row = (state.payouts[p.k] || []).find(r => r.partyKey === partyKey) || null;
@@ -4881,6 +4900,25 @@ function baseSplits(i) {
   }
   return out;
 }
+/* Tiền chia sẻ ĐÃ THẬT SỰ ĐỔI CHỦ: đọc từ các bảng chi trả đã duyệt, khoá
+   theo (bài, bên nhận). Đây là con số kế toán; mọi thứ tính từ phần trăm ×
+   doanh thu trọn đời chỉ là ƯỚC TÍNH và không được gọi là "đã trả". */
+let _csTra = null;
+function daTraChiaSe() {
+  if (_csTra) return _csTra;
+  const m = new Map();
+  PERIODS.forEach(p => {
+    if (!state.approved[p.k]) return;
+    (state.payouts[p.k] || []).forEach(r => {
+      (r.chiaSe || []).forEach(x => {
+        const k = x.i + "|" + r.partyKey;
+        m.set(k, cents((m.get(k) || 0) + x.amt));
+      });
+    });
+  });
+  _csTra = m; return m;
+}
+function xoaDemChiaSe() { _csTra = null; }
 function splitsOf(i, role, partyId) {
   const st = lazyState("splits", {});
   /* Mỗi chia sẻ cắt vào phần của ĐÚNG người đặt nó (goc): label thấy chia
@@ -4893,28 +4931,85 @@ function splitsOf(i, role, partyId) {
     sum += c.pct;
     const earnedRaw = cents(mine * c.pct / 100);
     const recouped = c.recoup ? Math.min(c.recoup, earnedRaw) : 0;
-    return Object.assign({}, c, { goc: gocChiaSe(c, i), earned: earnedRaw, recouped, payable: cents(c.status === "accepted" ? earnedRaw - recouped : 0), recouping: !!c.recoup && recouped < c.recoup,
-      haustekTra: c.status === "accepted" && !!c.nhan, nhanClientId: c.nhan ? partyClientId(c.nhan) : null });
+    /* HAI con số khác hẳn nhau, trước đây gộp làm một tên "payable":
+         uocTinh — phần trăm × số bạn đã nhận trọn đời trên bài. Ước tính.
+         daTra   — tiền đã thật sự ghi vào ví người ấy ở các kỳ đã duyệt.
+       Tiền chỉ đổi chủ khi chia sẻ đã NHẬN và có BÊN NHẬN (hieuLuc). Người
+       mới được mời, hay đã nhận nhưng chưa gắn bên, thì daTra = 0 dù ước
+       tính có lớn tới đâu. */
+    const hieuLuc = c.status === "accepted" && !!c.nhan;
+    return Object.assign({}, c, { goc: gocChiaSe(c, i), earned: earnedRaw, recouped,
+      uocTinh: cents(c.status === "accepted" ? earnedRaw - recouped : 0),
+      daTra: hieuLuc ? (daTraChiaSe().get(i + "|" + c.nhan) || 0) : 0,
+      hieuLuc, recouping: !!c.recoup && recouped < c.recoup,
+      haustekTra: hieuLuc, nhanClientId: c.nhan ? partyClientId(c.nhan) : null });
   });
   return { trackId: i, partyKey: partyKeyOfTrack(i), title: tTitle[i], isrc: tIsrc[i], artist: ARTISTS[tArtist[i]].name, ownerPct: Math.max(0, 100 - sum), collaborators, hasSplits: collaborators.length > 0, lifetimeMine: mine };
 }
 function splitsReport(role, partyId) { return nhoDoc("splits", role + "|" + partyId, () => splitsReportTinh(role, partyId)); }
+/* PHẦN CHIA CỦA TÔI — góc nhìn của người cộng tác, ngược hẳn với splitsOf
+   (góc nhìn chủ bài). Người cộng tác thấy: bài nào, chủ bài là ai, mình
+   giữ bao nhiêu phần trăm, còn bao nhiêu ngưỡng thu hồi, và ĐÃ NHẬN bao
+   nhiêu ở từng kỳ. KHÔNG thấy doanh thu của bài, không thấy nền tảng,
+   không thấy lãnh thổ — những thứ ấy là của chủ bài. */
+function phanChiaCua(pk) {
+  const st = state.splits || {}, tra = daTraChiaSe(), rows = [];
+  Object.keys(st).forEach(k => {
+    const i = +k; if (!(i >= 0 && i < N)) return;
+    (st[k] || []).forEach(c => {
+      if (c.nhan !== pk || c.status !== "accepted") return;
+      const goc = gocChiaSe(c, i);
+      const chu = goc === "label" ? "L:" + tLabel[i] : "A:" + tArtist[i];
+      const theoKy = [];
+      PERIODS.forEach(p => {
+        if (!state.approved[p.k]) return;
+        const row = (state.payouts[p.k] || []).find(r => r.partyKey === pk);
+        if (!row || !Array.isArray(row.chiaSe)) return;
+        let v = 0; row.chiaSe.forEach(x => { if (x.i === i) v = cents(v + x.amt); });
+        if (v > 0.004) theoKy.push({ k: p.k, label: p.label, soTien: v, approvedAt: state.approved[p.k].at });
+      });
+      rows.push({ trackId: i, title: tTitle[i], isrc: tIsrc[i], artist: ARTISTS[tArtist[i]].name,
+        chu: partyName(chu), chuLoai: goc === "label" ? "label" : "artist",
+        vai: c.role, vaiLabel: c.roleLabel, vaiLabelEn: c.roleLabelEn,
+        pct: c.pct, recoup: c.recoup || 0, acceptedAt: c.acceptedAt || null,
+        daTra: tra.get(i + "|" + pk) || 0, theoKy });
+    });
+  });
+  rows.sort((a, b) => b.daTra - a.daTra);
+  const tong = cents(rows.reduce((x, r) => x + r.daTra, 0));
+  return { rows, tracks: rows.length, daTra: tong,
+    note: "Đây là phần của bạn trên từng bài: phần trăm đã thoả thuận với chủ bài, và số tiền đã ghi vào ví bạn ở từng kỳ Haustek đã xét duyệt. Doanh thu của cả bài thuộc về chủ bài, cổng này không hiện.",
+    noteEn: "This is your share on each track: the percentage agreed with the track owner, and the amount credited to your wallet in each period Haustek has approved. The track's full revenue belongs to the owner and is not shown here." };
+}
 function splitsReportTinh(role, partyId) {
   const sc = scopeOf(role, partyId, "rec"), n = sc ? sc.length : N;
   const step = n > 4000 ? Math.ceil(n / 4000) : 1;
-  const rows = []; const emails = new Set(); let invited = 0, paid = 0, recouping = 0;
-  for (let k = 0; k < n; k += step) {
-    const i = sc ? sc[k] : k;
+  const rows = []; const emails = new Set(); let invited = 0, daTra = 0, uocTinh = 0, hieuLuc = 0, recouping = 0;
+  /* Lấy mẫu 1/13 bài là chuyện được phép với phần ƯỚC TÍNH, nhưng những bài
+     có chia sẻ THẬT (ai đó đã đặt, đã nhận, đang được trả tiền) thì lấy mẫu
+     là giấu mất đúng chỗ có tiền: trước khi sửa, bảng này báo 38.132 USD ước
+     tính mà không hiện nổi một dòng nào trong 44 USD đã trả thật. Nên: mọi
+     bài trong state.splits vào hết, rồi mới lấy mẫu phần còn lại. */
+  const trongPham = i => !sc || inScope(role, partyId, "rec", i);
+  const daXet = new Set();
+  const gom = i => {
+    if (daXet.has(i)) return; daXet.add(i);
     const s = splitsOf(i, role, partyId);
-    if (!s.hasSplits) continue;
+    if (!s.hasSplits) return;
     rows.push(s);
-    s.collaborators.forEach(c => { emails.add(c.email); if (c.status === "invited") invited++; if (c.recouping) recouping++; paid += c.payable; });
-  }
-  rows.sort((a, b) => b.lifetimeMine - a.lifetimeMine);
-  return { asOf: isoDate(ASOF), counts: { tracks: rows.length, collaborators: emails.size, invited, paid: cents(paid), recouping }, rows: rows.slice(0, 300), truncated: rows.length > 300, sampled: step > 1,
+    s.collaborators.forEach(c => { emails.add(c.email); if (c.status === "invited") invited++; if (c.recouping) recouping++; if (c.hieuLuc) hieuLuc++; daTra += c.daTra; uocTinh += c.uocTinh; });
+  };
+  Object.keys(state.splits || {}).forEach(k => { const i = +k; if (i >= 0 && i < N && trongPham(i)) gom(i); });
+  for (let k = 0; k < n; k += step) gom(sc ? sc[k] : k);
+  /* Cắt còn 300 dòng sau khi xếp theo doanh thu trọn đời là cắt đúng những
+     bài CÓ TIỀN THẬT: chia sẻ có hiệu lực thường nằm trên bài nhỏ. Xếp bài
+     có tiền đã trả lên trước, rồi mới tới doanh thu. */
+  const tienCua = r => (r.collaborators || []).reduce((s, c) => s + (c.daTra || 0), 0);
+  rows.sort((a, b) => (tienCua(b) - tienCua(a)) || (b.lifetimeMine - a.lifetimeMine));
+  return { asOf: isoDate(ASOF), counts: { tracks: rows.length, collaborators: emails.size, invited, hieuLuc, daTra: cents(daTra), uocTinh: cents(uocTinh), recouping }, rows: rows.slice(0, 300), truncated: rows.length > 300, sampled: step > 1,
     roles: COLLAB_ROLES.map(r => ({ k: r.k, label: r.vi, labelEn: r.en })),
-    note: "Người cộng tác nhận phần trăm trên số tiền của bạn cho bài đó, không thấy con số của bạn — chỉ thấy phần của họ. Có ngưỡng thu hồi thì bạn nhận trước cho đến khi đủ, rồi mới chia.",
-    noteEn: "Collaborators receive a percentage of your earnings on that track and only see their own share. With a recoupment amount you are paid first until it is met, then the split applies." };
+    note: "Người cộng tác nhận phần trăm trên số tiền của bạn cho bài đó, không thấy con số của bạn — chỉ thấy phần của họ. Có ngưỡng thu hồi thì bạn nhận trước cho đến khi đủ, rồi mới chia. Tiền chỉ thật sự đổi chủ khi người ấy đã nhận lời mời và có bên nhận; trước đó con số chỉ là ước tính.",
+    noteEn: "Collaborators receive a percentage of your earnings on that track and only see their own share. With a recoupment amount you are paid first until it is met, then the split applies. Money only changes hands once the collaborator has accepted and has a payee account; before that the figure is an estimate." };
 }
 function setSplit(role, partyId, trackId, c, by) {
   const i = +trackId;
@@ -5207,7 +5302,7 @@ function explainPeriod(role, partyId, pk) {
       if (payout.chiaSeRa > 0) steps.push({ k: "chiaSe", label: "− Chia cho người cộng tác", labelEn: "− Shared with collaborators", value: cents(payout.chiaSeRa), kind: "tien" });
       if (payout.chiaSeVao > 0) steps.push({ k: "chiaSeVao", label: "+ Nhận từ chia sẻ tác quyền", labelEn: "+ Received from royalty splits", value: cents(payout.chiaSeVao), kind: "tien" });
       if (payout.recoup) steps.push({ k: "recoup", label: "− Thu hồi tạm ứng", labelEn: "− Advance recoupment", value: cents(payout.recoup), kind: "tien" });
-      if (payout.carryOut) steps.push({ k: "carry", label: "→ Dồn sang kỳ sau (dưới ngưỡng " + fmt.usd0(CFG.PAYOUT_MIN) + ")", labelEn: "→ Carried to next period (below " + fmt.usd0(CFG.PAYOUT_MIN) + ")", value: cents(payout.carry), kind: "tien" });
+      if (payout.carryOut) steps.push({ k: "carry", label: "→ Dồn sang kỳ sau (dưới ngưỡng " + fmt.usd0(CFG.PAYOUT_MIN) + ")", labelEn: "→ Carried to next period (below " + fmt.usd0(CFG.PAYOUT_MIN) + ")", value: cents(payout.carryOut), kind: "tien" });
       steps.push({ k: "credit", label: "= Ghi vào ví", labelEn: "= Credited to wallet", value: cents(payout.earned - payout.recoup), kind: "tien", tong: true });
     }
   }
@@ -6404,7 +6499,7 @@ function createTicket(o) {
 function seedTickets() {
   if (state.tickets.length) return;
   const parties = []; const seen = new Set();
-  state.accounts.filter(a => a.role !== "admin" && a.partyKey && a.status === "active").forEach(a => { if (!seen.has(a.partyKey)) { seen.add(a.partyKey); parties.push(a.partyKey); } });
+  state.accounts.filter(a => a.role !== "admin" && benCoDanhMuc(a.partyKey) && a.status === "active").forEach(a => { if (!seen.has(a.partyKey)) { seen.add(a.partyKey); parties.push(a.partyKey); } });
   const sup = staffByRole("support"), acc = staffByRole("accounting")[0], ops = staffByRole("ops")[0];
   /* [loại, tiêu đề, nội dung, trạng thái, ưu tiên, tiêu đề EN, nội dung EN] —
      dữ liệu mẫu có cả hai thứ tiếng để bật EN là sạch hẳn; ticket thật do
@@ -6474,7 +6569,7 @@ const OTHER_PARTIES = ["Blue Harbor Music", "Northline Records", "Sakura Wave En
 function seedClaims() {
   if (state.claims.length) return;
   const parties = []; const seen = new Set();
-  state.accounts.filter(a => a.role !== "admin" && a.partyKey && a.status === "active").forEach(a => { if (!seen.has(a.partyKey)) { seen.add(a.partyKey); parties.push(a.partyKey); } });
+  state.accounts.filter(a => a.role !== "admin" && benCoDanhMuc(a.partyKey) && a.status === "active").forEach(a => { if (!seen.has(a.partyKey)) { seen.add(a.partyKey); parties.push(a.partyKey); } });
   const sup = staffByRole("support");
   for (let k = 0; k < 44; k++) {
     const h = hash(k, 95);
@@ -6532,6 +6627,7 @@ const audit = {
    kiểm test/i18n-loi.js bắt chuỗi bị bỏ sót.
    ===================================================================== */
 const LOI_EN = {
+  "Cổng của bạn không có mục này": "Your portal does not have this section",
   "Bài hát này không thuộc phạm vi của bạn": "This track is outside your scope",
   "Bút toán phải có diễn giải": "An adjustment needs a description",
   "Bước này chưa được đánh dấu": "This step has not been marked",
@@ -6682,6 +6778,10 @@ const LOI_EN = {
 };
 /* mẫu cho thông báo có phần động: [regex, thay thế]; $1… giữ nguyên phần động */
 const LOI_MAU_EN = [
+  [/^Đã thu hồi (.+) cho khoản này; không hạ gốc xuống dưới số đã thu hồi$/, "$1 has already been recouped against this advance; the principal cannot go below the recouped amount"],
+  [/^Đã thu hồi (.+) cho khoản này ở các kỳ đã duyệt; xoá là mất dấu số ấy\. Huỷ chốt các kỳ đó trước\.$/, "$1 has already been recouped in approved periods; deleting it would lose that record. Revoke those periods first."],
+  [/^Phương thức cổng đối tác chưa khai quyền: (.+)$/, "Partner API method has no permission entry: $1"],
+  [/^Bảng quyền cổng đối tác khai thừa: (.+)$/, "Partner permission table lists a method that does not exist: $1"],
   [/^Không có loại mã (.+)$/, "No id type $1"],
   [/^Mã ISRC không đúng định dạng: (.+)$/, "ISRC is not in the right format: $1"],
   [/^Tổng tỉ lệ sáng tác của track "(.+)" vượt 100%$/, 'Writer shares on track "$1" exceed 100%'],
@@ -8403,13 +8503,23 @@ const admin = {
     },
     set(partyKey, opening, note) {
       if (!(opening >= 0)) throw new Error("Số tiền tạm ứng không hợp lệ");
+      /* advanceBalance() kẹp số dư về 0, nên hạ gốc xuống dưới phần đã thu
+         hồi làm phần vượt BỐC HƠI: tiền đã giữ lại của đối tác ở các kỳ
+         trước không còn dấu vết ở đâu. Chặn ngay tại cửa ghi. */
+      const daThu = cents(Object.values((state.advances[partyKey] || {}).byPeriod || {}).reduce((s, v) => s + v, 0));
+      if (daThu > opening + 0.004)
+        throw new Error("Đã thu hồi " + fmt.usd(daThu) + " cho khoản này; không hạ gốc xuống dưới số đã thu hồi");
       state.advances[partyKey] = state.advances[partyKey] || { byPeriod: {} };
       state.advances[partyKey].opening = opening;
       state.advances[partyKey].note = note || state.advances[partyKey].note || "";
       audit.log("advance.set", partyName(partyKey) + " · " + fmt.usd0(opening));
       store.save();
     },
-    remove(partyKey) { delete state.advances[partyKey]; audit.log("advance.remove", partyName(partyKey)); store.save(); },
+    remove(partyKey) {
+      const daThu = cents(Object.values((state.advances[partyKey] || {}).byPeriod || {}).reduce((s, v) => s + v, 0));
+      if (daThu > 0.004) throw new Error("Đã thu hồi " + fmt.usd(daThu) + " cho khoản này ở các kỳ đã duyệt; xoá là mất dấu số ấy. Huỷ chốt các kỳ đó trước.");
+      delete state.advances[partyKey]; audit.log("advance.remove", partyName(partyKey)); store.save();
+    },
     total() { return cents(Object.keys(state.advances).reduce((s, k) => s + advanceBalance(k), 0)); }
   },
   accounts: {
@@ -9390,10 +9500,35 @@ function scrub(payload) {
   goc._bytes = s.length;
   return goc;
 }
-function partyClientIdOf(role, partyId) { return role === "label" ? LABELS[partyId].clientId : role === "artist" ? ARTISTS[partyId].clientId : "admin"; }
+/* MỘT CHỖ DUY NHẤT đổi danh tính phiên (vai, mã) thành khoá bên thụ hưởng.
+   Trước vòng 23 phép ghép này nằm rải rác mười hai chỗ dưới dạng
+   benTu(role, partyId) — thêm một loại bên là
+   phải nhớ sửa đủ mười hai chỗ, sót một chỗ là tiền đi nhầm ví. */
+function benTu(role, partyId) {
+  if (role === "label") return "L:" + partyId;
+  if (role === "artist") return "A:" + partyId;
+  if (role === "nhan") return "N:" + partyId;
+  throw new Error("Vai trò không hợp lệ ở cổng đối tác");
+}
+function taiKhoanCua(id) { return state.accounts.find(x => x.id === String(id)) || null; }
+function partyClientIdOf(role, partyId) {
+  if (role === "label") return LABELS[partyId].clientId;
+  if (role === "artist") return ARTISTS[partyId].clientId;
+  if (role === "nhan") return partyClientId("N:" + partyId);
+  return "admin";
+}
 function assertParty(role, partyId) {
   if (role === "label") { if (!(partyId >= 0 && partyId < LABELS.length)) throw new Error("Không có quyền"); }
   else if (role === "artist") { if (!(partyId >= 0 && partyId < ARTISTS.length)) throw new Error("Không có quyền"); }
+  else if (role === "nhan") {
+    /* Bên "người nhận" bám TÀI KHOẢN (N:U0018), không bám số thứ tự như
+       label và nghệ sĩ. Kiểm ba thứ: tài khoản có thật, chưa bị khoá, và
+       thật sự đang giữ bên ấy. */
+    const a = taiKhoanCua(partyId);
+    if (!a || a.status === "suspended") throw new Error("Không có quyền");
+    const ds = Array.isArray(a.ben) && a.ben.length ? a.ben : (a.partyKey ? [{ key: a.partyKey }] : []);
+    if (!ds.some(b => b.key === "N:" + partyId)) throw new Error("Không có quyền");
+  }
   else throw new Error("Vai trò không hợp lệ ở cổng đối tác");
 }
 function inScope(role, partyId, stream, i) {
@@ -9409,7 +9544,95 @@ function requireApproved(periodKey) {
   return pi;
 }
 
-const api = {
+/* =====================================================================
+   QUYỀN Ở CỔNG ĐỐI TÁC — bảng khai MỘT CHỖ, mặc định ĐÓNG
+   ---------------------------------------------------------------------
+   Mặt tiền nội bộ đã có QUYEN_HAM + boQuyen() từ vòng 8: hàm nào không
+   khai nhóm là gọi không được. Cổng đối tác thì tới vòng 23 mới có thứ
+   tương đương, và đó là lý do thêm một loại bên thụ hưởng (người cộng
+   tác) từng là chuyện phải đọc tay 59 phương thức xem cái nào lọt.
+
+   Bảng này khai: phương thức nào mở cho LOẠI BÊN nào. Thêm phương thức
+   mà quên khai là lõi ném ngay lúc dựng, không phải chờ tới lúc chạy.
+   Khi lên máy chủ, mỗi dòng ở đây là một luật RLS: cùng một bảng, cùng
+   một câu hỏi "vai này có được đọc dòng này không".
+   ===================================================================== */
+const BEN_MOI = ["label", "artist", "nhan"];
+const BEN_CO_DANH_MUC = ["label", "artist"];          /* ai sở hữu bản ghi */
+const QUYEN_API = {
+  /* không nhận danh tính phiên — không gác theo loại bên */
+  refresh: BEN_MOI, demoLogins: BEN_MOI, trangCho: BEN_MOI, trangMo: BEN_MOI,
+
+  /* mọi bên thụ hưởng: danh tính, kỳ, ví, tiền ra, việc hỗ trợ, chia sẻ */
+  session: BEN_MOI, periods: BEN_MOI,
+  wallet: BEN_MOI, withdrawalQuote: BEN_MOI, requestWithdrawal: BEN_MOI,
+  cancelWithdrawal: BEN_MOI, setBank: BEN_MOI, statements: BEN_MOI,
+  notifications: BEN_MOI, markNotifications: BEN_MOI,
+  tickets: BEN_MOI, createTicket: BEN_MOI, replyTicket: BEN_MOI,
+  loiMoiChiaSe: BEN_MOI, acceptSplit: BEN_MOI, phanChia: BEN_MOI,
+
+  /* chỉ bên SỞ HỮU bản ghi: danh mục, doanh thu, nền tảng, phát hành,
+     tạm ứng, chiến dịch, tác quyền. Người cộng tác không sở hữu bài nào
+     nên không có gì để xem ở đây — và quan trọng hơn: không suy ra được
+     doanh thu của bài mình góp phần. */
+  summary: BEN_CO_DANH_MUC, contract: BEN_CO_DANH_MUC, roster: BEN_CO_DANH_MUC,
+  rosterArtists: BEN_CO_DANH_MUC, releases: BEN_CO_DANH_MUC, submitRelease: BEN_CO_DANH_MUC,
+  trackAsset: BEN_CO_DANH_MUC, catalogue: BEN_CO_DANH_MUC, platformTail: BEN_CO_DANH_MUC,
+  platformReport: BEN_CO_DANH_MUC, labelTree: BEN_CO_DANH_MUC, delegations: BEN_CO_DANH_MUC,
+  dailyTrends: BEN_CO_DANH_MUC, playlists: BEN_CO_DANH_MUC, splits: BEN_CO_DANH_MUC,
+  splitsOf: BEN_CO_DANH_MUC, setSplit: BEN_CO_DANH_MUC, removeSplit: BEN_CO_DANH_MUC,
+  quality: BEN_CO_DANH_MUC, disputeAlert: BEN_CO_DANH_MUC, monetization: BEN_CO_DANH_MUC,
+  metadataHealth: BEN_CO_DANH_MUC, metadataReport: BEN_CO_DANH_MUC, explain: BEN_CO_DANH_MUC,
+  search: BEN_CO_DANH_MUC, campaigns: BEN_CO_DANH_MUC, advanceOffer: BEN_CO_DANH_MUC,
+  requestAdvance: BEN_CO_DANH_MUC, proposals: BEN_CO_DANH_MUC, withdrawProposal: BEN_CO_DANH_MUC,
+  forecast: BEN_CO_DANH_MUC, checkRelease: BEN_CO_DANH_MUC, addArtist: BEN_CO_DANH_MUC,
+  requestCampaign: BEN_CO_DANH_MUC, claims: BEN_CO_DANH_MUC, canViewAs: BEN_CO_DANH_MUC,
+  trend: BEN_CO_DANH_MUC, breakdown: BEN_CO_DANH_MUC, tacPham: BEN_CO_DANH_MUC,
+  tracks: BEN_CO_DANH_MUC, trackDetail: BEN_CO_DANH_MUC
+};
+/* Trang nào của cổng đối tác mở cho loại bên nào. Cùng hình dạng với
+   QUYEN_MAN của cổng nội bộ: một bảng, không phải mười sáu câu if rải
+   trong mười sáu file. Thêm trang mà quên khai là bài kiểm đỏ ngay. */
+const TRANG_CHO_BEN = {
+  "k-toi": ["nhan"], "k-phan-chia": ["nhan"],
+  "k-vi": BEN_MOI, "k-ho-tro": BEN_MOI,
+  "k-tong-quan": BEN_CO_DANH_MUC, "k-ban-ghi": BEN_CO_DANH_MUC, "k-danh-muc": BEN_CO_DANH_MUC,
+  "k-nen-tang": BEN_CO_DANH_MUC, "k-du-bao": BEN_CO_DANH_MUC, "k-xu-huong": BEN_CO_DANH_MUC,
+  "k-playlist": BEN_CO_DANH_MUC, "k-chat-luong": BEN_CO_DANH_MUC, "k-chia-se": BEN_CO_DANH_MUC,
+  "k-chien-dich": BEN_CO_DANH_MUC, "k-phat-hanh": BEN_CO_DANH_MUC, "k-nghe-si": BEN_CO_DANH_MUC,
+  "k-he-thong": BEN_CO_DANH_MUC, "k-bang-ke": BEN_CO_DANH_MUC, "k-tam-ung": BEN_CO_DANH_MUC,
+  "k-tai-lieu": BEN_CO_DANH_MUC
+};
+/* Bọc mặt tiền đối tác y như boQuyen() bọc mặt tiền nội bộ. Tham số đầu
+   tiên của mọi phương thức có danh tính LÀ vai — chặn ngay ở đó, trước khi
+   thân hàm chạm tới dữ liệu. */
+function boQuyenApi(mt) {
+  const ra = {};
+  Object.keys(mt).forEach(ten => {
+    const cho = QUYEN_API[ten];
+    if (!cho) throw new Error("Phương thức cổng đối tác chưa khai quyền: " + ten);
+    const f = mt[ten];
+    if (typeof f !== "function") { ra[ten] = f; return; }
+    ra[ten] = function (role) {
+      if (arguments.length && role != null && cho.indexOf(role) < 0)
+        throw new Error("Cổng của bạn không có mục này");
+      return f.apply(mt, arguments);
+    };
+    /* Giữ nguyên số tham số và tên: bài kiểm và mã gọi ngoài đọc f.length để
+       biết hàm có nhận danh tính phiên hay không. Bọc xong mà arity về 1 là
+       mọi phép quét "mọi hàm nhận (vai, mã)" âm thầm quét được số không. */
+    try {
+      Object.defineProperty(ra[ten], "length", { value: f.length });
+      Object.defineProperty(ra[ten], "name", { value: ten });
+    } catch (e) {}
+  });
+  Object.keys(QUYEN_API).forEach(ten => {
+    if (!(ten in mt)) throw new Error("Bảng quyền cổng đối tác khai thừa: " + ten);
+  });
+  return ra;
+}
+
+const apiGoc = {
   /* đọc lại quyết định mới nhất của admin (khi intranet vừa duyệt xong) */
   refresh() { const s = store.load(); if (s) { state = ensureShape(s); invalidateRates(); rebuildMatchIndex(); } return !!s; },
 
@@ -9420,6 +9643,12 @@ const api = {
     return scrub({ accounts: state.accounts
       .filter(a => a.role !== "admin" && a.partyKey && a.status !== "suspended")
       .map(a => {
+        if (a.partyKey[0] === "N") {
+          /* Người cộng tác: mã bên bám tài khoản, nên partyId là mã tài
+             khoản chứ không phải số thứ tự. */
+          return { email: a.email, role: "nhan", partyId: a.id, name: a.ten || a.email,
+                   clientId: partyClientId(a.partyKey), status: a.status, kind: "nhan" };
+        }
         const id = +a.partyKey.slice(2), isL = a.partyKey[0] === "L";
         const who = isL ? LABELS[id] : ARTISTS[id];
         if (!who) return null;
@@ -9431,6 +9660,22 @@ const api = {
 
   session(role, partyId) {
     assertParty(role, partyId);
+    if (role === "nhan") {
+      /* Bên "người nhận" không có danh mục, không có bài, không có tác
+         quyền — chỉ có ví và phần chia. Trả về ĐÚNG những gì khung cần để
+         dựng cổng, không thêm trường nào gợi ý có dữ liệu khác. */
+      const pk = "N:" + partyId, a = taiKhoanCua(partyId), moi = loiMoiChiaSeCua(pk);
+      const pc = phanChiaCua(pk);
+      return scrub({
+        role, partyId, clientId: partyClientId(pk), name: a.ten || a.email, kind: "nhan",
+        belongsTo: null, belongsToEn: null, independent: false, parentLabel: null, childLabels: 0,
+        hasRecording: false, hasPublishing: false, trackCount: 0, compositionCount: 0,
+        openTickets: state.tickets.filter(t => t.partyKey === pk && t.status !== "done").length,
+        loiMoi: moi.invited, baiChia: pc.tracks,
+        currency: "USD", fxNote: "Số liệu tính bằng USD · tỷ giá quy đổi được chốt lúc xét duyệt kỳ",
+        fxNoteEn: "Figures are in USD · the conversion rate is locked when the period is approved"
+      });
+    }
     const isLabel = role === "label";
     const me = isLabel ? LABELS[partyId] : ARTISTS[partyId];
     const recCount = isLabel ? idxOf(byLabel, partyId).length : idxOf(byArtist, partyId).length;
@@ -9461,7 +9706,10 @@ const api = {
     const waiting = PERIODS.filter(p => !state.approved[p.k]).map(p => ({ k: p.k, label: p.label }));
     /* Tác quyền về theo quý và về trễ, nên rất nhiều kỳ đơn giản là không
        có báo cáo nào — khách phải biết điều đó, không thì họ tưởng mất tiền. */
-    const pubOpen = PERIODS.filter(p => state.approved[p.k] && pubLoaded(p.idx)).map(p => ({ k: p.k, label: p.label }));
+    /* Bên "người nhận" không sở hữu tác phẩm nên không bao giờ có kỳ tác
+       quyền; để nguyên danh sách là cổng của họ mọc ra một tab rỗng. */
+    const pubOpen = role === "nhan" ? []
+      : PERIODS.filter(p => state.approved[p.k] && pubLoaded(p.idx)).map(p => ({ k: p.k, label: p.label }));
     return scrub({ open, waiting, pubOpen, latest: open.length ? open[open.length - 1].k : null });
   },
 
@@ -9473,7 +9721,7 @@ const api = {
     const a = agg(role, partyId, p, stream);
     const prevIdx = approvedPeriods().map(x => x.idx).filter(x => x < p).pop();
     const prev = prevIdx != null ? agg(role, partyId, prevIdx, stream) : null;
-    const partyKey = role === "label" ? "L:" + partyId : "A:" + partyId;
+    const partyKey = benTu(role, partyId);
     const advOpening = state.advances[partyKey] ? state.advances[partyKey].opening : 0;
     const advLeft = advanceBalance(partyKey);
     const payoutRow = (state.payouts[periodKey] || []).find(r => r.partyKey === partyKey) || null;
@@ -9742,43 +9990,49 @@ const api = {
   },
   /* ---- 19i: chia sẻ tác quyền, chất lượng lượt nghe, ngưỡng, metadata, giải thích, thông báo, tìm, chiến dịch ---- */
   splits(role, partyId) { assertParty(role, partyId); return scrub(splitsReport(role, partyId)); },
+  /* góc nhìn NGƯỢC LẠI: phần mình được chia trên bài của người khác */
+  phanChia(role, partyId) { assertParty(role, partyId); return scrub(phanChiaCua(benTu(role, partyId))); },
+  /* Khung đọc bảng này để dựng điều hướng; trang không có trong bảng thì
+     không hiện ở cột trái và gõ thẳng #hash cũng không mở được. */
+  trangCho(role) { return (Object.keys(TRANG_CHO_BEN).filter(k => TRANG_CHO_BEN[k].indexOf(role) >= 0)); },
+  trangMo(role, id) { const c = TRANG_CHO_BEN[id]; return !!c && c.indexOf(role) >= 0; },
   splitsOf(role, partyId, trackId) { assertParty(role, partyId); const sc = scopeOf(role, partyId, "rec"); if (sc && !sc.includes(+trackId)) throw new Error("Không có quyền"); return scrub(splitsOf(+trackId, role, partyId)); },
   setSplit(role, partyId, trackId, c) { assertParty(role, partyId); return scrub(setSplit(role, partyId, trackId, c, partyClientIdOf(role, partyId))); },
   removeSplit(role, partyId, trackId, email) { assertParty(role, partyId); return scrub(removeSplit(role, partyId, trackId, email, partyClientIdOf(role, partyId))); },
   /* người được mời nhận lời mời từ chính tài khoản của mình; email phải là
      email đăng nhập đang giữ bên (role, partyId) */
-  acceptSplit(role, partyId, trackId, email) { assertParty(role, partyId); return scrub(acceptSplitTuCong(role === "label" ? "L:" + partyId : "A:" + partyId, email, trackId)); },
-  loiMoiChiaSe(role, partyId) { assertParty(role, partyId); return scrub(loiMoiChiaSeCua(role === "label" ? "L:" + partyId : "A:" + partyId)); },
+  acceptSplit(role, partyId, trackId, email) { assertParty(role, partyId); return scrub(acceptSplitTuCong(benTu(role, partyId), email, trackId)); },
+  loiMoiChiaSe(role, partyId) { assertParty(role, partyId); return scrub(loiMoiChiaSeCua(benTu(role, partyId))); },
   quality(role, partyId) { assertParty(role, partyId); return scrub(qualityReport(role, partyId)); },
   disputeAlert(role, partyId, trackId, note) { assertParty(role, partyId); return scrub(setAlertStatus(trackId, "disputed", note, partyClientIdOf(role, partyId), role, partyId)); },
   monetization(role, partyId, trackId) { assertParty(role, partyId); const sc = scopeOf(role, partyId, "rec"); if (sc && !sc.includes(+trackId)) throw new Error("Không có quyền"); return scrub(monetizationOf(+trackId)); },
   metadataHealth(role, partyId, trackId) { assertParty(role, partyId); const sc = scopeOf(role, partyId, "rec"); if (sc && !sc.includes(+trackId)) throw new Error("Không có quyền"); return scrub(metadataHealth(+trackId, role, partyId)); },
   metadataReport(role, partyId) { assertParty(role, partyId); return scrub(metadataReport(role, partyId)); },
   explain(role, partyId, pk) { assertParty(role, partyId); return scrub(explainPeriod(role, partyId, pk)); },
-  withdrawalQuote(role, partyId, amount) { assertParty(role, partyId); return scrub(withdrawalQuote(role === "label" ? "L:" + partyId : "A:" + partyId, amount)); },
+  withdrawalQuote(role, partyId, amount) { assertParty(role, partyId); return scrub(withdrawalQuote(benTu(role, partyId), amount)); },
   notifications(role, partyId) { assertParty(role, partyId); return scrub(notificationsOf(role, partyId)); },
   markNotifications(role, partyId, ids) { assertParty(role, partyId); return scrub(markNotifications(role, partyId, ids)); },
   search(role, partyId, q, limit) { assertParty(role, partyId); return scrub(searchAll(role, partyId, q, limit)); },
   campaigns(role, partyId) { assertParty(role, partyId); return scrub(campaignsOf(role, partyId)); },
   /* ---- 19j: đề nghị tạm ứng và theo dõi đề xuất ---- */
-  advanceOffer(role, partyId) { assertParty(role, partyId); return scrub(advanceOfferOf(role === "label" ? "L:" + partyId : "A:" + partyId)); },
-  requestAdvance(role, partyId, d) { assertParty(role, partyId); const pk = role === "label" ? "L:" + partyId : "A:" + partyId; return scrub(proposalForPartner(proposeAdvance(pk, { amount: d.amount, feePct: ADVANCE_FEE, note: d.note }, partyClientIdOf(role, partyId), "partner"))); },
-  proposals(role, partyId) { assertParty(role, partyId); const pk = role === "label" ? "L:" + partyId : "A:" + partyId; return scrub(proposalsList({ partyKey: pk }).map(proposalForPartner)); },
-  withdrawProposal(role, partyId, id) { assertParty(role, partyId); const pk = role === "label" ? "L:" + partyId : "A:" + partyId; const pr = proposalsOf().find(p => p.id === id); if (!pr || pr.partyKey !== pk) throw new Error("Không có quyền"); return scrub(proposalForPartner(reviewProposal(id, "withdraw", "", partyClientIdOf(role, partyId), "partner"))); },
+  advanceOffer(role, partyId) { assertParty(role, partyId); return scrub(advanceOfferOf(benTu(role, partyId))); },
+  requestAdvance(role, partyId, d) { assertParty(role, partyId); const pk = benTu(role, partyId); return scrub(proposalForPartner(proposeAdvance(pk, { amount: d.amount, feePct: ADVANCE_FEE, note: d.note }, partyClientIdOf(role, partyId), "partner"))); },
+  proposals(role, partyId) { assertParty(role, partyId); const pk = benTu(role, partyId); return scrub(proposalsList({ partyKey: pk }).map(proposalForPartner)); },
+  withdrawProposal(role, partyId, id) { assertParty(role, partyId); const pk = benTu(role, partyId); const pr = proposalsOf().find(p => p.id === id); if (!pr || pr.partyKey !== pk) throw new Error("Không có quyền"); return scrub(proposalForPartner(reviewProposal(id, "withdraw", "", partyClientIdOf(role, partyId), "partner"))); },
   /* ---- ví, rút tiền, bảng kê ---- */
   wallet(role, partyId) {
     assertParty(role, partyId);
-    return scrub(walletOf(role === "label" ? "L:" + partyId : "A:" + partyId));
+    return scrub(walletOf(benTu(role, partyId)));
   },
   requestWithdrawal(role, partyId, o) {
     assertParty(role, partyId);
-    const pk = role === "label" ? "L:" + partyId : "A:" + partyId;
+    const pk = benTu(role, partyId);
     const r = requestWithdrawal(pk, o && o.amount, o && o.note, partyClientId(pk));
     return scrub({ id: r.id, status: r.status, amount: r.amount, requestedAt: r.requestedAt });
   },
   cancelWithdrawal(role, partyId, id) {
     assertParty(role, partyId);
-    const pk = role === "label" ? "L:" + partyId : "A:" + partyId;
+    const pk = benTu(role, partyId);
     const w = state.withdrawals.find(x => x.id === id && x.partyKey === pk);
     if (!w) throw new Error("Không tìm thấy yêu cầu");
     if (w.status !== "requested") throw new Error("Yêu cầu đang được xử lý, không huỷ được");
@@ -9788,7 +10042,7 @@ const api = {
   },
   setBank(role, partyId, b) {
     assertParty(role, partyId);
-    const pk = role === "label" ? "L:" + partyId : "A:" + partyId;
+    const pk = benTu(role, partyId);
     if (!b || !String(b.bank || "").trim() || !String(b.account || "").trim() || !String(b.holder || "").trim()) throw new Error("Cần đủ tên ngân hàng, số tài khoản và tên chủ tài khoản");
     state.bank[pk] = { bank: String(b.bank).trim(), account: String(b.account).replace(/\s+/g, ""), holder: String(b.holder).trim().toUpperCase(),
       currency: b.currency === "VND" ? "VND" : "USD", swift: String(b.swift || "").trim().toUpperCase(), updatedAt: nowISO() };
@@ -9809,7 +10063,7 @@ const api = {
   /* ---- hỗ trợ ---- */
   tickets(role, partyId) {
     assertParty(role, partyId);
-    const pk = role === "label" ? "L:" + partyId : "A:" + partyId;
+    const pk = benTu(role, partyId);
     /* Đối tác thấy: mô tả, bình luận (người viết nội bộ hiện là "Haustek",
        không lộ id / email nhân viên), người phụ trách theo TÊN, và cờ done. */
     const rows = state.tickets.filter(t => t.partyKey === pk).map(t => Object.assign({}, t, {
@@ -9849,15 +10103,15 @@ const api = {
     const i = +(o && o.trackId); if (!inScope(role, partyId, "rec", i)) throw new Error("Bài hát này không thuộc phạm vi của bạn");
     if (!["smartlink", "pitch", "ads"].includes(o.kind)) throw new Error("Chưa chọn loại chiến dịch");
     const start = chuoi(o.start) || addDays(isoDate(ASOF), 7), end = chuoi(o.end) || addDays(start, 30);
-    const c = admin.campaignCreate({ trackId: i, kind: o.kind, start, end, budget: o.budget, note: o.note, status: "requested" }, partyClientId(role === "label" ? "L:" + partyId : "A:" + partyId));
-    const pk = role === "label" ? "L:" + partyId : "A:" + partyId;
+    const c = admin.campaignCreate({ trackId: i, kind: o.kind, start, end, budget: o.budget, note: o.note, status: "requested" }, partyClientId(benTu(role, partyId)));
+    const pk = benTu(role, partyId);
     const t = createTicket({ type: "marketing", title: "Đề nghị chiến dịch · " + tTitle[i], body: (o.note || "Đề nghị chạy chiến dịch " + o.kind) + " · " + c.id, partyKey: pk, trackId: i, priority: "normal", assignee: null });
     store.save();
     return scrub({ id: c.id, ticketId: t.id, status: "requested", start, end });
   },
   createTicket(role, partyId, o) {
     assertParty(role, partyId);
-    const pk = role === "label" ? "L:" + partyId : "A:" + partyId;
+    const pk = benTu(role, partyId);
     if (o && o.trackId != null && !inScope(role, partyId, "rec", +o.trackId)) throw new Error("Bài hát này không thuộc phạm vi của bạn");
     if (!o || !String(o.body || "").trim()) throw new Error("Bạn hãy mô tả yêu cầu");
     const t = createTicket({ type: o.type, title: o.title, body: o.body, partyKey: pk, trackId: o.trackId, priority: o.priority === "high" ? "high" : "normal", assignee: null });
@@ -9866,7 +10120,7 @@ const api = {
   },
   replyTicket(role, partyId, id, text) {
     assertParty(role, partyId);
-    const pk = role === "label" ? "L:" + partyId : "A:" + partyId;
+    const pk = benTu(role, partyId);
     const t = state.tickets.find(x => x.id === id && x.partyKey === pk);
     if (!t) throw new Error("Không tìm thấy yêu cầu");
     themBinhLuan(t, text, partyClientId(pk));
@@ -10105,6 +10359,8 @@ const api = {
     return scrub(out);
   }
 };
+const api = boQuyenApi(apiGoc);
+
 
 /* =====================================================================
    25. TIỆN ÍCH GIAO DIỆN DÙNG CHUNG
@@ -10218,6 +10474,26 @@ function seedNguoiNhan() {
     const ns = state.accounts.find(a => a.role === "artist" && a.status === "active" && +a.partyKey.slice(2) !== tArtist[bai[1]]);
     st[bai[1]] = baseSplits(bai[1]).map((c, k) => k === 0 && ns ? Object.assign({}, c, { name: partyName(ns.partyKey), email: ns.email, recoup: 0 }) : c);
     acceptSplit(bai[1], st[bai[1]][0].email, "khởi tạo");
+  }
+  /* Một người cộng tác trên BÀI DOANH THU LỚN. Không có dòng này thì tài
+     khoản người cộng tác duy nhất của bản mẫu có 8,55 USD — dưới ngưỡng rút
+     50 USD — và cổng của họ không bao giờ demo được luồng rút tiền. Giữ cả
+     hai để thấy cả hai trạng thái: một người rút được, một người chưa. */
+  let to = -1, toV = 0;
+  indie.forEach(id => idxOf(byArtist, id).forEach(i => {
+    if (bai.indexOf(i) >= 0) return;
+    const v = grossRec(i, P - 3);
+    if (v > toV && baseSplits(i).length) { toV = v; to = i; }
+  }));
+  if (to >= 0) {
+    st[to] = baseSplits(to).map((c, k) => k === 0 ? Object.assign({}, c, { pct: 25, recoup: 0 }) : c);
+    acceptSplit(to, st[to][0].email, "khởi tạo");
+    /* Người này đã bấm vào thư mời và đặt mật khẩu, nên tài khoản hoạt
+       động và đăng nhập được vào cổng. Người cộng tác kia để nguyên trạng
+       thái "đang mời" — đó là trạng thái trước lần đăng nhập đầu tiên, và
+       đúng là chưa đăng nhập được. */
+    const tk = state.accounts.find(a => a.email === st[to][0].email);
+    if (tk) { tk.status = "active"; tk.lastSeen = isoDate(ASOF); }
   }
 }
 if (FRESH) {
@@ -10913,6 +11189,11 @@ function chay(cauHinh) {
     /* Ma trận phân quyền nằm ở lõi (A.quyen.man): màn nào không được cấp cho vai
        đang đăng nhập thì không có trên thanh điều hướng, không mở được qua #hash. */
     if (c.A && c.A.quyen && typeof c.A.quyen.man === 'function' && !c.A.quyen.man(m.id)) return false;
+    /* Cổng đối tác có bảng tương đương ở lõi: trang nào mở cho LOẠI BÊN nào.
+       Bên "người nhận" chỉ có bốn trang; mười bốn trang còn lại không hiện ở
+       cột trái và gõ thẳng #hash cũng không mở được. */
+    if (c.api && typeof c.api.trangMo === 'function' && c.phien && c.phien.me
+        && !c.api.trangMo(c.phien.me.role, m.id)) return false;
     if (m.vai && c.A && c.A.staff && c.A.staff.me && !(c.A.quyen && c.A.quyen.aaa()) && m.vai.indexOf(c.A.staff.me.role) < 0) return false;
     if (!m.khaDung) return true;
     try { return !!m.khaDung(c); } catch (e) { return false; }
@@ -10992,6 +11273,9 @@ function chay(cauHinh) {
       return '<option value="' + esc(p.k) + '"' + (p.k === kyHienTai ? ' selected' : '') + '>' +
         esc(c.t('period')) + ' ' + esc(p.label) + (p.nhan ? ' · ' + esc(p.nhan) : '') + '</option>';
     }).reverse().join('');
+    /* Cổng nào không có trang nào đọc theo kỳ (cổng người cộng tác) thì ô
+       chọn kỳ là một ô rỗng bấm được nhưng không đổi gì — giấu hẳn. */
+    sel.hidden = !kys.length;
 
     document.querySelectorAll('[data-th]').forEach(function (b) {
       b.classList.toggle('on', b.dataset.th === theme);
@@ -12850,7 +13134,7 @@ var CHU = {
     co: 'Nền tảng gắn cờ', goBo: 'lượt bị gỡ khỏi báo cáo', khieuNai: 'Khiếu nại', xuLy: 'Xử lý',
     cBai: 'Bài hát', cTk: 'Tài khoản', cMuc: 'Mức', cTinHieu: 'Tín hiệu vượt ngưỡng', cLuot: 'Lượt nghe 7 ngày', cCo: 'Cờ nền tảng', cTt: 'Trạng thái', cThaoTac: 'Thao tác',
     lichSu: 'Diễn biến', chuaCo: 'Chưa có thao tác nào.',
-    chuSoHuu: 'Chủ bản ghi', cong: 'Người cộng tác', cPhan: 'Phần chia', cDaChia: 'Đã chia', cThuHoi: 'Thu hồi', them: 'Thêm người', bo: 'Bỏ', nhan: 'Đã nhận', moi: 'Chờ nhận', xacNhanThay: 'Xác nhận thay',
+    chuSoHuu: 'Chủ bản ghi', cong: 'Người cộng tác', cPhan: 'Phần chia', cDaChia: 'Đã trả', cUocTinh: 'ước tính trọn đời', cThuHoi: 'Thu hồi', them: 'Thêm người', bo: 'Bỏ', nhan: 'Đã nhận', moi: 'Chờ nhận', xacNhanThay: 'Xác nhận thay',
     haustekTra: 'Haustek trả thẳng · {id}', chuaVi: 'chưa có ví nhận',
     thuHoiCon: 'còn {n} để thu hồi', thuHoiXong: 'đã thu hồi đủ', chuaChia: 'chưa có người cộng tác',
     ngRule: 'Luật trả tiền của nền tảng', datNguong: 'đạt', duoiNguong: 'dưới ngưỡng', uocTinh: 'ước tính', khongNguong: 'không có ngưỡng',
@@ -12875,7 +13159,7 @@ var CHU = {
     co: 'Flagged by platform', goBo: 'streams removed from reports', khieuNai: 'Dispute', xuLy: 'Handle',
     cBai: 'Track', cTk: 'Account', cMuc: 'Level', cTinHieu: 'Signals over threshold', cLuot: 'Streams, 7 days', cCo: 'Platform flag', cTt: 'Status', cThaoTac: 'Actions',
     lichSu: 'History', chuaCo: 'No actions yet.',
-    chuSoHuu: 'Owner', cong: 'Collaborators', cPhan: 'Share', cDaChia: 'Paid out', cThuHoi: 'Recoup', them: 'Add person', bo: 'Remove', nhan: 'Accepted', moi: 'Invited', xacNhanThay: 'Accept on behalf',
+    chuSoHuu: 'Owner', cong: 'Collaborators', cPhan: 'Share', cDaChia: 'Paid', cUocTinh: 'lifetime estimate', cThuHoi: 'Recoup', them: 'Add person', bo: 'Remove', nhan: 'Accepted', moi: 'Invited', xacNhanThay: 'Accept on behalf',
     haustekTra: 'Paid directly by Haustek · {id}', chuaVi: 'no payee wallet yet',
     thuHoiCon: '{n} left to recoup', thuHoiXong: 'fully recouped', chuaChia: 'no collaborators',
     ngRule: 'Platform payout rules', datNguong: 'met', duoiNguong: 'below threshold', uocTinh: 'estimate', khongNguong: 'no threshold',
@@ -12969,12 +13253,17 @@ function bangChiaSe(rows, opts) {
   return '<div class="tw"><table class="t"><thead><tr><th>' + esc(t('cBai')) + '</th>' + (opts.noiBo ? '<th>' + esc(t('cTk')) + '</th>' : '') +
     '<th class="num">' + esc(t('chuSoHuu')) + '</th><th>' + esc(t('cong')) + '</th><th class="num">' + esc(t('cDaChia')) + '</th>' + (opts.nutBai ? '<th>' + esc(t('cThaoTac')) + '</th>' : '') + '</tr></thead><tbody>' +
     rows.map(function (r) {
-      var daChia = r.collaborators.reduce(function (s, c) { return s + c.payable; }, 0);
+      /* HAI con số: đã trả thật (từ các kỳ đã duyệt) và ước tính trọn đời.
+         Gộp làm một là chỗ cả hệ từng báo 38.132 USD trong khi tiền thật đổi
+         chủ là 44 USD. */
+      var daTra = r.collaborators.reduce(function (s, c) { return s + (c.daTra || 0); }, 0);
+      var uocTinh = r.collaborators.reduce(function (s, c) { return s + (c.uocTinh || 0); }, 0);
       return '<tr data-cs="' + r.trackId + '"><td>' + HM.tenBia({ bia: r.trackId, ten: HM.dai(r.title, 34), phu: r.artist + ' · ' + r.isrc }) + '</td>' +
         (opts.noiBo ? '<td><div class="t-ttl">' + esc(HM.dai(opts.tenTk ? opts.tenTk(r.partyKey) : '', 24)) + '</div></td>' : '') +
         '<td class="num"><b>' + esc(n(r.ownerPct)) + '%</b><div class="meter thin" style="width:72px;margin:5px 0 0 auto"><i style="width:' + r.ownerPct + '%"></i></div></td>' +
         '<td>' + (r.collaborators.length ? r.collaborators.map(function (cg) { return dongCong(cg, { nut: opts.nutCong ? function (x) { return opts.nutCong(r, x); } : null }); }).join('') : '<span class="nil">' + esc(t('chuaChia')) + '</span>') + '</td>' +
-        '<td class="num band"><b>' + esc(tien(daChia)) + '</b></td>' +
+        '<td class="num band"><b>' + esc(tien(daTra)) + '</b>' +
+          (uocTinh > 0.004 ? '<div class="muted" style="font-size:11px;margin-top:2px">' + esc(t('cUocTinh') + ' ' + tien(uocTinh)) + '</div>' : '') + '</td>' +
         (opts.nutBai ? '<td>' + opts.nutBai(r) + '</td>' : '') + '</tr>';
     }).join('') + '</tbody></table></div>';
 }
@@ -14941,7 +15230,7 @@ HT.dangKy({
       themCs: 'Thêm chia sẻ', fBai: 'Bài hát', fBaiHint: 'Gõ tên bài hoặc ISRC rồi chọn trong gợi ý.', fTen: 'Người cộng tác', fEmail: 'Email', fVai: 'Vai trò', fPct: 'Phần trăm', fThuHoi: 'Khoản thu hồi (USD)', fThuHoiHint: 'Trừ dần vào phần của người này cho đến khi hết.', daThemCs: 'Đã mời {t} · {p}%', khongBai: 'Không tìm thấy bài hát',
       navChiaSe: 'Chia sẻ tác quyền', h1: 'Chia sẻ tác quyền',
       mo: 'Bài nào chia phần trăm cho ai, lời mời chưa nhận, khoản thu hồi còn dở. Phần đã nhận tách khỏi số trả cho chủ bản ghi.',
-      kBai: 'Bài có chia sẻ', kNg: 'Người cộng tác', kMoi: 'Lời mời chưa nhận', kMoiS: 'chưa được chia tiền', kDaChia: 'Đã chia cho người cộng tác', kDaChiaS: 'tích luỹ các kỳ đã xét duyệt', kThuHoi: 'Đang thu hồi',
+      kBai: 'Bài có chia sẻ', kNg: 'Người cộng tác', kMoi: 'Lời mời chưa nhận', kMoiS: 'chưa được chia tiền', kDaChia: 'Đã trả người cộng tác', kDaChiaS: 'tiền thật, các kỳ đã xét duyệt', kUoc: 'Ước tính trọn đời', kUocS: 'phần trăm × doanh thu, chưa phải tiền đã trả', kThuHoi: 'Đang thu hồi',
       locAll: 'Tất cả', locMoi: 'Có lời mời chưa nhận', locThuHoi: 'Đang thu hồi', tim: 'Tìm bài, ISRC, tài khoản, email…',
       xacNhanThay: 'Xác nhận thay', hoiXn: 'Xác nhận thay {e}?', hoiXnMo: 'Chỉ làm khi người cộng tác đã gửi xác nhận bằng văn bản; hành động được ghi nhật ký.', daXn: 'Đã xác nhận cho {e}',
       khong: 'Không có bài nào khớp', khongMo: 'Đổi bộ lọc phía trên.'
@@ -14950,7 +15239,7 @@ HT.dangKy({
       themCs: 'Add a split', fBai: 'Track', fBaiHint: 'Type a title or ISRC and pick a suggestion.', fTen: 'Collaborator', fEmail: 'Email', fVai: 'Role', fPct: 'Share %', fThuHoi: 'Recoupment (USD)', fThuHoiHint: 'Deducted from this share until cleared.', daThemCs: 'Invited {t} · {p}%', khongBai: 'Track not found',
       navChiaSe: 'Royalty splits', h1: 'Royalty splits',
       mo: 'Who shares what on which track, pending invitations, running recoupments. Accepted shares are split out of the owner’s payout.',
-      kBai: 'Tracks with splits', kNg: 'Collaborators', kMoi: 'Pending invitations', kMoiS: 'not paid yet', kDaChia: 'Paid to collaborators', kDaChiaS: 'across approved periods', kThuHoi: 'Recouping',
+      kBai: 'Tracks with splits', kNg: 'Collaborators', kMoi: 'Pending invitations', kMoiS: 'not paid yet', kDaChia: 'Paid to collaborators', kDaChiaS: 'real money, approved periods', kUoc: 'Lifetime estimate', kUocS: 'percentage × revenue, not money paid', kThuHoi: 'Recouping',
       locAll: 'All', locMoi: 'Pending invitations', locThuHoi: 'Recouping', tim: 'Search track, ISRC, account, email…',
       xacNhanThay: 'Accept on behalf', hoiXn: 'Accept on behalf of {e}?', hoiXnMo: 'Only when the collaborator has confirmed in writing; the action is logged.', daXn: 'Accepted for {e}',
       khong: 'No tracks match', khongMo: 'Change the filters above.'
@@ -14973,7 +15262,8 @@ HT.dangKy({
       { l: t('kBai'), v: HT.fmt.n(k.tracks), lon: true, s: d.sampled ? (c.lang === 'vi' ? 'đã lấy mẫu' : 'sampled') : '' },
       { l: t('kNg'), v: HT.fmt.n(k.collaborators) },
       { l: t('kMoi'), v: HT.fmt.n(k.invited), s: t('kMoiS'), mau: k.invited ? HB.mau('warn') : '' },
-      { l: t('kDaChia'), v: c.tien2(k.paid), s: t('kDaChiaS') },
+      { l: t('kDaChia'), v: c.tien2(k.daTra), s: t('kDaChiaS') },
+      { l: t('kUoc'), v: c.tien2(k.uocTinh), s: t('kUocS') },
       { l: t('kThuHoi'), v: HT.fmt.n(k.recouping) }
     ]);
     html += '<div class="bar">' +
@@ -25175,6 +25465,336 @@ function inRa(c) {
 }
 ];
 var MAN_KHACH = [
+/* ---- man/k-toi.js ---- */
+function(){
+/* =====================================================================
+   CỔNG NGƯỜI CỘNG TÁC · TỔNG QUAN
+   ---------------------------------------------------------------------
+   Người cộng tác không sở hữu bài nào. Họ góp mặt trên bài của người
+   khác — sản xuất, phối khí, hát cùng — và được chia một phần trăm trên
+   phần của chủ bài. Nên trang này KHÔNG có doanh thu, không có lượt
+   nghe, không có nền tảng: những thứ ấy là của chủ bài.
+
+   Trang trả lời đúng bốn câu, theo thứ tự người ta thật sự hỏi:
+     1. Tôi có bao nhiêu tiền, rút được chưa?
+     2. Tiền ấy đến từ đâu — bài nào, ai là chủ, tôi giữ bao nhiêu phần?
+     3. Còn ai mời tôi cộng tác mà tôi chưa trả lời không?
+     4. Tôi cần làm gì tiếp (khai tài khoản nhận tiền, nhận lời mời)?
+   ===================================================================== */
+"use strict";
+(function () {
+
+HT.dangKy({
+  id: 'k-toi', nav: 'navToi', nhom: '', icon: 'home',
+
+  dem: function (c) {
+    try {
+      var s = c.phien.me;
+      return s.loiMoi ? '!' + s.loiMoi : '';
+    } catch (e) { return ''; }
+  },
+
+  chu: {
+    vi: {
+      navToi: 'Tổng quan', h1: 'Chào {ten}',
+      mo: 'Bạn được chia phần trên bài của người khác. Trang này là toàn bộ những gì Haustek đang giữ cho bạn.',
+      kVi: 'Trong ví', kViS: 'đã ghi qua các kỳ đã xét duyệt', kRut: 'Rút được ngay', kBai: 'Bài được chia', kLoiMoi: 'Lời mời chưa trả lời',
+      duoiNguong: 'Dưới ngưỡng rút tối thiểu {n}', dangAm: 'Số dư đang âm',
+      /* việc cần làm */
+      canLam: 'Việc của bạn', canLamMo: 'Những bước còn thiếu để tiền về tới tài khoản của bạn.',
+      vNganHang: 'Khai tài khoản nhận tiền', vNganHangMo: 'Haustek cần số tài khoản trước khi chuyển tiền. Tên chủ tài khoản phải trùng với tên trên thoả thuận.',
+      vLoiMoi: 'Trả lời {n} lời mời cộng tác', vLoiMoiMo: 'Chưa nhận thì phần của bạn vẫn nằm ở chủ bài, không vào ví.',
+      vRut: 'Gửi yêu cầu rút tiền', vRutMo: 'Số dư đã vượt ngưỡng tối thiểu. Haustek chuyển khoản trong 2 ngày làm việc.',
+      vCho: 'Chờ kỳ tới', vChoMo: 'Số dư còn dưới ngưỡng rút {n}. Khoản này không mất, nó cộng dồn sang kỳ sau.',
+      xong: 'Không còn việc nào', xongMo: 'Mọi thứ đã đủ. Kỳ tới có tiền là Haustek ghi thẳng vào ví bạn.',
+      di: 'Mở',
+      /* phần chia gọn */
+      phan: 'Phần chia của bạn', phanMo: 'Mỗi dòng là một bài bạn có phần. Con số là tiền đã ghi vào ví bạn, không phải doanh thu của bài.',
+      cBai: 'Bài', cChu: 'Chủ bài', cVai: 'Vai của bạn', cPhan: 'Phần của bạn', cDaNhan: 'Đã nhận',
+      xemHet: 'Xem đầy đủ', trong: 'Chưa có bài nào', trongMo: 'Khi bạn nhận một lời mời cộng tác, bài ấy hiện ở đây.',
+      /* dòng tiền theo kỳ */
+      theoKy: 'Tiền vào ví theo kỳ', theoKyMo: 'Mỗi kỳ Haustek xét duyệt xong là một lần ghi vào ví.',
+      cKy: 'Kỳ', cGhi: 'Ghi vào ví', cLuc: 'Xét duyệt lúc',
+      trongKy: 'Chưa kỳ nào ghi vào ví', trongKyMo: 'Khoản đầu tiên được ghi khi kỳ đầu tiên có phần của bạn được xét duyệt.',
+      /* giải thích */
+      hieu: 'Cách phần của bạn được tính',
+      hieuMo: 'Chủ bài nhận phần của họ sau khi Haustek trừ phí theo hợp đồng. Phần trăm của bạn cắt trên phần của CHỦ BÀI, không cắt trên doanh thu gộp. Có ngưỡng thu hồi thì chủ bài nhận trước cho tới khi đủ, rồi mới tới lượt bạn. Vì phần của bạn tính trên phần của người khác, cổng này không hiện doanh thu của bài.'
+    },
+    en: {
+      navToi: 'Overview', h1: 'Hello {ten}',
+      mo: 'You hold a share on other people’s tracks. This page is everything Haustek is holding for you.',
+      kVi: 'In wallet', kViS: 'credited across approved periods', kRut: 'Withdrawable now', kBai: 'Tracks with a share', kLoiMoi: 'Invitations to answer',
+      duoiNguong: 'Below the {n} minimum', dangAm: 'Balance is negative',
+      canLam: 'Your next steps', canLamMo: 'What is still missing before the money reaches your account.',
+      vNganHang: 'Add your payout account', vNganHangMo: 'Haustek needs your bank details before transferring. The account holder name must match the name on the agreement.',
+      vLoiMoi: 'Answer {n} collaboration invitations', vLoiMoiMo: 'Until you accept, your share stays with the track owner and never reaches your wallet.',
+      vRut: 'Request a withdrawal', vRutMo: 'Your balance is above the minimum. Haustek transfers within 2 working days.',
+      vCho: 'Wait for the next period', vChoMo: 'Your balance is still below the {n} minimum. Nothing is lost; it adds up with the next period.',
+      xong: 'Nothing to do', xongMo: 'Everything is in place. As soon as a period brings money in, Haustek credits your wallet.',
+      di: 'Open',
+      phan: 'Your shares', phanMo: 'Each row is a track you hold a share on. The figure is what was credited to your wallet, not the track’s revenue.',
+      cBai: 'Track', cChu: 'Owner', cVai: 'Your role', cPhan: 'Your share', cDaNhan: 'Received',
+      xemHet: 'See all', trong: 'No tracks yet', trongMo: 'Once you accept a collaboration invitation, that track appears here.',
+      theoKy: 'Credited per period', theoKyMo: 'Each period Haustek approves is one credit to your wallet.',
+      cKy: 'Period', cGhi: 'Credited', cLuc: 'Approved at',
+      trongKy: 'Nothing credited yet', trongKyMo: 'The first credit lands when the first period containing your share is approved.',
+      hieu: 'How your share is worked out',
+      hieuMo: 'The track owner receives their share after Haustek deducts the contracted fee. Your percentage is taken from the OWNER’S share, not from gross revenue. Where a recoupment amount applies, the owner is paid first until it is met, and your share follows. Because your share is a percentage of someone else’s money, this portal does not show the track’s revenue.'
+    }
+  },
+
+  ve: function (root, c) {
+    var t = c.t, api = c.api, me = c.phien.me;
+    var w = api.wallet(me.role, me.partyId);
+    var pc = api.phanChia(me.role, me.partyId);
+    var moi = api.loiMoiChiaSe(me.role, me.partyId);
+    var choMoi = (moi.rows || []).filter(function (r) { return r.status === 'invited'; });
+
+    var duoi = w.available > 0.004 && w.available < w.threshold;
+    var html = HM.dau({
+      h1: HM.esc(t('h1').replace('{ten}', me.name)),
+      mo: HM.esc(t('mo'))
+    });
+
+    html += HM.so([
+      { l: t('kVi'), v: HT.fmt.usd(w.totalCredit), lon: true, s: t('kViS') },
+      { l: t('kRut'), v: HT.fmt.usd(Math.max(0, w.available)),
+        s: w.amNo ? t('dangAm') : duoi ? t('duoiNguong').replace('{n}', HT.fmt.usd0(w.threshold)) : '',
+        mau: w.amNo ? HB.mau('no') : duoi ? HB.mau('warn') : HB.mau('ok') },
+      { l: t('kBai'), v: HT.fmt.n(pc.tracks) },
+      { l: t('kLoiMoi'), v: HT.fmt.n(choMoi.length), mau: choMoi.length ? HB.mau('warn') : '' }
+    ]);
+
+    /* ---- việc cần làm: đúng thứ tự chặn tiền ---- */
+    var viec = [];
+    if (!w.bank) viec.push({ ten: t('vNganHang'), mo: t('vNganHangMo'), di: 'k-vi', kieu: 'warn' });
+    if (choMoi.length) viec.push({ ten: t('vLoiMoi').replace('{n}', choMoi.length), mo: t('vLoiMoiMo'), di: 'k-phan-chia', kieu: 'warn' });
+    if (w.bank && w.available >= w.threshold) viec.push({ ten: t('vRut'), mo: t('vRutMo'), di: 'k-vi', kieu: 'ok' });
+    else if (w.bank && duoi) viec.push({ ten: t('vCho'), mo: t('vChoMo').replace('{n}', HT.fmt.usd0(w.threshold)), di: '', kieu: '' });
+
+    html += HM.the({
+      h2: HM.esc(t('canLam')), p: HM.esc(t('canLamMo')),
+      than: viec.length
+        ? '<div class="checks">' + viec.map(function (v) {
+            return '<div class="check ' + (v.kieu || '') + '">' + HM.icon(v.kieu === 'ok' ? 'check' : 'alert') +
+              '<div><b>' + HM.esc(v.ten) + '</b><span>' + HM.esc(v.mo) + '</span></div>' +
+              (v.di ? '<div class="r"><a class="btn sm" href="#' + v.di + '">' + HM.esc(t('di')) + '</a></div>' : '') +
+              '</div>';
+          }).join('') + '</div>'
+        : HM.trong({ tieuDe: t('xong'), moTa: t('xongMo'), icon: 'check' })
+    });
+
+    /* ---- phần chia, gọn: ba dòng nhiều tiền nhất ---- */
+    var rows = (pc.rows || []).slice(0, 3);
+    html += HM.the({
+      h2: HM.esc(t('phan')), p: HM.esc(t('phanMo')), thoBody: true,
+      hanhDong: pc.tracks > 3 ? '<a class="btn sm" href="#k-phan-chia">' + HM.esc(t('xemHet')) + '</a>' : '',
+      than: rows.length
+        ? '<div class="tw"><table class="t"><thead><tr><th>' + HM.esc(t('cBai')) + '</th><th>' + HM.esc(t('cChu')) + '</th>' +
+          '<th>' + HM.esc(t('cVai')) + '</th><th class="num">' + HM.esc(t('cPhan')) + '</th>' +
+          '<th class="num">' + HM.esc(t('cDaNhan')) + '</th></tr></thead><tbody>' +
+          rows.map(function (r) {
+            return '<tr><td>' + HM.tenBia({ bia: r.trackId, ten: HM.dai(r.title, 34), phu: r.artist + ' · ' + r.isrc }) + '</td>' +
+              '<td>' + HM.esc(HM.dai(r.chu, 22)) + '</td>' +
+              '<td>' + HM.esc(c.song(r, 'vaiLabel')) + '</td>' +
+              '<td class="num"><b>' + HM.esc(HT.fmt.n(r.pct)) + '%</b></td>' +
+              '<td class="num band"><b>' + HM.esc(HT.fmt.usd(r.daTra)) + '</b></td></tr>';
+          }).join('') + '</tbody></table></div>'
+        : HM.trong({ tieuDe: t('trong'), moTa: t('trongMo'), icon: 'swap' })
+    });
+
+    /* ---- tiền vào ví theo kỳ ---- */
+    var ky = w.credits || [];
+    html += HM.the({
+      h2: HM.esc(t('theoKy')), p: HM.esc(t('theoKyMo')), thoBody: true,
+      than: ky.length
+        ? '<div class="tw"><table class="t"><thead><tr><th>' + HM.esc(t('cKy')) + '</th>' +
+          '<th class="num">' + HM.esc(t('cGhi')) + '</th><th>' + HM.esc(t('cLuc')) + '</th></tr></thead><tbody>' +
+          ky.slice().reverse().map(function (x) {
+            return '<tr><td><b>' + HM.esc(x.label) + '</b></td>' +
+              '<td class="num band"><b>' + HM.esc(HT.fmt.usd(x.credit)) + '</b></td>' +
+              '<td class="mono">' + HM.esc(HT.fmt.luc(x.approvedAt)) + '</td></tr>';
+          }).join('') + '</tbody></table></div>'
+        : HM.trong({ tieuDe: t('trongKy'), moTa: t('trongKyMo'), icon: 'cash' })
+    });
+
+    html += HM.the({ h2: HM.esc(t('hieu')), than: '<p class="say">' + HM.esc(t('hieuMo')) + '</p>' });
+    root.innerHTML = html;
+  }
+});
+
+})();
+
+},
+/* ---- man/k-phan-chia.js ---- */
+function(){
+/* =====================================================================
+   CỔNG NGƯỜI CỘNG TÁC · PHẦN CHIA CỦA TÔI
+   ---------------------------------------------------------------------
+   Đây là góc nhìn NGƯỢC LẠI với trang Chia sẻ tác quyền của chủ bài.
+   Chủ bài hỏi "tôi chia cho những ai"; người cộng tác hỏi "tôi được chia
+   trên bài nào, bao nhiêu, và đã nhận đủ chưa".
+
+   Ranh giới quan trọng nhất của trang này là thứ nó KHÔNG hiện: doanh
+   thu của bài, lượt nghe, nền tảng, lãnh thổ. Người cộng tác biết phần
+   trăm của mình và số tiền mình nhận; từ hai số ấy họ suy ra được phần
+   của chủ bài, và đó là điều không tránh được — nhưng portal không tự
+   mình bày thêm gì nữa.
+   ===================================================================== */
+"use strict";
+(function () {
+
+HT.dangKy({
+  id: 'k-phan-chia', nav: 'navPhanChia', nhom: '', icon: 'swap',
+
+  dem: function (c) {
+    try {
+      var m = c.api.loiMoiChiaSe(c.phien.me.role, c.phien.me.partyId);
+      return m.invited ? '!' + m.invited : '';
+    } catch (e) { return ''; }
+  },
+
+  chu: {
+    vi: {
+      navPhanChia: 'Phần chia của tôi', h1: 'Phần chia của tôi',
+      mo: 'Bài nào bạn có phần, chủ bài là ai, bạn giữ bao nhiêu phần trăm và đã nhận được bao nhiêu.',
+      kBai: 'Bài có phần', kDaNhan: 'Đã nhận', kDaNhanS: 'cộng dồn các kỳ đã xét duyệt', kMoi: 'Lời mời chưa trả lời',
+      /* lời mời */
+      loiMoi: 'Lời mời cộng tác', loiMoiMo: 'Ai đó mời bạn nhận một phần trên bài của họ. Nhận rồi thì từ kỳ xét duyệt kế tiếp, phần ấy vào ví bạn.',
+      cBai: 'Bài', cChu: 'Chủ bài', cVai: 'Vai', cPhan: 'Phần', cThuHoi: 'Ngưỡng thu hồi', cTt: 'Trạng thái', cNhan: 'Đã nhận', cTu: 'Nhận từ',
+      nhan: 'Nhận lời mời', daNhan: 'Đã nhận lời mời', dangCho: 'Chờ bạn trả lời',
+      hoiNhan: 'Nhận phần chia trên "{t}"?',
+      hoiNhanMo: 'Bạn nhận {p}% phần của {c} trên bài này. Từ kỳ xét duyệt kế tiếp, phần ấy được ghi thẳng vào ví bạn thay vì vào ví họ.',
+      dongY: 'Nhận', daNhanXong: 'Đã nhận lời mời cộng tác',
+      trongMoi: 'Không có lời mời nào đang chờ', trongMoiMo: 'Khi ai đó mời bạn cộng tác, lời mời hiện ở đây.',
+      /* bảng phần chia */
+      bang: 'Bài bạn có phần', bangMo: 'Con số là tiền đã ghi vào ví bạn, không phải doanh thu của bài.',
+      thuHoiCon: 'chủ bài nhận trước {n}', khongThuHoi: 'không có',
+      trong: 'Chưa có bài nào', trongMo: 'Nhận một lời mời cộng tác là bài ấy hiện ở đây, kèm số tiền theo từng kỳ.',
+      /* chi tiết theo kỳ */
+      chiTiet: 'Theo kỳ', dongKy: '{n} kỳ đã ghi', chuaKy: 'chưa kỳ nào',
+      cKy: 'Kỳ', cSoTien: 'Ghi vào ví', cLuc: 'Xét duyệt lúc'
+    },
+    en: {
+      navPhanChia: 'My shares', h1: 'My shares',
+      mo: 'Which tracks you hold a share on, who owns them, what percentage you hold and how much you have received.',
+      kBai: 'Tracks', kDaNhan: 'Received', kDaNhanS: 'across approved periods', kMoi: 'Invitations to answer',
+      loiMoi: 'Collaboration invitations', loiMoiMo: 'Someone invited you to take a share on their track. Once you accept, that share goes to your wallet from the next approved period.',
+      cBai: 'Track', cChu: 'Owner', cVai: 'Role', cPhan: 'Share', cThuHoi: 'Recoupment', cTt: 'Status', cNhan: 'Accepted', cTu: 'Accepted on',
+      nhan: 'Accept', daNhan: 'Accepted', dangCho: 'Waiting for you',
+      hoiNhan: 'Accept your share on “{t}”?',
+      hoiNhanMo: 'You take {p}% of {c}’s share on this track. From the next approved period it is credited to your wallet instead of theirs.',
+      dongY: 'Accept', daNhanXong: 'Invitation accepted',
+      trongMoi: 'No pending invitations', trongMoiMo: 'When someone invites you to collaborate, the invitation appears here.',
+      bang: 'Tracks you hold a share on', bangMo: 'The figure is what was credited to your wallet, not the track’s revenue.',
+      thuHoiCon: 'owner paid first up to {n}', khongThuHoi: 'none',
+      trong: 'No tracks yet', trongMo: 'Accept a collaboration invitation and the track appears here with the amount per period.',
+      chiTiet: 'By period', dongKy: '{n} periods credited', chuaKy: 'none yet',
+      cKy: 'Period', cSoTien: 'Credited', cLuc: 'Approved at'
+    }
+  },
+
+  ve: function (root, c) {
+    var t = c.t, api = c.api, me = c.phien.me;
+    var pc = api.phanChia(me.role, me.partyId);
+    var moi = api.loiMoiChiaSe(me.role, me.partyId);
+    var cho = (moi.rows || []).filter(function (r) { return r.status === 'invited'; });
+
+    var html = HM.dau({ h1: HM.esc(t('h1')), mo: HM.esc(t('mo')) });
+    html += HM.so([
+      { l: t('kBai'), v: HT.fmt.n(pc.tracks), lon: true },
+      { l: t('kDaNhan'), v: HT.fmt.usd(pc.daTra), s: t('kDaNhanS') },
+      { l: t('kMoi'), v: HT.fmt.n(cho.length), mau: cho.length ? HB.mau('warn') : '' }
+    ]);
+
+    /* ---- lời mời đang chờ ---- */
+    html += HM.the({
+      h2: HM.esc(t('loiMoi')) + (cho.length ? ' <span class="muted">(' + cho.length + ')</span>' : ''),
+      p: HM.esc(t('loiMoiMo')), thoBody: true,
+      than: cho.length
+        ? '<div class="tw"><table class="t"><thead><tr><th>' + HM.esc(t('cBai')) + '</th><th>' + HM.esc(t('cChu')) + '</th>' +
+          '<th>' + HM.esc(t('cVai')) + '</th><th class="num">' + HM.esc(t('cPhan')) + '</th>' +
+          '<th>' + HM.esc(t('cThuHoi')) + '</th><th></th></tr></thead><tbody>' +
+          cho.map(function (r) {
+            return '<tr><td>' + HM.tenBia({ bia: r.trackId, ten: HM.dai(r.title, 32), phu: r.artist + ' · ' + r.isrc }) + '</td>' +
+              '<td>' + HM.esc(HM.dai(r.chu, 20)) + '</td>' +
+              '<td>' + HM.esc(c.song(r, 'roleLabel')) + '</td>' +
+              '<td class="num"><b>' + HM.esc(HT.fmt.n(r.pct)) + '%</b></td>' +
+              '<td>' + (r.recoup ? '<span class="muted">' + HM.esc(t('thuHoiCon').replace('{n}', HT.fmt.usd0(r.recoup))) + '</span>'
+                                 : '<span class="nil">' + HM.esc(t('khongThuHoi')) + '</span>') + '</td>' +
+              '<td><button type="button" class="btn sm pri" data-nhan="' + r.trackId + '" data-email="' + HM.esc(r.email) +
+                '" data-ten="' + HM.esc(r.title) + '" data-pct="' + HM.esc(String(r.pct)) + '" data-chu="' + HM.esc(r.chu) + '">' +
+                HM.icon('check') + HM.esc(t('nhan')) + '</button></td></tr>';
+          }).join('') + '</tbody></table></div>'
+        : HM.trong({ tieuDe: t('trongMoi'), moTa: t('trongMoiMo'), icon: 'check' })
+    });
+
+    /* ---- bài đã có phần ---- */
+    html += HM.the({
+      h2: HM.esc(t('bang')), p: HM.esc(t('bangMo')), thoBody: true,
+      than: pc.rows.length
+        ? '<div class="tw"><table class="t"><thead><tr><th>' + HM.esc(t('cBai')) + '</th><th>' + HM.esc(t('cChu')) + '</th>' +
+          '<th>' + HM.esc(t('cVai')) + '</th><th class="num">' + HM.esc(t('cPhan')) + '</th>' +
+          '<th>' + HM.esc(t('cTu')) + '</th><th class="num">' + HM.esc(t('cNhan')) + '</th>' +
+          '<th>' + HM.esc(t('chiTiet')) + '</th></tr></thead><tbody>' +
+          pc.rows.map(function (r) {
+            return '<tr><td>' + HM.tenBia({ bia: r.trackId, ten: HM.dai(r.title, 32), phu: r.artist + ' · ' + r.isrc }) + '</td>' +
+              '<td>' + HM.esc(HM.dai(r.chu, 20)) + '</td>' +
+              '<td>' + HM.esc(c.song(r, 'vaiLabel')) + '</td>' +
+              '<td class="num"><b>' + HM.esc(HT.fmt.n(r.pct)) + '%</b>' +
+                (r.recoup ? '<div class="muted" style="font-size:11px">' + HM.esc(t('thuHoiCon').replace('{n}', HT.fmt.usd0(r.recoup))) + '</div>' : '') + '</td>' +
+              '<td class="mono">' + HM.esc(r.acceptedAt ? HT.fmt.ngay(r.acceptedAt) : '—') + '</td>' +
+              '<td class="num band"><b>' + HM.esc(HT.fmt.usd(r.daTra)) + '</b></td>' +
+              '<td>' + (r.theoKy.length
+                ? '<button type="button" class="btn sm" data-ky-bai="' + r.trackId + '">' +
+                    HM.esc(t('dongKy').replace('{n}', r.theoKy.length)) + '</button>'
+                : '<span class="nil">' + HM.esc(t('chuaKy')) + '</span>') + '</td></tr>' +
+              '<tr class="ky-bai" data-cua="' + r.trackId + '" hidden><td colspan="7">' +
+                '<table class="t"><thead><tr><th>' + HM.esc(t('cKy')) + '</th>' +
+                '<th class="num">' + HM.esc(t('cSoTien')) + '</th><th>' + HM.esc(t('cLuc')) + '</th></tr></thead><tbody>' +
+                r.theoKy.map(function (x) {
+                  return '<tr><td><b>' + HM.esc(x.label) + '</b></td>' +
+                    '<td class="num">' + HM.esc(HT.fmt.usd(x.soTien)) + '</td>' +
+                    '<td class="mono">' + HM.esc(HT.fmt.luc(x.approvedAt)) + '</td></tr>';
+                }).join('') + '</tbody></table></td></tr>';
+          }).join('') + '</tbody></table></div>'
+        : HM.trong({ tieuDe: t('trong'), moTa: t('trongMo'), icon: 'swap' })
+    });
+
+    html += HM.the({ h2: HM.esc(c.lang === 'vi' ? 'Cách tính' : 'How it works'),
+      than: '<p class="say">' + HM.esc(c.song(pc, 'note')) + '</p>' });
+
+    root.innerHTML = html;
+
+    /* mở / đóng bảng theo kỳ của một bài */
+    HM.bam(root, '[data-ky-bai]', function (el) {
+      var id = el.getAttribute('data-ky-bai');
+      var d = root.querySelector('.ky-bai[data-cua="' + id + '"]');
+      if (d) d.hidden = !d.hidden;
+    });
+
+    /* nhận lời mời — xác nhận trước, vì nhận rồi là tiền đổi chủ từ kỳ sau */
+    HM.bam(root, '[data-nhan]', function (el) {
+      var id = el.getAttribute('data-nhan'), email = el.getAttribute('data-email');
+      c.hoiThoai({
+        tieuDe: t('hoiNhan').replace('{t}', el.getAttribute('data-ten')),
+        moTa: HM.esc(t('hoiNhanMo').replace('{p}', el.getAttribute('data-pct')).replace('{c}', el.getAttribute('data-chu'))),
+        dong: t('dongY')
+      }).then(function (ok) {
+        if (!ok) return;
+        try {
+          api.acceptSplit(me.role, me.partyId, +id, email);
+          c.thongBao(t('daNhanXong'), 'ok');
+          c.veLai();
+        } catch (e) { c.thongBao(e.message, 'no'); }
+      });
+    });
+  }
+});
+
+})();
+
+},
 /* ---- man/k-tong-quan.js ---- */
 function(){
 /* =====================================================================
@@ -27259,7 +27879,7 @@ HT.dangKy({
     vi: {
       navChiaSe: 'Chia sẻ tác quyền', h1: 'Chia sẻ tác quyền',
       mo: 'Chia phần trăm tiền của một bài cho producer, nghệ sĩ khách, đồng sáng tác, kỹ sư. Họ chỉ thấy phần của họ; có ngưỡng thu hồi thì bạn nhận trước.',
-      kBai: 'Bài có chia sẻ', kNg: 'Người cộng tác', kMoi: 'Lời mời chưa nhận', kMoiS: 'chưa được chia tiền cho tới khi nhận', kDaChia: 'Đã chia cho người cộng tác', kDaChiaS: 'tích luỹ các kỳ đã xét duyệt', kThuHoi: 'Đang thu hồi', kThuHoiS: 'bạn nhận trước cho tới khi đủ',
+      kBai: 'Bài có chia sẻ', kNg: 'Người cộng tác', kMoi: 'Lời mời chưa nhận', kMoiS: 'chưa được chia tiền cho tới khi nhận', kDaChia: 'Đã trả người cộng tác', kUoc: 'Ước tính trọn đời', kUocS: 'phần trăm × doanh thu, chưa phải tiền đã trả', kDaChiaS: 'tiền thật, các kỳ đã xét duyệt', kThuHoi: 'Đang thu hồi', kThuHoiS: 'bạn nhận trước cho tới khi đủ',
       locAll: 'Tất cả', locMoi: 'Có lời mời chưa nhận', locThuHoi: 'Đang thu hồi', tim: 'Tìm bài hát, ISRC, email…',
       themMoi: 'Thêm chia sẻ cho bài khác', them: 'Thêm người', bo: 'Bỏ',
       khong: 'Không có bài nào khớp', khongMo: 'Đổi bộ lọc hoặc thêm chia sẻ cho một bài.', trong: 'Chưa có bài nào được chia sẻ', trongMo: 'Bấm “Thêm chia sẻ cho bài khác”, nhập ISRC và người cộng tác.',
@@ -27273,7 +27893,7 @@ HT.dangKy({
     en: {
       navChiaSe: 'Royalty splits', h1: 'Royalty splits',
       mo: 'Share a track’s earnings with a producer, featured artist, co-writer or engineer. They see only their share; with recoupment you are paid first.',
-      kBai: 'Tracks with splits', kNg: 'Collaborators', kMoi: 'Pending invitations', kMoiS: 'not paid until accepted', kDaChia: 'Paid to collaborators', kDaChiaS: 'across approved periods', kThuHoi: 'Recouping', kThuHoiS: 'you are paid first until met',
+      kBai: 'Tracks with splits', kNg: 'Collaborators', kMoi: 'Pending invitations', kMoiS: 'not paid until accepted', kDaChia: 'Paid to collaborators', kUoc: 'Lifetime estimate', kUocS: 'percentage × revenue, not money paid', kDaChiaS: 'real money, approved periods', kThuHoi: 'Recouping', kThuHoiS: 'you are paid first until met',
       locAll: 'All', locMoi: 'Pending invitations', locThuHoi: 'Recouping', tim: 'Search track, ISRC, email…',
       themMoi: 'Add a split on another track', them: 'Add person', bo: 'Remove',
       khong: 'No tracks match', khongMo: 'Change the filter or add a split on a track.', trong: 'No splits yet', trongMo: 'Click “Add a split on another track”, enter the ISRC and the collaborator.',
@@ -27302,7 +27922,8 @@ HT.dangKy({
       { l: t('kBai'), v: HT.fmt.n(k.tracks), lon: true },
       { l: t('kNg'), v: HT.fmt.n(k.collaborators) },
       { l: t('kMoi'), v: HT.fmt.n(k.invited), s: t('kMoiS'), mau: k.invited ? HB.mau('warn') : '' },
-      { l: t('kDaChia'), v: HT.fmt.usd(k.paid), s: t('kDaChiaS') },
+      { l: t('kDaChia'), v: HT.fmt.usd(k.daTra), s: t('kDaChiaS') },
+      { l: t('kUoc'), v: HT.fmt.usd(k.uocTinh), s: t('kUocS') },
       { l: t('kThuHoi'), v: HT.fmt.n(k.recouping), s: t('kThuHoiS') }
     ]);
     html += '<div class="bar">' +

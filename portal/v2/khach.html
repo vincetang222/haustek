@@ -27,6 +27,8 @@ HAUSTEK.lockdown();
 <script src="haustek-them.js"></script>
 <script src="haustek-hoso.js"></script>
 
+<script src="man/k-toi.js"></script>
+<script src="man/k-phan-chia.js"></script>
 <script src="man/k-tong-quan.js"></script>
 <script src="man/k-ban-ghi.js"></script>
 <script src="man/k-danh-muc.js"></script>
@@ -96,7 +98,10 @@ HT.chay({
   phien: PHIEN,
   thongBao: function () { return api.notifications(PHIEN.me.role, PHIEN.me.partyId); },
   danhDauDoc: function (c, ids) { return api.markNotifications(PHIEN.me.role, PHIEN.me.partyId, ids); },
-  tim: function (c, q) { return api.search(PHIEN.me.role, PHIEN.me.partyId, q, 6); },
+  /* Tìm nhanh quét danh mục; bên không có danh mục thì không có gì để
+     tìm, và gọi vào là lõi chặn đúng như bảng quyền đã khai. */
+  tim: PHIEN.me.role === 'nhan' ? null
+    : function (c, q) { return api.search(PHIEN.me.role, PHIEN.me.partyId, q, 6); },
   moBai: function (c, id) {
     var me = PHIEN.me, la = me.role === 'label', hs = api.trackAsset(me.role, me.partyId, id);
     HTS.moNgan(c, hs, { mineLabel: la ? HTS.t('label') : HTS.t('toi'), revenueLabel: la ? HTS.t('gop') : HTS.t('toi'), anMine: !la,
@@ -104,7 +109,10 @@ HT.chay({
   },
   moDoiTac: function (c) { location.hash = '#k-nghe-si'; },
   coTienTe: false,
+  /* Bên "người cộng tác" không có trang nào đọc theo kỳ: phần chia và ví
+     đều là cộng dồn. Trả danh sách rỗng để khung giấu ô chọn kỳ. */
   kyDanhSach: function () {
+    if (PHIEN.me.role === 'nhan') return [];
     return PHIEN.kys.map(function (p) { return { k: p.k, label: p.label }; });
   },
   kyMacDinh: PHIEN.moiNhat,
@@ -125,7 +133,8 @@ HT.chay({
       return '<option value="' + i + '"' + (a === toi ? ' selected' : '') + '>' +
         HT.esc(a.name) + '</option>';
     }).join('');
-    var vai = toi.role !== 'label'
+    var vai = toi.role === 'nhan' ? (vi ? 'Người cộng tác' : 'Collaborator')
+      : toi.role !== 'label'
       ? (me.independent ? (vi ? 'Nghệ sĩ độc lập' : 'Independent artist') : (vi ? 'Nghệ sĩ' : 'Artist'))
       : me.parentLabel ? (vi ? 'Label con của ' + me.parentLabel.name : 'Sub-label of ' + me.parentLabel.name)
       : me.childLabels > 0 ? (vi ? 'Label mẹ · ' + me.childLabels + ' label con' : 'Parent label · ' + me.childLabels + ' sub-labels')
