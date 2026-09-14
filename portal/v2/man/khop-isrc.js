@@ -229,7 +229,7 @@ function veChiTiet(root, c) {
       ? { kieu: 'ok', icon: 'check', chu: HM.esc(t('daKhop') + ' → ' + A.titleOf(q.resolvedTo) + ' · ' + HT.fmt.luc(q.at)) }
       : q.status === 'parked'
         ? { kieu: 'warn', icon: 'clock', chu: HM.esc(t('deLai') + (q.note ? ' · ' + q.note : '')) }
-        : { kieu: 'no', icon: 'alert', chu: HM.esc(q.reason) },
+        : { kieu: 'no', icon: 'alert', chu: HM.esc(c.song(q, 'reason')) },
     h2: HM.esc(q.title || (c.lang === 'vi' ? '(file không ghi tên bài hát)' : '(no title in file)')),
     p: HM.esc(q.id + ' · ' + c.song(A.feeds[q.feedId], 'name')),
     than: HM.kv([
@@ -265,7 +265,7 @@ function veChiTiet(root, c) {
             '<em>' + HM.esc(tr.isrc) + ' · ' + HM.esc(HM.dai(tr.artist, 24)) +
             (tr.label ? ' · ' + HM.esc(HM.dai(tr.label, 20)) : ' · ' + (c.lang === 'vi' ? 'độc lập' : 'independent')) + '</em>' +
             '<div class="bar" style="margin-top:6px"><i style="width:' + g.score + '%"></i></div>' +
-            '<em style="margin-top:4px">' + HM.esc(g.why) + ' · ' + g.score + ' ' + HM.esc(t('diem')) + '</em></div>' +
+            '<em style="margin-top:4px">' + HM.esc(c.song(g, 'why')) + ' · ' + g.score + ' ' + HM.esc(t('diem')) + '</em></div>' +
           '<button type="button" class="btn sm" data-xem="' + g.i + '">' + HM.icon('info') + '</button>' +
           '<button type="button" class="btn sm pri" data-khop="' + g.i + '">' + HM.esc(t('khop')) + '</button>' +
           '</div>';

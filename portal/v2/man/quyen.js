@@ -185,7 +185,7 @@ function veKhieuNai(c) {
     return {
       id: x.id, r: x, store: x.store, loai: c.song(A.claims.categories.filter(function (k) { return k.id === x.category; })[0] || { label: x.category }, 'label'),
       han: x.expiresAt || '', bai: x.track.title, doiTac: x.party.name, pl: pl ? pl.classification : '',
-      tt: x.country, ben: x.otherParty || '', xem: x.dailyViews, trangThai: x.status,
+      tt: c.song(x, 'country'), ben: x.otherParty || '', xem: x.dailyViews, trangThai: x.status,
       capNhat: x.updatedAt, uuTien: UT_HANG[x.priority] == null ? 9 : UT_HANG[x.priority], nv: tenNv(A, x.assignee)
     };
   });
@@ -216,7 +216,7 @@ function veKhieuNai(c) {
           return '<option value="' + o[0] + '"' + (LOC.tt === o[0] ? ' selected' : '') + '>' + HM.esc(o[1]) + '</option>';
         }).join('') + '</select>' +
       sel('data-nv', LOC.nv, nhanVien.map(function (s) { return [s.id, s.name]; }), t('moiNv')) +
-      sel('data-thi', LOC.thiTruong, thiTruong.map(function (x) { return [x, x]; }), t('moiTt')) +
+      sel('data-thi', LOC.thiTruong, thiTruong.map(function (x) { return [x, c.lang === 'en' ? (A.territoriesEn[A.territories.indexOf(x)] || x) : x]; }), t('moiTt')) +
       '<button type="button" class="pill' + (LOC.toi ? ' on' : '') + '" data-toi>' + HM.icon(LOC.toi ? 'check' : 'user') + HM.esc(t('chiToi')) + '</button>' +
       '<div class="sp"></div>' +
       '<button type="button" class="btn sm" data-xuat>' + HM.icon('down2') + HM.esc(t('xuat')) + '</button>' +
@@ -255,7 +255,7 @@ function veKhieuNai(c) {
           '<td>' + hanHtml + '</td>' +
           '<td>' + HM.tenBia({ bia: x.trackId, ten: HM.dai(x.track.title, 28), phuHtml: true, phu: HM.esc(HM.dai(x.track.artist, 24)) + ' · <span class="mono">' + HM.esc(x.track.isrc) + ' · ' + HM.esc(x.track.upc) + '</span>' }) + '</td>' +
           '<td><div class="t-ttl">' + HM.esc(HM.dai(x.party.name, 24)) + '</div><div class="t-sub">' + HM.esc(x.party.clientId) + (d.pl ? ' · ' + HM.esc(d.pl) : '') + '</div></td>' +
-          '<td>' + HM.esc(x.country) + '</td>' +
+          '<td>' + HM.esc(c.song(x, 'country')) + '</td>' +
           '<td>' + (x.otherParty ? HM.esc(HM.dai(x.otherParty, 22)) : '<span class="nil">—</span>') + '</td>' +
           '<td class="num">' + HM.esc(HT.fmt.n(x.dailyViews)) + '</td>' +
           '<td>' + HM.tag(TT[c.lang][x.status], KIEU[x.status]) + '</td>' +
@@ -379,7 +379,7 @@ function moClaim(c, id) {
       { t: t('cDoiTac'), v: x.party.name + ' · ' + x.party.clientId },
       { t: 'ISRC · UPC', v: '<span class="mono">' + HM.esc(x.track.isrc) + ' · ' + HM.esc(x.track.upc) + '</span>', vHtml: true },
       { t: t('benKhac'), v: x.otherParty || t('khongBen') },
-      { t: t('cTt'), v: x.country },
+      { t: t('cTt'), v: c.song(x, 'country') },
       { t: t('luotXem'), v: HT.fmt.n(x.dailyViews), manh: true },
       { t: t('cNv'), v: x.assignee ? tenNv(A, x.assignee) : t('chuaGan') },
       { t: t('ngayTao'), v: HT.fmt.luc(x.createdAt) },
@@ -463,7 +463,7 @@ function inHoSo(c, x) {
     [['Asset ID', x.assetId], [t('cNt'), x.store], [t('cLoai'), cat ? c.song(cat, 'label') : x.category],
      [t('cBai'), x.track.title + ' · ' + x.track.artist], ['ISRC · UPC', x.track.isrc + ' · ' + x.track.upc],
      [t('cDoiTac'), x.party.name + ' · ' + x.party.clientId], [t('benKhac'), x.otherParty || t('khongBen')],
-     [t('cTt'), x.country], [t('luotXem'), HT.fmt.n(x.dailyViews)],
+     [t('cTt'), c.song(x, 'country')], [t('luotXem'), HT.fmt.n(x.dailyViews)],
      [t('cTrangThai'), TT[c.lang][x.status]], [t('ngayTao'), HT.fmt.luc(x.createdAt)],
      [t('hetHan'), x.expiresAt ? HT.fmt.ngay(x.expiresAt) : t('khongHan')]]
       .map(function (r) { return '<dt>' + HM.esc(r[0]) + '</dt><dd>' + HM.esc(String(r[1])) + '</dd>'; }).join('') + '</dl>';

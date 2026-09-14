@@ -70,7 +70,7 @@ HT.dangKy({
         loai: r.partyKey[0] === 'L' ? 'label' : 'artist',
         rate: r.rate, from: r.from,
         fromLabel: A.periods[A.pIndexOf(r.from)] ? A.periods[A.pIndexOf(r.from)].label : r.from,
-        by: r.by, at: r.at, note: r.note || '',
+        by: c.song(r, 'by'), at: r.at, note: c.song(r, 'note') || '',
         dangAp: A.rates.rateFor(r.partyKey, c.kyKey) === r.rate &&
                 r.from <= c.kyKey &&
                 !raw.some(function (x) { return x.partyKey === r.partyKey && x.from > r.from && x.from <= c.kyKey; }),

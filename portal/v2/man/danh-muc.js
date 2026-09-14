@@ -373,7 +373,7 @@ function moBanGhi(c, i) {
   var theoThiTruong = function () {
     if (g <= 0) return [];
     var pt = A.splitDim(i, g, A.territoryW, pi);
-    return A.territories.map(function (x, j) { return { ten: x, gt: Math.round(pt[j] * 100) / 100, mau: P[j % 8] }; })
+    return (vi ? A.territories : A.territoriesEn).map(function (x, j) { return { ten: x, gt: Math.round(pt[j] * 100) / 100, mau: P[j % 8] }; })
       .sort(function (a, b) { return b.gt - a.gt; }).slice(0, 8)
       .filter(function (x) { return x.gt > 0.004; });
   };

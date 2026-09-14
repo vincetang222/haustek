@@ -43,6 +43,9 @@ node portal/test/qc-bat-bien.js     # bất biến chuỗi tiền trên mọi k�
 node portal/test/qc-quyen.js        # ma trận quyền: trang mở được thì hàm gọi được
 node portal/test/qc-vai-quet.js     # mọi vai × mọi trang × mọi hàm đọc (283 phép)
 node portal/test/qc-dem-nho.js      # đệm không được phép thiu
+node portal/test/aaa.js             # hội đồng đi qua mọi cửa, giám đốc qua cửa
+node portal/test/tien-ba-lop.js     # ba lớp người / bên / vai, độc lập 100%, label tự trả, huỷ chốt bù trừ
+node portal/test/i18n-loi.js        # mọi lỗi lõi có bản tiếng Anh
 ```
 
 | Bài | Kiểm gì |
@@ -54,6 +57,9 @@ node portal/test/qc-dem-nho.js      # đệm không được phép thiu
 | `qc-quyen.js` | `QUYEN_MAN`, `QUYEN_NHOM`, `QUYEN_HAM`, `MAN_CAP` phải nhất quán: trang mà vai mở được thì mọi hàm trang ấy gọi phải nằm trong nhóm vai ấy có; không vai nào trắng bảng; giám đốc không cầm nhập liệu lẫn kiểm số. |
 | `qc-vai-quet.js` | Đăng nhập từng vai, mở từng trang, gọi từng hàm đọc trang ấy dùng — hàm nào ném "Không có quyền" trên trang được mở là hỏng. |
 | `qc-dem-nho.js` | Mỗi hàm có đệm phải chứng minh: đổi thứ nó phụ thuộc (bảng giá, tỷ lệ, duyệt kỳ) thì số đổi theo, trả về chỗ cũ thì số về chỗ cũ. |
+| `aaa.js` | Vòng 22: vai hội đồng (bod) là đường tắt DUY NHẤT và không có trong bảng nào; giám đốc qua cửa như mọi vai — không gõ số, không bỏ qua sai lệch, không gõ tỷ giá, không tạo hồ sơ thay; `giamSat` là nhóm có tên; chỉ hội đồng đưa người vào / ra khối hội đồng, thành viên cuối không khoá được; nhật ký ghi đúng người. Đọc cả mã nguồn lõi và trang để chắc không còn `role === "mgmt"`. |
+| `tien-ba-lop.js` | Bốn quyết định tiền vòng 22: nghệ sĩ độc lập 100% sau phí; label tự trả theo hợp đồng (`labelTuTra`); ba lớp người dùng ↔ bên thụ hưởng ↔ vai trên bài — người cộng tác nhận lời mời được trả THẬT (trừ chủ, cộng bên nhận, ngưỡng thu hồi), tài khoản người nhận HTK-N được cấp tự động, một đăng nhập nhiều bên; huỷ chốt có bù trừ (sổ cái + rồi −, ví có thể âm và rút bị chặn). Kèm các lỗi lẻ: preview kỳ đã duyệt, tỷ giá báo giá rút tiền, dòng tỷ lệ của label mới, di trú lược đồ 3. |
+| `i18n-loi.js` | Đọc mọi `new Error(...)` trong lõi (201 câu) và đòi `HAUSTEK.i18n.loi` dịch được từng câu sang tiếng Anh không còn dấu — thêm lỗi mới mà quên bản dịch là đỏ. |
 
 ## 3. Trình duyệt thật
 
@@ -119,6 +125,7 @@ chromium nếu playwright không tự tìm được), `SHOTS` (nơi lưu ảnh c
 | `vong18-man.js` | Tác quyền chạy thật: mở trang, kiểm năm ô số và bốn tab, đòi con số tiền-để-trên-bàn phải lớn hơn 0; kiểm ba nhóm việc còn phải làm đều có nội dung; lọc "thiếu ISWC" rồi kiểm mọi dòng còn lại đều thiếu thật; mở ngăn chi tiết và đếm đủ mười bảy hội; **gõ tỷ lệ tác giả chỉ 90% rồi đòi hệ thống báo ngay trên mặt**; đăng ký đủ một lãnh thổ rồi kiểm lãnh thổ ấy rời khỏi danh sách hở và tổng tiền giảm; dán bảng Sentric hai dòng và kiểm nhận một, trả lại một; kiểm vai kinh doanh không vào được; và bên cổng đối tác, tác giả thấy tác phẩm mình với ISWC thật mà không thấy phí hay biên. |
 | `goi-du-trang.js` | Không cần trình duyệt. So danh sách `<script src="man/…">` của `intranet.html` và `khach.html` với những gì thực sự nằm trong `goi-mot-trang.html`, và bắt cả file trang mồ côi. Bài này sinh ra vì vòng 15 thêm ba trang mà quên thêm vào danh sách gõ cứng trong `dung-goi.js`: suốt hai vòng, bản gói — tức bản artifact người ngoài xem — thiếu hẳn ba trang mới, mà mọi bài kiểm vẫn xanh vì bài nào cũng kiểm trang thật chứ không kiểm gói. |
 | `roi-man.js` | Trang Tính ROI chạy thật: **đọc con số hiện trên mặt** rồi so với bảng tính, chứ không chỉ xem trang có vẽ ra hay không. Gõ vào ô nhập rồi kiểm kết quả có tính lại; bật ba mốc thưởng rồi kiểm bảng bốn kịch bản; đổi sang EN và nền tối; rời trang rồi quay lại xem số có được nhớ. Chính bài này bắt được lỗi `HM.nhap` dùng chung một đồng hồ hoãn cho cả trang. |
+| `i18n-hai-chieu.js` | Vòng 22. Đổi ngôn ngữ rồi đi hết mọi trang và mọi tab của hai cổng, soi MỌI text node và thuộc tính (placeholder, aria-label, title). Dữ liệu — tên nghệ sĩ, tên bài, tên nhân sự, tên người cộng tác, ghi chú người gõ — bị loại trước khi soi; phần còn lại phải sạch ở cả hai chiều (ngưỡng 0): bật EN không còn tiếng Việt, bật VI không còn chữ khung tiếng Anh. Chính bài này bắt được 142 chỗ sót sau khi các trang đã "dịch xong": lý do hàng chờ, ghi chú tạm ứng, tên thị trường, nhật ký thao tác, tiêu đề ticket mẫu, tên nền tảng gom. |
 | `v2-tieng-anh.js` | Bật EN rồi soi những chỗ **chỉ chứa chữ của giao diện** — nhãn, phụ đề thẻ, đầu cột, tab, câu giải thích. Tên nghệ sĩ, tên bài, tên label là DỮ LIỆU tiếng Việt và phải giữ nguyên, nên bài kiểm bỏ qua tiêu đề thẻ (nhiều chỗ là dữ liệu) và bóc phần trong ngoặc kép trước khi soi. |
 
 Chạy:
@@ -132,7 +139,7 @@ node test/v2-quet.js v2/intranet.html 390,640,900      # điện thoại · máy
 node test/v2-quet.js v2/khach.html    390,640,900
 node test/v2-hep.js
 node test/v2-bam.js && node test/v2-khach-tk.js && node test/v2-luong.js
-node test/v2-tuong-phan.js && node test/v2-tieng-anh.js && node test/api-guard.js
+node test/v2-tuong-phan.js && node test/v2-tieng-anh.js && node test/i18n-hai-chieu.js && node test/api-guard.js
 node test/luoc-do.js && node test/ma-dinh-danh.js && node test/ranh-gioi-trang.js
 node test/qc-bat-bien.js && node test/qc-quyen.js && node test/qc-vai-quet.js && node test/qc-dem-nho.js
 node test/roi-cong-thuc.js && node test/roi-man.js && node test/vong15-man.js && node test/vong16-man.js \

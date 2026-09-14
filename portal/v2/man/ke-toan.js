@@ -26,19 +26,19 @@ var SAU = [];   /* việc phải làm SAU khi HTML đã vào DOM */
    cách kế toán Việt Nam gọi, không dịch lại cho "dễ hiểu" — người đọc
    bảng này là kế toán, và họ tìm theo số hiệu. */
 var TK = {
-  '131': { ten: 'Phải thu của khách hàng (đối tác phân phối, nền tảng)', loai: 'ts' },
-  '138': { ten: 'Phải thu khác (tạm ứng cho nghệ sĩ, label)', loai: 'ts' },
-  '511': { ten: 'Doanh thu cung cấp dịch vụ (phí dịch vụ Haustek)', loai: 'dt' },
+  '131': { ten: 'Phải thu của khách hàng (đối tác phân phối, nền tảng)', tenEn: 'Receivables from customers (distribution partners, platforms)', loai: 'ts' },
+  '138': { ten: 'Phải thu khác (tạm ứng cho nghệ sĩ, label)', tenEn: 'Other receivables (advances to artists and labels)', loai: 'ts' },
+  '511': { ten: 'Doanh thu cung cấp dịch vụ (phí dịch vụ Haustek)', tenEn: 'Service revenue (Haustek fee)', loai: 'dt' },
   /* Chênh lệch bảng giá là dòng thu nhập THỨ HAI của Haustek và phải nằm
      ở tài khoản riêng: nó do bảng giá quyết định, còn 511 do phí trong
      hợp đồng quyết định. Nhập chung một tài khoản là hết đọc được mình
      lãi nhờ đâu. Dương thì ghi Có, âm thì ghi Nợ — một khoản giảm trừ
      doanh thu, không phải một khoản phí. */
-  '5118': { ten: 'Chênh lệch bảng giá nền tảng', loai: 'dt' },
-  '3311': { ten: 'Phải trả label', loai: 'no' },
-  '3312': { ten: 'Phải trả nghệ sĩ', loai: 'no' },
-  '3314': { ten: 'Phải trả tác giả (tác quyền)', loai: 'no' },
-  '338': { ten: 'Phải trả khác (tiền chưa khớp ISRC)', loai: 'no' }
+  '5118': { ten: 'Chênh lệch bảng giá nền tảng', tenEn: 'Platform rate-card variance', loai: 'dt' },
+  '3311': { ten: 'Phải trả label', tenEn: 'Payable to labels', loai: 'no' },
+  '3312': { ten: 'Phải trả nghệ sĩ', tenEn: 'Payable to artists', loai: 'no' },
+  '3314': { ten: 'Phải trả tác giả (tác quyền)', tenEn: 'Payable to writers (publishing)', loai: 'no' },
+  '338': { ten: 'Phải trả khác (tiền chưa khớp ISRC)', tenEn: 'Other payables (money not yet matched to an ISRC)', loai: 'no' }
 };
 
 HT.dangKy({
@@ -299,7 +299,7 @@ function veButToan(c, s) {
         '<th class="num" style="width:150px">' + HM.esc(t('co')) + '</th></tr></thead><tbody>' +
         b.dong.map(function (d) {
           return '<tr><td class="mono">' + HM.esc(d.tk) + '</td>' +
-            '<td><div class="t-ttl">' + HM.esc(TK[d.tk].ten) + '</div>' +
+            '<td><div class="t-ttl">' + HM.esc(c.song(TK[d.tk], 'ten')) + '</div>' +
             '<div class="t-sub" style="font-family:var(--f);font-size:12px">' + HM.esc(d.mo) + '</div></td>' +
             '<td class="num">' + (d.no ? HM.esc(c.tien2(d.gt)) : '<span class="nil">—</span>') + '</td>' +
             '<td class="num">' + (!d.no ? HM.esc(c.tien2(d.gt)) : '<span class="nil">—</span>') + '</td></tr>';
@@ -345,7 +345,7 @@ function veButToan(c, s) {
         ma.map(function (k) {
           var du = Math.round(((duNo[k] || 0) - (duCo[k] || 0)) * 100) / 100;
           return '<tr><td class="mono">' + HM.esc(k) + '</td>' +
-            '<td>' + HM.esc(TK[k].ten) + '</td>' +
+            '<td>' + HM.esc(c.song(TK[k], 'ten')) + '</td>' +
             '<td class="num">' + (duNo[k] ? HM.esc(c.tien2(duNo[k])) : '<span class="nil">—</span>') + '</td>' +
             '<td class="num">' + (duCo[k] ? HM.esc(c.tien2(duCo[k])) : '<span class="nil">—</span>') + '</td>' +
             '<td class="num band">' + HM.esc(c.tien2(du)) + '</td></tr>';
@@ -549,7 +549,7 @@ function veTamUng(c) {
         var nhip = kiem.get(x.partyKey) || 0;
         var soKy = x.balance <= 0 ? 0 : nhip > 0 ? Math.ceil(x.balance / nhip) : null;
         return '<tr><td><div class="t-ttl">' + HM.esc(HM.dai(x.name, 34)) + '</div>' +
-          '<div class="t-sub">' + HM.esc(x.clientId) + ' · ' + HM.esc(x.note || '') + '</div></td>' +
+          '<div class="t-sub">' + HM.esc(x.clientId) + ' · ' + HM.esc(c.song(x, 'note') || '') + '</div></td>' +
           '<td class="num">' + HM.esc(c.tien(x.opening)) + '</td>' +
           '<td class="num">' + HM.esc(c.tien(x.recouped)) + '</td>' +
           '<td class="num band">' + (x.balance > 0
@@ -771,7 +771,7 @@ function moChiTiet(c, key, s) {
         { t: c.lang === 'vi' ? 'Số đã tạm ứng' : 'Advanced', v: c.tien2(ung.opening) },
         { t: c.lang === 'vi' ? 'Đã thu hồi' : 'Recouped', v: c.tien2(ung.recouped) },
         { t: c.lang === 'vi' ? 'Còn phải thu hồi' : 'Outstanding', v: c.tien2(ung.balance), manh: true },
-        { t: c.lang === 'vi' ? 'Ghi chú' : 'Note', v: ung.note || '—' }
+        { t: c.lang === 'vi' ? 'Ghi chú' : 'Note', v: c.song(ung, 'note') || '—' }
       ]) : '') +
     '<h4 class="sec">' + (c.lang === 'vi' ? 'Thu nhập 12 kỳ' : 'Earned across 12 periods') + '</h4>' +
     HB.o({ loai: 'cot', cao: 150, anTruc: true, chuThich: false,
@@ -793,7 +793,7 @@ function moChiTiet(c, key, s) {
 function xuatButToan(c, s) {
   var A = c.A;
   var d = [];
-  var push = function (bt, tk, mo, no, co) { d.push([bt, tk, TK[tk].ten, mo, no ? no.toFixed(2) : '', co ? co.toFixed(2) : '']); };
+  var push = function (bt, tk, mo, no, co) { d.push([bt, tk, c.song(TK[tk], 'ten'), mo, no ? no.toFixed(2) : '', co ? co.toFixed(2) : '']); };
   push(c.t('but1'), '131', 'Phải thu doanh thu kỳ', s.gross, 0);
   push(c.t('but1'), '511', 'Phí dịch vụ Haustek', 0, s.fee);
   push(c.t('but1'), '3311', 'Phần label được hưởng', 0, s.labelCut);

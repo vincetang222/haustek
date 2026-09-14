@@ -153,7 +153,7 @@ function veTacDong(c) {
     '<th>' + HM.esc(t('tdKieu')) + '</th></tr></thead><tbody>' +
     d.rows.map(function (r) {
       return '<tr' + (r.am ? ' class="canh"' : '') + '>' +
-        '<td>' + HM.tenBia({ ten: r.name, seed: r.name }) + '</td>' +
+        '<td>' + HM.tenBia({ ten: c.song(r, 'name'), seed: r.name }) + '</td>' +
         '<td class="num mono">' + HM.esc(HT.fmt.n(r.streams)) + '</td>' +
         '<td class="num mono muted">' + HM.esc(HT.fmt.usd(r.thucTe1k)) + '</td>' +
         '<td class="num mono">' + HM.esc(c.tien(r.gross)) + '</td>' +

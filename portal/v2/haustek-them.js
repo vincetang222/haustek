@@ -121,7 +121,7 @@ function theCanhBao(r) {
       '<p>' + esc(song(r.dsp, 'reason') + ' · ' + n(r.dsp.removedStreams) + ' ' + t('goBo')) + '</p></div></div>' : '') +
     '<h4 class="sec" style="margin-top:14px">' + esc(t('lichSu')) + '</h4>' +
     (r.history && r.history.length ? '<ul class="tl">' + r.history.slice().reverse().map(function (h) {
-      return '<li><b>' + esc(h.status) + '</b> · <span class="mono">' + esc(h.at) + '</span>' + (h.by ? ' · ' + esc(h.by) : '') + (h.note ? '<div class="muted" style="font-size:12.5px">' + esc(h.note) + '</div>' : '') + '</li>';
+      return '<li><b>' + esc(h.status) + '</b> · <span class="mono">' + esc(h.at) + '</span>' + (h.by ? ' · ' + esc(h.by) : '') + (h.note ? '<div class="muted" style="font-size:12.5px">' + esc(song(h, 'note')) + '</div>' : '') + '</li>';
     }).join('') + '</ul>' : '<p class="say">' + esc(t('chuaCo')) + '</p>');
 }
 
@@ -295,9 +295,9 @@ function theDeXuat(pr, opts) {
   if (c.reasons && c.reasons.length) html += '<h4 class="sec" style="margin-top:14px">' + esc(t('dxLyDo')) + '</h4><ul class="tl">' + c.reasons.map(function (r) { return '<li>' + esc(song(r, 'vi') === r.vi && HT.lang === 'en' ? r.en : r.vi) + '</li>'; }).join('') + '</ul>';
   if (c.series && c.series.length) html += '<h4 class="sec" style="margin-top:14px">' + esc(t('dxSeries')) + '</h4>' +
     HB.o({ loai: 'cot', cao: 150, chuThich: false, dinhDang: 'tien', truc: c.series.map(function (x) { return x.label; }), chuoi: [{ ten: t('dxNet'), gt: c.series.map(function (x) { return x.net; }), mau: P[0] }] });
-  if (pr.terms && pr.terms.note) html += '<p class="hint" style="margin-top:10px"><b>' + esc(t('dxNote')) + ':</b> ' + esc(pr.terms.note) + '</p>';
+  if (pr.terms && pr.terms.note) html += '<p class="hint" style="margin-top:10px"><b>' + esc(t('dxNote')) + ':</b> ' + esc(song(pr.terms, 'note')) + '</p>';
   html += '<h4 class="sec" style="margin-top:14px">' + esc(t('dxHistory')) + '</h4><ul class="tl">' + pr.history.slice().reverse().map(function (h) {
-    return '<li>' + tagDx(h.status) + ' <span class="mono" style="font-size:12px">' + esc(h.at) + '</span>' + (h.by ? ' · ' + esc(h.by) : '') + (h.note ? '<div class="muted" style="font-size:12.5px">' + esc(h.note) + '</div>' : '') + '</li>';
+    return '<li>' + tagDx(h.status) + ' <span class="mono" style="font-size:12px">' + esc(h.at) + '</span>' + (h.by ? ' · ' + esc(h.by) : '') + (h.note ? '<div class="muted" style="font-size:12.5px">' + esc(song(h, 'note')) + '</div>' : '') + '</li>';
   }).join('') + '</ul>';
   return html;
 }

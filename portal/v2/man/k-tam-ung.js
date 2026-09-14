@@ -245,8 +245,8 @@ function veDeNghi(c, dn, dangUng) {
         ds.map(function (p) {
           var cuoi = p.history[p.history.length - 1];
           return '<tr><td class="mono">' + HM.esc(p.id) + '</td><td><div class="t-ttl">' + HM.esc(c.song(p, 'moTa')) + '</div>' +
-            (p.terms.note ? '<div class="t-sub" style="font-family:var(--f)">' + HM.esc(p.terms.note) + '</div>' : '') +
-            (cuoi && cuoi.note ? '<div class="t-sub" style="font-family:var(--f)">' + HM.esc((vi ? 'Haustek: ' : 'Haustek: ') + cuoi.note) + '</div>' : '') + '</td>' +
+            (p.terms.note ? '<div class="t-sub" style="font-family:var(--f)">' + HM.esc(c.song(p.terms, 'note')) + '</div>' : '') +
+            (cuoi && cuoi.note ? '<div class="t-sub" style="font-family:var(--f)">' + HM.esc('Haustek: ' + c.song(cuoi, 'note')) + '</div>' : '') + '</td>' +
             '<td>' + HTM.tagDx(p.status) + '</td><td class="mono" style="font-size:12.5px">' + HM.esc(String(p.updatedAt).slice(0, 10)) + '</td>' +
             '<td>' + (DN_CHO.indexOf(p.status) >= 0 ? '<button type="button" class="btn sm ghost" data-rut="' + HM.esc(p.id) + '">' + HM.esc(t('dnRut')) + '</button>' : '') + '</td></tr>';
         }).join('') + '</tbody></table></div>' });

@@ -81,7 +81,7 @@ HT.dangKy({
       { l: t('kNgay'), v: HT.fmt.n(d.avgPerDay) },
       { l: t('kBai'), v: HT.fmt.n(d.tracksCounted), s: t('kBaiS') },
       ntDau ? { l: t('kNt'), v: c.song(ntDau, 'name'), s: HT.fmt.pct(ntDau.streams / d.total) + ' ' + t('cuaTong') } : null,
-      d.byCountry[0] ? { l: t('kTt'), v: d.byCountry[0].name, s: HT.fmt.pct(d.byCountry[0].streams / d.total) + ' ' + t('cuaTong') } : null
+      d.byCountry[0] ? { l: t('kTt'), v: c.song(d.byCountry[0], 'name'), s: HT.fmt.pct(d.byCountry[0].streams / d.total) + ' ' + t('cuaTong') } : null
     ].filter(Boolean));
 
     /* ---- biểu đồ theo ngày: cột / vùng / đường ---- */
@@ -112,7 +112,7 @@ HT.dangKy({
     if (LOC.tab === 'bai') rows = d.topTracks.slice(0, 12).map(function (x) { return { ten: x.title, phu: x.artist + ' · ' + x.isrc, gt: x.streams, bia: x.id, lech: HM.lech(x.streams, x.prev), pick: true, attr: 'data-bg="' + x.id + '"' }; });
     else if (LOC.tab === 'ph') rows = d.topReleases.slice(0, 12).map(function (x) { return { ten: x.title, phu: x.artist + ' · ' + x.type + ' · ' + x.tracks + ' ' + t('track'), gt: x.streams, bia: x.trackId, lech: HM.lech(x.streams, x.prev), pick: true, attr: 'data-bg="' + x.trackId + '"' }; });
     else if (LOC.tab === 'ns') rows = d.topArtists.slice(0, 12).map(function (x) { return { ten: x.name, phu: x.clientId + ' · ' + x.tracks + ' ' + t('bai'), gt: x.streams, hinh: true, seed: x.clientId, lech: HM.lech(x.streams, x.prev) }; });
-    else if (LOC.tab === 'tt') rows = d.byCountry.map(function (x, i) { return { ten: x.name, gt: x.streams, mau: P[i % 8], phuV: HT.fmt.pct(x.streams / d.total) }; });
+    else if (LOC.tab === 'tt') rows = d.byCountry.map(function (x, i) { return { ten: c.song(x, 'name'), gt: x.streams, mau: P[i % 8], phuV: HT.fmt.pct(x.streams / d.total) }; });
     else rows = d.byPlatform.map(function (x, i) { return { ten: c.song(x, 'name'), gt: x.streams, mau: x.name === 'Nền tảng khác' ? HB.mauKhac() : P[i % 8], phuV: HT.fmt.pct(x.streams / d.total) }; });
 
     var demo = d.demo;

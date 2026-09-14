@@ -106,7 +106,7 @@ HT.dangKy({
       { l: t('kMo'), v: HT.fmt.n(mo.length), lon: true, s: choNt ? HT.fmt.n(choNt) + ' ' + t('choNt') : '' },
       { l: t('kXong'), v: HT.fmt.n(xong.length) },
       { l: t('kKn'), v: HT.fmt.n(kn.counts.open), mau: kn.counts.open ? HB.mau('warn') : '', s: HT.fmt.n(kn.counts.total) + ' ' + t('tongKn') },
-      { l: t('kHan'), v: gan ? HT.fmt.ngay(gan.dueAt) : '—', s: gan ? gan.id + ' · “' + HM.dai(gan.title, 30) + '”' : t('khongHan'),
+      { l: t('kHan'), v: gan ? HT.fmt.ngay(gan.dueAt) : '—', s: gan ? gan.id + ' · “' + HM.dai(c.song(gan, 'title'), 30) + '”' : t('khongHan'),
         mau: gan && gan.dueAt < homNay() ? HB.mau('no') : '' }
     ]);
 
@@ -123,7 +123,7 @@ HT.dangKy({
           var qua = x.status !== 'done' && x.dueAt < homNay();
           return '<tr class="pick" data-tk="' + HM.esc(x.id) + '">' +
             '<td class="mono" style="white-space:nowrap">' + HM.esc(x.id) + '<div class="t-sub" style="font-family:var(--f)">' + HM.tag(loaiCua(x.type), 'link') + '</div></td>' +
-            '<td><div class="t-ttl">' + HM.esc(HM.dai(x.title, 60)) + '</div>' +
+            '<td><div class="t-ttl">' + HM.esc(HM.dai(c.song(x, 'title'), 60)) + '</div>' +
               (x.track ? '<div class="t-sub">' + HM.esc(x.track.title) + ' · ' + HM.esc(x.track.isrc) + '</div>' : '') + '</td>' +
             '<td>' + HM.tag(t(CHU_TT[x.status] || x.status), KIEU_TT[x.status] || '') +
               (x.priority === 'high' || x.priority === 'urgent' ? ' ' + HM.tag(t(CHU_UT[x.priority]), KIEU_UT[x.priority]) : '') + '</td>' +
@@ -223,7 +223,7 @@ function moChiTiet(c, id) {
       x.closedAt ? { t: t('xongLuc'), v: HT.fmt.luc(x.closedAt) } : null
     ]) +
     '<h4 class="sec">' + HM.esc(t('moTa')) + '</h4>' +
-    '<div class="bl-tx">' + HM.esc(x.body || x.title) + '</div>' +
+    '<div class="bl-tx">' + HM.esc(c.song(x, 'body') || c.song(x, 'title')) + '</div>' +
     (x.done ? '<div class="bl-xong"><span class="ico ok">' + HM.icon('check') + '</span>' + HM.esc(t('daXong').replace('{luc}', HT.fmt.luc(x.done.at))) + '</div>' : '') +
     '<h4 class="sec">' + HM.esc(t('luong')) + ' (' + (x.comments || []).length + ')</h4>' + luong +
     (x.status === 'done' ? '<p class="hint" style="margin-top:12px">' + HM.esc(t('daXongGhi')) + '</p>' : '') +
@@ -231,7 +231,7 @@ function moChiTiet(c, id) {
     '<textarea class="in" rows="2" data-tra maxlength="' + GH.doDaiBinhLuan + '" placeholder="' + HM.esc(t('vietBl')) + '"></textarea>' +
     '<div class="btnrow" style="margin-top:10px"><button type="button" class="btn pri sm" data-gui-tra>' + HM.icon('up') + HM.esc(t('guiTra')) + '</button>' +
       '<span class="hint" style="margin:0" data-conlai>' + HM.esc(t('conLai').replace('{n}', GH.doDaiBinhLuan)) + '</span></div>',
-    { tieuDe: x.title, phu: x.id + ' · ' + (ty ? c.song(ty, 'label') : x.type),
+    { tieuDe: c.song(x, 'title'), phu: x.id + ' · ' + (ty ? c.song(ty, 'label') : x.type),
       khiMo: function (dr) {
         var o2 = dr.querySelector('[data-tra]'), cl = dr.querySelector('[data-conlai]');
         if (o2 && cl) o2.addEventListener('input', function () { cl.textContent = t('conLai').replace('{n}', Math.max(0, GH.doDaiBinhLuan - o2.value.length)); });

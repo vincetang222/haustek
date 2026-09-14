@@ -213,6 +213,8 @@ function oThongBao() {
 function thongBao(msg, kieu) {
   var el = document.createElement('div');
   el.className = 'toast' + (kieu ? ' ' + kieu : '');
+  /* lỗi lõi ném bằng tiếng Việt; bật EN thì dịch lúc hiện */
+  try { if (lang === 'en' && window.HAUSTEK && window.HAUSTEK.i18n) msg = window.HAUSTEK.i18n.loi(msg, 'en'); } catch (e) {}
   el.textContent = msg;
   oThongBao().appendChild(el);
   setTimeout(function () { el.style.opacity = '0'; el.style.transition = 'opacity .3s'; }, 3200);
@@ -677,6 +679,11 @@ function chay(cauHinh) {
     $('[data-banner]').innerHTML = cauHinh.bieuNgu ? (cauHinh.bieuNgu(c) || '') : '';
 
     var sel = $('[data-ky]');
+    sel.setAttribute('aria-label', c.t('period'));
+    document.querySelectorAll('[data-th]').forEach(function (b) {
+      var k = b.dataset.th === 'dark' ? 'themeDark' : b.dataset.th === 'light' ? 'themeLight' : 'themeAuto';
+      b.setAttribute('title', c.t(k)); b.setAttribute('aria-label', c.t(k));
+    });
     sel.innerHTML = kys.map(function (p) {
       return '<option value="' + esc(p.k) + '"' + (p.k === kyHienTai ? ' selected' : '') + '>' +
         esc(c.t('period')) + ' ' + esc(p.label) + (p.nhan ? ' · ' + esc(p.nhan) : '') + '</option>';

@@ -116,7 +116,7 @@ function trongTab(c, k, qq) {
 function dongDx(c, p, me) {
   var t = tx, roi = p.type === 'advance' ? p.calc.roi : null;
   return '<tr class="pick" data-pr="' + HM.esc(p.id) + '"><td>' + HM.tenBia({ ten: p.party.name, seed: p.party.clientId, phu: p.id + ' · ' + p.ageDays + ' ' + t('ngay') }) + '</td>' +
-    '<td style="min-width:220px"><div class="t-ttl">' + HM.esc(c.song(p, 'moTa')) + '</div><div class="t-sub" style="font-family:var(--f)">' + HM.esc((p.byRole === 'partner' ? t('cuaDoiTac') : p.by) + (p.terms.note ? ' · ' + HM.dai(p.terms.note, 48) : '')) + '</div></td>' +
+    '<td style="min-width:220px"><div class="t-ttl">' + HM.esc(c.song(p, 'moTa')) + '</div><div class="t-sub" style="font-family:var(--f)">' + HM.esc((p.byRole === 'partner' ? t('cuaDoiTac') : p.by) + (p.terms.note ? ' · ' + HM.dai(c.song(p.terms, 'note'), 48) : '')) + '</div></td>' +
     '<td class="num" style="white-space:nowrap">' + (roi == null ? '<span class="nil">—</span>' : '<b>' + HM.esc(HT.fmt.pct(roi)) + '</b><div class="t-sub" style="font-family:var(--f)">' + HM.esc((c.lang === 'vi' ? 'thu hồi ' : 'recoup ') + (p.calc.recoupMonths == null ? '—' : p.calc.recoupMonths + (c.lang === 'vi' ? ' tháng' : ' mo')) + (p.calc.grade ? ' · ' + (c.lang === 'vi' ? 'hạng ' : 'grade ') + p.calc.grade : '')) + '</div>') + '</td>' +
     '<td>' + HTM.tagKn(p.calc.recommendation) +
       (p.calc.ruiRo && p.calc.ruiRo.muc !== 'ok'

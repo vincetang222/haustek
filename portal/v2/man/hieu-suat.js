@@ -164,7 +164,7 @@ function veNguoi(c, ds) {
       '<option value="">' + HM.esc(t('moiVai')) + '</option>' +
       vais.map(function (v) {
         var k = KHOI(A).filter(function (x) { return x.vai === v; })[0];
-        return '<option value="' + v + '"' + (LOC.vai === v ? ' selected' : '') + '>' + HM.esc(k ? c.song(k, 'vi') : v) + '</option>';
+        return '<option value="' + v + '"' + (LOC.vai === v ? ' selected' : '') + '>' + HM.esc(k ? (c.lang === 'en' ? k.en : k.vi) : v) + '</option>';
       }).join('') + '</select></div>';
 
   if (!loc.length) return HM.the({ h2: HM.esc(t('tNguoi')), than: thanh + HM.trong({ icon: 'user', tieuDe: t('khong'), moTa: t('nguon') }) });
@@ -307,7 +307,7 @@ function veThang(c) {
   });
   var dsKhoi = Object.keys(khoi).map(function (v) {
     var k = khoi[v], kh = KHOI(A).filter(function (x) { return x.vai === v; })[0];
-    k.ten = kh ? c.song(kh, 'vi') : v;
+    k.ten = kh ? (c.lang === 'en' ? kh.en : kh.vi) : v;
     k.tyLe = k.coHan ? Math.round(k.dungHan / k.coHan * 1000) / 10 : null;
     return k;
   }).sort(function (a, b) { return b.giao - a.giao; });
@@ -374,7 +374,7 @@ function veQt(c) {
         var k = KHOI(A).filter(function (x) { return x.vai === q.vai; })[0];
         return '<tr class="pick" data-qt="' + HM.esc(q.id) + '">' +
           '<td><b>' + HM.esc(c.lang === 'en' ? q.en : q.vi) + '</b><div class="t-sub">' + HM.esc(HM.dai(c.lang === 'en' ? (q.moEn || q.mo) : q.mo, 92)) + '</div></td>' +
-          '<td>' + HM.esc(k ? c.song(k, 'vi') : q.vai) + '</td>' +
+          '<td>' + HM.esc(k ? (c.lang === 'en' ? k.en : k.vi) : q.vai) + '</td>' +
           '<td>' + HM.esc(nhip[q.nhip] || q.nhip) + '</td>' +
           '<td class="num mono">' + HM.esc(t('qtSoBuoc').replace('{n}', q.soBuoc)) + '</td></tr>';
       }).join('') + '</tbody></table></div>' });

@@ -186,6 +186,9 @@ const FEED_W = FEEDS.map(f => STORE_W.reduce((s, w, j) => s + (STORE_FEED[j] ===
 const TERR = ["Việt Nam","Hoa Kỳ","Nhật Bản","Hàn Quốc","Đức","Anh","Pháp","Úc","Canada",
 "Đài Loan","Thái Lan","Singapore","Brazil","Mexico","Indonesia","Khác"];
 const TERR_W = [.34,.14,.075,.06,.045,.04,.035,.03,.028,.026,.025,.022,.02,.018,.016,.02];
+const TERR_EN = ["Vietnam","United States","Japan","South Korea","Germany","United Kingdom","France","Australia","Canada",
+"Taiwan","Thailand","Singapore","Brazil","Mexico","Indonesia","Other"];
+const terrEn = nm => { const j = TERR.indexOf(nm); return j >= 0 ? TERR_EN[j] : nm; };
 const PUBSRC = ["VCPMC","The MLC","ASCAP","PRS","GEMA","SACEM","YouTube Content ID","JASRAC"];
 const PUBSRC_W = [.34,.18,.11,.10,.07,.055,.075,.07];
 
@@ -397,11 +400,11 @@ function defaultState() {
   [5, 6, 7].forEach(id => { if (LABELS[id]) s.contracts["L:" + id] = { labelTuTra: true, note: "Label tự thanh toán cho nghệ sĩ của mình theo hợp đồng riêng" }; });
   /* một label đổi tỷ lệ giữa chừng, để thấy tác dụng của ngày hiệu lực */
   s.rates.push({ partyKey: "L:3", rate: 0.72, from: PERIODS[8].k, by: "khởi tạo", at: "2026-04-02",
-                 note: "Phụ lục hợp đồng ký 02.04.2026, áp dụng từ kỳ 04/2026" });
+                 note: "Phụ lục hợp đồng ký 02.04.2026, áp dụng từ kỳ 04/2026", noteEn: "Contract addendum signed 02.04.2026, effective from period 04/2026" });
 
   /* --- tạm ứng --- */
-  ARTISTS.forEach(a => { if (rnd() < 0.18) s.advances[a.key] = { opening: Math.round(600 + rnd() * 22000), note: "Tạm ứng theo hợp đồng", byPeriod: {} }; });
-  LABELS.forEach(l => { if (rnd() < 0.30) s.advances[l.key] = { opening: Math.round(4000 + rnd() * 90000), note: "Tạm ứng marketing / sản xuất", byPeriod: {} }; });
+  ARTISTS.forEach(a => { if (rnd() < 0.18) s.advances[a.key] = { opening: Math.round(600 + rnd() * 22000), note: "Tạm ứng theo hợp đồng", noteEn: "Contract advance", byPeriod: {} }; });
+  LABELS.forEach(l => { if (rnd() < 0.30) s.advances[l.key] = { opening: Math.round(4000 + rnd() * 90000), note: "Tạm ứng marketing / sản xuất", noteEn: "Marketing / production advance", byPeriod: {} }; });
 
   /* --- lịch sử nạp: 11 kỳ đầu đã nạp đủ, kỳ mới nhất còn thiếu TikTok,
      một kỳ cũ từng thiếu YouTube rồi nạp bù muộn. Kỳ nào nạp đủ và đối
@@ -916,7 +919,8 @@ function suggestFor(q, limit) {
   const out = [];
   const nq = norm(q.title), na = norm(q.artist);
   const seen = new Set();
-  const push = (i, score, why) => { if (seen.has(i)) return; seen.add(i); out.push({ i, score, why }); };
+  const WHY_EN = { "Trùng mã ISRC": "ISRC match", "Sai 1 ký tự cuối của mã ISRC": "ISRC off by its last character" };
+  const push = (i, score, why) => { if (seen.has(i)) return; seen.add(i); out.push({ i, score, why, whyEn: WHY_EN[why] || lyDoEn(why) }); };
   if (q.isrc) {
     for (let i = 0; i < N; i++) {
       if (tIsrc[i] === q.isrc || tIsrcAlt[i] === q.isrc) { push(i, 100, "Trùng mã ISRC"); break; }
@@ -969,7 +973,7 @@ const rates = {
   invalidate: invalidateRates,
   scheduleFor(partyKey) { return (schedIndex().get(partyKey) || []).slice(); },
   /* bảng thô cho trang Tỷ lệ (bản sao, không phải tham chiếu vào state) */
-  raw() { return state.rates.map(r => Object.assign({}, r)); },
+  raw() { return state.rates.map(r => Object.assign({}, r, { noteEn: r.noteEn || ghiChuEn(r.note), byEn: r.by === "khởi tạo" ? "seed" : r.by })); },
   rateFor(partyKey, periodKey) {
     /* Nghệ sĩ độc lập: 100% phần sau phí, không có bảng. Chỉ label có tỷ
        lệ (phần nghệ sĩ trong label được hưởng). */
@@ -3125,7 +3129,7 @@ function dailyTrendsTinh(role, partyId, days, top) {
     topReleases: fin([...byRel.values()]).slice(0, Math.max(15, Math.round(top / 3))),
     topArtists: role === "artist" ? [] : fin([...byArtist.values()]).slice(0, Math.max(15, Math.round(top / 5))),
     byPlatform: PLAT_NAMES.map((nm, j) => ({ name: nm, nameEn: PLAT_NAMES_EN[j], streams: Math.round(byPlat[j]) })).filter(x => x.streams > 0).sort((a, b) => b.streams - a.streams),
-    byCountry: TERR.map((nm, j) => ({ name: nm, streams: Math.round(byTerr[j]) })).sort((a, b) => b.streams - a.streams).slice(0, 12),
+    byCountry: TERR.map((nm, j) => ({ name: nm, nameEn: TERR_EN[j], streams: Math.round(byTerr[j]) })).sort((a, b) => b.streams - a.streams).slice(0, 12),
     demo: demoOf(role, partyId),
     tracksCounted: byTrack.length,
     note: "Lượt nghe theo ngày do nền tảng cung cấp, chưa qua đối soát doanh thu. Số này để theo dõi xu hướng; số tiền chỉ có khi kỳ được xét duyệt.",
@@ -4157,7 +4161,8 @@ function proposalsList(f) {
   if (f.type) ds = ds.filter(p => p.type === f.type);
   if (f.partyKey) ds = ds.filter(p => p.partyKey === f.partyKey);
   if (f.by) ds = ds.filter(p => p.by === f.by);
-  return ds.map(p => Object.assign({ moTa: moTaDeXuat(p).vi, moTaEn: moTaDeXuat(p).en, ageDays: Math.max(0, Math.round((new Date(String(p.updatedAt).replace(" ", "T")) - new Date()) / -864e5)) }, p));
+  return ds.map(p => Object.assign({ moTa: moTaDeXuat(p).vi, moTaEn: moTaDeXuat(p).en, ageDays: Math.max(0, Math.round((new Date(String(p.updatedAt).replace(" ", "T")) - new Date()) / -864e5)) }, p,
+    { terms: Object.assign({}, p.terms, { noteEn: p.terms.noteEn || ghiChuEn(p.terms.note) }), history: (p.history || []).map(h => Object.assign({}, h, { noteEn: h.noteEn || ghiChuEn(h.note) })) }));
 }
 function proposalCounts() {
   const ds = proposalsOf();
@@ -4169,9 +4174,9 @@ function proposalCounts() {
 function proposalForPartner(p) {
   const mt = moTaDeXuat(p, true);
   return { id: p.id, type: p.type, status: p.status, createdAt: p.createdAt, updatedAt: p.updatedAt,
-    terms: p.type === "advance" ? { amount: p.terms.amount, feePct: p.terms.feePct, note: p.terms.note } : { months: p.terms.months, partnerPct: Math.round((1 - p.terms.feePct) * 1000) / 1000, note: p.terms.note },
+    terms: p.type === "advance" ? { amount: p.terms.amount, feePct: p.terms.feePct, note: p.terms.note, noteEn: p.terms.noteEn || ghiChuEn(p.terms.note) } : { months: p.terms.months, partnerPct: Math.round((1 - p.terms.feePct) * 1000) / 1000, note: p.terms.note, noteEn: p.terms.noteEn || ghiChuEn(p.terms.note) },
     repayment: p.calc.repayment, recoupMonths: p.calc.recoupMonths, moTa: mt.vi, moTaEn: mt.en,
-    history: p.history.map(h => ({ at: h.at, status: h.status, note: ["rejected", "returned", "approved"].includes(h.status) ? h.note : "" })) };
+    history: p.history.map(h => { const co = ["rejected", "returned", "approved"].includes(h.status); return { at: h.at, status: h.status, note: co ? h.note : "", noteEn: co ? (h.noteEn || ghiChuEn(h.note)) : "" }; }) };
 }
 /* dữ liệu mẫu: vài đề xuất đang chờ để bàn giám đốc có việc */
 function seedProposals() {
@@ -4691,7 +4696,8 @@ function boTickNoiBo(t) { t.done = null; t.closedAt = null; }
 function createTicket(o) {
   const at = o.at || nowISO();
   const t = { id: ticketId(at), type: TICKET_TYPES.some(x => x.id === o.type) ? o.type : "khac",
-    title: String(o.title || "").trim(), partyKey: o.partyKey, party: { name: partyName(o.partyKey), clientId: partyClientId(o.partyKey) },
+    title: String(o.title || "").trim(), titleEn: o.titleEn ? String(o.titleEn).trim() : undefined, bodyEn: o.bodyEn ? String(o.bodyEn).slice(0, BODY_LEN) : undefined,
+    partyKey: o.partyKey, party: { name: partyName(o.partyKey), clientId: partyClientId(o.partyKey) },
     trackId: o.trackId != null ? +o.trackId : null, track: o.trackId != null && tTitle[+o.trackId] ? { title: tTitle[+o.trackId], isrc: tIsrc[+o.trackId] } : null,
     createdBy: o.createdBy || partyClientId(o.partyKey), source: o.source || "portal",
     createdAt: at, updatedAt: at, status: o.status || "open", priority: o.priority || "normal",
@@ -4711,21 +4717,38 @@ function seedTickets() {
   const parties = []; const seen = new Set();
   state.accounts.filter(a => a.role !== "admin" && a.partyKey && a.status === "active").forEach(a => { if (!seen.has(a.partyKey)) { seen.add(a.partyKey); parties.push(a.partyKey); } });
   const sup = staffByRole("support"), acc = staffByRole("accounting")[0], ops = staffByRole("ops")[0];
+  /* [loại, tiêu đề, nội dung, trạng thái, ưu tiên, tiêu đề EN, nội dung EN] —
+     dữ liệu mẫu có cả hai thứ tiếng để bật EN là sạch hẳn; ticket thật do
+     đối tác gõ thì giữ nguyên ngôn ngữ họ viết. */
   const mau = [
-    ["nen-tang", "Bài hát chưa hiện trên Apple Music sau 5 ngày", "Bài đã lên Spotify từ tuần trước nhưng tìm trên Apple Music vẫn chưa thấy. Nhờ Haustek kiểm tra giúp.", "in_progress", "high"],
-    ["thanh-toan", "Chưa nhận được tiền của yêu cầu rút tháng trước", "Yêu cầu rút ngày 12/08 báo đã thanh toán nhưng tài khoản ngân hàng chưa thấy tiền về.", "waiting", "high"],
-    ["phat-hanh", "Đổi ngày phát hành của single sắp tới", "Xin dời ngày phát hành từ 26/09 sang 10/10 vì MV chưa xong.", "open", "normal"],
-    ["quyen", "Video trên YouTube bị bên khác nhận quyền", "Kênh của tôi bị claim bài của chính tôi, tiền quảng cáo đang chảy sang bên khác.", "in_progress", "urgent"],
-    ["marketing", "Đăng ký gói pitch playlist cho EP mới", "Muốn được gửi đề xuất lên playlist biên tập của Spotify và Zing cho EP phát hành tháng 10.", "open", "normal"],
-    ["tai-khoan", "Cập nhật tài khoản ngân hàng nhận tiền", "Đổi sang tài khoản Techcombank mới, đính kèm giấy xác nhận.", "done", "normal"],
-    ["nen-tang", "Ảnh bìa hiển thị sai trên Zing MP3", "Zing đang hiện ảnh bìa cũ của bản single, không phải bản EP.", "done", "low"],
-    ["phat-hanh", "Bổ sung lời bài hát cho 3 bài", "Gửi kèm lời bài hát để hiện trên Spotify và Apple Music.", "in_progress", "low"],
-    ["thanh-toan", "Xin bảng kê PDF kỳ 05/2026", "Kế toán bên tôi cần bảng kê có dấu để hạch toán.", "done", "normal"],
-    ["quyen", "Bài bị gỡ khỏi TikTok vì khiếu nại bản quyền", "Bài bị gỡ từ hôm qua, tôi là chủ sở hữu hợp pháp, xin hỗ trợ khiếu nại lại.", "open", "urgent"],
-    ["marketing", "Chạy quảng cáo TikTok cho bài mới", "Ngân sách khoảng $500, muốn Haustek tư vấn và chạy giúp.", "waiting", "normal"],
-    ["khac", "Hỏi về thuế khấu trừ trên bảng kê", "Bảng kê có dòng thuế khấu trừ tại nguồn, xin giải thích cách tính.", "open", "low"],
-    ["nen-tang", "Tên nghệ sĩ bị gộp nhầm với nghệ sĩ khác trên Spotify", "Trang nghệ sĩ Spotify của tôi đang hiện bài của một người trùng tên.", "in_progress", "high"],
-    ["phat-hanh", "Hồ sơ album bị trả lại, cần hướng dẫn", "Hồ sơ HSTK bị trả lại vì thiếu file WAV, xin hướng dẫn định dạng chuẩn.", "done", "normal"]
+    ["nen-tang", "Bài hát chưa hiện trên Apple Music sau 5 ngày", "Bài đã lên Spotify từ tuần trước nhưng tìm trên Apple Music vẫn chưa thấy. Nhờ Haustek kiểm tra giúp.", "in_progress", "high",
+      "Track still not on Apple Music after 5 days", "The track went live on Spotify last week but still does not show on Apple Music. Please check."],
+    ["thanh-toan", "Chưa nhận được tiền của yêu cầu rút tháng trước", "Yêu cầu rút ngày 12/08 báo đã thanh toán nhưng tài khoản ngân hàng chưa thấy tiền về.", "waiting", "high",
+      "Last month's withdrawal has not arrived", "The withdrawal of 12 Aug is marked paid, but nothing has reached my bank account yet."],
+    ["phat-hanh", "Đổi ngày phát hành của single sắp tới", "Xin dời ngày phát hành từ 26/09 sang 10/10 vì MV chưa xong.", "open", "normal",
+      "Move the release date of the upcoming single", "Please move the release from 26 Sep to 10 Oct; the music video is not ready."],
+    ["quyen", "Video trên YouTube bị bên khác nhận quyền", "Kênh của tôi bị claim bài của chính tôi, tiền quảng cáo đang chảy sang bên khác.", "in_progress", "urgent",
+      "YouTube video claimed by another party", "My channel got a claim on my own track; the ad money is going to someone else."],
+    ["marketing", "Đăng ký gói pitch playlist cho EP mới", "Muốn được gửi đề xuất lên playlist biên tập của Spotify và Zing cho EP phát hành tháng 10.", "open", "normal",
+      "Playlist pitching for the new EP", "We would like to be pitched to Spotify and Zing editorial playlists for the EP releasing in October."],
+    ["tai-khoan", "Cập nhật tài khoản ngân hàng nhận tiền", "Đổi sang tài khoản Techcombank mới, đính kèm giấy xác nhận.", "done", "normal",
+      "Update the payout bank account", "Switching to a new Techcombank account; confirmation letter attached."],
+    ["nen-tang", "Ảnh bìa hiển thị sai trên Zing MP3", "Zing đang hiện ảnh bìa cũ của bản single, không phải bản EP.", "done", "low",
+      "Wrong cover art on Zing MP3", "Zing is showing the old single cover instead of the EP cover."],
+    ["phat-hanh", "Bổ sung lời bài hát cho 3 bài", "Gửi kèm lời bài hát để hiện trên Spotify và Apple Music.", "in_progress", "low",
+      "Add lyrics for 3 tracks", "Lyrics attached, to be displayed on Spotify and Apple Music."],
+    ["thanh-toan", "Xin bảng kê PDF kỳ 05/2026", "Kế toán bên tôi cần bảng kê có dấu để hạch toán.", "done", "normal",
+      "PDF statement for period 05/2026", "Our accountant needs a stamped statement for bookkeeping."],
+    ["quyen", "Bài bị gỡ khỏi TikTok vì khiếu nại bản quyền", "Bài bị gỡ từ hôm qua, tôi là chủ sở hữu hợp pháp, xin hỗ trợ khiếu nại lại.", "open", "urgent",
+      "Track removed from TikTok after a rights claim", "The track was taken down yesterday; I am the rightful owner, please help dispute it."],
+    ["marketing", "Chạy quảng cáo TikTok cho bài mới", "Ngân sách khoảng $500, muốn Haustek tư vấn và chạy giúp.", "waiting", "normal",
+      "Run TikTok ads for the new track", "Budget around $500; we would like Haustek to advise and run it."],
+    ["khac", "Hỏi về thuế khấu trừ trên bảng kê", "Bảng kê có dòng thuế khấu trừ tại nguồn, xin giải thích cách tính.", "open", "low",
+      "Question about withholding tax on the statement", "The statement shows a withholding-tax line; please explain how it is calculated."],
+    ["nen-tang", "Tên nghệ sĩ bị gộp nhầm với nghệ sĩ khác trên Spotify", "Trang nghệ sĩ Spotify của tôi đang hiện bài của một người trùng tên.", "in_progress", "high",
+      "Artist profile merged with another artist on Spotify", "My Spotify artist page is showing tracks by someone with the same name."],
+    ["phat-hanh", "Hồ sơ album bị trả lại, cần hướng dẫn", "Hồ sơ HSTK bị trả lại vì thiếu file WAV, xin hướng dẫn định dạng chuẩn.", "done", "normal",
+      "Album file returned, need guidance", "The HSTK file was returned for missing WAVs; please advise the required format."]
   ];
   const ngay = ["2026-08-05 09:14:00", "2026-08-08 14:02:00", "2026-08-12 10:30:00", "2026-08-14 16:45:00", "2026-08-18 11:20:00", "2026-08-19 09:05:00",
     "2026-08-21 15:12:00", "2026-08-24 10:48:00", "2026-08-26 13:33:00", "2026-08-28 08:56:00", "2026-08-30 17:20:00", "2026-09-01 09:41:00", "2026-09-02 14:15:00", "2026-09-03 10:07:00"];
@@ -4734,7 +4757,7 @@ function seedTickets() {
     const id = +pk.slice(2);
     const ids = pk[0] === "L" ? idxOf(byLabel, id) : idxOf(byArtist, id);
     const trackId = (m[0] === "nen-tang" || m[0] === "quyen" || m[0] === "marketing") && ids.length ? ids[(k * 7) % ids.length] : null;
-    const t = createTicket({ type: m[0], title: m[1], body: m[2], partyKey: pk, trackId, at: ngay[k], status: m[3], priority: m[4],
+    const t = createTicket({ type: m[0], title: m[1], body: m[2], titleEn: m[5], bodyEn: m[6], partyKey: pk, trackId, at: ngay[k], status: m[3], priority: m[4],
       assignee: m[0] === "thanh-toan" || m[0] === "khac" ? acc.id : (m[0] === "quyen" ? sup[1].id : (m[0] === "phat-hanh" ? ops.id : sup[0].id)) });
     const nv = staffById(t.assignee);
     if (m[3] !== "open") {
@@ -4807,8 +4830,269 @@ const audit = {
     state.audit.unshift({ at: nowISO(), action, detail, by: by || (_me ? _me.email : "he-thong") });
     if (state.audit.length > 400) state.audit.length = 400;
   },
-  list(limit) { return state.audit.slice(0, limit || 100); }
+  list(limit) { return state.audit.slice(0, limit || 100).map(a => Object.assign({}, a, { detailEn: dichNhatKy(a.detail), byEn: ghiChuEn(a.by) })); }
 };
+/* =====================================================================
+   19b. SONG NGỮ CHO CHUỖI SINH TRONG LÕI  (vòng 22)
+   ---------------------------------------------------------------------
+   Lõi ném lỗi và ghi nhật ký bằng tiếng Việt — đó là ngôn ngữ vận hành.
+   Bật EN thì khung dịch LÚC HIỆN: dichLoi() tra bảng LOI_EN theo nguyên
+   văn, rồi theo mẫu (phần động giữ nguyên); dichNhatKy() dịch những mẫu
+   nhật ký mà lõi tự sinh. Chuỗi do người gõ (ghi chú, tiêu đề ticket
+   thật) không dịch. Thêm một new Error mới thì thêm một dòng ở đây; bài
+   kiểm test/i18n-loi.js bắt chuỗi bị bỏ sót.
+   ===================================================================== */
+const LOI_EN = {
+  "Bài hát này không thuộc phạm vi của bạn": "This track is outside your scope",
+  "Bút toán phải có diễn giải": "An adjustment needs a description",
+  "Bước này chưa được đánh dấu": "This step has not been marked",
+  "Bạn chưa khai thông tin tài khoản nhận tiền": "You have not added a payout account yet",
+  "Bạn hãy mô tả yêu cầu": "Please describe the request",
+  "Bạn không được mời cộng tác trên bài này": "You were not invited to collaborate on this track",
+  "Bản ghi không hợp lệ": "Invalid recording",
+  "Bản ghi không thuộc danh mục của bạn": "The recording is not in your catalogue",
+  "Bản ghi này không thuộc phạm vi của bạn": "This recording is outside your scope",
+  "Bản mẫu chưa nối máy chủ nên chưa đọc tự động được. Cần một dịch vụ chạy nền gọi YouTube Data API.": "The prototype has no server, so it cannot read automatically. A background service calling the YouTube Data API is needed.",
+  "Chưa chọn bài hát": "No track selected",
+  "Chưa chọn bộ phận": "No department selected",
+  "Chưa chọn hồ sơ quyền cho khối": "No permission profile chosen for the unit",
+  "Chưa chọn kỳ": "No period selected",
+  "Chưa chọn loại chiến dịch": "No campaign type selected",
+  "Chưa chọn loại khiếu nại": "No claim type selected",
+  "Chưa chọn nghệ sĩ chính": "No main artist selected",
+  "Chưa có ISWC thì chưa gửi đăng ký được. Xin mã ở Sentric trước.": "Registration needs an ISWC first. Request the code from Sentric.",
+  "Chưa dán gì vào": "Nothing pasted",
+  "Chưa đẩy hồ sơ lên tool phân phối nào. Đánh dấu ở phiếu giao việc trước.": "The file has not been pushed to any distribution tool. Mark it on the work sheet first.",
+  "Chưa đặt tay trạng thái đăng ký ở hội này": "No manual registration status set for this society",
+  "Chỉ hội đồng quản trị mới chuyển người vào / ra khỏi hội đồng": "Only the board can move people into or out of the board",
+  "Chỉ hội đồng quản trị mới khoá thành viên hội đồng": "Only the board can lock a board member",
+  "Chỉ hội đồng quản trị mới thêm thành viên hội đồng": "Only the board can add a board member",
+  "Chỉ label mới có cây label": "Only labels have a label tree",
+  "Chỉ label mới có danh sách nghệ sĩ": "Only labels have an artist roster",
+  "Chỉ label mới thêm được nghệ sĩ vào roster": "Only a label can add artists to its roster",
+  "Chỉ người được giao mới đánh dấu xong việc này": "Only the assignee can mark this done",
+  "Chỉ người đề xuất mới rút / gửi lại được": "Only the proposer can withdraw or resubmit",
+  "Chỉ sửa được khối thêm bằng tay": "Only manually added units can be edited",
+  "Chỉ tác giả mới có danh sách tác phẩm": "Only writers have a works list",
+  "Chỉ đặt được cho label": "Can only be set for a label",
+  "Chỉ đổi được chiến dịch tạo bằng tay": "Only manually created campaigns can be changed",
+  "Chỉ đổi được trạng thái nền tảng thêm bằng tay": "Only manually added platforms can change status",
+  "Chọn nguồn đã lấy số": "Pick the source the figure came from",
+  "Cần ghi lý do": "A reason is required",
+  "Cần ghi lý do từ chối": "A rejection reason is required",
+  "Cần số tham chiếu lệnh chuyển khoản": "The transfer reference is required",
+  "Cần đủ tên ngân hàng, số tài khoản và tên chủ tài khoản": "Bank name, account number and account holder are all required",
+  "Dòng này đã được xử lý": "This row has already been handled",
+  "EP tối đa 6 track; nhiều hơn chọn Album": "An EP has at most 6 tracks; choose Album for more",
+  "Email không hợp lệ": "Invalid email",
+  "Email người cộng tác không hợp lệ": "Invalid collaborator email",
+  "Email này không có trong danh sách chia sẻ của bài": "This email is not on the track's split list",
+  "Email này không thuộc tài khoản đang đăng nhập": "This email does not belong to the signed-in account",
+  "Email này đã có trong danh sách nhân sự": "This email is already on the staff list",
+  "Email này đã có tài khoản": "This email already has an account",
+  "File không phải trạng thái Haustek (thiếu feeds)": "Not a Haustek state file (no feeds)",
+  "Giám đốc mẫu phải ở Ban giám đốc": "The sample director must stay in Management",
+  "Hồ sơ này chưa đánh dấu đẩy lên tool ấy": "This file is not marked as pushed to that tool",
+  "Hồ sơ này không ở trạng thái đã gửi": "This file is not in the submitted state",
+  "Hồ sơ phải có ít nhất một track": "A release needs at least one track",
+  "Hồ sơ đã phát hành, không trả lại được": "The release is live and cannot be returned",
+  "Không bỏ được bên chính của tài khoản; đổi bên chính trước": "The account's primary payee cannot be removed; change the primary first",
+  "Không chuyển thành viên hội đồng cuối cùng ra khỏi hội đồng": "The last board member cannot be moved out of the board",
+  "Không có nhân viên này": "No such staff member",
+  "Không có quyền": "Not permitted",
+  "Không có quyền: bài này thuộc đối tác không do bạn phụ trách": "Not permitted: this track belongs to a partner you do not manage",
+  "Không có quyền: chỉ tiêu của người khác": "Not permitted: someone else's target",
+  "Không có quyền: đối tác này không do bạn phụ trách": "Not permitted: you do not manage this partner",
+  "Không khoá thành viên hội đồng cuối cùng": "The last board member cannot be locked",
+  "Không tìm thấy bản ghi": "Recording not found",
+  "Không tìm thấy yêu cầu": "Request not found",
+  "Không tìm thấy đối tác": "Partner not found",
+  "Không tự khoá chính mình": "You cannot lock yourself",
+  "Kỳ chưa xét duyệt, chưa lập được bảng kê": "The period is not approved yet, so no statement can be issued",
+  "Kỳ của dòng này đã xét duyệt và không còn kỳ nào đang mở để ghi khoản truy thu. Mở kỳ mới rồi khớp lại": "This row's period is approved and no open period remains for the catch-up. Open a new period, then match again",
+  "Kỳ không hợp lệ": "Invalid period",
+  "Kỳ này chưa chốt sổ": "This period is not closed yet",
+  "Kỳ này đã xét duyệt; bút toán phải ghi vào kỳ đang mở": "This period is approved; adjustments go into an open period",
+  "Kỳ đã xét duyệt, phải huỷ xét duyệt trước": "The period is approved; un-approve it first",
+  "Kỳ đã xét duyệt, tỷ giá đã chốt, không thay đổi được nữa": "The period is approved and its rate is locked; it cannot change",
+  "Kỳ đã xét duyệt. Muốn nhập lại phải huỷ xét duyệt trước": "The period is approved. Un-approve it before loading again",
+  "Loại chiến dịch không hợp lệ": "Invalid campaign type",
+  "Loại phát hành không hợp lệ": "Invalid release type",
+  "Loại yêu cầu không hợp lệ": "Invalid request type",
+  "Lượt nghe phải là số không âm": "Streams must be a non-negative number",
+  "Lượt nghe vượt ngưỡng hợp lý, kiểm lại đơn vị": "Streams exceed a plausible range; check the unit",
+  "Lớp tài sản này không giao đích danh": "This asset class is not assigned to individuals",
+  "Mã ISWC phải có dạng T-123456789-0": "An ISWC looks like T-123456789-0",
+  "Mã UPC phải có 12–13 chữ số": "A UPC has 12–13 digits",
+  "Mỗi lần dán tối đa 3.000 dòng": "At most 3,000 rows per paste",
+  "Mức trả phải là số dương dưới 100 USD / 1.000 lượt": "The rate must be positive and under USD 100 per 1,000 streams",
+  "Mức trả đối tác phải là số dương dưới 100 USD / 1.000 lượt": "The partner rate must be positive and under USD 100 per 1,000 streams",
+  "Nghệ sĩ này không thuộc label": "This artist is not on the label",
+  "Nghệ sĩ này không thuộc label của bạn": "This artist is not on your label",
+  "Nghệ sĩ độc lập nhận 100% sau phí Haustek; tỷ lệ chia chỉ đặt cho label": "Independent artists keep 100% after the Haustek fee; rates are set for labels only",
+  "Ngày bắt đầu / kết thúc phải theo yyyy-mm-dd": "Start / end dates must be yyyy-mm-dd",
+  "Ngày hết hạn phải sau ngày ký": "The end date must be after the signing date",
+  "Ngày hợp đồng phải theo yyyy-mm-dd": "Contract dates must be yyyy-mm-dd",
+  "Ngày không hợp lệ": "Invalid date",
+  "Ngày kết thúc phải sau ngày bắt đầu": "The end date must be after the start date",
+  "Ngày phát hành phải theo định dạng yyyy-mm-dd": "The release date must be yyyy-mm-dd",
+  "Người phụ trách phải thuộc Kinh doanh": "The manager must be in Sales",
+  "Năm đánh giá không hợp lệ": "Invalid review year",
+  "Nền tảng chỉ giao cho Vận hành": "Platforms are assigned to Operations only",
+  "Nền tảng này đã có": "This platform already exists",
+  "Nội dung trống": "Empty content",
+  "Phí Haustek phải trong khoảng 0–99%": "The Haustek fee must be between 0 and 99%",
+  "Phí chuyển tiền không được âm": "The transfer fee cannot be negative",
+  "Phí chuyển tiền vượt 5.000.000 ₫, kiểm lại số đã nhập": "The transfer fee exceeds 5,000,000 ₫; check the figure",
+  "Phải cấp mã trước khi đánh dấu đã phát hành": "Codes must be assigned before marking as released",
+  "Phải ghi rõ nội dung cần bổ sung": "State what needs to be added",
+  "Phải tiếp nhận hồ sơ trước khi cấp mã": "The file must be received before codes are assigned",
+  "Phần trăm phải trong khoảng 0–100": "The percentage must be between 0 and 100",
+  "Phần đối tác hưởng phải trong khoảng 1–99%": "The partner share must be between 1 and 99%",
+  "Single tối đa 3 track; từ 4 track trở lên chọn EP": "A single has at most 3 tracks; choose EP from 4",
+  "Số công khai phải là số nguyên không âm": "The public figure must be a non-negative integer",
+  "Số tiền phải khác 0": "The amount must not be zero",
+  "Số tiền phải là số không âm": "The amount must be non-negative",
+  "Số tiền rút không hợp lệ": "Invalid withdrawal amount",
+  "Số tiền tạm ứng không hợp lệ": "Invalid advance amount",
+  "Số tiền vượt ngưỡng hợp lý, kiểm lại đơn vị": "The amount exceeds a plausible range; check the unit",
+  "Số vượt ngưỡng hợp lý, kiểm lại đơn vị": "The figure exceeds a plausible range; check the unit",
+  "Thao tác không hợp lệ": "Invalid action",
+  "Thiếu họ tên": "Full name is missing",
+  "Thiếu nghệ danh": "Artist name is missing",
+  "Thiếu tiêu đề yêu cầu": "Request title is missing",
+  "Thiếu tên bản phát hành": "Release title is missing",
+  "Thiếu tên file PDF": "PDF file name is missing",
+  "Thiếu tên khối": "Unit name is missing",
+  "Thiếu tên nền tảng": "Platform name is missing",
+  "Thiếu tên tool": "Tool name is missing",
+  "Thiếu tên tổ": "Team name is missing",
+  "Thiếu tên đơn vị phân phối": "Distributor name is missing",
+  "Thiếu tên đối tác": "Partner name is missing",
+  "Tiếp nhận hồ sơ trước khi đẩy lên tool": "Receive the file before pushing it to a tool",
+  "Trạng thái không hợp lệ": "Invalid status",
+  "Trạng thái đăng ký không hợp lệ": "Invalid registration status",
+  "Tài khoản label hoặc nghệ sĩ phải gắn với một mã bên thụ hưởng": "A label or artist account must be linked to a payee code",
+  "Tài khoản đã giữ bên này": "The account already holds this payee",
+  "Tài khoản đối tác chỉ giao cho Kinh doanh": "Partner accounts are assigned to Sales only",
+  "Tác phẩm không hợp lệ": "Invalid work",
+  "Tác phẩm phải có ít nhất một tác giả": "A work needs at least one writer",
+  "Tác quyền không đi qua label": "Publishing does not go through the label",
+  "Tỷ giá phải lớn hơn 0": "The rate must be greater than 0",
+  "Tỷ lệ phải nằm giữa 0 và 1": "The rate must be between 0 and 1",
+  "Vai trò không hợp lệ ở cổng đối tác": "Invalid role on the partner portal",
+  "Yêu cầu không ở trạng thái chờ xử lý": "The request is not pending",
+  "Yêu cầu không ở trạng thái xử lý được": "The request is not in a processable state",
+  "Yêu cầu đang được xử lý, không huỷ được": "The request is being processed and cannot be cancelled",
+  "Đã có nghệ sĩ tên này trong hệ thống": "An artist with this name already exists",
+  "Đã có tool tên này": "A tool with this name already exists",
+  "Đã có đối tác tên này": "A partner with this name already exists",
+  "Đã thanh toán, không từ chối được": "Already paid; it cannot be rejected",
+  "Đường dẫn dài bất thường, kiểm lại": "The link is unusually long; check it",
+  "Đường dẫn phải bắt đầu bằng https://": "The link must start with https://"
+};
+/* mẫu cho thông báo có phần động: [regex, thay thế]; $1… giữ nguyên phần động */
+const LOI_MAU_EN = [
+  [/^Không có loại mã (.+)$/, "No id type $1"],
+  [/^Mã ISRC không đúng định dạng: (.+)$/, "ISRC is not in the right format: $1"],
+  [/^Tổng tỉ lệ sáng tác của track "(.+)" vượt 100%$/, 'Writer shares on track "$1" exceed 100%'],
+  [/^File thuộc lược đồ mới hơn \((.+)\), bản này chưa đọc được$/, "The file uses a newer schema ($1); this build cannot read it"],
+  [/^Kỳ (.+) đã xét duyệt, không đặt được tỷ lệ mới cho kỳ đã chốt sổ$/, "Period $1 is approved; no new rate for a closed period"],
+  [/^Kỳ (.+) đã được xét duyệt$/, "Period $1 is already approved"],
+  [/^Phải xét duyệt xong các kỳ trước: (.+), vì phần chuyển sang kỳ sau và thu hồi tạm ứng chạy nối tiếp qua từng kỳ$/, "Earlier periods must be approved first: $1, because carry-over and advance recoupment run period by period"],
+  [/^Chưa đủ điều kiện xét duyệt: (.+)$/, "Not ready for approval: $1"],
+  [/^Phải huỷ xét duyệt các kỳ sau trước: (.+), vì các kỳ sau đã tính dựa trên kết quả của kỳ này$/, "Later periods must be un-approved first: $1, because they were computed on this period's result"],
+  [/^Số tiền rút tối thiểu là (.+)$/, "The minimum withdrawal is $1"],
+  [/^Số dư đang âm (.+) do một kỳ đã huỷ chốt và duyệt lại thấp hơn; chờ kỳ sau bù đủ mới rút được$/, "The balance is negative by $1 because a period was un-approved and re-approved lower; withdrawals resume once later periods cover it"],
+  [/^Số tiền vượt số dư khả dụng (.+)$/, "The amount exceeds the available balance $1"],
+  [/^Tổng phần chia vượt 100% \(đang là (.+)\)$/, "Splits exceed 100% (currently $1)"],
+  [/^Không có kỳ (.+)$/, "No period $1"],
+  [/^Không có đối tác (.+)$/, "No partner $1"],
+  [/^Số tiền tạm ứng tối thiểu (.+)$/, "The minimum advance is $1"],
+  [/^Số tiền vượt mức tối đa (.+)$/, "The amount exceeds the maximum $1"],
+  [/^Đối tác đã có đề xuất tạm ứng (.+) đang xử lý$/, "The partner already has advance proposal $1 in progress"],
+  [/^Đối tác đã có đề xuất hợp đồng (.+) đang xử lý$/, "The partner already has contract proposal $1 in progress"],
+  [/^Không tìm thấy đề xuất (.+)$/, "Proposal $1 not found"],
+  [/^Vai (.+) không được (.+) đề xuất$/, "Role $1 may not $2 a proposal"],
+  [/^Đề xuất đang ở trạng thái (.+), không (.+) được$/, "The proposal is in status $1 and cannot be $2"],
+  [/^Đường dẫn này không thuộc (.+) \((.+)\)\. Kiểm lại xem có dán nhầm cột không$/, "This link does not belong to $1 ($2). Check whether it was pasted in the wrong column"],
+  [/^Không có nền tảng (.+)$/, "No platform $1"],
+  [/^Nguồn này đã nhập cho kỳ (.+)$/, "This feed is already loaded for period $1"],
+  [/^Kỳ (.+) không phải kỳ cuối quý\. Tác quyền chốt theo quý, nhập vào kỳ này là đặt tiền của cả quý vào sai kỳ$/, "Period $1 is not a quarter end. Publishing settles quarterly; loading it here puts a whole quarter's money in the wrong period"],
+  [/^Kỳ (.+) đã xét duyệt\. Huỷ xét duyệt trước khi sửa số$/, "Period $1 is approved. Un-approve it before changing figures"],
+  [/^Không có nguồn (.+)$/, "No feed $1"],
+  [/^Không tìm thấy dòng (.+)$/, "Row $1 not found"],
+  [/^Ngày (.+) chưa có số nhập tay$/, "No manual figure for $1"],
+  [/^Nền tảng này chưa đối soát cho ngày (.+)$/, "This platform has not been reconciled for $1"],
+  [/^Bài này không có nền tảng (.+)$/, "This track has no platform $1"],
+  [/^Bài này chưa đối soát (.+) cho ngày (.+)$/, "This track has no $1 reconciliation for $2"],
+  [/^Không có quy trình (.+)$/, "No runbook $1"],
+  [/^Quy trình (.+) không có bước (.+)$/, "Runbook $1 has no step $2"],
+  [/^Khoản này đã ghi vào kỳ (.+) và kỳ đó đã xét duyệt\. Huỷ xét duyệt kỳ đó trước$/, "This amount was booked in period $1, which is approved. Un-approve that period first"],
+  [/^Vai tài khoản không hợp lệ: (.+)$/, "Invalid account role: $1"],
+  [/^Không có bên thụ hưởng (.+)$/, "No payee $1"],
+  [/^Không có tài khoản (.+)$/, "No account $1"],
+  [/^Không tìm thấy hồ sơ (.+)$/, "Release file $1 not found"],
+  [/^Không có tool (.+)$/, "No tool $1"],
+  [/^Bài này chưa có link (.+)$/, "This track has no $1 link yet"],
+  [/^(.+) không công bố số ra ngoài, không ghi được$/, "$1 publishes no public figures; nothing to record"],
+  [/^(.+) không công bố số ra ngoài$/, "$1 publishes no public figures"],
+  [/^(.+) chỉ có số trên trang, không có API chính thức\. Mở link rồi gõ số vào\.$/, "$1 only shows figures on its page, with no official API. Open the link and key the figure in."],
+  [/^Không có lần đọc nào ngày (.+)$/, "No reading on $1"],
+  [/^Tổng tỷ lệ tác giả phải đúng 100%, đang là (.+)$/, "Writer shares must total 100%, currently $1"],
+  [/^Không có hội (.+)$/, "No society $1"],
+  [/^Đã có khối (.+)$/, "Unit $1 already exists"],
+  [/^Không có khối (.+)$/, "No unit $1"],
+  [/^Đã có tổ (.+)$/, "Team $1 already exists"],
+  [/^Không có nhân viên (.+)$/, "No staff member $1"],
+  [/^Không tìm thấy (.+)$/, "$1 not found"],
+  [/^Chặn ở tầng API: payload chứa thông tin nội bộ \((.+)\)$/, "Blocked at the API layer: the payload contains internal information ($1)"],
+  [/^Không có quyền: (.+) \(vai (.+) · cần (.+)\)$/, "Not permitted: $1 (role $2 · needs $3)"],
+  [/^Không có quyền: (.+)$/, "Not permitted: $1"]
+];
+function dichLoi(msg, lang) {
+  if (lang !== "en" || typeof msg !== "string") return msg;
+  if (LOI_EN[msg]) return LOI_EN[msg];
+  for (const [re, thay] of LOI_MAU_EN) { const m = re.exec(msg); if (m) return msg.replace(re, thay); }
+  return msg;
+}
+/* Nhật ký do lõi tự sinh: dịch theo mẫu; ghi chú người gõ để nguyên. */
+const NHAT_KY_MAU_EN = [
+  [/^Xét duyệt kỳ (.+?)( \(ghi nhận ngoại lệ: (.+)\))?$/, (m) => "Approved period " + m[1] + (m[3] ? " (exceptions noted: " + m[3] + ")" : "")],
+  [/^Huỷ xét duyệt kỳ (.+?)( · (.+))?$/, (m) => "Un-approved period " + m[1] + (m[3] ? " · " + m[3] : "")],
+  [/^Chốt tỷ giá kỳ (.+?): 1 USD = (.+?) ₫ · (.+?) ngày (.+)$/, (m) => "Locked FX for period " + m[1] + ": 1 USD = " + m[2] + " ₫ · " + m[3] + " on " + m[4]],
+  [/^Nhập (.+?) · kỳ (.+?) · (.+?) · (\d+) dòng vào danh sách chờ khớp$/, (m) => "Loaded " + tenNguonEn(m[1]) + " · period " + m[2] + " · " + m[3] + " · " + m[4] + " rows to the match queue"],
+  [/^Nhập (.+?) · kỳ (.+?) · (.+)$/, (m) => "Loaded " + tenNguonEn(m[1]) + " · period " + m[2] + " · " + m[3]],
+  [/^Nhập báo cáo tác quyền quý (.+?) · (.+)$/, (m) => "Loaded publishing report Q" + m[1] + " · " + m[2]],
+  [/^Nhập báo cáo tác quyền kỳ (.+)$/, (m) => "Loaded publishing report, period " + m[1]],
+  [/^Gỡ báo cáo tác quyền kỳ (.+)$/, (m) => "Removed publishing report, period " + m[1]],
+  [/^Gỡ nguồn (.+?) khỏi kỳ (.+)$/, (m) => "Removed feed " + tenNguonEn(m[1]) + " from period " + m[2]],
+  [/^1 USD = (.+?) ₫ · (.+)$/, (m) => "1 USD = " + m[1] + " ₫ · " + m[2]],
+  [/^(.+?) → (.+?)% từ kỳ (.+)$/, (m) => m[1] + " → " + m[2] + "% from period " + m[3]],
+  [/^(.+?) \(cấp cho người cộng tác\)$/, (m) => dichNhatKy(m[1]) + " (issued to a collaborator)"]
+];
+function tenNguonEn(vi) { const f = FEEDS.find(x => x.name === vi); return f ? f.nameEn : (vi === "Báo cáo tác quyền" ? "Publishing report" : vi); }
+function dichNhatKy(detail) {
+  if (typeof detail !== "string") return detail;
+  for (const [re, fn] of NHAT_KY_MAU_EN) { const m = re.exec(detail); if (m) return fn(m); }
+  /* chuỗi ghép bằng " · ": dịch từng đoạn (ghi chú mẫu, số tháng, phí, kỳ) */
+  return detail.split(" · ").map(d => ghiChuEn(d)
+    .replace(/^(\d+) tháng$/, "$1 months").replace(/^phí (\d+%)$/, "fee $1").replace(/^phí ứng (\d+%)$/, "advance fee $1")
+    .replace(/^kỳ (\S+)$/, "period $1").replace(/^quyền (\S+)$/, "profile $1").replace(/^Tạm ứng (.+)$/, "Advance $1").replace(/^Hợp đồng (\d+) tháng$/, "Contract $1 months")).join(" · ");
+}
+/* Ghi chú mẫu (dữ liệu gieo) — tra bảng; ghi chú người gõ để nguyên */
+const GHI_CHU_EN = { "Tạm ứng theo hợp đồng": "Contract advance", "Tạm ứng marketing / sản xuất": "Marketing / production advance", "Gia hạn trước hạn": "Early renewal",
+  "Sản xuất album mới": "New album production", "Số đã đối chiếu với bảng kê": "Figures reconciled against the statement", "Đã kiểm thu nhập 12 kỳ": "Income over 12 periods checked",
+  "Đối soát xong, đã xét duyệt": "Reconciled and approved", "khởi tạo": "seed", "Khởi tạo khi thêm đối tác": "Seeded when the partner was added",
+  "Kế toán": "Accounting", "Giám đốc": "Director", "Kinh doanh": "Sales", "Vận hành": "Operations", "Hỗ trợ": "Support", "duyệt lại": "re-approved" };
+function ghiChuEn(vi) {
+  if (typeof vi !== "string" || !vi) return vi;
+  if (GHI_CHU_EN[vi]) return GHI_CHU_EN[vi];
+  let m = /^Chiến dịch quảng bá quý (\d)$/.exec(vi); if (m) return "Quarter " + m[1] + " promotion campaign";
+  m = /^Đã kiểm thu nhập (\d+) kỳ$/.exec(vi); if (m) return "Income over " + m[1] + " periods checked";
+  m = /^(.+?) tạm ứng (.+?) \+ phí (.+)$/.exec(vi); if (m) return m[1] + " advance " + m[2] + " + fee " + m[3];
+  return vi;
+}
 function nowISO() { return new Date().toISOString().slice(0, 19).replace("T", " "); }
 
 /* =====================================================================
@@ -5506,8 +5790,10 @@ rebuildNhapIndex();
    song và soi lẫn nhau: việc đã "đã xong" mà bước còn dở là dấu hiệu
    người làm bỏ qua bước, thường là bước gom bằng chứng.
    ===================================================================== */
+const BAO_EN = { "đối tác": "the partner", "giám đốc": "the director", "trưởng bộ phận nếu tiền giữ vượt 2.000 USD": "head of department if held money exceeds USD 2,000",
+  "trưởng bộ phận nếu phải nhả claim": "head of department if the claim must be released", "trưởng bộ phận nếu lệch trên 20%": "head of department if the variance exceeds 20%" };
 function b(id, vi, en, gio, mo, moEn, bao) {
-  return { id, vi, en, gio, mo: mo || "", moEn: moEn || "", bao: bao || "" };
+  return { id, vi, en, gio, mo: mo || "", moEn: moEn || "", bao: bao || "", baoEn: bao ? (BAO_EN[bao] || bao) : "" };
 }
 const QUY_TRINH = [
   { id: "tranh-chap", vai: "support", man: "quyen", nhip: "viec",
@@ -5954,9 +6240,14 @@ const von = {
 };
 
 /* hàng chờ khớp ISRC */
+/* Lý do một dòng nằm ở hàng chờ, song ngữ — lý do ghi vào state bằng
+   tiếng Việt (chuỗi ngắn, cố định), bản EN tra khi đọc. */
+const LY_DO_EN = { "Thiếu mã ISRC": "ISRC missing", "Mã ISRC không có trong danh mục": "ISRC not in the catalogue", "Mã ISRC của nhà phát hành khác": "ISRC belongs to another distributor",
+  "Trùng tên bài hát và tên nghệ sĩ": "Title and artist match", "Trùng tên bài hát": "Title match", "Lượt nghe giả trên mức cho phép": "Artificial streams above tolerance" };
+const lyDoEn = vi => LY_DO_EN[vi] || (typeof vi === "string" ? vi.replace(/^Trùng tên bài hát và tên nghệ sĩ/, "Title and artist match").replace(/^Trùng tên bài hát/, "Title match") : vi);
 const queue = {
   list(filter) {
-    let l = state.queue;
+    let l = state.queue.map(q => q.reasonEn ? q : Object.assign({}, q, { reasonEn: lyDoEn(q.reason) }));
     if (filter && filter.periodKey) l = l.filter(q => q.periodKey === filter.periodKey);
     if (filter && filter.status) l = l.filter(q => q.status === filter.status);
     if (filter && filter.feedId != null) l = l.filter(q => q.feedId === filter.feedId);
@@ -6366,7 +6657,7 @@ const admin = {
   },
   periods: PERIODS, feeds: FEEDS, pubFeed: PUB_FEED,
   stores: STORES, storeW: STORE_W, storeFeed: STORE_FEED, storeTopCount: N_TOP,
-  territories: TERR, territoryW: TERR_W, pubSources: PUBSRC, pubSourceW: PUBSRC_W,
+  territories: TERR, territoriesEn: TERR_EN, territoryW: TERR_W, pubSources: PUBSRC, pubSourceW: PUBSRC_W,
   labels: LABELS, artists: ARTISTS,
   questions: QUESTIONS, samplesNeeded: SAMPLES_NEEDED,
   counts: { tracks: N, periods: P, artists: CFG.N_ARTISTS, labels: CFG.N_LABELS, stores: STORES.length, territories: TERR.length },
@@ -6411,12 +6702,12 @@ const admin = {
     theoKy() {
       return PERIODS.map(p => { let v = 0; Object.keys(state.advances).forEach(k => { v += (state.advances[k].byPeriod || {})[p.k] || 0; }); return { k: p.k, label: p.label, thuHoi: cents(v) }; });
     },
-    theoBen(pk) { const a = state.advances[pk]; return a ? { opening: a.opening, note: a.note, byPeriod: Object.assign({}, a.byPeriod || {}) } : { opening: 0, note: "", byPeriod: {} }; },
+    theoBen(pk) { const a = state.advances[pk]; return a ? { opening: a.opening, note: a.note, noteEn: a.noteEn || ghiChuEn(a.note), byPeriod: Object.assign({}, a.byPeriod || {}) } : { opening: 0, note: "", noteEn: "", byPeriod: {} }; },
     list() {
       return Object.keys(state.advances).map(k => ({
         partyKey: k, name: partyName(k), clientId: partyClientId(k),
         kind: k[0] === "L" ? "label" : "artist",
-        opening: state.advances[k].opening, note: state.advances[k].note,
+        opening: state.advances[k].opening, note: state.advances[k].note, noteEn: state.advances[k].noteEn || ghiChuEn(state.advances[k].note),
         recouped: cents(Object.values(state.advances[k].byPeriod || {}).reduce((s, v) => s + v, 0)),
         balance: advanceBalance(k)
       })).sort((a, b) => b.balance - a.balance);
@@ -7333,7 +7624,7 @@ const admin = {
   claims: {
     categories: CLAIM_CAT, statuses: CLAIM_STATUS,
     list(f) {
-      let ds = state.claims.slice();
+      let ds = state.claims.map(c => Object.assign({}, c, { countryEn: terrEn(c.country) }));
       if (f && f.status) ds = ds.filter(c => f.status === "open-all" ? (c.status !== "resolved" && c.status !== "released") : c.status === f.status);
       if (f && f.store) ds = ds.filter(c => c.store === f.store);
       if (f && f.category) ds = ds.filter(c => c.category === f.category);
@@ -7936,6 +8227,7 @@ const api = {
        vị nào khác, không có "nguồn báo cáo" nào ở đây: đó là chuyện vận
        hành nội bộ của Haustek. */
     const names = isTerr ? TERR : (isStore ? PLAT_NAMES : PUBSRC);
+    const namesEn = isTerr ? TERR_EN : (isStore ? PLAT_NAMES_EN : PUBSRC);
     const wts   = isTerr ? TERR_W : (isStore ? null : PUBSRC_W);
     const acc = new Float64Array(names.length);
     const accTail = (isStore && expanded) ? new Float64Array(TAIL_W.length) : null;
@@ -7969,7 +8261,7 @@ const api = {
       /* 8 nền tảng lớn đứng riêng; phần còn lại là MỘT dòng, hoặc bóc ra
          theo từng nền tảng nhỏ khi mở rộng. Không bao giờ cắt mất tiền:
          phần đuôi bị cắt vẫn nằm lại một dòng. */
-      const top = PLAT_NAMES.slice(0, N_TOP).map((s, j) => ({ name: s, value: cents(acc[j] * norm) })).filter(x => x.value > 0.004);
+      const top = PLAT_NAMES.slice(0, N_TOP).map((s, j) => ({ name: s, nameEn: PLAT_NAMES_EN[j], value: cents(acc[j] * norm) })).filter(x => x.value > 0.004);
       top.sort((a, b) => b.value - a.value);
       const tailTotal = cents(acc[N_PLAT - 1] * norm);
       if (!expanded) {
@@ -7986,7 +8278,7 @@ const api = {
         totalStores = top.length + list.length;
       }
     } else {
-      let list = names.map((s, j) => ({ name: s, value: cents(acc[j] * norm) })).filter(x => x.value > 0.004);
+      let list = names.map((s, j) => ({ name: s, nameEn: namesEn[j], value: cents(acc[j] * norm) })).filter(x => x.value > 0.004);
       list.sort((a, b) => b.value - a.value);
       const N_HIEN = expanded ? 40 : list.length;
       hien = list.slice(0, N_HIEN);
@@ -8094,12 +8386,13 @@ const api = {
       /* làm tròn y như ma trận nền tảng × kỳ, để hai bảng khớp nhau tới xu */
       byStore = mk(PLAT_NAMES, khopTong(Array.from(rev, v => v * f), m, cents), PLAT_NAMES_EN);
     } else byStore = mk(PUBSRC, splitDim(i, m, PUBSRC_W, p));
+    const byTerrRows = mk(TERR, byTerr, TERR_EN);
     const out = {
       id: i, title: tTitle[i], isrc: tIsrc[i], type: TYPES[tType[i]],
       artist: ARTISTS[tArtist[i]].name,
       streams: stream === "rec" ? recStreams[i * P + p] : null,
       revenue: stream === "rec" ? cents(revenueOf(i, p, role)) : m, mine: m,
-      byStore, byTerritory: mk(TERR, byTerr), steps: []
+      byStore, byTerritory: byTerrRows, steps: []
     };
     /* Chuỗi tiền của một bài cũng chỉ có số của người xem: label thấy doanh
        thu (sau phí) → trả nghệ sĩ → phần label; nghệ sĩ chỉ thấy phần mình. */
@@ -8289,6 +8582,8 @@ const H = {
   fmt, esc, vtable, barChart, cents,
   api, admin: boQuyen(admin),
   storage: { available: store.available, exportJSON: () => store.exportJSON(), importJSON: t => store.importJSON(t), thongTin: () => store.thongTin(), luocDo: () => LUOC_DO, luocDoVer: () => state.luocDoVer },
+  /* song ngữ cho chuỗi lõi sinh — sống sót qua lockdown vì không mang dữ liệu */
+  i18n: { loi: dichLoi, nhatKy: dichNhatKy, ghiChu: ghiChuEn, lyDo: lyDoEn, lanhTho: terrEn },
 
   /* khach.html gọi hàm này ngay dòng đầu. Sau đó HAUSTEK.admin không
      còn tồn tại trong trình duyệt khách — cả dữ liệu thô, cả tên đơn vị

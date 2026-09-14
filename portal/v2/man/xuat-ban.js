@@ -157,7 +157,7 @@ function veBan(c) {
       v.trenBan.map(function (x) {
         return '<tr class="pick canh" data-tp="' + x.w + '">' +
           '<td>' + HM.tenBia({ ten: x.ten, seed: 'w' + x.w, bia: x.w }) + '</td>' +
-          '<td>' + x.nuoc.map(function (n) { return HM.tag(n, 'warn'); }).join(' ') + '</td>' +
+          '<td>' + x.nuoc.map(function (n) { return HM.tag(c.lang === 'en' ? (A.territoriesEn[A.territories.indexOf(n)] || n) : n, 'warn'); }).join(' ') + '</td>' +
           '<td class="num mono"><b>' + HM.esc(c.tien(x.tong)) + '</b></td></tr>';
       }).join('') + '</tbody></table></div>'
   });
@@ -227,7 +227,7 @@ function veNhap(c) {
   var t = c.t;
   return HM.the({
     h2: HM.esc(t('nhapTieu')), p: HM.esc(t('nhapMo')), icon: 'down2',
-    than: '<textarea class="in mono" rows="9" data-sentric placeholder="ISRC\tISWC\tMã hội\tHội&#10;VNHTK2600001\tT-123456789-0\tPRS9988\tPRS"></textarea>' +
+    than: '<textarea class="in mono" rows="9" data-sentric placeholder="' + HM.esc(c.lang === 'vi' ? 'ISRC\tISWC\tMã hội\tHội' : 'ISRC\tISWC\tSociety code\tSociety') + '&#10;VNHTK2600001\tT-123456789-0\tPRS9988\tPRS"></textarea>' +
       '<div class="btnrow" style="margin-top:10px"><button type="button" class="btn pri" data-nhan-sentric>' +
       HM.icon('down2') + HM.esc(t('nhapNut')) + '</button></div>'
   }) + HM.the({ h2: HM.esc(t('apiTieu')), icon: 'info', than: '<p class="say">' + HM.esc(t('apiMo')) + '</p>' });

@@ -240,7 +240,7 @@ function bangTicket(c, rows, opts) {
     rows.map(function (x) {
       var qh = quaHan(A, x);
       return '<tr class="pick" data-tk="' + HM.esc(x.id) + '">' +
-        '<td><div class="t-ttl">' + HM.esc(HM.dai(x.title, 44)) + '</div><div class="t-sub">' + HM.esc(x.id + ' · ' + tenLoai(A, c, x.type) + ' · ' + (x.party ? x.party.name : '')) + '</div></td>' +
+        '<td><div class="t-ttl">' + HM.esc(HM.dai(c.song(x, 'title'), 44)) + '</div><div class="t-sub">' + HM.esc(x.id + ' · ' + tenLoai(A, c, x.type) + ' · ' + (x.party ? x.party.name : '')) + '</div></td>' +
         '<td>' + HM.tag(t(x.priority), KIEU_UU[x.priority]) + '</td>' +
         '<td style="white-space:nowrap' + (qh ? ';color:var(--danger);font-weight:600' : '') + '">' + HM.esc(HT.fmt.date(x.dueAt)) + (qh ? '<div class="t-sub" style="color:var(--danger)">' + HM.esc(t('quaHan')) + '</div>' : '') + '</td>' +
         '<td>' + (opts.nhan

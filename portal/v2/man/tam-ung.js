@@ -79,7 +79,7 @@ HT.dangKy({
       return {
         key: x.partyKey, ten: x.name, ma: x.clientId, loai: x.kind,
         opening: x.opening, recouped: x.recouped, balance: x.balance,
-        note: x.note || '',
+        note: c.song(x, 'note') || '',
         pc: x.opening > 0 ? x.recouped / x.opening : 1,
         soKy: x.balance <= 0 ? 0 : (nhip > 0 ? Math.ceil(x.balance / nhip) : null)
       };

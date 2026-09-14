@@ -230,7 +230,7 @@ HT.dangKy({
     var theThiTruong = HM.the({
       h2: HM.esc(t('lanhTho')), p: HM.esc(t('lanhThoMo')),
       than: HB.o({ loai: 'thanh', tenTong: la ? t('veTayLb') : t('veTay'), hang: lt.rows.slice(0, 8).map(function (r, i) {
-        return { ten: r.name, gt: r.value, mau: P[i % 8] };
+        return { ten: c.song(r, 'name'), gt: r.value, mau: P[i % 8] };
       }) })
     });
 
@@ -486,7 +486,7 @@ function moBai(c, id, luong, la) {
     (d.byStore.length ? '<h4 class="sec">' + HM.esc(t('cuaHang')) + '</h4>' +
       HB.o({ loai: 'thanh', hang: d.byStore.map(function (x, i) { return { ten: c.song(x, 'name'), gt: x.value, mau: P[i % 8] }; }) }) : '') +
     (d.byTerritory.length ? '<h4 class="sec">' + HM.esc(t('lanhTho')) + '</h4>' +
-      HB.o({ loai: 'thanh', hang: d.byTerritory.map(function (x, i) { return { ten: x.name, gt: x.value, mau: P[i % 8] }; }) }) : '') +
+      HB.o({ loai: 'thanh', hang: d.byTerritory.map(function (x, i) { return { ten: c.song(x, 'name'), gt: x.value, mau: P[i % 8] }; }) }) : '') +
     (luong === 'rec'
       ? '<div class="btnrow" style="margin-top:14px"><button type="button" class="btn sm" data-ho-so>' +
         HM.icon('layers') + HM.esc(vi ? 'Xem quy trình phát hành và nền tảng' : 'Release pipeline & platforms') + '</button></div>'

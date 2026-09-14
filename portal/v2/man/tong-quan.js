@@ -130,7 +130,7 @@ HT.dangKy({
     var chuaDuyetIdx = A.periods.filter(function (p) { return !A.isApproved(p.k); }).map(function (p) { return p.idx; });
 
     /* ---- cửa hàng & lãnh thổ của kỳ đang xem ---- */
-    var boc = HM.nho(A, 'boc:' + pi, function () {
+    var boc = HM.nho(A, 'boc:' + pi + ':' + c.lang, function () {
       function dim(w, ten) {
         var acc = new Float64Array(ten.length), scale = 0;
         var buoc = Math.max(1, Math.floor(A.trackCount / 9000));
@@ -145,7 +145,7 @@ HT.dangKy({
         return ten.map(function (n, j) { return { ten: n, gt: Math.round(acc[j] * norm * 100) / 100 }; })
           .sort(function (a, b) { return b.gt - a.gt; });
       }
-      return { ch: dim(A.storeW, A.stores), lt: dim(A.territoryW, A.territories) };
+      return { ch: dim(A.storeW, A.stores), lt: dim(A.territoryW, c.lang === 'en' ? A.territoriesEn : A.territories) };
     });
     var ch8 = boc.ch.slice(0, 8), chDuoi = boc.ch.slice(8);
     var chDuoiTong = chDuoi.reduce(function (s, x) { return s + x.gt; }, 0);
@@ -442,7 +442,7 @@ HT.dangKy({
                 v: HT.fmt.n(qKy.length) + ' ' + t('dong') + ' · ' + c.tien(A.queue.pendingTotal(pk)) },
               { t: c.lang === 'vi' ? 'Tỷ lệ trên doanh thu kỳ' : 'Share of period revenue',
                 v: HT.fmt.pct(nay.gross ? A.queue.pendingTotal(pk) / nay.gross : 0, 2) +
-                   ' / ngưỡng ' + HT.fmt.pct(A.cfg.BLACKBOX_CAP, 1) },
+                   ' / ' + (c.lang === 'vi' ? 'ngưỡng' : 'cap') + ' ' + HT.fmt.pct(A.cfg.BLACKBOX_CAP, 1) },
               { t: c.lang === 'vi' ? 'Kỳ có nhiều dòng chờ khớp nhất' : 'Period with most held rows',
                 v: (function () {
                   var d = {};
@@ -470,8 +470,8 @@ HT.dangKy({
       hanhDong: '<button type="button" class="btn sm ghost" data-di="quan-tri">' + HM.esc(t('xemHet')) + '</button>',
       than: '<div class="steps">' + A.audit.list(7).map(function (a) {
         return '<div class="s ' + (a.action.indexOf('approve') >= 0 ? 'ok' : a.action.indexOf('revoke') >= 0 ? 'no' : '') + '">' +
-          '<b>' + HM.esc(a.detail) + '</b>' +
-          '<span>' + HM.esc(a.action) + ' · ' + HM.esc(a.by) + '</span>' +
+          '<b>' + HM.esc(c.song(a, 'detail')) + '</b>' +
+          '<span>' + HM.esc(a.action) + ' · ' + HM.esc(c.song(a, 'by')) + '</span>' +
           '<div class="tm">' + HM.esc(HT.fmt.luc(a.at)) + '</div></div>';
       }).join('') + '</div>'
     });

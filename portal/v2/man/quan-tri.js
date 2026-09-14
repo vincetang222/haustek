@@ -295,8 +295,8 @@ function veNhatKy(c) {
           : 'info';
         return '<tr><td class="num mono">' + HM.esc(HT.fmt.luc(a.at)) + '</td>' +
           '<td>' + HM.tag(a.action, kieu) + '</td>' +
-          '<td>' + HM.esc(a.detail) + '</td>' +
-          '<td class="mono">' + HM.esc(a.by) + '</td></tr>';
+          '<td>' + HM.esc(c.song(a, 'detail')) + '</td>' +
+          '<td class="mono">' + HM.esc(c.song(a, 'by')) + '</td></tr>';
       }).join('') + '</tbody></table></div>',
     chan: HT.fmt.n(ds.length) + (c.lang === 'vi' ? ' dòng · đang hiển thị 150 dòng gần nhất' : ' entries · latest 150 shown')
   });

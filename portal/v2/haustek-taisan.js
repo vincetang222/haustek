@@ -393,7 +393,7 @@ function dongBuoc(c, x, i, o) {
     '<div class="buoc-t">' +
       '<b>' + esc(tenBuoc(c, x)) + '</b>' +
       (x.gio ? '<span class="tag">' + esc(slaChu(c, x.gio)) + '</span>' : '') +
-      (x.bao ? '<span class="tag warn">' + esc((vi ? 'Báo: ' : 'Tell: ') + x.bao) + '</span>' : '') +
+      (x.bao ? '<span class="tag warn">' + esc((vi ? 'Báo: ' : 'Tell: ') + (vi ? x.bao : (x.baoEn || x.bao))) + '</span>' : '') +
       (mo ? '<span class="buoc-m">' + esc(mo) + '</span>' : '') +
       (o.xong && o.at ? '<span class="buoc-x">' + esc((vi ? 'Đã làm · ' : 'Done · ') + HT.fmt.luc(o.at) + (o.by ? ' · ' + o.by : '')) + '</span>' : '') +
       (o.ghiChu ? '<span class="buoc-m">' + esc(o.ghiChu) + '</span>' : '') +

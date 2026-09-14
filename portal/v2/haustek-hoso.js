@@ -222,7 +222,7 @@ function veBuoc3(d, o2) {
     o(T('lhDt'), chu('contact.phone', c.phone, '09xx xxx xxx', ' type="tel" inputmode="tel"'), T('lhDtHint'), !!o2.staff) +
     o(T('lhEmail'), chu('contact.email', c.email, '', ' type="email" inputmode="email"')) +
     o(T('lhGio'), chon('contact.when', c.when, [['any', T('lhGioAny')], ['morning', T('lhSang')], ['afternoon', T('lhChieu')], ['evening', T('lhToi')], ['message', T('lhNhan')]]), null, true) +
-    o(T('lhMxh'), chu('contact.social', c.social, 'facebook.com/… hoặc @tenban'), null, true) +
+    o(T('lhMxh'), chu('contact.social', c.social, HT.lang === 'en' ? 'facebook.com/… or @you' : 'facebook.com/… hoặc @tenban'), null, true) +
     '</div>' + o(T('lhPhu'), chu('contact.backup', c.backup), T('lhPhuHint'), true);
 }
 

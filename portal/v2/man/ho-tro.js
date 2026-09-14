@@ -227,7 +227,7 @@ function dungBang(c, root, rows) {
       return '<td class="mono">' + HM.esc(r.id) + '</td>' +
         '<td>' + HM.tag(t(r.priority), KIEU_UU[r.priority]) + '</td>' +
         '<td>' + HM.tag(r.loaiNhan, '') + '</td>' +
-        '<td><div class="t-ttl">' + HM.esc(HM.dai(r.title, 64)) + '</div>' +
+        '<td><div class="t-ttl">' + HM.esc(HM.dai(c.song(r, 'title'), 64)) + '</div>' +
           '<div class="t-sub">' + HM.esc(r.party.name + ' · ' + r.party.clientId) + '</div></td>' +
         '<td>' + (r.track ? HM.tenBia({ bia: r.trackId, ten: HM.dai(r.track.title, 24), phu: r.track.isrc, cls: 'sm' }) : '<span class="nil">—</span>') + '</td>' +
         '<td>' + (r.nvTen ? HM.esc(r.nvTen) : '<span class="nil">' + HM.esc(t('chuaGan')) + '</span>') + '</td>' +
@@ -331,7 +331,7 @@ function moTicket(c, id) {
     '<h4 class="sec">' + HM.esc(HTS.t('bvTieu')) + '</h4>' +
     HTS.buocViec(c, 'ticket', tk.id) +
     '<h4 class="sec">' + HM.esc(T('moTa')) + '</h4>' +
-    '<div class="bl-tx" style="margin-bottom:4px">' + (tk.body ? HM.esc(tk.body) : '<span class="nil">' + HM.esc(T('khongMoTa')) + '</span>') + '</div>' +
+    '<div class="bl-tx" style="margin-bottom:4px">' + (tk.body ? HM.esc(c.song(tk, 'body')) : '<span class="nil">' + HM.esc(T('khongMoTa')) + '</span>') + '</div>' +
     xong +
     '<h4 class="sec">' + HM.esc(T('binhLuan')) + ' (' + (tk.comments || []).length + '/' + GH.soBinhLuan + ')</h4>' +
     '<div class="bl-ds">' + bl + '</div>' +
@@ -339,7 +339,7 @@ function moTicket(c, id) {
     '<div class="btnrow" style="margin-top:8px"><button type="button" class="btn sm pri" data-gui>' + HM.esc(T('guiBl')) + '</button>' +
       '<span class="hint" style="margin:0" data-conlai>' + HM.esc(T('conLai').replace('{n}', GH.doDaiBinhLuan)) + '</span></div>' +
     '<p class="hint">' + HM.esc(T('blMo').replace('{n}', GH.doDaiBinhLuan).replace('{m}', GH.soBinhLuan)) + '</p>',
-    { tieuDe: tk.title, phu: tk.id + ' · ' + tk.party.clientId, khiMo: function (dr) {
+    { tieuDe: c.song(tk, 'title'), phu: tk.id + ' · ' + tk.party.clientId, khiMo: function (dr) {
       var lam = function (fn, msg) {
         try { fn(); c.thongBao(msg, 'ok'); LOC.moId = id; c.veLai(); }
         catch (e) { c.thongBao(e.message, 'no'); }

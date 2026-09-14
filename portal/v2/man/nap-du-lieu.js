@@ -208,7 +208,7 @@ function veLuong(c) {
           { t: t('khiNao'), v: co ? HT.fmt.luc(st.at) : '—' },
           { t: c.lang === 'vi' ? 'Doanh thu kỳ này' : 'This period', v: c.tien(theoKy[c.ky.idx] || 0), manh: true },
           { t: c.lang === 'vi' ? 'Chờ khớp ISRC' : 'On hold in queue',
-            v: treo.length ? HT.fmt.n(treo.length) + ' dòng · ' + c.tien(treo.reduce(function (s, q) { return s + q.amount; }, 0)) : '—' }
+            v: treo.length ? HT.fmt.n(treo.length) + ' ' + (c.lang === 'vi' ? 'dòng' : 'rows') + ' · ' + c.tien(treo.reduce(function (s, q) { return s + q.amount; }, 0)) : '—' }
         ]) +
         '<div style="margin-top:14px">' + HB.o({
           loai: 'cot', cao: 130, anTruc: true, chuThich: false,
@@ -322,8 +322,8 @@ function veSu(c) {
       ds.slice(0, 120).map(function (a) {
         return '<tr><td class="num mono">' + HM.esc(HT.fmt.luc(a.at)) + '</td>' +
           '<td>' + HM.tag(a.action.replace('ingest.', ''), a.action === 'ingest.unload' ? 'no' : 'info') + '</td>' +
-          '<td>' + HM.esc(a.detail) + '</td>' +
-          '<td class="mono">' + HM.esc(a.by) + '</td></tr>';
+          '<td>' + HM.esc(c.song(a, 'detail')) + '</td>' +
+          '<td class="mono">' + HM.esc(c.song(a, 'by')) + '</td></tr>';
       }).join('') + '</tbody></table></div>'
   });
 }
