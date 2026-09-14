@@ -226,6 +226,10 @@ viết nội bộ là "Haustek", không lộ id / email nhân sự (`giauNhanSu`
 
 ## 11. Chỗ bản mẫu không chứng minh được
 
+> Mục này chỉ nói *vì sao* bản mẫu không chứng minh được. Hình dạng của bản
+> chạy thật — lược đồ, khoá, chỉ mục, giao dịch chốt kỳ, luật quyền, di trú —
+> nằm ở [`HA-TANG.md`](HA-TANG.md).
+
 Hai cổng chạy cùng gốc trong một trình duyệt: nạp lại lõi trong iframe là có
 lại `admin`; `localStorage` ai cũng đọc được. Đây là hình dạng của ranh
 giới, chưa phải ranh giới đã thực thi. Khi lên máy chủ: dữ liệu thô ở

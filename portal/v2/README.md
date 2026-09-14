@@ -385,6 +385,105 @@ Cổng đối tác không có và không nên có: bảng tính này đọc ra p
 giữ lại, phí môi giới và biên lợi nhuận. Đối tác muốn biết mình ứng được bao
 nhiêu thì vẫn dùng `k-tam-ung`, chạy trên `advanceOfferOf()` đã lược sạch.
 
+## Vòng 23: cổng người cộng tác, bốn lỗi tiền, và hạ tầng bản chạy thật
+
+Chủ dự án đặt hai việc: làm nốt cổng riêng cho người cộng tác (D7 của vòng
+22 để lại), và đưa ra kiến trúc dữ liệu cùng hạ tầng cho bản chạy thật, "tối
+ưu để khi code thật sẽ không bị bottleneck và bug". Việc thứ hai đẻ ra việc
+thứ ba: lập bản đồ chuỗi tiền để thiết kế thì tìm ra bốn chỗ bản mẫu đang
+nói sai con số.
+
+### 23a · Bốn chỗ tiền nói sai con số
+
+Cả bốn đều đo được, không phải suy đoán. `test/tien-dung-so.js` giữ cửa —
+`qc-bat-bien.js` kiểm tiền có CÂN không, bài này kiểm tiền có nói ĐÚNG SỐ
+không, hai chuyện khác nhau.
+
+| Chỗ | Bản mẫu nói | Số thật |
+|---|---|---|
+| Cổng của A:142, tác quyền kỳ 12/2025 | 25,50 USD | 18,10 USD |
+| Trang Chia sẻ nội bộ, "đã chia cho người cộng tác" | 38.132,54 USD | 44,14 USD |
+| Bảng giải thích kỳ, dòng "dồn sang kỳ sau" | (rỗng) | 10,29 · 49,01 USD |
+| Bài kiểm bất biến ví | "13 đạt" | không kiểm gì |
+
+1. **Một người đứng cả hai vai tác giả trên cùng một bài** (12 bài) làm chỉ
+   mục người viết nạp bài ấy hai lần. Đường tiền thật trả đúng một lần, nhưng
+   mọi chỗ cộng theo phạm vi thì thừa. Sửa ở gốc: người thứ hai phải khác
+   người thứ nhất, và thêm dây an toàn ở chỉ mục.
+2. **Bảng giải thích đọc `payout.carry`**, tên thật là `carryOut`. Dòng "dồn
+   sang kỳ sau" hiện rỗng suốt nhiều vòng vì không ai kiểm giá trị của nó.
+3. **Trang Chia sẻ gộp hai khái niệm vào một tên.** Con số cũ là phần trăm ×
+   doanh thu trọn đời, tính cho cả người chưa nhận lời mời và không có ví —
+   tức một ước tính, nhưng nhãn ghi "đã chia". Tách hẳn: `uocTinh` và
+   `daTra` (đọc từ các bảng chốt). Bảng còn lấy mẫu 1/13 bài rồi cắt 300
+   dòng theo doanh thu, nên giấu đúng những bài nhỏ có tiền thật: nay bài có
+   chia sẻ thật vào hết và xếp lên đầu.
+4. **Tạm ứng kẹp số dư về 0**, nên hạ gốc xuống dưới phần đã thu hồi làm
+   phần vượt bốc hơi. Chặn ở cửa ghi, và chặn luôn việc xoá khoản đã thu hồi.
+
+### 23b · Cổng người cộng tác
+
+Người cộng tác vào **cùng một cửa** với label và nghệ sĩ, không phải cửa thứ
+ba. Mô hình ba lớp nói một đăng nhập giữ nhiều bên thụ hưởng, nên người vừa
+là nghệ sĩ vừa là người cộng tác trên bài người khác không phải đăng nhập
+hai lần.
+
+Hai chỗ gom lại, và đó là điều kiện để thêm loại bên mà không sót:
+
+- `benTu(vai, mã)` — một hàm duy nhất đổi danh tính phiên thành khoá bên,
+  thay cho 19 chỗ tự ghép chuỗi rải khắp mặt tiền.
+- `QUYEN_API` — bảng khai mỗi phương thức của mặt tiền đối tác mở cho loại
+  bên nào, bọc y như `boQuyen()` bọc mặt tiền nội bộ. Mặc định ĐÓNG: thêm
+  phương thức mà quên khai là lõi ném lúc dựng, không phải chờ tới lúc chạy.
+  `TRANG_CHO_BEN` làm việc tương tự cho trang.
+
+Bốn trang: Tổng quan · Phần chia của tôi · Ví & rút tiền · Hỗ trợ. 31 mục
+thuộc danh mục của chủ bài bị chặn ở tầng mặt tiền; gõ thẳng `#hash` cũng
+không mở được trang không thuộc về mình.
+
+`api.phanChia` là góc nhìn ngược với trang Chia sẻ của chủ bài: bài nào, chủ
+bài là ai, phần trăm bao nhiêu, ngưỡng thu hồi còn bao nhiêu, và tiền đã ghi
+vào ví theo từng kỳ. Gói không mang một trường doanh thu nào của bài — bài
+kiểm quét mọi khoá để chắc điều đó.
+
+Rò suy luận có ý chấp nhận: người cộng tác biết phần trăm của mình và số
+tiền mình nhận, nên chia ra là suy được phần của chủ bài. Không tránh được
+mà vẫn giữ được tính giải trình; cổng không bày thêm gì nữa.
+
+Thêm một chỗ nữa mà khoá bên dạng chuỗi ghép đã làm vỡ: ba hàm dựng dữ liệu
+mẫu tra mảng bằng `+partyKey.slice(2)`, gặp `N:U0019` thì ra `NaN` và hệ
+không dựng nổi. Nay lọc qua vị từ `benCoDanhMuc()`.
+
+### 23c · Nghệ sĩ độc lập vẫn chia sẻ doanh thu
+
+Cách diễn đạt của vòng 22 ("nhận 100% phần sau phí") dễ đọc nhanh thành
+"Haustek không thu gì của indie". Chuỗi tiền vốn đã đúng — phí hợp đồng cắt
+trước, đo được ở kỳ 05/2026: gộp ghi nhận 395.104,37 USD, phí 59.267,67 USD,
+trả họ 335.836,70 USD — nhưng chữ thì phải sửa. Họ chia sẻ doanh thu như mọi
+đối tác; cái họ không có là lớp cắt THỨ HAI, vì không có label đứng giữa.
+
+Phần còn thiếu là chỗ NHÌN THẤY con số ấy. Trang Đối soát, tab Xem trước
+thanh toán, nay có thẻ "Phần Haustek giữ lại của kỳ này": gộp ghi nhận, phí
+kèm tỷ lệ, phần trả đối tác, số bên và số bài — tách riêng bài của label và
+nghệ sĩ độc lập. Cổng đối tác không đổi: vẫn chỉ hiện số sau phí của chính
+họ, và bài kiểm đòi gói của họ sạch mọi trường phí.
+
+### 23d · Hạ tầng bản chạy thật
+
+[`../HA-TANG.md`](../HA-TANG.md) — mười ba mục, là thứ đội lập trình code
+theo khi rời bản mẫu. Mười nguyên tắc nền xếp theo thứ tự ưu tiên; lược đồ
+Postgres với khoá, chỉ mục, phân vùng và ước lượng số dòng ở quy mô một triệu
+bài; chốt kỳ là giao dịch năm pha với idempotency nằm trong khoá chính; huỷ
+chốt ghi lô đảo chứ không xoá; bốn đẳng thức đối chiếu chặn cửa duyệt; RLS
+với bảng dịch từng phép kiểm của `api-guard.js` sang luật thật; ngân sách
+mili-giây cho từng đường nóng; chín chặng di trú mà cổng chấp nhận là khớp
+bảng tính kế toán tới từng xu, hai kỳ liên tiếp.
+
+Hai mục cuối đáng đọc nhất: **"Chỗ chỉ biết sau khi đọc dữ liệu thật"** (bốn
+con số quyết định kiến trúc mà hôm nay chỉ là ước lượng, kèm cách đo), và
+**"Đối chiếu với bản mẫu"** (bản mẫu làm đúng cái gì cứ thế dịch sang, làm
+sai cái gì thì bản thật phải khác — bảy dòng, mỗi dòng một lỗi đã đo được).
+
 ## Vòng 22: hạ tầng có tên, hội đồng qua mọi cửa, tiền ba lớp, song ngữ trọn hai chiều
 
 Vòng này đi theo sáu ý của người dùng, gộp thành bốn bậc. Kiến trúc tổng thể

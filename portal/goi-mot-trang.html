@@ -2672,7 +2672,10 @@ const rates = {
   /* bảng thô cho trang Tỷ lệ (bản sao, không phải tham chiếu vào state) */
   raw() { return state.rates.map(r => Object.assign({}, r, { noteEn: r.noteEn || ghiChuEn(r.note), byEn: r.by === "khởi tạo" ? "seed" : r.by })); },
   rateFor(partyKey, periodKey) {
-    /* Nghệ sĩ độc lập: 100% phần sau phí, không có bảng. Chỉ label có tỷ
+    /* Nghệ sĩ độc lập VẪN chia sẻ doanh thu với Haustek: phí hợp đồng
+       (feeOf) đã cắt trước bước này. Cái họ không có là lớp cắt THỨ HAI —
+       bảng tỷ lệ chỉ tồn tại để chia giữa label và nghệ sĩ của label, mà
+       độc lập thì không có label đứng giữa. Chỉ label có tỷ
        lệ (phần nghệ sĩ trong label được hưởng). */
     if (partyKey[0] === "A") return 1;
     const ck = partyKey + "|" + periodKey;
@@ -2686,7 +2689,7 @@ const rates = {
     return v;
   },
   add(partyKey, rate, fromPeriodKey, by, note) {
-    if (String(partyKey)[0] === "A") throw new Error("Nghệ sĩ độc lập nhận 100% sau phí Haustek; tỷ lệ chia chỉ đặt cho label");
+    if (String(partyKey)[0] === "A") throw new Error("Nghệ sĩ độc lập nhận toàn bộ phần sau phí Haustek; tỷ lệ chia chỉ đặt cho label");
     if (!(rate > 0 && rate < 1)) throw new Error("Tỷ lệ phải nằm giữa 0 và 1");
     if (state.approved[fromPeriodKey]) throw new Error("Kỳ " + fromPeriodKey + " đã xét duyệt, không đặt được tỷ lệ mới cho kỳ đã chốt sổ");
     state.rates = state.rates.filter(r => !(r.partyKey === partyKey && r.from === fromPeriodKey));
@@ -3891,6 +3894,44 @@ function advanceBalance(partyKey) {
   if (!a) return 0;
   const used = Object.values(a.byPeriod || {}).reduce((s, v) => s + v, 0);
   return cents(Math.max(a.opening - used, 0));
+}
+/* PHÍ HAUSTEK CỦA MỘT KỲ, TÁCH THEO LOẠI CHỦ BÀI.
+   Đối tác chỉ thấy số NET của mình, đúng như thoả thuận — cổng của họ không
+   có chỗ nào hiện phí. Nhưng nội bộ thì đối soát phải nói ra: kỳ này Haustek
+   thu bao nhiêu, thu của ai. Đặc biệt là NGHỆ SĨ ĐỘC LẬP: họ vẫn chia sẻ
+   doanh thu với Haustek như mọi đối tác khác, chỉ khác là phần sau phí về
+   hết cho họ, không có lớp cắt thứ hai như nghệ sĩ thuộc label. Không tách
+   ra ở đây thì rất dễ đọc nhầm thành "Haustek không thu gì của indie". */
+function phiTheoLoaiChu(pIdx) {
+  const pk = PERIODS[pIdx].k;
+  const nhom = {
+    label:  { loai: "label",  ten: "Bài của label",           tenEn: "Label-owned tracks" },
+    indie:  { loai: "indie",  ten: "Nghệ sĩ độc lập",          tenEn: "Independent artists" }
+  };
+  Object.keys(nhom).forEach(k => { nhom[k].gopGhiNhan = 0; nhom[k].phi = 0; nhom[k].traDoiTac = 0; nhom[k].bai = 0; nhom[k].ben = new Set(); });
+  for (let i = 0; i < N; i++) {
+    const g = grossRec(i, pIdx);
+    if (g <= 0) continue;
+    const s = splitRec(i, g, pk, pIdx);
+    const k = tLabel[i] >= 0 ? "label" : "indie";
+    const n = nhom[k];
+    n.gopGhiNhan = cents(n.gopGhiNhan + s.ghiNhan);
+    n.phi = cents(n.phi + s.fee);
+    n.traDoiTac = cents(n.traDoiTac + s.labelCut + s.artist);
+    n.bai++;
+    n.ben.add(tLabel[i] >= 0 ? "L:" + tLabel[i] : "A:" + tArtist[i]);
+  }
+  const ds = Object.keys(nhom).map(k => {
+    const n = nhom[k];
+    return { loai: n.loai, ten: n.ten, tenEn: n.tenEn, gopGhiNhan: n.gopGhiNhan, phi: n.phi,
+      traDoiTac: n.traDoiTac, bai: n.bai, soBen: n.ben.size,
+      phiPct: n.gopGhiNhan > 0 ? Math.round(n.phi / n.gopGhiNhan * 1000) / 10 : 0 };
+  });
+  const tong = ds.reduce((o, x) => ({ gopGhiNhan: cents(o.gopGhiNhan + x.gopGhiNhan), phi: cents(o.phi + x.phi), traDoiTac: cents(o.traDoiTac + x.traDoiTac) }),
+    { gopGhiNhan: 0, phi: 0, traDoiTac: 0 });
+  return { periodKey: pk, rows: ds, tong: Object.assign(tong, { phiPct: tong.gopGhiNhan > 0 ? Math.round(tong.phi / tong.gopGhiNhan * 1000) / 10 : 0 }),
+    note: "Phí hợp đồng Haustek thu trên gộp ghi nhận của kỳ, tách theo loại chủ bài. Nghệ sĩ độc lập vẫn chia sẻ doanh thu như mọi đối tác; phần sau phí về hết cho họ vì không có label đứng giữa. Cổng đối tác chỉ hiện số sau phí của chính họ.",
+    noteEn: "Haustek's contract fee on the period's recognised gross, split by who owns the track. Independent artists share revenue like every other partner; what remains after the fee goes entirely to them because there is no label in between. The partner portal shows only their own net figure." };
 }
 function earnedByParty(pIdx) {
   const out = new Map();
@@ -6714,7 +6755,7 @@ const LOI_EN = {
   "Mức trả đối tác phải là số dương dưới 100 USD / 1.000 lượt": "The partner rate must be positive and under USD 100 per 1,000 streams",
   "Nghệ sĩ này không thuộc label": "This artist is not on the label",
   "Nghệ sĩ này không thuộc label của bạn": "This artist is not on your label",
-  "Nghệ sĩ độc lập nhận 100% sau phí Haustek; tỷ lệ chia chỉ đặt cho label": "Independent artists keep 100% after the Haustek fee; rates are set for labels only",
+  "Nghệ sĩ độc lập nhận toàn bộ phần sau phí Haustek; tỷ lệ chia chỉ đặt cho label": "Independent artists keep everything after the Haustek fee; rates are set for labels only",
   "Ngày bắt đầu / kết thúc phải theo yyyy-mm-dd": "Start / end dates must be yyyy-mm-dd",
   "Ngày hết hạn phải sau ngày ký": "The end date must be after the signing date",
   "Ngày hợp đồng phải theo yyyy-mm-dd": "Contract dates must be yyyy-mm-dd",
@@ -8465,7 +8506,7 @@ const admin = {
   titleOf: i => tTitle[i], isrcOf: i => tIsrc[i], typeOf: i => TYPES[tType[i]],
   artistOf: i => ARTISTS[tArtist[i]], labelOf: i => (tLabel[i] >= 0 ? LABELS[tLabel[i]] : null),
   streamsOf: (i, p) => recStreams[i * P + p],
-  grossRec, grossPub, grossRecByFeed, grossOf, splitRec, splitDim, mineOf, agg, scopeOf,
+  grossRec, grossPub, grossRecByFeed, grossOf, splitRec, splitDim, mineOf, agg, scopeOf, phiTheoLoaiChu,
   /* nền tảng, quy trình phát hành, cây label */
   platformNames: PLAT_NAMES, platformNamesEn: PLAT_NAMES_EN, platformSpm: PLAT_SPM,
   splitStores, splitStreams, trackMatrix,
@@ -18687,6 +18728,9 @@ HT.dangKy({
       tgKhoa: 'Đã chốt', tgChua: 'Chưa chốt',
       xemTruoc: 'Bảng thanh toán nếu xét duyệt kỳ ngay bây giờ',
       seChi: 'Sẽ thanh toán', donSang: 'Chuyển sang kỳ sau', thuTamUng: 'Thu hồi tạm ứng',
+      phiH1: 'Phần Haustek giữ lại của kỳ này',
+      phiMo: 'Phí hợp đồng thu trên gộp ghi nhận, tách theo loại chủ bài. Nghệ sĩ độc lập vẫn chia sẻ doanh thu như mọi đối tác; khác biệt duy nhất là phần sau phí về hết cho họ vì không có label đứng giữa. Cổng đối tác chỉ hiện số sau phí của chính họ, không hiện dòng này.',
+      pcLoai: 'Chủ bài', pcGop: 'Gộp ghi nhận', pcPhi: 'Phí Haustek', pcTra: 'Trả đối tác', pcBen: 'Số bên', pcBai: 'Số bài', pcTong: 'Tổng kỳ',
       benNhan: 'bên thụ hưởng', boQua: 'Xét duyệt kèm ghi nhận ngoại lệ',
       canhBoQua: 'Ngoại lệ ghi vĩnh viễn vào hồ sơ xét duyệt kèm tên người duyệt. Chỉ dùng khi chắc lý do.',
       lyDo: 'Lý do', nguoiDuyet: 'Người xét duyệt'
@@ -18704,6 +18748,9 @@ HT.dangKy({
       tgKhoa: 'Locked', tgChua: 'Not locked',
       xemTruoc: 'Payout table if approved now',
       seChi: 'Payable', donSang: 'Carried to next period', thuTamUng: 'Recouped against advances',
+      phiH1: 'What Haustek retains this period',
+      phiMo: 'The contract fee charged on recognised gross, split by who owns the track. Independent artists share revenue like every other partner; the only difference is that everything after the fee goes to them, because there is no label in between. The partner portal shows only their own post-fee figure and never this breakdown.',
+      pcLoai: 'Track owner', pcGop: 'Recognised gross', pcPhi: 'Haustek fee', pcTra: 'To partners', pcBen: 'Parties', pcBai: 'Tracks', pcTong: 'Period total',
       benNhan: 'payees', boQua: 'Approve, overriding unmet conditions',
       canhBoQua: 'The override is written permanently to the approval record with your name. Only when you are sure.',
       lyDo: 'Reason', nguoiDuyet: 'Approved by'
@@ -19020,6 +19067,44 @@ function veXem(c) {
     chan: c.lang === 'vi'
       ? 'Tổng được hưởng của kỳ là ' + HM.esc(c.tien2(tong.earned)) + ', bằng đúng “phần nghệ sĩ được hưởng” cộng “phần label được hưởng” ở trang tổng quan.'
       : 'Total earned this period is ' + HM.esc(c.tien2(tong.earned)) + ' — exactly artists plus labels from the overview.'
+  }) + vePhi(c);
+}
+
+/* Phần Haustek giữ lại, tách theo loại chủ bài. Đối tác không bao giờ thấy
+   bảng này; nội bộ thì phải thấy, vì nó là chỗ duy nhất trả lời "kỳ này
+   Haustek thu của ai bao nhiêu" — kể cả của nghệ sĩ độc lập. */
+function vePhi(c) {
+  var A = c.A, t = c.t;
+  var d = HM.nho(A, 'philoai:' + c.ky.idx, function () { return A.phiTheoLoaiChu(c.ky.idx); });
+  var P = HB.dayMau();
+  return HM.the({
+    h2: HM.esc(t('phiH1')), p: HM.esc(t('phiMo')), thoBody: true,
+    than: '<div class="tw"><table class="t"><thead><tr>' +
+      '<th>' + HM.esc(t('pcLoai')) + '</th>' +
+      '<th class="num">' + HM.esc(t('pcGop')) + '</th>' +
+      '<th class="num">' + HM.esc(t('pcPhi')) + '</th>' +
+      '<th class="num">' + HM.esc(t('pcTra')) + '</th>' +
+      '<th class="num">' + HM.esc(t('pcBen')) + '</th>' +
+      '<th class="num">' + HM.esc(t('pcBai')) + '</th></tr></thead><tbody>' +
+      d.rows.map(function (r) {
+        return '<tr><td><b>' + HM.esc(c.song(r, 'ten')) + '</b></td>' +
+          '<td class="num">' + HM.esc(c.tien2(r.gopGhiNhan)) + '</td>' +
+          '<td class="num band"><b>' + HM.esc(c.tien2(r.phi)) + '</b>' +
+            '<div class="muted" style="font-size:11px">' + HM.esc(HT.fmt.n(r.phiPct) + '%') + '</div></td>' +
+          '<td class="num">' + HM.esc(c.tien2(r.traDoiTac)) + '</td>' +
+          '<td class="num">' + HM.esc(HT.fmt.n(r.soBen)) + '</td>' +
+          '<td class="num">' + HM.esc(HT.fmt.n(r.bai)) + '</td></tr>';
+      }).join('') +
+      '<tr class="tong"><td><b>' + HM.esc(t('pcTong')) + '</b></td>' +
+      '<td class="num"><b>' + HM.esc(c.tien2(d.tong.gopGhiNhan)) + '</b></td>' +
+      '<td class="num band"><b>' + HM.esc(c.tien2(d.tong.phi)) + '</b>' +
+        '<div class="muted" style="font-size:11px">' + HM.esc(HT.fmt.n(d.tong.phiPct) + '%') + '</div></td>' +
+      '<td class="num"><b>' + HM.esc(c.tien2(d.tong.traDoiTac)) + '</b></td>' +
+      '<td class="num">—</td><td class="num">—</td></tr>' +
+      '</tbody></table></div>' +
+      '<div style="padding:12px 14px 2px">' + HB.chia(d.rows.map(function (r, i) {
+        return { ten: c.song(r, 'ten') + ' · ' + (c.lang === 'vi' ? 'phí' : 'fee'), gt: r.phi, mau: P[i] };
+      })) + '</div>'
   });
 }
 

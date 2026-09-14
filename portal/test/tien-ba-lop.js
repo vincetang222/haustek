@@ -2,7 +2,9 @@
    TIỀN · BA LỚP NGƯỜI DÙNG ↔ BÊN THỤ HƯỞNG ↔ VAI TRÊN BÀI (vòng 22)
    ---------------------------------------------------------------------
    Bốn quyết định đã chốt, mỗi quyết định một nhóm phép kiểm:
-     D1 Nghệ sĩ độc lập nhận 100% sau phí — không có "Haustek giữ thêm".
+     D1 Nghệ sĩ độc lập VẪN chia sẻ doanh thu với Haustek theo phí hợp đồng;
+        phần sau phí về hết cho họ vì không có label đứng giữa — không có
+        lớp cắt thứ hai, không có "Haustek giữ thêm".
      D2 Nghệ sĩ thuộc label: theo hợp đồng từng label (labelTuTra).
      D3 Tách ba lớp: một đăng nhập nhiều bên; người cộng tác đã nhận lời
         mời được trả THẬT, trừ vào phần của chủ; ai chưa có tài khoản thì
@@ -36,7 +38,7 @@ check("D1 · Không nghệ sĩ độc lập nào có dòng tỷ lệ; rateFor(A:
   must(!raw.some(r => r.partyKey[0] === "A"), "vẫn còn dòng tỷ lệ A:");
   const indie = A.artists.find(a => a.labelId < 0);
   must(A.rates.rateFor(indie.key, CUOI.k) === 1, "rateFor A: không phải 1");
-  mustThrow(() => A.rates.add(indie.key, 0.9, MO[0].k, "x"), /100%/, "đặt tỷ lệ cho nghệ sĩ độc lập");
+  mustThrow(() => A.rates.add(indie.key, 0.9, MO[0].k, "x"), /chỉ đặt cho label/, "đặt tỷ lệ cho nghệ sĩ độc lập");
   return raw.length + " dòng tỷ lệ, toàn label";
 });
 check("D1 · Mọi bài của nghệ sĩ độc lập: phần label = 0, nghệ sĩ nhận trọn net = ghi nhận − phí", () => {

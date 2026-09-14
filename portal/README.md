@@ -18,6 +18,10 @@ Bản v1 (`intranet.html`, `dashboard.html`, `screens/`) đã gỡ ở vòng 22;
 - **`KIEN-TRUC.md`** — kiến trúc: lược đồ state, ranh giới lõi ↔ trang ↔ cổng, hệ mã định danh,
   di trú lược đồ, mô hình người dùng ↔ bên thụ hưởng ↔ vai trên bài, chuỗi tiền, quyền và AAA,
   các quyết định đã chốt. Sửa lõi thì đọc file này trước.
+- **`HA-TANG.md`** — hạ tầng bản CHẠY THẬT: lược đồ Postgres với khoá và chỉ mục, chốt kỳ là
+  giao dịch gì, huỷ chốt ghi gì, đồng thời và idempotency, RLS và bảng dịch từ `test/api-guard.js`
+  sang luật thật, ngân sách mili-giây cho từng đường nóng, chín chặng di trú. Rời bản mẫu thì
+  code theo file này.
 - **`v2/README.md`** — từng vòng đã làm gì, từng trang trả lời câu hỏi gì, và những chỗ bản mẫu
   cố tình không chứng minh.
 - **`v2/VAN-PHONG.md`** — chuẩn thuật ngữ và giọng tiếng Việt cho mọi chữ trên cổng
