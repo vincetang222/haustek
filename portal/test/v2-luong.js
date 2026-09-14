@@ -16,6 +16,19 @@ const B = 'http://127.0.0.1:8099/v2/';
   p.on('console', m => { const t = m.text(); if (m.type() === 'error' && !t.includes('Failed to load resource')) errs.push('CONSOLE ' + t); });
   let hong = 0;
   const kiem = (ten, ok, chiTiet) => { console.log((ok ? '  ok   ' : '  HỎNG ') + ten + (chiTiet ? ' · ' + chiTiet : '')); if (!ok) hong++; };
+  /* Vòng 22: giám đốc xét duyệt, không gõ số mình duyệt — kế toán ghi nhận
+     chênh lệch, giám đốc chốt tỷ giá kỳ và duyệt. Đổi người rồi mở lại
+     trang để khung vẽ lại theo quyền mới. */
+  const doiVai = async (vai, man) => {
+    await p.evaluate(v => {
+      const A = HAUSTEK.admin, ai = A.staff.list().find(x => x.role === v && x.active !== false);
+      if (ai) A.staff.setMe(ai.id);
+    }, vai);
+    await p.evaluate(() => { location.hash = '#__khong_co__'; });
+    await p.waitForTimeout(150);
+    await p.evaluate(m => { location.hash = '#' + m; }, man);
+    await p.waitForTimeout(700);
+  };
 
   await p.goto(B + 'intranet.html', { waitUntil: 'networkidle' });
   await p.evaluate(() => localStorage.removeItem('haustek.portal.v1'));
@@ -47,10 +60,13 @@ const B = 'http://127.0.0.1:8099/v2/';
     hongDk.length === 2 && hongDk.some(x => /Đối (chiếu|soát)/.test(x.ten)) && hongDk.some(x => /tỷ giá/.test(x.ten)),
     hongDk.map(x => x.ten).join(' | '));
 
-  /* ---- 2. ghi nhận chênh lệch qua hộp thoại ---- */
+  /* ---- 2. kế toán ghi nhận chênh lệch qua hộp thoại ---- */
+  const nutGhiGD = await p.$('[data-ghinhan]');
+  kiem('giám đốc không có nút ghi nhận chênh lệch (không gõ số mình duyệt)', !nutGhiGD);
+  await doiVai('accounting', 'doi-chieu');
   await p.click('main [data-tab="doi"]'); await p.waitForTimeout(400);
   const nutGhi = await p.$('[data-ghinhan]');
-  kiem('có nút ghi nhận chênh lệch', !!nutGhi);
+  kiem('kế toán có nút ghi nhận chênh lệch', !!nutGhi);
   if (nutGhi) {
     await nutGhi.click(); await p.waitForTimeout(350);
     /* bấm xác nhận khi chưa điền lý do → phải bị chặn */
@@ -67,7 +83,8 @@ const B = 'http://127.0.0.1:8099/v2/';
     kiem('ghi nhận chênh lệch có lý do thì được', daGhi === 1);
   }
 
-  /* ---- 3. chốt tỷ giá ---- */
+  /* ---- 3. giám đốc chốt tỷ giá kỳ ---- */
+  await doiVai('mgmt', 'doi-chieu');
   await p.click('main [data-tab="tg"]'); await p.waitForTimeout(400);
   await p.click('[data-chottg]'); await p.waitForTimeout(350);
   await p.fill('.modal [data-o=rate]', '26200');
