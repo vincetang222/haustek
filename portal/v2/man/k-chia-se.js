@@ -27,7 +27,7 @@ HT.dangKy({
     vi: {
       navChiaSe: 'Chia sẻ tác quyền', h1: 'Chia sẻ tác quyền',
       mo: 'Chia phần trăm tiền của một bài cho producer, nghệ sĩ khách, đồng sáng tác, kỹ sư. Họ chỉ thấy phần của họ; có ngưỡng thu hồi thì bạn nhận trước.',
-      kBai: 'Bài có chia sẻ', kNg: 'Người cộng tác', kMoi: 'Lời mời chưa nhận', kMoiS: 'chưa được chia tiền cho tới khi nhận', kDaChia: 'Đã chia cho người cộng tác', kDaChiaS: 'tích luỹ các kỳ đã xét duyệt', kThuHoi: 'Đang thu hồi', kThuHoiS: 'bạn nhận trước cho tới khi đủ',
+      kBai: 'Bài có chia sẻ', kNg: 'Người cộng tác', kMoi: 'Lời mời chưa nhận', kMoiS: 'chưa được chia tiền cho tới khi nhận', kDaChia: 'Đã trả người cộng tác', kUoc: 'Ước tính trọn đời', kUocS: 'phần trăm × doanh thu, chưa phải tiền đã trả', kDaChiaS: 'tiền thật, các kỳ đã xét duyệt', kThuHoi: 'Đang thu hồi', kThuHoiS: 'bạn nhận trước cho tới khi đủ',
       locAll: 'Tất cả', locMoi: 'Có lời mời chưa nhận', locThuHoi: 'Đang thu hồi', tim: 'Tìm bài hát, ISRC, email…',
       themMoi: 'Thêm chia sẻ cho bài khác', them: 'Thêm người', bo: 'Bỏ',
       khong: 'Không có bài nào khớp', khongMo: 'Đổi bộ lọc hoặc thêm chia sẻ cho một bài.', trong: 'Chưa có bài nào được chia sẻ', trongMo: 'Bấm “Thêm chia sẻ cho bài khác”, nhập ISRC và người cộng tác.',
@@ -41,7 +41,7 @@ HT.dangKy({
     en: {
       navChiaSe: 'Royalty splits', h1: 'Royalty splits',
       mo: 'Share a track’s earnings with a producer, featured artist, co-writer or engineer. They see only their share; with recoupment you are paid first.',
-      kBai: 'Tracks with splits', kNg: 'Collaborators', kMoi: 'Pending invitations', kMoiS: 'not paid until accepted', kDaChia: 'Paid to collaborators', kDaChiaS: 'across approved periods', kThuHoi: 'Recouping', kThuHoiS: 'you are paid first until met',
+      kBai: 'Tracks with splits', kNg: 'Collaborators', kMoi: 'Pending invitations', kMoiS: 'not paid until accepted', kDaChia: 'Paid to collaborators', kUoc: 'Lifetime estimate', kUocS: 'percentage × revenue, not money paid', kDaChiaS: 'real money, approved periods', kThuHoi: 'Recouping', kThuHoiS: 'you are paid first until met',
       locAll: 'All', locMoi: 'Pending invitations', locThuHoi: 'Recouping', tim: 'Search track, ISRC, email…',
       themMoi: 'Add a split on another track', them: 'Add person', bo: 'Remove',
       khong: 'No tracks match', khongMo: 'Change the filter or add a split on a track.', trong: 'No splits yet', trongMo: 'Click “Add a split on another track”, enter the ISRC and the collaborator.',
@@ -70,7 +70,8 @@ HT.dangKy({
       { l: t('kBai'), v: HT.fmt.n(k.tracks), lon: true },
       { l: t('kNg'), v: HT.fmt.n(k.collaborators) },
       { l: t('kMoi'), v: HT.fmt.n(k.invited), s: t('kMoiS'), mau: k.invited ? HB.mau('warn') : '' },
-      { l: t('kDaChia'), v: HT.fmt.usd(k.paid), s: t('kDaChiaS') },
+      { l: t('kDaChia'), v: HT.fmt.usd(k.daTra), s: t('kDaChiaS') },
+      { l: t('kUoc'), v: HT.fmt.usd(k.uocTinh), s: t('kUocS') },
       { l: t('kThuHoi'), v: HT.fmt.n(k.recouping), s: t('kThuHoiS') }
     ]);
     html += '<div class="bar">' +

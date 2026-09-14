@@ -687,7 +687,16 @@ check("Splits của label chỉ chứa bài của label và tổng phần chia k
     must(r.partyKey === L1.key, "bài " + r.trackId + " không thuộc label " + L1.key);
     const tong = r.collaborators.reduce((s, c) => s + c.pct, 0);
     must(r.ownerPct + tong === 100, "tổng phần chia ≠ 100 ở bài " + r.trackId);
-    r.collaborators.forEach(c => must(c.payable <= c.earned + 0.005, "chi trả vượt phần được hưởng"));
+    /* Vòng 23: "payable" tách thành hai trường khác hẳn nhau — uocTinh là
+       ước tính trọn đời, daTra là tiền THẬT đã ghi vào ví ở các kỳ đã duyệt.
+       Gộp hai thứ này làm một là chỗ trang Chia sẻ từng báo 38.132 USD trong
+       khi tiền thật đổi chủ là 44 USD. */
+    r.collaborators.forEach(c => {
+      must(c.uocTinh <= c.earned + 0.005, "ước tính vượt phần được hưởng");
+      must(c.daTra >= 0, "đã trả âm ở bài " + r.trackId);
+      must(!(c.daTra > 0.004) || c.hieuLuc, "có tiền đã trả mà chia sẻ chưa có hiệu lực");
+      must(!("payable" in c), "trường payable cũ vẫn còn — hai khái niệm lại bị gộp");
+    });
   });
   return d.rows.length + " bài · " + d.counts.collaborators + " người cộng tác";
 });

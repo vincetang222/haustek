@@ -284,7 +284,15 @@ for (let i = 0; i < N; i++) {
   let w = ARTISTS[a].writer ? a : ((rnd() * CFG.N_ARTISTS) | 0);
   let guard = 0; while (!ARTISTS[w].writer && guard++ < 12) w = (rnd() * CFG.N_ARTISTS) | 0;
   tW1[i] = w;
-  if (rnd() < 0.3) { tW2[i] = (rnd() * CFG.N_ARTISTS) | 0; tW1s[i] = [0.5, 0.6, 0.65][(rnd() * 3) | 0]; }
+  if (rnd() < 0.3) {
+    /* Người thứ hai phải KHÁC người thứ nhất. Trùng là bài có "hai tác giả"
+       cùng một người: chỉ mục byWriter nạp bài ấy hai lần, nên mọi chỗ cộng
+       theo phạm vi (agg, danh mục, cổng đối tác) đếm tiền tác quyền hai lần
+       trong khi earnedByParty — đường tiền thật — chỉ trả một lần. */
+    let w2 = (rnd() * CFG.N_ARTISTS) | 0;
+    if (w2 === w) w2 = (w2 + 1) % CFG.N_ARTISTS;
+    tW2[i] = w2; tW1s[i] = [0.5, 0.6, 0.65][(rnd() * 3) | 0];
+  }
   else { tW2[i] = -1; tW1s[i] = 1; }
 }
 
@@ -339,11 +347,11 @@ const byArtist = buildIndex(i => tArtist[i], CFG.N_ARTISTS);
 const byLabel  = buildIndex(i => tLabel[i],  CFG.N_LABELS);
 const byWriter = (() => {
   const cnt = new Int32Array(CFG.N_ARTISTS);
-  for (let i = 0; i < N; i++) { cnt[tW1[i]]++; if (tW2[i] >= 0) cnt[tW2[i]]++; }
+  for (let i = 0; i < N; i++) { cnt[tW1[i]]++; if (tW2[i] >= 0 && tW2[i] !== tW1[i]) cnt[tW2[i]]++; }
   const off = new Int32Array(CFG.N_ARTISTS + 1);
   for (let i = 0; i < CFG.N_ARTISTS; i++) off[i + 1] = off[i] + cnt[i];
   const arr = new Int32Array(off[CFG.N_ARTISTS]); const cur = off.slice(0, CFG.N_ARTISTS);
-  for (let i = 0; i < N; i++) { arr[cur[tW1[i]]++] = i; if (tW2[i] >= 0) arr[cur[tW2[i]]++] = i; }
+  for (let i = 0; i < N; i++) { arr[cur[tW1[i]]++] = i; if (tW2[i] >= 0 && tW2[i] !== tW1[i]) arr[cur[tW2[i]]++] = i; }
   return { off, arr };
 })();
 const idxOf = (ix, k) => (k >= 0 && k + 1 < ix.off.length ? ix.arr.subarray(ix.off[k], ix.off[k + 1]) : new Int32Array(0));
@@ -1411,7 +1419,10 @@ function nguoiVietCua(i) {
     }
   }
   const out = [{ artistId: tW1[i], share: tW1s[i] }];
-  if (tW2[i] >= 0) out.push({ artistId: tW2[i], share: 1 - tW1s[i] });
+  /* Cùng một người đứng cả hai vai trò thì là MỘT dòng 100%, không phải hai
+     dòng cộng lại — hai dòng làm mọi chỗ đếm theo người bị lặp. */
+  if (tW2[i] >= 0 && tW2[i] !== tW1[i]) out.push({ artistId: tW2[i], share: 1 - tW1s[i] });
+  else if (tW2[i] === tW1[i]) out[0].share = 1;
   return out;
 }
 function writerShare(i, artistId) { let s = 0; nguoiVietCua(i).forEach(x => { if (x.artistId === artistId) s += x.share; }); return s; }
@@ -2135,6 +2146,7 @@ function approve(pIdx, by, note, force) {
   state.approved[pk] = { at: nowISO(), by: by || "admin", note: note || "",
                          overrides: failed.map(c => c.id) };
   state.payouts[pk] = runPayout(pIdx, true);
+  xoaDemChiaSe();
   state.publishedAt = nowISO();
   audit.log("period.approve", "Xét duyệt kỳ " + PERIODS[pIdx].label + (failed.length ? " (ghi nhận ngoại lệ: " + failed.map(c => c.label).join(", ") + ")" : ""));
   store.save();
@@ -2168,6 +2180,7 @@ function revoke(pIdx, why) {
     duyetLuc: state.approved[pk].at, duyetBoi: state.approved[pk].by,
     dong: dong.map(r => ({ partyKey: r.partyKey, earned: r.earned, recoup: r.recoup, payable: r.payable, carryIn: r.carryIn, carryOut: r.carryOut, chiaSeRa: r.chiaSeRa || 0, chiaSeVao: r.chiaSeVao || 0 })) });
   delete state.payouts[pk]; delete state.approved[pk];
+  xoaDemChiaSe();
   state.publishedAt = nowISO();
   audit.log("period.revoke", "Huỷ xét duyệt kỳ " + PERIODS[pIdx].label + (why ? " · " + why : ""));
   store.save();
@@ -3192,6 +3205,25 @@ function baseSplits(i) {
   }
   return out;
 }
+/* Tiền chia sẻ ĐÃ THẬT SỰ ĐỔI CHỦ: đọc từ các bảng chi trả đã duyệt, khoá
+   theo (bài, bên nhận). Đây là con số kế toán; mọi thứ tính từ phần trăm ×
+   doanh thu trọn đời chỉ là ƯỚC TÍNH và không được gọi là "đã trả". */
+let _csTra = null;
+function daTraChiaSe() {
+  if (_csTra) return _csTra;
+  const m = new Map();
+  PERIODS.forEach(p => {
+    if (!state.approved[p.k]) return;
+    (state.payouts[p.k] || []).forEach(r => {
+      (r.chiaSe || []).forEach(x => {
+        const k = x.i + "|" + r.partyKey;
+        m.set(k, cents((m.get(k) || 0) + x.amt));
+      });
+    });
+  });
+  _csTra = m; return m;
+}
+function xoaDemChiaSe() { _csTra = null; }
 function splitsOf(i, role, partyId) {
   const st = lazyState("splits", {});
   /* Mỗi chia sẻ cắt vào phần của ĐÚNG người đặt nó (goc): label thấy chia
@@ -3204,8 +3236,18 @@ function splitsOf(i, role, partyId) {
     sum += c.pct;
     const earnedRaw = cents(mine * c.pct / 100);
     const recouped = c.recoup ? Math.min(c.recoup, earnedRaw) : 0;
-    return Object.assign({}, c, { goc: gocChiaSe(c, i), earned: earnedRaw, recouped, payable: cents(c.status === "accepted" ? earnedRaw - recouped : 0), recouping: !!c.recoup && recouped < c.recoup,
-      haustekTra: c.status === "accepted" && !!c.nhan, nhanClientId: c.nhan ? partyClientId(c.nhan) : null });
+    /* HAI con số khác hẳn nhau, trước đây gộp làm một tên "payable":
+         uocTinh — phần trăm × số bạn đã nhận trọn đời trên bài. Ước tính.
+         daTra   — tiền đã thật sự ghi vào ví người ấy ở các kỳ đã duyệt.
+       Tiền chỉ đổi chủ khi chia sẻ đã NHẬN và có BÊN NHẬN (hieuLuc). Người
+       mới được mời, hay đã nhận nhưng chưa gắn bên, thì daTra = 0 dù ước
+       tính có lớn tới đâu. */
+    const hieuLuc = c.status === "accepted" && !!c.nhan;
+    return Object.assign({}, c, { goc: gocChiaSe(c, i), earned: earnedRaw, recouped,
+      uocTinh: cents(c.status === "accepted" ? earnedRaw - recouped : 0),
+      daTra: hieuLuc ? (daTraChiaSe().get(i + "|" + c.nhan) || 0) : 0,
+      hieuLuc, recouping: !!c.recoup && recouped < c.recoup,
+      haustekTra: hieuLuc, nhanClientId: c.nhan ? partyClientId(c.nhan) : null });
   });
   return { trackId: i, partyKey: partyKeyOfTrack(i), title: tTitle[i], isrc: tIsrc[i], artist: ARTISTS[tArtist[i]].name, ownerPct: Math.max(0, 100 - sum), collaborators, hasSplits: collaborators.length > 0, lifetimeMine: mine };
 }
@@ -3213,19 +3255,32 @@ function splitsReport(role, partyId) { return nhoDoc("splits", role + "|" + part
 function splitsReportTinh(role, partyId) {
   const sc = scopeOf(role, partyId, "rec"), n = sc ? sc.length : N;
   const step = n > 4000 ? Math.ceil(n / 4000) : 1;
-  const rows = []; const emails = new Set(); let invited = 0, paid = 0, recouping = 0;
-  for (let k = 0; k < n; k += step) {
-    const i = sc ? sc[k] : k;
+  const rows = []; const emails = new Set(); let invited = 0, daTra = 0, uocTinh = 0, hieuLuc = 0, recouping = 0;
+  /* Lấy mẫu 1/13 bài là chuyện được phép với phần ƯỚC TÍNH, nhưng những bài
+     có chia sẻ THẬT (ai đó đã đặt, đã nhận, đang được trả tiền) thì lấy mẫu
+     là giấu mất đúng chỗ có tiền: trước khi sửa, bảng này báo 38.132 USD ước
+     tính mà không hiện nổi một dòng nào trong 44 USD đã trả thật. Nên: mọi
+     bài trong state.splits vào hết, rồi mới lấy mẫu phần còn lại. */
+  const trongPham = i => !sc || inScope(role, partyId, "rec", i);
+  const daXet = new Set();
+  const gom = i => {
+    if (daXet.has(i)) return; daXet.add(i);
     const s = splitsOf(i, role, partyId);
-    if (!s.hasSplits) continue;
+    if (!s.hasSplits) return;
     rows.push(s);
-    s.collaborators.forEach(c => { emails.add(c.email); if (c.status === "invited") invited++; if (c.recouping) recouping++; paid += c.payable; });
-  }
-  rows.sort((a, b) => b.lifetimeMine - a.lifetimeMine);
-  return { asOf: isoDate(ASOF), counts: { tracks: rows.length, collaborators: emails.size, invited, paid: cents(paid), recouping }, rows: rows.slice(0, 300), truncated: rows.length > 300, sampled: step > 1,
+    s.collaborators.forEach(c => { emails.add(c.email); if (c.status === "invited") invited++; if (c.recouping) recouping++; if (c.hieuLuc) hieuLuc++; daTra += c.daTra; uocTinh += c.uocTinh; });
+  };
+  Object.keys(state.splits || {}).forEach(k => { const i = +k; if (i >= 0 && i < N && trongPham(i)) gom(i); });
+  for (let k = 0; k < n; k += step) gom(sc ? sc[k] : k);
+  /* Cắt còn 300 dòng sau khi xếp theo doanh thu trọn đời là cắt đúng những
+     bài CÓ TIỀN THẬT: chia sẻ có hiệu lực thường nằm trên bài nhỏ. Xếp bài
+     có tiền đã trả lên trước, rồi mới tới doanh thu. */
+  const tienCua = r => (r.collaborators || []).reduce((s, c) => s + (c.daTra || 0), 0);
+  rows.sort((a, b) => (tienCua(b) - tienCua(a)) || (b.lifetimeMine - a.lifetimeMine));
+  return { asOf: isoDate(ASOF), counts: { tracks: rows.length, collaborators: emails.size, invited, hieuLuc, daTra: cents(daTra), uocTinh: cents(uocTinh), recouping }, rows: rows.slice(0, 300), truncated: rows.length > 300, sampled: step > 1,
     roles: COLLAB_ROLES.map(r => ({ k: r.k, label: r.vi, labelEn: r.en })),
-    note: "Người cộng tác nhận phần trăm trên số tiền của bạn cho bài đó, không thấy con số của bạn — chỉ thấy phần của họ. Có ngưỡng thu hồi thì bạn nhận trước cho đến khi đủ, rồi mới chia.",
-    noteEn: "Collaborators receive a percentage of your earnings on that track and only see their own share. With a recoupment amount you are paid first until it is met, then the split applies." };
+    note: "Người cộng tác nhận phần trăm trên số tiền của bạn cho bài đó, không thấy con số của bạn — chỉ thấy phần của họ. Có ngưỡng thu hồi thì bạn nhận trước cho đến khi đủ, rồi mới chia. Tiền chỉ thật sự đổi chủ khi người ấy đã nhận lời mời và có bên nhận; trước đó con số chỉ là ước tính.",
+    noteEn: "Collaborators receive a percentage of your earnings on that track and only see their own share. With a recoupment amount you are paid first until it is met, then the split applies. Money only changes hands once the collaborator has accepted and has a payee account; before that the figure is an estimate." };
 }
 function setSplit(role, partyId, trackId, c, by) {
   const i = +trackId;
@@ -3518,7 +3573,7 @@ function explainPeriod(role, partyId, pk) {
       if (payout.chiaSeRa > 0) steps.push({ k: "chiaSe", label: "− Chia cho người cộng tác", labelEn: "− Shared with collaborators", value: cents(payout.chiaSeRa), kind: "tien" });
       if (payout.chiaSeVao > 0) steps.push({ k: "chiaSeVao", label: "+ Nhận từ chia sẻ tác quyền", labelEn: "+ Received from royalty splits", value: cents(payout.chiaSeVao), kind: "tien" });
       if (payout.recoup) steps.push({ k: "recoup", label: "− Thu hồi tạm ứng", labelEn: "− Advance recoupment", value: cents(payout.recoup), kind: "tien" });
-      if (payout.carryOut) steps.push({ k: "carry", label: "→ Dồn sang kỳ sau (dưới ngưỡng " + fmt.usd0(CFG.PAYOUT_MIN) + ")", labelEn: "→ Carried to next period (below " + fmt.usd0(CFG.PAYOUT_MIN) + ")", value: cents(payout.carry), kind: "tien" });
+      if (payout.carryOut) steps.push({ k: "carry", label: "→ Dồn sang kỳ sau (dưới ngưỡng " + fmt.usd0(CFG.PAYOUT_MIN) + ")", labelEn: "→ Carried to next period (below " + fmt.usd0(CFG.PAYOUT_MIN) + ")", value: cents(payout.carryOut), kind: "tien" });
       steps.push({ k: "credit", label: "= Ghi vào ví", labelEn: "= Credited to wallet", value: cents(payout.earned - payout.recoup), kind: "tien", tong: true });
     }
   }
@@ -4993,6 +5048,8 @@ const LOI_EN = {
 };
 /* mẫu cho thông báo có phần động: [regex, thay thế]; $1… giữ nguyên phần động */
 const LOI_MAU_EN = [
+  [/^Đã thu hồi (.+) cho khoản này; không hạ gốc xuống dưới số đã thu hồi$/, "$1 has already been recouped against this advance; the principal cannot go below the recouped amount"],
+  [/^Đã thu hồi (.+) cho khoản này ở các kỳ đã duyệt; xoá là mất dấu số ấy\. Huỷ chốt các kỳ đó trước\.$/, "$1 has already been recouped in approved periods; deleting it would lose that record. Revoke those periods first."],
   [/^Không có loại mã (.+)$/, "No id type $1"],
   [/^Mã ISRC không đúng định dạng: (.+)$/, "ISRC is not in the right format: $1"],
   [/^Tổng tỉ lệ sáng tác của track "(.+)" vượt 100%$/, 'Writer shares on track "$1" exceed 100%'],
@@ -6714,13 +6771,23 @@ const admin = {
     },
     set(partyKey, opening, note) {
       if (!(opening >= 0)) throw new Error("Số tiền tạm ứng không hợp lệ");
+      /* advanceBalance() kẹp số dư về 0, nên hạ gốc xuống dưới phần đã thu
+         hồi làm phần vượt BỐC HƠI: tiền đã giữ lại của đối tác ở các kỳ
+         trước không còn dấu vết ở đâu. Chặn ngay tại cửa ghi. */
+      const daThu = cents(Object.values((state.advances[partyKey] || {}).byPeriod || {}).reduce((s, v) => s + v, 0));
+      if (daThu > opening + 0.004)
+        throw new Error("Đã thu hồi " + fmt.usd(daThu) + " cho khoản này; không hạ gốc xuống dưới số đã thu hồi");
       state.advances[partyKey] = state.advances[partyKey] || { byPeriod: {} };
       state.advances[partyKey].opening = opening;
       state.advances[partyKey].note = note || state.advances[partyKey].note || "";
       audit.log("advance.set", partyName(partyKey) + " · " + fmt.usd0(opening));
       store.save();
     },
-    remove(partyKey) { delete state.advances[partyKey]; audit.log("advance.remove", partyName(partyKey)); store.save(); },
+    remove(partyKey) {
+      const daThu = cents(Object.values((state.advances[partyKey] || {}).byPeriod || {}).reduce((s, v) => s + v, 0));
+      if (daThu > 0.004) throw new Error("Đã thu hồi " + fmt.usd(daThu) + " cho khoản này ở các kỳ đã duyệt; xoá là mất dấu số ấy. Huỷ chốt các kỳ đó trước.");
+      delete state.advances[partyKey]; audit.log("advance.remove", partyName(partyKey)); store.save();
+    },
     total() { return cents(Object.keys(state.advances).reduce((s, k) => s + advanceBalance(k), 0)); }
   },
   accounts: {

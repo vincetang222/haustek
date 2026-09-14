@@ -21,7 +21,7 @@ HT.dangKy({
       themCs: 'Thêm chia sẻ', fBai: 'Bài hát', fBaiHint: 'Gõ tên bài hoặc ISRC rồi chọn trong gợi ý.', fTen: 'Người cộng tác', fEmail: 'Email', fVai: 'Vai trò', fPct: 'Phần trăm', fThuHoi: 'Khoản thu hồi (USD)', fThuHoiHint: 'Trừ dần vào phần của người này cho đến khi hết.', daThemCs: 'Đã mời {t} · {p}%', khongBai: 'Không tìm thấy bài hát',
       navChiaSe: 'Chia sẻ tác quyền', h1: 'Chia sẻ tác quyền',
       mo: 'Bài nào chia phần trăm cho ai, lời mời chưa nhận, khoản thu hồi còn dở. Phần đã nhận tách khỏi số trả cho chủ bản ghi.',
-      kBai: 'Bài có chia sẻ', kNg: 'Người cộng tác', kMoi: 'Lời mời chưa nhận', kMoiS: 'chưa được chia tiền', kDaChia: 'Đã chia cho người cộng tác', kDaChiaS: 'tích luỹ các kỳ đã xét duyệt', kThuHoi: 'Đang thu hồi',
+      kBai: 'Bài có chia sẻ', kNg: 'Người cộng tác', kMoi: 'Lời mời chưa nhận', kMoiS: 'chưa được chia tiền', kDaChia: 'Đã trả người cộng tác', kDaChiaS: 'tiền thật, các kỳ đã xét duyệt', kUoc: 'Ước tính trọn đời', kUocS: 'phần trăm × doanh thu, chưa phải tiền đã trả', kThuHoi: 'Đang thu hồi',
       locAll: 'Tất cả', locMoi: 'Có lời mời chưa nhận', locThuHoi: 'Đang thu hồi', tim: 'Tìm bài, ISRC, tài khoản, email…',
       xacNhanThay: 'Xác nhận thay', hoiXn: 'Xác nhận thay {e}?', hoiXnMo: 'Chỉ làm khi người cộng tác đã gửi xác nhận bằng văn bản; hành động được ghi nhật ký.', daXn: 'Đã xác nhận cho {e}',
       khong: 'Không có bài nào khớp', khongMo: 'Đổi bộ lọc phía trên.'
@@ -30,7 +30,7 @@ HT.dangKy({
       themCs: 'Add a split', fBai: 'Track', fBaiHint: 'Type a title or ISRC and pick a suggestion.', fTen: 'Collaborator', fEmail: 'Email', fVai: 'Role', fPct: 'Share %', fThuHoi: 'Recoupment (USD)', fThuHoiHint: 'Deducted from this share until cleared.', daThemCs: 'Invited {t} · {p}%', khongBai: 'Track not found',
       navChiaSe: 'Royalty splits', h1: 'Royalty splits',
       mo: 'Who shares what on which track, pending invitations, running recoupments. Accepted shares are split out of the owner’s payout.',
-      kBai: 'Tracks with splits', kNg: 'Collaborators', kMoi: 'Pending invitations', kMoiS: 'not paid yet', kDaChia: 'Paid to collaborators', kDaChiaS: 'across approved periods', kThuHoi: 'Recouping',
+      kBai: 'Tracks with splits', kNg: 'Collaborators', kMoi: 'Pending invitations', kMoiS: 'not paid yet', kDaChia: 'Paid to collaborators', kDaChiaS: 'real money, approved periods', kUoc: 'Lifetime estimate', kUocS: 'percentage × revenue, not money paid', kThuHoi: 'Recouping',
       locAll: 'All', locMoi: 'Pending invitations', locThuHoi: 'Recouping', tim: 'Search track, ISRC, account, email…',
       xacNhanThay: 'Accept on behalf', hoiXn: 'Accept on behalf of {e}?', hoiXnMo: 'Only when the collaborator has confirmed in writing; the action is logged.', daXn: 'Accepted for {e}',
       khong: 'No tracks match', khongMo: 'Change the filters above.'
@@ -53,7 +53,8 @@ HT.dangKy({
       { l: t('kBai'), v: HT.fmt.n(k.tracks), lon: true, s: d.sampled ? (c.lang === 'vi' ? 'đã lấy mẫu' : 'sampled') : '' },
       { l: t('kNg'), v: HT.fmt.n(k.collaborators) },
       { l: t('kMoi'), v: HT.fmt.n(k.invited), s: t('kMoiS'), mau: k.invited ? HB.mau('warn') : '' },
-      { l: t('kDaChia'), v: c.tien2(k.paid), s: t('kDaChiaS') },
+      { l: t('kDaChia'), v: c.tien2(k.daTra), s: t('kDaChiaS') },
+      { l: t('kUoc'), v: c.tien2(k.uocTinh), s: t('kUocS') },
       { l: t('kThuHoi'), v: HT.fmt.n(k.recouping) }
     ]);
     html += '<div class="bar">' +

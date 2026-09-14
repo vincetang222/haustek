@@ -21,7 +21,7 @@ var CHU = {
     co: 'Nền tảng gắn cờ', goBo: 'lượt bị gỡ khỏi báo cáo', khieuNai: 'Khiếu nại', xuLy: 'Xử lý',
     cBai: 'Bài hát', cTk: 'Tài khoản', cMuc: 'Mức', cTinHieu: 'Tín hiệu vượt ngưỡng', cLuot: 'Lượt nghe 7 ngày', cCo: 'Cờ nền tảng', cTt: 'Trạng thái', cThaoTac: 'Thao tác',
     lichSu: 'Diễn biến', chuaCo: 'Chưa có thao tác nào.',
-    chuSoHuu: 'Chủ bản ghi', cong: 'Người cộng tác', cPhan: 'Phần chia', cDaChia: 'Đã chia', cThuHoi: 'Thu hồi', them: 'Thêm người', bo: 'Bỏ', nhan: 'Đã nhận', moi: 'Chờ nhận', xacNhanThay: 'Xác nhận thay',
+    chuSoHuu: 'Chủ bản ghi', cong: 'Người cộng tác', cPhan: 'Phần chia', cDaChia: 'Đã trả', cUocTinh: 'ước tính trọn đời', cThuHoi: 'Thu hồi', them: 'Thêm người', bo: 'Bỏ', nhan: 'Đã nhận', moi: 'Chờ nhận', xacNhanThay: 'Xác nhận thay',
     haustekTra: 'Haustek trả thẳng · {id}', chuaVi: 'chưa có ví nhận',
     thuHoiCon: 'còn {n} để thu hồi', thuHoiXong: 'đã thu hồi đủ', chuaChia: 'chưa có người cộng tác',
     ngRule: 'Luật trả tiền của nền tảng', datNguong: 'đạt', duoiNguong: 'dưới ngưỡng', uocTinh: 'ước tính', khongNguong: 'không có ngưỡng',
@@ -46,7 +46,7 @@ var CHU = {
     co: 'Flagged by platform', goBo: 'streams removed from reports', khieuNai: 'Dispute', xuLy: 'Handle',
     cBai: 'Track', cTk: 'Account', cMuc: 'Level', cTinHieu: 'Signals over threshold', cLuot: 'Streams, 7 days', cCo: 'Platform flag', cTt: 'Status', cThaoTac: 'Actions',
     lichSu: 'History', chuaCo: 'No actions yet.',
-    chuSoHuu: 'Owner', cong: 'Collaborators', cPhan: 'Share', cDaChia: 'Paid out', cThuHoi: 'Recoup', them: 'Add person', bo: 'Remove', nhan: 'Accepted', moi: 'Invited', xacNhanThay: 'Accept on behalf',
+    chuSoHuu: 'Owner', cong: 'Collaborators', cPhan: 'Share', cDaChia: 'Paid', cUocTinh: 'lifetime estimate', cThuHoi: 'Recoup', them: 'Add person', bo: 'Remove', nhan: 'Accepted', moi: 'Invited', xacNhanThay: 'Accept on behalf',
     haustekTra: 'Paid directly by Haustek · {id}', chuaVi: 'no payee wallet yet',
     thuHoiCon: '{n} left to recoup', thuHoiXong: 'fully recouped', chuaChia: 'no collaborators',
     ngRule: 'Platform payout rules', datNguong: 'met', duoiNguong: 'below threshold', uocTinh: 'estimate', khongNguong: 'no threshold',
@@ -140,12 +140,17 @@ function bangChiaSe(rows, opts) {
   return '<div class="tw"><table class="t"><thead><tr><th>' + esc(t('cBai')) + '</th>' + (opts.noiBo ? '<th>' + esc(t('cTk')) + '</th>' : '') +
     '<th class="num">' + esc(t('chuSoHuu')) + '</th><th>' + esc(t('cong')) + '</th><th class="num">' + esc(t('cDaChia')) + '</th>' + (opts.nutBai ? '<th>' + esc(t('cThaoTac')) + '</th>' : '') + '</tr></thead><tbody>' +
     rows.map(function (r) {
-      var daChia = r.collaborators.reduce(function (s, c) { return s + c.payable; }, 0);
+      /* HAI con số: đã trả thật (từ các kỳ đã duyệt) và ước tính trọn đời.
+         Gộp làm một là chỗ cả hệ từng báo 38.132 USD trong khi tiền thật đổi
+         chủ là 44 USD. */
+      var daTra = r.collaborators.reduce(function (s, c) { return s + (c.daTra || 0); }, 0);
+      var uocTinh = r.collaborators.reduce(function (s, c) { return s + (c.uocTinh || 0); }, 0);
       return '<tr data-cs="' + r.trackId + '"><td>' + HM.tenBia({ bia: r.trackId, ten: HM.dai(r.title, 34), phu: r.artist + ' · ' + r.isrc }) + '</td>' +
         (opts.noiBo ? '<td><div class="t-ttl">' + esc(HM.dai(opts.tenTk ? opts.tenTk(r.partyKey) : '', 24)) + '</div></td>' : '') +
         '<td class="num"><b>' + esc(n(r.ownerPct)) + '%</b><div class="meter thin" style="width:72px;margin:5px 0 0 auto"><i style="width:' + r.ownerPct + '%"></i></div></td>' +
         '<td>' + (r.collaborators.length ? r.collaborators.map(function (cg) { return dongCong(cg, { nut: opts.nutCong ? function (x) { return opts.nutCong(r, x); } : null }); }).join('') : '<span class="nil">' + esc(t('chuaChia')) + '</span>') + '</td>' +
-        '<td class="num band"><b>' + esc(tien(daChia)) + '</b></td>' +
+        '<td class="num band"><b>' + esc(tien(daTra)) + '</b>' +
+          (uocTinh > 0.004 ? '<div class="muted" style="font-size:11px;margin-top:2px">' + esc(t('cUocTinh') + ' ' + tien(uocTinh)) + '</div>' : '') + '</td>' +
         (opts.nutBai ? '<td>' + opts.nutBai(r) + '</td>' : '') + '</tr>';
     }).join('') + '</tbody></table></div>';
 }

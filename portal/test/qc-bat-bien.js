@@ -182,8 +182,16 @@ check("Mọi đối tác: ví cộng lại đúng các kỳ đã ghi", () => {
     soThat(w, null, "wallet " + dt.partyKey);
     const cong = (w.credits || []).reduce((s, x) => s + x.credit, 0);
     const rut = (w.withdrawals || []).filter(x => x.status === "paid").reduce((s, x) => s + x.amount, 0);
-    if (w.balance != null && Math.abs(w.balance - (cong - rut)) > 0.05)
-      xau.push(dt.partyKey + ": số dư " + w.balance + " ≠ ghi " + cong.toFixed(2) + " − rút " + rut.toFixed(2));
+    /* Vòng 23: phép kiểm này từng đọc w.balance — một trường KHÔNG tồn tại
+       trên ví (tên thật là available/totalCredit), nên điều kiện != null luôn
+       sai và bất biến "ví = ghi − rút" trên giấy suốt nhiều vòng không có ai
+       canh. Đọc đúng tên trường, và kiểm cả hai vế. */
+    if (Math.abs(w.totalCredit - cong) > 0.05)
+      xau.push(dt.partyKey + ": tổng ghi " + w.totalCredit + " ≠ cộng từng kỳ " + cong.toFixed(2));
+    if (Math.abs(w.available - (w.totalCredit - w.pending - w.paid)) > 0.05)
+      xau.push(dt.partyKey + ": khả dụng " + w.available + " ≠ ghi − đang xử lý − đã rút");
+    if (Math.abs(w.paid - rut) > 0.05)
+      xau.push(dt.partyKey + ": đã rút " + w.paid + " ≠ cộng lệnh đã chuyển " + rut.toFixed(2));
   });
   must(n > 10, "chỉ đọc được " + n + " ví");
   must(!xau.length, xau.slice(0, 4).join(" · "));
