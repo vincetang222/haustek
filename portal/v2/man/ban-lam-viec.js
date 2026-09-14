@@ -140,7 +140,7 @@ HT.dangKy({
       mo: HM.esc(t('homNay').replace('{d}', HT.fmt.date(A.asOf()))),
       so: [{ l: t('nhanVien'), v: me.name }, { l: t('vaiTro'), v: vi ? me.title : me.titleEn }]
     });
-    var ve = { sales: veSales, support: veSupport, accounting: veKeToan, ops: veVanHanh, mgmt: veQuanLy }[me.role] || veVanHanh;
+    var ve = { sales: veSales, support: veSupport, accounting: veKeToan, ops: veVanHanh, mgmt: veQuanLy, bod: veQuanLy }[me.role] || veVanHanh;
     html += veNhiemVuToi(c) + ve(c);
     root.innerHTML = html;
     HB.gan(root);

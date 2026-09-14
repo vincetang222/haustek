@@ -395,17 +395,17 @@ function vePhanQuyen(c) {
   var A = c.A, t = c.t, vi = c.lang === 'vi';
   if (!A.quyen) return '';
   var b = A.quyen.bang(), vai = A.quyen.vaiTatCa;
-  var tenVai = { mgmt: vi ? 'Giám đốc' : 'Director', accounting: vi ? 'Kế toán' : 'Accounting', sales: vi ? 'Kinh doanh' : 'Sales', ops: vi ? 'Vận hành' : 'Operations', support: vi ? 'Hỗ trợ' : 'Support' };
+  var tenVai = { bod: vi ? 'Hội đồng' : 'Board', mgmt: vi ? 'Giám đốc' : 'Director', accounting: vi ? 'Kế toán' : 'Accounting', sales: vi ? 'Kinh doanh' : 'Sales', ops: vi ? 'Vận hành' : 'Operations', support: vi ? 'Hỗ trợ' : 'Support' };
   function tenMan(id) { var m = (HT.man || []).filter(function (x) { return x.id === id; })[0]; var d = m && m.chu && m.chu[c.lang]; return (d && m.nav && d[m.nav]) || id; }
   var ids = (HT.man || []).map(function (m) { return m.id; }).filter(function (id) { return b.man[id]; });
   var dau = '<thead><tr><th>' + HM.esc(t('pqMan')) + '</th>' + vai.map(function (v) { return '<th style="text-align:center">' + HM.esc(tenVai[v]) + '</th>'; }).join('') + '</tr></thead>';
   var than = ids.map(function (id) {
     return '<tr><td><div class="t-ttl">' + HM.esc(tenMan(id)) + '</div><div class="t-sub">' + HM.esc(id) + '</div></td>' +
-      vai.map(function (v) { var co = v === 'mgmt' || b.man[id].indexOf(v) >= 0; return '<td style="text-align:center">' + (co ? '<span class="ico ok">' + HM.icon('check') + '</span>' : '<span class="nil">·</span>') + '</td>'; }).join('') + '</tr>';
+      vai.map(function (v) { var co = b.man[id].indexOf(v) >= 0; return '<td style="text-align:center">' + (co ? '<span class="ico ok">' + HM.icon('check') + '</span>' : '<span class="nil">·</span>') + '</td>'; }).join('') + '</tr>';
   }).join('');
   var nhom = Object.keys(b.nhom).map(function (g) {
     var x = b.nhom[g];
-    return '<tr><td><div class="t-ttl">' + HM.esc(vi ? x.vi : x.en) + '</div><div class="t-sub">' + HM.esc(g) + '</div></td><td>' + x.vai.map(function (v) { return HM.tag(tenVai[v], v === 'mgmt' ? 'ok' : 'info'); }).join(' ') + '</td></tr>';
+    return '<tr><td><div class="t-ttl">' + HM.esc(vi ? x.vi : x.en) + '</div><div class="t-sub">' + HM.esc(g) + '</div></td><td>' + x.vai.map(function (v) { return HM.tag(tenVai[v] || v, 'info'); }).join(' ') + '</td></tr>';
   }).join('');
   return HM.the({ h2: HM.esc(t('tPq')), p: HM.esc(t('pqMo')), thoBody: true,
       than: '<div class="tw"><table class="t">' + dau + '<tbody>' + than + '</tbody></table></div>' }) +

@@ -195,7 +195,8 @@ HT.dangKy({
    bày tình trạng, thay vì rải điều kiện khắp nơi rồi sót một chỗ.
    --------------------------------------------------------------- */
 function coLam(c) {
-  try { return c.A.staff.me.role !== 'mgmt'; } catch (e) { return true; }
+  /* người giám sát chỉ đọc phiếu; hội đồng (AAA) thì làm được */
+  try { return c.A.quyen.aaa() || !c.A.quyen.nhom('giamSat'); } catch (e) { return true; }
 }
 
 function veDanhSach(c) {

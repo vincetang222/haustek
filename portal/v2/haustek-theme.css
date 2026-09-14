@@ -1522,3 +1522,14 @@ table.t tr.canh td .muted,table.t tr.canh td.muted{color:var(--ink-2)}
 
 /* dòng tổng trong bảng trên màn: nền dày hơn zebra, chữ đậm, không viền lạ */
 table.t tbody tr.tong td{background:var(--band);font-weight:600;border-top:1.5px solid var(--line-2)}
+
+/* ---- bình luận ticket (vòng 22): danh sách phẳng, không khung chat ---- */
+.bl-ds{display:flex;flex-direction:column}
+.bl{padding:8px 0 9px;border-top:1px solid var(--line)}
+.bl:first-child{border-top:0;padding-top:2px}
+.bl-ai{font-size:12px;font-weight:600;color:var(--ink)}
+.bl.dt .bl-ai{color:var(--accent)}
+.bl-luc{font-size:11.5px;color:var(--faint);margin-left:8px}
+.bl-tx{font-size:13px;line-height:1.55;white-space:pre-wrap;word-break:break-word;margin-top:3px}
+.bl-xong{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:10px 0 2px;padding:9px 12px;border-radius:10px;background:var(--fill);font-size:13px}
+.bl-xong .ico.ok{display:inline-flex}

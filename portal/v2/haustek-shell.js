@@ -602,11 +602,12 @@ function chay(cauHinh) {
      và gõ thẳng #hash cũng không mở được. */
   function dungDuoc(m, c) {
     /* màn nội bộ khai vai: [ 'ops', 'sales', 'support', 'accounting', 'mgmt' ];
-       không khai thì ai cũng thấy. mgmt thấy hết. */
+       không khai thì ai cũng thấy. Chỉ hội đồng (AAA) đi qua mà không tra;
+       giám đốc cũng qua cửa như mọi vai. */
     /* Ma trận phân quyền nằm ở lõi (A.quyen.man): màn nào không được cấp cho vai
        đang đăng nhập thì không có trên thanh điều hướng, không mở được qua #hash. */
     if (c.A && c.A.quyen && typeof c.A.quyen.man === 'function' && !c.A.quyen.man(m.id)) return false;
-    if (m.vai && c.A && c.A.staff && c.A.staff.me && c.A.staff.me.role !== 'mgmt' && m.vai.indexOf(c.A.staff.me.role) < 0) return false;
+    if (m.vai && c.A && c.A.staff && c.A.staff.me && !(c.A.quyen && c.A.quyen.aaa()) && m.vai.indexOf(c.A.staff.me.role) < 0) return false;
     if (!m.khaDung) return true;
     try { return !!m.khaDung(c); } catch (e) { return false; }
   }

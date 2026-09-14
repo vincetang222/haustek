@@ -14,13 +14,15 @@
 
 var LOC = { tab: 'cho', loai: 'all', tim: '', trang: 0 };
 var VAI_DUYET = ['mgmt'], VAI_KIEM = ['accounting', 'mgmt'];
+/* Hội đồng (AAA) làm được mọi thao tác; giám sát = thấy và rút / gửi lại đề xuất của người khác. */
+function quyenDx(A) { var aaa = A.quyen.aaa(), r = A.staff.me.role; return { duyet: aaa || VAI_DUYET.indexOf(r) >= 0, kiem: aaa || VAI_KIEM.indexOf(r) >= 0, giamSat: A.quyen.nhom('giamSat') }; }
 
 var CHU = null; /* gán sau khi đăng ký, để hộp thoại dùng chung tra được chữ từ màn khác */
 function tx(k) { var d = (CHU && CHU[HT.lang]) || (CHU && CHU.vi) || {}; return d[k] != null ? d[k] : k; }
 
 HT.dangKy({
   id: 'xet-duyet', nav: 'navXetDuyet', nhom: 'nhomTien', icon: 'check',
-  dem: function (c) { try { var k = c.A.proposals.counts(), r = c.A.staff.me.role; if (r === 'accounting') return k.submitted ? '!' + k.submitted : ''; if (r === 'mgmt') return k.checked ? '!' + k.checked : (k.pending ? String(k.pending) : ''); return k.pending ? String(k.pending) : ''; } catch (e) { return ''; } },
+  dem: function (c) { try { var k = c.A.proposals.counts(), r = c.A.staff.me.role, q = quyenDx(c.A); if (r === 'accounting') return k.submitted ? '!' + k.submitted : ''; if (q.duyet) return k.checked ? '!' + k.checked : (k.pending ? String(k.pending) : ''); return k.pending ? String(k.pending) : ''; } catch (e) { return ''; } },
 
   chu: {
     vi: {
@@ -126,15 +128,15 @@ function dongDx(c, p, me) {
 /* Mỗi vai thấy tối đa hai nút chính; thao tác phụ nằm trong menu ⋯ để dòng
    bảng không thành một dãy năm nút. */
 function nutDx(c, p, me) {
-  var t = tx, role = me.role, chinh = [], phu = [];
+  var t = tx, role = me.role, chinh = [], phu = [], q = quyenDx(c.A);
   var cho = ['submitted', 'checked'].indexOf(p.status) >= 0;
   function nut(act, nhan, cls) { return '<button type="button" class="btn sm ' + (cls || '') + '" data-dx="' + act + '" data-id="' + p.id + '">' + HM.esc(t(nhan)) + '</button>'; }
   function muc(act, nhan, cls) { return '<button type="button" class="' + (cls || '') + '" data-dx="' + act + '" data-id="' + p.id + '">' + HM.esc(t(nhan)) + '</button>'; }
-  if (cho && role === 'mgmt') { chinh.push(nut('approve', 'duyet', 'pri')); chinh.push(nut('reject', 'tuChoi', 'dang')); }
-  if (p.status === 'submitted' && (role === 'accounting' || role === 'mgmt')) (role === 'mgmt' ? phu : chinh).push(role === 'mgmt' ? muc('check', 'kiem') : nut('check', 'kiem', 'pri'));
-  if (cho && (role === 'accounting' || role === 'mgmt')) phu.push(muc('return', 'traLai'));
-  if (p.status === 'returned' && (p.byRole === role || role === 'mgmt')) chinh.push(nut('resubmit', 'guiLai', 'pri'));
-  if (['submitted', 'checked', 'returned'].indexOf(p.status) >= 0 && (p.byRole === role || role === 'mgmt') && p.byRole !== 'partner') (chinh.length ? phu : chinh).push(chinh.length ? muc('withdraw', 'rut', 'dang') : nut('withdraw', 'rut', 'ghost'));
+  if (cho && q.duyet) { chinh.push(nut('approve', 'duyet', 'pri')); chinh.push(nut('reject', 'tuChoi', 'dang')); }
+  if (p.status === 'submitted' && q.kiem) (q.duyet ? phu : chinh).push(q.duyet ? muc('check', 'kiem') : nut('check', 'kiem', 'pri'));
+  if (cho && q.kiem) phu.push(muc('return', 'traLai'));
+  if (p.status === 'returned' && (p.byRole === role || q.giamSat)) chinh.push(nut('resubmit', 'guiLai', 'pri'));
+  if (['submitted', 'checked', 'returned'].indexOf(p.status) >= 0 && (p.byRole === role || q.giamSat) && p.byRole !== 'partner') (chinh.length ? phu : chinh).push(chinh.length ? muc('withdraw', 'rut', 'dang') : nut('withdraw', 'rut', 'ghost'));
   if (!chinh.length && !phu.length) return '<span class="nil">—</span>';
   return '<div class="btnrow" style="flex-wrap:nowrap">' + chinh.join('') + HM.menu(phu) + '</div>';
 }

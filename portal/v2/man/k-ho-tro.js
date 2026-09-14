@@ -42,9 +42,11 @@ HT.dangKy({
       knTrong: 'Không có khiếu nại bản quyền nào đang xử lý trên bài hát của bạn.',
       knDaXong: 'khiếu nại đã giải quyết hoặc đã nhả claim',
       /* ngăn chi tiết */
-      luong: 'Trao đổi', traLoi: 'Trả lời Haustek', guiTra: 'Gửi phản hồi', daGuiTra: 'Đã gửi phản hồi',
+      moTa: 'Nội dung yêu cầu', luong: 'Bình luận', chuaBl: 'Haustek chưa bình luận', traLoi: 'Bình luận', guiTra: 'Gửi bình luận', daGuiTra: 'Đã gửi bình luận',
+      vietBl: 'Viết bình luận ngắn cho Haustek…', conLai: 'còn {n} ký tự',
       ban: 'Bạn', haustek: 'Haustek', taoLuc: 'Gửi lúc', xongLuc: 'Xong lúc', uuTien: 'Mức ưu tiên',
-      daXongGhi: 'Yêu cầu này đã xong. Nếu vẫn còn vướng, bạn trả lời ngay dưới đây và yêu cầu sẽ được mở lại.',
+      daXong: 'Haustek đã xử lý xong lúc {luc}',
+      daXongGhi: 'Yêu cầu này đã xong. Nếu vẫn còn vướng, bạn bình luận ngay dưới đây và yêu cầu sẽ được mở lại.',
       /* hộp thoại tạo yêu cầu */
       hoiTieuDe: 'Gửi yêu cầu hỗ trợ', hoiMo: 'Haustek tiếp nhận trong giờ làm việc. Hạn xử lý tính theo mức ưu tiên: bình thường 3 ngày, cao 2 ngày.',
       hoiLoai: 'Loại yêu cầu', hoiTd: 'Tiêu đề', hoiNd: 'Nội dung', hoiBai: 'Bài hát liên quan (tuỳ chọn)', hoiTimBai: 'Gõ tên bài hát hoặc mã ISRC…',
@@ -70,9 +72,11 @@ HT.dangKy({
       knMo: 'Haustek watches Content ID and platform claims; each row is something handled for you.',
       knTrong: 'No rights claim is in progress on your tracks.',
       knDaXong: 'claims resolved or released',
-      luong: 'Conversation', traLoi: 'Reply to Haustek', guiTra: 'Send reply', daGuiTra: 'Reply sent',
+      moTa: 'Request details', luong: 'Comments', chuaBl: 'No comment from Haustek yet', traLoi: 'Comment', guiTra: 'Post comment', daGuiTra: 'Comment posted',
+      vietBl: 'Write a short comment for Haustek…', conLai: '{n} characters left',
       ban: 'You', haustek: 'Haustek', taoLuc: 'Sent', xongLuc: 'Closed', uuTien: 'Priority',
-      daXongGhi: 'This request is closed. If something is still wrong, reply below and it reopens.',
+      daXong: 'Haustek marked this done on {luc}',
+      daXongGhi: 'This request is closed. If something is still wrong, comment below and it reopens.',
       hoiTieuDe: 'New support request', hoiMo: 'Haustek picks requests up during working hours. The due date follows the priority: normal 3 days, high 2 days.',
       hoiLoai: 'Request type', hoiTd: 'Title', hoiNd: 'Details', hoiBai: 'Related track (optional)', hoiTimBai: 'Type a track title or ISRC…',
       hoiUt: 'Priority', hoiGui: 'Send request', daGui: 'Request sent', hanXuLy: 'due',
@@ -198,14 +202,13 @@ function moChiTiet(c, id) {
   var x = tk.rows.filter(function (y) { return y.id === id; })[0];
   if (!x) return;
   var ty = tk.types.filter(function (y) { return y.id === x.type; })[0];
-  var luong = '<div style="display:flex;flex-direction:column;gap:10px">' + x.messages.map(function (m) {
-    var minh = m.who === 'partner';
-    return '<div style="display:flex;flex-direction:column;align-items:' + (minh ? 'flex-end' : 'flex-start') + '">' +
-      '<div style="max-width:88%;padding:10px 13px;border-radius:12px;font-size:13px;line-height:1.6;' +
-        (minh ? 'background:var(--accent-lo);border-bottom-right-radius:4px' : 'background:var(--band);border-bottom-left-radius:4px') + '">' +
-        HM.esc(m.text) + '</div>' +
-      '<div class="hint">' + HM.esc((minh ? t('ban') : t('haustek') + (x.assigneeName ? ' · ' + x.assigneeName : '')) + ' · ' + HT.fmt.luc(m.at)) + '</div></div>';
-  }).join('') + '</div>';
+  /* Vòng 22: bình luận ngắn, không khung chat. Người viết nội bộ hiện là
+     "Haustek" (lõi đã giấu tên nhân sự); bình luận của mình có cờ cuaToi. */
+  var GH = tk.gioiHan || { doDaiBinhLuan: 300, soBinhLuan: 20 };
+  var luong = '<div class="bl-ds">' + ((x.comments || []).map(function (m) {
+    return '<div class="bl' + (m.cuaToi ? ' dt' : '') + '"><span class="bl-ai">' + HM.esc(m.cuaToi ? t('ban') : t('haustek')) + '</span><span class="bl-luc">' + HM.esc(HT.fmt.luc(m.at)) + '</span>' +
+      '<div class="bl-tx">' + HM.esc(m.text) + '</div></div>';
+  }).join('') || '<p class="nil">' + HM.esc(t('chuaBl')) + '</p>') + '</div>';
 
   c.nganTruot(
     '<div class="btnrow" style="margin-bottom:12px">' + HM.tag(t(CHU_TT[x.status] || x.status), KIEU_TT[x.status] || '') +
@@ -219,13 +222,19 @@ function moChiTiet(c, id) {
       { t: t('taoLuc'), v: HT.fmt.luc(x.createdAt) },
       x.closedAt ? { t: t('xongLuc'), v: HT.fmt.luc(x.closedAt) } : null
     ]) +
-    '<h4 class="sec">' + HM.esc(t('luong')) + '</h4>' + luong +
+    '<h4 class="sec">' + HM.esc(t('moTa')) + '</h4>' +
+    '<div class="bl-tx">' + HM.esc(x.body || x.title) + '</div>' +
+    (x.done ? '<div class="bl-xong"><span class="ico ok">' + HM.icon('check') + '</span>' + HM.esc(t('daXong').replace('{luc}', HT.fmt.luc(x.done.at))) + '</div>' : '') +
+    '<h4 class="sec">' + HM.esc(t('luong')) + ' (' + (x.comments || []).length + ')</h4>' + luong +
     (x.status === 'done' ? '<p class="hint" style="margin-top:12px">' + HM.esc(t('daXongGhi')) + '</p>' : '') +
     '<h4 class="sec">' + HM.esc(t('traLoi')) + '</h4>' +
-    '<textarea class="in" rows="3" data-tra placeholder="' + HM.esc(vi ? 'Bạn viết phản hồi ở đây…' : 'Write your reply…') + '"></textarea>' +
-    '<div class="btnrow" style="margin-top:10px"><button type="button" class="btn pri sm" data-gui-tra>' + HM.icon('up') + HM.esc(t('guiTra')) + '</button></div>',
+    '<textarea class="in" rows="2" data-tra maxlength="' + GH.doDaiBinhLuan + '" placeholder="' + HM.esc(t('vietBl')) + '"></textarea>' +
+    '<div class="btnrow" style="margin-top:10px"><button type="button" class="btn pri sm" data-gui-tra>' + HM.icon('up') + HM.esc(t('guiTra')) + '</button>' +
+      '<span class="hint" style="margin:0" data-conlai>' + HM.esc(t('conLai').replace('{n}', GH.doDaiBinhLuan)) + '</span></div>',
     { tieuDe: x.title, phu: x.id + ' · ' + (ty ? c.song(ty, 'label') : x.type),
       khiMo: function (dr) {
+        var o2 = dr.querySelector('[data-tra]'), cl = dr.querySelector('[data-conlai]');
+        if (o2 && cl) o2.addEventListener('input', function () { cl.textContent = t('conLai').replace('{n}', Math.max(0, GH.doDaiBinhLuan - o2.value.length)); });
         HM.bam(dr, '[data-gui-tra]', function () {
           var o = dr.querySelector('[data-tra]');
           try {

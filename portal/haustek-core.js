@@ -2278,6 +2278,10 @@ seedReleases();
    ===================================================================== */
 const STAFF = [
   { id: "S01", email: "mgmt@haustek-group.com",     name: "Nguyễn Minh Quản",  role: "mgmt",       title: "Giám đốc",              titleEn: "Managing director" },
+  /* Vòng 22: hội đồng quản trị — loại tài khoản duy nhất đi qua mọi cửa
+     (AAA). Không nằm trong VAI_NB, không có trong bảng quyền; laAAA()
+     mới là thứ cho qua. Giám đốc (S01) từ vòng này đi qua cửa như mọi vai. */
+  { id: "S00", email: "bod@haustek-group.com",      name: "Đặng Toàn Quyền",   role: "bod",        title: "Hội đồng quản trị",     titleEn: "Board" },
   { id: "S02", email: "ops@haustek-group.com",      name: "Trần Vận Hành",     role: "ops",        title: "Vận hành phát hành",    titleEn: "Release operations" },
   { id: "S03", email: "sales1@haustek-group.com",   name: "Lê Kinh Doanh",     role: "sales",      title: "Kinh doanh · label",     titleEn: "Sales · labels" },
   { id: "S04", email: "sales2@haustek-group.com",   name: "Phạm Thu Hà",       role: "sales",      title: "Kinh doanh · nghệ sĩ",   titleEn: "Sales · artists" },
@@ -2312,6 +2316,7 @@ const CHUC_DANH = [
      Cách đánh số này ngược với bản cũ (0 thấp, 3 cao), nên mọi phép so
      phải đảo dấu: "trưởng bộ phận trở lên" giờ là cap <= 2. */
   { id: "giam-doc",       cap: 1, vi: "Giám đốc",        en: "Managing director" },
+  { id: "thanh-vien-hd",  cap: 1, vi: "Thành viên hội đồng", en: "Board member" },
   { id: "quan-ly",        cap: 2, vi: "Quản lý",         en: "Manager" },
   { id: "truong-bo-phan", cap: 2, vi: "Trưởng bộ phận",  en: "Head of department" },
   { id: "truong-nhom",    cap: 3, vi: "Trưởng nhóm",     en: "Team lead" },
@@ -2336,13 +2341,28 @@ const TAI_SAN = [
   { id: "khieuNai",       vi: "Khiếu nại bản quyền", en: "Rights claims", man: "quyen", dem: () => state.claims.length, gan: id => state.claims.filter(c => c.assignee === id).length }
 ];
 const MAN_TAT_CA = ["ban-lam-viec", "to-chuc", "ho-tro", "tong-quan", "theo-doi", "nhap-so-lieu", "nap-du-lieu", "khop-isrc", "doi-chieu", "phat-hanh", "chien-dich", "quyen", "muc-tra", "chia-se", "xet-duyet", "roi", "nen-tang", "ke-toan", "chi-tra", "tam-ung", "ty-le", "doi-tac", "danh-muc", "quan-tri", "hieu-suat", "hieu-qua-von", "phieu-giao", "xuat-ban"];
-const NHOM_TAT_CA = ["tong", "tien", "doiSoat", "chotKy", "kiemSo", "doiTac", "doiTacTao", "deXuat", "deXuatTao", "vanHanh", "nhapLieu", "danhMuc", "theoDoi", "chienDich", "chiaSe", "khieuNai", "hoTro", "quanTri", "phatHanhHo", "nhanSu", "toChuc", "von", "hieuSuat", "quyTrinh", "tacQuyen"];
+const VAI_AAA = "bod";      /* vai của hội đồng quản trị: đi qua mọi cửa */
+const NHOM_TAT_CA = ["giamSat", "tong", "tien", "tyGia", "doiSoat", "chotKy", "kiemSo", "doiTac", "doiTacTao", "deXuat", "deXuatTao", "vanHanh", "nhapLieu", "danhMuc", "theoDoi", "chienDich", "chiaSe", "khieuNai", "hoTro", "quanTri", "phatHanhHo", "nhanSu", "toChuc", "von", "hieuSuat", "quyTrinh", "tacQuyen"];
 const doiTacSapHetHan = me => partiesList({ status: "renew", manager: me && me.role === "sales" && !laTruong(me) ? me.id : undefined }).total;
+/* Nhóm hàm giám đốc KHÔNG cầm, dù thấy mọi trang: người chốt kỳ không gõ
+   số và không bỏ qua sai lệch (bốn mắt), và không tạo hồ sơ thay đối tác
+   (việc của kinh doanh / vận hành). Trang Nhập số liệu vì thế cũng đóng. */
+const NHOM_GIAM_DOC_BO = ["nhapLieu", "kiemSo", "tyGia", "phatHanhHo"];
+const MAN_GIAM_DOC_BO = ["nhap-so-lieu"];
 const TO_CHUC = [
+  /* Hội đồng quản trị: khối AAA. man / nhom ở đây chỉ để trang Tổ chức
+     hiện "toàn quyền"; quyền thật đến từ laAAA(), không từ bảng. Không ai
+     ngoài hội đồng thêm được người vào khối này (xem themNhanSu /
+     chuyenNhanSu). */
+  { id: "hoi-dong", vai: VAI_AAA, aaa: true, vi: "Hội đồng quản trị", en: "Board of directors",
+    chucNang: { vi: ["Toàn quyền trên mọi trang và mọi nhóm hàm (AAA)", "Bổ nhiệm, miễn nhiệm giám đốc", "Xem xét mọi quyết định đã ghi trong nhật ký"],
+                en: ["All access on every page and every function group (AAA)", "Appoint and remove the managing director", "Review every decision in the audit log"] },
+    man: MAN_TAT_CA, nhom: NHOM_TAT_CA, taiSan: [],
+    to: [{ id: "hoi-dong", vi: "Hội đồng", en: "Board", nhiemVu: [] }] },
   { id: "ban-giam-doc", vai: "mgmt", vi: "Ban giám đốc", en: "Management",
     chucNang: { vi: ["Chiến lược, hợp đồng khung với nền tảng và đối tác lớn", "Xét duyệt tạm ứng, hợp đồng, kỳ thanh toán", "Chỉ tiêu và kết quả kinh doanh", "Tổ chức, nhân sự và phân quyền"],
                 en: ["Strategy, framework deals with platforms and key partners", "Approve advances, contracts and payout periods", "Sales targets and results", "Organisation, people and permissions"] },
-    man: MAN_TAT_CA, nhom: NHOM_TAT_CA, taiSan: [],
+    man: MAN_TAT_CA.filter(m => !MAN_GIAM_DOC_BO.includes(m)), nhom: NHOM_TAT_CA.filter(g => !NHOM_GIAM_DOC_BO.includes(g)), taiSan: [],
     to: [{ id: "dieu-hanh", vi: "Điều hành", en: "Executive", nhiemVu: [
       { id: "duyet-de-xuat", vi: "Duyệt đề xuất tạm ứng / hợp đồng", en: "Approve advance / contract proposals", man: "xet-duyet", dem: () => proposalsOf().filter(p => p.status === "submitted" || p.status === "checked").length },
       { id: "duyet-ky", vi: "Xét duyệt kỳ đã đủ điều kiện", en: "Approve periods that are ready", man: "doi-chieu", dem: () => PERIODS.filter(p => !state.approved[p.k]).length },
@@ -2384,7 +2404,7 @@ const TO_CHUC = [
        thì tay ấy không được bỏ qua sai lệch của chính mình. Vận hành gõ,
        tài chính kiểm ở Đối soát, giám đốc chốt kỳ. */
     man: ["ban-lam-viec", "to-chuc", "ho-tro", "ke-toan", "chi-tra", "tam-ung", "chia-se", "doi-chieu", "xet-duyet", "roi", "hieu-qua-von", "xuat-ban"],
-    nhom: ["tien", "doiSoat", "kiemSo", "deXuat", "chiaSe", "hoTro", "toChuc", "von", "quyTrinh", "tacQuyen"],
+    nhom: ["tien", "tyGia", "doiSoat", "kiemSo", "deXuat", "chiaSe", "hoTro", "toChuc", "von", "quyTrinh", "tacQuyen"],
     taiSan: ["vi", "tamUng", "bangKe"],
     to: [
       { id: "thanh-toan", vi: "Thanh toán", en: "Payments", nhiemVu: [
@@ -2412,10 +2432,13 @@ const TO_CHUC = [
 ];
 /* Khối / tổ thêm bằng tay (state.toChucThem) gộp vào cây: khối mới chọn
    một hồ sơ quyền (vai) có sẵn; tổ mới nhận nhiệm vụ mô tả bằng chữ. */
+/* Khối rơi vào khi không rõ: hỗ trợ — ít quyền nhất. Không dùng chỉ số
+   mảng vì thứ tự TO_CHUC là thứ tự hiện trên sơ đồ, đổi được. */
+const KHOI_MAC_DINH = TO_CHUC.find(x => x.vai === "support");
 function khoiTatCa() {
   const them = state.toChucThem || {};
   const goc = TO_CHUC.map(k => Object.assign({}, k, { to: k.to.concat((them.to && them.to[k.id]) || []) }));
-  return goc.concat((them.khoi || []).map(k => Object.assign({ to: [], taiSan: [], chucNang: { vi: [], en: [] } }, k, { man: (TO_CHUC.find(x => x.vai === k.vai) || TO_CHUC[4]).man, nhom: (TO_CHUC.find(x => x.vai === k.vai) || TO_CHUC[4]).nhom, to: k.to || [] })));
+  return goc.concat((them.khoi || []).map(k => Object.assign({ to: [], taiSan: [], chucNang: { vi: [], en: [] } }, k, { man: (TO_CHUC.find(x => x.vai === k.vai) || KHOI_MAC_DINH).man, nhom: (TO_CHUC.find(x => x.vai === k.vai) || KHOI_MAC_DINH).nhom, to: k.to || [] })));
 }
 const khoiCua = id => khoiTatCa().find(k => k.id === id) || null;
 const toCua = (khoiId, toId) => { const k = khoiCua(khoiId); return k ? (k.to.find(t => t.id === toId) || null) : null; };
@@ -2430,6 +2453,7 @@ function tenChucVu(s, lang) {
 /* Vị trí ban đầu của nhân sự mẫu. S03 là chuyên viên kinh doanh (chỉ thấy
    tài khoản mình), S04 là trưởng bộ phận (thấy cả bộ phận). */
 const VI_TRI_MAU = {
+  S00: ["hoi-dong", "hoi-dong", "thanh-vien-hd"],
   S01: ["ban-giam-doc", "dieu-hanh", "giam-doc"], S02: ["van-hanh", "phat-hanh", "truong-bo-phan"],
   S03: ["kinh-doanh", "doi-tac", "chuyen-vien"], S04: ["kinh-doanh", "doi-tac", "truong-bo-phan"],
   S05: ["ho-tro", "cskh", "truong-bo-phan"], S06: ["ho-tro", "ban-quyen", "chuyen-vien"], S07: ["tai-chinh", "ke-toan", "truong-bo-phan"],
@@ -2441,7 +2465,7 @@ const NHAN_SU_THEM = [
   { id: "S10", email: "payments@haustek-group.com", name: "Lý Thanh Toán", role: "accounting", title: "Thanh toán", titleEn: "Payments" }
 ];
 function chuanNhanSu(x) {
-  const k = khoiCua(x.boPhan) || TO_CHUC.find(t => t.vai === x.role) || TO_CHUC[4];
+  const k = khoiCua(x.boPhan) || TO_CHUC.find(t => t.vai === x.role) || KHOI_MAC_DINH;
   x.boPhan = k.id; x.role = k.vai;
   if (!x.to || !k.to.some(t => t.id === x.to)) x.to = k.to.length ? k.to[0].id : "";
   if (!CHUC_DANH.some(c => c.id === x.chucDanh)) x.chucDanh = "nhan-vien";
@@ -3889,10 +3913,10 @@ function reviewProposal(id, action, note, by, role) {
   if (!pr) throw new Error("Không tìm thấy đề xuất " + id);
   const fl = PROPOSAL_FLOW[action];
   if (!fl) throw new Error("Thao tác không hợp lệ");
-  if (!fl.roles.includes(role)) throw new Error("Vai " + role + " không được " + action + " đề xuất");
+  if (!fl.roles.includes(role) && !laAAA(role)) throw new Error("Vai " + role + " không được " + action + " đề xuất");
   if (!fl.from.includes(pr.status)) throw new Error("Đề xuất đang ở trạng thái " + pr.status + ", không " + action + " được");
   if ((action === "reject" || action === "return") && !(note && note.trim())) throw new Error("Cần ghi lý do");
-  if ((action === "withdraw" || action === "resubmit") && role !== "mgmt" && pr.byRole !== role) throw new Error("Chỉ người đề xuất mới rút / gửi lại được");
+  if ((action === "withdraw" || action === "resubmit") && !coQuyenNhom("giamSat", role) && pr.byRole !== role) throw new Error("Chỉ người đề xuất mới rút / gửi lại được");
   const now = nowISO();
   if (action === "resubmit") pr.calc = pr.type === "advance" ? advanceCalc(pr.partyKey, pr.terms.amount, pr.terms.feePct) : contractCalc(pr.partyKey, pr.terms);
   pr.status = fl.to; pr.updatedAt = now;
@@ -4436,12 +4460,12 @@ const TICKET_STATUS = ["open", "in_progress", "waiting", "done"];
    được định tuyến khi tạo; nhân viên có thể chuyển bộ phận. Vai ngoài giám
    đốc chỉ thấy hàng đợi bộ phận mình và ticket được giao cho mình. */
 const BO_PHAN_TICKET = { "phat-hanh": "ops", "nen-tang": "ops", "thanh-toan": "accounting", "marketing": "sales", "hop-dong": "sales", "quyen": "support", "tai-khoan": "support", "khac": "support" };
-const TEN_BO_PHAN = { mgmt: { vi: "Ban giám đốc", en: "Management" }, ops: { vi: "Vận hành", en: "Operations" }, accounting: { vi: "Kế toán", en: "Accounting" }, sales: { vi: "Kinh doanh", en: "Sales" }, support: { vi: "Hỗ trợ", en: "Support" } };
+const TEN_BO_PHAN = { bod: { vi: "Hội đồng quản trị", en: "Board" }, mgmt: { vi: "Ban giám đốc", en: "Management" }, ops: { vi: "Vận hành", en: "Operations" }, accounting: { vi: "Kế toán", en: "Accounting" }, sales: { vi: "Kinh doanh", en: "Sales" }, support: { vi: "Hỗ trợ", en: "Support" } };
 function boPhanCua(type) { return BO_PHAN_TICKET[type] || "support"; }
 function deptCua(t) { if (!t.dept) t.dept = boPhanCua(t.type); return t.dept; }
 function ticketsChoVai(ds) {
   const role = vaiHienTai();
-  if (!role || role === "mgmt") return ds;
+  if (!role || coQuyenNhom("giamSat", role)) return ds;
   return ds.filter(t => deptCua(t) === role || (t.assignee && _me && t.assignee === _me.id));
 }
 function ticketId(at) { return sinhMa("ticket", nhomThang(at), ma => state.tickets.some(t => t.id === ma)); }
@@ -4572,7 +4596,7 @@ function seedOps() {
 const audit = {
   log(action, detail, by) {
     GHI_VER++;
-    state.audit.unshift({ at: nowISO(), action, detail, by: by || "mgmt@haustek-group.com" });
+    state.audit.unshift({ at: nowISO(), action, detail, by: by || (_me ? _me.email : "he-thong") });
     if (state.audit.length > 400) state.audit.length = 400;
   },
   list(limit) { return state.audit.slice(0, limit || 100); }
@@ -5848,8 +5872,15 @@ khoiTaoMaDem(state);   /* bộ đếm mã đi tiếp từ mã lớn nhất đã 
 const VAI_NB = ["mgmt", "accounting", "sales", "ops", "support"];
 /* Mô tả nhóm hàm; vai nào được gọi nhóm nào suy ra từ khối trong cây tổ chức. */
 const NHOM_MO = {
+  /* Vòng 22: thay cho mọi đường tắt "role === mgmt" trong mã. Có nhóm này
+     là thấy việc của mọi bộ phận, đối tác của mọi người, bản tính đầy đủ
+     (ROI, biên) — quyền GIÁM SÁT, không phải quyền làm thay. */
+  giamSat:   { vi: "Giám sát toàn công ty: việc của mọi bộ phận, đối tác của mọi người, bản tính đầy đủ", en: "Company-wide oversight: every department's work, everyone's partners, the full calculation" },
   tong:      { vi: "Số toàn công ty: dự báo doanh thu, chỉ tiêu, tỷ lệ chia, giải thích số", en: "Company-wide figures: revenue forecast, targets, rate shares, explanations" },
   tien:      { vi: "Tiền ra vào: ví, rút tiền, bảng kê, tạm ứng, tài khoản ngân hàng, bút toán", en: "Money in and out: wallets, withdrawals, statements, advances, bank details, adjustments" },
+  /* Tách khỏi tien ở vòng 22: người gõ tỷ giá không được là người khoá
+     tỷ giá vào kỳ (chotKy). Giám đốc thấy tiền nhưng không gõ tỷ giá. */
+  tyGia:     { vi: "Gõ tỷ giá Vietcombank cho kỳ chưa chốt", en: "Key in the Vietcombank rate for an open period" },
   doiSoat:   { vi: "Báo cáo kỳ, đối soát, hàng đợi ISRC — ĐỌC và ĐỐI CHIẾU, không chốt", en: "Period reports, reconciliation, ISRC queue — read and check, not close" },
   /* Tách khỏi doiSoat ở vòng 21. Người gõ số không được là người khoá sổ:
      gộp chung thì vận hành vừa nhập doanh thu vừa chốt kỳ, và không còn ai
@@ -5899,7 +5930,7 @@ const QUYEN_HAM = {
   approve: "chotKy", revoke: "chotKy", "fx.lock": "chotKy",
   /* Kế toán gõ tỷ giá Vietcombank vào; giám đốc mới đóng nó vào một kỳ.
      Để hở fx.set là để hở mọi con số VND của mọi kỳ chưa chốt. */
-  "fx.set": "tien",
+  "fx.set": "tyGia",
   "ingest.acceptVariance": "kiemSo",
   queue: "doiSoat", missingFeeds: "doiSoat", audit: "doiSoat",
   wallet: "tien", credits: "tien", statementsOf: "tien", withdrawals: "tien", statements: "tien", bank: "tien", advances: "tien", advanceBalance: "tien", withdrawalQuote: "tien", phiChuyen: "tien",
@@ -5948,23 +5979,29 @@ const QUYEN_MO = [
   "xuatBan.hoi", "xuatBan.vaiTacGia", "xuatBan.hoiTheoLanhTho"
 ];
 function vaiHienTai() { return _me ? _me.role : null; }
-function coQuyenNhom(nhom, role) { role = role || vaiHienTai(); const g = QUYEN_NHOM[nhom]; return role === "mgmt" || !!(g && g.vai.includes(role)); }
+/* AAA — All Access: chỉ hội đồng quản trị. Là chỗ DUY NHẤT trong lõi cho
+   một vai đi qua cửa mà không tra bảng; mọi chỗ khác tra QUYEN_MAN /
+   QUYEN_NHOM, kể cả giám đốc. */
+function laAAA(role) { return (role === undefined ? vaiHienTai() : role) === VAI_AAA; }
+function coQuyenNhom(nhom, role) { role = role || vaiHienTai(); if (laAAA(role)) return true; const g = QUYEN_NHOM[nhom]; return !!(g && g.vai.includes(role)); }
 /* Vài trang chỉ mở cho cấp quản lý trở lên, bất kể thuộc khối nào: trưởng
    bộ phận kinh doanh cũng là quản lý, nên chặn theo VAI thì chặn nhầm.
    Số là cấp thấp nhất còn được vào (nhỏ là cao). */
 const MAN_CAP = { "to-chuc": CAP_TRUONG, "muc-tra": CAP_GIAM_DOC, "hieu-suat": CAP_TRUONG, "hieu-qua-von": CAP_TRUONG };
 function manCoQuyen(id, role, cap) {
   role = role || vaiHienTai();
+  if (laAAA(role)) return true;
   cap = cap == null ? capCua(_me) : cap;
   const v = QUYEN_MAN[id];
-  if (v && role !== "mgmt" && !v.includes(role)) return false;
+  if (v && !v.includes(role)) return false;
   const c = MAN_CAP[id];
   if (c != null && cap > c) return false;
   return true;
 }
 function chanQuyen(ten, nhom) {
   if (coQuyenNhom(nhom)) return;
-  const e = new Error("Không có quyền: " + ten + " (vai " + vaiHienTai() + " · cần " + QUYEN_NHOM[nhom].vai.join(" / ") + ")");
+  const can = QUYEN_NHOM[nhom] ? QUYEN_NHOM[nhom].vai.join(" / ") : "?";
+  const e = new Error("Không có quyền: " + ten + " (vai " + vaiHienTai() + " · cần " + can + ")");
   e.code = "NO_QUYEN"; e.nhom = nhom; throw e;
 }
 function bocHam(fn, ten, nhom) { return function () { chanQuyen(ten, nhom); return fn.apply(this, arguments); }; }
@@ -6004,12 +6041,12 @@ const CALC_AN = {
 };
 function seriesChoVai(ser, role) {
   role = role || vaiHienTai();
-  if (role === "mgmt" || !Array.isArray(ser)) return ser;
+  if (coQuyenNhom("giamSat", role) || !Array.isArray(ser)) return ser;
   return ser.map(x => { const y = Object.assign({}, x); delete y.keep; if (role === "sales") { /* kinh doanh vẫn thấy gộp của tài khoản mình */ } return y; });
 }
 function calcChoVai(calc, role) {
   role = role || vaiHienTai();
-  if (!calc || role === "mgmt") return calc;
+  if (!calc || coQuyenNhom("giamSat", role)) return calc;
   const an = CALC_AN[role];
   if (an === null || an === undefined) chanQuyen("calc", "deXuat");
   const out = {};
@@ -6019,7 +6056,7 @@ function calcChoVai(calc, role) {
 function proposalChoVai(p, role) {
   if (!p) return p;
   role = role || vaiHienTai();
-  if (role === "mgmt") return p;
+  if (coQuyenNhom("giamSat", role)) return p;
   return Object.assign({}, p, { calc: calcChoVai(p.calc, role) });
 }
 function proposalsListChoVai(f) {
@@ -6053,7 +6090,7 @@ function partiesListChoVai(opts) {
 function salesKpiChoVai(staffId, pIdx) {
   const role = vaiHienTai();
   if (role === "sales" && staffId !== _me.id && !laTruong()) { const e = new Error("Không có quyền: chỉ tiêu của người khác"); e.code = "NO_QUYEN"; throw e; }
-  if (role !== "mgmt" && role !== "sales") chanQuyen("sales.kpi", "tong");
+  if (role !== "sales") chanQuyen("sales.kpi", "tong");
   return salesKpi(staffId, pIdx);
 }
 /* Chuông và tìm nhanh: chỉ đưa những mục dẫn tới màn vai đó mở được. */
@@ -6064,7 +6101,7 @@ function notificationsChoVai() {
 }
 function searchChoVai(q, limit) {
   const r = searchAll("admin", 0, q, limit), role = vaiHienTai();
-  if (role === "mgmt") return r;
+  if (coQuyenNhom("giamSat", role)) return r;
   const docs = r.docs.filter(d => !d.di || manCoQuyen(d.di, role));
   let parties = [];
   if (role === "sales") parties = laTruong() ? r.parties : r.parties.filter(p => state.partyManager[p.key] === _me.id);
@@ -6086,17 +6123,22 @@ function forecastStreamsOf() {
 }
 const quyenXuat = {
   vai: () => vaiHienTai(), vaiTatCa: VAI_NB.slice(),
+  /* AAA: vai hội đồng đi qua mọi cửa. Trang dùng để giấu / hiện nút; lõi
+     vẫn tự kiểm khi gọi. */
+  aaa: () => laAAA(), vaiAAA: VAI_AAA,
   man: id => manCoQuyen(id), nhom: g => coQuyenNhom(g),
   /* Bảng hàm → nhóm, để soát được ma trận: quy tắc trỏ vào nhóm không tồn
      tại, hay trỏ vào hàm không còn nữa, đều là lỗ hổng im lặng. */
   ham: () => Object.assign({}, QUYEN_HAM),
   mo: () => QUYEN_MO.slice(),
-  bang: () => ({ man: QUYEN_MAN, nhom: QUYEN_NHOM, khoi: TO_CHUC.map(k => ({ id: k.id, vai: k.vai, vi: k.vi, en: k.en, man: k.man.slice(), nhom: k.nhom.slice() })) }),
+  bang: () => ({ man: QUYEN_MAN, nhom: QUYEN_NHOM, khoi: TO_CHUC.map(k => ({ id: k.id, vai: k.vai, aaa: !!k.aaa, vi: k.vi, en: k.en, man: k.man.slice(), nhom: k.nhom.slice() })) }),
   cap: () => capCua(_me), truong: () => laTruong(),
-  cua: role => { const capTot = Math.min.apply(null, STAFF.concat(state.staff || []).filter(x => x.role === role).map(capCua).concat([CAP_THAP])); return { man: Object.keys(QUYEN_MAN).filter(id => manCoQuyen(id, role, capTot)), nhom: Object.keys(QUYEN_NHOM).filter(g => coQuyenNhom(g, role)) }; },
+  cua: role => { if (laAAA(role)) return { man: Object.keys(QUYEN_MAN), nhom: Object.keys(QUYEN_NHOM), aaa: true }; const capTot = Math.min.apply(null, STAFF.concat(state.staff || []).filter(x => x.role === role).map(capCua).concat([CAP_THAP])); return { man: Object.keys(QUYEN_MAN).filter(id => manCoQuyen(id, role, capTot)), nhom: Object.keys(QUYEN_NHOM).filter(g => coQuyenNhom(g, role)) }; },
   capToiDa: CAP_TOI_DA, capTruong: CAP_TRUONG, capBac: () => CHUC_DANH.map(c => ({ id: c.id, cap: c.cap, vi: c.vi, en: c.en })).sort((a, b) => a.cap - b.cap)
 };
 
+/* Số thành viên hội đồng còn hoạt động, không tính người đang xét. */
+const soAAAConLai = tru => STAFF.filter(x => laAAA(x.role) && x.active !== false && x.id !== tru).length;
 const demAnToan = (f, me) => { try { const v = f(me); return typeof v === "number" && isFinite(v) ? v : 0; } catch (e) { return 0; } };
 const nhanSuGon = x => ({ id: x.id, name: x.name, email: x.email, phone: x.phone || "", role: x.role, boPhan: x.boPhan, to: x.to, chucDanh: x.chucDanh, cap: capCua(x), title: x.title, titleEn: x.titleEn, active: x.active !== false, startedAt: x.startedAt || null });
 const maKhoi = ten => chuoi(ten).toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/đ/g, "d").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 32);
@@ -6700,7 +6742,7 @@ const admin = {
     cuaToi() {
       const me = _me, k = khoiCua(me.boPhan), t = k ? k.to.find(x => x.id === me.to) : null;
       const nhiemVu = [];
-      if (k) (laTruong(me) || k.vai === "mgmt" ? k.to : (t ? [t] : [])).forEach(x => (x.nhiemVu || []).forEach(n => nhiemVu.push({ id: n.id, to: x.vi, toEn: x.en, vi: n.vi, en: n.en, man: n.man || null, dem: n.dem ? demAnToan(n.dem, me) : null })));
+      if (k) (laTruong(me) ? k.to : (t ? [t] : [])).forEach(x => (x.nhiemVu || []).forEach(n => nhiemVu.push({ id: n.id, to: x.vi, toEn: x.en, vi: n.vi, en: n.en, man: n.man || null, dem: n.dem ? demAnToan(n.dem, me) : null })));
       return { id: me.id, name: me.name, khoi: k ? { id: k.id, vi: k.vi, en: k.en, chucNang: k.chucNang } : null, to: t ? { id: t.id, vi: t.vi, en: t.en } : null,
         chucDanh: chucDanhCua(me.chucDanh), cap: capCua(me), truong: laTruong(me), nhiemVu,
         taiSan: TAI_SAN.filter(a => a.gan).map(a => ({ id: a.id, vi: a.vi, en: a.en, man: a.man, dem: demAnToan(() => a.gan(me.id)) })).filter(a => a.dem > 0) };
@@ -6738,6 +6780,7 @@ const admin = {
       if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) throw new Error("Email không hợp lệ");
       if (STAFF.some(x => x.email.toLowerCase() === email)) throw new Error("Email này đã có trong danh sách nhân sự");
       if (!khoiCua(o.boPhan)) throw new Error("Chưa chọn bộ phận");
+      if (khoiCua(o.boPhan).aaa && !laAAA()) throw new Error("Chỉ hội đồng quản trị mới thêm thành viên hội đồng");
       let n = STAFF.length + 1, id; do { id = "S" + String(n++).padStart(2, "0"); } while (staffById(id));
       const x = chuanNhanSu({ id, email, name, boPhan: o.boPhan, to: o.to, chucDanh: o.chucDanh, active: true, phone: chuoi(o.phone), startedAt: isoDate(ASOF) });
       state.staff.push(x); STAFF.push(x);
@@ -6752,7 +6795,15 @@ const admin = {
       const x = staffById(id); if (!x) throw new Error("Không có nhân viên " + id);
       if (x.id === "S01" && o.boPhan && o.boPhan !== "ban-giam-doc") throw new Error("Giám đốc mẫu phải ở Ban giám đốc");
       const truoc = x.title;
-      if (o.boPhan) { if (!khoiCua(o.boPhan)) throw new Error("Không có khối " + o.boPhan); x.boPhan = o.boPhan; x.to = o.to || ""; }
+      if (o.boPhan) {
+        const kMoi = khoiCua(o.boPhan), kCu = khoiCua(x.boPhan);
+        if (!kMoi) throw new Error("Không có khối " + o.boPhan);
+        /* Vào hay ra khỏi hội đồng đều là việc của hội đồng: không thì ai
+           có quyền nhân sự cũng tự chuyển mình vào khối AAA được. */
+        if ((kMoi.aaa || (kCu && kCu.aaa)) && kMoi.id !== x.boPhan && !laAAA()) throw new Error("Chỉ hội đồng quản trị mới chuyển người vào / ra khỏi hội đồng");
+        if (kCu && kCu.aaa && !kMoi.aaa && soAAAConLai(x.id) === 0) throw new Error("Không chuyển thành viên hội đồng cuối cùng ra khỏi hội đồng");
+        x.boPhan = o.boPhan; x.to = o.to || "";
+      }
       if (o.to) x.to = o.to; if (o.chucDanh) x.chucDanh = o.chucDanh;
       chuanNhanSu(x);
       if (x.role !== "sales") Object.keys(state.partyManager).forEach(k => { if (state.partyManager[k] === id) delete state.partyManager[k]; });
@@ -6761,6 +6812,10 @@ const admin = {
     khoaNhanSu(id, mo, by) {
       const x = staffById(id); if (!x) throw new Error("Không có nhân viên " + id);
       if (x.id === _me.id) throw new Error("Không tự khoá chính mình");
+      if (laAAA(x.role) && !mo) {
+        if (!laAAA()) throw new Error("Chỉ hội đồng quản trị mới khoá thành viên hội đồng");
+        if (soAAAConLai(x.id) === 0) throw new Error("Không khoá thành viên hội đồng cuối cùng");
+      }
       x.active = !!mo; if (!x.active) { state.tickets.forEach(t => { if (t.assignee === id) t.assignee = null; }); }
       audit.log(x.active ? "tochuc.molai" : "tochuc.khoa", id + " · " + x.name, by); store.save(); return nhanSuGon(x);
     },
@@ -6969,6 +7024,7 @@ const admin = {
     proposeAdvance, proposeContract, review: reviewProposal, flow: PROPOSAL_FLOW },
   tickets: {
     types: TICKET_TYPES, statuses: TICKET_STATUS, depts: TEN_BO_PHAN, deptOf: type => boPhanCua(type),
+    gioiHan: { soBinhLuan: COMMENT_MAX, doDaiBinhLuan: COMMENT_LEN, doDaiMoTa: BODY_LEN },
     list(f) {
       let ds = ticketsChoVai(state.tickets.slice());
       ds.forEach(deptCua);
@@ -7524,7 +7580,7 @@ const api = {
       comments: (t.comments || []).map(c => ({ at: c.at, by: laNhanVien(c.by) ? "Haustek" : c.by, cuaToi: !laNhanVien(c.by), text: c.text })),
       done: t.done ? { at: t.done.at } : null,
       dept: deptCua(t), deptLabel: TEN_BO_PHAN[deptCua(t)].vi, deptLabelEn: TEN_BO_PHAN[deptCua(t)].en }));
-    return scrub({ rows, types: TICKET_TYPES, counts: { open: rows.filter(t => t.status !== "done").length, done: rows.filter(t => t.status === "done").length } });
+    return scrub({ rows, types: TICKET_TYPES, gioiHan: { soBinhLuan: COMMENT_MAX, doDaiBinhLuan: COMMENT_LEN, doDaiMoTa: BODY_LEN }, counts: { open: rows.filter(t => t.status !== "done").length, done: rows.filter(t => t.status === "done").length } });
   },
   /* Kiểm thử hồ sơ trước khi gửi: trả về lỗi chặn (nếu có) và bảng kiểm. */
   checkRelease(role, partyId, payload) {

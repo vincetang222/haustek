@@ -996,12 +996,15 @@ check("Chuông và tìm nhanh chỉ dẫn tới màn mà vai đó mở được"
   must(!ra.length, "mục dẫn sai vai: " + ra.join(", "));
   return "4 vai · không mục nào dẫn tới màn bị cấm";
 });
-check("Giám đốc thấy hết: mọi màn, bản tính đầy đủ, dự báo doanh thu", () => {
+check("Giám đốc qua cửa: mọi trang trừ Nhập số liệu, bản tính đầy đủ, dự báo; hội đồng (AAA) đi qua hết", () => {
   nhu("S01");
-  const q = A.quyen.cua("mgmt");
-  must(q.man.length === Object.keys(A.quyen.bang().man).length, "giám đốc thiếu màn");
+  const q = A.quyen.cua("mgmt"), tatCa = Object.keys(A.quyen.bang().man);
+  must(q.man.length === tatCa.length - 1 && q.man.indexOf("nhap-so-lieu") < 0, "giám đốc phải thấy mọi trang trừ Nhập số liệu: " + tatCa.filter(m => q.man.indexOf(m) < 0).join(","));
+  must(!A.quyen.nhom("nhapLieu") && !A.quyen.nhom("kiemSo") && !A.quyen.nhom("phatHanhHo"), "giám đốc vẫn gõ số / bỏ sai lệch / tạo hồ sơ thay");
   must(A.proposals.list({ type: "advance" })[0].calc.roi != null && A.forecast().projected.revenue > 0, "giám đốc mất bản tính / dự báo");
-  return q.man.length + " màn · bản tính đầy đủ";
+  const hd = A.quyen.cua(A.quyen.vaiAAA);
+  must(hd.aaa === true && hd.man.length === tatCa.length && hd.nhom.length === Object.keys(A.quyen.bang().nhom).length, "hội đồng không đi qua hết");
+  return q.man.length + "/" + tatCa.length + " trang · bản tính đầy đủ · hội đồng " + hd.man.length + " trang";
 });
 
 /* ===================== VÒNG 9: TICKET THEO BỘ PHẬN · TẠO HỒ SƠ THAY ĐỐI TÁC ===================== */
@@ -1063,12 +1066,14 @@ check("Tạo hồ sơ phát hành thay đối tác: hỗ trợ bị chặn, kinh
 check("Quyền suy ra từ cây tổ chức: màn và nhóm hàm của mỗi vai đúng bằng khối tương ứng; trưởng bộ phận kinh doanh thấy cả bộ phận, chuyên viên chỉ phần mình", () => {
   nhu("S01");
   const b = A.quyen.bang();
-  b.khoi.forEach(k => {
+  /* khối hội đồng là AAA: quyền không đến từ bảng nên không so với bảng */
+  must(b.khoi.filter(k => k.aaa).length === 1 && b.khoi.find(k => k.aaa).vai === A.quyen.vaiAAA, "phải có đúng một khối AAA, mang vai hội đồng");
+  b.khoi.filter(k => !k.aaa).forEach(k => {
     Object.keys(b.man).forEach(m => must((b.man[m].includes(k.vai)) === (k.man.includes(m)), "màn " + m + " lệch với khối " + k.id));
     Object.keys(b.nhom).forEach(g => must(b.nhom[g].vai.includes(k.vai) === k.nhom.includes(g), "nhóm " + g + " lệch với khối " + k.id));
   });
   const cay = A.toChuc.cay();
-  must(cay.khoi.length >= 5 && cay.khoi.every(k => k.to.length > 0), "cây thiếu khối hoặc tổ");
+  must(cay.khoi.length >= 6 && cay.khoi.every(k => k.to.length > 0), "cây thiếu khối hoặc tổ");
   must(cay.khoi.every(k => k.to.every(t => t.nhiemVu.every(n => typeof n.dem === "number"))), "nhiệm vụ không đếm được");
   const truong = nhu("S04"), tatCa = A.parties.list({}).rows.length, dxTruong = A.proposals.list().length;
   must(A.quyen.truong() && tatCa > 118, "trưởng bộ phận kinh doanh không thấy cả bộ phận");

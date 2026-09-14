@@ -81,7 +81,9 @@ check("Nhập thêm số liệu tay thì đối soát và điều kiện chốt 
   const t0 = J(A.recon(mo.i).rows.map(r => r.attributed));
   const c0 = J(A.approvalChecks(mo.i).map(c => c.ok));
   const f0 = A.feedTotals(mo.i, 0).attributed;
-  A.nhapLieu.ghiKy(mo.i, 0, f0 + 1234, { nguon: "onerpm", ghiChu: "qc đệm" }, "test");
+  /* gõ số là việc của vận hành; giám đốc (mặc định của bài kiểm) đã qua cửa từ vòng 22 */
+  const me = A.staff.me; A.staff.setMe("S02");
+  try { A.nhapLieu.ghiKy(mo.i, 0, f0 + 1234, { nguon: "onerpm", ghiChu: "qc đệm" }, "test"); } finally { A.staff.setMe(me.id); }
   const t1 = J(A.recon(mo.i).rows.map(r => r.attributed));
   const c1 = J(A.approvalChecks(mo.i).map(c => c.ok));
   must(t0 !== t1 || c0 !== c1, "gõ số mới vào mà đối soát lẫn điều kiện chốt đều không nhúc nhích");

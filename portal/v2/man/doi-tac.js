@@ -154,7 +154,7 @@ HT.dangKy({
 function veDanhSach(c, tatCa) {
   var A = c.A, t = c.t, vi = c.lang === 'vi';
   var dem = tatCa.counts;
-  var sales = A.staff.byRole('sales').concat(A.staff.byRole('mgmt'));
+  var sales = A.staff.byRole('sales'); /* lõi chỉ giao tài khoản đối tác cho kinh doanh */
   var html = '<div class="bar">' +
     '<div class="srch">' + HM.icon('tim') + '<input type="search" data-tim placeholder="' + HM.esc(t('tim')) + '" value="' + HM.esc(LOC.tim) + '"></div>' +
     (A.staff.me.role === 'sales' ? '' : '<select class="in" data-nv style="width:auto;height:34px"><option value="">' + HM.esc(t('moiNv')) + '</option>' +
@@ -286,7 +286,7 @@ function moDoiTac(c, r) {
   var pk = r.partyKey, id = +pk.slice(2), laNs = r.kind === 'artist';
   var w = null; try { w = A.wallet(pk); } catch (e) { w = null; }
   var tk = []; try { tk = A.tickets.list({ status: 'open-all' }).filter(function (x) { return x.partyKey === pk; }); } catch (e) { tk = []; }
-  var sales = A.staff.byRole('sales').concat(A.staff.byRole('mgmt'));
+  var sales = A.staff.byRole('sales'); /* lõi chỉ giao tài khoản đối tác cho kinh doanh */
   var lich = []; try { lich = A.periods.map(function (p, i) { return A.agg(laNs ? 'artist' : 'label', id, i, 'rec').gross; }); } catch (e) { lich = []; }
   var ph = []; try { ph = A.catalogueFor(laNs ? 'artist' : 'label', id, { limit: 8, sort: 'revenue' }).rows; } catch (e) { ph = []; }
 
@@ -331,7 +331,7 @@ function moDoiTac(c, r) {
       '<button type="button" class="btn sm pri" data-tao-tk>' + HM.icon('info') + HM.esc(t('taoTicket')) + '</button>' +
       '<button type="button" class="btn sm" data-di="ho-tro">' + HM.esc(t('moHoTro')) + '</button>' +
       (A.quyen.nhom('phatHanhHo') ? '<button type="button" class="btn sm" data-ho-so>' + HM.icon('disc') + HM.esc(t('taoHoSo')) + '</button>' : '') +
-      (['sales', 'mgmt'].indexOf(me.role) >= 0 ? '<button type="button" class="btn sm" data-de-ung>' + HM.icon('cash') + HM.esc(t('deUng')) + '</button><button type="button" class="btn sm" data-de-hd>' + HM.icon('file') + HM.esc(t('deHd')) + '</button>' : '') + '</div>' +
+      (A.quyen.nhom('deXuatTao') ? '<button type="button" class="btn sm" data-de-ung>' + HM.icon('cash') + HM.esc(t('deUng')) + '</button><button type="button" class="btn sm" data-de-hd>' + HM.icon('file') + HM.esc(t('deHd')) + '</button>' : '') + '</div>' +
     (lich.length ? '<h4 class="sec">' + HM.esc(t('dienBien')) + '</h4>' +
     HB.o({ loai: 'cot', cao: 150, anTruc: true, chuThich: false,
       truc: A.periods.map(function (p) { return p.label.slice(0, 2); }),

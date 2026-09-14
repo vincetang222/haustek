@@ -14,7 +14,7 @@ var LOC = { tab: 'so-do', tim: '' };
 
 HT.dangKy({
   id: 'to-chuc', nav: 'navToChuc', nhom: 'nhomHeThong', icon: 'tree',
-  dem: function (c) { try { var me = c.A.staff.me; if (me.role !== 'mgmt') return null; var n = c.A.toChuc.nhanSu().filter(function (x) { return x.active && (!x.to || !x.chucDanh); }).length; return n || null; } catch (e) { return null; } },
+  dem: function (c) { try { if (!c.A.quyen.nhom('nhanSu')) return null; var n = c.A.toChuc.nhanSu().filter(function (x) { return x.active && (!x.to || !x.chucDanh); }).length; return n || null; } catch (e) { return null; } },
 
   chu: {
     vi: {
@@ -52,7 +52,7 @@ HT.dangKy({
   },
 
   ve: function (root, c) {
-    var A = c.A, t = c.t, vi = c.lang === 'vi', me = A.staff.me, mgmt = me.role === 'mgmt';
+    var A = c.A, t = c.t, vi = c.lang === 'vi', me = A.staff.me, mgmt = A.quyen.nhom('nhanSu');
     var cay = A.toChuc.cay(), toi = A.toChuc.cuaToi();
     var ten = function (x) { return vi ? x.vi : x.en; };
     var html = HM.dau({ h1: HM.esc(t('h1')), mo: HM.esc(t('mo')),
@@ -225,7 +225,7 @@ function hoiTo(c, cay) {
   });
 }
 function moNhanSu(c, cay, id) {
-  var A = c.A, t = c.t, vi = c.lang === 'vi', mgmt = A.staff.me.role === 'mgmt';
+  var A = c.A, t = c.t, vi = c.lang === 'vi', mgmt = A.quyen.nhom('nhanSu');
   var x = A.toChuc.nhanSu().filter(function (y) { return y.id === id; })[0]; if (!x) return;
   var k = cay.khoi.filter(function (y) { return y.id === x.boPhan; })[0], to = k ? k.to.filter(function (y) { return y.id === x.to; })[0] : null;
   var ts = A.toChuc.taiSan().filter(function (a) { return ['taiKhoanDoiTac', 'nenTang', 'ticket', 'khieuNai'].indexOf(a.id) >= 0; }).map(function (a) { return { a: a, n: demGiu(A, a.id, x.id) }; }).filter(function (y) { return y.n; });

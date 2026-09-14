@@ -23,7 +23,7 @@ var CHON = { pIdx: null, fId: 0, q: '', ngay: null, bai: null, qBai: '' };
 
 HT.dangKy({
   id: 'nhap-so-lieu', nav: 'navNhap', nhom: 'nhomVanHanh', icon: 'down2',
-  vai: ['ops', 'accounting', 'mgmt'],
+  vai: ['ops', 'accounting'],
 
   chu: {
     vi: {

@@ -75,6 +75,10 @@ check("Không nhóm nào là quyền suông: nhóm nào cũng gác ít nhất m�
   /* Nhóm có trong bảng, có vai được cấp, mà không quy tắc nào trỏ tới thì
      nó chẳng gác gì — và những hàm lẽ ra nó gác đang chạy tự do. */
   const dung = {}; Object.keys(HAM).forEach(k => { dung[HAM[k]] = (dung[HAM[k]] || 0) + 1; });
+  /* Nhóm cũng có thể gác bằng lời gọi thẳng trong lõi (coQuyenNhom("g") /
+     chanQuyen(…, "g")) — giamSat vòng 22 là một nhóm như thế. */
+  const src = require("fs").readFileSync(require("path").join(__dirname, "..", "haustek-core.js"), "utf8");
+  Object.keys(NHOM).forEach(g => { const n = (src.match(new RegExp('(coQuyenNhom|chanQuyen)\\([^)]*"' + g + '"', "g")) || []).length; if (n) dung[g] = (dung[g] || 0) + n; });
   const suong = Object.keys(NHOM).filter(g => !dung[g]);
   must(!suong.length, "nhóm không gác gì: " + suong.join(", "));
   return Object.keys(NHOM).length + " nhóm · nhóm ít việc nhất gác " +
@@ -165,11 +169,18 @@ check("Cấm rồi thì phải báo cấm, không được vỡ", () => {
   return "mọi lệnh bị cấm đều ném đúng NO_QUYEN";
 });
 
-check("Giám đốc đi qua được mọi nhóm; vai khác thì đúng bảng", () => {
+check("Mọi vai đúng bảng, kể cả giám đốc; chỉ hội đồng (AAA) đi qua mọi nhóm và mọi trang", () => {
+  /* Vòng 22: giám đốc cũng qua cửa. Đường tắt duy nhất là vai hội đồng,
+     và vai ấy KHÔNG có trong bảng — bảng chỉ mô tả người phải qua cửa. */
+  const aaa = A.quyen.vaiAAA, hd = A.quyen.cua(aaa);
+  must(VAI.indexOf(aaa) < 0, "vai AAA lọt vào VAI_NB");
+  Object.keys(NHOM).forEach(g => { must(hd.nhom.indexOf(g) >= 0, "hội đồng bị chặn ở nhóm " + g); must(NHOM[g].vai.indexOf(aaa) < 0, "vai AAA ghi trong bảng nhóm " + g); });
+  Object.keys(MAN).forEach(m => { must(hd.man.indexOf(m) >= 0, "hội đồng bị chặn ở trang " + m); must(MAN[m].indexOf(aaa) < 0, "vai AAA ghi trong bảng trang " + m); });
   const gd = A.quyen.cua("mgmt").nhom;
-  Object.keys(NHOM).forEach(g => must(gd.indexOf(g) >= 0, "giám đốc bị chặn ở nhóm " + g));
+  ["nhapLieu", "kiemSo", "phatHanhHo"].forEach(g => must(gd.indexOf(g) < 0, "giám đốc vẫn cầm " + g));
+  must(gd.indexOf("chotKy") >= 0 && gd.indexOf("giamSat") >= 0, "giám đốc mất chốt kỳ / giám sát");
   const xau = [];
-  VAI.filter(v => v !== "mgmt").forEach(v => {
+  VAI.forEach(v => {
     const co = A.quyen.cua(v).nhom;
     Object.keys(NHOM).forEach(g => {
       const nen = NHOM[g].vai.indexOf(v) >= 0;
@@ -177,27 +188,27 @@ check("Giám đốc đi qua được mọi nhóm; vai khác thì đúng bảng",
     });
   });
   must(!xau.length, "lệch bảng: " + xau.join(", "));
-  return VAI.length + " vai × " + Object.keys(NHOM).length + " nhóm";
+  return VAI.length + " vai × " + Object.keys(NHOM).length + " nhóm đúng bảng · hội đồng " + hd.man.length + " trang / " + hd.nhom.length + " nhóm";
 });
 
 check("Trang chỉ giám đốc thì trưởng bộ phận cũng không vào", () => {
   const me = A.staff.me;
   const xau = [];
   try {
-    A.staff.list().filter(x => x.active !== false && x.role !== "mgmt").forEach(ai => {
+    A.staff.list().filter(x => x.active !== false && x.role !== "mgmt" && x.role !== A.quyen.vaiAAA).forEach(ai => {
       A.staff.setMe(ai.id);
       if (A.quyen.man("muc-tra")) xau.push(ai.role + "/" + (ai.title || ai.chucDanh) + " vào được Mức trả");
     });
   } finally { if (me) A.staff.setMe(me.id); }
   must(!xau.length, xau.join(" · "));
-  return "Mức trả nền tảng đóng với mọi vai ngoài giám đốc";
+  return "Mức trả nền tảng đóng với mọi vai ngoài giám đốc và hội đồng";
 });
 
 /* ================================================================= */
 check("Ba tay khác nhau: nhập số, kiểm sai lệch, chốt kỳ", () => {
-  /* Giám đốc đi qua mọi nhóm — đó là ngoại lệ đã biết và đã ghi trong
-     README, nên xét tách bạch trên các vai còn lại. */
-  const bo = a => a.filter(v => v !== "mgmt");
+  /* Từ vòng 22 giám đốc không còn cầm nhập số lẫn kiểm sai lệch, nên
+     không cần loại ra nữa; giữ bo() để phép kiểm nói rõ nó xét cả giám đốc. */
+  const bo = a => a.slice();
   const nhap = bo(NHOM.nhapLieu.vai), kiem = bo(NHOM.kiemSo.vai), chot = NHOM.chotKy.vai;
   must(nhap.length, "không ai được nhập số liệu");
   must(kiem.length, "không ai được bỏ qua sai lệch");
@@ -205,8 +216,8 @@ check("Ba tay khác nhau: nhập số, kiểm sai lệch, chốt kỳ", () => {
   must(!nhap.some(v => kiem.indexOf(v) >= 0), "một vai vừa nhập số vừa duyệt sai lệch: " + nhap.join(","));
   must(!nhap.some(v => chot.indexOf(v) >= 0), "một vai vừa nhập số vừa chốt kỳ: " + nhap.join(","));
   must(!kiem.some(v => chot.indexOf(v) >= 0), "một vai vừa duyệt sai lệch vừa chốt kỳ: " + kiem.join(","));
-  const tg = bo(NHOM.tien.vai);
-  must(!tg.some(v => chot.indexOf(v) >= 0), "vai nhập tỷ giá cũng chốt được kỳ: " + tg.join(","));
+  const tg = NHOM.tyGia.vai;
+  must(tg.length && !tg.some(v => chot.indexOf(v) >= 0), "vai gõ tỷ giá cũng chốt được kỳ: " + tg.join(","));
   return "nhập: " + nhap.join(",") + " · kiểm: " + kiem.join(",") + " · chốt: giám đốc";
 });
 

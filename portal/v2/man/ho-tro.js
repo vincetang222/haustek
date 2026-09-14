@@ -37,9 +37,11 @@ var CHU = {
     khong: 'Không có ticket nào', khongMo: 'Đổi bộ lọc phía trên, hoặc tạo ticket hộ đối tác.',
     quaHan: 'quá hạn', dDoiTac: 'Đối tác', dNguoiTao: 'Người tạo', nguonPortal: 'gửi từ cổng đối tác', nguonStaff: 'nhân viên tạo hộ',
     dTaoLuc: 'Tạo lúc', dDong: 'Đóng lúc', hanhDong: 'Hành động', nhanViec: 'Nhận việc', ganCho: 'Gán cho…', doiTt: 'Đổi trạng thái…', doiUu: 'Đổi ưu tiên…',
-    luongTin: 'Trao đổi', benDoiTac: 'Đối tác', benHaustek: 'Haustek', traLoi: 'Trả lời', guiTraLoi: 'Gửi trả lời',
-    guiMo: 'Đối tác thấy nội dung này trên cổng của họ. Ticket mới sẽ tự chuyển sang đang xử lý.',
-    daNhan: 'Đã nhận việc', daGan: 'Đã gán cho', daDoiTt: 'Đã đổi trạng thái', daDoiUu: 'Đã đổi ưu tiên', daGui: 'Đã gửi trả lời',
+    moTa: 'Mô tả', khongMoTa: 'Không có mô tả', binhLuan: 'Bình luận', benDoiTac: 'Đối tác', vietBl: 'Viết bình luận ngắn…', guiBl: 'Gửi bình luận',
+    blMo: 'Bình luận ngắn, tối đa {n} ký tự, giữ {m} bình luận gần nhất. Đối tác thấy trên cổng của họ; ticket mới tự chuyển sang đang xử lý.',
+    conLai: 'còn {n} ký tự', chuaBl: 'Chưa có bình luận',
+    tickXong: 'Đánh dấu xong', moLai: 'Mở lại', xongBoi: 'Xong · {ai} · {luc}', tickMo: 'Chỉ người được giao (hoặc quản trị) đánh dấu xong. Đối tác bình luận lại thì ticket tự mở.',
+    daNhan: 'Đã nhận việc', daGan: 'Đã gán cho', daDoiTt: 'Đã đổi trạng thái', daDoiUu: 'Đã đổi ưu tiên', daGui: 'Đã gửi bình luận', daTick: 'Đã đánh dấu xong', daMoLai: 'Đã mở lại',
     taoMo: 'Dùng khi đối tác gọi điện hoặc gửi email thay vì tạo ticket trên cổng. Đối tác thấy ticket này trong mục Hỗ trợ của họ.',
     hDoiTac: 'Đối tác', hTimDt: 'Nhập tên hoặc mã đối tác', daChon: 'Đã chọn', khongThay: 'Không tìm thấy', hLoai: 'Loại yêu cầu', hTieuDe: 'Tiêu đề', hNoiDung: 'Nội dung',
     taoGhi: 'Hạn xử lý tính theo ưu tiên: khẩn 1 ngày, cao 2 ngày, bình thường 3 ngày, thấp 7 ngày.',
@@ -64,9 +66,11 @@ var CHU = {
     khong: 'No tickets', khongMo: 'Change the filters above, or log a ticket for a partner.',
     quaHan: 'overdue', dDoiTac: 'Partner', dNguoiTao: 'Created by', nguonPortal: 'from the partner portal', nguonStaff: 'logged by staff',
     dTaoLuc: 'Created', dDong: 'Closed', hanhDong: 'Actions', nhanViec: 'Take it', ganCho: 'Assign to…', doiTt: 'Change status…', doiUu: 'Change priority…',
-    luongTin: 'Conversation', benDoiTac: 'Partner', benHaustek: 'Haustek', traLoi: 'Reply', guiTraLoi: 'Send reply',
-    guiMo: 'The partner sees this on their portal. A new ticket moves to in progress automatically.',
-    daNhan: 'Ticket taken', daGan: 'Assigned to', daDoiTt: 'Status changed', daDoiUu: 'Priority changed', daGui: 'Reply sent',
+    moTa: 'Description', khongMoTa: 'No description', binhLuan: 'Comments', benDoiTac: 'Partner', vietBl: 'Write a short comment…', guiBl: 'Post comment',
+    blMo: 'Short comments, up to {n} characters; the last {m} are kept. The partner sees them on their portal; a new ticket moves to in progress automatically.',
+    conLai: '{n} characters left', chuaBl: 'No comments yet',
+    tickXong: 'Mark done', moLai: 'Reopen', xongBoi: 'Done · {ai} · {luc}', tickMo: 'Only the assignee (or an admin) can mark it done. A partner comment reopens it.',
+    daNhan: 'Ticket taken', daGan: 'Assigned to', daDoiTt: 'Status changed', daDoiUu: 'Priority changed', daGui: 'Comment posted', daTick: 'Marked done', daMoLai: 'Reopened',
     taoMo: 'For requests that arrive by phone or email instead of the portal. The partner sees this ticket under Support on their side.',
     hDoiTac: 'Partner', hTimDt: 'Type a partner name or ID', daChon: 'Selected', khongThay: 'Not found', hLoai: 'Request type', hTieuDe: 'Title', hNoiDung: 'Details',
     taoGhi: 'Due date follows priority: urgent 1 day, high 2 days, normal 3 days, low 7 days.',
@@ -81,10 +85,6 @@ function T(k) { return (CHU[HT.lang] || CHU.vi)[k] || k; }
 
 function bayGio() { return new Date().toISOString().slice(0, 19).replace('T', ' '); }
 function tenNv(A, id) { var s = id ? A.staff.get(id) : null; return s ? s.name : ''; }
-function tenTheoEmail(A, email) {
-  var s = A.staff.list().filter(function (x) { return x.email === email; })[0];
-  return s ? s.name : email;
-}
 function loaiCua(A, id) {
   return A.tickets.types.filter(function (x) { return x.id === id; })[0] || { id: id, label: id, labelEn: id };
 }
@@ -110,7 +110,7 @@ HT.dangKy({
     var knMo = kn.open + kn.disputed + kn.escalated;
 
     var bp = A.tickets.depts[me.role];
-    var html = HM.dau({ h1: HM.esc(t('h1')) + (me.role !== 'mgmt' && bp ? ' <span>' + HM.esc(c.lang === 'en' ? bp.en : bp.vi) + '</span>' : ''), mo: HM.esc(t('mo')), nut: LOC.tab === 'khieunai' ? '' : '<button type="button" class="btn pri" data-tao>' + HM.icon('info') + HM.esc(t('taoTicket')) + '</button>' });
+    var html = HM.dau({ h1: HM.esc(t('h1')) + (!A.quyen.nhom('giamSat') && bp ? ' <span>' + HM.esc(c.lang === 'en' ? bp.en : bp.vi) + '</span>' : ''), mo: HM.esc(t('mo')), nut: LOC.tab === 'khieunai' ? '' : '<button type="button" class="btn pri" data-tao>' + HM.icon('info') + HM.esc(t('taoTicket')) + '</button>' });
     html += HM.tabs([
       { k: 'ticket', l: t('tTicket'), icon: 'info', dem: dangMo },
       coKn ? { k: 'khieunai', l: t('tKn'), icon: 'alert', dem: knMo } : null
@@ -193,7 +193,7 @@ function veTicket(c, dem, rows) {
 
   html += '<div class="bar">' +
     '<div class="srch">' + HM.icon('tim') + '<input type="search" data-tim value="' + HM.esc(LOC.tim) + '" placeholder="' + HM.esc(t('tim')) + '"></div>' +
-    sel('data-loai', LOC.loai, [['', t('moiLoai')]].concat(A.tickets.types.filter(function (x) { return me.role === 'mgmt' || A.tickets.deptOf(x.id) === me.role; }).map(function (x) { return [x.id, c.song(x, 'label')]; }))) +
+    sel('data-loai', LOC.loai, [['', t('moiLoai')]].concat(A.tickets.types.filter(function (x) { return A.quyen.nhom('giamSat') || A.tickets.deptOf(x.id) === me.role; }).map(function (x) { return [x.id, c.song(x, 'label')]; }))) +
     sel('data-tt', LOC.tt, [['open-all', t('dangMoHet')]].concat(TT.map(function (s) { return [s, t(s)]; })).concat([['', t('moiTt')]])) +
     (LOC.toi ? '' : sel('data-nv', LOC.nv, [['', t('moiNv')], ['-', t('chuaGan')]].concat(A.staff.list().map(function (s) { return [s.id, s.name]; })))) +
     sel('data-uu', LOC.uu, [['', t('moiUu')]].concat(UU.map(function (p) { return [p, t(p)]; }))) +
@@ -291,15 +291,19 @@ function moTicket(c, id) {
       '<option value="">' + HM.esc(dau) + '</option>' +
       chon.map(function (o) { return '<option value="' + HM.esc(o[0]) + '">' + HM.esc(o[1]) + '</option>'; }).join('') + '</select>';
   };
-  var tin = tk.messages.map(function (m) {
-    var staff = m.who === 'staff';
-    var ai = staff ? T('benHaustek') + ' · ' + tenTheoEmail(A, m.by) : T('benDoiTac') + ' · ' + m.by;
-    return '<div style="display:flex;justify-content:' + (staff ? 'flex-end' : 'flex-start') + ';margin:7px 0">' +
-      '<div style="max-width:88%;min-width:0;background:' + (staff ? 'var(--accent-lo)' : 'var(--fill)') +
-        ';border-radius:' + (staff ? '12px 12px 3px 12px' : '12px 12px 12px 3px') + ';padding:9px 12px;font-size:13px;line-height:1.55">' +
-        '<div style="font-size:11.5px;color:var(--faint);margin-bottom:3px">' + HM.esc(ai + ' · ' + HT.fmt.luc(m.at)) + '</div>' +
-        HM.esc(m.text || '') + '</div></div>';
-  }).join('');
+  /* Vòng 22: không còn khung chat. Bình luận ngắn kiểu Lark, mỗi dòng một
+     người một lúc; "xong" là một cái tick của người được giao. */
+  var GH = A.tickets.gioiHan;
+  var bl = (tk.comments || []).map(function (m) {
+    var nv = A.staff.get(m.by), ai = nv ? nv.name : T('benDoiTac') + ' · ' + tk.party.name;
+    return '<div class="bl' + (nv ? '' : ' dt') + '"><span class="bl-ai">' + HM.esc(ai) + '</span><span class="bl-luc">' + HM.esc(HT.fmt.luc(m.at)) + '</span>' +
+      '<div class="bl-tx">' + HM.esc(m.text || '') + '</div></div>';
+  }).join('') || '<p class="nil">' + HM.esc(T('chuaBl')) + '</p>';
+  var xong = tk.done ? '<div class="bl-xong"><span class="ico ok">' + HM.icon('check') + '</span>' +
+      HM.esc(T('xongBoi').replace('{ai}', tenNv(A, tk.done.by) || '—').replace('{luc}', HT.fmt.luc(tk.done.at))) +
+      '<button type="button" class="btn sm" data-botick>' + HM.esc(T('moLai')) + '</button></div>'
+    : '<div class="bl-xong"><button type="button" class="btn sm' + (tk.assignee === me.id || !tk.assignee || A.quyen.nhom('quanTri') ? ' pri' : '') + '" data-tick>' + HM.icon('check') + HM.esc(T('tickXong')) + '</button>' +
+      '<span class="hint" style="margin:0">' + HM.esc(T('tickMo')) + '</span></div>';
 
   c.nganTruot(
     '<div class="btnrow" style="margin-bottom:14px">' +
@@ -320,18 +324,21 @@ function moTicket(c, id) {
     '<div class="btnrow">' +
       (tk.assignee !== me.id ? '<button type="button" class="btn sm pri" data-nhan>' + HM.icon('user') + HM.esc(T('nhanViec')) + '</button>' : '') +
       selNho('data-gan', T('ganCho'), A.staff.list().filter(function (s) { return s.id !== tk.assignee; }).map(function (s) { return [s.id, s.name + ' · ' + c.song(s, 'title')]; })) +
-      selNho('data-doitt', T('doiTt'), TT.filter(function (s) { return s !== tk.status; }).map(function (s) { return [s, T(s)]; })) +
+      selNho('data-doitt', T('doiTt'), TT.filter(function (s) { return s !== tk.status && s !== 'done'; }).map(function (s) { return [s, T(s)]; })) +
       selNho('data-doiuu', T('doiUu'), UU.filter(function (p) { return p !== tk.priority; }).map(function (p) { return [p, T(p)]; })) +
       selNho('data-chuyen', T('chuyenBp'), A.tickets.types.filter(function (x) { return x.id !== tk.type; }).map(function (x) { var d = A.tickets.depts[A.tickets.deptOf(x.id)]; return [x.id, c.song(x, 'label') + ' · ' + (HT.lang === 'en' ? d.en : d.vi)]; })) +
     '</div>' +
     '<h4 class="sec">' + HM.esc(HTS.t('bvTieu')) + '</h4>' +
     HTS.buocViec(c, 'ticket', tk.id) +
-    '<h4 class="sec">' + HM.esc(T('luongTin')) + ' (' + tk.messages.length + ')</h4>' +
-    '<div>' + tin + '</div>' +
-    '<h4 class="sec">' + HM.esc(T('traLoi')) + '</h4>' +
-    '<textarea class="in" data-tl rows="3"></textarea>' +
-    '<div class="btnrow" style="margin-top:8px"><button type="button" class="btn sm pri" data-gui>' + HM.esc(T('guiTraLoi')) + '</button>' +
-      '<span class="hint" style="margin:0">' + HM.esc(T('guiMo')) + '</span></div>',
+    '<h4 class="sec">' + HM.esc(T('moTa')) + '</h4>' +
+    '<div class="bl-tx" style="margin-bottom:4px">' + (tk.body ? HM.esc(tk.body) : '<span class="nil">' + HM.esc(T('khongMoTa')) + '</span>') + '</div>' +
+    xong +
+    '<h4 class="sec">' + HM.esc(T('binhLuan')) + ' (' + (tk.comments || []).length + '/' + GH.soBinhLuan + ')</h4>' +
+    '<div class="bl-ds">' + bl + '</div>' +
+    '<textarea class="in" data-tl rows="2" maxlength="' + GH.doDaiBinhLuan + '" placeholder="' + HM.esc(T('vietBl')) + '"></textarea>' +
+    '<div class="btnrow" style="margin-top:8px"><button type="button" class="btn sm pri" data-gui>' + HM.esc(T('guiBl')) + '</button>' +
+      '<span class="hint" style="margin:0" data-conlai>' + HM.esc(T('conLai').replace('{n}', GH.doDaiBinhLuan)) + '</span></div>' +
+    '<p class="hint">' + HM.esc(T('blMo').replace('{n}', GH.doDaiBinhLuan).replace('{m}', GH.soBinhLuan)) + '</p>',
     { tieuDe: tk.title, phu: tk.id + ' · ' + tk.party.clientId, khiMo: function (dr) {
       var lam = function (fn, msg) {
         try { fn(); c.thongBao(msg, 'ok'); LOC.moId = id; c.veLai(); }
@@ -357,8 +364,12 @@ function moTicket(c, id) {
       });
       HM.bam(dr, '[data-gui]', function () {
         var o = dr.querySelector('[data-tl]');
-        lam(function () { A.tickets.reply(id, o.value, me.email); }, T('daGui'));
+        lam(function () { A.tickets.comment(id, o.value, me.id); }, T('daGui'));
       });
+      HM.bam(dr, '[data-tick]', function () { lam(function () { A.tickets.tick(id, me.email); }, T('daTick') + ' · ' + id); });
+      HM.bam(dr, '[data-botick]', function () { lam(function () { A.tickets.boTick(id, me.email); }, T('daMoLai') + ' · ' + id); });
+      var o2 = dr.querySelector('[data-tl]'), cl = dr.querySelector('[data-conlai]');
+      if (o2 && cl) o2.addEventListener('input', function () { cl.textContent = T('conLai').replace('{n}', Math.max(0, GH.doDaiBinhLuan - o2.value.length)); });
     } }
   );
 }

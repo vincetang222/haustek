@@ -15,7 +15,7 @@
 const { chromium } = require('playwright');
 const dungFontThat = require('./font-that.js');
 
-const VAI = ['mgmt', 'accounting', 'sales', 'ops', 'support'];
+const VAI = ['bod', 'mgmt', 'accounting', 'sales', 'ops', 'support'];
 let loi = 0, dem = 0;
 function must(ok, ten, them) { dem++; if (!ok) { loi++; console.log('  ✗ ' + ten + (them ? ' · ' + them : '')); } else console.log('  ✓ ' + ten); }
 

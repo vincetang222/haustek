@@ -108,7 +108,7 @@ HT.dangKy({
     html += '<div class="bar">' +
       '<div class="srch">' + HM.icon('tim') + '<input type="search" data-tim value="' + HM.esc(LOC.tim) + '" placeholder="' + HM.esc(t('tim')) + '"></div>' +
       '<select class="in" data-nv style="width:auto;height:34px"><option value="">' + HM.esc(t('moiNv')) + '</option>' +
-        A.staff.byRole('sales').concat(A.staff.byRole('mgmt')).map(function (s) { return '<option value="' + s.id + '"' + (LOC.nv === s.id ? ' selected' : '') + '>' + HM.esc(s.name) + '</option>'; }).join('') + '</select>' +
+        A.staff.byRole('sales').map(function (s) { return '<option value="' + s.id + '"' + (LOC.nv === s.id ? ' selected' : '') + '>' + HM.esc(s.name) + '</option>'; }).join('') + '</select>' +
       '<input class="in" data-tk style="width:200px;height:34px" placeholder="' + HM.esc(t('timTk')) + '" value="' + HM.esc(LOC.tk) + '">' +
       boLoc.map(function (b) {
         return '<button type="button" class="pill' + (LOC.loc === b[0] ? ' on' : '') + '" data-loc="' + b[0] + '">' + HM.esc(b[1]) + ' <span class="muted">' + b[2] + '</span></button>';
