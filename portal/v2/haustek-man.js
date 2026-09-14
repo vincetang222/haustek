@@ -321,15 +321,11 @@ function lechHtml(nay, truoc, nhanTruoc) {
    --------------------------------------------------------------------- */
 var _nho = {}, _moc = null;
 function moc(A) {
-  if (!A || !A.state) return 'khach';
-  var s = A.state();
-  return [Object.keys(s.approved).length, s.queue.length, s.rates.length,
-          Object.keys(s.match).length, Object.keys(s.variance).length,
-          Object.keys(s.advances).length, s.publishedAt,
-          Object.keys(s.feeds).map(function (k) {
-            return Object.keys(s.feeds[k]).map(function (f) { return s.feeds[k][f].status[0]; }).join('');
-          }).join(''),
-          Object.keys(s.pub).map(function (k) { return s.pub[k].status[0]; }).join('')].join('|');
+  /* Lõi giữ một chuỗi phiên bản đổi mỗi khi có gì đó làm số đổi (A.ver).
+     Trước đây tầng UI tự băm state qua A.state() — vừa xuyên ranh giới,
+     vừa thiu khi bảng giá hay số gõ tay đổi mà dấu vân tay không nhìn thấy. */
+  if (!A || typeof A.ver !== 'function') return 'khach';
+  return A.ver();
 }
 function nho(A, key, fn) {
   var m = moc(A);

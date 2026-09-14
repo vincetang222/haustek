@@ -86,15 +86,7 @@ HT.dangKy({
     });
 
     var theoKy = HM.nho(A, 'ungTheoKy', function () {
-      var st = A.state();
-      return A.periods.map(function (p) {
-        var s = 0;
-        Object.keys(st.advances).forEach(function (k) {
-          var b = st.advances[k].byPeriod || {};
-          s += b[p.k] || 0;
-        });
-        return Math.round(s * 100) / 100;
-      });
+      return A.advances.theoKy().map(function (r) { return r.thuHoi; });
     });
 
     var html = HM.dau({
@@ -223,7 +215,7 @@ HT.dangKy({
    Chi tiết một khoản ứng
    ===================================================================== */
 function moChiTiet(c, r) {
-  var A = c.A, st = A.state().advances[r.key] || { byPeriod: {} };
+  var A = c.A, st = A.advances.theoBen(r.key);
   var theo = st.byPeriod || {};
   var la = r.key[0] === 'L';
 

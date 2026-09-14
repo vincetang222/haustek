@@ -132,7 +132,7 @@ HT.dangKy({
            { l: t('kXem'), v: HB.gonSo(dem.views) }] });
     html += HM.tabs([
       { k: 'kn', l: t('tabKn'), icon: 'alert', dem: dem.open + dem.disputed + dem.escalated },
-      { k: 'video', l: t('tabVideo'), icon: 'disc', dem: Object.keys(A.state().videoSettings).length },
+      { k: 'video', l: t('tabVideo'), icon: 'disc', dem: A.videoSettings.keys().length },
       { k: 'qt', l: t('tabQt'), icon: 'list' }
     ], LOC.tab);
     var phan = LOC.tab === 'video' ? veVideo(c) : LOC.tab === 'qt' ? veQuyTrinh(c) : veKhieuNai(c);
@@ -490,7 +490,7 @@ function veVideo(c) {
   var A = c.A, t = c.t;
   var q = LOC.tkQ.trim();
   var ketQua = q ? A.parties.list({ q: q }).rows.slice(0, 8) : [];
-  var coSan = Object.keys(A.state().videoSettings);
+  var coSan = A.videoSettings.keys();
   var LOAI = { label: t('loaiLabel'), sublabel: t('loaiSub'), artist: t('loaiArtist') };
   var loaiCua = function (pk) { var p = A.parties.list({ q: A.partyClientId(pk) }).rows[0]; return p ? LOAI[p.kind] || p.kind : (pk[0] === 'L' ? LOAI.label : LOAI.artist); };
 

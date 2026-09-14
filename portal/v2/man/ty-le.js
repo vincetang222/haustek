@@ -58,7 +58,7 @@ HT.dangKy({
 
   ve: function (root, c) {
     var A = c.A, t = c.t;
-    var raw = A.state().rates;
+    var raw = A.rates.raw();
 
     var demTheoBen = {};
     raw.forEach(function (r) { demTheoBen[r.partyKey] = (demTheoBen[r.partyKey] || 0) + 1; });

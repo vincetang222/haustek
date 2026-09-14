@@ -125,7 +125,7 @@ function veLuoi(c) {
     than += '<tr' + (p.k === c.kyKey ? ' style="box-shadow:inset 3px 0 0 var(--accent)"' : '') + '>' +
       '<td class="k"><div class="cell">' + HM.esc(p.label) + '</div></td>';
     A.feeds.forEach(function (f) {
-      var st = A.state().feeds[p.k][f.id];
+      var st = A.ingest.trangThai(p.k, f.id);
       var co = st.status === 'loaded';
       than += '<td>' + (duyet
         ? '<div class="cell">' + HM.cham(co ? 'ok' : 'no', co ? t('daNap') : t('thieu')) + '</div>'
@@ -136,7 +136,7 @@ function veLuoi(c) {
             : '<span class="d">' + HM.esc(c.song(f, 'fmt')) + '<br>Bấm để nhập báo cáo</span>')) + '">' +
           HM.cham(co ? 'ok' : 'no', co ? t('daNap') : t('thieu')) + '</button>') + '</td>';
     });
-    var pb = A.state().pub[p.k], coPub = pb && pb.status === 'loaded';
+    var pb = A.ingest.trangThaiPub(p.k), coPub = pb && pb.status === 'loaded';
     var cuoiQuy = p.month % 3 === 0;
     than += '<td>' + (duyet
       ? '<div class="cell">' + (coPub ? HM.cham('ok', t('quy') + p.quarter) : '<span class="nil">—</span>') + '</div>'
@@ -186,7 +186,7 @@ function veLuong(c) {
         return Math.round(s * 100) / 100;
       });
     });
-    var st = A.state().feeds[c.kyKey][f.id];
+    var st = A.ingest.trangThai(c.kyKey, f.id);
     var co = st.status === 'loaded';
     var duyet = A.isApproved(c.kyKey);
     var treo = A.queue.list({ feedId: f.id, status: 'pending' });
@@ -222,7 +222,7 @@ function veLuong(c) {
   });
 
   /* tác quyền — dòng tiền riêng, đặt riêng */
-  var pb = A.state().pub[c.kyKey];
+  var pb = A.ingest.trangThaiPub(c.kyKey);
   var coPub = pb && pb.status === 'loaded';
   var kyCoPub = A.periods.filter(function (p, i) { return A.pubLoaded(i); });
   var pubTheoKy = HM.nho(A, 'pubKy', function () {

@@ -351,10 +351,11 @@ function veCauHoi(c) {
    TAB 4 — DỮ LIỆU BẢN MẪU
    ===================================================================== */
 function veDuLieu(c) {
-  var A = c.A, t = c.t, st = A.state();
+  var A = c.A, t = c.t;
   var co = HAUSTEK.storage.available;
-  var kich = 0;
-  try { kich = JSON.stringify(st).length; } catch (e) {}
+  /* Trang không đọc state thô nữa: lõi trả một gói thông tin lưu trữ. */
+  var tt = HAUSTEK.storage.thongTin();
+  var kich = tt.kichThuoc;
 
   return HM.the({
     h2: c.lang === 'vi' ? 'Nơi lưu dữ liệu bản mẫu' : 'Where the prototype’s data lives',
@@ -362,13 +363,14 @@ function veDuLieu(c) {
       ? 'Danh mục và doanh thu <b>không</b> được lưu: mỗi lần mở đều được sinh lại y hệt nhờ giá trị gốc cố định. Phần được lưu là <b>quyết định</b> của người vận hành, và đó cũng chính là dữ liệu được chuyển sang cổng đối tác.'
       : 'Catalogue and revenue are NOT stored — they regenerate identically from a fixed seed. What is stored are the operator’s DECISIONS, and that is exactly what flows to the client portal.',
     than: HM.kv([
-      { t: c.lang === 'vi' ? 'Nơi lưu' : 'Storage', v: co ? 'localStorage · ' + 'haustek.portal.v1' : (c.lang === 'vi' ? 'trình duyệt đang chặn, chỉ giữ trong bộ nhớ phiên' : 'blocked — memory only') },
-      { t: c.lang === 'vi' ? 'Kích thước' : 'Size', v: HT.fmt.n(Math.round(kich / 1024)) + ' KB' },
-      { t: c.lang === 'vi' ? 'Kỳ đã xét duyệt' : 'Approved periods', v: Object.keys(st.approved).length + '/' + A.periods.length },
-      { t: c.lang === 'vi' ? 'Dòng khớp thủ công' : 'Hand-matched rows', v: HT.fmt.n(Object.keys(st.match).length) },
-      { t: c.lang === 'vi' ? 'Dòng tỷ lệ' : 'Rate rows', v: HT.fmt.n(st.rates.length) },
-      { t: c.lang === 'vi' ? 'Khoản tạm ứng' : 'Advances', v: HT.fmt.n(Object.keys(st.advances).length) },
-      { t: c.lang === 'vi' ? 'Dòng nhật ký thao tác' : 'Audit entries', v: HT.fmt.n(st.audit.length) },
+      { t: c.lang === 'vi' ? 'Nơi lưu' : 'Storage', v: co ? 'localStorage · ' + tt.khoa : (c.lang === 'vi' ? 'trình duyệt đang chặn, chỉ giữ trong bộ nhớ phiên' : 'blocked — memory only') },
+      { t: c.lang === 'vi' ? 'Phiên bản lược đồ' : 'Schema version', v: String(tt.luocDoVer) + ' · ' + tt.luocDo.length + (c.lang === 'vi' ? ' khoá' : ' keys') },
+      { t: c.lang === 'vi' ? 'Kích thước' : 'Size', v: HT.fmt.n(Math.round(kich / 1024)) + ' KB / ' + HT.fmt.n(Math.round(tt.gioiHanUoc / 1024)) + ' KB' },
+      { t: c.lang === 'vi' ? 'Kỳ đã xét duyệt' : 'Approved periods', v: tt.soKyDuyet + '/' + A.periods.length },
+      { t: c.lang === 'vi' ? 'Dòng khớp thủ công' : 'Hand-matched rows', v: HT.fmt.n(tt.soKhopTay) },
+      { t: c.lang === 'vi' ? 'Dòng tỷ lệ' : 'Rate rows', v: HT.fmt.n(tt.soDongTyLe) },
+      { t: c.lang === 'vi' ? 'Khoản tạm ứng' : 'Advances', v: HT.fmt.n(tt.soTamUng) },
+      { t: c.lang === 'vi' ? 'Dòng nhật ký thao tác' : 'Audit entries', v: HT.fmt.n(tt.soNhatKy) },
       { t: c.lang === 'vi' ? 'Bản ghi đã sinh' : 'Generated recordings', v: HT.fmt.n(A.trackCount) },
       { t: c.lang === 'vi' ? 'Ô doanh thu theo nguồn' : 'Revenue cells by feed', v: HT.fmt.n(A.trackCount * A.periods.length * 3) }
     ]),

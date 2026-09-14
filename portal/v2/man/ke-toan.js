@@ -491,15 +491,7 @@ function veTamUng(c) {
   var kiem = HM.nho(A, 'kiem:' + c.ky.idx, function () { return A.earnedByParty(c.ky.idx); });
 
   var theoKy = HM.nho(A, 'ungTheoKy', function () {
-    var st = A.state();
-    return A.periods.map(function (p) {
-      var s = 0;
-      Object.keys(st.advances).forEach(function (k) {
-        var b = st.advances[k].byPeriod || {};
-        s += b[p.k] || 0;
-      });
-      return Math.round(s * 100) / 100;
-    });
+    return A.advances.theoKy().map(function (r) { return r.thuHoi; });
   });
 
   var html = HM.the({

@@ -915,7 +915,7 @@ check("Vận hành: không có tiền — ví, bảng kê, dự báo doanh thu, 
   mustThrow(() => A.proposals.list(), "đề xuất"); mustThrow(() => A.contractCalc("L:0", {}), "bản tính hợp đồng");
   const fs = A.forecastStreams();
   must(fs.projected.streams > 0 && fs.projected.revenue === undefined && JSON.stringify(fs).indexOf("revenue") < 0, "dự báo lượt nghe cho vận hành vẫn mang doanh thu");
-  must(A.agg("admin", 0, 0, "rec").gross >= 0 && Array.isArray(A.deliveries.list()), "vận hành mất báo cáo kỳ / giao nhận");
+  must(A.agg("admin", 0, 0, "rec").gross >= 0 && Array.isArray(A.platforms.list()), "vận hành mất báo cáo kỳ / nền tảng");
   must(!A.quyen.man("chi-tra") && !A.quyen.man("doi-tac") && A.quyen.man("phat-hanh"), "ma trận màn cho vận hành sai");
   /* Bảng giá nền tảng là quyết định của giám đốc. Vận hành nạp báo cáo và
      đối soát, nhưng không được thấy giá Haustek chào khách — mở được trang
@@ -1086,7 +1086,7 @@ check("Nhân sự nằm trong state: giám đốc thêm / chuyển / khoá; vai 
   const x = A.toChuc.themNhanSu({ name: "Phan Thử Việc", email: "thuviec@haustek-group.com", boPhan: "kinh-doanh", to: "marketing", chucDanh: "chuyen-vien" }, "x");
   /* Thang cấp: SỐ NHỎ LÀ CẤP CAO. Chuyên viên là Level 4, trưởng bộ phận Level 2. */
   must(x.role === "sales" && x.cap === 4 && /Marketing/.test(x.title), "vai / chức vụ không suy ra từ khối");
-  must(A.staff.get(x.id) && A.state().staff.some(s => s.id === x.id), "nhân sự mới không vào state");
+  must(A.staff.get(x.id) && A.staff.list().some(s => s.id === x.id), "nhân sự mới không vào danh sách nhân sự");
   const y = A.toChuc.chuyenNhanSu(x.id, { boPhan: "van-hanh", to: "du-lieu", chucDanh: "truong-bo-phan" }, "x");
   must(y.role === "ops" && y.cap === 2, "chuyển khối không đổi vai");
   must(A.quyen.capToiDa === 6 && A.quyen.capBac()[0].cap === 1 && A.quyen.capBac().slice(-1)[0].cap === 6, "thang cấp phải chạy từ Level 1 đến Level 6");
@@ -1113,7 +1113,7 @@ check("Thêm dữ liệu theo vai: đối tác (kinh doanh, tự phụ trách), 
   const nt = A.platforms.add({ name: "Nhạc Xanh", status: "connecting", ownerId: "S02" }, "x");
   must(A.platforms.list()[0].name === nt.name && A.platforms.list()[0].owner === "Trần Vận Hành", "nền tảng mới không đứng đầu danh sách");
   mustThrow(() => A.platforms.add({ name: "Nhạc Xanh" }, "x"), "trùng tên nền tảng");
-  A.pricing.add({ store: "Qobuz", tier: "front", currency: "EUR", kind: "track", price: 1.49 }, "x"); must(A.pricing.list().length === 1, "giá không lưu");
+  must(A.pricing === undefined && A.deliveries === undefined && A.bulk === undefined, "mặt tiền còn giao nhận / sửa hàng loạt / bảng giá đã bỏ từ vòng 14");
   nhu("S07");
   const bt = A.ledger.addAdjustment({ periodKey: openKey, partyKey: "L:0", kind: "chi-phi", amount: -12.5, note: "Phí chuyển khoản" }, "x");
   must(A.ledger.adjustments({ periodKey: openKey })[0].id === bt.id, "bút toán không vào sổ");

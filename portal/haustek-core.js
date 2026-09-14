@@ -1,8 +1,8 @@
 /* =====================================================================
    HAUSTEK PORTAL — LÕI DÙNG CHUNG  ("máy chủ giả lập")
    ---------------------------------------------------------------------
-   File này đóng vai trò cái mà sau này là DATABASE + API. Hai trang
-   intranet.html (admin) và dashboard.html (label / nghệ sĩ) cùng nạp
+   File này đóng vai trò cái mà sau này là DATABASE + API. Hai cổng
+   v2/intranet.html (nội bộ) và v2/khach.html (label / nghệ sĩ) cùng nạp
    file này, nhưng KHÔNG được phép với tới cùng một thứ:
 
      · HAUSTEK.admin  — toàn bộ dữ liệu thô, tên đơn vị phân phối, tỷ lệ
@@ -10,9 +10,9 @@
                         CHỈ intranet được chạm vào.
      · HAUSTEK.api    — trả về gói dữ liệu ĐÃ TÍNH SẴN và ĐÃ CẮT BỚT cho
                         đúng một người xem, đúng một kỳ ĐÃ DUYỆT.
-                        Đây là thứ duy nhất dashboard được gọi.
+                        Đây là thứ duy nhất cổng đối tác được gọi.
 
-   dashboard.html gọi HAUSTEK.lockdown() ngay khi khởi động: sau lời gọi
+   khach.html gọi HAUSTEK.lockdown() ngay khi khởi động: sau lời gọi
    đó, HAUSTEK.admin biến mất khỏi trang khách và không lời gọi nào của
    trang đó lấy lại được.
 
@@ -30,7 +30,7 @@
    Số liệu sinh tại chỗ bằng bộ sinh số giả ngẫu nhiên CÓ HẠT GIỐNG cố
    định — nên hai trang mở riêng vẫn ra đúng cùng một con số. Chỉ những
    QUYẾT ĐỊNH của admin (đã nạp luồng nào, đã duyệt kỳ nào, tỷ lệ, tạm
-   ứng, khớp tay) là được lưu lại và truyền qua dashboard.
+   ứng, khớp tay) là được lưu lại và truyền qua cổng đối tác.
    ===================================================================== */
 "use strict";
 (function(global){
@@ -41,7 +41,8 @@ const T_BOOT = performance.now();
    1. THÔNG SỐ
    --------------------------------------------------------------------- */
 const CFG = {
-  VERSION:      "1.3.0",   /* 1.3.0: đối tác chỉ thấy số NET; ví và rút tiền; ticket; dự báo */
+  VERSION:      "1.4.0",   /* 1.4.0: lược đồ có phiên bản và di trú; ba lớp người / bên thụ hưởng / vai; AAA */
+  LUOC_DO_VER:  2,         /* phiên bản LƯỢC ĐỒ state, tăng bằng DI_TRU — tách khỏi phiên bản ứng dụng */
   STORE_KEY:    "haustek.portal.v1",
   N_TRACKS:     50000,
   N_PERIODS:    12,
@@ -58,7 +59,7 @@ const CFG = {
    bất cứ thứ gì nằm đây đều tải về máy khách — mở dev tools hay chỉ cần
    `curl` file .js là đọc được, không cần chạy một dòng JavaScript nào.
    Vì vậy intranet.html tự nạp chúng vào lúc khởi động bằng
-   HAUSTEK.admin.provideSecrets(); dashboard.html không bao giờ gọi hàm đó,
+   HAUSTEK.admin.provideSecrets(); khach.html không bao giờ gọi hàm đó,
    nên bản sao lõi mà khách tải về không mang theo gì cả.
    Trong sản phẩm thật, tương đương là: những giá trị này nằm trong biến
    môi trường của máy chủ và chưa từng đi qua đường truyền tới khách. */
@@ -72,6 +73,9 @@ const KHONG_CO_BI_MAT = {
    nở ra khi intranet nạp bí mật vào. */
 let FORBIDDEN = ["grossRate", "distributor", "nhà phân phối", "phân phối",
                  "rate_share", "rateShare", "ký trực tiếp",
+                 /* Vòng 22: id và email nhân sự là số nội bộ; api.tickets từng
+                    trả email nhân viên trong tin nhắn cho đối tác. */
+                 "@haustek-group.com",
                  /* Đối tác chỉ thấy số NET của mình. Doanh thu gộp, phí dịch vụ
                     và phần Haustek nằm trong bảng kê PDF mà Haustek gửi riêng,
                     không nằm trong bất kỳ gói dữ liệu nào của cổng đối tác. */
@@ -347,11 +351,13 @@ const idxOf = (ix, k) => (k >= 0 && k + 1 < ix.off.length ? ix.arr.subarray(ix.o
    Danh mục và doanh thu sinh lại y hệt mỗi lần mở nhờ hạt giống cố định,
    nên không cần lưu. Thứ phải lưu là QUYẾT ĐỊNH của admin: đã nạp luồng
    nào, khớp tay dòng nào, tỷ lệ đổi từ ngày nào, đã duyệt kỳ nào. Đó
-   cũng chính là thứ chảy sang dashboard.
+   cũng chính là thứ chảy sang cổng đối tác.
    ===================================================================== */
 function defaultState() {
   const s = {
     v: CFG.VERSION,
+    luocDoVer: CFG.LUOC_DO_VER,
+    maDem: {},        /* bộ đếm sinh mã theo loại: lưu cùng state để mã không trùng sau khi nạp lại */
     feeds: {},        /* feeds[periodKey][feedId] = {status, at, file, rows, control} */
     pub:   {},        /* pub[periodKey] = {status, at, file} — tác quyền theo quý */
     match: {},        /* match["<track>:<p>"] = số tiền khớp tay cộng thêm */
@@ -373,8 +379,6 @@ function defaultState() {
     bank: {},         /* bank[partyKey] = tài khoản nhận tiền */
     tickets: [],      /* yêu cầu hỗ trợ */
     claims: [],       /* xung đột Content ID / khiếu nại trên nền tảng */
-    deliveries: [],   /* yêu cầu giao nhận nền tảng (vận hành) */
-    bulk: [],         /* yêu cầu sửa hàng loạt (vận hành) */
     videoSettings: {},/* cài đặt video / Content ID theo tài khoản */
     partyManager: {}, /* partyKey → nhân viên kinh doanh phụ trách */
     publishedAt: null
@@ -422,13 +426,204 @@ function fileNameFor(f, p) {
 }
 
 let state = null;
+
+/* =====================================================================
+   9a. LƯỢC ĐỒ TRẠNG THÁI — sổ đăng ký MỌI khoá của state
+   ---------------------------------------------------------------------
+   Trước vòng 22, khoá của state nằm rải ở defaultState, ensureShape và
+   lazyState; 28 khoá chỉ có ở ensureShape, một khoá (bkSentric) không ai
+   đọc. Thêm khoá là thêm tuỳ tiện, và người sau không biết khoá nào là
+   bảng nghiệp vụ, khoá nào là đệm.
+
+   Từ nay: mọi khoá khai ở đây, kèm kiểu và nghĩa. ensureShape đọc sổ này;
+   test/luoc-do.js đối chiếu Object.keys(state) với sổ, nên thêm khoá mà
+   quên khai là bài kiểm hỏng ngay. Khoá bị bỏ thì đi qua DI_TRU (bên
+   dưới), không xoá tay.
+
+   kieu: "mang" (mảng) · "bang" (object khoá→giá trị) · "gia" (giá trị lẻ)
+   nhom: "nghiep-vu" (sẽ thành bảng trong CSDL thật) · "van-hanh" (ghi chú
+         của người dùng, cũng lưu) · "he-thong" (phiên bản, bộ đếm)
+   ===================================================================== */
+const LUOC_DO = {
+  v:             { kieu: "gia",  nhom: "he-thong",  mo: "phiên bản ứng dụng đã ghi state này" },
+  luocDoVer:     { kieu: "gia",  nhom: "he-thong",  mo: "phiên bản lược đồ; DI_TRU nâng dần" },
+  maDem:         { kieu: "bang", nhom: "he-thong",  mo: "bộ đếm sinh mã theo loại (và theo tháng), xem sinhMa" },
+  publishedAt:   { kieu: "gia",  nhom: "he-thong",  mo: "mốc đổi số lần cuối cho cổng đối tác" },
+  feeds:         { kieu: "bang", nhom: "nghiep-vu", mo: "feeds[kỳ][nguồn] = {status, at, file, rows, control}" },
+  pub:           { kieu: "bang", nhom: "nghiep-vu", mo: "pub[kỳ] = {status, at, file}: báo cáo tác quyền theo quý" },
+  match:         { kieu: "bang", nhom: "nghiep-vu", mo: "match['bài:kỳ'] = tiền khớp tay cộng thêm" },
+  queue:         { kieu: "mang", nhom: "nghiep-vu", mo: "hàng chờ khớp ISRC" },
+  variance:      { kieu: "bang", nhom: "nghiep-vu", mo: "variance['kỳ:nguồn'] = sai lệch đã chấp nhận" },
+  rates:         { kieu: "mang", nhom: "nghiep-vu", mo: "bảng tỷ lệ label ↔ nghệ sĩ có ngày hiệu lực" },
+  contracts:     { kieu: "bang", nhom: "nghiep-vu", mo: "contracts[bên] = {feePct, fromKey, traThang, from, to, …}" },
+  rateOverride:  { kieu: "bang", nhom: "nghiep-vu", mo: "bảng giá nền tảng (per1k, khach) của giám đốc" },
+  advances:      { kieu: "bang", nhom: "nghiep-vu", mo: "advances[bên] = {opening, note, byPeriod}" },
+  carry:         { kieu: "bang", nhom: "nghiep-vu", mo: "phần dưới ngưỡng dồn sang kỳ sau, theo bên" },
+  approved:      { kieu: "bang", nhom: "nghiep-vu", mo: "approved[kỳ] = {at, by, note, overrides}" },
+  payouts:       { kieu: "bang", nhom: "nghiep-vu", mo: "payouts[kỳ] = bảng chi trả đã chốt (snapshot bất biến)" },
+  chiTraDao:     { kieu: "bang", nhom: "nghiep-vu", mo: "chiTraDao[kỳ] = [{lan, at, by, why, rows}]: dòng đảo khi huỷ chốt, không xoá snapshot" },
+  adjustments:   { kieu: "mang", nhom: "nghiep-vu", mo: "bút toán điều chỉnh BT-" },
+  fx:            { kieu: "bang", nhom: "nghiep-vu", mo: "tỷ giá hiện tại và tỷ giá đã chốt theo kỳ" },
+  phiChuyen:     { kieu: "bang", nhom: "nghiep-vu", mo: "phí chuyển khoản" },
+  accounts:      { kieu: "mang", nhom: "nghiep-vu", mo: "NGƯỜI DÙNG đăng nhập: {id U, email, role, partyKey (mặc định), ben[] (mọi bên thụ hưởng người này nắm), status}" },
+  bank:          { kieu: "bang", nhom: "nghiep-vu", mo: "bank[bên] = tài khoản nhận tiền" },
+  withdrawals:   { kieu: "mang", nhom: "nghiep-vu", mo: "yêu cầu rút tiền RT-" },
+  statements:    { kieu: "bang", nhom: "nghiep-vu", mo: "statements[kỳ][bên] = bảng kê PDF" },
+  releases:      { kieu: "mang", nhom: "nghiep-vu", mo: "hồ sơ phát hành HSTK-" },
+  tickets:       { kieu: "mang", nhom: "nghiep-vu", mo: "việc hỗ trợ HT-: body, comments[], done, assignee" },
+  claims:        { kieu: "mang", nhom: "nghiep-vu", mo: "khiếu nại CL-" },
+  proposals:     { kieu: "mang", nhom: "nghiep-vu", mo: "đề xuất tạm ứng / hợp đồng DX-" },
+  campaigns:     { kieu: "mang", nhom: "nghiep-vu", mo: "chiến dịch CD-" },
+  splits:        { kieu: "bang", nhom: "nghiep-vu", mo: "splits[bài] = [{email, pct, status, recoup, goc, taiKhoanId}]" },
+  tacPham:       { kieu: "bang", nhom: "nghiep-vu", mo: "tác phẩm ghi đè (tác giả, tỷ lệ) theo bài" },
+  dangKyTq:      { kieu: "bang", nhom: "nghiep-vu", mo: "trạng thái đăng ký với hội tác quyền" },
+  staff:         { kieu: "mang", nhom: "nghiep-vu", mo: "nhân sự (gương của STAFF + người thêm sau)" },
+  toChucThem:    { kieu: "bang", nhom: "nghiep-vu", mo: "khối / tổ thêm ngoài TO_CHUC" },
+  partyManager:  { kieu: "bang", nhom: "nghiep-vu", mo: "bên → nhân viên kinh doanh phụ trách" },
+  platformOwner: { kieu: "bang", nhom: "nghiep-vu", mo: "nền tảng → nhân sự phụ trách" },
+  platformsExtra:{ kieu: "mang", nhom: "nghiep-vu", mo: "nền tảng thêm bằng tay" },
+  extraParties:  { kieu: "mang", nhom: "nghiep-vu", mo: "label / nghệ sĩ thêm sau khi nạp (nối lại vào LABELS/ARTISTS)" },
+  videoSettings: { kieu: "bang", nhom: "nghiep-vu", mo: "Content ID theo bên" },
+  nhapTay:       { kieu: "mang", nhom: "nghiep-vu", mo: "số gõ tay N-: doanh thu kỳ×nguồn, theo bài" },
+  luotNgay:      { kieu: "bang", nhom: "nghiep-vu", mo: "lượt nghe ngày gõ tay" },
+  doiSoatNgay:   { kieu: "bang", nhom: "van-hanh",  mo: "đối soát lượt nghe ngày đã ghi" },
+  doiSoatBai:    { kieu: "bang", nhom: "van-hanh",  mo: "đối soát theo bài đã ghi" },
+  giaoTool:      { kieu: "bang", nhom: "van-hanh",  mo: "phiếu giao việc phát hành: tick từng tool" },
+  toolThem:      { kieu: "mang", nhom: "van-hanh",  mo: "tool thêm vào phiếu giao" },
+  toolBo:        { kieu: "mang", nhom: "van-hanh",  mo: "tool bỏ khỏi phiếu giao" },
+  linkStore:     { kieu: "bang", nhom: "van-hanh",  mo: "link nền tảng theo ISRC" },
+  soCongKhai:    { kieu: "bang", nhom: "van-hanh",  mo: "số công khai đọc từ link store" },
+  buocViec:      { kieu: "bang", nhom: "van-hanh",  mo: "bước quy trình đã đánh dấu theo việc" },
+  danhGiaNam:    { kieu: "bang", nhom: "van-hanh",  mo: "đánh giá nhân sự cuối năm" },
+  alerts:        { kieu: "bang", nhom: "van-hanh",  mo: "trạng thái xử lý cảnh báo lượt nghe" },
+  notifRead:     { kieu: "bang", nhom: "van-hanh",  mo: "thông báo đã đọc theo người" },
+  answers:       { kieu: "bang", nhom: "van-hanh",  mo: "câu trả lời cho các câu hỏi còn treo" },
+  audit:         { kieu: "mang", nhom: "van-hanh",  mo: "nhật ký thao tác (trần 400 dòng)" }
+};
 function ensureShape(s) {
-  ["withdrawals", "tickets", "claims", "deliveries", "bulk", "releases", "proposals", "staff", "campaigns", "adjustments", "priceExtra", "platformsExtra", "extraParties", "nhapTay"].forEach(k => { if (!Array.isArray(s[k])) s[k] = []; });
-  ["statements", "bank", "videoSettings", "partyManager", "splits", "alerts", "notifRead", "rateOverride", "contracts", "platformOwner", "toChucThem", "luotNgay", "buocViec", "danhGiaNam", "doiSoatNgay", "doiSoatBai", "giaoTool", "linkStore", "soCongKhai", "tacPham", "dangKyTq", "bkSentric"].forEach(k => { if (!s[k] || typeof s[k] !== "object") s[k] = {}; });
-  if (!Array.isArray(s.toolThem)) s.toolThem = [];
-  if (!Array.isArray(s.toolBo)) s.toolBo = [];
+  Object.keys(LUOC_DO).forEach(k => {
+    const d = LUOC_DO[k];
+    if (d.kieu === "mang") { if (!Array.isArray(s[k])) s[k] = []; }
+    else if (d.kieu === "bang") { if (!s[k] || typeof s[k] !== "object" || Array.isArray(s[k])) s[k] = {}; }
+  });
+  if (s.luocDoVer == null) s.luocDoVer = CFG.LUOC_DO_VER;
   return s;
 }
+
+/* =====================================================================
+   9b. DI TRÚ LƯỢC ĐỒ
+   ---------------------------------------------------------------------
+   Trước đây store.load bỏ toàn bộ state nếu s.v khác CFG.VERSION — mỗi
+   lần tăng phiên bản ứng dụng là mất mọi quyết định đã ghi. Giờ phiên bản
+   ứng dụng và phiên bản lược đồ tách nhau: state cũ được nâng dần qua
+   từng bước trong DI_TRU (theo thứ tự "den"), rồi mới qua ensureShape.
+   Mỗi bước phải idempotent: chạy hai lần cho cùng kết quả.
+
+   Bước di trú chỉ được đụng HÌNH DẠNG (đổi tên khoá, tách/gộp trường),
+   không được đọc hằng sinh lúc nạp (STAFF, PERIODS…) vì nó chạy trước khi
+   những thứ đó tồn tại; việc chuẩn hoá cần dữ liệu ấy đặt ở dongBoNhanSu.
+   ===================================================================== */
+const COMMENT_MAX = 20, COMMENT_LEN = 300, BODY_LEN = 1000;
+function diTruTicket(t) {
+  if (Array.isArray(t.messages)) {
+    const m = t.messages.slice();
+    const dau = m.length && m[0].who === "partner" ? m.shift() : null;
+    t.body = String((dau ? dau.text : t.body) || "").slice(0, BODY_LEN);
+    t.comments = m.map(x => ({ at: x.at, by: x.by, text: String(x.text || "").slice(0, COMMENT_LEN) })).slice(-COMMENT_MAX);
+    delete t.messages;
+  }
+  if (!Array.isArray(t.comments)) t.comments = [];
+  if (typeof t.body !== "string") t.body = "";
+  if (t.done === undefined) t.done = t.status === "done" ? { by: t.assignee || null, at: t.closedAt || t.updatedAt } : null;
+  return t;
+}
+/* Đọc lại bộ đếm sinh mã từ dữ liệu đã có, để mã mới không trùng mã cũ.
+   Mỗi loại một biểu thức bắt (nhóm, số). */
+const MA_DOC = [
+  ["hoSo",     "releases",    /^HSTK-(\d{4})-(\d+)$/],
+  ["ticket",   "tickets",     /^HT-(\d{4})-(\d+)$/],
+  ["rutTien",  "withdrawals", /^RT-(\d{4})-(\d+)$/],
+  ["deXuat",   "proposals",   /^DX-(\d{4})-(\d+)$/],
+  ["butToan",  "adjustments", /^BT-(\d{6})-(\d+)$/],
+  ["taiKhoan", "accounts",    /^U()(\d+)$/],
+  ["khieuNai", "claims",      /^CL-()(\d+)$/],
+  ["chienDich","campaigns",   /^CD-\d+-[A-Z]+-()(\d+)$/],
+  ["hangCho",  "queue",       /^Q()(\d+)$/],
+  ["nhapTay",  "nhapTay",     /^N-()(\d+)/],
+  ["nhanSu",   "staff",       /^S()(\d+)$/]
+];
+function khoiTaoMaDem(s) {
+  const md = (s.maDem && typeof s.maDem === "object") ? s.maDem : (s.maDem = {});
+  MA_DOC.forEach(([loai, bang, re]) => {
+    (Array.isArray(s[bang]) ? s[bang] : []).forEach(r => {
+      const m = re.exec(String(r && r.id || ""));
+      if (!m) return;
+      const k = m[1] ? loai + "|" + m[1] : loai, n = +m[2];
+      if (!(md[k] >= n)) md[k] = n;
+    });
+  });
+  return md;
+}
+const DI_TRU = [
+  { den: 2, mo: "Vòng 22: bỏ deliveries / bulk / priceExtra / bkSentric (mã chết từ vòng 14); maDem; ticket messages → body + comments + done; accounts.ben[]; chiTraDao",
+    chay(s) {
+      ["deliveries", "bulk", "priceExtra", "bkSentric"].forEach(k => { delete s[k]; });
+      (Array.isArray(s.tickets) ? s.tickets : []).forEach(diTruTicket);
+      (Array.isArray(s.accounts) ? s.accounts : []).forEach(a => {
+        if (!Array.isArray(a.ben)) a.ben = a.partyKey ? [{ key: a.partyKey, vai: "chu" }] : [];
+      });
+      if (!s.chiTraDao || typeof s.chiTraDao !== "object") s.chiTraDao = {};
+      khoiTaoMaDem(s);
+    } }
+];
+function diTru(s) {
+  let ver = +s.luocDoVer || 1;
+  DI_TRU.slice().sort((a, b) => a.den - b.den).forEach(m => { if (m.den > ver) { m.chay(s); ver = m.den; } });
+  s.luocDoVer = ver;
+  s.v = CFG.VERSION;
+  return s;
+}
+
+/* =====================================================================
+   9c. SINH MÃ ĐỊNH DANH — một chỗ, bộ đếm lưu trong state
+   ---------------------------------------------------------------------
+   Trước đây sáu bộ đếm là biến module (về 0 mỗi lần nạp lại trang) và
+   bốn loại mã lấy từ độ dài mảng — đã tái hiện trùng HSTK-2609-001,
+   U0018, BT-202607-002. Giờ mọi mã đi qua sinhMa(): bộ đếm nằm ở
+   state.maDem (khoá theo loại, và theo tháng với mã có tháng), được ghi
+   cùng state; khoiTaoMaDem() đọc lại bộ đếm từ dữ liệu cũ khi di trú;
+   và daCo() là dây an toàn cuối: mã đã tồn tại thì đếm tiếp.
+   ===================================================================== */
+const MA_DINH_DANH = {
+  hoSo:      { tienTo: "HSTK-", pad: 3 },   /* HSTK-YYMM-nnn  hồ sơ phát hành */
+  ticket:    { tienTo: "HT-",   pad: 3 },   /* HT-YYMM-nnn    việc hỗ trợ */
+  rutTien:   { tienTo: "RT-",   pad: 3 },   /* RT-YYMM-nnn    rút tiền */
+  deXuat:    { tienTo: "DX-",   pad: 3 },   /* DX-YYMM-nnn    đề xuất */
+  butToan:   { tienTo: "BT-",   pad: 3 },   /* BT-YYYYMM-nnn  bút toán */
+  taiKhoan:  { tienTo: "U",     pad: 4 },   /* Unnnn          người dùng */
+  khieuNai:  { tienTo: "CL-",   pad: 4 },   /* CL-nnnn        khiếu nại */
+  chienDich: { tienTo: "",      pad: 2 },   /* CD-bài-KI-nn   chiến dịch (đuôi) */
+  hangCho:   { tienTo: "Q",     pad: 5 },   /* Qnnnnn         hàng chờ khớp */
+  nhapTay:   { tienTo: "N-",    pad: 4 },   /* N-nnnn         số gõ tay */
+  nhanSu:    { tienTo: "S",     pad: 2 }    /* Snn            nhân sự */
+};
+function demMa(loai, nhom) {
+  const md = (state.maDem && typeof state.maDem === "object") ? state.maDem : (state.maDem = {});
+  const k = nhom ? loai + "|" + nhom : loai;
+  md[k] = (md[k] | 0) + 1;
+  return md[k];
+}
+function sinhMa(loai, nhom, daCo) {
+  const d = MA_DINH_DANH[loai];
+  if (!d) throw new Error("Không có loại mã " + loai);
+  let ma;
+  do {
+    const n = demMa(loai, nhom);
+    ma = d.tienTo + (nhom ? nhom + "-" : "") + String(n).padStart(d.pad, "0");
+  } while (daCo && daCo(ma));
+  return ma;
+}
+const nhomThang = at => String(at).slice(2, 4) + String(at).slice(5, 7);   /* "2026-09-13…" → "2609" */
 
 /* ---------------------------------------------------------------------
    8b. HỒ SƠ PHÁT HÀNH
@@ -440,11 +635,9 @@ function ensureShape(s) {
    --------------------------------------------------------------------- */
 const RELEASE_TYPES = ["single", "ep", "album"];
 const RELEASE_STATUS = ["submitted", "received", "coded", "released", "returned"];
-let releaseSeq = 0;
-function releaseId() {
-  releaseSeq++;
-  const d = new Date();
-  return "HSTK-" + String(d.getFullYear()).slice(2) + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(releaseSeq).padStart(3, "0");
+function releaseId(at) {
+  const d = at ? String(at) : nowISO();
+  return sinhMa("hoSo", nhomThang(d), ma => state.releases.some(r => r.id === ma));
 }
 function genIsrc(seed) {
   /* VN-HTK-26-NNNNN: mã quốc gia, mã đơn vị cấp, năm, số thứ tự */
@@ -517,7 +710,8 @@ function buildRelease(payload, artistId, submittedBy, role) {
   const lienHe = payload.contact || {};
   const camKet = {}; CAM_KET.forEach(c => { camKet[c.id] = !!(payload.commitments && payload.commitments[c.id]); });
   const r = {
-    id: releaseId(), artistId, artistName: a.name, artistClientId: a.clientId,
+    /* xem trước không tiêu mã: mã chỉ cấp khi hồ sơ được gửi thật */
+    id: submittedBy === "preview" ? "HSTK-XEM-TRUOC" : releaseId(now), artistId, artistName: a.name, artistClientId: a.clientId,
     labelId: a.labelId, submittedBy, submittedRole: role,
     title: chuoi(payload.title), version: chuoi(payload.version),
     type: payload.type, label: chuoi(payload.label) || (a.labelId >= 0 && LABELS[a.labelId] ? LABELS[a.labelId].name : "Haustek"),
@@ -626,20 +820,33 @@ const store = {
     try { localStorage.setItem(CFG.STORE_KEY, JSON.stringify(state)); return true; }
     catch (e) { return false; }
   },
+  /* Không còn bỏ state vì lệch phiên bản ứng dụng: có hình dạng state
+     (có feeds) là nhận, rồi nâng lược đồ bằng DI_TRU. */
   load() {
     try {
       const raw = localStorage.getItem(CFG.STORE_KEY);
       if (!raw) return null;
       const s = JSON.parse(raw);
-      return (s && s.v === CFG.VERSION) ? s : null;
+      return (s && typeof s === "object" && s.feeds && typeof s.feeds === "object") ? diTru(s) : null;
     } catch (e) { return null; }
   },
   clear() { try { localStorage.removeItem(CFG.STORE_KEY); } catch (e) {} },
   exportJSON() { return JSON.stringify(state, null, 1); },
   importJSON(txt) {
     const s = JSON.parse(txt);
-    if (!s || s.v !== CFG.VERSION) throw new Error("File trạng thái không đúng phiên bản " + CFG.VERSION);
-    state = ensureShape(s); invalidateRates(); rebuildMatchIndex(); store.save(); return true;
+    if (!s || typeof s !== "object" || !s.feeds || typeof s.feeds !== "object") throw new Error("File không phải trạng thái Haustek (thiếu feeds)");
+    if (+s.luocDoVer > CFG.LUOC_DO_VER) throw new Error("File thuộc lược đồ mới hơn (" + s.luocDoVer + " > " + CFG.LUOC_DO_VER + "), bản này chưa đọc được");
+    state = ensureShape(diTru(s)); invalidateRates(); rebuildMatchIndex(); store.save(); return true;
+  },
+  /* Thông tin lưu trữ cho trang Quản trị — thay cho việc trang đọc thẳng state */
+  thongTin() {
+    let kich = 0; try { kich = JSON.stringify(state).length; } catch (e) {}
+    const theoKhoa = {};
+    Object.keys(LUOC_DO).forEach(k => { try { theoKhoa[k] = JSON.stringify(state[k] == null ? null : state[k]).length; } catch (e) { theoKhoa[k] = 0; } });
+    return { khoa: CFG.STORE_KEY, phienBan: CFG.VERSION, luocDoVer: state.luocDoVer, kichThuoc: kich, gioiHanUoc: 5 * 1024 * 1024, theoKhoa,
+      soKyDuyet: Object.keys(state.approved).length, soKhopTay: Object.keys(state.match).length, soDongTyLe: state.rates.length,
+      soTamUng: Object.keys(state.advances).length, soNhatKy: state.audit.length,
+      luocDo: Object.keys(LUOC_DO).map(k => ({ khoa: k, kieu: LUOC_DO[k].kieu, nhom: LUOC_DO[k].nhom, mo: LUOC_DO[k].mo })) };
   },
   available() { try { localStorage.setItem("__t", "1"); localStorage.removeItem("__t"); return true; } catch (e) { return false; } }
 };
@@ -748,6 +955,8 @@ function schedIndex() {
 const rates = {
   invalidate: invalidateRates,
   scheduleFor(partyKey) { return (schedIndex().get(partyKey) || []).slice(); },
+  /* bảng thô cho trang Tỷ lệ (bản sao, không phải tham chiếu vào state) */
+  raw() { return state.rates.map(r => Object.assign({}, r)); },
   rateFor(partyKey, periodKey) {
     const ck = partyKey + "|" + periodKey;
     const hit = _rateCache.get(ck);
@@ -2248,6 +2457,10 @@ function dongBoNhanSu() {
   } else state.staff.forEach(chuanNhanSu);
   STAFF.splice(0, STAFF.length, ...state.staff);
   _me = staffById(_me && _me.id) || STAFF[0];
+  /* dữ liệu cũ ghi người viết bình luận bằng email; chuẩn là id nhân sự */
+  (state.tickets || []).forEach(t => (t.comments || []).forEach(c => {
+    if (/@/.test(String(c.by))) { const nv = STAFF.find(x => x.email === c.by); if (nv) c.by = nv.id; }
+  }));
 }
 /* Đối tác thêm bằng tay (state.extraParties) nối vào LABELS / ARTISTS
    ngay lúc nạp, giữ nguyên id đã cấp. */
@@ -2401,11 +2614,7 @@ function walletOf(partyKey) {
     threshold: CFG.PAYOUT_MIN, withdrawals: ws, bank: state.bank[partyKey] || null, cadence: reportCadence(),
     nextPeriod: nextOpen ? { k: nextOpen.k, label: nextOpen.label } : null };
 }
-let withdrawSeq = 0;
-function withdrawalId(at) {
-  withdrawSeq++;
-  return "RT-" + String(at).slice(2, 4) + String(at).slice(5, 7) + "-" + String(withdrawSeq).padStart(3, "0");
-}
+function withdrawalId(at) { return sinhMa("rutTien", nhomThang(at), ma => state.withdrawals.some(w => w.id === ma)); }
 function requestWithdrawal(partyKey, amount, note, by) {
   const w = walletOf(partyKey);
   amount = Math.round(+amount * 100) / 100;
@@ -2439,7 +2648,7 @@ function seedWithdrawals() {
       if (ci % 3 === 2 && cum - ruot >= CFG.PAYOUT_MIN * 2 && state.bank[pk]) {
         const amt = Math.floor((cum - ruot) * 0.7);
         const at = addDays(c.approvedAt.slice(0, 10), 3 + (k % 4)) + " 10:" + String(12 + k * 7 % 40).padStart(2, "0") + ":00";
-        const r = { id: "RT-" + at.slice(2, 4) + at.slice(5, 7) + "-" + String(++withdrawSeq).padStart(3, "0"), partyKey: pk,
+        const r = { id: withdrawalId(at), partyKey: pk,
           party: { name: partyName(pk), clientId: partyClientId(pk) }, amount: amt, currency: "USD", requestedAt: at, updatedAt: at,
           status: "paid", bank: Object.assign({}, state.bank[pk]), note: "", by: partyClientId(pk),
           ref: "TT" + at.slice(2, 4) + at.slice(5, 7) + at.slice(8, 10) + String(100 + n), paidAt: addDays(at.slice(0, 10), 2) + " 15:30:00",
@@ -2450,7 +2659,7 @@ function seedWithdrawals() {
     /* tài khoản đầu tiên có một yêu cầu đang chờ, để bàn kế toán có việc */
     if (n === 0 && state.bank[pk] && cum - ruot > 200) {
       const at = "2026-09-02 09:12:00";
-      state.withdrawals.push({ id: "RT-2609-" + String(++withdrawSeq).padStart(3, "0"), partyKey: pk, party: { name: partyName(pk), clientId: partyClientId(pk) },
+      state.withdrawals.push({ id: withdrawalId("2026-09-01"), partyKey: pk, party: { name: partyName(pk), clientId: partyClientId(pk) },
         amount: Math.floor((cum - ruot) * 0.5), currency: "USD", requestedAt: at, updatedAt: at, status: "requested", bank: Object.assign({}, state.bank[pk]),
         note: "", by: partyClientId(pk), ref: null, paidAt: null, history: [{ at, status: "requested", by: partyClientId(pk) }] });
     }
@@ -2783,6 +2992,7 @@ function dailyTrendsTinh(role, partyId, days, top) {
      chi (Thông tư 111/2013, Điều 25); tổ chức tự xuất hoá đơn.
    ===================================================================== */
 function lazyState(k, init) { if (!state[k] || typeof state[k] !== "object") state[k] = init; return state[k]; }
+
 
 /* ---- chia sẻ tác quyền (splits) ---- */
 const COLLAB_TEN = ["Minh", "An", "Khoa", "Linh", "Huy", "Thảo", "Nam", "Vy", "Đức", "Hà", "Quân", "Trang"];
@@ -3156,7 +3366,6 @@ function notificationsTinh(role, partyId) {
     if (ph.length) push("ph:sub", isoDate(ASOF), "info", ph.length + " hồ sơ phát hành chờ tiếp nhận", ph.length + " releases awaiting intake", "", "", "phat-hanh");
     const dx = proposalCounts();
     if (dx.pending) push("dx:cho", isoDate(ASOF), "warn", dx.pending + " đề xuất chờ xét duyệt (" + dx.checked + " đã kiểm số)", dx.pending + " proposals awaiting approval (" + dx.checked + " checked)", "Tạm ứng và hợp đồng: giám đốc duyệt, kế toán kiểm.", "Advances and contracts: director approves, accounting checks.", "xet-duyet");
-    const gn = state.deliveries.filter(d => d.status !== "done");
     const md = metadataReport("admin", 0);
     if (md.counts.blocking) push("md:block", md.asOf, "warn", md.counts.blocking + " bản ghi thiếu mã quan trọng (ISWC / IPI)", md.counts.blocking + " recordings missing key identifiers (ISWC / IPI)", "Giữ lại trước khi giao; xem Sức khoẻ metadata.", "Held before delivery; see Metadata health.", "danh-muc");
   }
@@ -3630,8 +3839,7 @@ function dealRoiTuDoiTac(partyKey) {
     termMonths: ct && ct.months ? ct.months : null, series: ser };
 }
 
-let proposalSeq = 0;
-function proposalId(now) { proposalSeq++; return "DX-" + String(now).slice(2, 4) + String(now).slice(5, 7) + "-" + String(proposalSeq).padStart(3, "0"); }
+function proposalId(now) { return sinhMa("deXuat", nhomThang(now), ma => proposalsOf().some(p => p.id === ma)); }
 function proposalsOf() { if (!Array.isArray(state.proposals)) state.proposals = []; return state.proposals; }
 function moTaDeXuat(pr, doiTac) {
   if (pr.type === "advance") return { vi: "Tạm ứng " + fmt.usd0(pr.terms.amount) + " · phí ứng " + Math.round(pr.terms.feePct * 100) + "%", en: "Advance " + fmt.usd0(pr.terms.amount) + " · " + Math.round(pr.terms.feePct * 100) + "% advance charge" };
@@ -4236,9 +4444,18 @@ function ticketsChoVai(ds) {
   if (!role || role === "mgmt") return ds;
   return ds.filter(t => deptCua(t) === role || (t.assignee && _me && t.assignee === _me.id));
 }
-let ticketSeq = 0;
-function ticketId(at) { ticketSeq++; return "HT-" + String(at).slice(2, 4) + String(at).slice(5, 7) + "-" + String(ticketSeq).padStart(3, "0"); }
+function ticketId(at) { return sinhMa("ticket", nhomThang(at), ma => state.tickets.some(t => t.id === ma)); }
 function slaDue(at, priority) { return addDays(String(at).slice(0, 10), priority === "urgent" ? 1 : priority === "high" ? 2 : priority === "low" ? 7 : 3) + " 17:00:00"; }
+function laNhanVien(by) { return /^S\d{2,}$/.test(String(by)) || /@haustek-group\.com$/i.test(String(by)); }
+function themBinhLuan(t, text, by) {
+  const tx = String(text || "").trim();
+  if (!tx) throw new Error("Nội dung trống");
+  t.comments = Array.isArray(t.comments) ? t.comments : [];
+  t.comments.push({ at: nowISO(), by: by || (_me ? _me.id : ""), text: tx.slice(0, COMMENT_LEN) });
+  if (t.comments.length > COMMENT_MAX) t.comments.splice(0, t.comments.length - COMMENT_MAX);
+  t.updatedAt = nowISO();
+}
+function boTickNoiBo(t) { t.done = null; t.closedAt = null; }
 function createTicket(o) {
   const at = o.at || nowISO();
   const t = { id: ticketId(at), type: TICKET_TYPES.some(x => x.id === o.type) ? o.type : "khac",
@@ -4247,7 +4464,11 @@ function createTicket(o) {
     createdBy: o.createdBy || partyClientId(o.partyKey), source: o.source || "portal",
     createdAt: at, updatedAt: at, status: o.status || "open", priority: o.priority || "normal",
     assignee: o.assignee || null, dueAt: slaDue(at, o.priority || "normal"),
-    messages: [{ at, by: o.createdBy || partyClientId(o.partyKey), who: o.who || "partner", text: String(o.body || "").trim() }] };
+    /* Vòng 22: không còn khung chat. Mô tả ban đầu là body; trao đổi là
+       comments ngắn (tối đa COMMENT_MAX, mỗi mục ≤ COMMENT_LEN); "xong" là
+       một cái tick của người được giao (done), không phải một trạng thái
+       ai cũng bấm được. */
+    body: String(o.body || "").trim().slice(0, BODY_LEN), comments: [], done: null };
   t.dept = boPhanCua(t.type);
   if (!t.title) throw new Error("Thiếu tiêu đề yêu cầu");
   state.tickets.unshift(t);
@@ -4285,11 +4506,11 @@ function seedTickets() {
       assignee: m[0] === "thanh-toan" || m[0] === "khac" ? acc.id : (m[0] === "quyen" ? sup[1].id : (m[0] === "phat-hanh" ? ops.id : sup[0].id)) });
     const nv = staffById(t.assignee);
     if (m[3] !== "open") {
-      t.messages.push({ at: addDays(ngay[k].slice(0, 10), 1) + " 09:30:00", by: nv.email, who: "staff",
+      t.comments.push({ at: addDays(ngay[k].slice(0, 10), 1) + " 09:30:00", by: nv.id,
         text: m[3] === "done" ? "Đã xử lý xong. Bạn kiểm tra lại giúp và phản hồi nếu còn vướng." : m[3] === "waiting" ? "Haustek đã gửi yêu cầu sang nền tảng, đang chờ phản hồi (thường 3 đến 5 ngày làm việc)." : "Đã tiếp nhận, đang xử lý. Sẽ cập nhật trong 2 ngày làm việc." });
-      t.updatedAt = t.messages[t.messages.length - 1].at;
+      t.updatedAt = t.comments[t.comments.length - 1].at;
     }
-    if (m[3] === "done") t.closedAt = t.updatedAt;
+    if (m[3] === "done") { t.closedAt = t.updatedAt; t.done = { by: nv.id, at: t.updatedAt }; }
   });
   state.tickets.sort((a, b) => (a.updatedAt < b.updatedAt ? 1 : -1));
 }
@@ -4334,62 +4555,10 @@ function seedClaims() {
 }
 
 /* =====================================================================
-   19g. GIAO NHẬN NỀN TẢNG và SỬA HÀNG LOẠT — công cụ vận hành
+   19g. CÀI ĐẶT VIDEO MẪU (giao nhận và sửa hàng loạt đã bỏ từ vòng 14;
+   mã của chúng bỏ hẳn ở vòng 22, dữ liệu cũ đi qua DI_TRU)
    ===================================================================== */
-const DELIVERY_SUBJECTS = [
-  { id: "producer",  label: "Theo nhà sản xuất / label", labelEn: "By producer / label" },
-  { id: "upc-list",  label: "Theo danh sách UPC",          labelEn: "By UPC list" },
-  { id: "upc-file",  label: "Theo file UPC",               labelEn: "By UPC file" },
-  { id: "albums",    label: "Chọn bản phát hành",          labelEn: "Pick releases" }
-];
-const BULK_ACTIONS = [
-  { id: "lock",         label: "Khoá / mở khoá danh sách bản phát hành", labelEn: "Lock or unlock a list of releases" },
-  { id: "price",        label: "Đổi giá album",                          labelEn: "Change album price" },
-  { id: "release-date", label: "Đổi ngày phát hành số của album",        labelEn: "Change albums’ digital release date" },
-  { id: "track-price",  label: "Đổi giá track trên bản phát hành",       labelEn: "Change track price on releases" }
-];
-let deliverySeq = 0, bulkSeq = 0;
-function createDelivery(o, by) {
-  if (!String(o.name || "").trim()) throw new Error("Thiếu tên yêu cầu");
-  if (!o.platforms || !o.platforms.length) throw new Error("Chưa chọn nền tảng");
-  if (!o.subject || !DELIVERY_SUBJECTS.some(s => s.id === o.subject.type)) throw new Error("Chưa chọn đối tượng giao");
-  const at = o.at || nowISO();
-  const count = o.subject.count || (o.subject.value ? String(o.subject.value).split(/[\s,;]+/).filter(Boolean).length : 0);
-  const d = { id: "GN-" + at.slice(2, 4) + at.slice(5, 7) + "-" + String(++deliverySeq).padStart(3, "0"), name: String(o.name).trim(),
-    subject: { type: o.subject.type, value: String(o.subject.value || ""), count }, platforms: o.platforms.slice(),
-    createdAt: at, updatedAt: at, by: by || "ops@haustek-group.com", status: o.status || "queued",
-    progress: { sent: o.status === "done" ? count * o.platforms.length : 0, total: count * o.platforms.length } };
-  state.deliveries.unshift(d);
-  return d;
-}
-function createBulk(o, by) {
-  if (!BULK_ACTIONS.some(a => a.id === o.action)) throw new Error("Thao tác không hợp lệ");
-  const upcs = String(o.upcs || "").split(/[\s,;]+/).filter(Boolean);
-  if (!upcs.length) throw new Error("Chưa có UPC nào");
-  const at = o.at || nowISO();
-  const r = { id: "SL-" + at.slice(2, 4) + at.slice(5, 7) + "-" + String(++bulkSeq).padStart(3, "0"), action: o.action, upcs, count: upcs.length,
-    value: o.value == null ? "" : String(o.value), createdAt: at, updatedAt: at, by: by || "ops@haustek-group.com", status: o.status || "queued", note: o.note || "" };
-  state.bulk.unshift(r);
-  return r;
-}
 function seedOps() {
-  if (!state.deliveries.length) {
-    [["Giao lại catalog Nightform sang Apple Music", { type: "producer", value: "HTK-L001", count: 451 }, ["Apple Music"], "2026-08-20 10:15:00", "done"],
-     ["Bổ sung 12 UPC thiếu trên Zing MP3", { type: "upc-list", value: "880012345678 880012345679 880012345680", count: 12 }, ["Zing MP3", "NhacCuaTui"], "2026-08-27 15:40:00", "done"],
-     ["Giao EP Đêm thứ hai lên TikTok và Instagram", { type: "albums", value: "HSTK-2608-001", count: 3 }, ["TikTok", "Instagram", "Facebook"], "2026-09-01 09:20:00", "sending"],
-     ["Giao lại toàn bộ cho Amazon Music sau lỗi metadata", { type: "upc-file", value: "amazon-redeliver-0903.csv", count: 1180 }, ["Amazon Music"], "2026-09-03 11:05:00", "queued"]
-    ].forEach(m => { const d = createDelivery({ name: m[0], subject: m[1], platforms: m[2], at: m[3], status: m[4] }); if (m[4] === "sending") d.progress.sent = Math.round(d.progress.total * 0.4); });
-  }
-  if (!state.bulk.length) {
-    [["lock", "880038358681 880084563223 880012345678", "locked", "2026-08-11 09:00:00", "done"],
-     ["price", "880012345679 880012345680 880012345681 880012345682", "9.99 USD", "2026-08-15 14:20:00", "done"],
-     ["release-date", "880012345690", "2026-10-10", "2026-08-22 10:10:00", "done"],
-     ["track-price", "880012345700 880012345701", "1.29 USD", "2026-08-26 16:00:00", "failed"],
-     ["lock", "880012345710 880012345711 880012345712 880012345713 880012345714", "unlocked", "2026-08-29 11:30:00", "done"],
-     ["price", "880012345720", "7.99 USD", "2026-09-02 09:45:00", "queued"],
-     ["release-date", "880012345730 880012345731", "2026-11-14", "2026-09-03 15:25:00", "queued"]
-    ].forEach(m => createBulk({ action: m[0], upcs: m[1], value: m[2], at: m[3], status: m[4], note: m[4] === "failed" ? "2 UPC không tồn tại trong danh mục" : "" }));
-  }
   if (!Object.keys(state.videoSettings).length) {
     const seen = new Set();
     state.accounts.filter(a => a.role !== "admin" && a.partyKey && a.status === "active").forEach((a, n) => {
@@ -4566,6 +4735,9 @@ const INGEST_STEPS = [
 ];
 const ingest = {
   steps: INGEST_STEPS,
+  /* trạng thái nạp của một ô kỳ × nguồn, và của tác quyền theo kỳ — bản sao */
+  trangThai(pk, fId) { const o = state.feeds[pk] && state.feeds[pk][fId]; return o ? Object.assign({}, o) : null; },
+  trangThaiPub(pk) { const o = state.pub[pk]; return o ? Object.assign({}, o) : null; },
   load(pIdx, fId, opts) {
     const pk = PERIODS[pIdx].k;
     if (state.approved[pk]) throw new Error("Kỳ đã xét duyệt. Muốn nhập lại phải huỷ xét duyệt trước");
@@ -4577,11 +4749,10 @@ const ingest = {
     st.file = (opts && opts.file) || fileNameFor(f, PERIODS[pIdx]);
     /* nạp xong thì luôn có một ít dòng không khớp được — đó là chuyện bình thường */
     const n = 2 + ((Math.random() * 5) | 0);
-    let qid = state.queue.length + 1;
     for (let j = 0; j < n; j++) {
       const seedTrack = (Math.random() * N) | 0;
       state.queue.push({
-        id: "Q" + String(Date.now() % 100000 + qid++).padStart(5, "0"),
+        id: sinhMa("hangCho", null, ma => state.queue.some(q => q.id === ma)),
         periodKey: pk, feedId: fId,
         isrc: Math.random() < 0.4 ? "" : tIsrc[seedTrack].slice(0, -1) + "X",
         title: tTitle[seedTrack], artist: ARTISTS[tArtist[seedTrack]].name,
@@ -4732,7 +4903,7 @@ function tongNhapKy(pIdx, fId) {
 
 function moiNhap(o, by) {
   const me = by || (_me ? _me.email : "");
-  return { id: "N-" + String((state.nhapTay.length + 1)).padStart(4, "0") + "-" + Date.now().toString(36).slice(-4),
+  return { id: sinhMa("nhapTay", null, ma => state.nhapTay.some(x => x.id === ma)),
     at: nowISO(), by: me, kieu: o.kieu, pIdx: o.pIdx, ky: PERIODS[o.pIdx].k, fId: o.fId,
     trackIdx: o.trackIdx == null ? null : o.trackIdx, tien: o.tien, truoc: o.truoc,
     nguon: o.nguon, ghiChu: o.ghiChu || "" };
@@ -5650,6 +5821,7 @@ function esc(s) {
 }
 
 if (!FRESH) { try { seedPartyManager(); seedWithdrawals(); seedTickets(); seedClaims(); seedOps(); seedProposals(); } catch (e) { console.warn("[haustek-core] gieo dữ liệu mẫu: " + e.message); } }
+khoiTaoMaDem(state);   /* bộ đếm mã đi tiếp từ mã lớn nhất đã có, kể cả mã gieo mẫu */
 
 /* =====================================================================
    23. MẶT TIỀN CHO ADMIN — chỉ intranet.html được chạm
@@ -5690,7 +5862,7 @@ const NHOM_MO = {
   doiTacTao: { vi: "Thêm đối tác mới (label, nghệ sĩ) và hợp đồng", en: "Add new partners (labels, artists) and contracts" },
   deXuat:    { vi: "Đề xuất tạm ứng / hợp đồng; bảng tính ROI hợp đồng; bản tính lược theo vai", en: "Advance / contract proposals; deal ROI calculator; calculation trimmed per role" },
   deXuatTao: { vi: "Tạo đề xuất", en: "Create proposals" },
-  vanHanh:   { vi: "Phát hành, giao nhận, sửa hàng loạt, nạp báo cáo, nền tảng", en: "Releases, deliveries, bulk edits, report ingest, platforms" },
+  vanHanh:   { vi: "Phát hành, nạp báo cáo, nền tảng phân phối", en: "Releases, report ingest, distribution platforms" },
   nhapLieu:  { vi: "Gõ doanh thu từ báo cáo nền tảng và sửa lượt nghe hằng ngày", en: "Key in revenue from platform reports and correct daily streams" },
   von:       { vi: "Hiệu quả sử dụng vốn: tiền đã ứng, đã thu hồi, còn đọng, dự báo thu hồi", en: "Capital efficiency: money advanced, recouped, still out, recovery forecast" },
   hieuSuat:  { vi: "Hiệu suất từng nhân viên: việc đã giao, đúng hạn, quá hạn, thời gian xử lý", en: "Per-person performance: work assigned, on time, overdue, handling time" },
@@ -5747,7 +5919,7 @@ const QUYEN_HAM = {
   quality: "danhMuc", qualityFor: "danhMuc", setAlertStatus: "danhMuc", metadataReport: "danhMuc", metadataReportFor: "danhMuc",
   catalogue: "danhMuc", platformReport: "danhMuc", platformTail: "danhMuc", catalogueReleases: "danhMuc", releases: "danhMuc",
   "releases.receive": "vanHanh", "releases.assignCodes": "vanHanh", "releases.publish": "vanHanh", "releases.returnFix": "vanHanh", "releases.createFor": "phatHanhHo",
-  deliveries: "vanHanh", bulk: "vanHanh", ingest: "vanHanh",
+  ingest: "vanHanh",
   /* Bảng giá là số của giám đốc, kể cả mức suy từ báo cáo: đọc được mức
      suy là đọc được luôn khach và bienGia nằm cùng gói. */
   platformRates: "tong",
@@ -5762,7 +5934,7 @@ const QUYEN_HAM = {
      Khai cả phần đọc thì thành viên mới thêm vào toChuc sau này mặc định
      đã có người gác, thay vì lọt ra ngoài không ai biết. */
   toChuc: "toChuc",
-  "parties.create": "doiTacTao", platforms: "vanHanh", campaignCreate: "chienDich", campaignSetStatus: "chienDich", claimCreate: "khieuNai", ledger: "tien", pricing: "vanHanh",
+  "parties.create": "doiTacTao", platforms: "vanHanh", campaignCreate: "chienDich", campaignSetStatus: "chienDich", claimCreate: "khieuNai", ledger: "tien",
   "toChuc.themKhoi": "nhanSu", "toChuc.suaKhoi": "nhanSu", "toChuc.themTo": "nhanSu", "toChuc.themNhanSu": "nhanSu", "toChuc.suaNhanSu": "nhanSu", "toChuc.chuyenNhanSu": "nhanSu", "toChuc.khoaNhanSu": "nhanSu", "toChuc.ganTaiSan": "nhanSu"
 };
 /* Thành viên CỐ Ý để mở trong một đối tượng đã gác: toàn là hàm đọc mà vai
@@ -5949,7 +6121,6 @@ const admin = {
   questions: QUESTIONS, samplesNeeded: SAMPLES_NEEDED,
   counts: { tracks: N, periods: P, artists: CFG.N_ARTISTS, labels: CFG.N_LABELS, stores: STORES.length, territories: TERR.length },
 
-  state: () => state,
   pIndexOf, partyName, partyClientId, partyKeyOfTrack,
   track(i) {
     return { i, title: tTitle[i], isrc: tIsrc[i], isrcAlt: tIsrcAlt[i], upc: tUpc[i],
@@ -5985,6 +6156,11 @@ const admin = {
   payoutOf: pk => state.payouts[pk] || null,
   rates, fx, ingest, queue, audit, nhapLieu, quyTrinh, hieuSuat, von, mucTraTacDong,
   advances: {
+    /* tổng thu hồi tạm ứng theo từng kỳ (mọi bên cộng lại) */
+    theoKy() {
+      return PERIODS.map(p => { let v = 0; Object.keys(state.advances).forEach(k => { v += (state.advances[k].byPeriod || {})[p.k] || 0; }); return { k: p.k, label: p.label, thuHoi: cents(v) }; });
+    },
+    theoBen(pk) { const a = state.advances[pk]; return a ? { opening: a.opening, note: a.note, byPeriod: Object.assign({}, a.byPeriod || {}) } : { opening: 0, note: "", byPeriod: {} }; },
     list() {
       return Object.keys(state.advances).map(k => ({
         partyKey: k, name: partyName(k), clientId: partyClientId(k),
@@ -6011,7 +6187,7 @@ const admin = {
       if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) throw new Error("Email không hợp lệ");
       if (state.accounts.some(a => a.email.toLowerCase() === email.toLowerCase())) throw new Error("Email này đã có tài khoản");
       if (role !== "admin" && !partyKey) throw new Error("Tài khoản label hoặc nghệ sĩ phải gắn với một mã bên thụ hưởng");
-      state.accounts.push({ id: "U" + String(state.accounts.length + 1).padStart(4, "0"),
+      state.accounts.push({ id: sinhMa("taiKhoan", null, ma => state.accounts.some(a => a.id === ma)),
         email, role, partyKey: role === "admin" ? null : partyKey, status: "invited",
         createdAt: nowISO().slice(0, 10), lastSeen: null, mfa: role === "admin" });
       audit.log("account.add", email + " · " + role + (partyKey ? " · " + partyKey + " (" + partyName(partyKey) + ")" : ""));
@@ -6035,7 +6211,7 @@ const admin = {
       const isLabel = String(partyKey)[0] === "L", pid = +String(partyKey).slice(2);
       const artistId = isLabel ? +(payload && payload.artistId) : pid;
       if (!ARTISTS[artistId]) return { ok: false, loi: "Chưa chọn nghệ sĩ chính" };
-      try { const r = buildRelease(payload, artistId, "preview", "staff"); releaseSeq--; return { ok: true, kiem: r.kiem, tracks: r.tracks.length }; }
+      try { const r = buildRelease(payload, artistId, "preview", "staff"); return { ok: true, kiem: r.kiem, tracks: r.tracks.length }; }
       catch (e) { return { ok: false, loi: e.message }; }
     },
     list(filter) {
@@ -6626,7 +6802,7 @@ const admin = {
     if (!/^\d{4}-\d{2}-\d{2}$/.test(o.start || "") || !/^\d{4}-\d{2}-\d{2}$/.test(o.end || "")) throw new Error("Ngày bắt đầu / kết thúc phải theo yyyy-mm-dd");
     if (o.end < o.start) throw new Error("Ngày kết thúc phải sau ngày bắt đầu");
     if (vaiHienTai() === "sales" && !laTruong() && state.partyManager[partyKeyOfTrack(i)] !== _me.id) throw new Error("Không có quyền: bài này thuộc đối tác không do bạn phụ trách");
-    const c = { id: "CD-" + String(i).padStart(5, "0") + "-" + o.kind.slice(0, 2).toUpperCase() + "-" + String(state.campaigns.length + 1).padStart(2, "0"), trackId: i, title: tTitle[i], partyKey: partyKeyOfTrack(i), kind: o.kind, start: o.start, end: o.end,
+    const c = { id: "CD-" + String(i).padStart(5, "0") + "-" + o.kind.slice(0, 2).toUpperCase() + "-" + String(demMa("chienDich")).padStart(2, "0"), trackId: i, title: tTitle[i], partyKey: partyKeyOfTrack(i), kind: o.kind, start: o.start, end: o.end,
       budget: o.kind === "ads" ? Math.max(0, +o.budget || 0) : 0, note: chuoi(o.note), status: o.status === "requested" ? "requested" : "planned", by: by || "", at: nowISO() };
     state.campaigns.unshift(c); audit.log("campaign.create", c.id + " · " + c.title + " · " + o.kind, by); store.save(); return c;
   },
@@ -6640,7 +6816,7 @@ const admin = {
     const i = +o.trackId; if (!(i >= 0 && i < N)) throw new Error("Chưa chọn bài hát");
     if (!CLAIM_CAT.some(c => c.id === o.category)) throw new Error("Chưa chọn loại khiếu nại");
     const store2 = chuoi(o.store) || "YouTube", k = state.claims.length, created = isoDate(ASOF);
-    const c = { id: "CL-" + String(k + 1).padStart(4, "0"), trackId: i, track: { title: tTitle[i], isrc: tIsrc[i], artist: ARTISTS[tArtist[i]].name, upc: tUpc[i] },
+    const c = { id: sinhMa("khieuNai", null, ma => state.claims.some(x => x.id === ma)), trackId: i, track: { title: tTitle[i], isrc: tIsrc[i], artist: ARTISTS[tArtist[i]].name, upc: tUpc[i] },
       partyKey: partyKeyOfTrack(i), party: { name: partyName(partyKeyOfTrack(i)), clientId: partyClientId(partyKeyOfTrack(i)) },
       store: store2, category: o.category, assetId: "A" + maNgauNhien(k + 1, 100, 16, "ABCDEFGHJKLMNPQRSTUVWXYZ0123456789"),
       otherParty: chuoi(o.otherParty) || null, country: chuoi(o.country) || "VN", dailyViews: Math.max(0, +o.dailyViews || 0), status: "open",
@@ -6663,23 +6839,10 @@ const admin = {
       if (o.partyKey && !partyName(o.partyKey)) throw new Error("Không tìm thấy đối tác");
       if (!chuoi(o.note)) throw new Error("Bút toán phải có diễn giải");
       const kinds = ["dieu-chinh", "chi-phi", "thu-khac", "hoan"];
-      const a = { id: "BT-" + o.periodKey.replace("-", "") + "-" + String(state.adjustments.length + 1).padStart(3, "0"), periodKey: o.periodKey, partyKey: o.partyKey || null, kind: kinds.includes(o.kind) ? o.kind : "dieu-chinh", amount, note: chuoi(o.note), ref: chuoi(o.ref), by: by || "", at: nowISO() };
+      const a = { id: sinhMa("butToan", o.periodKey.replace("-", ""), ma => state.adjustments.some(x => x.id === ma)), periodKey: o.periodKey, partyKey: o.partyKey || null, kind: kinds.includes(o.kind) ? o.kind : "dieu-chinh", amount, note: chuoi(o.note), ref: chuoi(o.ref), by: by || "", at: nowISO() };
       state.adjustments.unshift(a); audit.log("ledger.adjust", a.id + " · " + fmt.usd(amount) + " · " + a.note, by); store.save(); return a;
     },
     removeAdjustment(id, by) { const i = state.adjustments.findIndex(a => a.id === id); if (i < 0) throw new Error("Không tìm thấy " + id); const a = state.adjustments.splice(i, 1)[0]; audit.log("ledger.adjust.remove", a.id, by); store.save(); return true; }
-  },
-  pricing: {
-    list() { return state.priceExtra.slice(); },
-    add(o, by) {
-      const storeName = chuoi(o.store), tier = chuoi(o.tier), cur = chuoi(o.currency).toUpperCase(), gia = Math.round((+o.price || 0) * 100) / 100;
-      if (!storeName) throw new Error("Thiếu tên nền tảng"); if (!tier) throw new Error("Thiếu nhóm giá"); if (!/^[A-Z]{3}$/.test(cur)) throw new Error("Tiền tệ phải là mã 3 chữ (USD, VND…)");
-      if (!(gia > 0)) throw new Error("Giá phải lớn hơn 0");
-      const loai = o.kind === "track" ? "track" : "album";
-      const cu = state.priceExtra.find(x => x.store === storeName && x.tier === tier && x.currency === cur && x.kind === loai);
-      if (cu) { cu.price = gia; cu.by = by || ""; cu.at = nowISO(); } else state.priceExtra.unshift({ store: storeName, tier, currency: cur, kind: loai, price: gia, effective: chuoi(o.effective) || isoDate(ASOF), by: by || "", at: nowISO() });
-      audit.log("pricing.set", storeName + " · " + tier + " · " + loai + " · " + cur + " " + gia, by); store.save(); return state.priceExtra;
-    },
-    remove(o, by) { const i = state.priceExtra.findIndex(x => x.store === o.store && x.tier === o.tier && x.currency === o.currency && x.kind === o.kind); if (i < 0) throw new Error("Không có dòng giá này"); state.priceExtra.splice(i, 1); audit.log("pricing.remove", o.store + " · " + o.tier, by); store.save(); return true; }
   },
   /* ---- nhân viên, đối tác, kinh doanh ---- */
   staff: {
@@ -6830,15 +6993,36 @@ const admin = {
       const t = this.get(id); if (!t) throw new Error("Không tìm thấy " + id);
       if (!TICKET_TYPES.some(x => x.id === type)) throw new Error("Loại yêu cầu không hợp lệ");
       const tu = deptCua(t); t.type = type; t.dept = boPhanCua(type);
-      if (t.dept !== tu) t.assignee = null;
+      if (t.dept !== tu) { t.assignee = null; boTickNoiBo(t); }
       t.updatedAt = nowISO();
-      if (String(note || "").trim()) t.messages.push({ at: t.updatedAt, by, who: "staff", text: String(note).trim() });
+      if (String(note || "").trim()) themBinhLuan(t, note, by);
       audit.log("ticket.chuyen", t.id + " · " + TEN_BO_PHAN[tu].vi + " → " + TEN_BO_PHAN[t.dept].vi, by); store.save(); return t;
     },
-    assign(id, staffId, by) { const t = this.get(id); if (!t) throw new Error("Không tìm thấy " + id); if (!staffById(staffId)) throw new Error("Không có nhân viên " + staffId); t.assignee = staffId; t.updatedAt = nowISO(); if (t.status === "open") t.status = "in_progress"; audit.log("ticket.assign", t.id + " → " + staffById(staffId).name, by); store.save(); return t; },
-    setStatus(id, status, by) { const t = this.get(id); if (!t) throw new Error("Không tìm thấy " + id); if (TICKET_STATUS.indexOf(status) < 0) throw new Error("Trạng thái không hợp lệ"); t.status = status; t.updatedAt = nowISO(); if (status === "done") t.closedAt = t.updatedAt; audit.log("ticket.status", t.id + " → " + status, by); store.save(); return t; },
+    /* giao cho người khác thì tick cũ mất: việc chưa xong với người mới */
+    assign(id, staffId, by) { const t = this.get(id); if (!t) throw new Error("Không tìm thấy " + id); if (!staffById(staffId)) throw new Error("Không có nhân viên " + staffId); if (t.assignee !== staffId) boTickNoiBo(t); t.assignee = staffId; t.updatedAt = nowISO(); if (t.status === "open") t.status = "in_progress"; audit.log("ticket.assign", t.id + " → " + staffById(staffId).name, by); store.save(); return t; },
+    /* "done" chỉ đi qua tick(); các trạng thái khác đổi tự do, rời "done" thì tick mất */
+    setStatus(id, status, by) {
+      const t = this.get(id); if (!t) throw new Error("Không tìm thấy " + id);
+      if (TICKET_STATUS.indexOf(status) < 0) throw new Error("Trạng thái không hợp lệ");
+      if (status === "done") return this.tick(id, by);
+      if (t.status === "done") boTickNoiBo(t);
+      t.status = status; t.updatedAt = nowISO(); audit.log("ticket.status", t.id + " → " + status, by); store.save(); return t;
+    },
     setPriority(id, priority, by) { const t = this.get(id); if (!t) throw new Error("Không tìm thấy " + id); t.priority = priority; t.dueAt = slaDue(t.createdAt, priority); t.updatedAt = nowISO(); audit.log("ticket.priority", t.id + " → " + priority, by); store.save(); return t; },
-    reply(id, text, by) { const t = this.get(id); if (!t) throw new Error("Không tìm thấy " + id); if (!String(text || "").trim()) throw new Error("Nội dung trống"); t.messages.push({ at: nowISO(), by, who: "staff", text: String(text).trim() }); t.updatedAt = nowISO(); if (t.status === "open") t.status = "in_progress"; store.save(); return t; }
+    /* bình luận ngắn (kiểu Lark): by là id nhân sự; không có khung chat */
+    comment(id, text, by) { const t = this.get(id); if (!t) throw new Error("Không tìm thấy " + id); themBinhLuan(t, text, by); if (t.status === "open") t.status = "in_progress"; store.save(); return t; },
+    reply(id, text, by) { return this.comment(id, text, by); },
+    /* tick xong: chỉ người được giao, hoặc người có nhóm quanTri (giám đốc / AAA) */
+    tick(id, by) {
+      const t = this.get(id); if (!t) throw new Error("Không tìm thấy " + id);
+      const me = _me ? _me.id : null;
+      if (t.assignee && t.assignee !== me && !coQuyenNhom("quanTri")) throw new Error("Chỉ người được giao mới đánh dấu xong việc này");
+      if (!t.assignee) t.assignee = me;
+      const at = nowISO();
+      t.done = { by: me, at }; t.status = "done"; t.closedAt = at; t.updatedAt = at;
+      audit.log("ticket.done", t.id + " · " + (staffById(me) || {}).name, by); store.save(); return t;
+    },
+    boTick(id, by) { const t = this.get(id); if (!t) throw new Error("Không tìm thấy " + id); boTickNoiBo(t); t.status = "in_progress"; t.updatedAt = nowISO(); audit.log("ticket.reopen", t.id, by); store.save(); return t; }
   },
   claims: {
     categories: CLAIM_CAT, statuses: CLAIM_STATUS,
@@ -6858,22 +7042,12 @@ const admin = {
     assign(id, staffId, by) { const c = this.get(id); if (!c) throw new Error("Không tìm thấy " + id); c.assignee = staffId; c.updatedAt = nowISO(); audit.log("claim.assign", c.id + " → " + (staffById(staffId) || {}).name, by); store.save(); return c; }
   },
   videoSettings: {
+    keys: () => Object.keys(state.videoSettings),
     get: pk => state.videoSettings[pk] || null,
     set(pk, o, by) { state.videoSettings[pk] = Object.assign({}, state.videoSettings[pk] || {}, o, { updatedAt: nowISO() }); audit.log("video.settings", partyName(pk) + " · " + JSON.stringify(o).slice(0, 80), by); store.save(); return state.videoSettings[pk]; }
   },
-  deliveries: {
-    subjects: DELIVERY_SUBJECTS,
-    list() { return state.deliveries.slice(); },
-    create(o, by) { const d = createDelivery(o, by); audit.log("delivery.create", d.id + " · " + d.name + " · " + d.platforms.join(", "), by); store.save(); return d; },
-    setStatus(id, status, by) { const d = state.deliveries.find(x => x.id === id); if (!d) throw new Error("Không tìm thấy " + id); d.status = status; d.updatedAt = nowISO(); if (status === "done") d.progress.sent = d.progress.total; audit.log("delivery.status", d.id + " → " + status, by); store.save(); return d; }
-  },
-  bulk: {
-    actions: BULK_ACTIONS,
-    list() { return state.bulk.slice(); },
-    create(o, by) { const r = createBulk(o, by); audit.log("bulk.create", r.id + " · " + r.action + " · " + r.count + " UPC", by); store.save(); return r; },
-    setStatus(id, status, by) { const r = state.bulk.find(x => x.id === id); if (!r) throw new Error("Không tìm thấy " + id); r.status = status; r.updatedAt = nowISO(); audit.log("bulk.status", r.id + " → " + status, by); store.save(); return r; }
-  },
   answers: {
+    all() { return Object.assign({}, state.answers); },
     get(id) { return state.answers[id] || ""; },
     set(id, text) { state.answers[id] = text; audit.log("answer.set", id + " · " + (text ? text.slice(0, 60) : "(xoá)")); store.save(); },
     all() { return Object.assign({}, state.answers); }
@@ -6883,7 +7057,7 @@ const admin = {
 };
 
 /* =====================================================================
-   24. API CHO KHÁCH — thứ DUY NHẤT dashboard được gọi
+   24. API CHO KHÁCH — thứ DUY NHẤT cổng đối tác được gọi
    ---------------------------------------------------------------------
    Ba luật của tầng này:
      1. Chỉ trả về kỳ ĐÃ DUYỆT. Kỳ chưa đối chiếu xong thì khách không
@@ -6893,15 +7067,42 @@ const admin = {
      3. Mọi phép tính xong ở đây. Trình duyệt khách nhận số, không nhận
         công thức, không nhận tỷ lệ gốc, không nhận tên đơn vị phân phối.
    ===================================================================== */
+/* Người làm việc phía Haustek hiện ra ở cổng đối tác bằng TÊN, không bao giờ
+   bằng email hay id nhân sự. Đây là một chốt cho mọi gói: trước vòng 22,
+   sáu gói khác nhau (ticket, hồ sơ, ví, rút tiền, bảng kê, giải thích số)
+   mỗi gói tự lo và đều để lọt. Làm trên BẢN SAO, vì gói api thường chứa
+   tham chiếu thẳng vào state. */
+const KHOA_NGUOI_LAM = /^(by|submittedBy|createdBy|signedBy|checkedBy|approvedBy|assignee|nguoi|createdByName)$/;
+function tenNhanSuTu(v) {
+  if (typeof v !== "string") return null;
+  const nv = STAFF.find(x => x.email === v || x.id === v);
+  if (nv) return nv.name;
+  if (/@haustek-group\.com$/i.test(v)) return "Haustek";
+  return null;
+}
+function giauNhanSu(v) {
+  if (Array.isArray(v)) { v.forEach(giauNhanSu); return v; }
+  if (v && typeof v === "object") {
+    Object.keys(v).forEach(k => {
+      const x = v[k];
+      if (typeof x === "string") {
+        const ten = KHOA_NGUOI_LAM.test(k) ? tenNhanSuTu(x) : (/@haustek-group\.com$/i.test(x) ? (tenNhanSuTu(x) || "Haustek") : null);
+        if (ten != null) v[k] = ten;
+      } else giauNhanSu(x);
+    });
+  }
+  return v;
+}
 function scrub(payload) {
-  const s = JSON.stringify(payload);
+  const goc = giauNhanSu(JSON.parse(JSON.stringify(payload)));
+  const s = JSON.stringify(goc);
   for (const bad of FORBIDDEN) {
     if (s.toLowerCase().includes(String(bad).toLowerCase())) {
       throw new Error("Chặn ở tầng API: payload chứa thông tin nội bộ (" + bad + ")");
     }
   }
-  payload._bytes = s.length;
-  return payload;
+  goc._bytes = s.length;
+  return goc;
 }
 function partyClientIdOf(role, partyId) { return role === "label" ? LABELS[partyId].clientId : role === "artist" ? ARTISTS[partyId].clientId : "admin"; }
 function assertParty(role, partyId) {
@@ -7316,8 +7517,12 @@ const api = {
   tickets(role, partyId) {
     assertParty(role, partyId);
     const pk = role === "label" ? "L:" + partyId : "A:" + partyId;
+    /* Đối tác thấy: mô tả, bình luận (người viết nội bộ hiện là "Haustek",
+       không lộ id / email nhân viên), người phụ trách theo TÊN, và cờ done. */
     const rows = state.tickets.filter(t => t.partyKey === pk).map(t => Object.assign({}, t, {
       assigneeName: t.assignee && staffById(t.assignee) ? staffById(t.assignee).name : null, assignee: undefined,
+      comments: (t.comments || []).map(c => ({ at: c.at, by: laNhanVien(c.by) ? "Haustek" : c.by, cuaToi: !laNhanVien(c.by), text: c.text })),
+      done: t.done ? { at: t.done.at } : null,
       dept: deptCua(t), deptLabel: TEN_BO_PHAN[deptCua(t)].vi, deptLabelEn: TEN_BO_PHAN[deptCua(t)].en }));
     return scrub({ rows, types: TICKET_TYPES, counts: { open: rows.filter(t => t.status !== "done").length, done: rows.filter(t => t.status === "done").length } });
   },
@@ -7326,7 +7531,7 @@ const api = {
     assertParty(role, partyId);
     const artistId = role === "label" ? +(payload && payload.artistId) : partyId;
     if (!ARTISTS[artistId] || (role === "label" && ARTISTS[artistId].labelId !== partyId)) return scrub({ ok: false, loi: "Chưa chọn nghệ sĩ chính thuộc label" });
-    try { const r = buildRelease(payload, artistId, "preview", role); releaseSeq--; return scrub({ ok: true, kiem: r.kiem, tracks: r.tracks.length }); }
+    try { const r = buildRelease(payload, artistId, "preview", role); return scrub({ ok: true, kiem: r.kiem, tracks: r.tracks.length }); }
     catch (e) { return scrub({ ok: false, loi: e.message }); }
   },
   /* Label thêm nghệ sĩ vào roster của mình (chưa có bản ghi, có ngay hồ sơ
@@ -7371,9 +7576,8 @@ const api = {
     const pk = role === "label" ? "L:" + partyId : "A:" + partyId;
     const t = state.tickets.find(x => x.id === id && x.partyKey === pk);
     if (!t) throw new Error("Không tìm thấy yêu cầu");
-    if (!String(text || "").trim()) throw new Error("Nội dung trống");
-    t.messages.push({ at: nowISO(), by: partyClientId(pk), who: "partner", text: String(text).trim() });
-    t.updatedAt = nowISO(); if (t.status === "waiting" || t.status === "done") t.status = "open";
+    themBinhLuan(t, text, partyClientId(pk));
+    if (t.status === "waiting" || t.status === "done") { t.status = "open"; boTickNoiBo(t); }
     store.save();
     return scrub({ id: t.id, status: t.status });
   },
@@ -7610,7 +7814,7 @@ const api = {
 /* =====================================================================
    25. TIỆN ÍCH GIAO DIỆN DÙNG CHUNG
    Bảng ảo hoá: chỉ vẽ chừng 30 dòng đang nhìn thấy, dù danh sách 50.000
-   dòng. Cùng một hàm cho danh mục ở intranet và bảng bài ở dashboard.
+   dòng. Cùng một hàm cho danh mục ở intranet và bảng bài ở cổng đối tác.
    ===================================================================== */
 function vtable(opts) {
   const body = opts.body, spacer = opts.spacer, head = opts.head;
@@ -7696,23 +7900,13 @@ function barChart(canvas, points, opt) {
 }
 
 /* =====================================================================
-   26. ĐĂNG KÝ MÀN HÌNH (intranet nạp từng module vào đây)
-   ===================================================================== */
-const screens = [];
-function registerScreen(def) {
-  if (!def || !def.id || typeof def.render !== "function")
-    throw new Error("Trang phải có id và hàm render(root, ctx)");
-  screens.push(def);
-}
-
-/* =====================================================================
    26b. TRẠNG THÁI KHỞI ĐIỂM
    Mở bản mẫu lần đầu thì 10 kỳ đầu đã đối chiếu xong và đã duyệt — như
    một hệ thống đã chạy được gần một năm. Hai kỳ cuối cố tình để dở:
      · 06/2026 — đủ ba luồng nhưng đối chiếu còn lệch $41,37 ở YouTube
      · 07/2026 — chưa nạp TikTok
    Hai kỳ đó chính là việc phải làm ở màn hình "Đối chiếu & duyệt kỳ",
-   và cũng là lý do dashboard của label / nghệ sĩ chưa thấy chúng.
+   và cũng là lý do cổng đối tác của label / nghệ sĩ chưa thấy chúng.
    ===================================================================== */
 if (FRESH) {
   for (let pi = 0; pi <= P - 3; pi++) {
@@ -7734,6 +7928,7 @@ if (FRESH) {
     } catch (e) { console.warn("[haustek-core] không xét duyệt được kỳ " + PERIODS[pi].label + ": " + e.message); }
   }
   seedPartyManager(); seedWithdrawals(); seedTickets(); seedClaims(); seedOps(); seedProposals();
+  khoiTaoMaDem(state);
   /* Những lần nạp trong lịch sử cũng phải để lại dấu vết, không thì mở
      nhật ký ra thấy trống trơn và tưởng hệ thống không ghi gì. */
   PERIODS.forEach((p, pi) => {
@@ -7761,11 +7956,10 @@ const H = {
   VERSION: CFG.VERSION,
   bootMs: () => Math.round(performance.now() - T_BOOT),
   fmt, esc, vtable, barChart, cents,
-  screens, registerScreen,
   api, admin: boQuyen(admin),
-  storage: { available: store.available, exportJSON: () => store.exportJSON(), importJSON: t => store.importJSON(t) },
+  storage: { available: store.available, exportJSON: () => store.exportJSON(), importJSON: t => store.importJSON(t), thongTin: () => store.thongTin(), luocDo: () => LUOC_DO, luocDoVer: () => state.luocDoVer },
 
-  /* dashboard.html gọi hàm này ngay dòng đầu. Sau đó HAUSTEK.admin không
+  /* khach.html gọi hàm này ngay dòng đầu. Sau đó HAUSTEK.admin không
      còn tồn tại trong trình duyệt khách — cả dữ liệu thô, cả tên đơn vị
      phân phối, cả tỷ lệ gốc — hai thứ sau thì ngay từ đầu đã không nằm
      trong file này (xem provideSecrets ở trên).
@@ -7776,7 +7970,7 @@ const H = {
      Trong hệ thật, thứ tương đương là: những thứ này chưa bao giờ rời
      khỏi máy chủ. */
   lockdown() {
-    delete H.admin; delete H.screens; delete H.registerScreen;
+    delete H.admin;
     H.storage = { available: store.available };
     H.locked = true;
     Object.freeze(H);

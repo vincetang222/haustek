@@ -33,32 +33,40 @@ trở nên vô nghĩa.
 
 Khi lên Postgres, dịch từng phép kiểm ở đây thành một test SQL trên policy RLS.
 
-## 2. Trình duyệt thật
+## 2. Không cần trình duyệt: hạ tầng và chất lượng lõi
+
+```bash
+node portal/test/luoc-do.js         # lược đồ state và di trú
+node portal/test/ma-dinh-danh.js    # mã định danh không trùng
+node portal/test/ranh-gioi-trang.js # trang không chạm state thô, không tự lưu
+node portal/test/qc-bat-bien.js     # bất biến chuỗi tiền trên mọi kỳ, mọi đối tác
+node portal/test/qc-quyen.js        # ma trận quyền: trang mở được thì hàm gọi được
+node portal/test/qc-vai-quet.js     # mọi vai × mọi trang × mọi hàm đọc (283 phép)
+node portal/test/qc-dem-nho.js      # đệm không được phép thiu
+```
+
+| Bài | Kiểm gì |
+|---|---|
+| `luoc-do.js` | Mọi khoá của state phải khai trong `LUOC_DO` và ngược lại; kiểu khai khớp kiểu thật; state lược đồ 1 (còn `messages[]` trong ticket, còn `deliveries`) nhập lên là được nâng chứ không bị bỏ; di trú chạy hai lần cho cùng kết quả; file thuộc lược đồ mới hơn bị từ chối; ghi rồi nạp lại qua localStorage giữ `luocDoVer` và `maDem`. |
+| `ma-dinh-danh.js` | Mã trong mười bảng không trùng và đúng mẫu; tạo liên tiếp năm việc ra năm mã tăng dần; xoá tài khoản rồi tạo lại không lấy lại mã cũ; **kiểm thử hồ sơ (preview) không ăn bộ đếm**; bút toán đếm riêng theo tháng; nạp lại lõi từ localStorage (tải lại trang) rồi tạo tiếp không trùng; nạp state không có `maDem` thì bộ đếm được đọc lại từ dữ liệu. Bài này sinh ra vì sáu bộ đếm từng là biến module — tải lại trang là về 0, và HSTK-2609-001, U0018, BT-202607-002 đã trùng thật. |
+| `ranh-gioi-trang.js` | Đọc mã nguồn 46 trang và 4 file khung: không trang nào gọi `A.state(`; trang nội bộ chỉ chạm lõi qua `c.A`; trang đối tác không nhắc tới "admin" dù trong chuỗi; localStorage chỉ ở năm file được phép và chỉ với khoá `haustek.*` riêng; mỗi trang `HT.dangKy` đúng một lần. |
+| `qc-bat-bien.js` | Với mọi kỳ đã duyệt và mọi đối tác: gộp = phí + phần các bên; ví = tổng tín dụng − đã rút; bảng kê đối tác khớp ví tới từng xu; thu hồi duyệt rồi duyệt lại cho đúng số cũ. |
+| `qc-quyen.js` | `QUYEN_MAN`, `QUYEN_NHOM`, `QUYEN_HAM`, `MAN_CAP` phải nhất quán: trang mà vai mở được thì mọi hàm trang ấy gọi phải nằm trong nhóm vai ấy có; không vai nào trắng bảng; giám đốc không cầm nhập liệu lẫn kiểm số. |
+| `qc-vai-quet.js` | Đăng nhập từng vai, mở từng trang, gọi từng hàm đọc trang ấy dùng — hàm nào ném "Không có quyền" trên trang được mở là hỏng. |
+| `qc-dem-nho.js` | Mỗi hàm có đệm phải chứng minh: đổi thứ nó phụ thuộc (bảng giá, tỷ lệ, duyệt kỳ) thì số đổi theo, trả về chỗ cũ thì số về chỗ cũ. |
+
+## 3. Trình duyệt thật
 
 Cần một server tĩnh đang chạy và `playwright` (`npm i -g playwright`).
 
 ```bash
-npx http-server portal -p 8099 -c-1 &
-
-node portal/test/smoke.js    # vẽ hết mọi màn hình intranet, gom lỗi console
-node portal/test/flow.js     # đi hết một chu trình vận hành
-node portal/test/edge.js     # thu hồi duyệt sạch 12 kỳ rồi mở lại từng màn hình
+cd portal && python3 -m http.server 8099 --bind 127.0.0.1 &
+export NODE_PATH=$(npm root -g)
 ```
 
-`smoke.js` — mở từng màn hình, đổi sang kỳ chưa duyệt, đổi sang VND, và báo lỗi nếu
-màn hình nào ném lỗi hoặc ghi ra console.
-
-`flow.js` — đi đúng con đường một người vận hành đi hằng tháng, rồi kiểm tra kết quả
-xuất hiện ở cổng khách:
-
-```
-nạp luồng còn thiếu → khớp một dòng treo → ghi nhận chênh lệch
-  → chốt tỷ giá → xét duyệt kỳ → cổng đối tác thấy kỳ mới
-```
-
-`edge.js` — trường hợp biên khắc nghiệt nhất: thu hồi duyệt **sạch cả 12 kỳ**, rồi mở lại
-từng màn hình intranet và cả cổng khách. Đây là chỗ code hay chết vì chia cho 0, đọc `[0]`
-của mảng rỗng, hoặc so với kỳ trước không tồn tại.
+Ba bài `smoke.js` / `flow.js` / `edge.js` của bản v1 đã gỡ ở vòng 22 cùng với `intranet.html`,
+`dashboard.html` và `screens/`; việc chúng làm (vẽ hết mọi trang, đi trọn chu trình, thu hồi
+sạch 12 kỳ rồi mở lại) nay nằm trong `v2-quet.js`, `v2-luong.js` và `v2-khach-tk.js` bên dưới.
 
 `layout.js` — mở trang chọn hướng ở 1500 / 1280 / 1100px, đi hết các hướng, bắt chữ bị cắt,
 chữ tràn khung và lỗi console.
@@ -125,6 +133,8 @@ node test/v2-quet.js v2/khach.html    390,640,900
 node test/v2-hep.js
 node test/v2-bam.js && node test/v2-khach-tk.js && node test/v2-luong.js
 node test/v2-tuong-phan.js && node test/v2-tieng-anh.js && node test/api-guard.js
+node test/luoc-do.js && node test/ma-dinh-danh.js && node test/ranh-gioi-trang.js
+node test/qc-bat-bien.js && node test/qc-quyen.js && node test/qc-vai-quet.js && node test/qc-dem-nho.js
 node test/roi-cong-thuc.js && node test/roi-man.js && node test/vong15-man.js && node test/vong16-man.js \
   && node test/vong17-man.js && node test/vong18-man.js && node test/goi-du-trang.js
 node dung-goi.js && node test/v2-nhu-artifact.js && node test/v2-khong-mang.js
