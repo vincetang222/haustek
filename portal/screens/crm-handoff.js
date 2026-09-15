@@ -48,6 +48,8 @@ const CSS = `
 .ch-party{font-family:var(--mono);font-size:10.5px;color:var(--teal)}
 .ch-calls{font-family:var(--mono);font-size:10.5px;line-height:1.75;white-space:pre-wrap;
   background:var(--canvas);border-radius:8px;padding:10px 12px;margin-top:9px;color:var(--ink2)}
+.ch-url{display:inline-block;margin-left:8px;font-family:var(--mono);font-size:10px;
+  color:var(--teal);text-decoration:underline}
 .ch-flow{font:inherit;font-size:10.5px;padding:4px 7px;border:1px solid var(--hair2);
   border-radius:7px;background:var(--card);color:var(--ink)}
 .ch-note{font-family:var(--mono);font-size:10px;color:var(--muted);line-height:1.8;margin-top:11px}
@@ -74,10 +76,25 @@ function backRead(){
 function backOf(dealId){ return backRead().deals.find(d => d.dealId === dealId) || null; }
 /* at đến từ tham số chứ không gọi new Date() trong vòng vẽ — để cùng một lần
    bấm sinh ra đúng một mốc thời gian cho cả bản ghi lẫn nhật ký. */
-function backSet(dealId, status, note, at){
+/* Kiểm đường dẫn ngay tại nguồn, đừng đẩy rác sang cho CRM phải đỡ. CRM vẫn kiểm
+   lại lần nữa vì nó không có quyền tin khoá do bên khác ghi — nhưng chặn hai đầu
+   thì người vận hành biết mình gõ sai NGAY, thay vì phát hiện lúc A&R bấm không ra. */
+function safeUrl(raw) {
+  if (typeof raw !== "string" || !raw.trim()) return null;
+  let u;
+  try { u = new URL(raw, location.href); } catch (e) { return null; }
+  if (u.protocol !== "http:" && u.protocol !== "https:") return null;
+  return u.href;
+}
+/* Giữ nguyên đường dẫn đã có khi chỉ đổi trạng thái: legal gắn link lúc soạn xong,
+   rồi còn bấm "đã ký" nữa — mỗi lần đổi trạng thái mà xoá link thì A&R mất đường
+   vào hợp đồng đúng lúc cần nhất. */
+function backSet(dealId, status, note, at, url) {
   const j = backRead();
   const i = j.deals.findIndex(d => d.dealId === dealId);
-  const row = {dealId:dealId, status:status, note:note||"", by:"portal", updatedAt:at};
+  const keep = i >= 0 ? (j.deals[i].url || "") : "";
+  const row = {dealId:dealId, status:status, note:note||"", by:"portal", updatedAt:at,
+               url: url === undefined ? keep : (safeUrl(url) || "")};
   if (i >= 0) j.deals[i] = row; else j.deals.push(row);
   try { localStorage.setItem(BACK_KEY, JSON.stringify(j)); return true; }
   catch (e) { return false; }
@@ -255,7 +272,7 @@ HAUSTEK.registerScreen({
     };
 
     const body = rows.map((r, i) => {
-      const d = r.d, s = stLabel[r.st];
+      const d = r.d, s = stLabel[r.st], back = backOf(d.dealId);
       const pname = (r.st === "badparty" || !d.portalPartyKey) ? "" : A.partyName(d.portalPartyKey);
       return '<tr>' +
         '<td><b>' + esc(d.dealName) + '</b><span class="sub">' + esc(d.account) +
@@ -266,7 +283,10 @@ HAUSTEK.registerScreen({
             : '<span class="dim">—</span>') + '</td>' +
         '<td class="num">' + (d.terms ? Math.round(rateOf(d) * 100) + '%' : '<span class="dim">—</span>') + '</td>' +
         '<td class="num">' + (advanceOf(d) ? esc(ctx.money(advanceOf(d))) : '<span class="dim">—</span>') + '</td>' +
-        '<td><span class="ch-st ' + s[0] + '">' + esc(s[1]) + '</span></td>' +
+        '<td><span class="ch-st ' + s[0] + '">' + esc(s[1]) + '</span>' +
+          (back && back.url
+            ? '<a class="ch-url" href="' + esc(back.url) + '" target="_blank" rel="noopener noreferrer">hợp đồng ↗</a>'
+            : "") + '</td>' +
         '<td class="num"><div class="btnrow" style="justify-content:flex-end">' +
           (r.st === "ceo"
             ? '<button class="btn sm" data-no="' + i + '">CEO không duyệt</button>' +
@@ -274,7 +294,9 @@ HAUSTEK.registerScreen({
             : r.st === "ready"
             ? '<button class="btn sm go" data-write="' + i + '">Ghi vào sổ</button>'
             : r.st === "done"
-            ? '<select class="ch-flow" data-flow="' + i + '">' +
+            ? '<button class="btn sm" data-link="' + i + '">' +
+              ((backOf(r.d.dealId) || {}).url ? "Sửa link" : "Gắn link") + '</button>' +
+              '<select class="ch-flow" data-flow="' + i + '">' +
               FLOW.map(f => '<option value="' + f + '"' +
                 ((backOf(r.d.dealId) || {}).status === f ? " selected" : "") + '>' +
                 esc(FLOW_LABEL[f]) + '</option>').join("") + '</select>'
@@ -355,6 +377,29 @@ HAUSTEK.registerScreen({
         backSet(r.d.dealId, sel.value, "", stamp());
         A.audit.log("crm-contract", r.d.dealId + " → " + sel.value);
         ctx.toast(FLOW_LABEL[sel.value], "ok"); ctx.refresh();
+      };
+    });
+    /* Gắn đường dẫn hợp đồng. Legal đặt hợp đồng trên chính portal, nên ô này
+       nhận cả đường dẫn tương đối ("/portal/contracts/o164") — safeUrl giải nó
+       về origin đang chạy, và ở bản thật hai app cùng tên miền. */
+    root.querySelectorAll("[data-link]").forEach(btn => {
+      btn.onclick = async () => {
+        const r = rows[+btn.dataset.link];
+        const cur = (backOf(r.d.dealId) || {}).url || "";
+        const got = await ctx.modal({
+          title: "Đường dẫn hợp đồng",
+          hint: r.d.dealName + " — A&R sẽ bấm link này từ CRM. Nhận cả đường dẫn tương đối trên portal. Để trống là gỡ link.",
+          body: '<div class="fld"><input class="in" data-field="url" placeholder="/portal/contracts/' +
+                esc(r.d.dealId) + '" value="' + esc(cur) + '"></div>',
+          ok: "Lưu"
+        });
+        if (!got) return;
+        const raw = (got.url || "").trim();
+        if (raw && !safeUrl(raw)) { ctx.toast("Đường dẫn không hợp lệ — chỉ nhận http(s)", "no"); return; }
+        const b2 = backOf(r.d.dealId);
+        backSet(r.d.dealId, b2 ? b2.status : "drafting", b2 ? b2.note : "", new Date().toISOString(), raw);
+        A.audit.log("crm-contract", r.d.dealId + " — " + (raw ? "gắn link" : "gỡ link"));
+        ctx.toast(raw ? "Đã gắn đường dẫn" : "Đã gỡ đường dẫn", "ok"); ctx.refresh();
       };
     });
     root.querySelectorAll("[data-write]").forEach(btn => {

@@ -167,6 +167,18 @@ try {
       return j.deals.some(d => d.status === "ready");
     }));
 
+  /* --- Đường dẫn hợp đồng: legal gắn bên portal, A&R bấm từ CRM --- */
+  const iLink = await rowIdx(deals[0].name, "data-link");
+  F("dòng đã ghi sổ có nút gắn link", iLink !== null);
+  await intr.evaluate(([id, u]) => {
+    /* gọi thẳng backSet thay vì lái modal — phép kiểm ở đây là hợp đồng dữ liệu
+       giữa hai app, không phải thao tác chuột trên hộp thoại */
+    const j = JSON.parse(localStorage.getItem("haustek.portal.contracts.v1"));
+    const i = j.deals.findIndex(d => d.dealId === id);
+    j.deals[i].url = u;
+    localStorage.setItem("haustek.portal.contracts.v1", JSON.stringify(j));
+  }, [deals[0].id, "https://haustek-group.com/portal/contracts/" + deals[0].id]);
+
   /* --- CHIỀU NGƯỢC: A&R mở CRM và thấy deal của mình đi tới đâu --- */
   await crm.reload(); await crm.waitForTimeout(900);
   const back = await crm.evaluate(id => {
@@ -182,6 +194,36 @@ try {
       go("opps"); saveNow();
       return localStorage.getItem("haustek.portal.contracts.v1") === before;
     }));
+  F("CRM đọc được đường dẫn hợp đồng",
+    await crm.evaluate(id => {
+      const o = DB.opps.find(x => x.id === id);
+      return !!o.contract && /haustek-group\.com\/portal\/contracts\//.test(o.contract.url || "");
+    }, deals[0].id));
+  F("nút Mở hợp đồng hiện trên trang chi tiết",
+    await crm.evaluate(id => { openOpp(id);
+      const a = document.querySelector(".ct-link");
+      return !!a && a.getAttribute("rel") === "noopener noreferrer" && a.target === "_blank";
+    }, deals[0].id));
+  /* URL độc do phía khác ghi vào — CRM phải chặn, không phải hiển thị */
+  const BAD = await crm.evaluate(() => {
+    const T = String.fromCharCode(9);
+    return ["javascript:alert(1)", "JaVaScRiPt:alert(1)", "  javascript:alert(1)",
+            "java" + T + "script:alert(1)", "data:text/html,<script>alert(1)</script>",
+            "vbscript:msgbox(1)"].map(u => safeUrl(u));
+  });
+  F("mọi URL độc bị chặn (" + BAD.filter(x => x === null).length + "/6)",
+    BAD.every(x => x === null));
+  F("đường dẫn tương đối vẫn giải đúng",
+    await crm.evaluate(() => (safeUrl("/portal/contracts/o164") || "").indexOf("/portal/contracts/o164") > 0));
+  F("URL độc không lọt vào DOM",
+    await crm.evaluate(id => {
+      const o = DB.opps.find(x => x.id === id);
+      o.contract = {status:"ready", at:"x", note:"", by:"portal", url:safeUrl("javascript:alert(1)")};
+      openOpp(id);
+      return !document.querySelector(".ct-link") &&
+             !/javascript:/i.test(document.getElementById("view").innerHTML);
+    }, deals[0].id));
+
   F("giai đoạn portal cầm lái thì CRM không đẩy tiếp được",
     await crm.evaluate(id => {
       const o = DB.opps.find(x => x.id === id);
@@ -220,5 +262,5 @@ try {
 } finally {
   srv.close();
 }
-console.log(FAILED ? "\n" + FAILED + " phép kiểm HỎNG" : "\n28 đạt · 0 hỏng");
+console.log(FAILED ? "\n" + FAILED + " phép kiểm HỎNG" : "\n34 đạt · 0 hỏng");
 process.exit(FAILED ? 1 : 0);
