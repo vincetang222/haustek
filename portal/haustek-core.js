@@ -5066,7 +5066,8 @@ function ghiDangNhap(o) {
     /* Gộp: cùng người, cùng cổng, cùng kết quả, trong DN_GOP_PHUT phút.
        Cập nhật dòng cũ chứ không bỏ dòng mới — số lần là thông tin. */
     if (cu && cu.cong === o.cong && cu.ket === o.ket && cu.cua === (o.cua || null)
-        && cu.nhanSu === (o.nhanSu || null) && moc - dnMoc(cu.denLuc || cu.at) < DN_GOP_PHUT * 60000) {
+        && cu.nhanSu === (o.nhanSu || null) && cu.email === (o.email || "")
+        && moc - dnMoc(cu.denLuc || cu.at) < DN_GOP_PHUT * 60000) {
       cu.denLuc = nay; cu.soLan++; GHI_VER++; store.save(); return null;
     }
     const dong = {
@@ -5139,6 +5140,7 @@ const LOI_EN = {
   "Dòng này đã được xử lý": "This row has already been handled",
   "EP tối đa 6 track; nhiều hơn chọn Album": "An EP has at most 6 tracks; choose Album for more",
   "Email không hợp lệ": "Invalid email",
+  "Email hoặc mật khẩu không đúng": "That email or password is not right",
   "Email người cộng tác không hợp lệ": "Invalid collaborator email",
   "Email này không có trong danh sách chia sẻ của bài": "This email is not on the track's split list",
   "Email này không thuộc tài khoản đang đăng nhập": "This email does not belong to the signed-in account",
@@ -7725,6 +7727,21 @@ const admin = {
   staff: {
     list() { return STAFF.slice(); },
     get: staffById, byRole: staffByRole,
+    /* CỬA VÀO của cổng nội bộ. Cùng luật với api.dangNhapBang: câu lỗi
+       không nói email sai hay người đã nghỉ, và lý do thật nằm ở nhật ký
+       đăng nhập. KHÔNG gác bằng QUYEN_HAM — người chưa vào thì chưa có vai
+       để gác, và gác cửa vào bằng vai là khoá cửa từ bên ngoài. */
+    dangNhapBang(email) {
+      const e = chuoi(email).trim().toLowerCase();
+      const s = STAFF.find(x => x.email.toLowerCase() === e && x.active !== false);
+      if (!s) {
+        ghiDangNhap({ cong: "noi-bo", ket: "tu-choi", email: e });
+        throw new Error("Email hoặc mật khẩu không đúng");
+      }
+      _me = s;
+      ghiDangNhap({ cong: "noi-bo", ket: "ok", nhanSu: s.id, email: s.email, vai: s.role });
+      return Object.assign({}, s, { cap: capCua(s), capTen: chucDanhCua(s.chucDanh), truong: laTruong(s) });
+    },
     /* Kèm cấp và nhãn cấp: giao diện và phép kiểm đều hỏi "người này Level
        mấy" liên tục, tra lại qua chức danh mỗi lần thì dễ quên. */
     get me() { return _me ? Object.assign({}, _me, { cap: capCua(_me), capTen: chucDanhCua(_me.chucDanh), truong: laTruong(_me) }) : _me; },
@@ -8058,9 +8075,16 @@ function requireApproved(periodKey) {
    ===================================================================== */
 const BEN_MOI = ["label", "artist", "nhan"];
 const BEN_CO_DANH_MUC = ["label", "artist"];          /* ai sở hữu bản ghi */
+/* Hàm chạy TRƯỚC khi có vai — chính nó là thứ tạo ra vai, nên không gác
+   được theo vai. Phải là một danh sách viết ra, không phải một tai nạn của
+   "hàm này không nhận tham số nào". */
+const TRUOC_KHI_VAO = ["*truoc-khi-vao*"];
 const QUYEN_API = {
+  /* chạy trước khi đăng nhập: không có vai để gác */
+  refresh: TRUOC_KHI_VAO, demoLogins: TRUOC_KHI_VAO, dangNhapBang: TRUOC_KHI_VAO,
+
   /* không nhận danh tính phiên — không gác theo loại bên */
-  refresh: BEN_MOI, demoLogins: BEN_MOI, trangCho: BEN_MOI, trangMo: BEN_MOI,
+  trangCho: BEN_MOI, trangMo: BEN_MOI,
   moPhien: BEN_MOI, dangNhapCuaToi: BEN_MOI,
 
   /* mọi bên thụ hưởng: danh tính, kỳ, ví, tiền ra, việc hỗ trợ, chia sẻ */
@@ -8114,7 +8138,7 @@ function boQuyenApi(mt) {
     const f = mt[ten];
     if (typeof f !== "function") { ra[ten] = f; return; }
     ra[ten] = function (role) {
-      if (arguments.length && role != null && cho.indexOf(role) < 0)
+      if (cho !== TRUOC_KHI_VAO && arguments.length && role != null && cho.indexOf(role) < 0)
         throw new Error("Cổng của bạn không có mục này");
       return f.apply(mt, arguments);
     };
@@ -8156,6 +8180,38 @@ const apiGoc = {
                  clientId: who.clientId, status: a.status,
                  kind: isL ? (who.parentId >= 0 ? "sublabel" : "label") : (who.labelId >= 0 ? "artist-label" : "artist-indie") };
       }).filter(Boolean) });
+  },
+
+  /* TRA TÀI KHOẢN THEO EMAIL — cửa của trang đăng nhập.
+
+     Khác demoLogins() ở một điểm quyết định: hàm này KHÔNG liệt kê ai có
+     tài khoản, nó chỉ trả lời "email này vào được không". Hệ thật chỉ có
+     hàm này; demoLogins() là thang gỗ của bản mẫu và sẽ bỏ đi.
+
+     Câu lỗi CỐ Ý không nói email sai hay tài khoản bị khoá: nói ra là cho
+     người lạ một cách dò xem ai có tài khoản ở Haustek. Lý do thật của
+     từng lần bị chặn nằm ở nhật ký đăng nhập, chỗ chỉ nội bộ đọc được.
+
+     Bản mẫu không có mật khẩu nên hàm này chỉ nhận email. Trên máy chủ nó
+     nhận thêm mật khẩu và mã xác thực hai lớp, và ba nhánh ket của nhật ký
+     ("sai-mat-khau", "sai-mfa", "bi-khoa") mới dùng tới. */
+  dangNhapBang(email) {
+    const e = chuoi(email).trim().toLowerCase();
+    const a = state.accounts.find(x => x.email.toLowerCase() === e
+      && x.role !== "admin" && x.partyKey);
+    const chan = () => {
+      ghiDangNhap({ cong: "doi-tac", ket: "tu-choi", email: e, vai: a ? a.role : "", ben: a ? a.partyKey : null });
+      throw new Error("Email hoặc mật khẩu không đúng");
+    };
+    if (!a || a.status === "suspended") chan();
+    /* Lần vào đầu tiên của một tài khoản đã mời thì kích hoạt nó — đúng
+       như hệ thật làm khi người ta bấm link mời và đặt mật khẩu. */
+    if (a.status === "invited") { a.status = "active"; store.save(); }
+    const pk = a.partyKey;
+    if (pk[0] === "N") return scrub({ role: "nhan", partyId: a.id, email: a.email, ten: a.ten || a.email });
+    const id = +pk.slice(2), who = pk[0] === "L" ? LABELS[id] : ARTISTS[id];
+    if (!who) chan();
+    return scrub({ role: a.role, partyId: id, email: a.email, ten: who.name });
   },
 
   /* CỬA VÀO của cổng đối tác. Là phương thức RIÊNG chứ không gắn vào

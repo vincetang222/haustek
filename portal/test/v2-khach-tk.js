@@ -4,11 +4,23 @@
    riêng. Quét MỘT tài khoản là quét đúng một trong số đó. Đây quét hết. */
 const { chromium } = require('playwright');
 const dungFontThat = require('./font-that.js');
+const { doiTaiKhoan } = require('./vao-cua.js');
 
 (async () => {
   const b = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium-1194/chrome-linux/chrome' });
   const ctx = await b.newContext({ viewport: { width: 1440, height: 1100 } });
   const p = await ctx.newPage();
+  /* addInitScript chứ không evaluate: evaluate lúc này chạy trên about:blank,
+     khác origin nên sessionStorage ghi xong là mất. */
+  await p.addInitScript(() => {
+    try {
+      /* CHỈ đặt khi chưa có: init script chạy lại ở MỌI lần reload, nên đặt
+         vô điều kiện là đè mất tài khoản mà vòng lặp vừa chọn — và bài kiểm
+         sẽ quét mười lăm lần cùng một tài khoản mà vẫn báo sạch. */
+      if (!sessionStorage.getItem('haustek.phien.portal'))
+        sessionStorage.setItem('haustek.phien.portal', JSON.stringify({ email: 'label1@vidu.vn' }));
+    } catch (e) {}
+  });
   await dungFontThat(p);
   const errs = [];
   p.on('pageerror', e => errs.push('PAGEERROR ' + e.message));
@@ -16,12 +28,16 @@ const dungFontThat = require('./font-that.js');
 
   await p.goto('http://127.0.0.1:8099/v2/khach.html', { waitUntil: 'networkidle' });
   await p.waitForTimeout(700);
-  const n = await p.$$eval('[data-ai] option', o => o.length);
+  /* Từ vòng 25 không còn ô chọn tài khoản; danh sách lấy thẳng từ lõi và
+     mỗi vòng lặp đặt phiên bằng EMAIL, đúng như cửa làm. */
+  const ds = await p.evaluate(() => HAUSTEK.api.demoLogins().accounts
+    .filter(a => a.status === 'active').map(a => a.email));
+  const n = ds.length;
   console.log('số tài khoản mẫu:', n);
   let hong = 0;
 
   for (let i = 0; i < n; i++) {
-    await p.evaluate(v => { try { sessionStorage.setItem('haustek.demo.tk', v); } catch (e) {} }, String(i));
+    await doiTaiKhoan(p, 'portal', ds[i]);
     await p.reload({ waitUntil: 'networkidle' });
     await p.waitForTimeout(600);
     const ai = await p.$eval('.side-foot b', e => e.textContent.trim());

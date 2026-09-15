@@ -26,6 +26,7 @@ const chu = p => p.evaluate(() => document.querySelector('main').textContent);
 
 (async () => {
   const b = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium-1194/chrome-linux/chrome' });
+  require('./vao-cua.js').gan(b);   /* vòng 25: mỗi trang mở ra đã có phiên, khỏi qua cửa */
   const ctx = await b.newContext({ viewport: { width: 1500, height: 1100 } });
   const p = await ctx.newPage();
   await dungFontThat(p);
@@ -139,12 +140,12 @@ const chu = p => p.evaluate(() => document.querySelector('main').textContent);
     const TK = H.api.demoLogins().accounts.filter(a => a.status === 'active');
     for (let n = 0; n < TK.length; n++) {
       if (TK[n].role !== 'artist') continue;
-      try { if (H.api.session('artist', TK[n].partyId).hasPublishing) return n; } catch (e) {}
+      try { if (H.api.session('artist', TK[n].partyId).hasPublishing) return TK[n].email; } catch (e) {}
     }
-    return -1;
+    return '';
   });
-  must(k >= 0, 'có tài khoản tác giả để thử');
-  await p.evaluate(n => { sessionStorage.setItem('haustek.demo.tk', String(n)); }, k);
+  must(!!k, 'có tài khoản tác giả để thử');
+  await p.evaluate(e => { sessionStorage.setItem('haustek.phien.portal', JSON.stringify({ email: e })); }, k);
   await p.reload({ waitUntil: 'networkidle' });
   await p.waitForTimeout(900);
   await p.evaluate(() => { location.hash = '#k-ban-ghi'; });

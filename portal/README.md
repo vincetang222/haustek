@@ -104,7 +104,7 @@ trả, ma trận quyền theo vai và cây tổ chức, nhật ký, di trú lư�
 
 **Giả** — bản thân các con số; "nạp file" chỉ bật cờ chứ không đọc file thật.
 
-**Chưa có** — database, đăng nhập thật, quy đổi tiền tệ theo từng nền tảng, và **địa chỉ IP**:
+**Chưa có** — database, **mật khẩu** (trang đăng nhập có thật và tra email thật, nhưng ô mật khẩu không được kiểm — nó có mặt để đội lập trình thấy chỗ nó nằm), quy đổi tiền tệ theo từng nền tảng, và **địa chỉ IP**:
 nhật ký đăng nhập ghi thật thời điểm, cổng, người, thiết bị và trình duyệt, nhưng cột Địa chỉ IP
 in "chưa có · bản mẫu" ở mọi dòng — trình duyệt biết tên của chính nó, không biết địa chỉ của
 chính nó. `test/dang-nhap.js` quét cả kho để cột ấy không bao giờ bị điền cho đẹp.

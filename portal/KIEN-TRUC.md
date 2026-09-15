@@ -173,6 +173,14 @@ Hai trục: **vai** (từ khối trong cây tổ chức) và **cấp** (từ ch�
   nhóm có tên `giamSat`, chỉ giám đốc có. Chỉ hội đồng đưa người vào / ra
   khối hội đồng hay khoá thành viên hội đồng; thành viên cuối không khoá
   được. Bài kiểm `test/aaa.js`, `test/qc-quyen.js`, `test/qc-vai-quet.js`.
+- **Cửa** (`v2/haustek-cua.js`, vòng 25) chạy TRƯỚC khung ở cả hai cổng.
+  Chưa có phiên thì dựng trang đăng nhập và dừng; có phiên thì **tra lại
+  theo email** rồi mới cho qua — tài khoản bị khoá giữa chừng bị đá ra ở
+  lần nạp kế tiếp. Lõi: `api.dangNhapBang(email)` và
+  `A.staff.dangNhapBang(email)`, cả hai ghi nhật ký kể cả khi từ chối. Câu
+  lỗi là một câu duy nhất cho mọi lý do, để không lộ ai có tài khoản.
+  Phiên lưu theo cổng ở `sessionStorage['haustek.phien.<cổng>']`. Bài kiểm
+  `test/cua-dang-nhap.js`; 19 bài còn lại gieo phiên bằng `test/vao-cua.js`.
 - **Nhật ký đăng nhập** (`state.dangNhap`, vòng 24) tách khỏi `audit`: audit
   ghi người ta LÀM gì, nhật ký này ghi người ta VÀO lúc nào. Cửa ghi duy
   nhất là `ghiDangNhap()`, không nằm trên mặt tiền nào; `dangNhap.ghi` mở

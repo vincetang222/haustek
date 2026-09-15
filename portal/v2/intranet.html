@@ -16,6 +16,7 @@
 <body>
 <script src="../haustek-core.js"></script>
 <script src="haustek-shell.js"></script>
+<script src="haustek-cua.js"></script>
 <script src="haustek-bieudo.js"></script>
 <script src="haustek-man.js"></script>
 <script src="haustek-taisan.js"></script>
@@ -59,15 +60,6 @@
    khách cũng tải về.
    ===================================================================== */
 var A = HAUSTEK.admin;
-try { var NV = sessionStorage.getItem('haustek.demo.nv'); if (NV) A.staff.setMe(NV); } catch (e) {}
-/* Ghi một dòng nhật ký đăng nhập cho phiên nội bộ đang mở. Đặt ở đây chứ
-   không trong trang vì trang bị cấm mọi đường ghi, và vì trên hệ thật đây
-   đúng là chỗ tương ứng với điểm cuối đăng nhập.
-   Cổng nội bộ của bản mẫu KHÔNG có mật khẩu — ô đổi người ở chân cột trái
-   là một công tắc bản mẫu — nên dòng nó sinh ra không chứng minh được ai
-   thật sự ngồi trước máy. Trên máy chủ, dòng này sinh sau khi kiểm mật
-   khẩu và xác thực hai lớp, và mang theo địa chỉ IP đọc từ kết nối. */
-try { A.dangNhap.ghi(); } catch (e) {}
 A.provideSecrets({
   code: 'DIST-1',
   name: 'Đối tác phân phối chính (tên thật điền khi triển khai)',
@@ -76,6 +68,27 @@ A.provideSecrets({
 });
 HT.setFx(A.fx.get().rate);
 
+/* =====================================================================
+   CỬA — dựng cổng chỉ sau khi có người đăng nhập.
+   Trước vòng 25, trang này tự vào bằng nhân sự đầu danh sách và có một ô
+   chọn người ở chân cột trái. Ô ấy làm nhật ký đăng nhập vô nghĩa và làm
+   ma trận quyền trông như một công tắc. Giờ vai đến từ tài khoản đã vào,
+   đúng như hệ thật.
+   ===================================================================== */
+HTCua.mo({
+  ten: 'internal',
+  tieuDe: HT.lang === 'en' ? 'Haustek internal' : 'Cổng nội bộ Haustek',
+  phu: HT.lang === 'en'
+    ? 'Your desk, your department queue, and what you are allowed to approve.'
+    : 'Bàn làm việc của bạn, hàng đợi của bộ phận, và những gì bạn được duyệt.',
+  dangNhap: function (email) { return A.staff.dangNhapBang(email); },
+  mau: A.staff.list().filter(function (s) { return s.active !== false; }).map(function (s) {
+    return { email: s.email, ten: s.name, phu: HT.lang === 'en' ? s.titleEn : s.title };
+  }),
+  xong: function () { dungCong(); }
+});
+
+function dungCong() {
 HT.chay({
   ten: 'internal',
   A: A,
@@ -105,24 +118,17 @@ HT.chay({
   chanTrai: function (c) {
     var me = A.staff.me;
     return '<b>' + HT.esc(me.email) + '</b><span>' + HT.esc(c.lang === 'vi' ? me.title : me.titleEn) + '</span>' +
-      '<select class="inline-sel" data-nv style="margin-top:9px;width:100%">' + A.staff.list().map(function (s) {
-        return '<option value="' + s.id + '"' + (s.id === me.id ? ' selected' : '') + '>' + HT.esc(s.name + ' · ' + (c.lang === 'vi' ? s.title : s.titleEn)) + '</option>';
-      }).join('') + '</select>' +
-      '<span style="display:block;margin-top:7px;line-height:1.5">' + HT.esc(c.lang === 'vi'
-        ? 'Bản mẫu: đổi nhân viên để xem bàn làm việc theo vai. Hệ thống thật lấy vai từ tài khoản đăng nhập.'
-        : 'Prototype: switch staff to see each role’s desk. The real system takes the role from the login.') + '</span>';
+      '<button type="button" class="btn sm ghost" data-ra style="margin-top:9px;width:100%">' +
+      HT.esc(c.lang === 'vi' ? 'Đăng xuất' : 'Sign out') + '</button>';
   }
 });
-/* Nhân vật nhân viên: giữ qua lần nạp lại. Đặt TRƯỚC khi vẽ (HT.chay đã vẽ
-   một lần; đổi xong thì nạp lại trang cho gọn, y như đổi tài khoản ở cổng
-   đối tác). */
-document.addEventListener('change', function (e) {
-  var s = e.target.closest('[data-nv]');
-  if (!s) return;
-  try { sessionStorage.setItem('haustek.demo.nv', s.value); } catch (err) {}
-  location.hash = '#ban-lam-viec';
+document.addEventListener('click', function (e) {
+  if (!e.target.closest('[data-ra]')) return;
+  HTCua.raKhoi('internal');
+  location.hash = '';
   location.reload();
 });
+}
 </script>
 </body>
 </html>

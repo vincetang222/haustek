@@ -1534,3 +1534,44 @@ table.t tbody tr.tong td{background:var(--band);font-weight:600;border-top:1.5px
 .bl-tx{font-size:13px;line-height:1.55;white-space:pre-wrap;word-break:break-word;margin-top:3px}
 .bl-xong{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:10px 0 2px;padding:9px 12px;border-radius:10px;background:var(--fill);font-size:13px}
 .bl-xong .ico.ok{display:inline-flex}
+
+/* ===== CỬA · trang đăng nhập (vòng 25) ==========================
+   Đứng trước khung nên không dùng lưới của khung. Dùng đúng token màu
+   của hệ nên tự đúng ở cả sáng lẫn tối, không cần khai lại bảng màu. */
+.cua-nen{min-height:100dvh;display:flex;align-items:center;justify-content:center;
+  padding:24px 16px;background:var(--bg);color:var(--ink)}
+.cua{width:100%;max-width:400px;background:var(--card);border:1px solid var(--card-line);
+  border-radius:var(--r);padding:26px 24px 18px;box-shadow:var(--raised)}
+.cua-dau{margin-bottom:20px}
+.cua-hieu{font-weight:700;font-size:12.5px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--accent);margin-bottom:14px}
+.cua-dau h1{margin:0 0 5px;font-size:20px;font-weight:650;letter-spacing:-.01em}
+.cua-dau p{margin:0;font-size:13px;line-height:1.5;color:var(--ink-2)}
+.cua-form .fld{display:block;margin:0 0 5px;font-size:12.5px;font-weight:550;color:var(--ink-2)}
+.cua-form .in{width:100%;margin-bottom:14px}
+.cua-nho{margin:-8px 0 14px;font-size:11.5px;line-height:1.5;color:var(--faint)}
+.cua-giua{margin:12px 0 0;text-align:center}
+.cua-nut{width:100%;justify-content:center;padding:10px 14px;font-size:14px}
+.cua-loi{margin:0 0 12px;padding:9px 11px;border-radius:var(--r-sm);font-size:12.5px;line-height:1.45;
+  background:var(--danger-lo);border:1px solid var(--danger);color:var(--danger)}
+.cua-mau-hop{margin-top:20px;border-top:1px solid var(--line);padding-top:14px}
+.cua-mau-hop summary{cursor:pointer;font-size:12.5px;font-weight:550;color:var(--ink-2);
+  list-style:none;display:flex;align-items:center;gap:6px}
+.cua-mau-hop summary::-webkit-details-marker{display:none}
+.cua-mau-hop summary::before{content:'\25B8';font-size:11px;color:var(--faint);transition:transform .15s}
+.cua-mau-hop[open] summary::before{transform:rotate(90deg)}
+.cua-mau-hop .cua-nho{margin:10px 0}
+.cua-mau-ds{display:flex;flex-direction:column;gap:5px;max-height:232px;overflow-y:auto}
+.cua-mau{display:block;width:100%;text-align:left;padding:7px 10px;border-radius:var(--r-sm);
+  border:1px solid var(--line);background:var(--bg);cursor:pointer;font:inherit;color:inherit}
+.cua-mau:hover{border-color:var(--accent);background:var(--card)}
+.cua-mau b{display:block;font-size:12.5px;font-weight:600}
+.cua-mau span{display:block;font-size:11.5px;color:var(--ink-2);font-family:var(--mono)}
+.cua-mau i{display:block;font-size:11px;font-style:normal;color:var(--faint);margin-top:1px}
+.cua-chan{margin-top:18px;padding-top:13px;border-top:1px solid var(--line);
+  display:flex;align-items:center;gap:10px;justify-content:space-between}
+.cua-chan span{font-size:11px;line-height:1.5;color:var(--faint);flex:1;min-width:0}
+@media (max-width:420px){
+  .cua{padding:22px 18px 16px}
+  .cua-chan{flex-direction:column;align-items:stretch}
+}

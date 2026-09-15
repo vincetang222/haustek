@@ -3,6 +3,7 @@ const dungFontThat = require('./font-that.js');
 const P = '[data-pane="dm"] ';
 (async()=>{
 const b=await chromium.launch({executablePath: process.env.CHROMIUM || undefined});
+  require('./vao-cua.js').gan(b);   /* vòng 25: mỗi trang mở ra đã có phiên, khỏi qua cửa */
 const p=await (await b.newContext({viewport:{width:1500,height:1000}})).newPage();
 await dungFontThat(p);
 const errs=[]; p.on('pageerror',e=>errs.push('pageerror: '+e.message));

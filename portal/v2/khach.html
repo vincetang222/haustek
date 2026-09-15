@@ -21,6 +21,7 @@
 HAUSTEK.lockdown();
 </script>
 <script src="haustek-shell.js"></script>
+<script src="haustek-cua.js"></script>
 <script src="haustek-bieudo.js"></script>
 <script src="haustek-man.js"></script>
 <script src="haustek-taisan.js"></script>
@@ -52,25 +53,45 @@ HAUSTEK.lockdown();
 "use strict";
 /* =====================================================================
    CỔNG KHÁCH — chỉ có HAUSTEK.api.
-   Ô chọn tài khoản ở chân cột trái là mô phỏng đăng nhập cho bản mẫu.
-   Hệ thật không có nó: mỗi người chỉ vào được chính tài khoản của mình,
-   và phiên đăng nhập trên máy chủ mới là thứ quyết định partyId.
+   Từ vòng 25, cửa vào là một trang đăng nhập thật (haustek-cua.js): gõ
+   email, lõi tra, sai thì bị từ chối và bị ghi vào nhật ký đăng nhập.
+   Hệ thật khác đúng hai chỗ: có mật khẩu, và không có danh sách tài
+   khoản mẫu.
    ===================================================================== */
 var api = HAUSTEK.api;
 var TK = api.demoLogins().accounts.filter(function (a) { return a.status === 'active'; });
-/* Giữ lựa chọn qua lần nạp lại. Không giữ thì bấm đổi tài khoản xong
-   trang nạp lại và quay về tài khoản đầu — trông như nút hỏng. */
-var CHON = 'haustek.demo.tk';
 /* Xem với tư cách label con: label mẹ chọn một label con thì phiên chuyển
    sang label con đó, còn tài khoản đăng nhập vẫn là label mẹ. Khoá này
    chỉ là ý muốn của người dùng; quyền thật kiểm bằng api.delegations. */
 var XEM = 'haustek.demo.xemThay';
-function nhoLai() {
-  try { var v = +sessionStorage.getItem(CHON); return (v >= 0 && v < TK.length) ? v : 0; }
-  catch (e) { return 0; }
-}
 function xoaXem() { try { sessionStorage.removeItem(XEM); } catch (e) {} }
-var toi = TK[nhoLai()];
+/* Ai đang vào: do CỬA quyết định, không phải ô chọn. Gán ở đúc() bên dưới. */
+var toi = null;
+/* =====================================================================
+   CỬA — dựng cổng chỉ sau khi có người đăng nhập.
+   Trước vòng 25, trang này tự vào bằng tài khoản đầu danh sách. Đó là
+   thứ không hệ thật nào làm, và nó làm nhật ký đăng nhập vô nghĩa: mọi
+   dòng đều là "tài khoản số 0". Giờ phiên do CỬA quyết định.
+   ===================================================================== */
+HTCua.mo({
+  ten: 'portal',
+  tieuDe: HT.lang === 'en' ? 'Partner portal' : 'Cổng đối tác',
+  phu: HT.lang === 'en'
+    ? 'Your revenue by period, your wallet, and your catalogue.'
+    : 'Số tiền theo từng kỳ, ví của bạn, và danh mục của bạn.',
+  dangNhap: function (email) { return api.dangNhapBang(email); },
+  mau: TK.map(function (a) {
+    return { email: a.email, ten: a.name,
+             phu: a.kind === 'nhan' ? (HT.lang === 'en' ? 'Collaborator' : 'Người cộng tác')
+                : a.kind === 'sublabel' ? (HT.lang === 'en' ? 'Sub-label' : 'Label con')
+                : a.role === 'label' ? 'Label'
+                : a.kind === 'artist-indie' ? (HT.lang === 'en' ? 'Independent artist' : 'Nghệ sĩ độc lập')
+                : (HT.lang === 'en' ? 'Artist' : 'Nghệ sĩ') };
+  }),
+  xong: function (dt) { toi = { role: dt.role, partyId: dt.partyId, name: dt.ten, email: dt.email }; dungCong(); }
+});
+
+function dungCong() {
 var thay = null;                                        /* {labelId, name, clientId} khi đang xem thay */
 var phienCua = { role: toi.role, partyId: toi.partyId }; /* phiên thật sự dùng để gọi api */
 (function () {
@@ -136,10 +157,6 @@ HT.chay({
   },
   chanTrai: function (c) {
     var vi = c.lang === 'vi', me = PHIEN.me;
-    var opts = TK.map(function (a, i) {
-      return '<option value="' + i + '"' + (a === toi ? ' selected' : '') + '>' +
-        HT.esc(a.name) + '</option>';
-    }).join('');
     var vai = toi.role === 'nhan' ? (vi ? 'Người cộng tác' : 'Collaborator')
       : toi.role !== 'label'
       ? (me.independent ? (vi ? 'Nghệ sĩ độc lập' : 'Independent artist') : (vi ? 'Nghệ sĩ' : 'Artist'))
@@ -149,21 +166,17 @@ HT.chay({
     return '<b>' + HT.esc(me.name) + '</b>' +
       '<span>' + HT.esc(vai) + '</span>' +
       (thay ? '<span style="display:block;margin-top:3px">' + HT.esc(vi ? 'đăng nhập: ' + toi.name : 'signed in as ' + toi.name) + '</span>' : '') +
-      '<select class="inline-sel" data-ai style="margin-top:9px;width:100%">' + opts + '</select>' +
-      '<span style="display:block;margin-top:7px;line-height:1.5">' +
-      HT.esc(vi
-        ? 'Bản mẫu: đổi tài khoản để xem theo góc nhìn khác. Hệ thống thật không có ô chọn này.'
-        : 'Prototype only: switch accounts to see another view. The real system has no such control.') +
-      '</span>';
+      '<span style="display:block;margin-top:2px" class="mono">' + HT.esc(toi.email) + '</span>' +
+      '<button type="button" class="btn sm ghost" data-ra style="margin-top:9px;width:100%">' +
+      HT.esc(vi ? 'Đăng xuất' : 'Sign out') + '</button>';
   }
 });
 
-document.addEventListener('change', function (e) {
-  var s = e.target.closest('[data-ai]');
-  if (!s) return;
-  try { sessionStorage.setItem(CHON, s.value); } catch (err) {}
+document.addEventListener('click', function (e) {
+  if (!e.target.closest('[data-ra]')) return;
+  HTCua.raKhoi('portal');
   xoaXem();
-  location.hash = '#k-tong-quan';
+  location.hash = '';
   location.reload();
 });
 
@@ -189,6 +202,7 @@ document.addEventListener('click', function (e) {
     location.reload();
   }
 });
+}
 </script>
 </body>
 </html>

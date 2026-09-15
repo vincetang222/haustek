@@ -21,6 +21,7 @@ const RONG = (process.argv[3] || '1500').split(',').map(Number);
 
 (async () => {
   const b = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium-1194/chrome-linux/chrome' });
+  require('./vao-cua.js').gan(b);   /* vòng 25: mỗi trang mở ra đã có phiên, khỏi qua cửa */
   let hong = 0;
 
   for (const W of RONG) {

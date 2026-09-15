@@ -1676,6 +1676,47 @@ table.t tbody tr.tong td{background:var(--band);font-weight:600;border-top:1.5px
 .bl-xong{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:10px 0 2px;padding:9px 12px;border-radius:10px;background:var(--fill);font-size:13px}
 .bl-xong .ico.ok{display:inline-flex}
 
+/* ===== CỬA · trang đăng nhập (vòng 25) ==========================
+   Đứng trước khung nên không dùng lưới của khung. Dùng đúng token màu
+   của hệ nên tự đúng ở cả sáng lẫn tối, không cần khai lại bảng màu. */
+.cua-nen{min-height:100dvh;display:flex;align-items:center;justify-content:center;
+  padding:24px 16px;background:var(--bg);color:var(--ink)}
+.cua{width:100%;max-width:400px;background:var(--card);border:1px solid var(--card-line);
+  border-radius:var(--r);padding:26px 24px 18px;box-shadow:var(--raised)}
+.cua-dau{margin-bottom:20px}
+.cua-hieu{font-weight:700;font-size:12.5px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--accent);margin-bottom:14px}
+.cua-dau h1{margin:0 0 5px;font-size:20px;font-weight:650;letter-spacing:-.01em}
+.cua-dau p{margin:0;font-size:13px;line-height:1.5;color:var(--ink-2)}
+.cua-form .fld{display:block;margin:0 0 5px;font-size:12.5px;font-weight:550;color:var(--ink-2)}
+.cua-form .in{width:100%;margin-bottom:14px}
+.cua-nho{margin:-8px 0 14px;font-size:11.5px;line-height:1.5;color:var(--faint)}
+.cua-giua{margin:12px 0 0;text-align:center}
+.cua-nut{width:100%;justify-content:center;padding:10px 14px;font-size:14px}
+.cua-loi{margin:0 0 12px;padding:9px 11px;border-radius:var(--r-sm);font-size:12.5px;line-height:1.45;
+  background:var(--danger-lo);border:1px solid var(--danger);color:var(--danger)}
+.cua-mau-hop{margin-top:20px;border-top:1px solid var(--line);padding-top:14px}
+.cua-mau-hop summary{cursor:pointer;font-size:12.5px;font-weight:550;color:var(--ink-2);
+  list-style:none;display:flex;align-items:center;gap:6px}
+.cua-mau-hop summary::-webkit-details-marker{display:none}
+.cua-mau-hop summary::before{content:'\25B8';font-size:11px;color:var(--faint);transition:transform .15s}
+.cua-mau-hop[open] summary::before{transform:rotate(90deg)}
+.cua-mau-hop .cua-nho{margin:10px 0}
+.cua-mau-ds{display:flex;flex-direction:column;gap:5px;max-height:232px;overflow-y:auto}
+.cua-mau{display:block;width:100%;text-align:left;padding:7px 10px;border-radius:var(--r-sm);
+  border:1px solid var(--line);background:var(--bg);cursor:pointer;font:inherit;color:inherit}
+.cua-mau:hover{border-color:var(--accent);background:var(--card)}
+.cua-mau b{display:block;font-size:12.5px;font-weight:600}
+.cua-mau span{display:block;font-size:11.5px;color:var(--ink-2);font-family:var(--mono)}
+.cua-mau i{display:block;font-size:11px;font-style:normal;color:var(--faint);margin-top:1px}
+.cua-chan{margin-top:18px;padding-top:13px;border-top:1px solid var(--line);
+  display:flex;align-items:center;gap:10px;justify-content:space-between}
+.cua-chan span{font-size:11px;line-height:1.5;color:var(--faint);flex:1;min-width:0}
+@media (max-width:420px){
+  .cua{padding:22px 18px 16px}
+  .cua-chan{flex-direction:column;align-items:stretch}
+}
+
 
 
 /* ---- ô chọn cửa, chỉ có ở bản gói một trang ---- */
@@ -6755,7 +6796,8 @@ function ghiDangNhap(o) {
     /* Gộp: cùng người, cùng cổng, cùng kết quả, trong DN_GOP_PHUT phút.
        Cập nhật dòng cũ chứ không bỏ dòng mới — số lần là thông tin. */
     if (cu && cu.cong === o.cong && cu.ket === o.ket && cu.cua === (o.cua || null)
-        && cu.nhanSu === (o.nhanSu || null) && moc - dnMoc(cu.denLuc || cu.at) < DN_GOP_PHUT * 60000) {
+        && cu.nhanSu === (o.nhanSu || null) && cu.email === (o.email || "")
+        && moc - dnMoc(cu.denLuc || cu.at) < DN_GOP_PHUT * 60000) {
       cu.denLuc = nay; cu.soLan++; GHI_VER++; store.save(); return null;
     }
     const dong = {
@@ -6828,6 +6870,7 @@ const LOI_EN = {
   "Dòng này đã được xử lý": "This row has already been handled",
   "EP tối đa 6 track; nhiều hơn chọn Album": "An EP has at most 6 tracks; choose Album for more",
   "Email không hợp lệ": "Invalid email",
+  "Email hoặc mật khẩu không đúng": "That email or password is not right",
   "Email người cộng tác không hợp lệ": "Invalid collaborator email",
   "Email này không có trong danh sách chia sẻ của bài": "This email is not on the track's split list",
   "Email này không thuộc tài khoản đang đăng nhập": "This email does not belong to the signed-in account",
@@ -9414,6 +9457,21 @@ const admin = {
   staff: {
     list() { return STAFF.slice(); },
     get: staffById, byRole: staffByRole,
+    /* CỬA VÀO của cổng nội bộ. Cùng luật với api.dangNhapBang: câu lỗi
+       không nói email sai hay người đã nghỉ, và lý do thật nằm ở nhật ký
+       đăng nhập. KHÔNG gác bằng QUYEN_HAM — người chưa vào thì chưa có vai
+       để gác, và gác cửa vào bằng vai là khoá cửa từ bên ngoài. */
+    dangNhapBang(email) {
+      const e = chuoi(email).trim().toLowerCase();
+      const s = STAFF.find(x => x.email.toLowerCase() === e && x.active !== false);
+      if (!s) {
+        ghiDangNhap({ cong: "noi-bo", ket: "tu-choi", email: e });
+        throw new Error("Email hoặc mật khẩu không đúng");
+      }
+      _me = s;
+      ghiDangNhap({ cong: "noi-bo", ket: "ok", nhanSu: s.id, email: s.email, vai: s.role });
+      return Object.assign({}, s, { cap: capCua(s), capTen: chucDanhCua(s.chucDanh), truong: laTruong(s) });
+    },
     /* Kèm cấp và nhãn cấp: giao diện và phép kiểm đều hỏi "người này Level
        mấy" liên tục, tra lại qua chức danh mỗi lần thì dễ quên. */
     get me() { return _me ? Object.assign({}, _me, { cap: capCua(_me), capTen: chucDanhCua(_me.chucDanh), truong: laTruong(_me) }) : _me; },
@@ -9747,9 +9805,16 @@ function requireApproved(periodKey) {
    ===================================================================== */
 const BEN_MOI = ["label", "artist", "nhan"];
 const BEN_CO_DANH_MUC = ["label", "artist"];          /* ai sở hữu bản ghi */
+/* Hàm chạy TRƯỚC khi có vai — chính nó là thứ tạo ra vai, nên không gác
+   được theo vai. Phải là một danh sách viết ra, không phải một tai nạn của
+   "hàm này không nhận tham số nào". */
+const TRUOC_KHI_VAO = ["*truoc-khi-vao*"];
 const QUYEN_API = {
+  /* chạy trước khi đăng nhập: không có vai để gác */
+  refresh: TRUOC_KHI_VAO, demoLogins: TRUOC_KHI_VAO, dangNhapBang: TRUOC_KHI_VAO,
+
   /* không nhận danh tính phiên — không gác theo loại bên */
-  refresh: BEN_MOI, demoLogins: BEN_MOI, trangCho: BEN_MOI, trangMo: BEN_MOI,
+  trangCho: BEN_MOI, trangMo: BEN_MOI,
   moPhien: BEN_MOI, dangNhapCuaToi: BEN_MOI,
 
   /* mọi bên thụ hưởng: danh tính, kỳ, ví, tiền ra, việc hỗ trợ, chia sẻ */
@@ -9803,7 +9868,7 @@ function boQuyenApi(mt) {
     const f = mt[ten];
     if (typeof f !== "function") { ra[ten] = f; return; }
     ra[ten] = function (role) {
-      if (arguments.length && role != null && cho.indexOf(role) < 0)
+      if (cho !== TRUOC_KHI_VAO && arguments.length && role != null && cho.indexOf(role) < 0)
         throw new Error("Cổng của bạn không có mục này");
       return f.apply(mt, arguments);
     };
@@ -9845,6 +9910,38 @@ const apiGoc = {
                  clientId: who.clientId, status: a.status,
                  kind: isL ? (who.parentId >= 0 ? "sublabel" : "label") : (who.labelId >= 0 ? "artist-label" : "artist-indie") };
       }).filter(Boolean) });
+  },
+
+  /* TRA TÀI KHOẢN THEO EMAIL — cửa của trang đăng nhập.
+
+     Khác demoLogins() ở một điểm quyết định: hàm này KHÔNG liệt kê ai có
+     tài khoản, nó chỉ trả lời "email này vào được không". Hệ thật chỉ có
+     hàm này; demoLogins() là thang gỗ của bản mẫu và sẽ bỏ đi.
+
+     Câu lỗi CỐ Ý không nói email sai hay tài khoản bị khoá: nói ra là cho
+     người lạ một cách dò xem ai có tài khoản ở Haustek. Lý do thật của
+     từng lần bị chặn nằm ở nhật ký đăng nhập, chỗ chỉ nội bộ đọc được.
+
+     Bản mẫu không có mật khẩu nên hàm này chỉ nhận email. Trên máy chủ nó
+     nhận thêm mật khẩu và mã xác thực hai lớp, và ba nhánh ket của nhật ký
+     ("sai-mat-khau", "sai-mfa", "bi-khoa") mới dùng tới. */
+  dangNhapBang(email) {
+    const e = chuoi(email).trim().toLowerCase();
+    const a = state.accounts.find(x => x.email.toLowerCase() === e
+      && x.role !== "admin" && x.partyKey);
+    const chan = () => {
+      ghiDangNhap({ cong: "doi-tac", ket: "tu-choi", email: e, vai: a ? a.role : "", ben: a ? a.partyKey : null });
+      throw new Error("Email hoặc mật khẩu không đúng");
+    };
+    if (!a || a.status === "suspended") chan();
+    /* Lần vào đầu tiên của một tài khoản đã mời thì kích hoạt nó — đúng
+       như hệ thật làm khi người ta bấm link mời và đặt mật khẩu. */
+    if (a.status === "invited") { a.status = "active"; store.save(); }
+    const pk = a.partyKey;
+    if (pk[0] === "N") return scrub({ role: "nhan", partyId: a.id, email: a.email, ten: a.ten || a.email });
+    const id = +pk.slice(2), who = pk[0] === "L" ? LABELS[id] : ARTISTS[id];
+    if (!who) chan();
+    return scrub({ role: a.role, partyId: id, email: a.email, ten: who.name });
   },
 
   /* CỬA VÀO của cổng đối tác. Là phương thức RIÊNG chứ không gắn vào

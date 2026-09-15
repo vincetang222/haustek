@@ -39,6 +39,7 @@ function bocNhuTrinhXem(noiDung) {
   await new Promise(r => setTimeout(r, 1200));
 
   const b = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium-1194/chrome-linux/chrome' });
+  require('./vao-cua.js').gan(b);   /* vòng 25: mỗi trang mở ra đã có phiên, khỏi qua cửa */
   const ctx = await b.newContext({ viewport: { width: 1400, height: 900 } });
   /* chặn sạch mạng ngoài — trang phải tự đủ */
   await ctx.route('**', r => {

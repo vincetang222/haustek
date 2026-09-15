@@ -461,6 +461,23 @@ Văn bản pháp lý áp dụng: **phải rà lại**. Theo tra cứu ở vòng 
 tức bảng này rơi thẳng vào nhóm ấy. Chưa có luật sư xác nhận; xem
 `TRIEN-KHAI.md` mục 10 trước khi code phần này.
 
+### Cửa đăng nhập
+
+Bản mẫu có trang đăng nhập thật (`v2/haustek-cua.js`) và nó tra email thật,
+nhưng **không có mật khẩu**. Khi lên máy chủ, bốn thứ phải có ngay từ ngày
+đầu — không cái nào là tính năng nâng cao:
+
+| Việc | Luật |
+|---|---|
+| Băm mật khẩu | Argon2id (hoặc bcrypt cost ≥ 12). **Không bao giờ** SHA-256 trần, không bao giờ tự nghĩ ra cách băm |
+| Hạn chế tốc độ | Theo **cặp** (địa chỉ IP, email đã gõ) — chặn theo mỗi IP thì một mạng công ty bị chặn oan; chặn theo mỗi email thì kẻ dò chỉ cần đổi email |
+| Xác thực hai lớp | Bắt buộc với mọi tài khoản nội bộ và mọi tài khoản đối tác có ví; `nguoi_dung.mfa_bat` đã có sẵn cột |
+| Đặt lại mật khẩu | Thẻ dùng một lần, hết hạn 30 phút, **băm trước khi lưu** như mật khẩu. Câu trả lời của trang "quên mật khẩu" phải giống hệt nhau dù email có tồn tại hay không |
+
+Và giữ nguyên luật đã có ở bản mẫu: **một câu lỗi duy nhất cho mọi lý do bị
+từ chối**. Lý do thật đi vào cột `ket` của `nhat_ky_dang_nhap`, chỗ chỉ nội
+bộ đọc được.
+
 Ba việc **cố ý chưa làm** ở giai đoạn một: chấm điểm rủi ro từng lần vào,
 dấu vân tay thiết bị, và tra nhà mạng theo thời gian thực. Cái thứ nhất cần
 dữ liệu lịch sử chưa có; hai cái sau thu thập nhiều hơn mức cần để trả lời

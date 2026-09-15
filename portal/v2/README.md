@@ -385,6 +385,93 @@ Cổng đối tác không có và không nên có: bảng tính này đọc ra p
 giữ lại, phí môi giới và biên lợi nhuận. Đối tác muốn biết mình ứng được bao
 nhiêu thì vẫn dùng `k-tam-ung`, chạy trên `advanceOfferOf()` đã lược sạch.
 
+## Vòng 25: trang đăng nhập
+
+Chủ dự án: *"nên có screen đăng nhập cho user"*. Đúng, và nó là mảnh còn
+thiếu để nhật ký đăng nhập của vòng 24 có nghĩa: trước vòng này mỗi cổng tự
+vào bằng tài khoản đầu danh sách, nên mọi dòng nhật ký đều là "tài khoản số
+không".
+
+### 1 · Một file vẽ, hai cửa riêng
+
+`v2/haustek-cua.js` chạy TRƯỚC khung. Chưa có phiên thì nó dựng màn hình
+đăng nhập và dừng ở đó; có phiên rồi thì gọi thẳng `xong()` và khung dựng
+như thường.
+
+Không gộp hai cổng làm một cửa, dù trông giống nhau: `khach.html` gọi
+`HAUSTEK.lockdown()` nên trong trang ấy `HAUSTEK.admin` **không còn tồn
+tại**. Một cửa gộp phải nạp cả hai mặt tiền, tức phá đúng cái ranh giới mà
+`test/ranh-gioi-trang.js` đang canh. File này chỉ **vẽ**; việc tra tài khoản
+do bên gọi truyền vào — `api.dangNhapBang` ở cổng đối tác,
+`A.staff.dangNhapBang` ở cổng nội bộ.
+
+### 2 · Ô mật khẩu có mặt, và tự khai là không được kiểm
+
+Bản mẫu không có mật khẩu. Hai cách xử lý đều sai: bỏ ô đi thì đội lập
+trình không thấy chỗ nó nằm; để ô mà im lặng thì người xem tưởng có kiểm.
+Nên ô có mặt và ngay dưới nó là một dòng: *"Bản mẫu không kiểm mật khẩu —
+gõ gì cũng được, hoặc để trống."*
+
+### 3 · Từ chối đúng cách
+
+Câu lỗi là **"Email hoặc mật khẩu không đúng"** cho mọi trường hợp: email
+không tồn tại, tài khoản bị khoá, gõ nhầm. Nói rõ hơn là cho người lạ một
+cách dò xem ai có tài khoản ở Haustek.
+
+Lý do thật nằm ở **nhật ký đăng nhập**, chỗ chỉ nội bộ đọc được — và mỗi
+lần bị từ chối ghi đúng **email đã gõ**, kể cả email không có tài khoản nào,
+vì người ta dò mật khẩu bằng những email không tồn tại.
+
+Luật gộp 30 phút cũng phải sửa theo: trước vòng 25 nó không so email, nên
+hai lần gõ sai hai email khác nhau gộp thành một dòng và mất thông tin.
+
+### 4 · Phiên được kiểm lại mỗi lần nạp trang
+
+`HTCua.mo` có phiên cũ vẫn **tra lại theo email** chứ không tin dữ liệu đã
+lưu. Tài khoản bị khoá sau khi người ta đã vào thì lần nạp trang kế tiếp bị
+đá ra cửa. Đây đúng là chỗ `HA-TANG.md` mục 3 gọi là *"phiên phải được kiểm
+lại"*.
+
+Phiên lưu theo cổng (`haustek.phien.internal` / `haustek.phien.portal`) nên
+mở hai cổng ở hai tab không đè lên nhau.
+
+### 5 · Ô chọn tài khoản biến mất, nút Đăng xuất thay chỗ
+
+Chân cột trái hai cổng trước đây là một ô `<select>` đổi người. Ô ấy làm ma
+trận quyền trông như một công tắc. Giờ là tên, email, và nút **Đăng xuất**.
+
+Đổi tài khoản để xem góc nhìn khác vẫn làm được — đăng xuất rồi vào bằng
+email khác, và danh sách tài khoản mẫu ở cửa cho bấm một phát là điền sẵn
+email. Danh sách ấy tự khai là thang gỗ của bản mẫu: hệ thật không bao giờ
+liệt kê ai có tài khoản.
+
+### 6 · Ba lỗi gặp khi dựng, đáng ghi lại
+
+- **Cửa không tự dọn.** `HT.chay()` **thêm** `<div class="app">` vào body
+  chứ không thay body, nên cửa dựng bằng `body.innerHTML` vẫn nằm đè 720px
+  phía trên cổng. Giờ cửa dựng vào một hộp riêng và gỡ hẳn hộp ấy lúc vào
+  được.
+- **Bộ kiểm quét mười lăm tài khoản mà cả mười lăm lần đều là một.**
+  `addInitScript` của Playwright chạy lại ở **mọi** lần điều hướng, kể cả
+  reload — gieo phiên vô điều kiện là đè mất tài khoản mà vòng lặp vừa
+  chọn. Bài kiểm vẫn báo "sạch". Một bài kiểm hỏng kiểu ấy tệ hơn một bài
+  kiểm đỏ, nên `test/vao-cua.js` giờ chỉ gieo **khi chưa có phiên**.
+- **Hai tab không chung localStorage.** `browser.newPage()` dựng một
+  context riêng mỗi lần. Bài kiểm đọc nhật ký bằng tab nội bộ không thấy
+  dòng mà tab đối tác vừa ghi, cho tới khi cả hai dùng chung một
+  `newContext()`.
+
+### 7 · Bộ kiểm
+
+`test/cua-dang-nhap.js` — 22 phép, bài **duy nhất** cố ý không gieo phiên:
+chưa vào thì không thấy cổng · ô mật khẩu tự khai · email lạ bị chặn và câu
+lỗi không tiết lộ ai có tài khoản · cửa gỡ hẳn khỏi DOM · nạp lại vẫn ở
+trong · đăng xuất rồi nạp lại vẫn ở cửa · hai email sai khác nhau thành hai
+dòng nhật ký · không dòng nào có địa chỉ IP.
+
+`test/vao-cua.js` là helper cho 19 bài còn lại: mỗi bài thêm đúng một dòng
+`require('./vao-cua.js').gan(b);` sau khi mở trình duyệt.
+
 ## Vòng 24: nhật ký đăng nhập, và hạ tầng lưu trữ cho 500.000 bài
 
 Chủ dự án thấy bên CRM có phần lưu địa chỉ IP mỗi lần người dùng đăng nhập
