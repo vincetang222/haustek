@@ -1,6 +1,10 @@
 # Giao kèo bàn giao CRM → Portal
 
-`crm.html` ghi. `intranet.html` đọc. Một chiều, không có chiều ngược lại.
+`crm/index.html` ghi. `intranet.html` đọc.
+
+Tài liệu này chỉ mô tả **chiều đi** — deal sang portal. Chiều về (trạng thái hợp
+đồng quay lại CRM) và bức tranh hai chiều đầy đủ nằm ở
+[`portal/SYNC.md`](../portal/SYNC.md), viết cho đội làm portal.
 
 ## Vì sao không khớp tự động được
 
@@ -103,7 +107,9 @@ Nói thẳng cho khỏi hiểu nhầm, cùng giọng với `portal/README.md`:
   nên chỉ chặn được thao tác nhầm, không chặn được người cố ý.
 - **Không tự đẩy.** Portal không bị đánh thức khi CRM ghi. Người vận hành mở
   intranet và xử lý bản tin.
-- **Không có chiều ngược.** Portal thu hồi kỳ hay đổi tỷ lệ thì CRM không biết.
+- **Chiều về rất hẹp.** Portal chỉ trả lại trạng thái hợp đồng qua
+  `haustek.portal.contracts.v1`. Thu hồi kỳ hay đổi tỷ lệ bên portal thì CRM
+  vẫn không biết — hai việc đó không đi qua kênh nào cả.
 
 Muốn lên thật thì cả ba khoá `localStorage` phải thành bảng trong Postgres, và
 `partyKey` phải lấy từ phiên đăng nhập trên máy chủ — đúng cảnh báo mà
@@ -141,11 +147,12 @@ Nếu bên nhận đã có một khoản ứng từ nguồn khác, màn hình h�
 cũ, số mới, phần đã thu hồi. Im lặng đè lên là xoá mất một khoản nợ có thật.
 Muốn cộng hai khoản thì sửa tay ở màn hình Tạm ứng.
 
-Kiểm thử xuyên hai app: `node crm/test/handoff-e2e.mjs` — 17 phép kiểm.
+Kiểm thử xuyên hai app: `node crm/test/handoff-e2e.mjs` — 34 phép kiểm.
 
 ## Còn thiếu gì để nối chặt hơn nữa
 
 - Portal không biết khi CRM sửa một deal **đã ghi**. Đổi tỷ lệ bên CRM sau khi đã
   vào sổ thì phải tự xử lý bên màn hình Tỷ lệ chia.
-- Không có chiều ngược: portal thu hồi kỳ hay đổi tỷ lệ thì CRM không hay biết.
+- Chiều về chỉ mang trạng thái hợp đồng. Portal thu hồi kỳ hay đổi tỷ lệ thì CRM
+  không hay biết.
 - Một deal ghi cho một party. Deal nhiều bên (đồng sở hữu) phải tách tay.

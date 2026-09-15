@@ -236,6 +236,71 @@ F('có capability thì đẩy Blob qua downloads.save', dlres.viaCap);
 F('người xem từ chối thì không mở thêm đường tải khác', dlres.declined);
 F('capability lỗi thì vẫn rơi về thẻ <a>', dlres.broken);
 
+// năm lỗi QC bắt được — mỗi cái một phép kiểm để không tái phát
+const qc = await p.evaluate(async ()=>{
+  const out={}, wait=()=>new Promise(r=>setTimeout(r,80));
+
+  // 1. nav ghi một số, tiêu đề ghi số khác, không giải thích
+  go('opps');
+  const navOpp = +document.querySelector('#nav .tab[onclick*="opps"] .tab-count').innerText;
+  const metaOpp = document.querySelector('#view .pmeta').innerText;
+  out.oppMeta = metaOpp.indexOf(String(navOpp)) >= 0;
+  go('leads');
+  const navLead = +document.querySelector('#nav .tab[onclick*="leads"] .tab-count').innerText;
+  out.leadMeta = document.querySelector('#view .pmeta').innerText.indexOf(String(navLead)) >= 0;
+
+  // 2. lọc rồi thì số thứ hai phải đếm trên tập đang hiện, không phải toàn kho
+  go('opps'); setOppF('won');
+  const mWon = document.querySelector('#view .pmeta').innerText;
+  out.metaWon = mWon.indexOf('·') < 0;      // "0 đang chạy" là rác, không được hiện
+  setOppF('negotiation');
+  const mNego = document.querySelector('#view .pmeta').innerText;
+  out.metaNego = mNego.indexOf('·') < 0;    // lọc rồi thì mọi dòng đều đang chạy
+  setOppF('all');
+
+  // 3. bấm nút tiền tệ đang bật thì không dựng lại view
+  go('opps');
+  const mark = document.getElementById('view');
+  setCur('USD');
+  out.curNoop = document.getElementById('view') === mark &&
+                mark.innerHTML.length > 0 && cur === 'USD';
+
+  // 4. lưu ngưỡng mà không đổi gì vẫn phải nói một tiếng
+  go('perms');
+  document.getElementById('toast').innerText='';
+  saveThreshold(); await wait();
+  out.thrToast = (document.getElementById('toast').innerText||'').trim().length > 0;
+
+  // 5. openDrawer với kind không có drawer thì đừng để overlay rỗng
+  closeDrawer();
+  openDrawer('task', DB.tasks[0].id);
+  out.badKind = !document.getElementById('overlay').innerHTML.trim() && !state.drawer;
+
+  // 6. xuất nhật ký phải báo, và chỉ báo khi giao được thật
+  const realClick = HTMLAnchorElement.prototype.click;
+  HTMLAnchorElement.prototype.click = function(){};
+  go('audit'); document.getElementById('toast').innerText='';
+  DL_CAP = undefined; delete window.claude;
+  audExport(); await wait(); await wait();
+  out.audToast = (document.getElementById('toast').innerText||'').trim().length > 0;
+
+  DL_CAP = undefined; document.getElementById('toast').innerText='';
+  window.claude = { use: () => Promise.resolve({ save: () => Promise.reject({code:'declined'}) }) };
+  audExport(); await wait(); await wait();
+  out.audSilentOnDecline = (document.getElementById('toast').innerText||'').trim().length === 0;
+  HTMLAnchorElement.prototype.click = realClick; delete window.claude; DL_CAP = undefined;
+  return out;
+});
+F('tiêu đề Cơ hội giải thích con số trên nav', qc.oppMeta);
+F('tiêu đề Lead giải thích con số trên nav', qc.leadMeta);
+F('lọc sang Đã ký thì không hiện "0 đang chạy"', qc.metaWon);
+F('lọc sang Đàm phán thì không hiện số phụ thừa', qc.metaNego);
+F('bấm nút tiền tệ đang bật thì không dựng lại view', qc.curNoop);
+F('lưu ngưỡng không đổi vẫn báo cho người dùng', qc.thrToast);
+F('openDrawer kind lạ thì không để overlay rỗng', qc.badKind);
+F('xuất nhật ký có báo khi giao được', qc.audToast);
+F('người xem từ chối thì không báo "đã xuất"', qc.audSilentOnDecline);
+
 // 11 mobile
 const m=await b.newPage({viewport:{width:390,height:844}});
 await m.goto(FILE); await m.click('.login-btn'); await m.waitForTimeout(400);
@@ -246,5 +311,5 @@ if(errs.length) FAILED++;
 console.log('\nLỗi JS: '+errs.length);
 errs.slice(0,5).forEach(e=>console.log('  '+e));
 await b.close();
-console.log(FAILED ? ('\n'+FAILED+' phép kiểm HỎNG') : '\n46 đạt · 0 hỏng');
+console.log(FAILED ? ('\n'+FAILED+' phép kiểm HỎNG') : '\n55 đạt · 0 hỏng');
 process.exit(FAILED?1:0);

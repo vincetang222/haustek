@@ -16,10 +16,17 @@ Hai trang, một lõi dữ liệu. Mở bằng trình duyệt là chạy, không
 liệu riêng, vòng đời riêng, và **không** đẩy toàn bộ thông tin sang đây — chỉ
 vài trường của deal đã ký, đủ để portal dựng điều khoản thương mại.
 
-Chiều đi: `crm/index.html` ghi khoá `haustek.crm.handoff.v1`. Màn hình
-**Bàn giao CRM** trong intranet đọc khoá đó, cho admin chọn kỳ hiệu lực rồi ghi
-vào sổ tỷ lệ và sổ tạm ứng. Không có chiều ngược lại. Giao kèo đầy đủ nằm ở
-`crm/HANDOFF.md`.
+Hai chiều, mỗi chiều một khoá riêng — không bên nào ghi vào khoá của bên kia:
+
+- **Đi**: `crm/index.html` ghi `haustek.crm.handoff.v1`. Màn hình **Bàn giao CRM**
+  trong intranet đọc khoá đó, cho admin chọn kỳ hiệu lực rồi ghi vào sổ tỷ lệ và
+  sổ tạm ứng.
+- **Về**: màn hình đó ghi `haustek.portal.contracts.v1` — trạng thái hợp đồng và
+  đường dẫn file hợp đồng legal đặt trên portal. CRM chỉ đọc, không sửa.
+
+**[`SYNC.md`](SYNC.md) là tài liệu cho đội portal** — hình dạng dữ liệu hai chiều,
+ai sở hữu giai đoạn nào, các bẫy đã thực sự vấp phải, và mục "cái này không làm
+được". Giao kèo của riêng chiều đi nằm ở `crm/HANDOFF.md`.
 
 ## Mười một màn hình intranet
 

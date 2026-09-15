@@ -6,8 +6,9 @@ Hệ **song song** với portal, không phải một phần của nó. Một fil
 |---|---|
 | `index.html` | Toàn bộ CRM — lead, cơ hội, khách hàng, người liên hệ, việc, nhân sự, duyệt giá, báo cáo, nhật ký, phân quyền, bàn giao portal |
 | `HANDOFF.md` | Giao kèo bàn giao sang portal, và những gì nó chưa làm |
-| `test/smoke.mjs` | 42 phép kiểm trên chính CRM |
-| `test/handoff-e2e.mjs` | 28 phép kiểm xuyên hai app — cả chuỗi CEO duyệt và chiều ngược |
+| `../portal/SYNC.md` | Hướng dẫn đồng bộ hai chiều, viết cho đội làm portal |
+| `test/smoke.mjs` | 55 phép kiểm trên chính CRM |
+| `test/handoff-e2e.mjs` | 34 phép kiểm xuyên hai app — cả chuỗi CEO duyệt và chiều ngược |
 
 ## Vì sao để riêng, không nhét vào `portal/`
 
@@ -76,8 +77,8 @@ tiết vẫn bị che nếu không có quyền xem tất cả.
 ## Kiểm thử
 
 ```bash
-node crm/test/smoke.mjs         # 42 phép kiểm trên CRM
-node crm/test/handoff-e2e.mjs   # 28 phép kiểm CRM ↔ portal
+node crm/test/smoke.mjs         # 55 phép kiểm trên CRM
+node crm/test/handoff-e2e.mjs   # 34 phép kiểm CRM ↔ portal
 ```
 
 Cần Playwright (`npm i -D playwright`). Cả hai tự tìm bản cài global.

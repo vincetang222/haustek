@@ -1170,6 +1170,8 @@ vi:{
   /* lists */
   newLead:'Tạo lead', newOpp:'Tạo cơ hội', newAcc:'Tạo khách hàng', newContact:'Tạo liên hệ',
   newTask:'Tạo việc', all:'Tất cả', items:'bản ghi', table:'Bảng', board:'Theo cột',
+  nOpen:'đang chạy', nPlay:'đang theo đuổi',
+  audExported:'Đã xuất nhật ký ra CSV', thrSame:'Ngưỡng giữ nguyên {n}',
   /* columns */
   cName:'Tên', cCompany:'Nghệ danh / Label', cTitle:'Vai trò', cEmail:'Email', cPhone:'Điện thoại',
   cStatus:'Trạng thái', cSource:'Nguồn', cOwner:'Phụ trách', cStage:'Giai đoạn', cAmount:'Giá trị',
@@ -1424,6 +1426,8 @@ en:{
   whyWaiting:'Waiting on approval {n} days',
   newLead:'New lead', newOpp:'New opportunity', newAcc:'New account', newContact:'New contact',
   newTask:'New task', all:'All', items:'records', table:'Table', board:'Board',
+  nOpen:'open', nPlay:'in play',
+  audExported:'Audit log exported to CSV', thrSame:'Threshold unchanged at {n}',
   cName:'Name', cCompany:'Artist / Label', cTitle:'Role', cEmail:'Email', cPhone:'Phone',
   cStatus:'Status', cSource:'Source', cOwner:'Owner', cStage:'Stage', cAmount:'Amount',
   cClose:'Close date', cRights:'Rights', cAccount:'Account', cType:'Type', cContacts:'Contacts',
@@ -2868,21 +2872,27 @@ function dlCap(){
   return window.claude.use('downloads').then(function(x){ return (DL_CAP = x || null); },
                                             function(){ return (DL_CAP = null); });
 }
+/* Trả về Promise<boolean>: true khi file thật sự được giao đi, false khi người
+   xem bấm từ chối. Nút gọi phải chờ kết quả này rồi mới báo "đã xuất" — trước
+   đây chúng toast ngay lập tức, tức là khoe thành công cả khi người xem vừa
+   bấm Không. */
 function saveFile(name, text, mime){
   const blob = new Blob([text], {type:mime});
-  dlCap().then(function(dl){
-    if(!dl) return false;
+  return dlCap().then(function(dl){
+    if(!dl) return null;
     return dl.save({filename:name, data:blob}).then(function(){ return true; }, function(err){
-      /* người xem bấm từ chối là lựa chọn của họ, không phải lỗi để thử lại */
-      return !!(err && err.code === 'declined');
+      /* từ chối là lựa chọn của người xem, không phải lỗi để thử lại;
+         mọi mã lỗi khác thì vẫn thử nốt đường thẻ <a> */
+      return (err && err.code === 'declined') ? false : null;
     });
   }).then(function(done){
-    if(done) return;
+    if(done !== null) return done;
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url; a.download = name;
     document.body.appendChild(a); a.click(); a.remove();
     setTimeout(function(){ URL.revokeObjectURL(url); }, 1500);
+    return true;
   });
 }
 function inboxRead(){
@@ -3026,8 +3036,11 @@ function toggleTheme(){
   THEME = THEME==='auto' ? 'dark' : THEME==='dark' ? 'light' : 'auto';
   applyTheme(); saveSoon(); toast(t('theme_'+THEME));
 }
-function setLang(l){ lang=l; saveSoon(); renderLogin(); render(); if(state.drawer) openDrawer(state.drawer.kind, state.drawer.id); }
-function setCur(c){ cur=c; saveSoon(); render(); if(state.drawer) openDrawer(state.drawer.kind, state.drawer.id); }
+/* Bấm vào nút đang bật thì thoát sớm. Dựng lại view là gán innerHTML mới, tức
+   là bảng ảo hoá mất vị trí cuộn — đang xem dòng thứ 800 mà lỡ bấm USD (vốn
+   đang bật) thì bị ném về đầu bảng, không rõ vì sao. */
+function setLang(l){ if(l===lang) return; lang=l; saveSoon(); renderLogin(); render(); if(state.drawer) openDrawer(state.drawer.kind, state.drawer.id); }
+function setCur(c){ if(c===cur) return; cur=c; saveSoon(); render(); if(state.drawer) openDrawer(state.drawer.kind, state.drawer.id); }
 function go(v){ inboxApply(); selClear(); state.view=v; state.q=''; document.getElementById('q').value=''; state.sort={key:null,dir:1};
   closeDrawer(); render(); }
 function onSearch(v){ state.q=v.trim().toLowerCase(); render(); }
@@ -3042,6 +3055,17 @@ function render(){
   queue.forEach(fn=>{ try{ fn(); }catch(e){ console.error('mount', e); } });
 }
 
+/* Badge cột trái đếm số ĐANG MỞ, tiêu đề đếm số bản ghi đang hiện. Khi hai số
+   lệch nhau mà không nói gì — nav ghi 26, tiêu đề ghi "35 bản ghi" — người dùng
+   đọc thành phần mềm tính sai. Nên ghi cả hai ra.
+   Số thứ hai đếm trên CHÍNH danh sách đang hiện, không đếm trên toàn kho: có
+   vậy thì khi lọc hay tìm kiếm nó vẫn đúng, thay vì trỏ về một tập khác. */
+function countMeta(shown, open, lblKey){
+  const base = shown + ' ' + t('items');
+  /* Chỉ ghi số phụ khi nó nói thêm được điều gì. Bằng nhau thì thừa; bằng 0
+     (đang lọc sang tab đã đóng) thì "0 đang chạy" là rác, không phải thông tin. */
+  return (open > 0 && open < shown) ? base + ' · ' + open + ' ' + t(lblKey) : base;
+}
 function phead(title, meta, actions){
   return '<div class="phead"><div class="ptitle">'+esc(title)+'</div>'+
     (meta?'<div class="pmeta">'+esc(meta)+'</div>':'')+
@@ -3904,7 +3928,8 @@ VIEWS.leads = function(){
       rows, leadCells, (l)=>openDrawer('lead', l.id), (l)=>visible(l.owner)?'':'locked', 'leads')
     : emptyBox(t('noResult'), t('noResultSub'));
 
-  return phead(t('leads'), rows.length+' '+t('items'),
+  const nPlay = rows.filter(l=>l.status!=='converted' && l.status!=='lost').length;
+  return phead(t('leads'), countMeta(rows.length, nPlay, 'nPlay'),
       (can('import')?'<button class="btn" onclick="openImport()">'+esc(t('importBtn'))+'</button>':'')+
       '<button class="btn btn-primary" onclick="openNew(\'lead\')">'+esc(t('newLead'))+'</button>')+
     searchNote(rows.filter(l=>l.owner!==ME).length)+
@@ -3984,8 +4009,8 @@ function saveBind(dealId, clear){
 function handoffExport(){
   const txt = JSON.stringify(handoffPayload(), null, 1);
   try {
-    saveFile('haustek-crm-handoff.json', txt, 'application/json');
-    toast(t('hoExported'));
+    saveFile('haustek-crm-handoff.json', txt, 'application/json')
+      .then(function(ok){ if(ok) toast(t('hoExported')); });
   } catch(e){ toast(e.message); }
 }
 
@@ -4049,7 +4074,8 @@ VIEWS.opps = function(){
       rows, cells, (o)=>openOpp(o.id), (o)=>visible(o.owner)?'':'locked', 'opps');
   } else body = emptyBox(t('noResult'), t('noResultSub'));
 
-  return phead(t('opps'), rows.length+' '+t('items'),
+  const nOpen = rows.filter(o=>OPEN_STAGES.includes(o.stage)).length;
+  return phead(t('opps'), countMeta(rows.length, nOpen, 'nOpen'),
       '<button class="btn btn-primary" onclick="openNew(\'opp\')">'+esc(t('newOpp'))+'</button>')+
     searchNote(rows.filter(o=>o.owner!==ME).length)+
     viewBar('opps')+
@@ -4726,8 +4752,10 @@ function audExport(){
     a.field?auditVal(a.field,a.oldV):'', a.field?auditVal(a.field,a.newV):String(a.newV||'')
   ]);
   const csv = [head].concat(rows).map(r=>r.map(c=>'"'+String(c).replace(/"/g,'""')+'"').join(',')).join('\n');
+  /* nút này trước đây im lặng hoàn toàn — bấm xong không biết đã xuất hay chưa */
   saveFile('haustek-nhat-ky-'+new Date().toISOString().slice(0,10)+'.csv',
-           '\ufeff'+csv, 'text/csv;charset=utf-8');
+           '\ufeff'+csv, 'text/csv;charset=utf-8')
+    .then(function(ok){ if(ok) toast(t('audExported')); });
 }
 function recordHistory(objId){
   const list = DB.audit.filter(a=>a.objId===objId).sort((x,y)=>y.ts-x.ts).slice(0,12);
@@ -4787,8 +4815,8 @@ function openSnapshot(){
 }
 function snapDownload(){
   saveFile('haustek-crm-snapshot-'+new Date().toISOString().slice(0,10)+'.json',
-           store.exportJSON(), 'application/json');
-  toast(t('snapSaved'));
+           store.exportJSON(), 'application/json')
+    .then(function(ok){ if(ok) toast(t('snapSaved')); });
 }
 function snapImport(){
   const el = document.getElementById('snapIn');
@@ -4950,7 +4978,14 @@ function lockedDrawer(kind, rec){
       (pend?'':'<button class="btn btn-primary" onclick="requestTransfer(\''+kind+'\',\''+rec.id+'\')">'+
         esc(t('reqTransfer'))+'</button>'));
 }
+const DRAWER_KINDS = ['opp','lead','account','contact'];
 function openDrawer(kind,id){
+  /* Kind lạ trước đây vẫn set state.drawer rồi để overlay rỗng — nhìn như bấm
+     hụt. Chặn ở đây để cái sai lộ ra lúc phát triển thay vì im lặng. */
+  if(DRAWER_KINDS.indexOf(kind) < 0){
+    if(window.console) console.warn('openDrawer: không có drawer cho kind', kind);
+    return;
+  }
   if(kind==='opp' || kind==='lead'){
     const rec = kind==='opp' ? DB.opps.find(x=>x.id===id) : DB.leads.find(x=>x.id===id);
     if(rec && !visible(rec.owner)){ state.drawer={kind:'locked',id:id}; lockedDrawer(kind, rec); return; }
@@ -5151,7 +5186,9 @@ function saveThreshold(){
   if(isNaN(raw) || raw < 0){ toast(t('completeField')); return; }
   const usd = Math.round(cur==='VND' ? raw/FX : raw);
   const old = REGION_THRESHOLD;
-  if(usd === old) return;
+  /* trước đây im lặng thoát ra: người dùng bấm Lưu và không nhận được gì cả,
+     không phân biệt nổi "đã lưu" với "nút hỏng" */
+  if(usd === old){ toast(t('thrSame',{n:money(usd)})); return; }
   REGION_THRESHOLD = usd;
   logAudit({objType:'system', objName:t('thrTitle'), action:'update',
             field:'thr', oldV:old, newV:usd});

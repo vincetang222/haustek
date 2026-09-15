@@ -3,6 +3,9 @@
 Tài liệu cho **đội làm portal**. Mọi hình dạng dữ liệu dưới đây trích từ code đang
 chạy, không viết theo trí nhớ — chạy `node crm/test/handoff-e2e.mjs` là kiểm được.
 
+> Mọi đường dẫn trong tài liệu này tính từ **gốc repo**, không phải từ `portal/`.
+> Các lệnh bên dưới cũng chạy ở gốc repo.
+
 ---
 
 ## 1. Toàn cảnh
@@ -401,7 +404,7 @@ khi lên Postgres, dịch từng phép kiểm ở đó thành một test SQL.
 
 ```bash
 node crm/test/handoff-e2e.mjs   # 34 phép kiểm xuyên hai app
-node crm/test/smoke.mjs         # 42 phép kiểm trên CRM
+node crm/test/smoke.mjs         # 55 phép kiểm trên CRM
 node portal/test/api-guard.js   # 21 phép kiểm ranh giới quyền portal
 ```
 
