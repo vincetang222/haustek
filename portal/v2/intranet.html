@@ -85,6 +85,30 @@ HTCua.mo({
   mau: A.staff.list().filter(function (s) { return s.active !== false; }).map(function (s) {
     return { email: s.email, ten: s.name, phu: HT.lang === 'en' ? s.titleEn : s.title };
   }),
+  /* Cột phải nói với NHÂN VIÊN. Ba con số đọc thẳng từ A.counts và danh
+     sách nền tảng từ A.stores, nên không có số nào gõ tay ở đây: đổi
+     CFG.N_TRACKS là cửa đổi theo. Một trang đăng nhập khoe con số bịa là
+     thứ đầu tiên người xem soi ra. */
+  phai: {
+    nhan: HT.lang === 'en' ? 'Internal portal' : 'Cổng nội bộ',
+    h: HT.lang === 'en'
+      ? ['Every dollar ', 'traces back', ' to one track']
+      : ['Mỗi đồng đều ', 'lần ngược được', ' về một bài hát'],
+    p: HT.lang === 'en'
+      ? 'Revenue arrives by period and by source, the split chain runs, and every figure on every page opens up until you reach the track that produced it.'
+      : 'Doanh thu về theo từng kỳ và từng nguồn, chuỗi chia chạy, và mọi con số trên mọi trang đều mở ra được cho tới đúng bài hát sinh ra nó.',
+    so: [
+      { n: HT.fmt.n(A.counts.tracks),  s: HT.lang === 'en' ? 'tracks' : 'bài hát' },
+      { n: HT.fmt.n(A.counts.artists), s: HT.lang === 'en' ? 'artists' : 'nghệ sĩ' },
+      { n: HT.fmt.n(A.counts.labels),  s: HT.lang === 'en' ? 'labels' : 'label' }
+    ],
+    trich: HT.lang === 'en'
+      ? 'A partner only ever sees NET. The fee, the gross figure and the distributor’s name do not exist on that side of the wall.'
+      : 'Đối tác chỉ thấy số NET. Phí, số gộp và tên đơn vị phân phối không tồn tại ở phía bên kia bức tường.',
+    trichAi: HT.lang === 'en' ? 'Design rule · guarded by test/api-guard.js'
+                              : 'Nguyên tắc dựng hệ · có test/api-guard.js canh',
+    the: A.stores.slice(0, 10)
+  },
   xong: function () { dungCong(); }
 });
 

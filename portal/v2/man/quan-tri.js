@@ -683,16 +683,16 @@ function hoiTaiKhoan(c) {
   });
 }
 
+/* Đi chung đường giao file với nút Xuất CSV (HM.giaoFile). Trước vòng 26
+   hàm này tự dựng thẻ <a download> rồi báo "Đã xuất trạng thái" ngay,
+   không hỏi gì — mà trong khung cách ly của trình xem artifact thì mọi
+   lượt tải do trang tự khởi đều bị chặn im lặng. Tức là bản công bố báo
+   thành công cho một việc chưa hề xảy ra, và không bài kiểm nào thấy vì
+   bài kiểm nào cũng chạy trên bản nhiều file, nơi lượt tải chạy thật. */
 function xuatJson(c) {
   try {
-    var txt = HAUSTEK.storage.exportJSON();
-    var b = new Blob([txt], { type: 'application/json' });
-    var a = document.createElement('a');
-    a.href = URL.createObjectURL(b);
-    a.download = 'haustek-trang-thai.json';
-    document.body.appendChild(a); a.click();
-    setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 400);
-    c.thongBao(c.lang === 'vi' ? 'Đã xuất trạng thái' : 'State exported', 'ok');
+    HM.giaoFile('haustek-trang-thai.json', HAUSTEK.storage.exportJSON(), 'application/json',
+      function () { c.thongBao(c.lang === 'vi' ? 'Đã xuất trạng thái' : 'State exported', 'ok'); });
   } catch (e) { c.thongBao(e.message, 'no'); }
 }
 

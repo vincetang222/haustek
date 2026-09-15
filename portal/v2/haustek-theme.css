@@ -1535,18 +1535,36 @@ table.t tbody tr.tong td{background:var(--band);font-weight:600;border-top:1.5px
 .bl-xong{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:10px 0 2px;padding:9px 12px;border-radius:10px;background:var(--fill);font-size:13px}
 .bl-xong .ico.ok{display:inline-flex}
 
-/* ===== CỬA · trang đăng nhập (vòng 25) ==========================
-   Đứng trước khung nên không dùng lưới của khung. Dùng đúng token màu
-   của hệ nên tự đúng ở cả sáng lẫn tối, không cần khai lại bảng màu. */
-.cua-nen{min-height:100dvh;display:flex;align-items:center;justify-content:center;
-  padding:24px 16px;background:var(--bg);color:var(--ink)}
-.cua{width:100%;max-width:400px;background:var(--card);border:1px solid var(--card-line);
-  border-radius:var(--r);padding:26px 24px 18px;box-shadow:var(--raised)}
-.cua-dau{margin-bottom:20px}
-.cua-hieu{font-weight:700;font-size:12.5px;letter-spacing:.14em;text-transform:uppercase;
-  color:var(--accent);margin-bottom:14px}
-.cua-dau h1{margin:0 0 5px;font-size:20px;font-weight:650;letter-spacing:-.01em}
-.cua-dau p{margin:0;font-size:13px;line-height:1.5;color:var(--ink-2)}
+/* ===== CỬA · trang đăng nhập (vòng 25, dựng lại vòng 26) =============
+   Bố cục hai cột lấy theo trang đăng nhập của HAUSTEK CRM, vì hai sản
+   phẩm phải trông như một bộ: CRM đã mượn khung cột trái của portal,
+   giờ portal mượn lại cửa của CRM. Cột trái là việc phải làm (đăng
+   nhập), cột phải là lý do sản phẩm tồn tại.
+
+   Màu thì KHÔNG mượn. CRM để Signal Red làm nút chính; portal đã có
+   --accent teal giữ vai ấy ở hàng trăm chỗ khác, đổi riêng cửa thành đỏ
+   thì cửa lạc khỏi chính sản phẩm nó mở ra. Chỉ mượn đúng một chi tiết
+   đỏ: chấm tín hiệu cạnh dòng nhãn, thứ CRM cũng đặt trên thanh trên —
+   đó là dấu của thương hiệu, không phải màu của nút.
+
+   Cột phải biến mất dưới 980px. Nó là trang trí có nội dung, không phải
+   nội dung: mất nó thì vẫn đăng nhập được, giữ nó trên điện thoại thì
+   phải cuộn qua một màn hình quảng cáo mới tới ô email. */
+.cua-nen{min-height:100dvh;display:grid;grid-template-columns:1fr 1fr;
+  background:var(--card);color:var(--ink)}
+
+/* ---- cột trái: việc phải làm ---- */
+.cua-trai{display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:56px 28px 64px;position:relative;background:var(--bg)}
+.cua-ngu{position:absolute;top:20px;right:22px}
+.cua-hieu{font-weight:700;font-size:13px;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--ink);margin-bottom:26px;display:flex;align-items:center;gap:9px}
+.cua-dot{width:7px;height:7px;border-radius:50%;background:#FF2E4C;flex:0 0 auto}
+.cua{width:100%;max-width:372px;background:var(--card);border:1px solid var(--card-line);
+  border-radius:var(--r);padding:24px 24px 18px;box-shadow:var(--raised)}
+.cua-dau{margin-bottom:18px}
+.cua-dau h1{margin:0 0 5px;font-size:18px;font-weight:650;letter-spacing:-.01em}
+.cua-dau p{margin:0;font-size:12.5px;line-height:1.5;color:var(--ink-2)}
 .cua-form .fld{display:block;margin:0 0 5px;font-size:12.5px;font-weight:550;color:var(--ink-2)}
 .cua-form .in{width:100%;margin-bottom:14px}
 .cua-nho{margin:-8px 0 14px;font-size:11.5px;line-height:1.5;color:var(--faint)}
@@ -1554,24 +1572,57 @@ table.t tbody tr.tong td{background:var(--band);font-weight:600;border-top:1.5px
 .cua-nut{width:100%;justify-content:center;padding:10px 14px;font-size:14px}
 .cua-loi{margin:0 0 12px;padding:9px 11px;border-radius:var(--r-sm);font-size:12.5px;line-height:1.45;
   background:var(--danger-lo);border:1px solid var(--danger);color:var(--danger)}
-.cua-mau-hop{margin-top:20px;border-top:1px solid var(--line);padding-top:14px}
+.cua-mau-hop{margin-top:18px;border-top:1px solid var(--line);padding-top:13px}
 .cua-mau-hop summary{cursor:pointer;font-size:12.5px;font-weight:550;color:var(--ink-2);
   list-style:none;display:flex;align-items:center;gap:6px}
 .cua-mau-hop summary::-webkit-details-marker{display:none}
 .cua-mau-hop summary::before{content:'\25B8';font-size:11px;color:var(--faint);transition:transform .15s}
 .cua-mau-hop[open] summary::before{transform:rotate(90deg)}
 .cua-mau-hop .cua-nho{margin:10px 0}
-.cua-mau-ds{display:flex;flex-direction:column;gap:5px;max-height:232px;overflow-y:auto}
+.cua-mau-ds{display:flex;flex-direction:column;gap:5px;max-height:222px;overflow-y:auto}
 .cua-mau{display:block;width:100%;text-align:left;padding:7px 10px;border-radius:var(--r-sm);
   border:1px solid var(--line);background:var(--bg);cursor:pointer;font:inherit;color:inherit}
 .cua-mau:hover{border-color:var(--accent);background:var(--card)}
 .cua-mau b{display:block;font-size:12.5px;font-weight:600}
 .cua-mau span{display:block;font-size:11.5px;color:var(--ink-2);font-family:var(--mono)}
 .cua-mau i{display:block;font-size:11px;font-style:normal;color:var(--faint);margin-top:1px}
-.cua-chan{margin-top:18px;padding-top:13px;border-top:1px solid var(--line);
-  display:flex;align-items:center;gap:10px;justify-content:space-between}
-.cua-chan span{font-size:11px;line-height:1.5;color:var(--faint);flex:1;min-width:0}
+.cua-chan{margin-top:16px;padding-top:12px;border-top:1px solid var(--line)}
+.cua-chan span{display:block;font-size:11px;line-height:1.5;color:var(--faint)}
+/* chỗ cho bản gói một trang gắn ô chọn cổng; trang thật để trống */
+.cua-them{width:100%;max-width:372px;margin-top:14px}
+
+/* ---- cột phải: vì sao có sản phẩm này ---- */
+.cua-phai{background:var(--chrome-grad),var(--chrome);color:var(--on-chrome);
+  padding:52px 54px;display:flex;flex-direction:column;justify-content:center;
+  position:relative;overflow:hidden}
+.cua-phai::after{content:'';position:absolute;right:-80px;top:-80px;width:340px;height:340px;
+  border-radius:50%;background:radial-gradient(circle,rgba(127,195,210,.16),transparent 68%)}
+.cua-phai>*{position:relative}
+.cua-nhan{font-size:12px;color:var(--on-chrome-2);letter-spacing:.08em;margin-bottom:20px;
+  display:flex;align-items:center;gap:9px;text-transform:uppercase}
+.cua-h{font-size:38px;font-weight:700;line-height:1.14;letter-spacing:-.03em;margin:0 0 18px;
+  max-width:11ch;color:var(--on-chrome)}
+.cua-h em{font-style:normal;color:var(--accent-3)}
+.cua-p{font-size:14px;color:var(--on-chrome-2);line-height:1.6;max-width:44ch;margin:0 0 30px}
+.cua-so{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;max-width:470px;
+  border-top:1px solid var(--chrome-line);padding-top:22px;margin-bottom:24px}
+.cua-so b{display:block;font-size:22px;font-weight:700;letter-spacing:-.02em;
+  font-family:var(--mono);color:var(--on-chrome)}
+.cua-so span{display:block;font-size:11.5px;color:var(--on-chrome-3);margin-top:3px;line-height:1.4}
+.cua-trich{font-size:14.5px;line-height:1.55;color:var(--on-chrome);border-left:2px solid var(--accent-2);
+  padding-left:15px;max-width:430px;margin-bottom:22px}
+.cua-trich span{display:block;color:var(--on-chrome-3);font-size:12px;margin-top:7px}
+.cua-the{display:flex;flex-wrap:wrap;gap:7px;max-width:470px}
+.cua-the i{font-style:normal;font-size:11px;color:var(--on-chrome-2);
+  border:1px solid var(--chrome-line);padding:3px 10px;border-radius:12px}
+
+@media (max-width:980px){
+  .cua-nen{grid-template-columns:1fr}
+  .cua-phai{display:none}
+  .cua-trai{padding:44px 20px 52px}
+}
 @media (max-width:420px){
   .cua{padding:22px 18px 16px}
-  .cua-chan{flex-direction:column;align-items:stretch}
+  .cua-trai{padding:40px 14px 46px}
+  .cua-ngu{top:12px;right:14px}
 }

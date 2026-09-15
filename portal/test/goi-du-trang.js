@@ -50,10 +50,28 @@ must(khach.length >= 15, "đọc được danh sách trang đối tác", khach.l
     thieu.length ? "THIẾU: " + thieu.join(", ") : ds.length + " trang đều có mặt");
 });
 
-/* Thư viện dùng chung cũng phải có mặt, không thì trang dựng ra rỗng. */
-["haustek-core.js", "haustek-shell.js", "haustek-man.js", "haustek-taisan.js",
- "haustek-them.js", "haustek-hoso.js", "haustek-bieudo.js"].forEach(f => {
-  const dau = fs.readFileSync(f === "haustek-core.js" ? path.join(__dirname, "..", f) : path.join(V, f), "utf8")
+/* Thư viện dùng chung cũng phải có mặt, không thì trang dựng ra rỗng.
+   Danh sách này TỪNG gõ cứng ngay tại đây — và đó là lý do bài kiểm này
+   vẫn xanh suốt vòng 25 trong khi bản gói thiếu hẳn haustek-cua.js, tức
+   thiếu hẳn trang đăng nhập. Bài kiểm chép lại cùng một danh sách gõ tay
+   với thứ nó đi kiểm thì nó chỉ kiểm được rằng hai bản chép giống nhau.
+   Giờ đọc từ trang thật, đúng cách danh sách trang vẫn làm ở trên. */
+function thuVienCua(trang) {
+  const html = fs.readFileSync(path.join(V, trang), "utf8");
+  const ra = [];
+  const re = /<script\s+src="((?:\.\.\/)?[a-z0-9-]+\.js)"><\/script>/gi;
+  let m;
+  while ((m = re.exec(html))) ra.push(m[1]);
+  return ra;
+}
+const THU_VIEN = [];
+thuVienCua("intranet.html").concat(thuVienCua("khach.html")).forEach(f => {
+  if (THU_VIEN.indexOf(f) < 0) THU_VIEN.push(f);
+});
+must(THU_VIEN.length >= 7, "đọc được danh sách thư viện từ trang thật",
+  THU_VIEN.length + " file: " + THU_VIEN.join(", "));
+THU_VIEN.forEach(f => {
+  const dau = fs.readFileSync(path.join(V, f), "utf8")
     .split("\n").find(l => l.trim().length > 30 && l.indexOf("=====") < 0);
   must(dau != null && goi.indexOf(dau.trim().slice(0, 60)) >= 0, "bản gói có " + f);
 });

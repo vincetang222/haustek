@@ -35,6 +35,37 @@ function manCua(trang) {
 }
 const NOIBO = manCua('intranet.html');
 const KHACH = manCua('khach.html');
+
+/* Danh sách THƯ VIỆN cũng đọc thẳng từ trang thật, vì đúng một lý do đã
+   xảy ra thật thêm một lần nữa. Ghi chú ngay trên kể chuyện vòng 15 quên
+   thêm ba TRANG vào mảng gõ cứng, và cách chữa là đọc từ trang thật. Chữa
+   xong một nửa: danh sách trang thì tự đọc, danh sách thư viện vẫn gõ tay
+   ngay dưới đây. Vòng 25 thêm v2/haustek-cua.js vào cả hai trang thật mà
+   không thêm vào mảng ấy — nên bản gói một trang, tức bản người ngoài mở
+   ra xem, KHÔNG CÓ trang đăng nhập, trong khi hai trang thật có, và cả 22
+   phép kiểm của cua-dang-nhap.js vẫn xanh vì chúng kiểm trang thật.
+   Người dùng báo "vẫn chưa thấy screen đăng nhập" đúng vào chỗ đó.
+   Giờ chữa nốt nửa còn lại: cả hai danh sách đều đọc từ trang thật, nên
+   thêm file vào trang thật là bản gói có ngay, không nhớ gì cả. */
+function thuVienCua(trang) {
+  const html = doc(V + trang);
+  const ra = [];
+  /* Khớp mọi <script src="..."> KHÔNG nằm trong man/ — tức các file thư
+     viện. '../haustek-core.js' cũng khớp, và V + '../haustek-core.js' là
+     đường dẫn hợp lệ cho fs, nên không phải xử lý riêng. */
+  const re = /<script\s+src="((?:\.\.\/)?[a-z0-9-]+\.js)"><\/script>/gi;
+  let m;
+  while ((m = re.exec(html))) ra.push(m[1]);
+  return ra;
+}
+const THU_VIEN = (function () {
+  const ra = [];
+  thuVienCua('intranet.html').concat(thuVienCua('khach.html')).forEach(f => {
+    if (ra.indexOf(f) < 0) ra.push(f);   /* giữ THỨ TỰ NẠP của trang thật */
+  });
+  if (!ra.length) throw new Error('Không đọc được thư viện nào từ hai trang thật');
+  return ra;
+})();
 const boc = ds => ds.map(n =>
   '/* ---- man/' + n + '.js ---- */\nfunction(){\n' + doc(V + 'man/' + n + '.js') + '\n}').join(',\n');
 
@@ -66,13 +97,7 @@ PHAN.push(`<meta charset="utf-8">
 </style>
 
 `);
-PHAN.push('<scr'+'ipt>', doc(__dirname + '/haustek-core.js'), '</scr'+'ipt>');
-PHAN.push('<scr'+'ipt>', doc(V + 'haustek-shell.js'), '</scr'+'ipt>');
-PHAN.push('<scr'+'ipt>', doc(V + 'haustek-bieudo.js'), '</scr'+'ipt>');
-PHAN.push('<scr'+'ipt>', doc(V + 'haustek-man.js'), '</scr'+'ipt>');
-PHAN.push('<scr'+'ipt>', doc(V + 'haustek-taisan.js'), '</scr'+'ipt>');
-PHAN.push('<scr'+'ipt>', doc(V + 'haustek-them.js'), '</scr'+'ipt>');
-PHAN.push('<scr'+'ipt>', doc(V + 'haustek-hoso.js'), '</scr'+'ipt>');
+THU_VIEN.forEach(f => PHAN.push('<scr'+'ipt>', doc(V + f), '</scr'+'ipt>'));
 PHAN.push(`
 
 <script>
@@ -90,7 +115,7 @@ var MAN_KHACH = [`, boc(KHACH), `];
    chặn. Bật cờ để nút Xuất CSV nói thật thay vì im lặng. */
 window.HAUSTEK_XEM_ONLINE = true;
 
-var K_CUA = 'haustek.cua', K_TK = 'haustek.demo.tk';
+var K_CUA = 'haustek.cua';
 function lay(k, mac) { try { return localStorage.getItem(k) || mac; } catch (e) { return mac; } }
 function dat(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
 
@@ -120,15 +145,58 @@ if (cua === 'khach') {
 
   var api = HAUSTEK.api;
   var TK = api.demoLogins().accounts.filter(function (a) { return a.status === 'active'; });
-  var i0 = 0;
-  try { var v = +localStorage.getItem(K_TK); if (v >= 0 && v < TK.length) i0 = v; } catch (e) {}
-  var toi = TK[i0];
 
   /* Xem với tư cách label con: label mẹ chọn một label con thì phiên
      chuyển sang label con đó, tài khoản đăng nhập vẫn là label mẹ. Khoá
      này chỉ là ý muốn của người dùng; quyền thật kiểm bằng api.delegations. */
   var K_XEM = 'haustek.xemThay';
   function xoaXem() { try { localStorage.removeItem(K_XEM); } catch (e) {} }
+
+  /* Ai đang vào: do CỬA quyết định, y như khach.html. Bản gói khác trang
+     thật đúng một chỗ — ô chọn cổng nằm ngay dưới thẻ đăng nhập, để người
+     mở bản công bố đổi được sang cổng nội bộ mà KHÔNG phải đăng nhập
+     trước rồi mới thấy nút. */
+  var toi = null;
+  HTCua.mo({
+    ten: 'portal',
+    tieuDe: HT.lang === 'en' ? 'Partner portal' : 'Cổng đối tác',
+    phu: HT.lang === 'en'
+      ? 'Your revenue by period, your wallet, and your catalogue.'
+      : 'Số tiền theo từng kỳ, ví của bạn, và danh mục của bạn.',
+    dangNhap: function (email) { return api.dangNhapBang(email); },
+    mau: TK.map(function (a) {
+      return { email: a.email, ten: a.name,
+               phu: a.kind === 'nhan' ? (HT.lang === 'en' ? 'Collaborator' : 'Người cộng tác')
+                  : a.kind === 'sublabel' ? (HT.lang === 'en' ? 'Sub-label' : 'Label con')
+                  : a.role === 'label' ? 'Label'
+                  : a.kind === 'artist-indie' ? (HT.lang === 'en' ? 'Independent artist' : 'Nghệ sĩ độc lập')
+                  : (HT.lang === 'en' ? 'Artist' : 'Nghệ sĩ') };
+    }),
+    phai: {
+      nhan: HT.lang === 'en' ? 'Partner portal' : 'Cổng đối tác',
+      h: HT.lang === 'en'
+        ? ['Your money, ', 'explained', ' line by line']
+        : ['Tiền của bạn, ', 'giải thích được', ' từng dòng'],
+      p: HT.lang === 'en'
+        ? 'What each period paid, which platform it came from, what is sitting in your wallet, and where a withdrawal has got to. The figures here are yours — nobody else’s are mixed in.'
+        : 'Từng kỳ trả bao nhiêu, đến từ nền tảng nào, ví còn bao nhiêu, và lệnh rút đang đi tới đâu. Số ở đây là của bạn — không lẫn của ai khác.',
+      trich: HT.lang === 'en'
+        ? 'Every figure on this side is NET: what reaches you after the fee. You never have to work out what was taken off along the way.'
+        : 'Mọi con số ở phía này đều là NET: phần về tới tay bạn sau khi trừ phí. Bạn không phải tự tính xem dọc đường đã trừ những gì.',
+      trichAi: HT.lang === 'en' ? 'How this portal is built' : 'Cách cổng này được dựng',
+      the: ['Spotify', 'YouTube Music', 'TikTok', 'Apple Music', 'Zing MP3',
+            'NhacCuaTui', 'Facebook', 'Amazon Music', 'Deezer', 'SoundCloud']
+    },
+    them: oChonCua(HT.lang, '<p>' + HT.esc(HT.lang === 'vi'
+      ? 'Bản gói một trang: đổi cổng để xem phía còn lại. Hệ thật không có ô chọn này.'
+      : 'Single-page bundle: switch door to see the other side. The real system has no such control.') + '</p>'),
+    xong: function (dt) {
+      toi = { role: dt.role, partyId: dt.partyId, name: dt.ten, email: dt.email };
+      dungCong();
+    }
+  });
+
+  function dungCong() {
   var thay = null;                                        /* {labelId, name, clientId} khi đang xem thay */
   var phienCua = { role: toi.role, partyId: toi.partyId }; /* phiên thật sự dùng để gọi api */
   (function () {
@@ -147,6 +215,8 @@ if (cua === 'khach') {
     var p = api.periods(phienCua.role, phienCua.partyId);
     return { me: s, kys: p.open, cho: p.waiting, kyTacQuyen: p.pubOpen, moiNhat: p.latest };
   }
+  /* Ghi một dòng nhật ký đăng nhập trước khi dựng phiên — y như khach.html. */
+  try { api.moPhien(phienCua.role, phienCua.partyId); } catch (e) {}
   var PHIEN = nạpPhien();
 
   HT.chay({
@@ -166,29 +236,31 @@ if (cua === 'khach') {
     },
     chanTrai: function (c) {
       var vi = c.lang === 'vi', me = PHIEN.me;
-      var opts = TK.map(function (a, i) {
-        return '<option value="' + i + '"' + (a === toi ? ' selected' : '') + '>' + HT.esc(a.name) + '</option>';
-      }).join('');
-      var vai = toi.role !== 'label'
+      var vai = toi.role === 'nhan' ? (vi ? 'Người cộng tác' : 'Collaborator')
+        : toi.role !== 'label'
         ? (me.independent ? (vi ? 'Nghệ sĩ độc lập' : 'Independent artist') : (vi ? 'Nghệ sĩ' : 'Artist'))
         : me.parentLabel ? (vi ? 'Label con của ' + me.parentLabel.name : 'Sub-label of ' + me.parentLabel.name)
         : me.childLabels > 0 ? (vi ? 'Label mẹ · ' + me.childLabels + ' label con' : 'Parent label · ' + me.childLabels + ' sub-labels')
         : 'Label';
+      /* Ô chọn tài khoản đã đi cùng vòng 25: ai đang vào là do CỬA quyết
+         định. Còn lại đúng một ô chọn — ô chọn CỔNG — và nó là thứ riêng
+         của bản gói một trang, không phải của sản phẩm. */
       return '<b>' + HT.esc(me.name) + '</b><span>' + HT.esc(vai) + '</span>' +
         (thay ? '<span style="display:block;margin-top:3px">' + HT.esc(vi ? 'đăng nhập: ' + toi.name : 'signed in as ' + toi.name) + '</span>' : '') +
-        '<select class="inline-sel" data-ai style="margin-top:9px;width:100%">' + opts + '</select>' +
+        '<span style="display:block;margin-top:2px" class="mono">' + HT.esc(toi.email) + '</span>' +
+        '<button type="button" class="btn sm ghost" data-ra style="margin-top:9px;width:100%">' +
+        HT.esc(vi ? 'Đăng xuất' : 'Sign out') + '</button>' +
         oChonCua(c.lang, '<p>' + HT.esc(vi
-          ? 'Bản mẫu: đổi tài khoản hoặc đổi cổng để xem theo góc nhìn khác. Hệ thống thật không có hai ô chọn này.'
-          : 'Prototype: switch account or door to see another view. The real system has neither control.') + '</p>');
+          ? 'Bản gói một trang: đổi cổng để xem phía còn lại. Hệ thống thật không có ô chọn này.'
+          : 'Single-page bundle: switch door to see the other side. The real system has no such control.') + '</p>');
     }
   });
 
-  document.addEventListener('change', function (e) {
-    var s = e.target.closest('[data-ai]');
-    if (!s) return;
-    dat(K_TK, s.value);
+  document.addEventListener('click', function (e) {
+    if (!e.target.closest('[data-ra]')) return;
+    HTCua.raKhoi('portal');
     xoaXem();
-    location.hash = '#k-tong-quan';
+    location.hash = '';
     location.reload();
   });
 
@@ -214,11 +286,11 @@ if (cua === 'khach') {
       location.reload();
     }
   });
+  }   /* hết dungCong() — cổng đối tác */
 
 } else {
   MAN_NOIBO.forEach(function (f) { f(); });
   var A = HAUSTEK.admin;
-  try { var NV = localStorage.getItem('haustek.demo.nv'); if (NV) A.staff.setMe(NV); } catch (e) {}
   A.provideSecrets({
     code: 'DIST-1',
     name: 'Đối tác phân phối chính (tên thật điền khi triển khai)',
@@ -227,6 +299,44 @@ if (cua === 'khach') {
   });
   HT.setFx(A.fx.get().rate);
 
+  /* Cửa nội bộ — y như intranet.html, cộng ô chọn cổng riêng của bản gói. */
+  HTCua.mo({
+    ten: 'internal',
+    tieuDe: HT.lang === 'en' ? 'Haustek internal' : 'Cổng nội bộ Haustek',
+    phu: HT.lang === 'en'
+      ? 'Your desk, your department queue, and what you are allowed to approve.'
+      : 'Bàn làm việc của bạn, hàng đợi của bộ phận, và những gì bạn được duyệt.',
+    dangNhap: function (email) { return A.staff.dangNhapBang(email); },
+    mau: A.staff.list().filter(function (s) { return s.active !== false; }).map(function (s) {
+      return { email: s.email, ten: s.name, phu: HT.lang === 'en' ? s.titleEn : s.title };
+    }),
+    phai: {
+      nhan: HT.lang === 'en' ? 'Internal portal' : 'Cổng nội bộ',
+      h: HT.lang === 'en'
+        ? ['Every dollar ', 'traces back', ' to one track']
+        : ['Mỗi đồng đều ', 'lần ngược được', ' về một bài hát'],
+      p: HT.lang === 'en'
+        ? 'Revenue arrives by period and by source, the split chain runs, and every figure on every page opens up until you reach the track that produced it.'
+        : 'Doanh thu về theo từng kỳ và từng nguồn, chuỗi chia chạy, và mọi con số trên mọi trang đều mở ra được cho tới đúng bài hát sinh ra nó.',
+      so: [
+        { n: HT.fmt.n(A.counts.tracks),  s: HT.lang === 'en' ? 'tracks' : 'bài hát' },
+        { n: HT.fmt.n(A.counts.artists), s: HT.lang === 'en' ? 'artists' : 'nghệ sĩ' },
+        { n: HT.fmt.n(A.counts.labels),  s: HT.lang === 'en' ? 'labels' : 'label' }
+      ],
+      trich: HT.lang === 'en'
+        ? 'A partner only ever sees NET. The fee, the gross figure and the distributor’s name do not exist on that side of the wall.'
+        : 'Đối tác chỉ thấy số NET. Phí, số gộp và tên đơn vị phân phối không tồn tại ở phía bên kia bức tường.',
+      trichAi: HT.lang === 'en' ? 'Design rule · guarded by test/api-guard.js'
+                                : 'Nguyên tắc dựng hệ · có test/api-guard.js canh',
+      the: A.stores.slice(0, 10)
+    },
+    them: oChonCua(HT.lang, '<p>' + HT.esc(HT.lang === 'vi'
+      ? 'Bản gói một trang: đổi cổng để xem phía còn lại. Hệ thật không có ô chọn này.'
+      : 'Single-page bundle: switch door to see the other side. The real system has no such control.') + '</p>'),
+    xong: function () { dungCong(); }
+  });
+
+  function dungCong() {
   HT.chay({
     ten: 'internal', A: A,
     kyDanhSach: function () {
@@ -248,22 +358,24 @@ if (cua === 'khach') {
     },
     chanTrai: function (c) {
       var me = A.staff.me;
+      /* Ô chọn nhân viên đã đi cùng vòng 25: vai đến từ tài khoản đã đăng
+         nhập. Muốn xem bàn làm việc của vai khác thì đăng xuất rồi vào
+         bằng tài khoản khác — đúng như hệ thật bắt phải làm. */
       return '<b>' + HT.esc(me.email) + '</b><span>' + HT.esc(c.lang === 'vi' ? me.title : me.titleEn) + '</span>' +
-        '<select class="inline-sel" data-nv style="margin-top:9px;width:100%">' + A.staff.list().map(function (s) {
-          return '<option value="' + s.id + '"' + (s.id === me.id ? ' selected' : '') + '>' + HT.esc(s.name + ' · ' + (c.lang === 'vi' ? s.title : s.titleEn)) + '</option>';
-        }).join('') + '</select>' +
+        '<button type="button" class="btn sm ghost" data-ra style="margin-top:9px;width:100%">' +
+        HT.esc(c.lang === 'vi' ? 'Đăng xuất' : 'Sign out') + '</button>' +
         oChonCua(c.lang, '<p>' + HT.esc(c.lang === 'vi'
-          ? 'Bản mẫu: đổi nhân viên để xem bàn làm việc theo vai; xét duyệt một kỳ ở đây rồi chuyển sang cổng đối tác.'
-          : 'Prototype: switch staff to see each role’s desk; approve a period here, then switch to the client portal.') + '</p>');
+          ? 'Bản gói một trang: xét duyệt một kỳ ở đây rồi đổi sang cổng đối tác để xem kết quả. Hệ thật không có ô chọn này.'
+          : 'Single-page bundle: approve a period here, then switch to the partner door to see the result. The real system has no such control.') + '</p>');
     }
   });
-  document.addEventListener('change', function (e) {
-    var s = e.target.closest('[data-nv]');
-    if (!s) return;
-    dat('haustek.demo.nv', s.value);
-    location.hash = '#ban-lam-viec';
+  document.addEventListener('click', function (e) {
+    if (!e.target.closest('[data-ra]')) return;
+    HTCua.raKhoi('internal');
+    location.hash = '';
     location.reload();
   });
+  }   /* hết dungCong() — cổng nội bộ */
 }
 
 })();

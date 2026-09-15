@@ -1676,18 +1676,36 @@ table.t tbody tr.tong td{background:var(--band);font-weight:600;border-top:1.5px
 .bl-xong{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:10px 0 2px;padding:9px 12px;border-radius:10px;background:var(--fill);font-size:13px}
 .bl-xong .ico.ok{display:inline-flex}
 
-/* ===== CỬA · trang đăng nhập (vòng 25) ==========================
-   Đứng trước khung nên không dùng lưới của khung. Dùng đúng token màu
-   của hệ nên tự đúng ở cả sáng lẫn tối, không cần khai lại bảng màu. */
-.cua-nen{min-height:100dvh;display:flex;align-items:center;justify-content:center;
-  padding:24px 16px;background:var(--bg);color:var(--ink)}
-.cua{width:100%;max-width:400px;background:var(--card);border:1px solid var(--card-line);
-  border-radius:var(--r);padding:26px 24px 18px;box-shadow:var(--raised)}
-.cua-dau{margin-bottom:20px}
-.cua-hieu{font-weight:700;font-size:12.5px;letter-spacing:.14em;text-transform:uppercase;
-  color:var(--accent);margin-bottom:14px}
-.cua-dau h1{margin:0 0 5px;font-size:20px;font-weight:650;letter-spacing:-.01em}
-.cua-dau p{margin:0;font-size:13px;line-height:1.5;color:var(--ink-2)}
+/* ===== CỬA · trang đăng nhập (vòng 25, dựng lại vòng 26) =============
+   Bố cục hai cột lấy theo trang đăng nhập của HAUSTEK CRM, vì hai sản
+   phẩm phải trông như một bộ: CRM đã mượn khung cột trái của portal,
+   giờ portal mượn lại cửa của CRM. Cột trái là việc phải làm (đăng
+   nhập), cột phải là lý do sản phẩm tồn tại.
+
+   Màu thì KHÔNG mượn. CRM để Signal Red làm nút chính; portal đã có
+   --accent teal giữ vai ấy ở hàng trăm chỗ khác, đổi riêng cửa thành đỏ
+   thì cửa lạc khỏi chính sản phẩm nó mở ra. Chỉ mượn đúng một chi tiết
+   đỏ: chấm tín hiệu cạnh dòng nhãn, thứ CRM cũng đặt trên thanh trên —
+   đó là dấu của thương hiệu, không phải màu của nút.
+
+   Cột phải biến mất dưới 980px. Nó là trang trí có nội dung, không phải
+   nội dung: mất nó thì vẫn đăng nhập được, giữ nó trên điện thoại thì
+   phải cuộn qua một màn hình quảng cáo mới tới ô email. */
+.cua-nen{min-height:100dvh;display:grid;grid-template-columns:1fr 1fr;
+  background:var(--card);color:var(--ink)}
+
+/* ---- cột trái: việc phải làm ---- */
+.cua-trai{display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:56px 28px 64px;position:relative;background:var(--bg)}
+.cua-ngu{position:absolute;top:20px;right:22px}
+.cua-hieu{font-weight:700;font-size:13px;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--ink);margin-bottom:26px;display:flex;align-items:center;gap:9px}
+.cua-dot{width:7px;height:7px;border-radius:50%;background:#FF2E4C;flex:0 0 auto}
+.cua{width:100%;max-width:372px;background:var(--card);border:1px solid var(--card-line);
+  border-radius:var(--r);padding:24px 24px 18px;box-shadow:var(--raised)}
+.cua-dau{margin-bottom:18px}
+.cua-dau h1{margin:0 0 5px;font-size:18px;font-weight:650;letter-spacing:-.01em}
+.cua-dau p{margin:0;font-size:12.5px;line-height:1.5;color:var(--ink-2)}
 .cua-form .fld{display:block;margin:0 0 5px;font-size:12.5px;font-weight:550;color:var(--ink-2)}
 .cua-form .in{width:100%;margin-bottom:14px}
 .cua-nho{margin:-8px 0 14px;font-size:11.5px;line-height:1.5;color:var(--faint)}
@@ -1695,26 +1713,59 @@ table.t tbody tr.tong td{background:var(--band);font-weight:600;border-top:1.5px
 .cua-nut{width:100%;justify-content:center;padding:10px 14px;font-size:14px}
 .cua-loi{margin:0 0 12px;padding:9px 11px;border-radius:var(--r-sm);font-size:12.5px;line-height:1.45;
   background:var(--danger-lo);border:1px solid var(--danger);color:var(--danger)}
-.cua-mau-hop{margin-top:20px;border-top:1px solid var(--line);padding-top:14px}
+.cua-mau-hop{margin-top:18px;border-top:1px solid var(--line);padding-top:13px}
 .cua-mau-hop summary{cursor:pointer;font-size:12.5px;font-weight:550;color:var(--ink-2);
   list-style:none;display:flex;align-items:center;gap:6px}
 .cua-mau-hop summary::-webkit-details-marker{display:none}
 .cua-mau-hop summary::before{content:'\25B8';font-size:11px;color:var(--faint);transition:transform .15s}
 .cua-mau-hop[open] summary::before{transform:rotate(90deg)}
 .cua-mau-hop .cua-nho{margin:10px 0}
-.cua-mau-ds{display:flex;flex-direction:column;gap:5px;max-height:232px;overflow-y:auto}
+.cua-mau-ds{display:flex;flex-direction:column;gap:5px;max-height:222px;overflow-y:auto}
 .cua-mau{display:block;width:100%;text-align:left;padding:7px 10px;border-radius:var(--r-sm);
   border:1px solid var(--line);background:var(--bg);cursor:pointer;font:inherit;color:inherit}
 .cua-mau:hover{border-color:var(--accent);background:var(--card)}
 .cua-mau b{display:block;font-size:12.5px;font-weight:600}
 .cua-mau span{display:block;font-size:11.5px;color:var(--ink-2);font-family:var(--mono)}
 .cua-mau i{display:block;font-size:11px;font-style:normal;color:var(--faint);margin-top:1px}
-.cua-chan{margin-top:18px;padding-top:13px;border-top:1px solid var(--line);
-  display:flex;align-items:center;gap:10px;justify-content:space-between}
-.cua-chan span{font-size:11px;line-height:1.5;color:var(--faint);flex:1;min-width:0}
+.cua-chan{margin-top:16px;padding-top:12px;border-top:1px solid var(--line)}
+.cua-chan span{display:block;font-size:11px;line-height:1.5;color:var(--faint)}
+/* chỗ cho bản gói một trang gắn ô chọn cổng; trang thật để trống */
+.cua-them{width:100%;max-width:372px;margin-top:14px}
+
+/* ---- cột phải: vì sao có sản phẩm này ---- */
+.cua-phai{background:var(--chrome-grad),var(--chrome);color:var(--on-chrome);
+  padding:52px 54px;display:flex;flex-direction:column;justify-content:center;
+  position:relative;overflow:hidden}
+.cua-phai::after{content:'';position:absolute;right:-80px;top:-80px;width:340px;height:340px;
+  border-radius:50%;background:radial-gradient(circle,rgba(127,195,210,.16),transparent 68%)}
+.cua-phai>*{position:relative}
+.cua-nhan{font-size:12px;color:var(--on-chrome-2);letter-spacing:.08em;margin-bottom:20px;
+  display:flex;align-items:center;gap:9px;text-transform:uppercase}
+.cua-h{font-size:38px;font-weight:700;line-height:1.14;letter-spacing:-.03em;margin:0 0 18px;
+  max-width:11ch;color:var(--on-chrome)}
+.cua-h em{font-style:normal;color:var(--accent-3)}
+.cua-p{font-size:14px;color:var(--on-chrome-2);line-height:1.6;max-width:44ch;margin:0 0 30px}
+.cua-so{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;max-width:470px;
+  border-top:1px solid var(--chrome-line);padding-top:22px;margin-bottom:24px}
+.cua-so b{display:block;font-size:22px;font-weight:700;letter-spacing:-.02em;
+  font-family:var(--mono);color:var(--on-chrome)}
+.cua-so span{display:block;font-size:11.5px;color:var(--on-chrome-3);margin-top:3px;line-height:1.4}
+.cua-trich{font-size:14.5px;line-height:1.55;color:var(--on-chrome);border-left:2px solid var(--accent-2);
+  padding-left:15px;max-width:430px;margin-bottom:22px}
+.cua-trich span{display:block;color:var(--on-chrome-3);font-size:12px;margin-top:7px}
+.cua-the{display:flex;flex-wrap:wrap;gap:7px;max-width:470px}
+.cua-the i{font-style:normal;font-size:11px;color:var(--on-chrome-2);
+  border:1px solid var(--chrome-line);padding:3px 10px;border-radius:12px}
+
+@media (max-width:980px){
+  .cua-nen{grid-template-columns:1fr}
+  .cua-phai{display:none}
+  .cua-trai{padding:44px 20px 52px}
+}
 @media (max-width:420px){
   .cua{padding:22px 18px 16px}
-  .cua-chan{flex-direction:column;align-items:stretch}
+  .cua-trai{padding:40px 14px 46px}
+  .cua-ngu{top:12px;right:14px}
 }
 
 
@@ -11800,6 +11851,247 @@ global.HT = {
 </script>
 <script>
 /* =====================================================================
+   CỬA — trang đăng nhập, dùng chung cho cả hai cổng
+   ---------------------------------------------------------------------
+   Chạy TRƯỚC khung. Không có phiên thì dựng màn hình đăng nhập và dừng
+   ở đó; có phiên rồi thì gọi thẳng xong() và khung dựng như thường.
+
+   Vì sao là một file chung mà không phải một trang trong man/: trang
+   trong man/ nằm BÊN TRONG khung — có điều hướng, có thanh trên, có ô
+   chọn kỳ. Cửa phải đứng trước tất cả những thứ ấy, nên nó không thể là
+   một trang.
+
+   Vì sao hai cổng vẫn có hai cửa riêng chứ không gộp làm một: cổng đối
+   tác gọi HAUSTEK.lockdown() nên trong trang ấy HAUSTEK.admin KHÔNG còn
+   tồn tại. Một cửa gộp phải nạp cả hai mặt tiền, tức là phá đúng cái ranh
+   giới mà test/ranh-gioi-trang.js đang canh. File này chỉ VẼ; việc tra
+   tài khoản do bên gọi truyền vào.
+
+   BẢN MẪU KHÔNG CÓ MẬT KHẨU. Ô mật khẩu có mặt vì hình dạng thật của
+   trang đăng nhập cần nó — đội lập trình phải thấy chỗ nó nằm — nhưng ô
+   ấy tự khai ngay bên dưới rằng bản mẫu không kiểm. Không giấu chuyện đó
+   đi, và cũng không bỏ ô đi rồi để người đọc tự đoán.
+
+   VÒNG 26 — hai cột. Cột trái đăng nhập, cột phải nói sản phẩm này để
+   làm gì. Lấy bố cục từ trang đăng nhập của HAUSTEK CRM theo yêu cầu của
+   chủ dự án; CRM trước đó đã mượn khung cột trái của portal, nên đây là
+   mượn lại đúng chiều còn thiếu. Nội dung cột phải do bên gọi truyền vào
+   (khoá `phai`) vì hai cổng nói với hai người khác nhau: nội bộ nói với
+   nhân viên, cổng đối tác nói với nghệ sĩ và label. Không truyền thì cột
+   phải không dựng, và cửa trở lại đúng hình một cột như vòng 25.
+   ===================================================================== */
+(function (global) {
+"use strict";
+
+var LS_PHIEN = 'haustek.phien';    /* cổng nào đang có ai vào — sessionStorage */
+
+function esc(s) { return HT.esc(s == null ? '' : String(s)); }
+function doc(k) { try { return sessionStorage.getItem(k); } catch (e) { return null; } }
+function ghi(k, v) { try { sessionStorage.setItem(k, v); } catch (e) {} }
+function xoa(k) { try { sessionStorage.removeItem(k); } catch (e) {} }
+
+/* Khoá phiên tách theo cổng: vào cổng nội bộ rồi mở cổng đối tác ở tab
+   khác thì hai phiên không đè lên nhau. */
+function khoa(ten) { return LS_PHIEN + '.' + ten; }
+
+/* ---------------------------------------------------------------------
+   Đọc / ghi / xoá phiên
+   --------------------------------------------------------------------- */
+function phienCua(ten) {
+  var s = doc(khoa(ten));
+  if (!s) return null;
+  try { var o = JSON.parse(s); return (o && o.email) ? o : null; } catch (e) { return null; }
+}
+function luuPhien(ten, o) { ghi(khoa(ten), JSON.stringify(o)); }
+function raKhoi(ten) { xoa(khoa(ten)); }
+
+/* ---------------------------------------------------------------------
+   Cột phải — chỉ dựng khi bên gọi truyền `phai`
+     nhan   dòng nhãn nhỏ trên cùng
+     h      [trước, phần nhấn, sau] — ghép thành một tiêu đề lớn
+     p      một đoạn
+     so     [{n, s}]  · ba con số
+     trich  câu trích, trichAi là người nói
+     the    [chuỗi]   · các thẻ tròn
+     link   {chu, href}
+   --------------------------------------------------------------------- */
+function vePhai(p) {
+  if (!p) return '';
+  var h = p.h || ['', '', ''];
+  var so = (p.so || []).map(function (x) {
+    return '<div><b>' + esc(x.n) + '</b><span>' + esc(x.s) + '</span></div>';
+  }).join('');
+  var the = (p.the || []).map(function (x) { return '<i>' + esc(x) + '</i>'; }).join('');
+  return '<div class="cua-phai">' +
+    (p.nhan ? '<div class="cua-nhan"><span class="cua-dot"></span>' + esc(p.nhan) + '</div>' : '') +
+    '<h2 class="cua-h">' + esc(h[0]) + '<em>' + esc(h[1]) + '</em>' + esc(h[2]) + '</h2>' +
+    (p.p ? '<p class="cua-p">' + esc(p.p) + '</p>' : '') +
+    (so ? '<div class="cua-so">' + so + '</div>' : '') +
+    (p.trich ? '<div class="cua-trich">' + esc(p.trich) +
+      (p.trichAi ? '<span>' + esc(p.trichAi) + '</span>' : '') + '</div>' : '') +
+    (the ? '<div class="cua-the">' + the + '</div>' : '') +
+  '</div>';
+}
+
+/* ---------------------------------------------------------------------
+   Màn hình
+   --------------------------------------------------------------------- */
+function ve(c) {
+  var vi = HT.lang !== 'en';
+  var t = {
+    email:    vi ? 'Email' : 'Email',
+    matKhau:  vi ? 'Mật khẩu' : 'Password',
+    mkMo:     vi ? 'Bản mẫu không kiểm mật khẩu — gõ gì cũng được, hoặc để trống.'
+                 : 'The prototype does not check passwords — type anything, or leave it empty.',
+    nut:      vi ? 'Vào cổng' : 'Sign in',
+    quen:     vi ? 'Quên mật khẩu?' : 'Forgot your password?',
+    quenMo:   vi ? 'Hệ thật gửi link đặt lại qua email. Bản mẫu chưa có bước ấy.'
+                 : 'The real system emails a reset link. The prototype has no such step yet.',
+    mauTd:    vi ? 'Tài khoản mẫu của bản mẫu' : 'Prototype sample accounts',
+    mauMo:    vi ? 'Bấm một dòng để điền email. Hệ thật không bao giờ liệt kê ai có tài khoản — danh sách này là thang gỗ của bản mẫu và sẽ bỏ đi.'
+                 : 'Click a row to fill the email. The real system never lists who has an account — this is prototype scaffolding and goes away.',
+    ghiChu:   vi ? 'Mỗi lần vào, kể cả lần bị từ chối, để lại một dòng ở nhật ký đăng nhập.'
+                 : 'Every sign-in, refused ones included, leaves a line in the sign-in log.',
+    doiNgu:   vi ? 'English' : 'Tiếng Việt'
+  };
+
+  var mau = (c.mau || []).map(function (m) {
+    return '<button type="button" class="cua-mau" data-mau="' + esc(m.email) + '">' +
+      '<b>' + esc(m.ten) + '</b>' +
+      '<span>' + esc(m.email) + '</span>' +
+      (m.phu ? '<i>' + esc(m.phu) + '</i>' : '') + '</button>';
+  }).join('');
+
+  return '<div class="cua-nen">' +
+
+    '<div class="cua-trai">' +
+      '<div class="cua-ngu">' +
+        '<button type="button" class="btn sm ghost" data-cua-ngu>' + esc(t.doiNgu) + '</button>' +
+      '</div>' +
+      '<div class="cua-hieu"><span class="cua-dot"></span>Haustek</div>' +
+
+      '<div class="cua">' +
+        '<div class="cua-dau">' +
+          '<h1>' + esc(c.tieuDe) + '</h1>' +
+          '<p>' + esc(c.phu) + '</p>' +
+        '</div>' +
+
+        '<form class="cua-form" data-cua-form novalidate>' +
+          '<label class="fld" for="cua-email">' + esc(t.email) + '</label>' +
+          '<input class="in" type="email" id="cua-email" name="email" autocomplete="username" ' +
+            'autocapitalize="off" spellcheck="false" data-cua-email>' +
+          '<label class="fld" for="cua-mk">' + esc(t.matKhau) + '</label>' +
+          '<input class="in" type="password" id="cua-mk" name="matkhau" autocomplete="current-password">' +
+          '<p class="cua-nho">' + esc(t.mkMo) + '</p>' +
+          '<div class="cua-loi" data-cua-loi hidden role="alert"></div>' +
+          '<button type="submit" class="btn pri cua-nut">' + esc(t.nut) + '</button>' +
+          '<p class="cua-nho cua-giua">' + esc(t.quen) + ' <span class="muted">' + esc(t.quenMo) + '</span></p>' +
+        '</form>' +
+
+        (mau ? '<details class="cua-mau-hop"><summary>' + esc(t.mauTd) + '</summary>' +
+          '<p class="cua-nho">' + esc(t.mauMo) + '</p>' +
+          '<div class="cua-mau-ds">' + mau + '</div></details>' : '') +
+
+        '<div class="cua-chan"><span>' + esc(t.ghiChu) + '</span></div>' +
+      '</div>' +
+
+      (c.them ? '<div class="cua-them">' + c.them + '</div>' : '') +
+    '</div>' +
+
+    vePhai(c.phai) +
+  '</div>';
+}
+
+/* ---------------------------------------------------------------------
+   mo(cauHinh) — cửa duy nhất của file này
+     ten     'internal' | 'portal'   · khoá phiên tách theo cổng
+     tieuDe, phu
+     dangNhap(email) → danh tính, hoặc ném
+     mau     [{ email, ten, phu }]   · danh sách bản mẫu, có thể bỏ trống
+     phai    xem vePhai() bên trên   · cột phải, có thể bỏ trống
+     them    HTML thô dưới thẻ đăng nhập, có thể bỏ trống
+     xong(danhTinh)                  · gọi khi đã vào được
+   --------------------------------------------------------------------- */
+function mo(c) {
+  /* Bản gói một trang nạp mọi script ở PHẦN ĐẦU trang, nên lúc hàm này
+     chạy thì document.body chưa tồn tại và appendChild ném ngay — trang
+     trắng, không một dòng chữ. Hai trang thật không gặp vì script của
+     chúng nằm trong <body>.
+     HT.chay() đã vấp và đã chữa đúng kiểu này (haustek-shell.js, chỗ
+     "if (!document.body)"); cửa đứng TRƯỚC khung nên phải tự chữa lấy. */
+  if (!document.body) {
+    document.addEventListener('DOMContentLoaded', function () { mo(c); });
+    return;
+  }
+
+  var cu = phienCua(c.ten);
+  if (cu) {
+    /* Có phiên rồi: tra lại theo email chứ không tin dữ liệu đã lưu.
+       Tài khoản bị khoá sau khi người ta đã vào thì lần nạp trang sau
+       phải đá ra — đây đúng là chỗ HA-TANG.md mục 3 gọi là "phiên phải
+       được kiểm lại". */
+    var lai = null;
+    try { lai = c.dangNhap(cu.email); } catch (e) { lai = null; }
+    if (lai) { c.xong(lai); return; }
+    raKhoi(c.ten);
+  }
+
+  /* Dựng vào một hộp RIÊNG rồi gỡ hẳn hộp ấy lúc vào được.
+     HT.chay() THÊM <div class="app"> vào body chứ không thay body, nên cửa
+     không tự gỡ thì nó nằm đè 720px phía trên cổng và người dùng phải cuộn
+     xuống mới thấy trang. Đã gặp thật lúc dựng vòng 25. */
+  var hop = document.createElement('div');
+  hop.setAttribute('data-cua-hop', '');
+  hop.innerHTML = ve(c);
+  document.body.appendChild(hop);
+
+  var form = hop.querySelector('[data-cua-form]');
+  var oEmail = hop.querySelector('[data-cua-email]');
+  var oLoi = hop.querySelector('[data-cua-loi]');
+  if (oEmail) oEmail.focus();
+
+  function vao(dt) {
+    hop.remove();
+    document.removeEventListener('click', bamTrongCua);
+    c.xong(dt);
+  }
+
+  function bao(m) {
+    if (!oLoi) return;
+    oLoi.textContent = m;
+    oLoi.hidden = !m;
+  }
+
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+    var email = (oEmail.value || '').trim();
+    if (!email) { bao(HT.lang === 'en' ? 'Enter your email.' : 'Nhập email của bạn.'); oEmail.focus(); return; }
+    var dt = null;
+    try { dt = c.dangNhap(email); }
+    catch (err) { bao(HT.lang === 'en' ? 'That email or password is not right.' : err.message); oEmail.select(); return; }
+    luuPhien(c.ten, { email: dt.email || email });
+    vao(dt);
+  });
+
+  function bamTrongCua(e) {
+    var m = e.target.closest ? e.target.closest('[data-mau]') : null;
+    if (m) { oEmail.value = m.getAttribute('data-mau'); bao(''); oEmail.focus(); return; }
+    var n = e.target.closest ? e.target.closest('[data-cua-ngu]') : null;
+    if (n) {
+      try { localStorage.setItem('haustek.lang', HT.lang === 'en' ? 'vi' : 'en'); } catch (err) {}
+      location.reload();
+    }
+  }
+  document.addEventListener('click', bamTrongCua);
+}
+
+global.HTCua = { mo: mo, raKhoi: raKhoi, phienCua: phienCua };
+
+})(window);
+
+</script>
+<script>
+/* =====================================================================
    HAUSTEK PORTAL v2 — BIỂU ĐỒ
    ---------------------------------------------------------------------
    Vẽ bằng SVG chứ không phải canvas, vì ba lý do:
@@ -12693,18 +12985,24 @@ function nhap(root, sel, fn, cho) {
    Dấu phân cách là chấm phẩy và có BOM ở đầu: Excel bản tiếng Việt mở
    file dấu phẩy không có BOM thì dồn hết vào một cột và mất dấu.
    --------------------------------------------------------------------- */
-function csv(ten, cot, dong) {
-  var q = function (v) {
-    if (v == null) return '';
-    var s = String(v);
-    return /[";\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
-  };
-  var txt = '\uFEFF' + cot.map(q).join(';') + '\n' +
-    dong.map(function (r) { return r.map(q).join(';'); }).join('\n');
+/* ---------------------------------------------------------------------
+   giaoFile — ĐƯA MỘT FILE cho người xem, thật thà về việc nó có tới nơi
+   ---------------------------------------------------------------------
+   Tách khỏi csv() ở vòng 26 vì có hai nơi cần nó mà chỉ một nơi làm đúng:
+   csv() dò claude.use('downloads') rồi mới rơi về thẻ <a download>, và
+   khi biết mình đang chạy trong trình xem thì nói thẳng là không lưu
+   được. quan-tri.js/xuatJson thì dựng thẻ <a download> rồi báo "Đã xuất
+   trạng thái" VÔ ĐIỀU KIỆN — trong khung cách ly của trình xem, lượt tải
+   bị chặn im lặng, nên người dùng được báo thành công cho một việc chưa
+   hề xảy ra.
+
+   Chép tay đoạn giao file sang file thứ hai là đúng cái cách hai danh
+   sách trong dung-goi.js trôi khỏi nhau. Nên: một hàm, hai nơi gọi.
+   --------------------------------------------------------------------- */
+function giaoFile(ten, txt, mime, baoXong) {
   var vi = HT.lang !== 'en';
-  var soDong = dong.length.toLocaleString(vi ? 'vi-VN' : 'en-US');
-  var baoXong = function () {
-    HT.thongBao(vi ? 'Đã xuất ' + ten + ' · ' + soDong + ' dòng' : 'Exported ' + ten + ' · ' + soDong + ' rows', 'ok');
+  baoXong = baoXong || function () {
+    HT.thongBao(vi ? 'Đã xuất ' + ten : 'Exported ' + ten, 'ok');
   };
   var baoKhongTai = function () {
     HT.thongBao(vi ? 'Trình xem này không cho phép lưu file. Mở bản mã nguồn để xuất ' + ten
@@ -12714,7 +13012,7 @@ function csv(ten, cot, dong) {
   /* Tải thẳng: bản nhiều file, hoặc bản gói mở thẳng từ repo. */
   function taiThang() {
     try {
-      var b = new Blob([txt], { type: 'text/csv;charset=utf-8' });
+      var b = new Blob([txt], { type: mime });
       var a = document.createElement('a');
       a.href = URL.createObjectURL(b);
       a.download = ten;
@@ -12748,6 +13046,22 @@ function csv(ten, cot, dong) {
       baoKhongTai();
     });
   }, taiThang);
+}
+
+function csv(ten, cot, dong) {
+  var q = function (v) {
+    if (v == null) return '';
+    var s = String(v);
+    return /[";\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+  };
+  var txt = '\uFEFF' + cot.map(q).join(';') + '\n' +
+    dong.map(function (r) { return r.map(q).join(';'); }).join('\n');
+  var vi = HT.lang !== 'en';
+  var soDong = dong.length.toLocaleString(vi ? 'vi-VN' : 'en-US');
+  giaoFile(ten, txt, 'text/csv;charset=utf-8', function () {
+    HT.thongBao(vi ? 'Đã xuất ' + ten + ' · ' + soDong + ' dòng'
+                   : 'Exported ' + ten + ' · ' + soDong + ' rows', 'ok');
+  });
 }
 
 /* ---------------------------------------------------------------------
@@ -12960,7 +13274,7 @@ global.HM = {
   chep: chep,
   dau: dau, so: so, the: the, huyHieu: huyHieu, suyHieu: suyHieu, tabs: tabs, trong: trong, ghi: ghi, menu: menu, kv: kv,
   hoi: hoi, banIn: banIn, dongIn: dongIn,
-  tag: tag, cham: cham, bam: bam, doi: doi, nhap: nhap, csv: csv,
+  tag: tag, cham: cham, bam: bam, doi: doi, nhap: nhap, csv: csv, giaoFile: giaoFile,
   lech: lech, lechHtml: lechHtml, dai: dai, esc: esc, icon: icon,
   nho: nho, quenHet: quenHet, moc: moc,
   bia: bia, hinh: hinh, tenBia: tenBia, xepHang: xepHang, hashChu: hashChu, oThanh: oThanh
@@ -24939,16 +25253,16 @@ function hoiTaiKhoan(c) {
   });
 }
 
+/* Đi chung đường giao file với nút Xuất CSV (HM.giaoFile). Trước vòng 26
+   hàm này tự dựng thẻ <a download> rồi báo "Đã xuất trạng thái" ngay,
+   không hỏi gì — mà trong khung cách ly của trình xem artifact thì mọi
+   lượt tải do trang tự khởi đều bị chặn im lặng. Tức là bản công bố báo
+   thành công cho một việc chưa hề xảy ra, và không bài kiểm nào thấy vì
+   bài kiểm nào cũng chạy trên bản nhiều file, nơi lượt tải chạy thật. */
 function xuatJson(c) {
   try {
-    var txt = HAUSTEK.storage.exportJSON();
-    var b = new Blob([txt], { type: 'application/json' });
-    var a = document.createElement('a');
-    a.href = URL.createObjectURL(b);
-    a.download = 'haustek-trang-thai.json';
-    document.body.appendChild(a); a.click();
-    setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 400);
-    c.thongBao(c.lang === 'vi' ? 'Đã xuất trạng thái' : 'State exported', 'ok');
+    HM.giaoFile('haustek-trang-thai.json', HAUSTEK.storage.exportJSON(), 'application/json',
+      function () { c.thongBao(c.lang === 'vi' ? 'Đã xuất trạng thái' : 'State exported', 'ok'); });
   } catch (e) { c.thongBao(e.message, 'no'); }
 }
 
@@ -31043,7 +31357,7 @@ function taiTatCa(c) {
    chặn. Bật cờ để nút Xuất CSV nói thật thay vì im lặng. */
 window.HAUSTEK_XEM_ONLINE = true;
 
-var K_CUA = 'haustek.cua', K_TK = 'haustek.demo.tk';
+var K_CUA = 'haustek.cua';
 function lay(k, mac) { try { return localStorage.getItem(k) || mac; } catch (e) { return mac; } }
 function dat(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
 
@@ -31073,15 +31387,58 @@ if (cua === 'khach') {
 
   var api = HAUSTEK.api;
   var TK = api.demoLogins().accounts.filter(function (a) { return a.status === 'active'; });
-  var i0 = 0;
-  try { var v = +localStorage.getItem(K_TK); if (v >= 0 && v < TK.length) i0 = v; } catch (e) {}
-  var toi = TK[i0];
 
   /* Xem với tư cách label con: label mẹ chọn một label con thì phiên
      chuyển sang label con đó, tài khoản đăng nhập vẫn là label mẹ. Khoá
      này chỉ là ý muốn của người dùng; quyền thật kiểm bằng api.delegations. */
   var K_XEM = 'haustek.xemThay';
   function xoaXem() { try { localStorage.removeItem(K_XEM); } catch (e) {} }
+
+  /* Ai đang vào: do CỬA quyết định, y như khach.html. Bản gói khác trang
+     thật đúng một chỗ — ô chọn cổng nằm ngay dưới thẻ đăng nhập, để người
+     mở bản công bố đổi được sang cổng nội bộ mà KHÔNG phải đăng nhập
+     trước rồi mới thấy nút. */
+  var toi = null;
+  HTCua.mo({
+    ten: 'portal',
+    tieuDe: HT.lang === 'en' ? 'Partner portal' : 'Cổng đối tác',
+    phu: HT.lang === 'en'
+      ? 'Your revenue by period, your wallet, and your catalogue.'
+      : 'Số tiền theo từng kỳ, ví của bạn, và danh mục của bạn.',
+    dangNhap: function (email) { return api.dangNhapBang(email); },
+    mau: TK.map(function (a) {
+      return { email: a.email, ten: a.name,
+               phu: a.kind === 'nhan' ? (HT.lang === 'en' ? 'Collaborator' : 'Người cộng tác')
+                  : a.kind === 'sublabel' ? (HT.lang === 'en' ? 'Sub-label' : 'Label con')
+                  : a.role === 'label' ? 'Label'
+                  : a.kind === 'artist-indie' ? (HT.lang === 'en' ? 'Independent artist' : 'Nghệ sĩ độc lập')
+                  : (HT.lang === 'en' ? 'Artist' : 'Nghệ sĩ') };
+    }),
+    phai: {
+      nhan: HT.lang === 'en' ? 'Partner portal' : 'Cổng đối tác',
+      h: HT.lang === 'en'
+        ? ['Your money, ', 'explained', ' line by line']
+        : ['Tiền của bạn, ', 'giải thích được', ' từng dòng'],
+      p: HT.lang === 'en'
+        ? 'What each period paid, which platform it came from, what is sitting in your wallet, and where a withdrawal has got to. The figures here are yours — nobody else’s are mixed in.'
+        : 'Từng kỳ trả bao nhiêu, đến từ nền tảng nào, ví còn bao nhiêu, và lệnh rút đang đi tới đâu. Số ở đây là của bạn — không lẫn của ai khác.',
+      trich: HT.lang === 'en'
+        ? 'Every figure on this side is NET: what reaches you after the fee. You never have to work out what was taken off along the way.'
+        : 'Mọi con số ở phía này đều là NET: phần về tới tay bạn sau khi trừ phí. Bạn không phải tự tính xem dọc đường đã trừ những gì.',
+      trichAi: HT.lang === 'en' ? 'How this portal is built' : 'Cách cổng này được dựng',
+      the: ['Spotify', 'YouTube Music', 'TikTok', 'Apple Music', 'Zing MP3',
+            'NhacCuaTui', 'Facebook', 'Amazon Music', 'Deezer', 'SoundCloud']
+    },
+    them: oChonCua(HT.lang, '<p>' + HT.esc(HT.lang === 'vi'
+      ? 'Bản gói một trang: đổi cổng để xem phía còn lại. Hệ thật không có ô chọn này.'
+      : 'Single-page bundle: switch door to see the other side. The real system has no such control.') + '</p>'),
+    xong: function (dt) {
+      toi = { role: dt.role, partyId: dt.partyId, name: dt.ten, email: dt.email };
+      dungCong();
+    }
+  });
+
+  function dungCong() {
   var thay = null;                                        /* {labelId, name, clientId} khi đang xem thay */
   var phienCua = { role: toi.role, partyId: toi.partyId }; /* phiên thật sự dùng để gọi api */
   (function () {
@@ -31100,6 +31457,8 @@ if (cua === 'khach') {
     var p = api.periods(phienCua.role, phienCua.partyId);
     return { me: s, kys: p.open, cho: p.waiting, kyTacQuyen: p.pubOpen, moiNhat: p.latest };
   }
+  /* Ghi một dòng nhật ký đăng nhập trước khi dựng phiên — y như khach.html. */
+  try { api.moPhien(phienCua.role, phienCua.partyId); } catch (e) {}
   var PHIEN = nạpPhien();
 
   HT.chay({
@@ -31119,29 +31478,31 @@ if (cua === 'khach') {
     },
     chanTrai: function (c) {
       var vi = c.lang === 'vi', me = PHIEN.me;
-      var opts = TK.map(function (a, i) {
-        return '<option value="' + i + '"' + (a === toi ? ' selected' : '') + '>' + HT.esc(a.name) + '</option>';
-      }).join('');
-      var vai = toi.role !== 'label'
+      var vai = toi.role === 'nhan' ? (vi ? 'Người cộng tác' : 'Collaborator')
+        : toi.role !== 'label'
         ? (me.independent ? (vi ? 'Nghệ sĩ độc lập' : 'Independent artist') : (vi ? 'Nghệ sĩ' : 'Artist'))
         : me.parentLabel ? (vi ? 'Label con của ' + me.parentLabel.name : 'Sub-label of ' + me.parentLabel.name)
         : me.childLabels > 0 ? (vi ? 'Label mẹ · ' + me.childLabels + ' label con' : 'Parent label · ' + me.childLabels + ' sub-labels')
         : 'Label';
+      /* Ô chọn tài khoản đã đi cùng vòng 25: ai đang vào là do CỬA quyết
+         định. Còn lại đúng một ô chọn — ô chọn CỔNG — và nó là thứ riêng
+         của bản gói một trang, không phải của sản phẩm. */
       return '<b>' + HT.esc(me.name) + '</b><span>' + HT.esc(vai) + '</span>' +
         (thay ? '<span style="display:block;margin-top:3px">' + HT.esc(vi ? 'đăng nhập: ' + toi.name : 'signed in as ' + toi.name) + '</span>' : '') +
-        '<select class="inline-sel" data-ai style="margin-top:9px;width:100%">' + opts + '</select>' +
+        '<span style="display:block;margin-top:2px" class="mono">' + HT.esc(toi.email) + '</span>' +
+        '<button type="button" class="btn sm ghost" data-ra style="margin-top:9px;width:100%">' +
+        HT.esc(vi ? 'Đăng xuất' : 'Sign out') + '</button>' +
         oChonCua(c.lang, '<p>' + HT.esc(vi
-          ? 'Bản mẫu: đổi tài khoản hoặc đổi cổng để xem theo góc nhìn khác. Hệ thống thật không có hai ô chọn này.'
-          : 'Prototype: switch account or door to see another view. The real system has neither control.') + '</p>');
+          ? 'Bản gói một trang: đổi cổng để xem phía còn lại. Hệ thống thật không có ô chọn này.'
+          : 'Single-page bundle: switch door to see the other side. The real system has no such control.') + '</p>');
     }
   });
 
-  document.addEventListener('change', function (e) {
-    var s = e.target.closest('[data-ai]');
-    if (!s) return;
-    dat(K_TK, s.value);
+  document.addEventListener('click', function (e) {
+    if (!e.target.closest('[data-ra]')) return;
+    HTCua.raKhoi('portal');
     xoaXem();
-    location.hash = '#k-tong-quan';
+    location.hash = '';
     location.reload();
   });
 
@@ -31167,11 +31528,11 @@ if (cua === 'khach') {
       location.reload();
     }
   });
+  }   /* hết dungCong() — cổng đối tác */
 
 } else {
   MAN_NOIBO.forEach(function (f) { f(); });
   var A = HAUSTEK.admin;
-  try { var NV = localStorage.getItem('haustek.demo.nv'); if (NV) A.staff.setMe(NV); } catch (e) {}
   A.provideSecrets({
     code: 'DIST-1',
     name: 'Đối tác phân phối chính (tên thật điền khi triển khai)',
@@ -31180,6 +31541,44 @@ if (cua === 'khach') {
   });
   HT.setFx(A.fx.get().rate);
 
+  /* Cửa nội bộ — y như intranet.html, cộng ô chọn cổng riêng của bản gói. */
+  HTCua.mo({
+    ten: 'internal',
+    tieuDe: HT.lang === 'en' ? 'Haustek internal' : 'Cổng nội bộ Haustek',
+    phu: HT.lang === 'en'
+      ? 'Your desk, your department queue, and what you are allowed to approve.'
+      : 'Bàn làm việc của bạn, hàng đợi của bộ phận, và những gì bạn được duyệt.',
+    dangNhap: function (email) { return A.staff.dangNhapBang(email); },
+    mau: A.staff.list().filter(function (s) { return s.active !== false; }).map(function (s) {
+      return { email: s.email, ten: s.name, phu: HT.lang === 'en' ? s.titleEn : s.title };
+    }),
+    phai: {
+      nhan: HT.lang === 'en' ? 'Internal portal' : 'Cổng nội bộ',
+      h: HT.lang === 'en'
+        ? ['Every dollar ', 'traces back', ' to one track']
+        : ['Mỗi đồng đều ', 'lần ngược được', ' về một bài hát'],
+      p: HT.lang === 'en'
+        ? 'Revenue arrives by period and by source, the split chain runs, and every figure on every page opens up until you reach the track that produced it.'
+        : 'Doanh thu về theo từng kỳ và từng nguồn, chuỗi chia chạy, và mọi con số trên mọi trang đều mở ra được cho tới đúng bài hát sinh ra nó.',
+      so: [
+        { n: HT.fmt.n(A.counts.tracks),  s: HT.lang === 'en' ? 'tracks' : 'bài hát' },
+        { n: HT.fmt.n(A.counts.artists), s: HT.lang === 'en' ? 'artists' : 'nghệ sĩ' },
+        { n: HT.fmt.n(A.counts.labels),  s: HT.lang === 'en' ? 'labels' : 'label' }
+      ],
+      trich: HT.lang === 'en'
+        ? 'A partner only ever sees NET. The fee, the gross figure and the distributor’s name do not exist on that side of the wall.'
+        : 'Đối tác chỉ thấy số NET. Phí, số gộp và tên đơn vị phân phối không tồn tại ở phía bên kia bức tường.',
+      trichAi: HT.lang === 'en' ? 'Design rule · guarded by test/api-guard.js'
+                                : 'Nguyên tắc dựng hệ · có test/api-guard.js canh',
+      the: A.stores.slice(0, 10)
+    },
+    them: oChonCua(HT.lang, '<p>' + HT.esc(HT.lang === 'vi'
+      ? 'Bản gói một trang: đổi cổng để xem phía còn lại. Hệ thật không có ô chọn này.'
+      : 'Single-page bundle: switch door to see the other side. The real system has no such control.') + '</p>'),
+    xong: function () { dungCong(); }
+  });
+
+  function dungCong() {
   HT.chay({
     ten: 'internal', A: A,
     kyDanhSach: function () {
@@ -31201,22 +31600,24 @@ if (cua === 'khach') {
     },
     chanTrai: function (c) {
       var me = A.staff.me;
+      /* Ô chọn nhân viên đã đi cùng vòng 25: vai đến từ tài khoản đã đăng
+         nhập. Muốn xem bàn làm việc của vai khác thì đăng xuất rồi vào
+         bằng tài khoản khác — đúng như hệ thật bắt phải làm. */
       return '<b>' + HT.esc(me.email) + '</b><span>' + HT.esc(c.lang === 'vi' ? me.title : me.titleEn) + '</span>' +
-        '<select class="inline-sel" data-nv style="margin-top:9px;width:100%">' + A.staff.list().map(function (s) {
-          return '<option value="' + s.id + '"' + (s.id === me.id ? ' selected' : '') + '>' + HT.esc(s.name + ' · ' + (c.lang === 'vi' ? s.title : s.titleEn)) + '</option>';
-        }).join('') + '</select>' +
+        '<button type="button" class="btn sm ghost" data-ra style="margin-top:9px;width:100%">' +
+        HT.esc(c.lang === 'vi' ? 'Đăng xuất' : 'Sign out') + '</button>' +
         oChonCua(c.lang, '<p>' + HT.esc(c.lang === 'vi'
-          ? 'Bản mẫu: đổi nhân viên để xem bàn làm việc theo vai; xét duyệt một kỳ ở đây rồi chuyển sang cổng đối tác.'
-          : 'Prototype: switch staff to see each role’s desk; approve a period here, then switch to the client portal.') + '</p>');
+          ? 'Bản gói một trang: xét duyệt một kỳ ở đây rồi đổi sang cổng đối tác để xem kết quả. Hệ thật không có ô chọn này.'
+          : 'Single-page bundle: approve a period here, then switch to the partner door to see the result. The real system has no such control.') + '</p>');
     }
   });
-  document.addEventListener('change', function (e) {
-    var s = e.target.closest('[data-nv]');
-    if (!s) return;
-    dat('haustek.demo.nv', s.value);
-    location.hash = '#ban-lam-viec';
+  document.addEventListener('click', function (e) {
+    if (!e.target.closest('[data-ra]')) return;
+    HTCua.raKhoi('internal');
+    location.hash = '';
     location.reload();
   });
+  }   /* hết dungCong() — cổng nội bộ */
 }
 
 })();

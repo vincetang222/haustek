@@ -235,18 +235,24 @@ function nhap(root, sel, fn, cho) {
    Dấu phân cách là chấm phẩy và có BOM ở đầu: Excel bản tiếng Việt mở
    file dấu phẩy không có BOM thì dồn hết vào một cột và mất dấu.
    --------------------------------------------------------------------- */
-function csv(ten, cot, dong) {
-  var q = function (v) {
-    if (v == null) return '';
-    var s = String(v);
-    return /[";\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
-  };
-  var txt = '\uFEFF' + cot.map(q).join(';') + '\n' +
-    dong.map(function (r) { return r.map(q).join(';'); }).join('\n');
+/* ---------------------------------------------------------------------
+   giaoFile — ĐƯA MỘT FILE cho người xem, thật thà về việc nó có tới nơi
+   ---------------------------------------------------------------------
+   Tách khỏi csv() ở vòng 26 vì có hai nơi cần nó mà chỉ một nơi làm đúng:
+   csv() dò claude.use('downloads') rồi mới rơi về thẻ <a download>, và
+   khi biết mình đang chạy trong trình xem thì nói thẳng là không lưu
+   được. quan-tri.js/xuatJson thì dựng thẻ <a download> rồi báo "Đã xuất
+   trạng thái" VÔ ĐIỀU KIỆN — trong khung cách ly của trình xem, lượt tải
+   bị chặn im lặng, nên người dùng được báo thành công cho một việc chưa
+   hề xảy ra.
+
+   Chép tay đoạn giao file sang file thứ hai là đúng cái cách hai danh
+   sách trong dung-goi.js trôi khỏi nhau. Nên: một hàm, hai nơi gọi.
+   --------------------------------------------------------------------- */
+function giaoFile(ten, txt, mime, baoXong) {
   var vi = HT.lang !== 'en';
-  var soDong = dong.length.toLocaleString(vi ? 'vi-VN' : 'en-US');
-  var baoXong = function () {
-    HT.thongBao(vi ? 'Đã xuất ' + ten + ' · ' + soDong + ' dòng' : 'Exported ' + ten + ' · ' + soDong + ' rows', 'ok');
+  baoXong = baoXong || function () {
+    HT.thongBao(vi ? 'Đã xuất ' + ten : 'Exported ' + ten, 'ok');
   };
   var baoKhongTai = function () {
     HT.thongBao(vi ? 'Trình xem này không cho phép lưu file. Mở bản mã nguồn để xuất ' + ten
@@ -256,7 +262,7 @@ function csv(ten, cot, dong) {
   /* Tải thẳng: bản nhiều file, hoặc bản gói mở thẳng từ repo. */
   function taiThang() {
     try {
-      var b = new Blob([txt], { type: 'text/csv;charset=utf-8' });
+      var b = new Blob([txt], { type: mime });
       var a = document.createElement('a');
       a.href = URL.createObjectURL(b);
       a.download = ten;
@@ -290,6 +296,22 @@ function csv(ten, cot, dong) {
       baoKhongTai();
     });
   }, taiThang);
+}
+
+function csv(ten, cot, dong) {
+  var q = function (v) {
+    if (v == null) return '';
+    var s = String(v);
+    return /[";\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+  };
+  var txt = '\uFEFF' + cot.map(q).join(';') + '\n' +
+    dong.map(function (r) { return r.map(q).join(';'); }).join('\n');
+  var vi = HT.lang !== 'en';
+  var soDong = dong.length.toLocaleString(vi ? 'vi-VN' : 'en-US');
+  giaoFile(ten, txt, 'text/csv;charset=utf-8', function () {
+    HT.thongBao(vi ? 'Đã xuất ' + ten + ' · ' + soDong + ' dòng'
+                   : 'Exported ' + ten + ' · ' + soDong + ' rows', 'ok');
+  });
 }
 
 /* ---------------------------------------------------------------------
@@ -502,7 +524,7 @@ global.HM = {
   chep: chep,
   dau: dau, so: so, the: the, huyHieu: huyHieu, suyHieu: suyHieu, tabs: tabs, trong: trong, ghi: ghi, menu: menu, kv: kv,
   hoi: hoi, banIn: banIn, dongIn: dongIn,
-  tag: tag, cham: cham, bam: bam, doi: doi, nhap: nhap, csv: csv,
+  tag: tag, cham: cham, bam: bam, doi: doi, nhap: nhap, csv: csv, giaoFile: giaoFile,
   lech: lech, lechHtml: lechHtml, dai: dai, esc: esc, icon: icon,
   nho: nho, quenHet: quenHet, moc: moc,
   bia: bia, hinh: hinh, tenBia: tenBia, xepHang: xepHang, hashChu: hashChu, oThanh: oThanh

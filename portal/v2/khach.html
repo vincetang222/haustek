@@ -88,6 +88,27 @@ HTCua.mo({
                 : a.kind === 'artist-indie' ? (HT.lang === 'en' ? 'Independent artist' : 'Nghệ sĩ độc lập')
                 : (HT.lang === 'en' ? 'Artist' : 'Nghệ sĩ') };
   }),
+  /* Cột phải nói với NGHỆ SĨ VÀ LABEL. Khác cửa nội bộ ở chỗ không có ô
+     số nào: trước khi đăng nhập, cổng này chỉ gọi được ba hàm trong lớp
+     TRUOC_KHI_VAO, nên nó KHÔNG biết gì về danh mục để mà đếm. Thà bỏ
+     trống ba ô số còn hơn bịa ra ba con số cho đẹp bố cục.
+     Danh sách nền tảng gõ tay vì lý do y hệt — api chưa mở gì trước cửa.
+     Đây là chữ giới thiệu, không phải số liệu. */
+  phai: {
+    nhan: HT.lang === 'en' ? 'Partner portal' : 'Cổng đối tác',
+    h: HT.lang === 'en'
+      ? ['Your money, ', 'explained', ' line by line']
+      : ['Tiền của bạn, ', 'giải thích được', ' từng dòng'],
+    p: HT.lang === 'en'
+      ? 'What each period paid, which platform it came from, what is sitting in your wallet, and where a withdrawal has got to. The figures here are yours — nobody else’s are mixed in.'
+      : 'Từng kỳ trả bao nhiêu, đến từ nền tảng nào, ví còn bao nhiêu, và lệnh rút đang đi tới đâu. Số ở đây là của bạn — không lẫn của ai khác.',
+    trich: HT.lang === 'en'
+      ? 'Every figure on this side is NET: what reaches you after the fee. You never have to work out what was taken off along the way.'
+      : 'Mọi con số ở phía này đều là NET: phần về tới tay bạn sau khi trừ phí. Bạn không phải tự tính xem dọc đường đã trừ những gì.',
+    trichAi: HT.lang === 'en' ? 'How this portal is built' : 'Cách cổng này được dựng',
+    the: ['Spotify', 'YouTube Music', 'TikTok', 'Apple Music', 'Zing MP3',
+          'NhacCuaTui', 'Facebook', 'Amazon Music', 'Deezer', 'SoundCloud']
+  },
   xong: function (dt) { toi = { role: dt.role, partyId: dt.partyId, name: dt.ten, email: dt.email }; dungCong(); }
 });
 
