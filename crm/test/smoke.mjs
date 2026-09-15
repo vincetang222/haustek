@@ -364,7 +364,8 @@ const rep = await p.evaluate(()=>{
 
   // 7. doanh thu Haustek phải tách khỏi giá trị deal
   const txt = document.getElementById('view').innerText;
-  out.coTheDoanhThu = txt.indexOf('Doanh thu Haustek')>=0;
+  /* tiêu đề thẻ viết hoa bằng CSS nên innerText trả chữ hoa — tìm không phân biệt */
+  out.coTheDoanhThu = txt.toLowerCase().indexOf('doanh thu haustek')>=0;
   const gross = wonAll.reduce((a,o)=>a+o.amount,0);
   const mh = txt.match(/HAUSTEK THỰC NHẬN[^\d]*([\d,]+)/i) ||
              txt.match(/Haustek thực nhận[^\d]*([\d,]+)/);

@@ -32,48 +32,103 @@
    và bộ kiểm đang bám vào một số class. */
 :root{
   color-scheme:light;
-  --paper:#FFFFFF;        /* mặt thẻ */
+  /* ══ BỀ MẶT — thang giá trị trên trục xám thương hiệu H=240, S≤12% ══════════
+     Đo lại cả sáu xám trong playbook: đều nằm ở H=240. Bản CRM đã trôi sang
+     H=217 S=25 — tức lệch 28° về phía ice và bão hoà gấp ba. Đó là lý do 3-4%
+     màu hiện có không đọc ra là màu: màu lạnh duy nhất của thương hiệu đang
+     đứng trên một nền cùng họ với nó. Kéo về 240 để ice cách nền đúng 50°. */
+  --app-bg:#DCDCE2;    /* CHỈ dùng ở body. Nền trang vs thẻ: 1,16 → 1,37:1.
+                          Đây là lớp trung gian mà trước đây không có, giữa cột
+                          nav gần đen và biển thẻ trắng. */
+  --paper:#FFFFFF;     /* mặt thẻ giữ trắng: số tiền đọc sạch nhất trên nền
+                          không sắc, và bậc nền mới đã gánh việc tách thẻ rồi */
   --raised:#FFFFFF;
-  --surface:#EBEEF3;      /* nền trang */
-  --fill:#DAE1E9;         /* ô lấp, nền nhạt trong thẻ */
-  --head:#E2E7EE;         /* dải tiêu đề trong thẻ */
-  --zebra:#F4F7FA;        /* dòng bảng khi rê chuột */
-  --ink:#1A2129;
-  --ink-2:#4F5964;
-  --muted:#5C6672;   /* đậm thêm một nấc: #6B7683 chỉ đạt 3.97:1 trên nền trang */
-  --muted-2:#818C99;
-  --line:#D2D9E2;         /* viền thấy rõ */
-  --line-2:#E6EBF1;       /* kẻ mảnh giữa các dòng — NHẠT hơn --line, đừng đảo */
-  --card-line:#D3DAE3;
+  --surface:#E9E9EF;   /* tint TRONG thẻ: .pill, .fsec, .dgrp, mọi :hover.
+                          KHÔNG còn là nền trang. */
+  --head:#24242E;      /* ĐỔI VAI: dải tiêu đề bảng nay TỐI. Đây là đòn chính
+                          chặt mảng trắng 87% — một vạch ghim ngang mỗi bảng,
+                          cho mắt mốc cố định khi cuộn 5.000 dòng. Chọn graphite
+                          chứ không gần-đen, để không dựng thêm một vùng 17:1
+                          thứ hai trong tầm mắt suốt tám tiếng. */
+  --head-line:#3A3A48; /* kẻ dưới dải head. Giữ --card-line ở đó sẽ thành một
+                          vạch sáng chói 10:1. */
+  --on-head:#F2F2F6;
+  --head-muted:#A9A9B6;/* chữ 10,5px VIẾT HOA cần dư ngưỡng, không sát ngưỡng */
+  --zebra:#EFEFF3;     /* sọc bảng + khối lõm. Cố ý rất nhẹ: 5.000 dòng mà sọc
+                          nặng thì chói sau ba tiếng. */
+  --row-hover:#E0E0E9; /* rê chuột. Phải thắng CẢ nền thường LẪN sọc zebra —
+                          trước đây hover dùng chung --zebra nên rê lên dòng
+                          chẵn của bảng tài chính là không có phản hồi nào. */
+  --fill:#DFDFE7;      /* lòng máng thanh tiến độ: máng rỗng phải đọc ra là
+                          máng, không phải khoảng trắng */
 
-  --brand:#FF2E4C;        /* Signal Red — hành động chính */
-  --brand-dark:#D4213C;
-  --brand-tint:#FFEDF0;
+  --ink:#14141A;       /* cố ý KHÔNG lấy #0A0A0D của playbook: gần-đen tuyệt đối
+                          trên trắng tuyệt đối là bước lùi về mỏi mắt với công
+                          cụ nhìn tám tiếng. Vẫn đậm hơn hẳn bản cũ #1A2129. */
+  --ink-2:#3C3C46;
+  --muted:#56565F;     /* kiểm trên CẢ SÁU mặt nền, không phải ba */
+  --muted-2:#5F5F6B;   /* bản cũ #818C99 chỉ 3,42:1 trên thẻ — đang trượt AA */
 
-  --accent:#0C7287;       /* teal — tương tác, thông tin */
-  --accent-2:#3D9DB1;
-  --accent-3:#7FC3D2;
-  --accent-lo:#DCEEF3;
-  --ice:#7FC3D2;          /* giữ tên cũ, trỏ vào accent-3 */
-  --ice-dark:#0C7287;     /* giữ tên cũ, trỏ vào accent */
+  --line:#C6C6D0;      /* nói thẳng: ĐẬM hơn bản cũ. Nó ám tím nên đọc nhẹ hơn
+                          ở cùng tỷ lệ, nhưng con số vẫn là con số. */
+  --line-2:#DDDDE5;    /* kẻ giữa các dòng — thứ mắt bám vào khi kéo bảng dài.
+                          Vẫn NHẠT hơn --line, đừng đảo. */
+  --card-line:#C9C9D3;
+  --line-strong:#79798A; /* viền CONTROL. WCAG 1.4.11 đòi 3:1 cho biên định danh
+                            control; --line cũ chỉ 1,42:1 nên mọi ô nhập trong
+                            CRM đang trượt. Tách token thay vì ép --line dày lên,
+                            vì ép --line sẽ đóng khung nặng mọi thẻ. */
 
-  --ok:#136E46;      --ok-lo:#E6F4ED;
-  --warn:#A15F00;    --warn-lo:#FFF6E5;
-  --danger:#C8102E;  --danger-lo:#FCEEF0;
-  --amber:#A15F00;   --green:#136E46;  --red:#C8102E;
-  --violet:#5A4BB8;  --teal:#0F7A6E;
+  --brand:#FF2E4C;      /* hex playbook nguyên bản. LUẬT: chỉ TÔ, không bao giờ
+                           làm chữ nhỏ — trên nền trang nó chỉ 2,68:1. */
+  --brand-ink:#0A0A0D;  /* chữ ĐẶT TRÊN nền đỏ tươi, đúng như playbook làm */
+  --brand-hi:#FF5266;   /* hover nút đỏ: làm SÁNG lên nên chữ mực càng rõ —
+                           ngược chiều với filter:brightness cũ, vốn làm chữ
+                           trắng trượt AA đúng lúc người ta rê vào */
+  --brand-dark:#C7102E; /* VAI: "sắc đỏ mang chữ màu --paper". Ở theme tối nó
+                           lật sáng, nên cùng một rule chạy đúng ở cả hai. */
+  --brand-tint:#FFE9ED;
 
-  /* chrome — cột trái và thanh trên, TỐI ở cả hai theme */
-  --chrome:#080E14; --chrome-2:#101B24; --chrome-3:#16242F; --chrome-line:#1D2C37;
-  --chrome-grad:linear-gradient(180deg,#0F1A23 0%,#0A131A 100%);
-  --on-chrome:#E3EBF2; --on-chrome-2:#A6B5C2; --on-chrome-3:#7F909E;
-  --nav:#080E14;          /* giữ tên cũ */
-  --nav-2:#A6B5C2;
+  --ice:#7FD6E8;       /* trả đúng bão hoà playbook. #7FC3D2 không phải quyết
+                          định thiết kế mà là hao mòn: hue gần như không đổi,
+                          chỉ bị cắt bão hoà. */
+  --ice-dark:#0A6274;  /* đây là màu LINK, và CHỈ là màu link */
+  --accent:#0A6274;
+  --accent-2:#1B87A0;  /* CHỈ đồ hoạ: fill thanh, icon. Cấm làm chữ nhỏ. */
+  --accent-3:#7FD6E8;
+  --accent-lo:#E1F3F8;
 
-  --r:9px; --r-sm:6px; --radius:6px;
-  --shadow:0 1px 1px rgba(20,32,44,.05), 0 2px 6px -1px rgba(20,32,44,.07);
-  --shadow-2:0 2px 6px rgba(20,32,44,.06), 0 14px 36px -12px rgba(20,32,44,.18);
-  --shadow-lift:0 2px 8px -4px rgba(12,114,135,.35);
+  --ok:#10693F;      --ok-lo:#E3F2E9;
+  --warn:#855200;    --warn-lo:#F8EFDC;
+  --danger:#B31229;  --danger-lo:#FBE8EB;   /* đỏ "có vấn đề", tách hẳn khỏi
+                                               đỏ "bấm đi" */
+  --amber:#855200;   --green:#10693F;  --red:#B31229;
+  --violet:#5748BE;  --teal:#0C6259;
+
+  /* ══ BIỂU ĐỒ — MỘT bộ hex chạy đúng ở CẢ HAI theme ═════════════════════════
+     Màu biểu đồ là hex cứng trong JS, tiêu thụ ở hơn mười chỗ. Nếu chọn màu chỉ
+     hợp nền sáng thì phải viết thêm getComputedStyle và listener đổi theme.
+     Tám màu dưới đây nằm trong cửa sổ độ sáng đạt ≥3:1 với CẢ nền trắng LẪN
+     thẻ tối, nên không cần một dòng JS nào — và cũng không thể xảy ra chuyện
+     một giai đoạn đổi màu khi người dùng bật nền tối. */
+  --chart-1:#AE700B;  --chart-2:#4A7BCC;  --chart-3:#B84FA3;  --chart-4:#0E86A3;
+  --chart-5:#8265DE;  --chart-6:#12857A;  --chart-7:#35924D;  --chart-8:#7C7C88;
+
+  /* ══ CHROME — đêm của Haustek, tối ở cả hai theme ══════════════════════════
+     Vấn đề của cột nav không phải là nó tối, mà là nó ám xanh S=43% trong khi
+     xám thương hiệu là S=13%. Nay nó đọc ra "mực", không phải "xanh đậm". */
+  --chrome:#0A0A0D; --chrome-2:#101015; --chrome-3:#1F1F29; --chrome-line:#2A2A34;
+  --chrome-grad:linear-gradient(180deg,#141419 0%,#08080B 100%);
+  --on-chrome:#F0F0F2;   /* Paper của playbook cuối cùng được dùng đúng vai nó
+                            được định: chữ trên nền tối */
+  --on-chrome-2:#A8A8B4; --on-chrome-3:#8A8A95;
+  --nav:#0A0A0D; --nav-2:#A8A8B4;
+
+  --r:7px; --r-sm:5px; --radius:5px;
+  --shadow:0 1px 2px rgba(10,10,20,.06), 0 2px 6px -1px rgba(10,10,20,.08);
+  --shadow-2:0 2px 6px rgba(10,10,20,.08), 0 16px 40px -12px rgba(10,10,20,.24);
+  --shadow-lift:0 0 0 3px rgba(10,98,116,.24);
+  --ring:0 0 0 3px rgba(10,98,116,.30);
   --side:212px;
 
   --disp:'Archivo',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
@@ -86,52 +141,86 @@
 @media (prefers-color-scheme:dark){
   :root:not([data-theme="light"]){
     color-scheme:dark;
-    --paper:#15212B; --raised:#1A2833; --surface:#0B141B; --fill:#2A3A48;
-    --head:#1E2C39;  --zebra:#1A2733;
-    --ink:#E8EEF4;   --ink-2:#A9B7C4; --muted:#8B9AA8; --muted-2:#6E7E8C;
-    --line:#2C3E4E;  --line-2:#223140; --card-line:#24333F;
-    --brand:#FF5C73; --brand-dark:#FF8095; --brand-tint:#331A20;
-    --accent:#4CB8CE; --accent-2:#6FCADD; --accent-3:#8FD8E7; --accent-lo:#14313C;
-    --ice:#8FD8E7;    --ice-dark:#4CB8CE;
-    --ok:#4FC98F;     --ok-lo:#122F24;
-    --warn:#E5A24A;   --warn-lo:#2E2413;
-    --danger:#FF6B80; --danger-lo:#33161C;
-    --amber:#E5A24A;  --green:#4FC98F; --red:#FF6B80;
-    --violet:#9B8AF0; --teal:#4FBFAF;
-    --chrome:#0E1A24; --chrome-2:#16242F; --chrome-3:#1B2C38; --chrome-line:#22323E;
-    --chrome-grad:linear-gradient(180deg,#10202C 0%,#0C1720 100%);
-    --nav:#0E1A24;
-    --shadow:0 1px 1px rgba(0,0,0,.34), 0 2px 6px -1px rgba(0,0,0,.30);
-    --shadow-2:0 2px 8px rgba(0,0,0,.35), 0 20px 50px -12px rgba(0,0,0,.7);
-    --shadow-lift:0 4px 14px -6px rgba(76,184,206,.5);
+    /* Chrome KHÔNG đảo vai: ở theme tối nó vẫn là mỏ neo tối nhất. Đảo nó thành
+       tấm nổi đo ra là xoá mất một lớp — cột nav tụt còn 1,04:1 so với thẻ và
+       biến mất khỏi màn hình. */
+    --app-bg:#15151A;  --paper:#1F1F27;   --raised:#2A2A34;
+    --surface:#2C2C37; --zebra:#242430;   --row-hover:#33333F; --fill:#3B3B48;
+    --head:#34343F;    /* ĐẢO CHIỀU, GIỮ VAI: ở nền sáng dải head tối hơn thẻ, ở
+                          nền tối nó sáng hơn thẻ. Cùng một nghĩa "đây là nắp,
+                          không phải dữ liệu", chỉ đổi phía. */
+    --head-line:#44444F; --on-head:#F1F1F4; --head-muted:#ADADBA;
+    --ink:#F1F1F4;     --ink-2:#C6C6D0;   --muted:#A6A6B0;  --muted-2:#9E9EAA;
+    --line:#40404D;    --line-2:#2E2E39;  --card-line:#393946;
+    --line-strong:#87879C;  /* bản tối cũ --line #2C3E4E chỉ ~1,7:1, cũng trượt */
+    --brand-hi:#FF5266;
+    --brand-dark:#FF7A8D;  /* lật SÁNG để vẫn đỡ được chữ màu --paper, nay là
+                              #1F1F27. Nhờ vậy cùng một rule .login-btn ra AA ở
+                              cả hai theme — đây là lý do không bao giờ được
+                              hardcode #FFFFFF lên một token biết lật. */
+    --brand-tint:#33161C;
+    --ice-dark:#5EC6DC; --accent:#5EC6DC; --accent-2:#3FA9C4; --accent-lo:#10303A;
+    --ok:#4FC98F;     --ok-lo:#102F22;
+    --warn:#E0A64B;   --warn-lo:#2E2413;
+    --danger:#FF7A8D; --danger-lo:#33161C;
+    --amber:#E0A64B;  --green:#4FC98F;  --red:#FF7A8D;
+    --violet:#AC9EF0; --teal:#4FC5B4;
+    --chrome:#08080A; --chrome-2:#0E0E12; --chrome-3:#22222C;
+    --chrome-line:#2E2E3A;  /* phải đủ đậm: ở nền tối chrome vs nền trang chỉ
+                               1,10:1, nên cạnh 1px này mới là thứ tách cột nav */
+    --chrome-grad:linear-gradient(180deg,#121218 0%,#060608 100%);
+    --on-chrome:#F0F0F2; --on-chrome-2:#A8A8B4; --on-chrome-3:#8A8A95;
+    --nav:#08080A; --nav-2:#A8A8B4;
+    --shadow:0 1px 2px rgba(0,0,0,.40), 0 2px 6px -1px rgba(0,0,0,.34);
+    --shadow-2:0 2px 8px rgba(0,0,0,.42), 0 20px 50px -12px rgba(0,0,0,.72);
+    --shadow-lift:0 0 0 3px rgba(94,198,220,.26);
+    --ring:0 0 0 3px rgba(94,198,220,.32);
   }
 }
 :root[data-theme="dark"]{
   color-scheme:dark;
-  --paper:#15212B; --raised:#1A2833; --surface:#0B141B; --fill:#2A3A48;
-  --head:#1E2C39;  --zebra:#1A2733;
-  --ink:#E8EEF4;   --ink-2:#A9B7C4; --muted:#8B9AA8; --muted-2:#6E7E8C;
-  --line:#2C3E4E;  --line-2:#223140; --card-line:#24333F;
-  --brand:#FF5C73; --brand-dark:#FF8095; --brand-tint:#331A20;
-  --accent:#4CB8CE; --accent-2:#6FCADD; --accent-3:#8FD8E7; --accent-lo:#14313C;
-  --ice:#8FD8E7;    --ice-dark:#4CB8CE;
-  --ok:#4FC98F;     --ok-lo:#122F24;
-  --warn:#E5A24A;   --warn-lo:#2E2413;
-  --danger:#FF6B80; --danger-lo:#33161C;
-  --amber:#E5A24A;  --green:#4FC98F; --red:#FF6B80;
-  --violet:#9B8AF0; --teal:#4FBFAF;
-  --chrome:#0E1A24; --chrome-2:#16242F; --chrome-3:#1B2C38; --chrome-line:#22323E;
-  --chrome-grad:linear-gradient(180deg,#10202C 0%,#0C1720 100%);
-  --nav:#0E1A24;
-  --shadow:0 1px 1px rgba(0,0,0,.34), 0 2px 6px -1px rgba(0,0,0,.30);
-  --shadow-2:0 2px 8px rgba(0,0,0,.35), 0 20px 50px -12px rgba(0,0,0,.7);
-  --shadow-lift:0 4px 14px -6px rgba(76,184,206,.5);
+  /* Chrome KHÔNG đảo vai: ở theme tối nó vẫn là mỏ neo tối nhất. Đảo nó thành
+     tấm nổi đo ra là xoá mất một lớp — cột nav tụt còn 1,04:1 so với thẻ và
+     biến mất khỏi màn hình. */
+  --app-bg:#15151A;  --paper:#1F1F27;   --raised:#2A2A34;
+  --surface:#2C2C37; --zebra:#242430;   --row-hover:#33333F; --fill:#3B3B48;
+  --head:#34343F;    /* ĐẢO CHIỀU, GIỮ VAI: ở nền sáng dải head tối hơn thẻ, ở
+                        nền tối nó sáng hơn thẻ. Cùng một nghĩa "đây là nắp,
+                        không phải dữ liệu", chỉ đổi phía. */
+  --head-line:#44444F; --on-head:#F1F1F4; --head-muted:#ADADBA;
+  --ink:#F1F1F4;     --ink-2:#C6C6D0;   --muted:#A6A6B0;  --muted-2:#9E9EAA;
+  --line:#40404D;    --line-2:#2E2E39;  --card-line:#393946;
+  --line-strong:#87879C;  /* bản tối cũ --line #2C3E4E chỉ ~1,7:1, cũng trượt */
+  --brand-hi:#FF5266;
+  --brand-dark:#FF7A8D;  /* lật SÁNG để vẫn đỡ được chữ màu --paper, nay là
+                            #1F1F27. Nhờ vậy cùng một rule .login-btn ra AA ở
+                            cả hai theme — đây là lý do không bao giờ được
+                            hardcode #FFFFFF lên một token biết lật. */
+  --brand-tint:#33161C;
+  --ice-dark:#5EC6DC; --accent:#5EC6DC; --accent-2:#3FA9C4; --accent-lo:#10303A;
+  --ok:#4FC98F;     --ok-lo:#102F22;
+  --warn:#E0A64B;   --warn-lo:#2E2413;
+  --danger:#FF7A8D; --danger-lo:#33161C;
+  --amber:#E0A64B;  --green:#4FC98F;  --red:#FF7A8D;
+  --violet:#AC9EF0; --teal:#4FC5B4;
+  --chrome:#08080A; --chrome-2:#0E0E12; --chrome-3:#22222C;
+  --chrome-line:#2E2E3A;  /* phải đủ đậm: ở nền tối chrome vs nền trang chỉ
+                             1,10:1, nên cạnh 1px này mới là thứ tách cột nav */
+  --chrome-grad:linear-gradient(180deg,#121218 0%,#060608 100%);
+  --on-chrome:#F0F0F2; --on-chrome-2:#A8A8B4; --on-chrome-3:#8A8A95;
+  --nav:#08080A; --nav-2:#A8A8B4;
+  --shadow:0 1px 2px rgba(0,0,0,.40), 0 2px 6px -1px rgba(0,0,0,.34);
+  --shadow-2:0 2px 8px rgba(0,0,0,.42), 0 20px 50px -12px rgba(0,0,0,.72);
+  --shadow-lift:0 0 0 3px rgba(94,198,220,.26);
+  --ring:0 0 0 3px rgba(94,198,220,.32);
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%}
 body{
   font-family:'Be Vietnam Pro',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
-  background:var(--surface);color:var(--ink);
+  /* --app-bg CHỈ dùng ở đây. 19 chỗ var(--surface) còn lại đều là tint bên
+     TRONG thẻ, nên nền trang phải có token riêng mới tách được hai vai. */
+  background:var(--app-bg);color:var(--ink);
   font-size:13.5px;line-height:1.5;
   font-feature-settings:'tnum' 1;
   -webkit-font-smoothing:antialiased;
@@ -140,7 +229,10 @@ button,input,select,textarea{font:inherit;color:inherit}
 button{cursor:pointer;background:none;border:none}
 a{color:var(--ice-dark);text-decoration:none}
 a:hover{text-decoration:underline}
-:focus-visible{outline:2px solid var(--brand);outline-offset:2px;border-radius:3px}
+/* Chỉ báo focus phải là viền ĐẶC. Quầng rgba trộn xuống nền ra khoảng 1,6:1,
+   dưới ngưỡng 3:1 — mà đây là CRM gõ phím tám tiếng, tab qua bốn chục ô. */
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:3px}
+@media (forced-colors:active){:focus-visible{outline:2px solid transparent}}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 
 /* ---------- login ---------- */
@@ -159,11 +251,13 @@ a:hover{text-decoration:underline}
 .login-t{font-size:16px;font-weight:600;text-align:center;margin-bottom:20px;letter-spacing:-.01em}
 .login-l{font-size:12px;color:var(--muted);margin-bottom:5px;display:flex}
 .login-hint{margin-left:auto;color:var(--ice-dark)}
-.login-in{width:100%;padding:9px 11px;border:1px solid var(--line-2);border-radius:5px;font-size:13.5px}
-.login-in:focus{border-color:var(--brand);outline:none;box-shadow:0 0 0 3px rgba(255,46,76,.15)}
-.login-btn{width:100%;margin-top:16px;padding:10px;border-radius:5px;background:var(--brand);
-  color:#fff;font-weight:600;font-size:14px}
-.login-btn:hover{background:var(--brand-dark)}
+.login-in{width:100%;padding:9px 11px;border:1px solid var(--line-strong);border-radius:5px;font-size:13.5px}
+.login-in:focus{border-color:var(--accent);outline:none;box-shadow:var(--ring)}
+/* trắng trên #FF2E4C chỉ 3,65:1 — đang trượt AA. --brand-dark biết lật sáng ở
+   theme tối nên cặp (nền, chữ) này đạt AA ở CẢ HAI mà không cần rẽ nhánh. */
+.login-btn{width:100%;margin-top:16px;padding:10px;border-radius:5px;background:var(--brand-dark);
+  color:var(--paper);font-weight:600;font-size:14px}
+.login-btn:hover{background:var(--brand);color:var(--brand-ink)}
 .login-row{display:flex;align-items:center;gap:8px;margin-top:14px;font-size:12.5px;color:var(--ink-2)}
 .login-sep{border-top:1px solid var(--line-2);margin:14px 0 12px}
 .login-link{font-size:12.5px;color:var(--ice-dark)}
@@ -186,7 +280,7 @@ a:hover{text-decoration:underline}
   border-top:1px solid rgba(255,255,255,.13);padding-top:22px;margin-bottom:26px}
 .lr-n{font-size:23px;font-weight:700;letter-spacing:-.02em}
 .lr-s{font-size:11.5px;color:var(--nav-2);margin-top:3px;line-height:1.4}
-.lr-quote{font-size:15px;line-height:1.55;color:#e6e6ea;border-left:2px solid var(--brand);
+.lr-quote{font-size:15px;line-height:1.55;color:var(--on-chrome);border-left:2px solid var(--brand);
   padding-left:15px;max-width:430px;margin-bottom:24px}
 .lr-quote span{color:var(--nav-2);font-size:12px;display:block;margin-top:7px}
 .lr-tags{display:flex;flex-wrap:wrap;gap:7px;max-width:470px}
@@ -222,7 +316,8 @@ a:hover{text-decoration:underline}
   border-radius:var(--radius);background:rgba(255,255,255,.1);font-size:13px;color:#fff;
 }
 .search input::placeholder{color:var(--on-chrome-3)}
-.search input:focus{background:#fff;color:var(--ink);border-color:#fff;outline:none}
+.search input:focus{background:var(--paper);color:var(--ink);border-color:var(--ice);
+  outline:none;box-shadow:var(--ring)}
 .search input:focus::placeholder{color:var(--muted)}
 .search svg{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--on-chrome-3)}
 .search input:focus + svg,.search:focus-within svg{color:var(--muted)}
@@ -236,7 +331,11 @@ a:hover{text-decoration:underline}
 .me{display:flex;align-items:center;gap:8px;padding-left:12px;border-left:1px solid rgba(255,255,255,.16);flex:0 0 auto}
 .avatar{width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,.16);display:grid;place-items:center;font-size:11px;font-weight:600;color:#fff}
 .me-name{font-size:12.5px;font-weight:500;color:#fff;line-height:1.25}
-.me-role{font-size:11px;color:var(--nav-2);line-height:1.25}
+.me-role{font-size:11px;color:var(--on-chrome-2);line-height:1.25}
+/* Chữ phụ nằm TRÊN nền tối phải đổi theo nền đó. --muted là màu của nền
+   sáng; đặt nó lên thanh trên hay lên dải head tối đều ra ~2,1:1. */
+.header .dim{color:var(--on-chrome-3)}
+th .dim,.vt-head .dim{color:var(--head-muted)}
 
 /* ---------- sidebar ----------
    Trước đây là dải tab ngang: 12 mục không đủ chỗ ở 1580px nên "Phân quyền"
@@ -262,7 +361,7 @@ a:hover{text-decoration:underline}
   border-left:2px solid transparent;
 }
 .tab:hover{background:var(--chrome-3);color:var(--on-chrome)}
-.tab.active{background:var(--chrome-3);color:#fff;font-weight:600;border-left-color:var(--brand)}
+.tab.active{background:var(--chrome-3);color:var(--on-chrome);font-weight:600;border-left-color:var(--brand)}
 .tab-ico{width:15px;height:15px;flex:0 0 auto;opacity:.65}
 .tab.active .tab-ico{opacity:1}
 .tab>span:first-of-type{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -282,17 +381,28 @@ a:hover{text-decoration:underline}
 .phead-actions{margin-left:auto;display:flex;gap:8px}
 .btn{
   padding:7px 13px;border-radius:var(--radius);font-size:12.5px;font-weight:500;
-  border:1px solid var(--line);background:var(--paper);color:var(--ink-2);
+  border:1px solid var(--line-strong);background:var(--paper);color:var(--ink-2);
 }
-.btn:hover{border-color:var(--line-2);background:#fbfcfd}
-.btn-primary{background:var(--brand-dark);border-color:var(--brand-dark);color:var(--paper);font-weight:600}
-.btn-primary:hover{filter:brightness(1.1)}
+/* #fbfcfd là hex ám xanh hardcode — ở theme tối nó cho nền sáng + chữ sáng */
+.btn:hover{border-color:var(--ink-2);background:var(--surface)}
+/* Signal Red thật + chữ mực, đúng cách playbook dùng nó. Bản cũ phải làm đỏ
+   SẪM lại để đỡ chữ trắng, tức là đánh mất chính độ tươi của #FF2E4C.
+   Viền --brand-dark không phải trang trí: #FF2E4C đặt thẳng trên nền trang
+   chỉ 2,68:1, dưới ngưỡng 3:1 cho biên một thành phần bấm được. */
+.btn-primary{background:var(--brand);border-color:var(--brand-dark);color:var(--brand-ink);font-weight:600}
+/* Bỏ filter:brightness — với chữ trắng nó làm nút TRƯỢT AA đúng lúc người ta
+   rê chuột vào. Với chữ mực, sáng lên là an toàn theo đúng chiều. */
+.btn-primary:hover{background:var(--brand-hi);border-color:var(--brand-hi)}
 .btn-sm{padding:4px 9px;font-size:11.5px}
 
 /* ---------- cards ---------- */
-.card{background:var(--paper);border:1px solid var(--line);border-radius:8px}
-.card-h{padding:12px 16px;border-bottom:1px solid var(--line-2);display:flex;align-items:center;gap:10px}
-.card-t{font-size:13px;font-weight:600}
+.card{background:var(--paper);border:1px solid var(--card-line);border-radius:var(--r);
+  box-shadow:var(--shadow);overflow:hidden}
+/* Nắp thẻ trước đây chỉ là một đường kẻ mảnh nên thẻ không có đầu có đuôi */
+.card-h{padding:11px 16px;border-bottom:1px solid var(--line);background:var(--zebra);
+  display:flex;align-items:center;gap:10px}
+.card-t{font-size:12px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;
+  color:var(--ink-2);line-height:1.5}
 .card-note{font-size:11.5px;color:var(--muted);margin-left:auto}
 .card-b{padding:14px 16px}
 
@@ -315,10 +425,19 @@ a:hover{text-decoration:underline}
 
 /* ---------- stat row ---------- */
 .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(214px,1fr));gap:12px;margin-bottom:16px}
-.stat{background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:13px 15px}
-.stat-l{font-size:11.5px;color:var(--muted);margin-bottom:4px}
-.stat-v{font-size:17px;font-weight:600;letter-spacing:-.02em}
-.stat-d{font-size:11px;color:var(--muted);margin-top:2px}
+/* Năm thẻ KPI trước đây giống hệt nhau: cùng nền, cùng viền, cùng cỡ chữ. Mắt
+   không biết nhìn cái nào trước nên cả dải đọc thành một khối xám. Ba việc:
+   vạch màu trên đỉnh phân loại thẻ, số to hẳn lên, và thẻ tiền có màu riêng. */
+.stat{position:relative;background:var(--paper);border:1px solid var(--card-line);
+  border-radius:var(--r);padding:15px 15px 13px;box-shadow:var(--shadow);overflow:hidden}
+.stat::before{content:'';position:absolute;inset:0 0 auto;height:3px;background:var(--accent-2)}
+.stat.s-money::before{background:var(--ok)}
+.stat.s-risk::before{background:var(--brand)}
+.stat.s-wait::before{background:var(--warn)}
+.stat-l{font-size:10.5px;color:var(--muted);margin-bottom:5px;text-transform:uppercase;
+  letter-spacing:.06em;font-weight:600;line-height:1.55}
+.stat-v{font-size:22px;font-weight:700;letter-spacing:-.02em;line-height:1.15;color:var(--ink)}
+.stat-d{font-size:11px;color:var(--muted);margin-top:3px}
 
 .grid2{display:grid;grid-template-columns:1.15fr .85fr;gap:16px;align-items:start}
 @media(max-width:1080px){.grid2{grid-template-columns:minmax(0,1fr)}}
@@ -336,15 +455,15 @@ a:hover{text-decoration:underline}
 /* ---------- table ---------- */
 .tools{display:flex;gap:8px;align-items:center;margin-bottom:12px;flex-wrap:wrap}
 .chip{
-  padding:5px 11px;border:1px solid var(--line);background:var(--paper);border-radius:14px;
+  padding:5px 11px;border:1px solid var(--line-strong);background:var(--paper);border-radius:14px;
   font-size:12px;color:var(--ink-2);
 }
-.chip:hover{border-color:var(--line-2)}
+.chip:hover{border-color:var(--ink-2);background:var(--surface)}
 /* Chip đang chọn dùng MỰC, không dùng đỏ. Signal Red là màu nhấn của thương
    hiệu — rải nó lên chip lọc, nút tạo, ô quyền và tab đang mở cùng lúc thì nó
    không còn nhấn được gì. Giữ đỏ cho hành động chính và trạng thái gấp. */
 .chip.on{background:var(--ink);border-color:var(--ink);color:var(--paper);font-weight:500}
-.seg{display:flex;border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;margin-left:auto}
+.seg{display:flex;border:1px solid var(--line-strong);border-radius:var(--radius);overflow:hidden;margin-left:auto}
 .seg button{padding:5px 12px;font-size:12px;color:var(--muted)}
 .seg button.on{background:var(--surface);color:var(--ink);font-weight:600}
 
@@ -352,15 +471,22 @@ a:hover{text-decoration:underline}
 .tscroll{overflow-x:auto}
 table{width:100%;border-collapse:collapse}
 th{
-  text-align:left;font-size:10.5px;font-weight:600;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;
-  padding:8px 14px;border-bottom:1px solid var(--card-line);background:var(--head);white-space:nowrap;
+  text-align:left;font-size:10.5px;font-weight:600;color:var(--head-muted);letter-spacing:.06em;text-transform:uppercase;
+  padding:8px 14px;border-bottom:1px solid var(--head-line);background:var(--head);white-space:nowrap;
 }
 th.sortable{cursor:pointer;user-select:none}
-th.sortable:hover{color:var(--ink)}
+th.sortable:hover{color:var(--on-head)}
 th .arw{opacity:.5;font-size:9px;margin-left:3px}
 td{padding:8px 14px;border-bottom:1px solid var(--line-2);font-size:13px;vertical-align:middle}
 tr:last-child td{border-bottom:none}
-tbody tr:hover{background:var(--zebra);cursor:pointer}
+/* Sọc xen kẽ cho BẢNG THƯỜNG. Dưới 150 dòng thì bảng không ảo hoá, và trước
+   đây nhánh đó không có sọc nào — nên mọi danh sách thực tế (35 deal, 24 lead)
+   là một mảng trắng liền mạch. Đó chính là thứ đọc ra "flat".
+   Sọc cố ý rất nhẹ: mắt chỉ cần mốc để không nhảy nhầm dòng, không cần kẻ ô. */
+tbody tr:nth-child(even){background:var(--zebra)}
+/* hover phải THẮNG cả dòng thường lẫn dòng có sọc, nên đặt sau và cùng độ
+   đặc hiệu trở lên */
+tbody tr:hover,tbody tr:nth-child(even):hover{background:var(--row-hover);cursor:pointer}
 .t-name{font-weight:500;color:var(--ice-dark)}
 tbody tr:hover .t-name{text-decoration:underline}
 .num{text-align:right;font-variant-numeric:tabular-nums}
@@ -371,8 +497,8 @@ tbody tr:hover .t-name{text-decoration:underline}
    Cố ý trông y hệt <table> ở trên: cùng nền đầu bảng, cùng đường kẻ, cùng
    padding 10px/14px và cỡ chữ 13px, nên đổi qua lại không thấy khác. */
 .vt{background:var(--paper);border:1px solid var(--card-line);border-radius:var(--r);overflow:hidden;box-shadow:var(--shadow)}
-.vt-head{display:grid;background:var(--head);border-bottom:1px solid var(--card-line)}
-.vt-head>span{padding:8px 14px;font-size:10.5px;font-weight:600;color:var(--muted);white-space:nowrap;
+.vt-head{display:grid;background:var(--head);border-bottom:1px solid var(--head-line)}
+.vt-head>span{padding:8px 14px;font-size:10.5px;font-weight:600;color:var(--head-muted);white-space:nowrap;
   letter-spacing:.06em;text-transform:uppercase}
 .vt-head>span.sortable{cursor:pointer;user-select:none}
 .vt-head>span.sortable:hover{color:var(--ink)}
@@ -381,7 +507,8 @@ tbody tr:hover .t-name{text-decoration:underline}
 .vt-spacer{position:relative;width:100%}
 .vt-row{position:absolute;left:0;right:0;display:grid;align-items:center;
   border-bottom:1px solid var(--line-2);cursor:pointer;background:var(--paper)}
-.vt-row:hover{background:var(--zebra)}
+.vt-odd{background:var(--zebra)}
+.vt-row:hover,.vt-odd:hover{background:var(--row-hover)}
 .vt-row:hover .t-name{text-decoration:underline}
 .vt-row>div{padding:8px 14px;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .vt-row>div.num{text-align:right;font-variant-numeric:tabular-nums}
@@ -436,14 +563,18 @@ kbd{
 /* ---------- chọn hàng loạt + view đã lưu ---------- */
 .selcell{width:36px;padding-left:12px!important;padding-right:0!important}
 th.selcell{padding-left:12px!important}
-.cbx{width:15px;height:15px;border:1.4px solid var(--line);border-radius:3px;display:inline-grid;
+.cbx{width:15px;height:15px;border:1.4px solid var(--line-strong);border-radius:3px;display:inline-grid;
   place-items:center;font-size:10px;color:var(--paper);line-height:1;cursor:pointer;flex:0 0 auto;
   background:var(--paper);vertical-align:middle}
 .cbx:hover{border-color:var(--ink-2)}
 /* .cbx.on ở phần "home bottom sections" tô đỏ (việc cần làm đã xong — đỏ ở đó
    có nghĩa). Ô tích chọn hàng loạt thì không: chọn 3 dòng không phải chuyện gấp.
    Nâng độ cụ thể thay vì đổi rule kia, để hai chỗ giữ được hai ý nghĩa riêng. */
-.selcell .cbx.on,th.selcell .cbx.on{background:var(--ink);border-color:var(--ink)}
+/* Ô tích nằm TRÊN dải head. Dùng --ink ở đây là mực-trên-mực: chỉ còn một
+   vệt ✓ lơ lửng không có ô. Đây là nút chọn hàng loạt của bảng 5.000 dòng. */
+.selcell .cbx.on{background:var(--accent);border-color:var(--accent);color:var(--paper)}
+th.selcell .cbx{border-color:var(--head-muted)}
+th.selcell .cbx.on{background:var(--ice);border-color:var(--ice);color:var(--chrome)}
 .bulkbar{
   display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px;
   background:var(--ink);color:var(--paper);border-radius:var(--r-sm);padding:8px 12px;
@@ -453,15 +584,15 @@ th.selcell{padding-left:12px!important}
 .bulk-n{font-family:var(--mono);font-size:12px;font-weight:700;background:var(--accent);color:var(--paper);
   border-radius:5px;padding:2px 8px;font-variant-numeric:tabular-nums}
 .bulk-l{font-size:12.5px;color:var(--paper);opacity:.72}
-.bulk-warn{font-size:11.5px;color:#ffc9d2}
+.bulk-warn{font-size:11.5px;color:var(--brand-hi)}
 .bulk-acts{margin-left:auto;display:flex;gap:6px;flex-wrap:wrap}
 .bulkbar .btn{background:transparent;border-color:var(--muted);color:var(--paper)}
 .bulkbar .btn:hover{background:var(--ink-2);border-color:var(--ink-2)}
-.bulkbar .btn-primary{background:var(--brand-dark);border-color:var(--brand-dark);color:var(--paper)}
-.bulkbar .btn-primary:hover{background:var(--brand-dark)}
+.bulkbar .btn-primary{background:var(--brand);border-color:var(--brand-dark);color:var(--brand-ink)}
+.bulkbar .btn-primary:hover{background:var(--brand-hi);border-color:var(--brand-hi)}
 
 .views{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:11px}
-.viewchip{display:inline-flex;align-items:center;border:1px solid var(--line);background:var(--paper);
+.viewchip{display:inline-flex;align-items:center;border:1px solid var(--line-strong);background:var(--paper);
   border-radius:14px;overflow:hidden;font-size:12px}
 .viewchip button{padding:4px 4px 4px 11px;color:var(--ink-2)}
 .viewchip .viewx{padding:4px 9px 4px 5px;color:var(--muted-2);font-size:13px;line-height:1}
@@ -551,7 +682,7 @@ th.selcell{padding-left:12px!important}
 .bars{display:flex;flex-direction:column;gap:10px}
 .brow{display:grid;grid-template-columns:124px 1fr 148px;gap:11px;align-items:center}
 .blabel{font-size:12px;color:var(--ink-2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.btrack{background:var(--line-2);border-radius:3px;height:17px;overflow:hidden}
+.btrack{background:var(--fill);border-radius:3px;height:17px;overflow:hidden}
 .bfill{height:100%;border-radius:3px}
 .bval{font-size:11.5px;font-weight:600;text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
 
@@ -591,7 +722,7 @@ th.selcell{padding-left:12px!important}
 .approve-bar{background:var(--paper);border:1px solid var(--line);border-radius:8px;margin-bottom:16px;overflow:hidden}
 .approve-h{padding:11px 16px;border-bottom:1px solid var(--line-2);display:flex;align-items:center;gap:9px}
 .approve-h .card-t{font-size:13px;font-weight:600}
-.approve-n{background:var(--brand);color:#fff;font-size:11px;font-weight:600;padding:1px 8px;border-radius:10px}
+.approve-n{background:var(--brand-dark);color:var(--paper);font-size:11px;font-weight:600;padding:1px 8px;border-radius:10px}
 .approve-empty{padding:24px 16px;text-align:center;color:var(--muted);font-size:12.5px}
 .approve-row{display:flex;align-items:center;gap:12px;padding:9px 16px;border-bottom:1px solid var(--line-2)}
 .approve-row:last-child{border-bottom:none}
@@ -616,7 +747,9 @@ th.selcell{padding-left:12px!important}
 .stable{max-height:218px;overflow-y:auto}
 .stable table td{padding:7px 12px;font-size:12px}
 .stable table th{padding:7px 12px;font-size:11px;position:sticky;top:0;z-index:1}
-.tnote{padding:8px 14px;font-size:11.5px;color:var(--red);border-top:1px solid var(--line-2);background:#fdf5f4}
+/* #fdf5f4 là hex cứng nên ở theme tối nó vẫn sáng — tương phản tụt còn 2,3:1 */
+.tnote{padding:8px 14px;font-size:11.5px;color:var(--danger);border-top:1px solid var(--line-2);
+  background:var(--danger-lo)}
 
 /* ---------- home bottom sections ---------- */
 .sec3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;align-items:start}
@@ -629,7 +762,8 @@ th.selcell{padding-left:12px!important}
 .colstack{display:flex;flex-direction:column;gap:14px}
 
 .lv-h{display:flex;align-items:center;gap:11px;padding:11px 14px;border-bottom:1px solid var(--line-2)}
-.lv-ico{width:34px;height:34px;border-radius:6px;background:var(--brand);display:grid;place-items:center;color:#fff;flex:0 0 auto}
+.lv-ico{width:34px;height:34px;border-radius:6px;background:var(--brand-dark);display:grid;place-items:center;
+  color:var(--paper);flex:0 0 auto}
 .lv-h>span:nth-child(2){flex:1;min-width:0}
 .lv-t{font-size:13px;font-weight:600;line-height:1.25;display:block}
 .lv-s{font-size:11px;color:var(--muted);display:block}
@@ -643,8 +777,9 @@ th.selcell{padding-left:12px!important}
 .kv{display:grid;grid-template-columns:100px minmax(0,1fr);gap:4px 10px;font-size:12px;align-items:center}
 .kv-k{color:var(--muted)}
 .kv-v{color:var(--ink-2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.cbx{width:13px;height:13px;border:1.4px solid var(--line);border-radius:2px;display:inline-grid;place-items:center;font-size:9px;color:#fff;line-height:1}
-.cbx.on{background:var(--brand);border-color:var(--brand)}
+.cbx{width:13px;height:13px;border:1.4px solid var(--line-strong);border-radius:2px;display:inline-grid;
+  place-items:center;font-size:9px;color:var(--paper);line-height:1}
+.cbx.on{background:var(--brand);border-color:var(--brand-dark);color:var(--brand-ink)}
 
 .ev{display:flex;gap:11px;padding:10px 14px;border-bottom:1px solid var(--line-2);width:100%;text-align:left}
 .ev:last-child{border-bottom:none}
@@ -681,8 +816,8 @@ th.selcell{padding-left:12px!important}
 @media(max-width:560px){.frow{grid-template-columns:1fr;gap:4px}}
 .flabel{font-size:12.5px;color:var(--ink-2);padding-top:8px;display:flex;gap:5px;align-items:flex-start;line-height:1.35}
 .star{color:var(--red);font-weight:700;line-height:1}
-.fin{width:100%;padding:7px 10px;border:1px solid var(--line-2);border-radius:4px;font-size:13px;background:var(--paper)}
-.fin:focus{border-color:var(--brand);outline:none;box-shadow:0 0 0 3px rgba(255,46,76,.13)}
+.fin{width:100%;padding:7px 10px;border:1px solid var(--line-strong);border-radius:4px;font-size:13px;background:var(--paper)}
+.fin:focus{border-color:var(--accent);outline:none;box-shadow:var(--ring)}
 .fin.err{border-color:var(--red);box-shadow:0 0 0 3px rgba(192,65,58,.09)}
 textarea.fin{min-height:64px;resize:vertical;font-family:inherit}
 .ferr{font-size:11.5px;color:var(--red);margin-top:4px;display:none}
@@ -691,11 +826,11 @@ textarea.fin{min-height:64px;resize:vertical;font-family:inherit}
 .substack>div:last-child{margin-bottom:0}
 .fchk{display:flex;align-items:center;gap:8px;padding-top:8px;font-size:13px}
 .fchk .cbox{cursor:pointer}
-.info{width:14px;height:14px;border-radius:50%;background:#7d8794;color:#fff;font-size:9px;font-weight:700;
+.info{width:14px;height:14px;border-radius:50%;background:var(--muted);color:var(--paper);font-size:9px;font-weight:700;
   display:inline-grid;place-items:center;cursor:help;position:relative;flex:0 0 auto;margin-top:2px}
-.info:hover{background:#4c5563}
+.info:hover{background:var(--ink-2)}
 .info:hover::after{content:attr(data-tip);position:absolute;left:-10px;bottom:calc(100% + 9px);
-  background:#16233a;color:#fff;padding:9px 12px;border-radius:6px;
+  background:var(--chrome-3);color:var(--on-chrome);padding:9px 12px;border-radius:6px;
   font-size:11.5px;font-weight:400;width:310px;line-height:1.45;z-index:9;text-align:left;
   box-shadow:0 4px 14px rgba(12,20,35,.3)}
 /* cột phải: neo mép phải để không tràn khỏi hộp thoại */
@@ -721,45 +856,49 @@ textarea.fin{min-height:64px;resize:vertical;font-family:inherit}
 .imp-ico{width:44px;height:44px;border-radius:8px;display:grid;place-items:center;margin-left:auto;
   flex:0 0 auto;font-size:11px;font-weight:700;color:#fff;letter-spacing:.02em}
 .imp-body{padding:22px 26px}
-.drop{border:2px dashed var(--line-2);border-radius:8px;padding:32px 20px;text-align:center;cursor:pointer;background:#fbfcfd}
+.drop{border:2px dashed var(--line-strong);border-radius:8px;padding:32px 20px;text-align:center;cursor:pointer;background:var(--zebra)}
 .drop:hover,.drop.over{border-color:var(--brand);background:var(--brand-tint)}
 .drop-t{font-size:13px;font-weight:500;margin-top:9px}
 .drop-s{font-size:11.5px;color:var(--muted);margin-top:3px}
 .imp-ok{background:var(--brand-tint);border:1px solid var(--line);border-radius:6px;padding:9px 13px;
   font-size:12.5px;color:var(--brand-dark);font-weight:500;margin-bottom:14px}
-.imp-warn{background:#fdf5f4;border:1px solid #f0cdc9;border-radius:6px;padding:9px 13px;
+.imp-warn{background:var(--danger-lo);border:1px solid var(--danger);border-radius:6px;padding:9px 13px;
   font-size:12.5px;color:var(--red);margin-bottom:14px}
 .maptbl{width:100%;border-collapse:collapse;font-size:12.5px}
-.maptbl th{text-align:left;font-size:11.5px;color:var(--muted);padding:7px 10px;border-bottom:1px solid var(--line)}
+.maptbl th{text-align:left;font-size:11.5px;color:var(--head-muted);background:var(--head);padding:7px 10px;
+  border-bottom:1px solid var(--head-line)}
 .maptbl td{padding:7px 10px;border-bottom:1px solid var(--line-2);vertical-align:middle}
 .maptbl select{width:100%;padding:5px 8px;border:1px solid var(--line-2);border-radius:4px;font-size:12.5px;background:var(--paper)}
 .mapscroll{max-height:320px;overflow-y:auto;border:1px solid var(--line);border-radius:7px}
 .imp-foot{padding:12px 22px;border-top:1px solid var(--line);display:flex;align-items:center;gap:14px;
   background:var(--zebra);border-radius:0 0 10px 10px;flex:0 0 auto}
 .steps{display:flex;align-items:center;gap:0;flex:1;max-width:380px}
-.sdot{width:11px;height:11px;border-radius:50%;background:#d3d9e0;flex:0 0 auto}
+.sdot{width:11px;height:11px;border-radius:50%;background:var(--fill);flex:0 0 auto}
 .sdot.on{background:var(--brand);box-shadow:0 0 0 3px rgba(255,46,76,.2)}
 .sdot.done{background:var(--brand)}
-.sline{height:2px;background:#e0e5ea;flex:1}
+.sline{height:2px;background:var(--fill);flex:1}
 .sline.done{background:var(--brand)}
 
 /* ---------- audit log ---------- */
 .aud-tools{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:12px}
-.aud-tools select,.aud-tools input[type=date]{padding:6px 9px;border:1px solid var(--line);
+.aud-tools select,.aud-tools input[type=date]{padding:6px 9px;border:1px solid var(--line-strong);
   border-radius:var(--radius);font-size:12.5px;background:var(--paper);color:var(--ink)}
 .aud-lbl{font-size:11.5px;color:var(--muted)}
-.aud-note{display:flex;gap:8px;align-items:flex-start;background:#fffdf4;border:1px solid #f0e2b8;
-  border-radius:7px;padding:9px 13px;font-size:12px;color:#7a6320;margin-bottom:14px;line-height:1.5}
+.aud-note{display:flex;gap:8px;align-items:flex-start;background:var(--warn-lo);border:1px solid var(--warn);
+  border-radius:7px;padding:9px 13px;font-size:12px;color:var(--warn);margin-bottom:14px;line-height:1.5}
 .mono{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:11.5px}
 .atag{display:inline-block;padding:2px 8px;border-radius:11px;font-size:11px;font-weight:600;white-space:nowrap}
-.a-create{background:#e9f4ee;color:#0a5c3b}
-.a-update{background:#eef1f7;color:#3d444f}
-.a-approve{background:#e9f4ee;color:#2b8f55}
-.a-reject{background:#fdeceb;color:#c0413a}
-.a-convert{background:#f0edfb;color:#5b45b8}
-.a-import{background:#e8f4f6;color:#136c7d}
-.a-note{background:#fdf3e8;color:#9a6410}
-.a-login{background:#eef1f7;color:#6b7280}
+/* Tám nhãn này vốn là hex cứng của nền sáng, nên ở theme tối chúng vẫn sáng
+   trắng giữa trang tối. Chuyển hết sang token trạng thái — vừa theo được theme,
+   vừa đạt AA ở cả hai. */
+.a-create{background:var(--ok-lo);color:var(--ok)}
+.a-update{background:var(--surface);color:var(--ink-2)}
+.a-approve{background:var(--ok-lo);color:var(--ok)}
+.a-reject{background:var(--danger-lo);color:var(--danger)}
+.a-convert{background:var(--accent-lo);color:var(--violet)}
+.a-import{background:var(--accent-lo);color:var(--accent)}
+.a-note{background:var(--warn-lo);color:var(--warn)}
+.a-login{background:var(--surface);color:var(--muted)}
 .diff-old{color:var(--muted);text-decoration:line-through}
 .diff-new{color:var(--ink);font-weight:500}
 .hist{border-top:1px solid var(--line-2);margin-top:16px;padding-top:14px}
@@ -780,12 +919,12 @@ textarea.fin{min-height:64px;resize:vertical;font-family:inherit}
 .me-pick:focus{outline:none;text-decoration:underline}
 .rolechip{display:inline-block;padding:2px 9px;border-radius:11px;font-size:11px;font-weight:600;white-space:nowrap}
 .r-manager{background:var(--brand-tint);color:var(--brand-dark)}
-.r-ar{background:#e8f4f6;color:#136c7d}
-.r-lm{background:#f0edfb;color:#5b45b8}
-.permyes{color:var(--brand);font-weight:700}
-.permno{color:#c8ced6}
-.ro-note{background:#fdf8ec;border:1px solid #f0e0bd;border-radius:6px;padding:9px 12px;
-  font-size:12px;color:#8a6512;margin-bottom:14px}
+.r-ar{background:var(--accent-lo);color:var(--accent)}
+.r-lm{background:var(--accent-lo);color:var(--violet)}
+.permyes{color:var(--ok);font-weight:700}
+.permno{color:var(--muted-2)}
+.ro-note{background:var(--warn-lo);border:1px solid var(--warn);border-radius:6px;padding:9px 12px;
+  font-size:12px;color:var(--warn);margin-bottom:14px}
 .noperm{padding:60px 20px;text-align:center}
 .noperm-t{font-size:15px;font-weight:600;margin-bottom:5px}
 .noperm-s{font-size:12.5px;color:var(--muted)}
@@ -796,7 +935,7 @@ textarea.fin{min-height:64px;resize:vertical;font-family:inherit}
 .dual{display:grid;grid-template-columns:1fr 30px 1fr;gap:8px;align-items:center}
 .dual select{height:132px;border:1px solid var(--line-2);border-radius:4px;font-size:12.5px;padding:4px;background:var(--paper)}
 .dual-b{display:flex;flex-direction:column;gap:6px}
-.dual-b button{border:1px solid var(--line);border-radius:4px;padding:5px 0;background:var(--paper);font-size:11px}
+.dual-b button{border:1px solid var(--line-strong);border-radius:4px;padding:5px 0;background:var(--paper);font-size:11px}
 .dual-b button:hover{border-color:var(--brand);color:var(--brand-dark)}
 .dual-l{font-size:11px;color:var(--muted);margin-bottom:3px}
 .pctin{position:relative}
@@ -859,7 +998,7 @@ textarea.fin{min-height:64px;resize:vertical;font-family:inherit}
 .actrig-row{display:flex;justify-content:space-between;gap:10px;font-size:12px;padding:3px 0}
 .actrig-row b{font-variant-numeric:tabular-nums}
 .actrig-cap{border-top:1px solid var(--line-2);margin-top:8px;padding-top:8px}
-.acwarn{font-size:11.5px;color:var(--warn);background:#fdf8ec;border:1px solid #f0e0bd;
+.acwarn{font-size:11.5px;color:var(--warn);background:var(--warn-lo);border:1px solid var(--warn);
   border-radius:5px;padding:8px 11px;margin-top:10px;line-height:1.5}
 
 .acsug{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
@@ -885,12 +1024,12 @@ textarea.fin{min-height:64px;resize:vertical;font-family:inherit}
 
 .path{display:flex;gap:3px;margin-bottom:14px;overflow-x:auto;padding-bottom:2px}
 .path-s{
-  flex:1;min-width:118px;background:#eceef1;color:var(--ink-2);font-size:12px;font-weight:500;
+  flex:1;min-width:118px;background:var(--fill);color:var(--ink-2);font-size:12px;font-weight:500;
   padding:10px 10px 10px 22px;position:relative;white-space:nowrap;text-align:center;
   clip-path:polygon(0 0, calc(100% - 12px) 0, 100% 50%, calc(100% - 12px) 100%, 0 100%, 12px 50%);
 }
 .path-s:first-child{clip-path:polygon(0 0, calc(100% - 12px) 0, 100% 50%, calc(100% - 12px) 100%, 0 100%);padding-left:12px}
-.path-s.done{background:#cfd9e4;color:#2b3a4d}
+.path-s.done{background:var(--accent-lo);color:var(--accent)}
 .path-s.now{background:var(--nav);color:#fff;font-weight:600}
 .path-s.lost{background:var(--red);color:#fff}
 .path-s:hover{filter:brightness(.97)}
@@ -919,9 +1058,9 @@ textarea.fin{min-height:64px;resize:vertical;font-family:inherit}
 .actbtn{padding:8px 11px;font-size:12.5px;color:var(--muted);border-bottom:2px solid transparent}
 .actbtn.on{color:var(--ink);border-bottom-color:var(--brand);font-weight:600}
 .actbtn:hover{color:var(--ink)}
-.chat-in{width:100%;padding:9px 11px;border:1px solid var(--line);border-radius:6px;font-size:13px;
+.chat-in{width:100%;padding:9px 11px;border:1px solid var(--line-strong);border-radius:6px;font-size:13px;
   resize:vertical;min-height:62px;font-family:inherit}
-.chat-in:focus{border-color:var(--brand);outline:none;box-shadow:0 0 0 3px rgba(255,46,76,.15)}
+.chat-in:focus{border-color:var(--accent);outline:none;box-shadow:var(--ring)}
 .chat-foot{display:flex;align-items:center;gap:9px;margin-top:8px}
 .chat-count{font-size:11px;color:var(--muted);margin-left:auto}
 .chat-item{display:flex;gap:10px;padding:11px 0;border-bottom:1px solid var(--line-2)}
@@ -939,10 +1078,10 @@ textarea.fin{min-height:64px;resize:vertical;font-family:inherit}
 .srchnote{background:var(--zebra);border:1px solid var(--line);border-radius:7px;padding:9px 13px;
   font-size:11.5px;color:var(--muted);line-height:1.5;margin-bottom:12px;display:flex;gap:8px}
 .srchnote svg{flex:0 0 auto;margin-top:2px;opacity:.6}
-.srchfound{background:var(--brand-tint);border-color:#f3c0c8;color:var(--brand-dark)}
-.lockcell{color:#b6bcc6;font-size:12px;letter-spacing:.06em}
-tr.locked td{background:#fcfcfd}
-tr.locked:hover td{background:#f7f8fa}
+.srchfound{background:var(--brand-tint);border-color:var(--brand-dark);color:var(--brand-dark)}
+.lockcell{color:var(--muted-2);font-size:12px;letter-spacing:.06em}
+tr.locked td{background:var(--zebra)}
+tr.locked:hover td{background:var(--row-hover)}
 .lockbadge{display:inline-flex;align-items:center;gap:5px;font-size:11px;color:var(--muted)}
 .dupitem{border:1px solid var(--line);border-radius:7px;padding:11px 13px;margin-bottom:9px}
 .dupitem b{font-size:13px}
@@ -1004,14 +1143,14 @@ tbody tr:hover .ipen{opacity:1}
 .fld{margin-bottom:13px}
 .fld-l{font-size:11.5px;color:var(--muted);margin-bottom:4px;font-weight:500}
 .fld-v{font-size:13.5px}
-.in{width:100%;padding:7px 10px;border:1px solid var(--line);border-radius:var(--radius);background:var(--paper);font-size:13px}
-.in:focus{border-color:var(--brand);outline:none;box-shadow:0 0 0 3px rgba(255,46,76,.13)}
+.in{width:100%;padding:7px 10px;border:1px solid var(--line-strong);border-radius:var(--radius);background:var(--paper);font-size:13px}
+.in:focus{border-color:var(--accent);outline:none;box-shadow:var(--ring)}
 .row2{display:grid;grid-template-columns:1fr 1fr;gap:11px}
 .sec{border-top:1px solid var(--line-2);margin-top:16px;padding-top:14px}
 .sec-t{font-size:11.5px;font-weight:600;color:var(--muted);margin-bottom:10px}
 .rights-pick{display:flex;gap:7px;flex-wrap:wrap}
 .rp{padding:6px 12px;border:1px solid var(--line);border-radius:15px;font-size:12px;color:var(--ink-2)}
-.rp.on{background:var(--brand-tint);border-color:#9fd0b6;color:var(--brand-dark);font-weight:600}
+.rp.on{background:var(--ok-lo);border-color:var(--ok);color:var(--ok);font-weight:600}
 .tl{display:flex;gap:10px;padding-bottom:13px;position:relative}
 .tl:not(:last-child)::before{content:'';position:absolute;left:5px;top:15px;bottom:0;width:1px;background:var(--line)}
 .tl-d{width:11px;height:11px;border-radius:50%;border:2px solid var(--paper);background:var(--line);flex:0 0 auto;margin-top:3px;z-index:1}
@@ -1090,7 +1229,7 @@ tbody tr:hover .ipen{opacity:1}
   padding:10px 12px;margin-bottom:12px}
 .finhist-t{font-size:11px;font-weight:650;color:var(--muted);text-transform:uppercase;
   letter-spacing:.05em;margin-bottom:6px;line-height:1.55}
-.fin-ta{width:100%;box-sizing:border-box;border:1px solid var(--line);border-radius:var(--r-sm);
+.fin-ta{width:100%;box-sizing:border-box;border:1px solid var(--line-strong);border-radius:var(--r-sm);
   padding:7px 9px;font:12px/1.5 var(--mono);color:var(--ink);background:var(--paper);resize:vertical}
 .fin-ta:focus{outline:none;border-color:var(--accent);box-shadow:var(--shadow-lift)}
 .finhist-r{display:flex;align-items:center;gap:10px;margin-top:7px;font-size:11.5px;color:var(--ink-2)}
@@ -1122,7 +1261,7 @@ tbody tr:hover .ipen{opacity:1}
 .finkpi-v{font-family:var(--mono);font-size:15px;font-weight:600;color:var(--ink)}
 .finkpi-v.good{color:var(--ok)} .finkpi-v.warn{color:var(--warn)} .finkpi-v.bad{color:var(--danger)}
 .fintbl table{width:100%;border-collapse:collapse;font-size:12px}
-.fintbl th{background:var(--head);text-align:left;padding:8px 9px 7px;font-size:10.5px;
+.fintbl th{background:var(--head);color:var(--head-muted);text-align:left;padding:8px 9px 7px;font-size:10.5px;
   text-transform:uppercase;letter-spacing:.05em;color:var(--muted);white-space:nowrap;line-height:1.6}
 .fintbl td{padding:7px 9px;border-top:1px solid var(--line-2);white-space:nowrap}
 .fintbl td.num,.fintbl th.num{text-align:right;font-family:var(--mono)}
@@ -1799,15 +1938,23 @@ function t(k, vars){ let s = (I18N[lang]&&I18N[lang][k]) || (I18N.en[k]) || k;
 
    Giữ nguyên id 'waiting', 'legal', 'signature' của bản cũ — đổi id thì toàn bộ
    dữ liệu mẫu, nhật ký và bản lưu localStorage của người dùng thành rác. */
+/* Màu giai đoạn là hex CỨNG, tiêu thụ ở hơn mười chỗ (donut, phễu, chấm trạng
+   thái, thanh pipeline). Nếu chọn màu chỉ hợp nền sáng thì phải viết thêm
+   getComputedStyle và listener đổi theme để chúng bám token.
+   Tám màu dưới đây nằm trong cửa sổ độ sáng đạt ≥3:1 với CẢ nền trắng LẪN thẻ
+   tối, nên không cần một dòng JS nào — và cũng không thể xảy ra chuyện một giai
+   đoạn đổi danh tính màu khi người dùng bật nền tối.
+   'lost' cố ý là XÁM phi sắc: deal thua là lịch sử, không phải việc cần làm,
+   nên nó không được tô đỏ và tranh chỗ nhấn với Signal Red. */
 const STAGES = [
-  {id:'negotiation', color:'var(--amber)',  raw:'#dd8a12'},
-  {id:'waiting',     color:'var(--violet)', raw:'#7059d6'},
-  {id:'region',      color:'#7a5cc6',       raw:'#7a5cc6'},
-  {id:'portal',      color:'#1d8e83',       raw:'#1d8e83'},
-  {id:'legal',       color:'#3a6fb0',       raw:'#3a6fb0'},
-  {id:'signature',   color:'var(--ice-dark)',raw:'#0b6b80'},
-  {id:'won',         color:'var(--green)',  raw:'#2e8b57'},
-  {id:'lost',        color:'var(--red)',    raw:'#8e1d2c'},
+  {id:'negotiation', color:'#AE700B', raw:'#AE700B'},   /* hổ phách 37° */
+  {id:'waiting',     color:'#4A7BCC', raw:'#4A7BCC'},   /* lam 217°    */
+  {id:'region',      color:'#B84FA3', raw:'#B84FA3'},   /* mận 312°    */
+  {id:'portal',      color:'#0E86A3', raw:'#0E86A3'},   /* cyan 192°   */
+  {id:'legal',       color:'#8265DE', raw:'#8265DE'},   /* tím 254°    */
+  {id:'signature',   color:'#12857A', raw:'#12857A'},   /* teal 174°   */
+  {id:'won',         color:'#35924D', raw:'#35924D'},   /* lục 136°    */
+  {id:'lost',        color:'#7C7C88', raw:'#7C7C88'},   /* xám phi sắc */
 ];
 const OPEN_STAGES = ['negotiation','waiting','region','portal','legal','signature'];
 /* Thứ tự deal đi qua. Mọi nơi cần "chuỗi giai đoạn" phải đọc từ đây — trước đây
@@ -1830,10 +1977,11 @@ const APPROVAL = {
   waiting:    { next:'region',  perm:'approveCountry', act:'approveC' },
   region:     { next:'portal',  perm:'approveRegion',  act:'approveR' }
 };
+/* cùng cửa sổ độ sáng với STAGES, cùng lý do */
 const LEAD_STATUS = [
-  {id:'new', raw:'#3a6fb0'}, {id:'contacted', raw:'#dd8a12'},
-  {id:'followup', raw:'#7059d6'}, {id:'meeting', raw:'#1d8e83'}, {id:'hold', raw:'#8b94a1'},
-  {id:'converted', raw:'#0b6b80'}, {id:'lost', raw:'#c0413a'},
+  {id:'new', raw:'#4A7BCC'}, {id:'contacted', raw:'#AE700B'},
+  {id:'followup', raw:'#8265DE'}, {id:'meeting', raw:'#12857A'}, {id:'hold', raw:'#7C7C88'},
+  {id:'converted', raw:'#35924D'}, {id:'lost', raw:'#B84FA3'},
 ];
 const SALUTATIONS = ['Mr.','Ms.','Mrs.','Dr.','Prof.'];
 const DEAL_TYPES  = ['artist','label','writer','publisher'];
@@ -2421,7 +2569,10 @@ function vtable(opts){
     const last  = Math.min(rows.length, Math.ceil((top+h)/RH)+4);
     let out = '';
     for(let r=first;r<last;r++){
-      out += '<div class="vt-row'+(opts.rowCls?(' '+opts.rowCls(rows[r])):'')+'" data-r="'+r+'" '+
+      /* Sọc tính theo CHỈ SỐ DỮ LIỆU, không dùng nth-child: paint() chỉ vẽ đoạn
+         first..last nên phần tử con thứ nhất luôn là dòng `first`, cuộn qua một
+         dòng là toàn bộ sọc đảo pha. */
+      out += '<div class="vt-row'+(r%2?' vt-odd':'')+(opts.rowCls?(' '+opts.rowCls(rows[r])):'')+'" data-r="'+r+'" '+
              'style="top:'+(r*RH)+'px;height:'+RH+'px;grid-template-columns:'+grid()+'">'+
              opts.rowHTML(rows[r], r)+'</div>';
     }
@@ -3465,7 +3616,7 @@ VIEWS.home = function(){
     cm[k] = (cm[k]||0)+o.amount;
   });
   const wClosed = barCard(t('wClosedOpps'),
-    Object.keys(cm).sort().map(k=>({label:k, v:cm[k], color:'#3aa3b8'})),
+    Object.keys(cm).sort().map(k=>({label:k, v:cm[k], color:'#0E86A3'})),
     t('closeMonth'));
 
   /* ---------- 7. Open Opps by Stage ---------- */
@@ -3674,8 +3825,11 @@ VIEWS.home = function(){
     '<div class="grid3">'+ wWait +'</div>'+
     bottom;
 };
-function stat(l,v,d){
-  return '<div class="stat"><div class="stat-l">'+esc(l)+'</div><div class="stat-v">'+esc(v)+'</div>'+
+/* k phân loại thẻ để vạch màu trên đỉnh nói được cái gì: money = tiền về,
+   wait = đang chờ ai đó, risk = cần để mắt. Không truyền k thì là thẻ đếm. */
+function stat(l,v,d,k){
+  return '<div class="stat'+(k?' s-'+k:'')+'"><div class="stat-l">'+esc(l)+'</div>'+
+    '<div class="stat-v">'+esc(v)+'</div>'+
     (d?'<div class="stat-d">'+esc(d)+'</div>':'')+'</div>';
 }
 function goOpp(stage){ state.view='opps'; state.oppFilter=stage; state.q=''; document.getElementById('q').value=''; render(); }
@@ -4515,8 +4669,8 @@ function myReports(){
   const kpiStrip = '<div class="stats">'+
     stat(t('rpMyLeads'), myL.length, lbl)+
     stat(t('rpMyOpps'), myO.length, lbl)+
-    stat(t('rpMyWon'), myW.length, lbl)+
-    stat(t('rpMyValue'), money(val), lbl)+
+    stat(t('rpMyWon'), myW.length, lbl, 'money')+
+    stat(t('rpMyValue'), money(val), lbl, 'money')+
   '</div>';
 
   /* 1 — cơ cấu giá trị theo giai đoạn */
@@ -4542,16 +4696,16 @@ function myReports(){
     {lo:0, hi:1, label:'$0'}, {lo:1, hi:5000, label:'< $5K'},
     {lo:5000, hi:15000, label:'$5K – $15K'}, {lo:15000, hi:30000, label:'$15K – $30K'},
     {lo:30000, hi:1e9, label:'> $30K'}
-  ].map(bk=>({label:bk.label, color:'#0b6b80', unit:'n',
+  ].map(bk=>({label:bk.label, color:'#0E86A3', unit:'n',
               v:myO.filter(o=>o.amount>=bk.lo && o.amount<bk.hi).length}));
 
   /* 6 — lead theo nguồn */
   const bySrc = Object.keys(SOURCES).map(k=>({
-    label:SOURCES[k][lang], unit:'n', color:'#3a6fb0', v:myL.filter(l=>l.source===k).length
+    label:SOURCES[k][lang], unit:'n', color:'#4A7BCC', v:myL.filter(l=>l.source===k).length
   })).filter(x=>x.v>0).sort((a2,b2)=>b2.v-a2.v);
 
   const none = (arr, unit) => arr.length ? arr
-    : [{label:'—', v:0, color:'#0b6b80', unit:unit}];
+    : [{label:'—', v:0, color:'#0E86A3', unit:unit}];
 
   /* mục tiêu & thời gian của riêng người này */
   const g = goalCalc(ME);
@@ -4625,8 +4779,8 @@ function managerReports(){
     /* "tỷ lệ thắng" tính trên deal ĐÃ ĐÓNG trong kỳ, không phải trên toàn bộ cơ
        hội — ghi kèm mẫu số để không ai đọc nhầm thành "89% deal đều thắng" */
     stat(t('kpiWon'), won.length, closed ? t('kpiWin')+' '+winRate+'% ('+won.length+'/'+closed+')' : t('kpiNoClosed'))+
-    stat(t('kpiValue'), moneyShort(wonVal), perLbl)+
-    stat(t('kpiOpen'), moneyShort(openVal), t('asOfNow')+' · '+open.length+' '+t('deals'))+
+    stat(t('kpiValue'), moneyShort(wonVal), perLbl, 'money')+
+    stat(t('kpiOpen'), moneyShort(openVal), t('asOfNow')+' · '+open.length+' '+t('deals'), 'wait')+
   '</div>';
 
   /* ----- donut 1: giá trị theo giai đoạn ----- */
@@ -4656,17 +4810,17 @@ function managerReports(){
     {lo:15000,hi:30000, label:'$15K – $30K'},
     {lo:30000,hi:1e9,   label:'> $30K'},
   ].map(b=>({
-    label:b.label, color:'#0b6b80', unit:'n',
+    label:b.label, color:'#0E86A3', unit:'n',
     v:DB.opps.filter(o=>o.amount>=b.lo && o.amount<b.hi).length
   }));
 
   /* ----- các biểu đồ cột cũ ----- */
   const byOwner = OWNERS.map(o=>{
     const l=DB.opps.filter(x=>x.owner===o && OPEN_STAGES.includes(x.stage));
-    return {label:o, v:l.reduce((a,b)=>a+b.amount,0), color:'#3d444f', n:l.length};
+    return {label:o, v:l.reduce((a,b)=>a+b.amount,0), color:'#8265DE', n:l.length};
   }).filter(x=>x.n>0).sort((a,b)=>b.v-a.v);
   const bySource = Object.keys(SOURCES).map(k=>({
-    label:SOURCES[k][lang], v:DB.leads.filter(l=>l.source===k).length, color:'#3a6fb0', unit:'n'
+    label:SOURCES[k][lang], v:DB.leads.filter(l=>l.source===k).length, color:'#4A7BCC', unit:'n'
   })).filter(x=>x.v>0).sort((a,b)=>b.v-a.v);
   const byMonth = monthSeries(won, o=>o.amount, '#3aa3b8');
 
@@ -4760,7 +4914,7 @@ function managerReports(){
         '<td class="num"><b>'+o2+'%</b>'+
           '<span class="kpi-tag" style="background:'+tag[1]+';color:'+tag[2]+'">'+esc(t(tag[0]))+'</span></td></tr>';
     }).join('')+'</tbody></table></div>'+
-    '<div class="tnote" style="color:var(--muted);background:#fafbfc">'+
+    '<div class="tnote" style="color:var(--muted);background:var(--zebra)">'+
       esc(t('goalYearNote'))+' · '+esc(t('kpiNote'))+'</div></div>';
 
   return phead(t('reports'), cur==='VND' ? fxNote()+' · '+perLbl : perLbl)+
@@ -4788,12 +4942,19 @@ function managerReports(){
    quên mất 'region' với 'portal' lúc chuỗi duyệt dài ra — hôm nay chưa lộ vì
    hai giai đoạn đó đang rỗng, nhưng deal đầu tiên rơi vào đó là phễu hụt số.
    Đếm luỹ kế: mỗi bước gồm deal đang ở đó VÀ mọi deal đã đi qua nó. */
+/* Phễu dùng đúng dải màu giai đoạn của STAGES, không phải một sắc teal loang
+   dần. Nhờ vậy màu ở phễu và màu ở donut, ở chấm trạng thái trong bảng đều nói
+   cùng một thứ — mắt học một luật là dùng được ở mọi màn. */
 const FUNNEL_STEPS = [
-  {from:'negotiation', lbl:'fnAll',   color:'#062b35'},
-  {from:'waiting',     lbl:'fnAppr',  color:'#0b6b80'},
-  {from:'legal',       lbl:'fnLegal', color:'#16899f'},
-  {from:'signature',   lbl:'fnSign',  color:'#2aa0b6'},
-  {from:'won',         lbl:'fnWon',   color:'#3aa3b8'}
+  /* Cùng HUE với dải giai đoạn nhưng SẪM hơn một nấc: thanh phễu là mảng tô lớn
+     mang chữ trắng, mà màu dùng cho chấm nhỏ thì quá sáng để đỡ chữ — hổ phách
+     #AE700B với chữ trắng chỉ 4,10:1. Giữ hue để mắt vẫn nhận ra cùng một giai
+     đoạn, hạ độ sáng để chữ đọc được. */
+  {from:'negotiation', lbl:'fnAll',   color:'#8A5808'},
+  {from:'waiting',     lbl:'fnAppr',  color:'#3A62A6'},
+  {from:'legal',       lbl:'fnLegal', color:'#6446C4'},
+  {from:'signature',   lbl:'fnSign',  color:'#0E6A61'},
+  {from:'won',         lbl:'fnWon',   color:'#2A753D'}
 ];
 function funnelSteps(list){
   return FUNNEL_STEPS.map(st=>{

@@ -111,6 +111,54 @@ Kiểm bằng số tính tay, không kiểm bằng chính nó. Ví dụ trong `t
 đúng tháng thứ 10, thu hồi xong tháng 15, tổng về 31.600. Bảng cũ cho 21.600 —
 chênh đúng 10.000, đúng bằng advance mà nó quên không tính là đã quay về.
 
+## Hệ màu
+
+Đo trước khi sửa. Ở màn danh sách, **87% diện tích vùng nội dung là trắng thuần**,
+nền trang chênh với thẻ đúng **1,16:1**, màu chỉ chiếm 3–4%, và phân cấp gần như
+hoàn toàn dựa vào viền 1px. Đó là thứ đọc ra "flat".
+
+Chẩn đoán gốc: bảng xám của CRM đã **trôi 28°** khỏi bảng màu thương hiệu. Cả sáu
+xám trong playbook nằm ở H=240 S≤13%; CRM đang ở H=217 S=25 — tức ngả về phía
+xanh ice. Màu lạnh duy nhất của thương hiệu đang đứng trên một nền cùng họ với
+nó, nên mắt không đọc ra đó là màu. Thêm màu vào lúc đó chỉ làm bệnh nặng hơn.
+
+| Việc | Trước | Sau |
+|---|---|---|
+| Nền trang ↔ mặt thẻ | 1,16:1 | **1,37:1** |
+| Dải tiêu đề bảng | trắng-xám, 1,24:1 | **graphite tối, 15,4:1** |
+| Sọc xen kẽ ở bảng thường | *không có* | có |
+| Rê chuột dòng chẵn bảng tài chính | *không phản hồi* | có |
+| Viền ô nhập | 1,42:1 — trượt WCAG 1.4.11 | **4,27:1** |
+| Cặp màu trượt WCAG AA | 14 | **0** / 830 cặp đo |
+
+Vài quyết định đáng ghi lại:
+
+- **Dải tiêu đề bảng đổi thành tối.** Đây là đòn duy nhất thật sự chặt mảng
+  trắng. Chọn graphite `#24242E` chứ không gần-đen, để không dựng thêm một vùng
+  17:1 thứ hai trong tầm mắt suốt tám tiếng. Ở theme tối nó đảo chiều — sáng hơn
+  thẻ — nhưng giữ nguyên nghĩa "đây là nắp, không phải dữ liệu".
+- **`--app-bg` tách khỏi `--surface`.** `var(--surface)` dùng 20 chỗ nhưng chỉ
+  một chỗ là nền trang; 19 chỗ còn lại là tint bên trong thẻ. Không tách thì
+  không thể đẩy nền trang xuống mà không kéo theo mọi hover.
+- **`--row-hover` tách khỏi `--zebra`.** Trước đây hover và sọc chẵn dùng chung
+  một token, nên rê chuột lên dòng chẵn của bảng dự báo tài chính là không có
+  phản hồi nào.
+- **`--line-strong` cho viền control.** WCAG 1.4.11 đòi 3:1 cho biên định danh
+  một thành phần bấm được; `--line` cũ chỉ 1,42:1 nên mọi ô nhập trong CRM đang
+  trượt. Tách token thay vì ép `--line` dày lên — ép nó sẽ đóng khung nặng mọi
+  thẻ.
+- **Nút chính lấy lại Signal Red thật.** Bản cũ phải làm đỏ sẫm lại để đỡ chữ
+  trắng, tức đánh mất chính độ tươi của `#FF2E4C`. Nay là nền đỏ tươi + chữ mực,
+  đúng cách playbook dùng nó.
+- **Vòng focus chuyển từ đỏ sang teal.** Đỏ đang là màu báo lỗi ở ngay rule kế
+  bên — ô đang gõ và ô sai không được cùng màu.
+- **Màu biểu đồ: một bộ tám hex chạy đúng ở CẢ HAI theme.** Chúng nằm trong cửa
+  sổ độ sáng đạt ≥3:1 với cả nền trắng lẫn thẻ tối, nên không cần một dòng JS
+  nào để đổi theo theme — và một giai đoạn không thể đổi danh tính màu khi người
+  dùng bật nền tối.
+- **21 màu hex cứng của theme sáng** nằm rải rác trong CSS đã chuyển hết sang
+  token. Chúng là lý do theme tối chưa bao giờ hoàn chỉnh.
+
 ## Vì sao để riêng, không nhét vào `portal/`
 
 Hai hệ khác vòng đời và khác người dùng.
