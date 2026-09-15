@@ -146,6 +146,113 @@ F('nghệ sĩ 100% vẫn thu hồi xong', edge.share1Recoup > 0, edge.share1Reco
 F('tham số vô lý không làm vỡ mô hình', edge.badFinite && edge.badYears >= 1,
   edge.badYears + '/' + edge.badFinite);
 
+console.log('\n— nhiều nguồn doanh thu, mỗi nguồn một tỷ lệ —');
+const ms = await p.evaluate(i => {
+  /* hai nguồn bằng nhau nhưng chia khác nhau: 1.000 chia 70/30 và 1.000 chia 50/50
+     → Haustek giữ 300 + 500 = 800/tháng, gộp thành một nguồn "bình quân 60%"
+     thì cũng ra 800 — nhưng chỉ đúng khi hai nguồn trôi cùng tốc độ. */
+  const two = finModel(Object.assign({}, i, {adv:0, mkt:0, prod:0, term:12, growth:0,
+    streams:[{k:'a', gross:1000, share:0.7, curve:'cat'},
+             {k:'b', gross:1000, share:0.5, curve:'cat'}]}));
+  const one = finModel(Object.assign({}, i, {adv:0, mkt:0, prod:0, term:12, growth:0,
+    gross:2000, share:0.6}));
+  /* giờ cho chúng trôi khác nhau: sync giữ phẳng, catalogue trôi −50%/năm */
+  const mix = finModel(Object.assign({}, i, {adv:0, mkt:0, prod:0, term:12, growth:-50,
+    streams:[{k:'cat', gross:1000, share:0.7, curve:'cat'},
+             {k:'sync',gross:1000, share:0.5, curve:'flat'}]}));
+  const allCat = finModel(Object.assign({}, i, {adv:0, mkt:0, prod:0, term:12, growth:-50,
+    streams:[{k:'cat', gross:1000, share:0.7, curve:'cat'},
+             {k:'c2',  gross:1000, share:0.5, curve:'cat'}]}));
+  /* bản phát hành mới lên dần 3 tháng rồi mới trôi */
+  const rel = finModel(Object.assign({}, i, {adv:0, mkt:0, prod:0, term:12, growth:0, rampMo:3,
+    streams:[{k:'r', gross:900, share:0, curve:'rel'}]}));
+  return { twoIn:two.inflow, oneIn:one.inflow, mixIn:mix.inflow, allCatIn:allCat.inflow,
+           m1:rel.months[0].gross, m2:rel.months[1].gross, m3:rel.months[2].gross, m4:rel.months[3].gross };
+}, BASE);
+F('hai nguồn cùng tốc độ = một nguồn bình quân', near(ms.twoIn, ms.oneIn, 1),
+  Math.round(ms.twoIn) + ' vs ' + Math.round(ms.oneIn));
+F('nguồn giữ phẳng thu nhiều hơn nguồn cùng trôi', ms.mixIn > ms.allCatIn,
+  Math.round(ms.mixIn) + ' > ' + Math.round(ms.allCatIn));
+F('bản phát hành mới lên dần: tháng 1 bằng 1/3 đỉnh', near(ms.m1, 300), ms.m1);
+F('bản phát hành mới: tháng 2 bằng 2/3 đỉnh', near(ms.m2, 600), ms.m2);
+F('bản phát hành mới: tháng 3 đạt đỉnh', near(ms.m3, 900), ms.m3);
+F('bản phát hành mới: qua đỉnh thì mới bắt đầu trôi', ms.m4 <= 900 + 0.5, ms.m4);
+
+console.log('\n— đo đà từ báo cáo 12 tháng —');
+const tr = await p.evaluate(() => {
+  const down = [];
+  /* dựng đúng −20%/năm rồi xem có đo ngược lại ra không */
+  for (let m = 0; m < 12; m++) down.push(5000 * Math.pow(Math.pow(0.8, 1/12), m));
+  const flat = [3000,3000,3000,3000,3000,3000,3000,3000,3000,3000,3000,3000];
+  const up   = []; for (let m = 0; m < 12; m++) up.push(2000 * Math.pow(Math.pow(1.5, 1/12), m));
+  const noisy= [3000, 9000, 1200, 5000, 800, 7000, 2000, 6000, 1000, 4000, 2500, 3500];
+  return {
+    down: finTrend(down), flat: finTrend(flat), up: finTrend(up), noisy: finTrend(noisy),
+    ba: finTrend([100,110,120]), rong: finTrend([]),
+    coSo0: finTrend([1000,0,1100,0,1200,0,1300,1400]),
+    amHet: finTrend([-5,-4,-3,-2,-1])
+  };
+});
+F('đo đúng −20%/năm từ chuỗi giảm 20%/năm', near(tr.down.yearly, -20, 0.6), tr.down.yearly);
+F('chuỗi đi ngang thì đà bằng 0', near(tr.flat.yearly, 0, 0.1), tr.flat.yearly);
+F('đo đúng +50%/năm từ chuỗi tăng 50%/năm', near(tr.up.yearly, 50, 1.5), tr.up.yearly);
+F('chuỗi đều thì độ bám sát gần 1', tr.down.r2 > 0.99, tr.down.r2);
+F('chuỗi nhảy loạn thì độ bám sát thấp', tr.noisy.r2 < 0.3, tr.noisy.r2);
+F('dưới 4 tháng thì từ chối đo', tr.ba === null, tr.ba);
+F('không có số thì từ chối đo', tr.rong === null, tr.rong);
+F('tháng bằng 0 bị loại, phần còn lại vẫn đo được', tr.coSo0 !== null && tr.coSo0.n === 5, tr.coSo0 && tr.coSo0.n);
+F('toàn số âm thì từ chối đo', tr.amHet === null, tr.amHet);
+F('nhịp hiện tại lấy trung bình 3 tháng cuối',
+  near(tr.flat.runRate, 3000), tr.flat.runRate);
+
+console.log('\n— đọc số khách dán vào —');
+const ps = await p.evaluate(() => ({
+  phay:   finParseHist('1000, 2000, 3000'),
+  lienNhau: finParseHist('1000,2000,3000'),
+  xuong:  finParseHist('1000\n2000\n3000'),
+  tab:    finParseHist('1000\t2000\t3000'),
+  nghin:  finParseHist('1,200 2,400 3,600'),
+  nghinVN:finParseHist('4.820\n4.650\n5.010'),
+  trieu:  finParseHist('1,234,567\n2,345,678'),
+  cotien: finParseHist('$1200 USD, $2400 USD'),
+  excel:  finParseHist('Tháng 10/2025\t4.820\nTháng 11/2025\t4.650\nTháng 12/2025\t5.010'),
+  thapphan: finParseHist('1200.5\n2400.25'),
+  qua12:  finParseHist(Array.from({length:20},(_,k)=>(k+1)*100).join(',')),
+  rong:   finParseHist(''),
+  null_:  finParseHist(null),
+  rac:    finParseHist('không có số nào ở đây')
+}));
+F('ngăn bằng dấu phẩy có dấu cách', ps.phay.join()==='1000,2000,3000', ps.phay.join());
+F('ngăn bằng dấu phẩy không dấu cách', ps.lienNhau.join()==='1000,2000,3000', ps.lienNhau.join());
+F('ngăn bằng xuống dòng', ps.xuong.join()==='1000,2000,3000', ps.xuong.join());
+F('ngăn bằng tab', ps.tab.join()==='1000,2000,3000', ps.tab.join());
+F('bỏ dấu phân nhóm kiểu Anh', ps.nghin.join()==='1200,2400,3600', ps.nghin.join());
+F('bỏ dấu phân nhóm kiểu Việt', ps.nghinVN.join()==='4820,4650,5010', ps.nghinVN.join());
+F('số hàng triệu có hai dấu phân nhóm', ps.trieu.join()==='1234567,2345678', ps.trieu.join());
+F('bỏ ký hiệu tiền tệ', ps.cotien.join()==='1200,2400', ps.cotien.join());
+F('dán từ Excel: mỗi dòng lấy số cuối, bỏ nhãn tháng và năm',
+  ps.excel.join()==='4820,4650,5010', ps.excel.join());
+F('giữ phần thập phân thật', ps.thapphan.join()==='1200.5,2400.25', ps.thapphan.join());
+F('dán quá 12 tháng thì lấy 12 tháng gần nhất',
+  ps.qua12.length===12 && ps.qua12[11]===2000, ps.qua12.length+'/'+ps.qua12[11]);
+F('dán rỗng không vỡ', ps.rong.length===0);
+F('null không vỡ', ps.null_.length===0);
+F('dán chữ không có số thì trả về rỗng', ps.rac.length===0, ps.rac.join());
+
+console.log('\n— phí pháp lý và xác suất —');
+const lp = await p.evaluate(i => {
+  const noLegal = finModel(Object.assign({}, i, {legal:0}));
+  const legal   = finModel(Object.assign({}, i, {legal:5000}));
+  const prob    = finModel(Object.assign({}, i, {prob:0.4}));
+  return { a:noLegal.outlay, b:legal.outlay, aRec:noLegal.recoupable, bRec:legal.recoupable,
+           aP:noLegal.profit, bP:legal.profit,
+           exp:prob.expected, pr:prob.profit };
+}, BASE);
+F('phí pháp lý cộng vào vốn bỏ ra', near(lp.b - lp.a, 5000), lp.b - lp.a);
+F('phí pháp lý KHÔNG thu hồi được từ nghệ sĩ', near(lp.aRec, lp.bRec), lp.aRec+' vs '+lp.bRec);
+F('phí pháp lý ăn thẳng vào lợi nhuận', near(lp.aP - lp.bP, 5000), lp.aP - lp.bP);
+F('lợi nhuận × xác suất đúng bằng tích', near(lp.exp, lp.pr*0.4, 1), lp.exp);
+
 console.log('\n— ba kịch bản —');
 const sc = await p.evaluate(i => finScenarios(i).map(x => ({
   k:x.k, inflow:x.r.inflow, irr:x.r.irr, pay:x.r.payback })), BASE);
@@ -171,5 +278,5 @@ errs.slice(0, 4).forEach(e => console.log('  ' + e));
 if (errs.length) FAILED++;
 await b.close();
 srv.close();
-console.log(FAILED ? ('\n' + FAILED + ' phép kiểm HỎNG') : '\n38 đạt · 0 hỏng');
+console.log(FAILED ? ('\n' + FAILED + ' phép kiểm HỎNG') : '\n71 đạt · 0 hỏng');
 process.exit(FAILED ? 1 : 0);

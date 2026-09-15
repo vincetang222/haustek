@@ -1086,6 +1086,29 @@ tbody tr:hover .ipen{opacity:1}
   .drawer{width:100%;max-width:100%}
 }
 /* mô hình tài chính — bảng lời lỗ theo năm */
+.finhist{background:var(--paper);border:1px solid var(--line-2);border-radius:var(--r-sm);
+  padding:10px 12px;margin-bottom:12px}
+.finhist-t{font-size:11px;font-weight:650;color:var(--muted);text-transform:uppercase;
+  letter-spacing:.05em;margin-bottom:6px;line-height:1.55}
+.fin-ta{width:100%;box-sizing:border-box;border:1px solid var(--line);border-radius:var(--r-sm);
+  padding:7px 9px;font:12px/1.5 var(--mono);color:var(--ink);background:var(--paper);resize:vertical}
+.fin-ta:focus{outline:none;border-color:var(--accent);box-shadow:var(--shadow-lift)}
+.finhist-r{display:flex;align-items:center;gap:10px;margin-top:7px;font-size:11.5px;color:var(--ink-2)}
+.finhist-r .dim{color:var(--muted)} .finhist-r .warn{color:var(--warn)}
+.finspark{color:var(--accent);flex:none;margin-left:auto}
+.finsrc{font-size:11.5px;padding:6px 10px;border-radius:var(--r-sm);margin-bottom:8px;line-height:1.5}
+.finsrc.do{background:var(--accent-lo);color:var(--ice-dark)}
+.finsrc.gd{background:var(--warn-lo);color:var(--warn)}
+.finsrc.warn{background:var(--danger-lo);color:var(--danger);font-weight:600}
+.finstr{margin-bottom:12px}
+.finstr-t{font-size:11px;font-weight:650;color:var(--muted);text-transform:uppercase;
+  letter-spacing:.05em;margin-bottom:6px;line-height:1.55}
+.finstr-r{display:flex;align-items:center;gap:9px;padding:3px 0;font-size:12px}
+.finstr-n{min-width:132px;color:var(--ink-2)}
+.finstr-b{flex:1;height:7px;background:var(--fill);border-radius:99px;overflow:hidden;min-width:40px}
+.finstr-b i{display:block;height:100%;background:var(--accent);border-radius:99px}
+.finstr-r b{font-family:var(--mono);min-width:92px;text-align:right}
+.finstr-p{min-width:86px;text-align:right;color:var(--muted);font-size:11px}
 .finverd{padding:9px 12px;border-radius:var(--r-sm);font-weight:650;font-size:12.5px;margin-bottom:12px}
 .finkpi{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:9px;margin-bottom:14px}
 .finkpi-c{background:var(--paper);border:1px solid var(--line-2);border-radius:var(--r-sm);padding:9px 11px}
@@ -1206,6 +1229,14 @@ vi:{
   nOpen:'đang chạy', nPlay:'đang theo đuổi',
   asOfNow:'tại thời điểm này', kpiNoClosed:'chưa deal nào đóng trong kỳ',
   finLow:'Thận trọng', finBase:'Cơ sở', finHigh:'Lạc quan',
+  finSrcMeasured:'Đà {g}%/năm — đo từ {n} tháng doanh thu khách cung cấp',
+  finSrcAssumed:'Đà {g}%/năm — đây là GIẢ ĐỊNH, chưa có báo cáo doanh thu của khách',
+  finFitOk:'số liệu bám sát xu hướng', finFitLoose:'số liệu dao động mạnh, coi con số này là ước chừng',
+  finHistNone:'Chưa dán báo cáo — mô hình đang chạy bằng giả định',
+  finHistThin:'Mới đọc được {n} tháng, cần ít nhất 4 tháng có doanh thu mới đo được đà',
+  finHistRead:'Đọc được {n} tháng · nhịp hiện tại {r}/tháng',
+  finGapHigh:'Khách khai {a}/tháng nhưng báo cáo 12 tháng chỉ cho thấy {b} — cao hơn {p}%. Hỏi lại trước khi trình duyệt.',
+  finGapLow:'Khách khai {a}/tháng trong khi báo cáo 12 tháng cho thấy {b} — thấp hơn {p}%. Kiểm lại xem có thiếu nguồn nào không.',
   finVStrong:'Deal tốt — vốn về nhanh và lãi dày, có thể chốt',
   finVOk:'Deal ổn — đạt mức lãi Haustek đặt ra',
   finVThin:'Lãi mỏng — chỉ nên chốt nếu có lý do chiến lược',
@@ -1480,6 +1511,14 @@ en:{
   nOpen:'open', nPlay:'in play',
   asOfNow:'as of now', kpiNoClosed:'no deals closed in period',
   finLow:'Cautious', finBase:'Base', finHigh:'Optimistic',
+  finSrcMeasured:'Trend {g}%/yr — measured from {n} months of client revenue',
+  finSrcAssumed:'Trend {g}%/yr — this is an ASSUMPTION, no client revenue report yet',
+  finFitOk:'the data follows the trend closely', finFitLoose:'the data swings a lot, treat this as a rough figure',
+  finHistNone:'No report pasted — the model is running on an assumption',
+  finHistThin:'Only {n} months read, at least 4 months with revenue are needed to measure a trend',
+  finHistRead:'Read {n} months · current run rate {r}/month',
+  finGapHigh:'Client states {a}/month but the 12-month report shows only {b} — {p}% higher. Ask before submitting for approval.',
+  finGapLow:'Client states {a}/month while the 12-month report shows {b} — {p}% lower. Check whether a source is missing.',
   finVStrong:'Strong deal — money back fast with a healthy margin',
   finVOk:'Sound deal — meets the return Haustek asks for',
   finVThin:'Thin margin — only worth signing for strategic reasons',
@@ -3875,16 +3914,27 @@ VIEWS.oppDetail = function(){
         const a = (o.ext||{}).advCalcResult;
         if(!a) return '<div class="dgrp">'+esc(L(sec.t))+'</div>'+
           '<div class="mini-empty">'+esc(L(['Deal này không dùng advance.','No advance on this deal.']))+'</div>';
+        /* Deal lưu từ form có đủ trường dẫn xuất, deal nhập sẵn chỉ có ĐIỀU KHOẢN.
+           Bản cũ đọc thẳng a.trigger1.amount nên tab này vỡ ở mọi deal nhập sẵn.
+           Số dẫn xuất giờ tính lại tại chỗ từ điều khoản — vừa không vỡ, vừa
+           không hiển thị số cũ đã lỗi thời nếu điều khoản có sửa sau đó. */
+        const fi = finInputOf(o);
+        const fm = fi && fi.term ? finModel(fi) : null;
+        const opt = (v, fmt) => (v===undefined || v===null) ? '—' : fmt(v);
         const rowsA = [
-          [L(['Advance ban đầu','Initial advance']), money(a.initialAdvance)],
-          [L(['Marketing fund','Marketing fund']), money(a.marketingFund)],
-          [L(['Tổng advance','Total advance']), money(a.initialAdvance+a.marketingFund)],
-          [L(['Số tháng thu hồi','Months to recoup']), (a.monthsToRecoup||0).toFixed(1)],
-          [L(['ROI toàn kỳ','Total ROI']), Math.round((a.roi||0)*100)+'%'],
-          [L(['ROI theo năm','ROI annual']), ((a.roiAnnual||0)*100).toFixed(1)+'%'],
-          [L(['Cap trigger','Trigger cap']), money(a.cap)],
-          ['Trigger 1 (×15)', money(a.trigger1.amount)+' · +'+a.trigger1.addMonths+L([' tháng',' months'])],
-          ['Trigger 2 (×12)', money(a.trigger2.amount)+' · +'+a.trigger2.addMonths+L([' tháng',' months'])]
+          [L(['Advance ban đầu','Initial advance']), money(a.initialAdvance||0)],
+          [L(['Marketing fund','Marketing fund']), money(a.marketingFund||0)],
+          [L(['Tổng advance','Total advance']), money((a.initialAdvance||0)+(a.marketingFund||0))],
+          [L(['Tỷ lệ nghệ sĩ','Artist share']), Math.round(pctOf(a.artistShare)*100)+'%'],
+          [L(['Thời hạn','Term']), (a.termMonths||0)+L([' tháng',' months'])],
+          [L(['Độc quyền','Exclusivity']), (a.exclusivityMonths||0)+L([' tháng',' months'])],
+          [L(['Số tháng thu hồi','Months to recoup']),
+            fm ? (fm.recoupMonth || L(['không thu hồi kịp','not within term'])) : '—'],
+          [L(['Bội số vốn','Return on money in']), fm ? fm.multiple.toFixed(2)+'×' : '—'],
+          [L(['Tỷ suất mỗi năm','Yearly rate of return']), fm ? finPct(fm.irr) : '—'],
+          [L(['Cap trigger','Trigger cap']), opt(a.cap, money)],
+          ['Trigger 1', a.trigger1 ? money(a.trigger1.amount)+' · +'+a.trigger1.addMonths+L([' tháng',' months']) : '—'],
+          ['Trigger 2', a.trigger2 ? money(a.trigger2.amount)+' · +'+a.trigger2.addMonths+L([' tháng',' months']) : '—']
         ];
         return '<div class="dgrp">'+esc(L(sec.t))+'</div><div class="dgrid">'+
           rowsA.map(r=>'<div class="drow"><div class="dlab">'+esc(r[0])+'</div>'+
@@ -5530,10 +5580,14 @@ const OPP_FORM = [
     {k:'office', l:['Văn phòng phụ trách','Admin - country office'], f:'sel',
       o:['VN - Hanoi','VN - Hồ Chí Minh','VN - Đà Nẵng']},
     {k:'fromLead', l:['Chuyển từ lead','Converted from lead'], f:'chk'},
-    {k:'matching', l:['Quyền đối ứng (tháng)','Matching rights (in months)'], f:'sel', o:MONTHS_LIST},
+    {k:'matching', l:['Quyền ra giá bằng đối thủ (tháng)','Matching rights (months)'], f:'sel', o:MONTHS_LIST,
+      tip:['Hết hạn hợp đồng, nếu khách có lời mời từ nơi khác thì Haustek được quyền trả bằng giá đó để giữ khách, trong bấy nhiêu tháng.',
+           'When the deal ends, Haustek may match any rival offer to keep the client, for this many months.']},
     {k:'spStreams', l:['Lượt nghe Spotify / ngày','Spotify streams per day'], f:'num'},
     {k:'ytViews',   l:['Lượt xem YouTube / ngày','YouTube views per day'], f:'num'},
-    {k:'migration', l:['Ngày chuyển kho','Migration date'], f:'date'},
+    {k:'migration', l:['Ngày chuyển catalogue về Haustek','Catalogue migration date'], f:'date',
+      tip:['Ngày bản ghi rời nhà phân phối cũ. Trước ngày này Haustek chưa thu được đồng nào.',
+           'The day the recordings leave the old distributor. Haustek collects nothing before it.']},
     {k:'pubPerf1',  l:['Publishing performance','Publishing performance'], f:'text'},
     {k:'pubMech1',  l:['Publishing mechanical','Publishing mechanical'], f:'text'},
     {k:'pubSync1',  l:['Publishing sync','Publishing sync'], f:'text'}
@@ -5570,23 +5624,43 @@ const OPP_FORM = [
    Lc:[
     {k:'ytIncome',  l:['Thu nhập YouTube / tháng','YouTube income / month'], f:'money', req:1, d:'0', calc:1},
     {k:'audioIncome', l:['Thu nhập Audio / tháng','Audio income / month'], f:'money', req:1, d:'0', calc:1},
+    {k:'pubIncome',   l:['Thu nhập Publishing / tháng','Publishing income / month'], f:'money', d:'0', calc:1,
+      tip:['Tỷ lệ chia riêng cho publishing đặt ở phần Điều khoản.','Publishing split is set in the Terms section.']},
+    {k:'ugcIncome',   l:['Thu nhập UGC / tháng','UGC income / month'], f:'money', d:'0', calc:1},
+    {k:'thirdIncome', l:['Thu nhập video bên thứ ba / tháng','Third-party video income / month'], f:'money', d:'0', calc:1},
+    {k:'syncIncome',  l:['Thu nhập Sync / tháng','Sync income / month'], f:'money', d:'0', calc:1,
+      tip:['Sync về theo cục, không có xu hướng để ngoại suy — mô hình giữ phẳng.',
+           'Sync arrives in lumps with no trend to extrapolate — the model holds it flat.']},
+    {k:'neighIncome', l:['Thu nhập quyền liên quan / tháng','Neighbouring rights income / month'], f:'money', d:'0', calc:1},
     {k:'monthlyIncome', l:['Thu nhập hàng tháng','Monthly income'], f:'money', d:'0', ro:1,
-      tip:['Tự cộng từ YouTube và Audio.','Sum of YouTube and Audio.']},
-    {k:'newRelIncome',  l:['Thu nhập ước tính từ bản phát hành mới','New release estimated monthly income'], f:'money', calc:1},
+      tip:['Tự cộng tất cả các nguồn ở trên.','Sum of every source above.']},
+    {k:'newRelIncome',  l:['Ước tính thu nhập bản phát hành mới / tháng','New releases, estimated income / month'], f:'money', calc:1, d:'0',
+      tip:['Bản mới chưa ra thì chưa có số thật. Mô hình cho nguồn này lên dần trong ba tháng đầu rồi mới trôi như catalogue.',
+           'New releases have no real numbers yet. The model ramps this source over three months, then lets it drift like the catalogue.']},
     {k:'netPct',        l:['Tỷ lệ ròng HAUSTEK','HAUSTEK net rate'], f:'pct', d:'30', calc:1,
       tip:['Phần trăm HAUSTEK giữ lại trên tổng thu nhập tháng cộng thu nhập bản phát hành mới.',
            'Percentage HAUSTEK keeps of monthly income plus new-release income.']},
     {k:'netIncome',     l:['Thu nhập ròng HAUSTEK','HAUSTEK net income'], f:'money', ro:1,
       tip:['(Thu nhập hàng tháng + thu nhập bản phát hành mới) × tỷ lệ ròng.',
            '(Monthly income + new-release income) × net rate.']},
-    {k:'higherFeat',    l:['Lượt nghe từ bài hợp tác cao hơn','Higher feature streams'], f:'sel', o:['NA','Yes','No']},
+    {k:'higherFeat',    l:['Bài hợp tác kéo nhiều lượt nghe hơn bài chính?','Collabs out-stream own tracks?'], f:'sel', o:['NA','Yes','No'],
+      tip:['Nếu phần lớn lượt nghe đến từ bài khách hát cùng người khác thì doanh thu phụ thuộc vào người đó, không phải vào khách.',
+           'If most streams come from tracks featuring someone else, the revenue depends on that person, not on the client.']},
     {k:'ownsCatalog',   l:['Có sở hữu catalogue?','Owns catalog?'], f:'sel', o:['Yes','No','Other']}
    ],
    Rc:[
-    {k:'referralPct', l:['Tỷ lệ giới thiệu','Referral percentages'], f:'ta'},
-    {k:'mktScore',    l:['Điểm marketing','Marketing score'], f:'sel', o:['A','B','C','D','E','F']},
-    {k:'ownFeats',    l:['Tự có bài hợp tác','Own feats'], f:'sel', o:['NA','Yes','No'], d:'NA'},
-    {k:'shareouts',   l:['Có chia sẻ chéo đáng kể?','Substantial user / feat. shareouts?'], f:'sel', o:['NA','Yes','No'], d:'No'},
+    {k:'referralPct', l:['Hoa hồng giới thiệu phải trả','Referral commission owed'], f:'ta',
+      tip:['Ai giới thiệu deal này và ăn bao nhiêu phần trăm. Ghi ở đây rồi nhập số vào ô Finders fee.',
+           'Who introduced this deal and what percentage they take. Note it here, then enter the number in Finders fee.']},
+    {k:'mktScore',    l:['Xếp hạng marketing (A cao nhất)','Marketing rating (A is best)'], f:'sel', o:['A','B','C','D','E','F'],
+      tip:['Đánh giá khả năng tự đẩy của khách: A là tự chạy được, F là phải bơm tiền mới có lượt nghe.',
+           'How well the client can push their own releases: A runs itself, F needs money spent to get streams.']},
+    {k:'ownFeats',    l:['Khách tự mời được người hợp tác?','Client lands their own collabs?'], f:'sel', o:['NA','Yes','No'], d:'NA',
+      tip:['Khách tự kéo được người hợp tác thì bản phát hành mới đỡ tốn tiền marketing.',
+           'A client who brings their own collaborators needs less marketing spend on new releases.']},
+    {k:'shareouts',   l:['Phải chia lại cho bên khác nhiều không?','Significant splits owed to others?'], f:'sel', o:['NA','Yes','No'], d:'No',
+      tip:['Doanh thu phải chia tiếp cho người hợp tác hoặc nhạc sĩ khác thì phần thực nhận thấp hơn con số trên báo cáo.',
+           'Revenue that must be split again with collaborators or other writers means less than the report shows.']},
     {k:'catalogNotes',l:['Ghi chú catalogue','Catalog notes'], f:'ta'}
    ]},
 
@@ -5599,11 +5673,11 @@ const OPP_FORM = [
     {k:'ytChannel', l:['Kênh YouTube','YouTube channel'], f:'text'}
    ],
    Rc:[
-    {k:'spFollowers', l:['Spotify followers','Spotify followers'], f:'num'},
+    {k:'spFollowers', l:['Người theo dõi Spotify','Spotify followers'], f:'num'},
     {k:'spListeners', l:['Người nghe Spotify / tháng','Spotify monthly listeners'], f:'num'},
-    {k:'igFollowers', l:['Instagram followers','Instagram followers'], f:'num'},
-    {k:'ttFollowers', l:['TikTok followers','TikTok followers'], f:'num'},
-    {k:'ytSubs',      l:['YouTube subscribers','YouTube subscribers'], f:'num'}
+    {k:'igFollowers', l:['Người theo dõi Instagram','Instagram followers'], f:'num'},
+    {k:'ttFollowers', l:['Người theo dõi TikTok','TikTok followers'], f:'num'},
+    {k:'ytSubs',      l:['Người đăng ký YouTube','YouTube subscribers'], f:'num'}
    ]},
 
  { t:['Thông tin hệ thống & điều khoản','System information'],
@@ -5615,14 +5689,19 @@ const OPP_FORM = [
            'If Exclusivity Term Type is Term, then describe the term in number of months.']},
     {k:'licTerm',     l:['Thời hạn license','License term'], f:'text',
       tip:['Tính theo số tháng.','In months.']},
-    {k:'deliverables',l:['Sản phẩm cam kết','Deliverables'], f:'ta',
+    {k:'deliverables',l:['Khách cam kết giao gì','What the client commits to deliver'], f:'ta',
       tip:['Mô tả tiến độ giao sản phẩm, số bản thu / video mới cam kết, và chu kỳ giao.',
            'Describe the deliverables timeline, the number of new masters/videos committed, and the periodicity.']},
-    {k:'pctDist',   l:['Distribution %','Distribution %'], f:'pct', d:'70',
-      tip:['Tỷ lệ nghệ sĩ nhận trên doanh thu phân phối.','Share the artist receives on distribution revenue.']},
-    {k:'pctUGC',    l:['UGC %','UGC %'], f:'pct', d:'70'},
-    {k:'pct3rd',    l:['Third party videos %','Third party videos %'], f:'pct', d:'70'},
-    {k:'pctSync',   l:['Sync %','Sync %'], f:'pct', d:'50'}
+    {k:'pctDist',   l:['Nghệ sĩ giữ · phân phối','Artist keeps · distribution'], f:'pct', d:'70',
+      tip:['Phần NGHỆ SĨ giữ trên doanh thu phân phối. Phần còn lại là của Haustek, mô hình lời lỗ lấy đúng phần đó.',
+           'The share the ARTIST keeps of distribution revenue. The rest is Haustek, and the profit model works off that.']},
+    {k:'pctUGC',    l:['Nghệ sĩ giữ · UGC','Artist keeps · UGC'], f:'pct', d:'70',
+      tip:['Doanh thu từ video người dùng tự đăng có dùng nhạc của khách.',
+           'Revenue from user-uploaded videos that use the client music.']},
+    {k:'pct3rd',    l:['Nghệ sĩ giữ · video bên thứ ba','Artist keeps · third-party video'], f:'pct', d:'70'},
+    {k:'pctSync',   l:['Nghệ sĩ giữ · sync','Artist keeps · sync'], f:'pct', d:'50',
+      tip:['Sync là tiền cấp phép nhạc cho phim, quảng cáo, game. Về theo cục chứ không đều hàng tháng.',
+           'Sync is licensing music for film, ads and games. It arrives in lumps, not evenly each month.']}
    ],
    Rc:[
     {k:'artistId',    l:['Mã nghệ sĩ','Artist ID'], f:'text'},
@@ -5631,16 +5710,20 @@ const OPP_FORM = [
       tip:['Tích vào để mở phần Tính toán advance bên dưới.',
            'Tick to reveal the Advance calculation section below.']},
     {k:'exclType',    l:['Kiểu thời hạn độc quyền','Exclusivity term type'], f:'sel',
-      o:[['Mốc muộn hơn của x tháng thu hồi vốn','Later of x months of recoupment'],
-         ['Cố định','Fixed']]},
+      o:[['Tới khi thu hồi xong, ít nhất x tháng','Until recouped, minimum x months'],
+         ['Cố định theo số tháng','Fixed number of months']]},
     {k:'licType',     l:['Kiểu thời hạn license','Licence term type'], f:'sel',
       o:[['Theo sản phẩm','Per product'],['Theo năm','Per year'],['Theo kỳ hạn','Per term']], d:'Per product'},
-    {k:'rofn',        l:['ROFN (tháng)','ROFN (in months)'], f:'sel', o:MONTHS_LIST},
-    {k:'matching2',   l:['Quyền đối ứng (tháng)','Matching rights (in months)'], f:'sel', o:MONTHS_LIST},
-    {k:'pctDistNew',  l:['Distribution new releases %','Distribution new releases %'], f:'pct', d:'70'},
-    {k:'pctYT',       l:['YouTube %','YouTube %'], f:'pct', d:'70'},
-    {k:'pctNeigh',    l:['Neighboring rights %','Neighboring rights %'], f:'pct', d:'85'},
-    {k:'pctPub',      l:['Publishing %','Publishing %'], f:'pct', d:'70'}
+    {k:'rofn',        l:['Quyền được chào trước (tháng)','Right of first negotiation (months)'], f:'sel', o:MONTHS_LIST,
+      tip:['Khách muốn ký nơi khác thì phải chào Haustek trước, trong bấy nhiêu tháng.',
+           'Before signing elsewhere the client must come to Haustek first, for this many months.']},
+    {k:'matching2',   l:['Quyền ra giá bằng đối thủ (tháng)','Matching rights (months)'], f:'sel', o:MONTHS_LIST},
+    {k:'pctDistNew',  l:['Nghệ sĩ giữ · bản phát hành mới','Artist keeps · new releases'], f:'pct', d:'70'},
+    {k:'pctYT',       l:['Nghệ sĩ giữ · YouTube','Artist keeps · YouTube'], f:'pct', d:'70'},
+    {k:'pctNeigh',    l:['Nghệ sĩ giữ · quyền liên quan','Artist keeps · neighbouring rights'], f:'pct', d:'85',
+      tip:['Tiền thu từ việc phát bản ghi ở nơi công cộng, đài phát thanh, quán xá.',
+           'Money from the recording being played in public, on radio, in venues.']},
+    {k:'pctPub',      l:['Nghệ sĩ giữ · publishing','Artist keeps · publishing'], f:'pct', d:'70'}
    ]},
 
  { t:['Tính toán advance','Advance calculation'], custom:'advance', Lc:[], Rc:[] },
@@ -5656,7 +5739,9 @@ const OPP_FORM = [
     {k:'prodFund',  l:['Quỹ sản xuất','Production fund'], f:'money', req:1, d:'0',
       tip:['Mặc định là 0. Nếu điền giá trị lớn hơn 0 thì deal phải được Phong duyệt.','The default is $0. If you put in a value greater than $0, the deal must be approved by Phong.']},
     {k:'legalFee',  l:['Phí pháp lý','Legal fee'], f:'money'},
-    {k:'recoupRate',l:['Tỷ lệ thu hồi','Recoupment rate'], f:'pct', d:'100'},
+    {k:'recoupRate',l:['Giữ lại bao nhiêu phần của nghệ sĩ để thu hồi','Share of artist money held for recoupment'], f:'pct', d:'100',
+      tip:['100% là giữ toàn bộ phần nghệ sĩ cho tới khi thu hồi xong advance. Để thấp hơn nếu đã hứa trả khách một phần ngay trong kỳ thu hồi.',
+           '100% holds all the artist money until the advance is recouped. Lower it if the client was promised some money during recoupment.']},
     {k:'totalROI',  l:['Tổng ROI của deal','Total deal ROI'], f:'text'},
     {k:'triggers',  l:['Điều kiện kích hoạt','Triggers'], f:'ta',
       tip:['Mô tả sự kiện kích hoạt, khoảng thời gian áp dụng, cam kết tài chính bổ sung, và việc gia hạn độc quyền / license.',
@@ -5813,15 +5898,15 @@ const ADV_F = [
   {id:'ac_fee',  l:['Finders fee','Finders fee'], k:'pct', d:'0'},
   {id:'ac_rate', l:['Ngưỡng kích hoạt trigger (% advance đã thu hồi)','Trigger threshold (% of advance recouped)'], k:'pct', d:'100'},
   {id:'ac_cap',  l:['Cap trigger (doanh thu 12 tháng cộng thêm %)','Trigger cap (12-month revenue plus %)'], k:'pct', d:'30'},
-  {id:'ac_growth', l:['Doanh thu thay đổi mỗi năm','Yearly revenue change'], k:'pct', d:'-12',
-   tip:['Catalogue không đứng yên. Số âm là trôi xuống, số dương là còn đà tăng. Mặc định −12%/năm cho catalogue không có phát hành mới.',
-        'Catalogues do not stay flat. Negative means decline, positive means still growing. Default −12%/yr for a catalogue with no new releases.']},
-  {id:'ac_dist', l:['Phí phát hành Haustek chịu','Distribution fee borne by Haustek'], k:'pct', d:'0',
-   tip:['Phần nền tảng hoặc đối tác phát hành giữ lại trước khi chia. Để 0 nếu deal đã tính trên doanh thu ròng.',
-        'What the platform or distributor keeps before the split. Leave 0 if the deal is already on net revenue.']},
+  {id:'ac_growth', l:['Doanh thu trôi mỗi năm — khi chưa có báo cáo','Yearly revenue drift — when no report'], k:'pct', d:'-12',
+   tip:['CHỈ dùng khi chưa dán báo cáo doanh thu của khách. Dán vào thì mô hình ĐO đà thật và bỏ qua ô này. −12% là con số đặt tạm, chưa dựa trên số liệu Haustek — thay bằng mức trôi thật của danh mục khi có.',
+        'Used ONLY when no client revenue report is pasted. Paste one and the model MEASURES the real trend and ignores this field. −12% is a placeholder, not derived from Haustek data — replace it with the real catalogue drift once known.']},
+  {id:'ac_dist', l:['Phí nền tảng Haustek chịu','Platform fee borne by Haustek'], k:'pct', d:'0',
+   tip:['Phần nền tảng hoặc đối tác phát hành giữ lại TRƯỚC khi chia với nghệ sĩ. Để 0 nếu con số doanh thu đang nhập đã là tiền về tài khoản.',
+        'What the platform or distributor keeps BEFORE the split with the artist. Leave 0 if the revenue figures entered are already money received.']},
   {id:'ac_disc', l:['Chi phí vốn mỗi năm','Cost of capital per year'], k:'pct', d:'12',
-   tip:['Dùng để quy tiền các năm sau về giá trị hôm nay. Tiền năm thứ 6 không đáng bằng tiền năm nay.',
-        'Used to bring future money back to today. Money in year 6 is not worth money today.']}
+   tip:['Dùng để quy tiền các năm sau về giá trị hôm nay — tiền năm thứ sáu không đáng bằng tiền năm nay. 12% là con số ĐẶT TẠM, không lấy từ sổ sách Haustek. Đúng ra phải là lãi vay ngân hàng của Haustek, hoặc mức lợi nhuận tối thiểu ban giám đốc yêu cầu. Thay đúng số đó vào thì mọi con số NPV mới có nghĩa.',
+        'Used to bring later money back to today value — money in year six is not worth money now. 12% is a PLACEHOLDER, not taken from Haustek books. It should be Haustek own borrowing rate, or the minimum return the board requires. Put that number in and the NPV figures start to mean something.']}
 ];
 function advInput(f){
   const on = ' oninput="advCalc()" onchange="advCalc()"';
@@ -5868,6 +5953,17 @@ function finBoxHTML(){
         'Tính theo từng tháng rồi gộp lại, vì thu hồi advance là sự kiện có thời điểm. Doanh thu được cho trôi theo mức đặt ở phần giả định, và tiền các năm sau được quy về giá trị hôm nay.',
         'Computed month by month then grouped, because recoupment happens at a point in time. Revenue drifts by the rate set in the assumptions, and later money is brought back to today value.']))+'">?</span>'+
     '</div>'+
+    '<div class="finhist">'+
+      '<div class="finhist-t">'+esc(L(['Báo cáo doanh thu khách mang tới','Revenue history from the client']))+
+        '<span class="info" style="margin-left:6px" data-tip="'+esc(L([
+          'Dán doanh thu từng tháng, tháng cũ nhất trước, cách nhau bằng dấu phẩy hoặc xuống dòng. Mô hình sẽ ĐO đà tăng giảm từ đây thay vì dùng con số giả định.',
+          'Paste monthly revenue, oldest first, separated by commas or line breaks. The model MEASURES the trend from this instead of using an assumed number.']))+'">?</span>'+
+      '</div>'+
+      '<textarea class="fin-ta" id="finHist" rows="2" placeholder="'+
+        esc(L(['3120, 3340, 3010, 2890, 3150, 2760 …','3120, 3340, 3010, 2890, 3150, 2760 …']))+
+        '" oninput="advCalc()"></textarea>'+
+      '<div class="finhist-r" id="finHistOut"></div>'+
+    '</div>'+
     '<div id="finVerdict"></div>'+
     '<div class="finkpi" id="finKpi"></div>'+
     '<div class="fintbl" id="finYears"></div>'+
@@ -5876,14 +5972,111 @@ function finBoxHTML(){
     '<div class="finmax" id="finMax"></div>'+
   '</div>';
 }
-function finFromForm(){
-  return {
-    gross: advNum('ac_avg'), share: advNum('ac_share')/100, pass: advNum('ac_pass')/100,
-    adv: advNum('ac_adv'), mkt: advNum('ac_mkt'), prod: advNum('ac_prod'),
-    term: advNum('ac_term'), fee: advNum('ac_fee')/100,
-    growth: advNum('ac_growth'), dist: advNum('ac_dist')/100, disc: advNum('ac_disc'),
-    recoupMkt: 1
+/* đọc một trường của form deal (of_*), trả 0 nếu không có */
+function ofNum(k){ const e=document.getElementById('of_'+k); const v=parseFloat(e?e.value:0); return isNaN(v)?0:v; }
+function ofHas(k){ return !!document.getElementById('of_'+k); }
+
+/* Tách doanh thu từng tháng từ chỗ khách dán vào. Thực tế nó tới dưới đủ mọi
+   hình dạng: copy từ Excel thì mỗi dòng một tháng kèm nhãn và năm; gõ tay thì
+   một dòng ngăn bằng dấu phẩy; xuất từ PDF thì dính cả ký hiệu tiền.
+
+   Hai quy tắc, cả hai đều giải thích được:
+   1. Dấu chấm hoặc phẩy đứng trước ĐÚNG ba chữ số là dấu phân nhóm hàng nghìn
+      (1,200 và 1.200 đều là 1200). Sau đó dấu phẩy còn lại mới là dấu ngăn.
+   2. Nhiều dòng thì mỗi dòng lấy SỐ CUỐI CÙNG — bảng nào cũng để doanh thu ở
+      cột phải, còn nhãn tháng và năm nằm bên trái. Một dòng duy nhất thì lấy
+      hết, vì lúc đó người ta đang gõ một dãy số liền. */
+function finParseHist(txt){
+  if(txt === null || txt === undefined) return [];
+  let t = String(txt);
+  let prev;
+  do { prev = t; t = t.replace(/(\d)[.,](\d{3})(?!\d)/g, '$1$2'); } while(t !== prev);
+  const pick = line => {
+    const ns = (line.match(/\d+(?:\.\d+)?/g) || []).map(parseFloat).filter(x=>!isNaN(x));
+    return ns.length ? [ns[ns.length-1]] : [];
   };
+  const lines = t.split(/[\r\n]+/).map(x=>x.trim()).filter(Boolean);
+  let out;
+  if(lines.length > 1){
+    out = lines.reduce((a,l)=>a.concat(pick(l)), []);
+  } else {
+    out = (t.match(/\d+(?:\.\d+)?/g) || []).map(parseFloat).filter(x=>!isNaN(x));
+  }
+  return out.filter(x=>x>=0).slice(-12);
+}
+function finHistVals(){
+  const e = document.getElementById('finHist');
+  return finParseHist(e ? e.value : '');
+}
+
+/* Đà tăng giảm lấy từ đâu — trả cả con số lẫn NGUỒN của nó, để giao diện nói
+   thật: đo được từ số khách đưa, hay chỉ là giả định của mình. */
+function finGrowth(){
+  const tr = finTrend(finHistVals());
+  if(tr) return {v: Math.round(tr.yearly*10)/10, src:'do', tr:tr};
+  return {v: advNum('ac_growth'), src:'gd', tr:null};
+}
+
+function finFromForm(){
+  const g = finGrowth();
+  const hist = finTrend(finHistVals());
+  /* Nhịp chạy đo từ 3 tháng gần nhất đáng tin hơn một ô nhập tay, nhưng chỉ
+     dùng nó để CHIA LẠI tỷ trọng, không dùng để thay số của từng nguồn —
+     báo cáo khách đưa là tổng, không tách được ra từng nền tảng. */
+  const streams = FIN_STREAMS.map(st=>({
+    k: st.k, l: st.l, curve: st.curve,
+    gross: ofNum(st.inc),
+    share: (ofHas(st.pct) ? ofNum(st.pct) : 70)/100
+  }));
+  const sum = streams.reduce((a,x)=>a+x.gross,0);
+  /* KHÔNG tự co số khách khai về nhịp đo được. Bản trước làm vậy: gõ 1.800 cho
+     YouTube mà bảng hiện 1.334, không nói vì sao. Số khách khai là số khách
+     khai; báo cáo 12 tháng là bằng chứng. Hai cái lệch nhau thì đó là việc
+     phải KIỂM TRA, không phải việc âm thầm sửa — và chính là việc của tab
+     "Xác minh thu nhập". Mô hình chỉ lấy ĐÀ từ báo cáo, còn mức thì giữ nguyên. */
+  if(sum === 0){
+    /* chưa nhập theo nguồn thì dùng con số tổng ở phần advance, tỷ lệ chung */
+    streams.length = 0;
+    streams.push({k:'all', l:['Tổng doanh thu','Total revenue'], curve:'cat',
+                  gross: advNum('ac_avg'), share: advNum('ac_share')/100});
+  }
+  return {
+    streams,
+    gross: streams.reduce((a,x)=>a+x.gross,0),
+    share: advNum('ac_share')/100,
+    /* recoupRate ở form nói bao nhiêu phần thu nhập nghệ sĩ dùng để thu hồi;
+       pass-through là phần còn lại. Hai ô này vốn là hai mặt của một số —
+       trước đây nhập hai lần, sửa một chỗ thì chỗ kia sai. */
+    pass: ofHas('recoupRate') ? 1-clamp01(ofNum('recoupRate')/100) : advNum('ac_pass')/100,
+    adv: advNum('ac_adv'), mkt: advNum('ac_mkt'), prod: advNum('ac_prod'),
+    legal: ofNum('legalFee'),
+    prob: ofHas('prob') && ofNum('prob')>0 ? ofNum('prob')/100 : null,
+    term: advNum('ac_term'), fee: advNum('ac_fee')/100,
+    growth: g.v, growthSrc: g.src, hist: hist,
+    /* chênh lệch giữa lời khai và bằng chứng — để giao diện nêu ra */
+    claimed: sum, evidence: hist ? hist.runRate : null,
+    dist: advNum('ac_dist')/100, disc: advNum('ac_disc'),
+    recoupMkt: 1, rampMo: FIN_D.rampMo
+  };
+}
+function finHistOutHTML(inp){
+  const v = finHistVals();
+  if(!v.length) return '<span class="dim">'+esc(t('finHistNone'))+'</span>';
+  const tr = inp.hist;
+  if(!tr) return '<span class="warn">'+esc(t('finHistThin',{n:v.length}))+'</span>';
+  return '<span>'+esc(t('finHistRead',{n:tr.n, r:acFmt(Math.round(tr.runRate))}))+'</span>'+
+    finSpark(v);
+}
+/* Đường nhỏ xíu để người nhìn tự thấy dữ liệu có đáng tin không — 12 con số rời
+   rạc thì không ai đọc ra hình dạng, mà hình dạng mới là thứ quyết định. */
+function finSpark(v){
+  const mx = Math.max.apply(null, v.concat([1])), n = v.length;
+  if(n < 2) return '';
+  const W = 132, H = 26;
+  const pts = v.map((x,idx)=>[(idx/(n-1))*W, H - (x/mx)*(H-3) - 1.5]);
+  return '<svg class="finspark" width="'+W+'" height="'+H+'" viewBox="0 0 '+W+' '+H+'" aria-hidden="true">'+
+    '<polyline fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round" points="'+
+    pts.map(p=>p[0].toFixed(1)+','+p[1].toFixed(1)).join(' ')+'"/></svg>';
 }
 function finMonths(n){ return n ? (n+' '+L(['tháng','mo'])) : '—'; }
 function finPct(x){ return x===null ? '—' : (x*100).toFixed(0)+'%'; }
@@ -5894,6 +6087,42 @@ function finVerdictHTML(r){
   return '<div class="finverd" style="background:'+FIN_VC[v.k][0]+';color:'+FIN_VC[v.k][1]+'">'+
     esc(t(v.key))+'</div>';
 }
+/* Nói thẳng con số đà tăng giảm từ đâu ra. Một giả định đội lốt số đo được là
+   thứ nguy hiểm nhất trong bảng tài chính — người đọc sẽ tin nó như tin doanh
+   thu thật. */
+function finSrcHTML(inp){
+  let gap = '';
+  /* Lệch trên 15% giữa lời khai và sao kê là chuyện phải hỏi lại khách trước
+     khi ký, không phải chuyện làm tròn. */
+  if(inp.evidence > 0 && inp.claimed > 0){
+    const d = (inp.claimed - inp.evidence)/inp.evidence;
+    if(Math.abs(d) > 0.15)
+      gap = '<div class="finsrc warn">'+esc(t(d>0?'finGapHigh':'finGapLow',
+        {a:acFmt(Math.round(inp.claimed)), b:acFmt(Math.round(inp.evidence)),
+         p:Math.abs(Math.round(d*100))}))+'</div>';
+  }
+  if(inp.growthSrc === 'do' && inp.hist){
+    const tin = inp.hist.r2 >= 0.5 ? 'finFitOk' : 'finFitLoose';
+    return gap + '<div class="finsrc do">'+
+      esc(t('finSrcMeasured',{n:inp.hist.n, g:(inp.growth>0?'+':'')+inp.growth})) +
+      ' · ' + esc(t(tin)) + '</div>';
+  }
+  return gap + '<div class="finsrc gd">'+esc(t('finSrcAssumed',{g:(inp.growth>0?'+':'')+inp.growth}))+'</div>';
+}
+function finStreamHTML(r){
+  const live = (r.streams||[]).filter(x=>x.gross>0);
+  if(live.length < 2) return '';
+  const tot = live.reduce((a,x)=>a+x.gross,0) || 1;
+  return '<div class="finstr">'+
+    '<div class="finstr-t">'+esc(L(['Doanh thu theo nguồn, mỗi nguồn một tỷ lệ chia',
+                                    'Revenue by source, each with its own split']))+'</div>'+
+    live.map(x=>'<div class="finstr-r">'+
+      '<span class="finstr-n">'+esc(L(x.l||['—','—']))+'</span>'+
+      '<span class="finstr-b"><i style="width:'+Math.max(2,x.gross/tot*100)+'%"></i></span>'+
+      '<b>'+esc(acFmt(x.gross))+'</b>'+
+      '<span class="finstr-p">'+esc(L(['Haustek ','Haustek '])+Math.round((1-x.share)*100)+'%')+'</span>'+
+    '</div>').join('')+'</div>';
+}
 function finKpiHTML(r){
   const kpi = [
     [['Hoà vốn tiền mặt','Cash break-even'], finMonths(r.payback), r.payback && r.payback<=24?'good':(r.payback?'warn':'bad')],
@@ -5903,6 +6132,12 @@ function finKpiHTML(r){
     [['Tỷ suất mỗi năm','Yearly rate of return'], finPct(r.irr), r.irr>=0.25?'good':(r.irr>=0.15?'warn':'bad')],
     [['Giá trị hôm nay','Value in today money'], acFmt(r.npv), r.npv>0?'good':'bad']
   ];
+  /* Xác suất thành công đã có sẵn trong form từ lâu. Lợi nhuận nhân xác suất là
+     con số dùng để SO SÁNH giữa các deal — một deal lời 100 với 30% cơ hội
+     không bằng một deal lời 50 với 90% cơ hội. */
+  if(r.prob !== null && r.prob > 0)
+    kpi.push([['Lợi nhuận × xác suất','Probability-weighted profit'],
+              acFmt(r.expected), r.expected>0?'good':'bad']);
   return kpi.map(k=>'<div class="finkpi-c"><div class="finkpi-l">'+esc(L(k[0]))+'</div>'+
     '<div class="finkpi-v '+k[2]+'">'+esc(k[1])+'</div></div>').join('');
 }
@@ -5949,9 +6184,11 @@ function finRender(){
   const host = document.getElementById('finKpi'); if(!host) return;
   const inp = finFromForm();
   const r = finModel(inp);
-  document.getElementById('finVerdict').innerHTML = finVerdictHTML(r);
+  const ho = document.getElementById('finHistOut');
+  if(ho) ho.innerHTML = finHistOutHTML(inp);
+  document.getElementById('finVerdict').innerHTML = finSrcHTML(inp) + finVerdictHTML(r);
   host.innerHTML = finKpiHTML(r);
-  document.getElementById('finYears').innerHTML = finYearsHTML(r);
+  document.getElementById('finYears').innerHTML = finStreamHTML(r) + finYearsHTML(r);
   document.getElementById('finScen').innerHTML = finScenHTML(inp);
   document.getElementById('finMax').innerHTML  = finMaxHTML(inp);
 }
@@ -5984,12 +6221,14 @@ function finCard(o){
   return '<div class="tw" style="margin-top:16px"><div class="card-h">'+
       '<span class="card-t">'+esc(t('finTitle'))+'</span>'+
       '<span class="card-note">'+esc(
-        L(['Giả định: doanh thu ','Assumes revenue ']) +
+        (inp.growthSrc==='do' ? L(['Đà đo từ báo cáo khách: ','Trend measured from client report: '])
+                              : L(['Đà giả định: ','Assumed trend: '])) +
         (inp.growth>0?'+':'') + inp.growth + '%/' + L(['năm','yr']) + ' · ' +
         L(['chi phí vốn ','cost of capital ']) + inp.disc + '%'
       )+'</span></div>'+
-    '<div class="card-b">'+finVerdictHTML(r)+
+    '<div class="card-b">'+finSrcHTML(inp)+finVerdictHTML(r)+
       '<div class="finkpi">'+finKpiHTML(r)+'</div>'+
+      finStreamHTML(r)+
       '<div class="fintbl">'+finYearsHTML(r)+'</div>'+
       '<div class="acbox-t" style="margin-top:14px">'+esc(L(['Khoảng dao động','Range of outcomes']))+'</div>'+
       '<div class="finscen">'+finScenHTML(inp)+'</div>'+
@@ -6048,30 +6287,75 @@ function advModel(advOverride){
    của nghệ sĩ, hết dư thì trả. Chạy theo năm sẽ làm nhoè đúng cái mốc đó. */
 
 const FIN_D = {
-  growth:-12,   /* catalogue trôi xuống ~12%/năm nếu không có phát hành mới */
+  growth:-12,   /* dùng khi KHÔNG có lịch sử doanh thu — xem finGrowth() */
   dist:0,       /* phí nền tảng/phát hành Haustek chịu, % doanh thu gộp */
-  disc:12,      /* lãi suất chiết khấu — chi phí vốn của Haustek */
-  recoupMkt:1   /* marketing + production có được thu hồi cùng advance không */
+  disc:12,      /* chi phí vốn — xem ghi chú ở finRateNote() */
+  recoupMkt:1,  /* marketing + production có được thu hồi cùng advance không */
+  rampMo:3      /* bản phát hành mới mất ~3 tháng mới đạt đỉnh rồi mới trôi */
 };
+
+/* Mỗi nguồn doanh thu có TỶ LỆ CHIA riêng và ĐÀ riêng. Gộp hết vào một con số
+   bình quân là bỏ mất đúng thứ quyết định lời lỗ: YouTube chia 70/30 còn sync
+   chia 50/50; catalogue trôi xuống còn bản phát hành mới thì lên đỉnh rồi mới
+   trôi. Tỷ lệ của từng nguồn form đã có sẵn từ lâu — trước đây mô hình không
+   đọc tới, chỉ lấy một con số "tỷ lệ nghệ sĩ" chung. */
+const FIN_STREAMS = [
+  {k:'yt',    l:['YouTube','YouTube'],                       inc:'ytIncome',    pct:'pctYT',      curve:'cat'},
+  {k:'audio', l:['Audio / phân phối','Audio / distribution'], inc:'audioIncome', pct:'pctDist',    curve:'cat'},
+  {k:'newrel',l:['Bản phát hành mới','New releases'],         inc:'newRelIncome',pct:'pctDistNew', curve:'rel'},
+  {k:'pub',   l:['Publishing','Publishing'],                  inc:'pubIncome',   pct:'pctPub',     curve:'cat'},
+  {k:'ugc',   l:['UGC','UGC'],                                inc:'ugcIncome',   pct:'pctUGC',     curve:'cat'},
+  {k:'v3rd',  l:['Video bên thứ ba','Third-party video'],     inc:'thirdIncome', pct:'pct3rd',     curve:'cat'},
+  {k:'sync',  l:['Sync','Sync'],                              inc:'syncIncome',  pct:'pctSync',    curve:'flat'},
+  {k:'neigh', l:['Quyền liên quan','Neighbouring rights'],    inc:'neighIncome', pct:'pctNeigh',   curve:'flat'}
+];
+
+/* Đà của từng nguồn ở tháng thứ m (m bắt đầu từ 1).
+   cat  — catalogue trôi đều theo mức đo được hoặc giả định
+   rel  — bản phát hành mới: lên dần tới đỉnh rồi trôi như catalogue
+   flat — sync và quyền liên quan về theo cục, không có xu hướng để ngoại suy;
+          giữ phẳng là thừa nhận không biết, còn hơn bịa ra một đường cong */
+function finCurve(kind, m, gRate, rampMo){
+  if(kind==='flat') return 1;
+  if(kind==='rel'){
+    const r = Math.max(1, rampMo||FIN_D.rampMo);
+    if(m <= r) return m/r;
+    return Math.pow(gRate, m-r);
+  }
+  return Math.pow(gRate, m-1);
+}
+
+function finStreamsOf(i){
+  if(i.streams && i.streams.length) return i.streams;
+  /* một nguồn duy nhất — giữ để đường cũ và bộ kiểm cũ vẫn chạy y nguyên */
+  return [{k:'all', gross:i.gross||0, share:clamp01(i.share), curve:'cat'}];
+}
 
 function finModel(i){
   const term   = Math.max(1, Math.round(i.term||0));
-  const share  = clamp01(i.share), pass = clamp01(i.pass);
+  const pass   = clamp01(i.pass);
   const dist   = clamp01(i.dist), fee = clamp01(i.fee);
   const gRate  = Math.pow(1 + (i.growth||0)/100, 1/12);
-  const outlay = (i.adv||0) + (i.mkt||0) + (i.prod||0);
+  const legal  = i.legal||0;
+  /* Phí pháp lý là tiền mặt bỏ ra thật và KHÔNG thu hồi được từ nghệ sĩ —
+     nó nằm trong vốn bỏ ra nhưng không nằm trong phần recoupable. */
+  const outlay = (i.adv||0) + (i.mkt||0) + (i.prod||0) + legal;
   const recoupable = (i.adv||0) + (i.recoupMkt ? (i.mkt||0)+(i.prod||0) : 0);
   const rM     = Math.pow(1 + (i.disc||0)/100, 1/12);
+  const streams = finStreamsOf(i);
 
   let rec = 0, cum = -outlay, npv = -outlay, payback = 0;
   const cf = [-outlay], months = [];
   for(let m=1; m<=term; m++){
-    const gross   = (i.gross||0) * Math.pow(gRate, m-1);
-    const receipt = gross * (1-dist);
-    const artist  = receipt * share;
-    const houseGr = receipt - artist;
-    /* Trong lúc chưa thu hồi xong, phần của nghệ sĩ được giữ lại — trừ phần
-       pass-through đã cam kết vẫn trả. Đây chính là đường advance quay về. */
+    let gross = 0, artist = 0;
+    streams.forEach(st=>{
+      const g = (st.gross||0) * finCurve(st.curve, m, gRate, i.rampMo);
+      gross  += g;
+      artist += g * clamp01(st.share);
+    });
+    const shrink  = 1 - dist;
+    gross  *= shrink; artist *= shrink;
+    const houseGr = gross - artist;
     const take    = Math.min(Math.max(0, recoupable - rec), artist * (1-pass));
     rec += take;
     const finder  = houseGr * fee;
@@ -6097,18 +6381,52 @@ function finModel(i){
   }
 
   const inflow = cf.slice(1).reduce((a,b)=>a+b, 0);
+  const totGross = years.reduce((a,y)=>a+y.gross,0);
+  const prob = (i.prob===undefined || i.prob===null) ? null : clamp01(i.prob);
+  const profit = inflow - outlay;
   return {
-    months, years, outlay, recoupable,
-    inflow, profit: inflow - outlay,
+    months, years, outlay, recoupable, legal, streams,
+    inflow, profit,
     multiple: outlay>0 ? inflow/outlay : 0,
-    margin: years.reduce((a,y)=>a+y.gross,0)>0
-            ? (inflow-outlay)/years.reduce((a,y)=>a+y.gross,0) : 0,
+    margin: totGross>0 ? profit/totGross : 0,
     payback,                       /* tháng hoà vốn, 0 = không hoà trong kỳ */
     recoupMonth: monthWhenRecouped(months),
     npv, irr: irrAnnual(cf),
+    prob, expected: prob===null ? null : profit*prob,
     perYear: years.length
   };
 }
+
+/* ---- đà doanh thu suy từ BÁO CÁO 12 THÁNG khách mang tới ----
+   Khách đưa sao kê là dữ liệu tốt nhất có được; đoán một con số rồi áp cho mọi
+   deal thì chỉ là ý kiến. Hồi quy tuyến tính trên log doanh thu cho ra tốc độ
+   thay đổi mỗi tháng, quy ra năm. Dùng log vì doanh thu trôi theo tỷ lệ phần
+   trăm chứ không trôi theo số tuyệt đối.
+   Tháng bằng 0 hoặc âm bị loại: log không xác định, và một tháng trắng thường
+   là chưa có số liệu chứ không phải doanh thu thật bằng 0. */
+function finTrend(vals){
+  const pts = [];
+  (vals||[]).forEach((v,idx)=>{ if(v > 0) pts.push([idx, Math.log(v)]); });
+  if(pts.length < 4) return null;    /* dưới 4 điểm thì đường nào cũng vẽ được */
+  const n = pts.length;
+  const mx = pts.reduce((a,p)=>a+p[0],0)/n, my = pts.reduce((a,p)=>a+p[1],0)/n;
+  let num=0, den=0;
+  pts.forEach(p=>{ num += (p[0]-mx)*(p[1]-my); den += (p[0]-mx)*(p[0]-mx); });
+  if(den === 0) return null;
+  const slope = num/den;                         /* log-đổi mỗi tháng */
+  const yearly = (Math.pow(Math.exp(slope), 12) - 1) * 100;
+  /* R² để biết đường thẳng có tả được dữ liệu không — catalogue lên xuống thất
+     thường thì đừng bán con số này như một dự báo chắc chắn */
+  let ssRes=0, ssTot=0;
+  pts.forEach(p=>{ const fit = my + slope*(p[0]-mx); ssRes += Math.pow(p[1]-fit,2); ssTot += Math.pow(p[1]-my,2); });
+  const r2 = ssTot>0 ? 1-ssRes/ssTot : 0;
+  /* nhịp chạy hiện tại lấy trung bình 3 tháng gần nhất, không lấy một tháng:
+     một tháng lẻ có thể là tháng có bài viral hoặc tháng nghỉ lễ */
+  const last = (vals||[]).filter(v=>v>0).slice(-3);
+  const runRate = last.length ? last.reduce((a,v)=>a+v,0)/last.length : 0;
+  return { yearly: Math.max(-95, Math.min(300, yearly)), r2, n: pts.length, runRate };
+}
+
 function clamp01(x){ x = (x||0); return x<0 ? 0 : (x>1 ? 1 : x); }
 function monthWhenRecouped(ms){
   for(let k=0;k<ms.length;k++) if(ms[k].recoupPct >= 0.9999) return ms[k].m;
@@ -6690,7 +7008,9 @@ function advToggle(){
 /* Thu nhập tháng = YouTube + Audio; net = (tháng + bản mới) × tỷ lệ ròng */
 function dealCalc(){
   const g = id => { const e=document.getElementById('of_'+id); const v=parseFloat(e?e.value:0); return isNaN(v)?0:v; };
-  const monthly = g('ytIncome') + g('audioIncome');
+  /* Trước đây chỉ cộng YouTube với Audio, nên publishing, sync, quyền liên quan
+     và UGC không vào giá trị deal lẫn mô hình — mất trắng phần doanh thu đó. */
+  const monthly = FIN_STREAMS.reduce((a,st)=>a + g(st.inc), 0);
   const mi = document.getElementById('of_monthlyIncome');
   if(mi) mi.value = Math.round(monthly*100)/100;
   const net = (monthly + g('newRelIncome')) * (g('netPct')/100);

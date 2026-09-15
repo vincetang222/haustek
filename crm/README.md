@@ -9,7 +9,7 @@ Hệ **song song** với portal, không phải một phần của nó. Một fil
 | `../portal/SYNC.md` | Hướng dẫn đồng bộ hai chiều, viết cho đội làm portal |
 | `test/smoke.mjs` | 74 phép kiểm trên chính CRM |
 | `test/handoff-e2e.mjs` | 34 phép kiểm xuyên hai app — cả chuỗi CEO duyệt và chiều ngược |
-| `test/finmodel.mjs` | 38 phép kiểm mô hình tài chính, đối chiếu với số tính tay |
+| `test/finmodel.mjs` | 71 phép kiểm mô hình tài chính, đối chiếu với số tính tay |
 
 ## Mô hình tài chính
 
@@ -19,10 +19,41 @@ người ngồi đàm phán cần câu trả lời, không cần biết nó ra t
 Hiện ở hai chỗ: trong form tạo cơ hội (cập nhật ngay lúc gõ) và trên trang chi
 tiết deal.
 
+**Lấy số ở đâu.** Mô hình đọc thẳng các trường form đã có, không bắt nhập lại:
+
+| Trường form | Dùng để |
+|---|---|
+| `ytIncome` · `audioIncome` · `pubIncome` · `ugcIncome` · `thirdIncome` · `syncIncome` · `neighIncome` · `newRelIncome` | doanh thu từng nguồn |
+| `pctYT` · `pctDist` · `pctPub` · `pctUGC` · `pct3rd` · `pctSync` · `pctNeigh` · `pctDistNew` | tỷ lệ chia **riêng của từng nguồn** |
+| `advance` · `mktBudget` · `prodFund` · `legalFee` | tiền bỏ ra |
+| `recoupRate` | giữ lại bao nhiêu phần của nghệ sĩ để thu hồi |
+| `prob` | nhân ra lợi nhuận kỳ vọng |
+
+Mỗi nguồn có tỷ lệ chia riêng và đà riêng: YouTube chia 70/30 còn sync chia
+50/50; catalogue trôi xuống còn bản phát hành mới lên đỉnh trong ba tháng rồi
+mới trôi; sync và quyền liên quan về theo cục nên giữ phẳng — giữ phẳng là thừa
+nhận không biết, còn hơn bịa ra một đường cong.
+
+**Báo cáo 12 tháng của khách.** Dán vào ô trong phần mô hình — chấp mọi kiểu:
+dán từ Excel có nhãn tháng và năm, ngăn bằng phẩy, dấu phân nhóm kiểu Anh
+(1,200) hay kiểu Việt (1.200). Nhiều dòng thì mỗi dòng lấy số cuối, vì bảng nào
+cũng để doanh thu ở cột phải. Từ đó mô hình **đo** đà tăng giảm thay vì dùng giả
+định, và nói rõ trên màn hình rằng nó đang đo hay đang đoán.
+
+Lệch trên 15% giữa lời khai của khách và sao kê thì hiện cảnh báo đỏ — đó là
+việc phải hỏi lại trước khi trình duyệt, không phải việc làm tròn.
+
 **Cho ra:** hoà vốn tiền mặt tháng thứ mấy · thu hồi xong advance tháng thứ mấy ·
 lời lỗ từng năm với luỹ kế · lợi nhuận toàn kỳ · bội số vốn · tỷ suất mỗi năm ·
-giá trị quy về hôm nay · ba kịch bản thận trọng/cơ sở/lạc quan · **trần advance**
-theo mức lãi muốn giữ.
+giá trị quy về hôm nay · lợi nhuận × xác suất · ba kịch bản thận trọng/cơ sở/lạc
+quan · **trần advance** theo mức lãi muốn giữ.
+
+**Hai con số vẫn là giả định, chưa phải số của Haustek** — giao diện ghi rõ:
+
+- **Đà trôi −12%/năm** chỉ dùng khi CHƯA dán báo cáo của khách. Dán vào là bỏ.
+- **Chi phí vốn 12%/năm** dùng để quy tiền các năm sau về hôm nay. Đúng ra phải
+  là lãi vay của Haustek hoặc mức lợi nhuận tối thiểu ban giám đốc yêu cầu. Thay
+  đúng số đó vào thì NPV mới có nghĩa.
 
 **Khác gì bảng ROI cũ.** Bảng cũ trả lời được một câu: toàn kỳ lời mấy lần. Nó bỏ
 qua ba thứ:
@@ -122,7 +153,7 @@ tiết vẫn bị che nếu không có quyền xem tất cả.
 
 ```bash
 node crm/test/smoke.mjs         # 74 phép kiểm trên CRM
-node crm/test/finmodel.mjs      # 38 phép kiểm mô hình tài chính
+node crm/test/finmodel.mjs      # 71 phép kiểm mô hình tài chính
 node crm/test/handoff-e2e.mjs   # 34 phép kiểm CRM ↔ portal
 ```
 
