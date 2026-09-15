@@ -37,6 +37,7 @@
       <h1 id="pgTitle"></h1>
       <p id="pgSub"></p>
     </div>
+    <div id="rescueBar"></div>
     <div id="screen"></div>
   </main>
 </div>
@@ -172,6 +173,8 @@ function drawNav() {
 }
 
 /* ---------- vẽ ---------- */
+let RESC_HIDDEN = false;
+
 function render() {
   const id = (location.hash || "").replace("#", "") || H.screens[0].id;
   const s = H.screens.find(x => x.id === id) || H.screens[0];
@@ -180,6 +183,7 @@ function render() {
   $("pgTitle").textContent = s.title;
   $("pgSub").innerHTML = s.subtitle || "";
   $("crumb").textContent = "Admin · " + s.nav + " · kỳ " + A.periods[pIdx].label;
+  $("rescueBar").innerHTML = rescueBar();
   const root = $("screen");
   root.innerHTML = "";
   const t = performance.now();
@@ -189,9 +193,56 @@ function render() {
       <p class="hint">${esc(e && e.message)}</p><pre class="json">${esc(e && e.stack || "")}</pre></div>`;
     console.error(e);
   }
+  bindRescue();
   drawScale(performance.now() - t);
 }
 
+/* ---------- băng báo sổ bản cũ ----------
+   Lõi đã CỨU được dữ liệu của bản trước (xem storeRescue trong haustek-core),
+   nhưng cứu xong mà không nói thì người vận hành mở lên chỉ thấy một sổ trắng
+   tinh và tin rằng mình vừa mất sạch. Băng này là chỗ duy nhất nói ra, nên nó
+   phải hiện ở MỌI màn hình chứ không nấp trong một tab nào đó. */
+function rescueBar() {
+  if (H.storage.locked()) {
+    return `<div class="warn" style="border-left-color:#C2183C;background:#FDECEF;border-color:#F3C3CE">
+      <span class="ic" style="color:#C2183C">!</span><div>
+      <b style="color:#8E0F2B">Đang KHÔNG lưu được thay đổi nào</b>
+      <span style="color:#8E0F2B">Máy này có sổ của bản cũ mà không cất đi được, thường là hết dung
+      lượng trình duyệt. Đường ghi bị khoá để không đè lên sổ đó — mọi thao tác bây giờ chỉ nằm trong
+      bộ nhớ và mất khi đóng tab. Dọn bớt dữ liệu trang web rồi mở lại.</span></div></div>`;
+  }
+  const r = H.storage.rescued();
+  if (!r || RESC_HIDDEN) return "";
+  return `<div class="warn"><span class="ic">!</span><div>
+    <b>Tìm thấy sổ của bản ${esc(r.v)} trên máy này</b>
+    <span>Bản đang chạy dùng lược đồ khác nên không đọc thẳng được. Đã cất nguyên vẹn
+    ${(r.bytes / 1024).toFixed(0)} KB sang một bản sao. Tải về giữ trước khi làm tiếp —
+    sổ là tỷ lệ chia, tạm ứng và các kỳ đã duyệt, mất là mất tiền thật.</span>
+    <div class="btnrow" style="margin-top:9px">
+      <button type="button" class="btn" id="rescLater">Để sau</button>
+      <button type="button" class="btn pri" id="rescGet">Tải sổ bản cũ về</button>
+    </div></div></div>`;
+}
+
+/* Gắn sau khi render() đã đổ HTML: băng vẽ lại mỗi lần đổi màn hình nên không
+   gắn onclick cố định được. */
+function bindRescue() {
+  const get = document.getElementById("rescGet");
+  if (get) get.onclick = () => {
+    const keys = H.storage.backups();
+    const raw = keys.length ? H.storage.readBackup(keys[keys.length - 1]) : null;
+    if (!raw) return toast("Không đọc được bản sao", "no");
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob([raw], { type: "application/json" }));
+    a.download = "haustek-portal-ban-cu-" + new Date().toISOString().slice(0, 10) + ".json";
+    a.click(); URL.revokeObjectURL(a.href);
+    toast("Đã tải sổ bản cũ về máy", "ok");
+  };
+  const later = document.getElementById("rescLater");
+  /* "Để sau" chỉ GIẤU băng trong phiên này. Khoá sao lưu không bị đụng tới:
+     bấm nhầm một nút không được phép là mất sổ. */
+  if (later) later.onclick = () => { RESC_HIDDEN = true; render(); };
+}
 function drawScale(ms) {
   const st = A.state();
   const approved = Object.keys(st.approved).length;

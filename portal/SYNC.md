@@ -408,7 +408,9 @@ khi lên Postgres, dịch từng phép kiểm ở đó thành một test SQL.
 ```bash
 node crm/test/handoff-e2e.mjs   # 34 phép kiểm xuyên hai app
 node crm/test/smoke.mjs         # 74 phép kiểm trên CRM
+node crm/test/upgrade.mjs       # 19 phép kiểm đường nâng cấp CRM
 node portal/test/api-guard.js   # 21 phép kiểm ranh giới quyền portal
+node portal/test/upgrade.js     # 25 phép kiểm đường nâng cấp portal
 ```
 
 `handoff-e2e.mjs` tự dựng máy chủ tĩnh rồi mở **cả hai app trên cùng origin**, đi
@@ -443,3 +445,89 @@ Nói thẳng, đúng giọng `portal/README.md`:
 - **Portal không biết khi CRM sửa một deal đã trình.** Đổi tỷ lệ bên CRM sau khi
   đã ghi sổ thì phải tự xử lý ở màn hình Tỷ lệ chia.
 - **Một deal ghi cho một party.** Deal đồng sở hữu phải tách tay.
+
+---
+
+## 14. Lên bản chính thức — hai nhánh, một tên miền
+
+Từ bản này, hai nửa nằm trên **hai nhánh tách rời**, cả hai đều dựng thẳng từ
+`main`:
+
+| Nhánh | Đụng vào | Ai làm |
+|---|---|---|
+| `crm` | chỉ `crm/` — 7 file, +9.571 dòng | đội CRM |
+| `portal-crm-sync` | chỉ `portal/` + `.gitignore` — 7 file, +980 / −9 | đội portal |
+
+**Hai nhánh không đụng chung một file nào.** Đã kiểm bằng `git diff --name-only`
+rồi giao hai tập: rỗng. Hệ quả thực tế: merge nhánh nào trước cũng được, không
+xung đột, và không nhánh nào lùi thay đổi của nhánh kia. Đã dựng thử cả hai thứ
+tự — cây kết quả trùng nhau tới từng byte (`2f2f367`).
+
+### Bắt buộc: cùng một origin
+
+`localStorage` chia theo origin. Hai app phải nằm dưới **cùng một scheme + host +
+port** thì mới thấy khoá của nhau:
+
+```
+https://haustek.vn/portal/intranet.html
+https://haustek.vn/crm/index.html          ✅ thấy nhau
+```
+
+```
+https://portal.haustek.vn/intranet.html
+https://crm.haustek.vn/index.html          ❌ hai origin, KHÔNG thấy nhau
+```
+
+Tách sang hai subdomain là cầu nối **đứt im lặng**: không lỗi, không cảnh báo,
+màn hình Bàn giao chỉ đơn giản là luôn rỗng. Nếu sau này phải tách domain thì
+đường đi bắt buộc chuyển sang máy chủ (mục 11), không có cách vá nào ở phía
+trình duyệt.
+
+### Lên một nửa trước cũng không sao
+
+Đã kiểm cả hai trạng thái nửa vời:
+
+- **Portal lên trước, CRM chưa có** → màn hình Bàn giao hiện đúng dòng trống
+  *"Chưa có bản tin nào. Mở crm/index.html trên cùng trình duyệt này…"*. Không lỗi.
+- **CRM lên trước, portal chưa cập nhật** → CRM chạy đủ 74 phép kiểm, `handoff-e2e`
+  tự **BỎ QUA** kèm lời giải thích thay vì báo hỏng. Chiều về không có khoá để đọc
+  thì CRM giữ nguyên giai đoạn, không đoán.
+
+Nên thứ tự lên bản tuỳ ý. Chỉ khi **cả hai** cùng lên thì cầu nối mới chạy, và đó
+là hành vi đúng.
+
+### Dữ liệu người dùng khi lên bản mới
+
+Đây là chỗ nguy hiểm nhất và trước bản này nó **hỏng**: `store.load()` gặp bản ghi
+khác `CFG.VERSION` thì trả `null`, lõi tưởng máy trắng, seed lại, rồi lần
+`store.save()` đầu tiên ghi đè. Nghĩa là mỗi lần đẩy bản mới có đổi lược đồ là một
+lần người vận hành mất sổ. Đo được trên CRM: **115.509 byte biến mất ngay lúc mở
+trang**.
+
+Luật bây giờ, giống hệt nhau ở cả hai app:
+
+1. Gặp phiên bản lạ thì **chép nguyên văn** sang `haustek.<app>.bak.<v>.<lúc>`,
+   giữ 3 bản gần nhất.
+2. Chép được → app chạy tiếp, và **hiện băng báo ở mọi màn hình** kèm nút tải sổ
+   cũ về. Cứu được mà không nói thì người ta mở lên chỉ thấy sổ trắng và tin là
+   mất sạch.
+3. Chép **không** được (hết dung lượng trình duyệt) → **khoá đường ghi**. Thà app
+   chỉ đọc còn hơn nuốt mất dữ liệu chưa ai kịp lấy ra.
+4. Bấm "Để sau" chỉ giấu băng, **không** xoá khoá sao lưu.
+
+Không có bước tự chuyển lược đồ, và đó là cố ý: không ai viết nổi phép chuyển sang
+một lược đồ tương lai chưa tồn tại. Việc của chỗ này là **giữ**, không phải đoán.
+
+`node portal/test/upgrade.js` và `node crm/test/upgrade.mjs` kiểm đúng bốn điều
+trên, gồm cả trường hợp hết dung lượng (chặn `setItem` lên khoá sao lưu) và
+trường hợp JSON hỏng giữa chừng.
+
+### Việc phải làm trước khi bấm deploy
+
+- [ ] Cả hai app cùng origin — kiểm bằng cách mở hai tab và soi `location.origin`.
+- [ ] Chạy `node portal/test/upgrade.js` và `node crm/test/upgrade.mjs` trên đúng
+      bản sắp lên.
+- [ ] Bảo người vận hành bấm **Snapshot → Tải snapshot về máy** trước khi lên bản
+      có đổi `CFG.VERSION`. Băng cứu dữ liệu là lưới an toàn, không phải kế hoạch.
+- [ ] Sau khi lên, mở portal và xác nhận **không** có băng vàng. Có băng nghĩa là
+      lược đồ đã đổi và sổ cũ đang nằm trong khoá sao lưu chờ người lấy ra.
