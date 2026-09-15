@@ -262,6 +262,44 @@ F('kịch bản thận trọng thấp hơn cơ sở', sc[0].inflow < sc[1].inflo
 F('kịch bản lạc quan cao hơn cơ sở', sc[2].inflow > sc[1].inflow);
 F('thận trọng hoà vốn chậm hơn lạc quan', sc[0].pay >= sc[2].pay, sc[0].pay + ' vs ' + sc[2].pay);
 
+console.log('\n— chi phí vốn quan trọng tới đâu —');
+const hd = await p.evaluate(() => {
+  const mk = i => finModel(i);
+  /* Điểm NPV đổi dấu phải trùng IRR — đó là định nghĩa của IRR, và cũng là lý do
+     nói được "deal chịu được chi phí vốn tới X%". */
+  const base = {gross:5650, share:0.7, pass:0, dist:0, fee:0, adv:70000, mkt:10000,
+                prod:0, legal:3500, term:60, growth:-17.9, recoupMkt:1};
+  const irr = mk(Object.assign({}, base, {disc:12})).irr * 100;
+  const duoi = mk(Object.assign({}, base, {disc: irr - 2})).npv;
+  const tren = mk(Object.assign({}, base, {disc: irr + 2})).npv;
+  const tai  = mk(Object.assign({}, base, {disc: irr})).npv;
+
+  const mong = {gross:2000, share:0.8, pass:0, dist:0, fee:0.02, adv:60000, mkt:5000,
+                prod:0, legal:2000, term:60, growth:-20, recoupMkt:1};
+  const irrM = mk(Object.assign({}, mong, {disc:12})).irr * 100;
+
+  const lbl = (i, d) => {
+    const r = mk(Object.assign({}, i, {disc:d}));
+    const h = finHurdleHTML(r, Object.assign({}, i, {disc:d}));
+    return h.indexOf('finhurdle ok')>=0 ? 'ok'
+         : h.indexOf('finhurdle near')>=0 ? 'near'
+         : h.indexOf('finhurdle bad')>=0 ? 'bad' : 'trong';
+  };
+  return { irr, duoi, tren, tai, irrM,
+           khoe12: lbl(base, 12), khoeSat: lbl(base, Math.round(irr)-3),
+           mong12: lbl(mong, 12), mong2: lbl(mong, 2),
+           khongVon: finHurdleHTML(mk(Object.assign({}, base, {adv:0, mkt:0, prod:0, legal:0})),
+                                   Object.assign({}, base, {disc:12})) };
+});
+F('dưới IRR thì giá trị hôm nay còn dương', hd.duoi > 0, Math.round(hd.duoi));
+F('trên IRR thì giá trị hôm nay âm', hd.tren < 0, Math.round(hd.tren));
+F('đúng tại IRR thì giá trị hôm nay bằng 0', near(hd.tai, 0, 60), Math.round(hd.tai));
+F('deal khoẻ ở mức 12% thì báo khoảng cách rộng', hd.khoe12==='ok', hd.khoe12);
+F('cùng deal đó mà đặt chi phí vốn sát IRR thì báo hẹp', hd.khoeSat==='near', hd.khoeSat);
+F('deal biên mỏng ở mức 12% thì báo không đạt', hd.mong12==='bad', hd.mong12);
+F('deal biên mỏng ở mức 2% thì lại đạt', hd.mong2!=='bad', hd.mong2);
+F('không bỏ vốn thì không hiện dòng ngưỡng', hd.khongVon==='', hd.khongVon.slice(0,30));
+
 console.log('\n— advance tối đa —');
 const mx = await p.evaluate(i => {
   const at25 = finMaxAdvance(Object.assign({}, i, {adv:0}), 0.25);
@@ -278,5 +316,5 @@ errs.slice(0, 4).forEach(e => console.log('  ' + e));
 if (errs.length) FAILED++;
 await b.close();
 srv.close();
-console.log(FAILED ? ('\n' + FAILED + ' phép kiểm HỎNG') : '\n71 đạt · 0 hỏng');
+console.log(FAILED ? ('\n' + FAILED + ' phép kiểm HỎNG') : '\n79 đạt · 0 hỏng');
 process.exit(FAILED ? 1 : 0);

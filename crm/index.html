@@ -1100,6 +1100,11 @@ tbody tr:hover .ipen{opacity:1}
 .finsrc.do{background:var(--accent-lo);color:var(--ice-dark)}
 .finsrc.gd{background:var(--warn-lo);color:var(--warn)}
 .finsrc.warn{background:var(--danger-lo);color:var(--danger);font-weight:600}
+.finhurdle{font-size:11.5px;line-height:1.5;padding:7px 10px;border-radius:var(--r-sm);
+  margin:0 0 12px;border-left:3px solid}
+.finhurdle.ok{background:var(--ok-lo);color:var(--ok);border-color:var(--ok)}
+.finhurdle.near{background:var(--warn-lo);color:var(--warn);border-color:var(--warn)}
+.finhurdle.bad{background:var(--danger-lo);color:var(--danger);border-color:var(--danger)}
 .finstr{margin-bottom:12px}
 .finstr-t{font-size:11px;font-weight:650;color:var(--muted);text-transform:uppercase;
   letter-spacing:.05em;margin-bottom:6px;line-height:1.55}
@@ -1229,6 +1234,9 @@ vi:{
   nOpen:'đang chạy', nPlay:'đang theo đuổi',
   asOfNow:'tại thời điểm này', kpiNoClosed:'chưa deal nào đóng trong kỳ',
   finLow:'Thận trọng', finBase:'Cơ sở', finHigh:'Lạc quan',
+  finHurdleWide:'Deal chịu được chi phí vốn tới {i}%/năm. Đang đặt {d}% — cách xa tới mức con số chi phí vốn chính xác bao nhiêu cũng không đổi kết luận.',
+  finHurdleNear:'Deal chỉ chịu được chi phí vốn tới {i}%/năm, đang đặt {d}%. Khoảng cách hẹp — phải có con số chi phí vốn thật trước khi trình duyệt.',
+  finHurdleUnder:'Deal chỉ chịu được chi phí vốn tới {i}%/năm, thấp hơn mức {d}% đang đặt. Tiền để chỗ khác sinh lời hơn.',
   finSrcMeasured:'Đà {g}%/năm — đo từ {n} tháng doanh thu khách cung cấp',
   finSrcAssumed:'Đà {g}%/năm — đây là GIẢ ĐỊNH, chưa có báo cáo doanh thu của khách',
   finFitOk:'số liệu bám sát xu hướng', finFitLoose:'số liệu dao động mạnh, coi con số này là ước chừng',
@@ -1511,6 +1519,9 @@ en:{
   nOpen:'open', nPlay:'in play',
   asOfNow:'as of now', kpiNoClosed:'no deals closed in period',
   finLow:'Cautious', finBase:'Base', finHigh:'Optimistic',
+  finHurdleWide:'This deal carries a cost of capital up to {i}%/yr. Set to {d}% — far enough that the exact figure does not change the answer.',
+  finHurdleNear:'This deal only carries a cost of capital up to {i}%/yr, set to {d}%. Too close to call — get the real figure before submitting for approval.',
+  finHurdleUnder:'This deal only carries a cost of capital up to {i}%/yr, below the {d}% set. The money earns more elsewhere.',
   finSrcMeasured:'Trend {g}%/yr — measured from {n} months of client revenue',
   finSrcAssumed:'Trend {g}%/yr — this is an ASSUMPTION, no client revenue report yet',
   finFitOk:'the data follows the trend closely', finFitLoose:'the data swings a lot, treat this as a rough figure',
@@ -5966,6 +5977,7 @@ function finBoxHTML(){
     '</div>'+
     '<div id="finVerdict"></div>'+
     '<div class="finkpi" id="finKpi"></div>'+
+    '<div id="finHurdle"></div>'+
     '<div class="fintbl" id="finYears"></div>'+
     '<div class="acbox-t" style="margin-top:14px">'+esc(L(['Khoảng dao động','Range of outcomes']))+'</div>'+
     '<div class="finscen" id="finScen"></div>'+
@@ -6123,6 +6135,19 @@ function finStreamHTML(r){
       '<span class="finstr-p">'+esc(L(['Haustek ','Haustek '])+Math.round((1-x.share)*100)+'%')+'</span>'+
     '</div>').join('')+'</div>';
 }
+/* Chi phí vốn chỉ quan trọng khi nó GẦN tỷ suất của deal. Đo trên ba deal thật:
+   deal IRR 56% giữ nguyên kết luận ở mọi mức chi phí vốn từ 0% tới 30%; deal IRR
+   4% thì đổi dấu ngay quanh 4%. Điểm đổi dấu chính là IRR.
+   Nên thay vì bắt người dùng đi tìm cho ra con số chính xác rồi mới dám dùng mô
+   hình, nói thẳng deal này chịu được chi phí vốn tới đâu — và chỉ đòi con số
+   thật khi khoảng cách hẹp tới mức nó thật sự quyết định. */
+function finHurdleHTML(r, inp){
+  if(r.irr === null || r.outlay <= 0) return '';
+  const irr = Math.round(r.irr*100), disc = Math.round(inp.disc||0);
+  const key = irr >= disc*2 ? 'finHurdleWide' : (irr > disc ? 'finHurdleNear' : 'finHurdleUnder');
+  const cls = irr >= disc*2 ? 'ok' : (irr > disc ? 'near' : 'bad');
+  return '<div class="finhurdle '+cls+'">'+esc(t(key,{i:irr, d:disc}))+'</div>';
+}
 function finKpiHTML(r){
   const kpi = [
     [['Hoà vốn tiền mặt','Cash break-even'], finMonths(r.payback), r.payback && r.payback<=24?'good':(r.payback?'warn':'bad')],
@@ -6188,6 +6213,8 @@ function finRender(){
   if(ho) ho.innerHTML = finHistOutHTML(inp);
   document.getElementById('finVerdict').innerHTML = finSrcHTML(inp) + finVerdictHTML(r);
   host.innerHTML = finKpiHTML(r);
+  const hu = document.getElementById('finHurdle');
+  if(hu) hu.innerHTML = finHurdleHTML(r, inp);
   document.getElementById('finYears').innerHTML = finStreamHTML(r) + finYearsHTML(r);
   document.getElementById('finScen').innerHTML = finScenHTML(inp);
   document.getElementById('finMax').innerHTML  = finMaxHTML(inp);
@@ -6228,6 +6255,7 @@ function finCard(o){
       )+'</span></div>'+
     '<div class="card-b">'+finSrcHTML(inp)+finVerdictHTML(r)+
       '<div class="finkpi">'+finKpiHTML(r)+'</div>'+
+      finHurdleHTML(r, inp)+
       finStreamHTML(r)+
       '<div class="fintbl">'+finYearsHTML(r)+'</div>'+
       '<div class="acbox-t" style="margin-top:14px">'+esc(L(['Khoảng dao động','Range of outcomes']))+'</div>'+

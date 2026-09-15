@@ -9,7 +9,7 @@ Hệ **song song** với portal, không phải một phần của nó. Một fil
 | `../portal/SYNC.md` | Hướng dẫn đồng bộ hai chiều, viết cho đội làm portal |
 | `test/smoke.mjs` | 74 phép kiểm trên chính CRM |
 | `test/handoff-e2e.mjs` | 34 phép kiểm xuyên hai app — cả chuỗi CEO duyệt và chiều ngược |
-| `test/finmodel.mjs` | 71 phép kiểm mô hình tài chính, đối chiếu với số tính tay |
+| `test/finmodel.mjs` | 79 phép kiểm mô hình tài chính, đối chiếu với số tính tay |
 
 ## Mô hình tài chính
 
@@ -51,9 +51,44 @@ quan · **trần advance** theo mức lãi muốn giữ.
 **Hai con số vẫn là giả định, chưa phải số của Haustek** — giao diện ghi rõ:
 
 - **Đà trôi −12%/năm** chỉ dùng khi CHƯA dán báo cáo của khách. Dán vào là bỏ.
-- **Chi phí vốn 12%/năm** dùng để quy tiền các năm sau về hôm nay. Đúng ra phải
-  là lãi vay của Haustek hoặc mức lợi nhuận tối thiểu ban giám đốc yêu cầu. Thay
-  đúng số đó vào thì NPV mới có nghĩa.
+- **Chi phí vốn 12%/năm** dùng để quy tiền các năm sau về hôm nay.
+
+### Chi phí vốn lấy ở đâu
+
+Nó là **ngưỡng lợi nhuận tối thiểu** — dưới mức đó thì Haustek thà làm việc khác
+với số tiền ấy. Câu cần trả lời không phải "lãi suất nào" mà là: *nếu không ứng
+số tiền này cho deal, Haustek sẽ làm gì với nó, và việc đó sinh lời bao nhiêu?*
+
+| Tiền ở đâu ra | Lấy con số nào |
+|---|---|
+| Đi vay để ứng | Lãi vay thật, **sau thuế** — lãi vay được trừ khi tính thuế TNDN |
+| Tiền tự có | Việc tốt nhất khác số tiền đó làm được: deal khác, mua catalogue, trả nợ trước hạn |
+| Vừa vay vừa tự có | Trộn theo tỷ trọng hai nguồn |
+
+**Lãi gửi ngân hàng là sàn, không phải đáp án.** Gửi ngân hàng gần như không rủi
+ro; ứng tiền cho nghệ sĩ thì có thể mất trắng. Lấy lãi tiết kiệm làm ngưỡng thì
+mọi deal chỉ cần hơn 5–6% đã thành "đáng làm".
+
+**Bẫy đơn vị tiền.** Mô hình chạy bằng USD. Lãi suất VND đã bao gồm kỳ vọng VND
+mất giá — đem nó chiết khấu dòng tiền USD là trừ hai lần, một lần cho tiền tệ và
+một lần cho thời gian.
+
+**Đừng tính rủi ro hai lần.** Mô hình đã có kịch bản thận trọng và nhân xác suất.
+Nhồi thêm phần bù rủi ro lớn vào chi phí vốn là trừ cùng một rủi ro hai lượt.
+
+### Chưa có con số đó vẫn dùng được
+
+Điểm NPV đổi dấu chính là IRR. Nên chi phí vốn chỉ quyết định khi nó rơi SÁT tỷ
+suất của deal. Đo trên ba deal thật:
+
+| Deal | IRR | Chi phí vốn chạy 0% → 30% |
+|---|---|---|
+| Khoẻ | 56%/năm | dương ở cả 10 mức — kết luận không đổi |
+| Biên mỏng | 4%/năm | đổi dấu quanh 4% |
+| Dài, tiền về chậm | 6%/năm | đổi dấu quanh 6% |
+
+Vì vậy mô hình ghi thẳng lên màn hình deal chịu được chi phí vốn tới đâu, và chỉ
+đòi con số thật khi khoảng cách hẹp tới mức nó thật sự quyết định.
 
 **Khác gì bảng ROI cũ.** Bảng cũ trả lời được một câu: toàn kỳ lời mấy lần. Nó bỏ
 qua ba thứ:
@@ -153,7 +188,7 @@ tiết vẫn bị che nếu không có quyền xem tất cả.
 
 ```bash
 node crm/test/smoke.mjs         # 74 phép kiểm trên CRM
-node crm/test/finmodel.mjs      # 71 phép kiểm mô hình tài chính
+node crm/test/finmodel.mjs      # 79 phép kiểm mô hình tài chính
 node crm/test/handoff-e2e.mjs   # 34 phép kiểm CRM ↔ portal
 ```
 
