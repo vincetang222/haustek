@@ -522,8 +522,36 @@ một lược đồ tương lai chưa tồn tại. Việc của chỗ này là *
 trên, gồm cả trường hợp hết dung lượng (chặn `setItem` lên khoá sao lưu) và
 trường hợp JSON hỏng giữa chừng.
 
+### Trước khi bấm deploy: `/crm` sẽ là trang CÔNG KHAI
+
+`vercel.json` không có lớp xác thực nào. Đẩy `crm/` lên `haustek.vn` là mọi người
+có đường dẫn đều đọc được **điều khoản deal, số tiền tạm ứng, tên khách và tỷ lệ
+chia**. Đăng nhập trong CRM hiện là ô chọn người dùng, không phải mật khẩu — xem
+mục 11. Ranh giới quyền là thật và có test phủ, nhưng chạy phía trình duyệt nên
+chỉ chặn thao tác nhầm, không chặn người cố ý.
+
+Ba đường đi, chọn trước khi deploy chứ không phải sau:
+
+1. **Vercel Password Protection** hoặc **Vercel Authentication** bật cho cả
+   project — nhanh nhất, một lớp trước mọi đường dẫn.
+2. Deploy CRM sang một project Vercel **riêng, có bảo vệ** — nhưng khi đó nó là
+   một origin khác và **cầu nối sang portal đứt**. Xem phần cùng-origin ở trên.
+3. Không deploy CRM lên public, chỉ chạy nội bộ (`npx http-server` trên máy, hoặc
+   một máy trong mạng công ty) cho tới khi có máy chủ thật.
+
+Cách 1 giữ được cả cầu nối lẫn lớp chặn, nên là cách nên dùng nếu phải lên ngay.
+
+### `cleanUrls: true` đổi đường dẫn, không đổi origin
+
+Cấu hình hiện tại bỏ đuôi `.html`, nên trên bản chính thức hai app nằm ở `/crm`
+và `/portal/intranet` chứ không phải `/crm/index.html`. Điều này **không** ảnh
+hưởng tới cầu nối: hai app tìm nhau qua `localStorage`, không qua link, và đã
+kiểm là không bên nào có thẻ `<a>` trỏ sang bên kia. Chỉ cần nhớ khi đưa đường
+dẫn cho người dùng.
+
 ### Việc phải làm trước khi bấm deploy
 
+- [ ] Đã chọn một trong ba đường ở trên cho lớp bảo vệ `/crm`.
 - [ ] Cả hai app cùng origin — kiểm bằng cách mở hai tab và soi `location.origin`.
 - [ ] Chạy `node portal/test/upgrade.js` và `node crm/test/upgrade.mjs` trên đúng
       bản sắp lên.
