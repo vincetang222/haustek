@@ -55,5 +55,36 @@ nạp luồng còn thiếu → khớp một dòng treo → ghi nhận chênh l�
 từng màn hình intranet và cả cổng khách. Đây là chỗ code hay chết vì chia cho 0, đọc `[0]`
 của mảng rỗng, hoặc so với kỳ trước không tồn tại.
 
+## 3. Đường nâng cấp — dữ liệu có sống sót khi lên bản mới không
+
+```bash
+node portal/test/upgrade.js
+```
+
+25 phép kiểm. Đây là phép kiểm bảo vệ thứ duy nhất trong portal **không dựng lại
+được**: tỷ lệ chia, khoản tạm ứng, và các kỳ đã duyệt. Danh mục và doanh thu sinh
+lại y hệt từ seed; ba thứ trên thì không.
+
+Tình huống dựng lại đúng như thật: người vận hành đã làm việc trên bản cũ, Haustek
+đẩy bản mới có đổi lược đồ (`CFG.VERSION` khác đi), người vận hành mở lại trang.
+Bản trước đây gặp phiên bản lạ thì `store.load()` trả `null`, lõi tưởng máy trắng,
+seed lại, rồi lần `store.save()` đầu tiên ghi đè.
+
+Kiểm những gì:
+
+- sổ bản cũ được chép **nguyên vẹn từng byte** sang `haustek.portal.bak.<v>.<lúc>`
+- người vận hành **thấy băng báo** ở cả 11 màn hình, kèm nút tải sổ cũ về —
+  cứu được mà không nói thì người ta mở lên chỉ thấy sổ trắng và tin là mất sạch
+- bấm "Để sau" chỉ giấu băng, **không** xoá khoá sao lưu
+- mở lại năm lần vẫn chỉ giữ tối đa 3 bản sao
+- JSON hỏng giữa chừng cũng cứu, cất dưới nhãn `khong-ro`
+- cất không được (hết dung lượng) thì **khoá đường ghi** — thà không lưu được còn
+  hơn nuốt mất sổ; kiểm bằng cách chặn `setItem` lên khoá sao lưu
+- cùng phiên bản thì không đụng gì cả: không đẻ bản sao thừa, không hiện băng
+
+Bản song sinh bên CRM là `crm/test/upgrade.mjs`.
+
 Biến môi trường: `BASE` (mặc định `http://127.0.0.1:8099`), `CHROMIUM` (đường dẫn
 chromium nếu playwright không tự tìm được), `SHOTS` (nơi lưu ảnh chụp).
+
+Kiểm thử của CRM nằm ở `crm/test/smoke.mjs` — xem `crm/README.md`.

@@ -10,12 +10,30 @@ Hai trang, một lõi dữ liệu. Mở bằng trình duyệt là chạy, không
 | `haustek-ui.css` | cả hai | Bảng màu và các thành phần giao diện |
 | `screens/*.js` | intranet | Mỗi file một màn hình, tự đăng ký vào khung |
 
-## Mười màn hình intranet
+## CRM là hệ riêng, không nằm trong portal
+
+`crm/` là một ứng dụng song song, không phải một màn hình của portal. Nó có dữ
+liệu riêng, vòng đời riêng, và **không** đẩy toàn bộ thông tin sang đây — chỉ
+vài trường của deal đã ký, đủ để portal dựng điều khoản thương mại.
+
+Hai chiều, mỗi chiều một khoá riêng — không bên nào ghi vào khoá của bên kia:
+
+- **Đi**: `crm/index.html` ghi `haustek.crm.handoff.v1`. Màn hình **Bàn giao CRM**
+  trong intranet đọc khoá đó, cho admin chọn kỳ hiệu lực rồi ghi vào sổ tỷ lệ và
+  sổ tạm ứng.
+- **Về**: màn hình đó ghi `haustek.portal.contracts.v1` — trạng thái hợp đồng và
+  đường dẫn file hợp đồng legal đặt trên portal. CRM chỉ đọc, không sửa.
+
+**[`SYNC.md`](SYNC.md) là tài liệu cho đội portal** — hình dạng dữ liệu hai chiều,
+ai sở hữu giai đoạn nào, các bẫy đã thực sự vấp phải, và mục "cái này không làm
+được". Giao kèo của riêng chiều đi nằm ở `crm/HANDOFF.md`.
+
+## Mười một màn hình intranet
 
 **Vận hành** — Tổng quan · Nạp dữ liệu · Khớp ISRC · Đối chiếu & duyệt kỳ
 **Tiền** — Tỷ lệ chia · Tạm ứng & thu hồi · Chi trả
 **Dữ liệu** — Danh mục
-**Quản trị** — Tài khoản & nhật ký · Câu hỏi còn treo
+**Quản trị** — Tài khoản & nhật ký · Câu hỏi còn treo · Bàn giao CRM
 
 Mỗi màn hình là một file trong `screens/`, tự đăng ký vào khung qua
 `HAUSTEK.registerScreen()`. Viết thêm màn hình mới thì đọc `screens/_CONTRACT.md`
