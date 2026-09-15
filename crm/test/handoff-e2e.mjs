@@ -41,6 +41,22 @@ const MIME = { ".html": "text/html", ".js": "text/javascript", ".css": "text/css
                ".json": "application/json", ".svg": "image/svg+xml", ".png": "image/png",
                ".jpg": "image/jpeg", ".webp": "image/webp", ".ico": "image/x-icon" };
 const ROOT = process.cwd();
+
+/* Phép kiểm này cần CẢ HAI nửa: CRM ở đây, và màn hình Bàn giao bên portal.
+   Trên nhánh chỉ có CRM thì nửa portal không tồn tại — khi đó nói thẳng ra là
+   BỎ QUA, đừng báo hỏng. Hỏng nghĩa là "có lỗi phải sửa"; ở đây chỉ là "nửa kia
+   không nằm trên nhánh này", hai chuyện khác hẳn nhau.
+   Khi tách repo, đây chính là phép kiểm phải chuyển sang repo nào giữ cả hai. */
+const CAN_PORTAL = ["portal/screens/crm-handoff.js", "portal/intranet.html",
+                    "portal/haustek-core.js"];
+const MISSING = CAN_PORTAL.filter(f => !fs.existsSync(path.resolve(ROOT, f)));
+if (MISSING.length) {
+  console.log("BỎ QUA — phép kiểm này cần cả hai app trên cùng một cây nguồn.");
+  MISSING.forEach(f => console.log("   thiếu: " + f));
+  console.log("\nNhánh này chỉ có CRM. Chạy nó trên nhánh có cả portal:");
+  console.log("   git checkout claude/intelligent-volta-2p43r5 && node crm/test/handoff-e2e.mjs");
+  process.exit(0);
+}
 function serve() {
   return new Promise(resolve => {
     const srv = http.createServer((req, res) => {
