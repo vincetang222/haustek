@@ -107,6 +107,31 @@ jobs:
 
       - name: CRM
         run: |
+          # Mỗi bộ test một trần thời gian riêng. Không có trần thì một bộ treo
+          # nuốt trọn timeout-minutes của cả job, và log chỉ còn 25 phút im
+          # lặng — không nói được bộ nào treo. Có trần thì hỏng nhanh và chỉ
+          # đúng mặt thủ phạm.
+          #
+          # 300s là gấp ~3 lần bộ chậm nhất đo được (portal/test/smoke.js: 54s
+          # trên máy 4 nhân), đủ rộng cho runner chậm mà vẫn bắt được treo thật.
+          # --kill-after cho Playwright 30s để đóng trình duyệt tử tế trước khi
+          # bị KILL; KILL thẳng thì Chromium thành tiến trình mồ côi.
+          #
+          # Chạy HẾT rồi mới báo hỏng, không dừng ở bộ đầu tiên: một lượt chạy
+          # cho biết cả ba chỗ hỏng vẫn hơn ba lượt mỗi lượt một chỗ.
+          FAILS=0
+          chay() {
+            local f="$1" rc=0
+            timeout --kill-after=30 300 node "$f" || rc=$?
+            [ $rc -eq 0 ] && return 0
+            if [ $rc -eq 124 ] || [ $rc -eq 137 ]; then
+              echo "::error file=$f::$f TREO — bị cắt sau 300 giây"
+            else
+              echo "::error file=$f::$f hỏng, mã thoát $rc"
+            fi
+            FAILS=$((FAILS + 1))
+            return 0
+          }
           shopt -s nullglob
           files=(crm/test/*.mjs)
           if [ ${#files[@]} -eq 0 ]; then
@@ -115,14 +140,40 @@ jobs:
           fi
           for f in "${files[@]}"; do
             echo "::group::$f"
-            node "$f"
+            chay "$f"
             echo "::endgroup::"
           done
+          [ $FAILS -eq 0 ] || { echo "$FAILS bộ test CRM hỏng"; exit 1; }
 
       - name: Portal
         env:
           BASE: http://127.0.0.1:8099
         run: |
+          # Mỗi bộ test một trần thời gian riêng. Không có trần thì một bộ treo
+          # nuốt trọn timeout-minutes của cả job, và log chỉ còn 25 phút im
+          # lặng — không nói được bộ nào treo. Có trần thì hỏng nhanh và chỉ
+          # đúng mặt thủ phạm.
+          #
+          # 300s là gấp ~3 lần bộ chậm nhất đo được (portal/test/smoke.js: 54s
+          # trên máy 4 nhân), đủ rộng cho runner chậm mà vẫn bắt được treo thật.
+          # --kill-after cho Playwright 30s để đóng trình duyệt tử tế trước khi
+          # bị KILL; KILL thẳng thì Chromium thành tiến trình mồ côi.
+          #
+          # Chạy HẾT rồi mới báo hỏng, không dừng ở bộ đầu tiên: một lượt chạy
+          # cho biết cả ba chỗ hỏng vẫn hơn ba lượt mỗi lượt một chỗ.
+          FAILS=0
+          chay() {
+            local f="$1" rc=0
+            timeout --kill-after=30 300 node "$f" || rc=$?
+            [ $rc -eq 0 ] && return 0
+            if [ $rc -eq 124 ] || [ $rc -eq 137 ]; then
+              echo "::error file=$f::$f TREO — bị cắt sau 300 giây"
+            else
+              echo "::error file=$f::$f hỏng, mã thoát $rc"
+            fi
+            FAILS=$((FAILS + 1))
+            return 0
+          }
           shopt -s nullglob
           # api-guard đã chạy ở job kia rồi, không chạy lại.
           files=(portal/test/upgrade.mjs portal/test/smoke.js portal/test/flow.js portal/test/edge.js)
@@ -130,8 +181,9 @@ jobs:
           for f in "${files[@]}"; do
             [ -f "$f" ] || continue
             echo "::group::$f"
-            node "$f"
+            chay "$f"
             echo "::endgroup::"
             ran=1
           done
           [ $ran -eq 1 ] || echo "Nhánh này không có bộ kiểm thử trình duyệt của portal — bỏ qua."
+          [ $FAILS -eq 0 ] || { echo "$FAILS bộ test portal hỏng"; exit 1; }
