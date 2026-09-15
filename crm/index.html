@@ -2854,6 +2854,37 @@ function safeUrl(raw){
   if(u.protocol !== 'http:' && u.protocol !== 'https:') return null;
   return u.href;
 }
+/* Xuất file. Bốn nút xuất trước đây đều tự dựng thẻ <a download> — cách đó chạy
+   khi app nằm trên web server thật, nhưng trong khung xem artifact của claude.ai
+   thì trình duyệt chặn mọi lượt tải do trang tự khởi, kể cả blob:, nên bấm xong
+   không có gì xảy ra. Ở đó phải đi qua downloads capability.
+   Giữ một đường đi chung cho cả hai môi trường: hỏi capability trước, không có
+   thì rơi về thẻ <a> như cũ. Trên server thật window.claude không tồn tại nên
+   nhánh này thoát ngay, không tốn gì. */
+var DL_CAP;   /* undefined = chưa hỏi · null = không có · object = dùng được */
+function dlCap(){
+  if(DL_CAP !== undefined) return Promise.resolve(DL_CAP);
+  if(!window.claude || typeof window.claude.use !== 'function'){ DL_CAP = null; return Promise.resolve(null); }
+  return window.claude.use('downloads').then(function(x){ return (DL_CAP = x || null); },
+                                            function(){ return (DL_CAP = null); });
+}
+function saveFile(name, text, mime){
+  const blob = new Blob([text], {type:mime});
+  dlCap().then(function(dl){
+    if(!dl) return false;
+    return dl.save({filename:name, data:blob}).then(function(){ return true; }, function(err){
+      /* người xem bấm từ chối là lựa chọn của họ, không phải lỗi để thử lại */
+      return !!(err && err.code === 'declined');
+    });
+  }).then(function(done){
+    if(done) return;
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = name;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(function(){ URL.revokeObjectURL(url); }, 1500);
+  });
+}
 function inboxRead(){
   try {
     const raw = localStorage.getItem(INBOX_KEY);
@@ -3953,11 +3984,7 @@ function saveBind(dealId, clear){
 function handoffExport(){
   const txt = JSON.stringify(handoffPayload(), null, 1);
   try {
-    const url = URL.createObjectURL(new Blob([txt],{type:'application/json'}));
-    const a = document.createElement('a');
-    a.href = url; a.download = 'haustek-crm-handoff.json';
-    document.body.appendChild(a); a.click(); a.remove();
-    setTimeout(()=>URL.revokeObjectURL(url), 1000);
+    saveFile('haustek-crm-handoff.json', txt, 'application/json');
     toast(t('hoExported'));
   } catch(e){ toast(e.message); }
 }
@@ -4699,12 +4726,8 @@ function audExport(){
     a.field?auditVal(a.field,a.oldV):'', a.field?auditVal(a.field,a.newV):String(a.newV||'')
   ]);
   const csv = [head].concat(rows).map(r=>r.map(c=>'"'+String(c).replace(/"/g,'""')+'"').join(',')).join('\n');
-  const blob = new Blob(['\ufeff'+csv], {type:'text/csv;charset=utf-8'});
-  const a2 = document.createElement('a');
-  a2.href = URL.createObjectURL(blob);
-  a2.download = 'haustek-nhat-ky-'+new Date().toISOString().slice(0,10)+'.csv';
-  document.body.appendChild(a2); a2.click(); document.body.removeChild(a2);
-  setTimeout(()=>URL.revokeObjectURL(a2.href),1500);
+  saveFile('haustek-nhat-ky-'+new Date().toISOString().slice(0,10)+'.csv',
+           '\ufeff'+csv, 'text/csv;charset=utf-8');
 }
 function recordHistory(objId){
   const list = DB.audit.filter(a=>a.objId===objId).sort((x,y)=>y.ts-x.ts).slice(0,12);
@@ -4763,12 +4786,8 @@ function openSnapshot(){
   setTimeout(()=>{ const e=document.getElementById('snapIn'); if(e) e.focus(); },60);
 }
 function snapDownload(){
-  const blob = new Blob([store.exportJSON()], {type:'application/json'});
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = 'haustek-crm-snapshot-'+new Date().toISOString().slice(0,10)+'.json';
-  document.body.appendChild(a); a.click(); document.body.removeChild(a);
-  setTimeout(()=>URL.revokeObjectURL(a.href), 1500);
+  saveFile('haustek-crm-snapshot-'+new Date().toISOString().slice(0,10)+'.json',
+           store.exportJSON(), 'application/json');
   toast(t('snapSaved'));
 }
 function snapImport(){
@@ -5982,12 +6001,7 @@ function sampleCSV(){
     ['Hà Vy Nguyễn','Vy Vy','Artist (Songwriter)','havy.writes@gmail.com','+84 987 220 116','New','Employee referral','Writer','Vietnam','4']
   ];
   const csv = [head].concat(rows).map(r=>r.map(c=>'"'+String(c).replace(/"/g,'""')+'"').join(',')).join('\n');
-  const blob = new Blob(['\ufeff'+csv], {type:'text/csv;charset=utf-8'});
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = 'haustek-leads-mau.csv';
-  document.body.appendChild(a); a.click(); document.body.removeChild(a);
-  setTimeout(()=>URL.revokeObjectURL(a.href), 1500);
+  saveFile('haustek-leads-mau.csv', '\ufeff'+csv, 'text/csv;charset=utf-8');
 }
 function doImport(){
   const good = IMP.rows.map(impRowToLead).filter(impValid);

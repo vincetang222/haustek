@@ -200,6 +200,42 @@ F('duyệt hàng loạt chỉ chạm deal đúng quyền', await p.evaluate(()=>
   bulkRun('advance');
   return mine.every(o=>DB.opps.find(x=>x.id===o.id).stage==='waiting'); }));
 
+// xuất file: cùng một hàm phải chạy được cả trên web server thật lẫn trong
+// khung xem artifact, nên kiểm cả hai nhánh thay vì chỉ nhánh đang chạy ở đây
+const dlres = await p.evaluate(async ()=>{
+  const out = {}, realClick = HTMLAnchorElement.prototype.click;
+  let anchors = [];
+  HTMLAnchorElement.prototype.click = function(){ anchors.push({name:this.download, href:this.href}); };
+  const wait = ()=>new Promise(r=>setTimeout(r,80));
+
+  DL_CAP = undefined; delete window.claude; anchors = [];
+  saveFile('a.json','{}','application/json'); await wait();
+  out.fallback = anchors.length===1 && anchors[0].name==='a.json' && anchors[0].href.indexOf('blob:')===0;
+
+  let got = null; DL_CAP = undefined; anchors = [];
+  window.claude = { use: n => Promise.resolve(n==='downloads'
+    ? { save: r => { got = r; return Promise.resolve({status:'saved'}); } } : null) };
+  saveFile('b.csv','x,y','text/csv'); await wait();
+  out.viaCap = !!got && got.filename==='b.csv' && got.data instanceof Blob && anchors.length===0;
+
+  DL_CAP = undefined; anchors = [];
+  window.claude = { use: () => Promise.resolve({ save: () => Promise.reject({code:'declined'}) }) };
+  saveFile('c.json','{}','application/json'); await wait();
+  out.declined = anchors.length===0;
+
+  DL_CAP = undefined; anchors = [];
+  window.claude = { use: () => Promise.reject(new Error('nổ')) };
+  saveFile('d.json','{}','application/json'); await wait();
+  out.broken = anchors.length===1;
+
+  HTMLAnchorElement.prototype.click = realClick; delete window.claude; DL_CAP = undefined;
+  return out;
+});
+F('không có capability thì xuất bằng thẻ <a download>', dlres.fallback);
+F('có capability thì đẩy Blob qua downloads.save', dlres.viaCap);
+F('người xem từ chối thì không mở thêm đường tải khác', dlres.declined);
+F('capability lỗi thì vẫn rơi về thẻ <a>', dlres.broken);
+
 // 11 mobile
 const m=await b.newPage({viewport:{width:390,height:844}});
 await m.goto(FILE); await m.click('.login-btn'); await m.waitForTimeout(400);
@@ -210,5 +246,5 @@ if(errs.length) FAILED++;
 console.log('\nLỗi JS: '+errs.length);
 errs.slice(0,5).forEach(e=>console.log('  '+e));
 await b.close();
-console.log(FAILED ? ('\n'+FAILED+' phép kiểm HỎNG') : '\n42 đạt · 0 hỏng');
+console.log(FAILED ? ('\n'+FAILED+' phép kiểm HỎNG') : '\n46 đạt · 0 hỏng');
 process.exit(FAILED?1:0);
