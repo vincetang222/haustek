@@ -4,8 +4,8 @@
 
 Tài liệu này chỉ mô tả **chiều đi** — deal sang portal. Chiều về (trạng thái hợp
 đồng quay lại CRM) và bức tranh hai chiều đầy đủ nằm ở
-[`portal/SYNC.md`](https://github.com/vincetang222/haustek/blob/claude/intelligent-volta-2p43r5/portal/SYNC.md), viết cho đội làm portal.
-File đó nằm ở nhánh `claude/intelligent-volta-2p43r5`, không ở nhánh này.
+[`portal/SYNC.md`](https://github.com/vincetang222/haustek/blob/portal-crm-sync/portal/SYNC.md),
+viết cho đội làm portal. File đó nằm ở nhánh `portal-crm-sync`, không ở nhánh này.
 
 ## Vì sao không khớp tự động được
 

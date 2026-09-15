@@ -1224,6 +1224,14 @@ tbody tr:hover .ipen{opacity:1}
   .fgrid{grid-template-columns:1fr}
   .drawer{width:100%;max-width:100%}
 }
+/* băng cứu dữ liệu sau khi nâng phiên bản */
+.rescue{display:flex;gap:14px;align-items:center;justify-content:space-between;flex-wrap:wrap;
+  background:var(--warn-lo);border:1px solid var(--warn);border-left:4px solid var(--warn);
+  border-radius:var(--r);padding:12px 16px;margin-bottom:16px;color:var(--warn);font-size:13px}
+.rescue-bad{background:var(--danger-lo);border-color:var(--danger);color:var(--danger)}
+.rescue-s{font-size:12px;margin-top:3px;line-height:1.5;font-weight:400;max-width:70ch}
+.rescue-a{display:flex;gap:8px;flex:0 0 auto}
+
 /* mô hình tài chính — bảng lời lỗ theo năm */
 .finhist{background:var(--paper);border:1px solid var(--line-2);border-radius:var(--r-sm);
   padding:10px 12px;margin-bottom:12px}
@@ -1391,6 +1399,12 @@ vi:{
   finVLoss:'Không thu hồi đủ vốn trong thời hạn deal',
   finVnA:'Chưa nhập tiền ứng nên chưa tính được lời lỗ',
   finNoData:'Deal này chưa có điều khoản tài chính',
+  rsFoundT:'Tìm thấy dữ liệu của bản {v} trên máy này',
+  rsFoundS:'Bản mới dùng lược đồ khác nên không đọc thẳng được. Đã cất nguyên vẹn {n} KB sang một bản sao — tải về giữ trước khi làm tiếp.',
+  rsGet:'Tải bản cũ về', rsLater:'Để sau', rsSaved:'Đã tải bản cũ về máy',
+  rsGone:'Không đọc được bản sao nữa',
+  rsLockT:'Đang KHÔNG lưu được thay đổi nào',
+  rsLockS:'Máy này có dữ liệu của bản cũ mà không cất đi được (thường do hết dung lượng trình duyệt). Đường ghi bị khoá để không đè lên nó. Hãy dọn bớt dữ liệu trang web rồi mở lại.',
   revTitle:'Doanh thu Haustek so với giá trị deal',
   revNote:'Giá trị deal là doanh thu catalogue của nghệ sĩ. Haustek chỉ giữ phần chia của mình.',
   revGross:'Giá trị deal đã ký', revHouse:'Haustek thực nhận, năm đầu',
@@ -1676,6 +1690,12 @@ en:{
   finVLoss:'Does not recover the money within the deal term',
   finVnA:'No advance entered yet, nothing to project',
   finNoData:'This deal has no financial terms yet',
+  rsFoundT:'Found data from version {v} on this machine',
+  rsFoundS:'This release uses a different schema and cannot read it directly. {n} KB were copied byte-for-byte into a backup — download it before carrying on.',
+  rsGet:'Download old data', rsLater:'Later', rsSaved:'Old data downloaded',
+  rsGone:'The backup can no longer be read',
+  rsLockT:'Nothing is being saved right now',
+  rsLockS:'This machine holds data from an older version that could not be copied aside, usually because browser storage is full. Writing is locked so it will not be overwritten. Free up site data and reopen.',
   revTitle:'Haustek revenue versus deal value',
   revNote:'Deal value is the artist catalogue revenue. Haustek only keeps its own share.',
   revGross:'Signed deal value', revHouse:'Haustek keeps, first year',
@@ -2994,19 +3014,77 @@ function applySnapshot(s){
   ME = u ? u.name : USERS[0].name;
   AUTHED = !!s.auth && !!u;   /* người dùng lạ thì bắt đăng nhập lại */
 }
+/* ═══ CỨU DỮ LIỆU KHI LÊN BẢN MỚI ═══════════════════════════════════════════
+   Nâng STORE_VERSION là việc BÌNH THƯỜNG mỗi khi đổi lược đồ. Bản trước xử lý
+   phiên bản lạ bằng cách trả null — app tưởng chưa có dữ liệu, seed lại bộ mẫu,
+   rồi lần lưu đầu tiên GHI ĐÈ lên dữ liệu thật của khách.
+
+   Đã dựng lại đúng tình huống đó và đo được: 115.509 byte dữ liệu thật biến mất
+   ngay tại thời điểm mở trang, không còn một bản sao nào.
+
+   Luật mới, theo đúng thứ tự:
+     1. Thấy phiên bản lạ → CHÉP nguyên văn sang một khoá sao lưu riêng.
+     2. Chép được → cho app chạy tiếp với dữ liệu mẫu, và hiện băng báo kèm nút
+        tải bản cũ về máy.
+     3. Chép KHÔNG được (hết dung lượng chẳng hạn) → KHOÁ ĐƯỜNG GHI. Thà app
+        không lưu được còn hơn nuốt mất dữ liệu người ta đã nhập hàng tháng.
+   Không tự chuyển đổi lược đồ: không ai viết nổi phép chuyển sang một lược đồ
+   tương lai chưa tồn tại. Việc của chỗ này là GIỮ, không phải đoán. */
+const BAK_PREFIX = 'haustek.crm.bak.';
+const BAK_KEEP   = 3;     /* giữ ba bản gần nhất, đủ để lùi vài lần nâng cấp */
+var STORE_RESCUED = null; /* {key, v, bytes} nếu vừa cứu được một bản */
+var STORE_LOCKED  = false;/* true = cấm ghi, vì có dữ liệu cũ chưa cứu được */
+
+function bakList(){
+  const out = [];
+  try {
+    for(let i=0;i<localStorage.length;i++){
+      const k = localStorage.key(i);
+      if(k && k.indexOf(BAK_PREFIX)===0) out.push(k);
+    }
+  } catch(e){}
+  return out.sort();
+}
+function bakPrune(){
+  const all = bakList();
+  /* khoá có gắn dấu thời gian ISO nên sắp chữ cũng là sắp theo thời gian */
+  while(all.length > BAK_KEEP){ try { localStorage.removeItem(all.shift()); } catch(e){ break; } }
+}
+function storeRescue(raw, parsed){
+  const v = (parsed && parsed.v) ? String(parsed.v) : 'khong-ro';
+  const key = BAK_PREFIX + v + '.' + new Date().toISOString().replace(/[:.]/g,'-');
+  try {
+    localStorage.setItem(key, raw);
+    STORE_RESCUED = {key:key, v:v, bytes:raw.length};
+    bakPrune();
+    return true;
+  } catch(e){
+    /* Dọn bản sao cũ rồi thử lại một lần — hết chỗ thường là do chính chúng */
+    try {
+      bakList().forEach(k=>localStorage.removeItem(k));
+      localStorage.setItem(key, raw);
+      STORE_RESCUED = {key:key, v:v, bytes:raw.length};
+      return true;
+    } catch(e2){ return false; }
+  }
+}
+
 const store = {
   save(){
-    if(!STORE_READY) return false;
+    if(!STORE_READY || STORE_LOCKED) return false;
     try { localStorage.setItem(STORE_KEY, JSON.stringify(snapshot())); handoffPublish(); return true; }
     catch(e){ return false; }
   },
   load(){
-    try {
-      const raw = localStorage.getItem(STORE_KEY);
-      if(!raw) return null;
-      const s = JSON.parse(raw);
-      return (s && s.v === STORE_VERSION) ? s : null;
-    } catch(e){ return null; }
+    let raw = null;
+    try { raw = localStorage.getItem(STORE_KEY); } catch(e){ return null; }
+    if(!raw) return null;
+    let s = null;
+    try { s = JSON.parse(raw); } catch(e){ s = null; }
+    if(s && s.v === STORE_VERSION) return s;
+    /* tới đây là phiên bản lạ hoặc JSON hỏng — dữ liệu vẫn có thể quý */
+    STORE_LOCKED = !storeRescue(raw, s);
+    return null;
   },
   clear(){ try { localStorage.removeItem(STORE_KEY); } catch(e){} },
   exportJSON(){ return JSON.stringify(snapshot(), null, 1); },
@@ -3238,6 +3316,35 @@ function contractLink(o){
     '<path d="M9.5 2.5h4v4M13.5 2.5L7 9M11.5 9.5v3a1 1 0 01-1 1h-7a1 1 0 01-1-1v-7a1 1 0 011-1h3"/>'+
     '</svg>'+esc(t('ctOpen'))+'</a>';
 }
+/* Băng thông báo sau khi nâng phiên bản. Hai trạng thái, hai mức độ khác hẳn:
+   — cứu được  : app chạy bình thường, chỉ cần người dùng tải bản cũ về giữ
+   — không cứu được : đường ghi đang bị KHOÁ, mọi thay đổi sẽ không được lưu.
+     Trường hợp đó phải nói thật rõ, vì im lặng ở đây là tệ nhất: người ta gõ
+     cả buổi rồi mất trắng. */
+function rescueBanner(){
+  if(STORE_LOCKED) return '<div class="rescue rescue-bad">'+
+    '<div><b>'+esc(t('rsLockT'))+'</b><div class="rescue-s">'+esc(t('rsLockS'))+'</div></div></div>';
+  if(!STORE_RESCUED) return '';
+  return '<div class="rescue">'+
+    '<div><b>'+esc(t('rsFoundT',{v:STORE_RESCUED.v}))+'</b>'+
+      '<div class="rescue-s">'+esc(t('rsFoundS',{n:(STORE_RESCUED.bytes/1024).toFixed(0)}))+'</div></div>'+
+    '<div class="rescue-a">'+
+      '<button class="btn" onclick="rescueDismiss()">'+esc(t('rsLater'))+'</button>'+
+      '<button class="btn btn-primary" onclick="rescueDownload()">'+esc(t('rsGet'))+'</button>'+
+    '</div></div>';
+}
+function rescueDownload(){
+  if(!STORE_RESCUED) return;
+  let raw = '';
+  try { raw = localStorage.getItem(STORE_RESCUED.key) || ''; } catch(e){}
+  if(!raw){ toast(t('rsGone')); return; }
+  saveFile('haustek-crm-ban-cu-'+STORE_RESCUED.v+'.json', raw, 'application/json')
+    .then(function(ok){ if(ok) toast(t('rsSaved')); });
+}
+/* Ẩn băng nhưng KHÔNG xoá khoá sao lưu. Người dùng bấm "để sau" là đang nói
+   "tôi biết rồi", không phải "xoá đi giúp tôi". */
+function rescueDismiss(){ STORE_RESCUED = null; render(); }
+
 function bootStore(){
   STORE_READY = store.available();
   if(!STORE_READY) return;
@@ -3336,7 +3443,9 @@ function render(){
   /* view dựng chuỗi và đẩy hàm vào MOUNTS; gán innerHTML xong mới chạy chúng,
      lúc đó element mới thật sự có trong DOM để gắn sự kiện cuộn/bấm */
   MOUNTS = [];
-  document.getElementById('view').innerHTML = VIEWS[state.view]();
+  /* Băng cứu dữ liệu đứng TRÊN mọi view: nếu vừa có một bản cũ được cứu, người
+     dùng phải thấy ngay ở màn hình đầu tiên, không phải đi tìm trong menu. */
+  document.getElementById('view').innerHTML = rescueBanner() + VIEWS[state.view]();
   const queue = MOUNTS; MOUNTS = [];
   queue.forEach(fn=>{ try{ fn(); }catch(e){ console.error('mount', e); } });
 }

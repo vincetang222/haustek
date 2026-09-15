@@ -54,7 +54,7 @@ if (MISSING.length) {
   console.log("BỎ QUA — phép kiểm này cần cả hai app trên cùng một cây nguồn.");
   MISSING.forEach(f => console.log("   thiếu: " + f));
   console.log("\nNhánh này chỉ có CRM. Chạy nó trên nhánh có cả portal:");
-  console.log("   git checkout claude/intelligent-volta-2p43r5 && node crm/test/handoff-e2e.mjs");
+  console.log("   git checkout portal-crm-sync && node crm/test/handoff-e2e.mjs");
   process.exit(0);
 }
 function serve() {
