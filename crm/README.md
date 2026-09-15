@@ -10,6 +10,31 @@ Hệ **song song** với portal, không phải một phần của nó. Một fil
 | `test/smoke.mjs` | 74 phép kiểm trên chính CRM |
 | `test/handoff-e2e.mjs` | 34 phép kiểm xuyên hai app — cả chuỗi CEO duyệt và chiều ngược |
 | `test/finmodel.mjs` | 79 phép kiểm mô hình tài chính, đối chiếu với số tính tay |
+| `test/upgrade.mjs` | 19 phép kiểm đường nâng cấp — dữ liệu khách có sống sót khi lên bản mới không |
+
+## Lên bản mới mà không mất dữ liệu
+
+Đây là phần quan trọng nhất của store, vì dữ liệu khách đã nhập là thứ duy nhất
+không dựng lại được.
+
+Nâng `STORE_VERSION` là việc **bình thường** mỗi khi đổi lược đồ. Bản trước xử lý
+phiên bản lạ bằng cách trả `null` — app tưởng chưa có dữ liệu, seed lại bộ mẫu,
+rồi lần lưu đầu tiên **ghi đè** lên dữ liệu thật. Dựng lại đúng tình huống đó và
+đo được: **115.509 byte dữ liệu thật biến mất ngay lúc mở trang**, không còn một
+bản sao nào.
+
+Luật hiện tại, theo đúng thứ tự:
+
+1. Thấy phiên bản lạ → **chép nguyên văn** sang `haustek.crm.bak.<phiên bản>.<thời điểm>`.
+2. Chép được → app chạy tiếp với dữ liệu mẫu, và hiện băng báo kèm nút **tải bản cũ về máy**.
+3. Chép **không** được (hết dung lượng chẳng hạn) → **khoá đường ghi**. Thà app
+   không lưu được còn hơn nuốt mất dữ liệu người ta đã nhập hàng tháng.
+
+Giữ ba bản sao gần nhất. JSON hỏng giữa chừng cũng được cứu, cất dưới nhãn
+`khong-ro`. Mở lại nhiều lần không đẻ ra vô số bản sao.
+
+**Không tự chuyển đổi lược đồ** — không ai viết nổi phép chuyển sang một lược đồ
+tương lai chưa tồn tại. Việc của chỗ này là **giữ**, không phải đoán.
 
 ## Mô hình tài chính
 
@@ -237,6 +262,7 @@ tiết vẫn bị che nếu không có quyền xem tất cả.
 ```bash
 node crm/test/smoke.mjs         # 74 phép kiểm trên CRM
 node crm/test/finmodel.mjs      # 79 phép kiểm mô hình tài chính
+node crm/test/upgrade.mjs       # 19 phép kiểm đường nâng cấp
 node crm/test/handoff-e2e.mjs   # 34 phép kiểm CRM ↔ portal
 ```
 
