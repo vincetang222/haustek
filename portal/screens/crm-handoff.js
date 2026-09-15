@@ -48,11 +48,40 @@ const CSS = `
 .ch-party{font-family:var(--mono);font-size:10.5px;color:var(--teal)}
 .ch-calls{font-family:var(--mono);font-size:10.5px;line-height:1.75;white-space:pre-wrap;
   background:var(--canvas);border-radius:8px;padding:10px 12px;margin-top:9px;color:var(--ink2)}
+.ch-flow{font:inherit;font-size:10.5px;padding:4px 7px;border:1px solid var(--hair2);
+  border-radius:7px;background:var(--card);color:var(--ink)}
 .ch-note{font-family:var(--mono);font-size:10px;color:var(--muted);line-height:1.8;margin-top:11px}
 `;
 
 const KEY     = "haustek.crm.handoff.v1";
 const VERSION = "1.0.0";
+/* Chiều về: portal báo CRM biết hợp đồng đi tới đâu. CRM đọc chỉ-đọc và không
+   bao giờ ghi vào khoá này — cũng như portal không bao giờ ghi vào khoá của CRM.
+   Mỗi bên một khoá, một chiều, nên không cần khoá chốt. */
+const BACK_KEY     = "haustek.portal.contracts.v1";
+const BACK_VERSION = "1.0.0";
+const FLOW = ["ceo_approved", "drafting", "ready", "signed"];
+const FLOW_LABEL = {
+  ceo_approved: "CEO đã duyệt", ceo_rejected: "CEO không duyệt",
+  drafting: "Legal đang soạn", ready: "Hợp đồng sẵn sàng", signed: "Đã ký"
+};
+function backRead(){
+  try {
+    const j = JSON.parse(localStorage.getItem(BACK_KEY) || "null");
+    return (j && j.v === BACK_VERSION && Array.isArray(j.deals)) ? j : {v:BACK_VERSION, deals:[]};
+  } catch (e) { return {v:BACK_VERSION, deals:[]}; }
+}
+function backOf(dealId){ return backRead().deals.find(d => d.dealId === dealId) || null; }
+/* at đến từ tham số chứ không gọi new Date() trong vòng vẽ — để cùng một lần
+   bấm sinh ra đúng một mốc thời gian cho cả bản ghi lẫn nhật ký. */
+function backSet(dealId, status, note, at){
+  const j = backRead();
+  const i = j.deals.findIndex(d => d.dealId === dealId);
+  const row = {dealId:dealId, status:status, note:note||"", by:"portal", updatedAt:at};
+  if (i >= 0) j.deals[i] = row; else j.deals.push(row);
+  try { localStorage.setItem(BACK_KEY, JSON.stringify(j)); return true; }
+  catch (e) { return false; }
+}
 
 /* Kỳ hiệu lực admin đang chọn. Để ngoài DOM để sau ctx.refresh() (ghi xong
    một deal) vẫn giữ nguyên lựa chọn, khỏi phải chọn lại từng lần. */
@@ -100,14 +129,18 @@ function alreadyWritten(A, deal) {
   return { rate, adv, any: rate || adv };
 }
 
-/* Trạng thái một dòng. Thứ tự kiểm quan trọng: chưa gắn thì chưa cần biết
-   party có thật không, và đã ghi rồi thì không mời ghi lại. */
+/* Thứ tự kiểm có ý nghĩa quy trình, không phải tuỳ tiện: CEO duyệt TRƯỚC, ghi
+   sổ SAU. Ghi tỷ lệ và tạm ứng vào sổ khi CEO chưa gật là ghi một cam kết
+   thương mại chưa ai phê — đúng thứ mà chuỗi duyệt sinh ra để chặn. */
 function classify(A, deal) {
   if (!deal.portalPartyKey) return "unbound";
   if (!partyOk(A, deal.portalPartyKey)) return "badparty";
-  if (alreadyWritten(A, deal).any) return "done";
   if (!deal.terms) return "noterms";
-  return "ready";
+  const back = backOf(deal.dealId);
+  if (back && back.status === "ceo_rejected") return "declined";
+  if (!back) return "ceo";                       /* chờ CEO duyệt */
+  if (alreadyWritten(A, deal).any) return "done";
+  return "ready";                                /* CEO gật rồi, còn ghi sổ */
 }
 
 function advanceOf(deal) {
@@ -160,13 +193,16 @@ HAUSTEK.registerScreen({
   nav: "Bàn giao CRM",
   group: "Quản trị",
   title: "Bàn giao từ CRM",
-  subtitle: "Deal đã ký bên CRM, chuyển thành <b>tỷ lệ chia</b> và <b>tạm ứng</b> trong sổ.",
+  subtitle: "CEO duyệt deal A&R đã trình, rồi chuyển thành <b>tỷ lệ chia</b> và <b>tạm ứng</b> trong sổ.",
 
   badge(ctx) {
     const h = readHandoff();
     if (!h || h.err) return "";
     const A = ctx.admin;
-    const n = h.deals.filter(d => classify(A, d) === "ready").length;
+    const n = h.deals.filter(d => {
+      const st = classify(A, d);
+      return st === "ceo" || st === "ready";
+    }).length;
     return n ? String(n) : "";
   },
 
@@ -204,12 +240,15 @@ HAUSTEK.registerScreen({
     if (!ui.period || !open.some(p => p.k === ui.period)) ui.period = open.length ? open[0].k : "";
 
     const rows = h.deals.map(d => ({ d: d, st: classify(A, d) }));
+    const nCeo   = rows.filter(r => r.st === "ceo").length;
     const nReady = rows.filter(r => r.st === "ready").length;
     const nDone  = rows.filter(r => r.st === "done").length;
 
     const stLabel = {
-      ready:    ['ready', 'sẵn sàng'],
-      done:     ['done',  'đã ghi'],
+      ceo:      ['hold',  'chờ CEO duyệt'],
+      ready:    ['ready', 'CEO đã duyệt · chờ ghi sổ'],
+      done:     ['done',  'đã ghi sổ'],
+      declined: ['bad',   'CEO không duyệt'],
       unbound:  ['hold',  'chưa gắn'],
       noterms:  ['hold',  'chưa có điều khoản'],
       badparty: ['bad',   'party không có thật']
@@ -228,9 +267,19 @@ HAUSTEK.registerScreen({
         '<td class="num">' + (d.terms ? Math.round(rateOf(d) * 100) + '%' : '<span class="dim">—</span>') + '</td>' +
         '<td class="num">' + (advanceOf(d) ? esc(ctx.money(advanceOf(d))) : '<span class="dim">—</span>') + '</td>' +
         '<td><span class="ch-st ' + s[0] + '">' + esc(s[1]) + '</span></td>' +
-        '<td class="num">' + (r.st === "ready"
-            ? '<button class="btn sm" data-write="' + i + '">Ghi vào sổ</button>'
-            : '') + '</td>' +
+        '<td class="num"><div class="btnrow" style="justify-content:flex-end">' +
+          (r.st === "ceo"
+            ? '<button class="btn sm" data-no="' + i + '">CEO không duyệt</button>' +
+              '<button class="btn sm pri" data-yes="' + i + '">CEO duyệt</button>'
+            : r.st === "ready"
+            ? '<button class="btn sm go" data-write="' + i + '">Ghi vào sổ</button>'
+            : r.st === "done"
+            ? '<select class="ch-flow" data-flow="' + i + '">' +
+              FLOW.map(f => '<option value="' + f + '"' +
+                ((backOf(r.d.dealId) || {}).status === f ? " selected" : "") + '>' +
+                esc(FLOW_LABEL[f]) + '</option>').join("") + '</select>'
+            : '') +
+        '</div></td>' +
       '</tr>';
     }).join("");
 
@@ -239,8 +288,8 @@ HAUSTEK.registerScreen({
         '<div class="ch-head">' +
           '<div class="ch-src">Nguồn <b>' + esc(h.source || "?") + '</b> · phiên bản ' + esc(h.v) +
             ' · ghi lúc ' + esc(String(h.at || "—").replace("T", " ").slice(0, 16)) + '<br>' +
-            esc(h.deals.length) + ' deal đã ký · <b>' + nReady + '</b> sẵn sàng · ' +
-            nDone + ' đã ghi</div>' +
+            esc(h.deals.length) + ' deal đã trình · <b>' + nCeo + '</b> chờ CEO · ' +
+            nReady + ' chờ ghi sổ · ' + nDone + ' đã ghi</div>' +
           '<div style="margin-left:auto" class="ch-pick">' +
             '<span>tỷ lệ hiệu lực từ kỳ</span>' +
             (open.length
@@ -260,7 +309,7 @@ HAUSTEK.registerScreen({
 
         '<div class="tb-wrap"><table class="tb"><thead><tr>' +
           '<th>Deal</th><th>Party bên portal</th><th class="num">Tỷ lệ NS</th>' +
-          '<th class="num">Tạm ứng</th><th>Trạng thái</th><th></th>' +
+          '<th class="num">Tạm ứng</th><th>Trạng thái</th><th class="num"></th>' +
         '</tr></thead><tbody>' + (body || '<tr><td colspan="6" class="dim">Chưa có deal nào</td></tr>') +
         '</tbody></table></div>' +
 
@@ -276,12 +325,47 @@ HAUSTEK.registerScreen({
     const sel = document.getElementById("chPeriod");
     if (sel) sel.onchange = () => { ui.period = sel.value; };
 
+    /* CEO duyệt / không duyệt. Chỉ ghi vào khoá chiều về — chưa đụng vào sổ.
+       Ghi sổ là một bước riêng ngay sau đó, để admin còn chọn kỳ hiệu lực. */
+    const stamp = () => new Date().toISOString();
+    root.querySelectorAll("[data-yes]").forEach(btn => {
+      btn.onclick = async () => {
+        const r = rows[+btn.dataset.yes];
+        backSet(r.d.dealId, "ceo_approved", "", stamp());
+        A.audit.log("crm-ceo", r.d.dealId + " — CEO duyệt");
+        ctx.toast("CEO đã duyệt " + r.d.dealId, "ok"); ctx.refresh();
+      };
+    });
+    root.querySelectorAll("[data-no]").forEach(btn => {
+      btn.onclick = async () => {
+        const r = rows[+btn.dataset.no];
+        const ok = await ctx.confirm("CEO không duyệt deal này",
+          r.d.dealName + " sẽ được trả về đàm phán bên CRM. Điều khoản chưa ghi vào sổ nên không có gì phải gỡ.",
+          "Không duyệt", true);
+        if (!ok) return;
+        backSet(r.d.dealId, "ceo_rejected", "", stamp());
+        A.audit.log("crm-ceo", r.d.dealId + " — CEO không duyệt");
+        ctx.toast("Đã trả " + r.d.dealId + " về CRM", "ok"); ctx.refresh();
+      };
+    });
+    /* Sau khi ghi sổ, legal đẩy trạng thái hợp đồng — CRM đọc và hiện cho A&R */
+    root.querySelectorAll("[data-flow]").forEach(sel => {
+      sel.onchange = () => {
+        const r = rows[+sel.dataset.flow];
+        backSet(r.d.dealId, sel.value, "", stamp());
+        A.audit.log("crm-contract", r.d.dealId + " → " + sel.value);
+        ctx.toast(FLOW_LABEL[sel.value], "ok"); ctx.refresh();
+      };
+    });
     root.querySelectorAll("[data-write]").forEach(btn => {
       btn.onclick = async () => {
         const r = rows[+btn.dataset.write];
         try {
           const done = await writeOne(A, ctx, r.d, ui.period);
-          if (done) { ctx.toast("Đã ghi " + r.d.dealId + " vào sổ", "ok"); ctx.refresh(); }
+          if (done) {
+            backSet(r.d.dealId, "drafting", "Đã ghi tỷ lệ và tạm ứng vào sổ", new Date().toISOString());
+            ctx.toast("Đã ghi " + r.d.dealId + " vào sổ", "ok"); ctx.refresh();
+          }
         } catch (e) { ctx.toast(e.message, "no"); }
       };
     });

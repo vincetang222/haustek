@@ -77,7 +77,8 @@ try {
     HANDOFF_BIND[r[1].dealId] = "A:0";
     HANDOFF_BIND[r[2].dealId] = "L:9999";
     saveNow();
-    return r.slice(0, 2).map(x => ({ id: x.dealId, share: x.terms.artistSharePct / 100, adv: x.terms.totalAdvanceUSD }));
+    return r.slice(0, 2).map(x => ({ id: x.dealId, name: x.dealName,
+      share: x.terms.artistSharePct / 100, adv: x.terms.totalAdvanceUSD }));
   });
   F("CRM ghi khoá bàn giao", await crm.evaluate(() => !!localStorage.getItem("haustek.crm.handoff.v1")));
   F("CRM không bao giờ đụng khoá portal", await crm.evaluate(() => localStorage.getItem("haustek.portal.v1") === null));
@@ -102,8 +103,34 @@ try {
     await intr.evaluate(() => [...document.querySelectorAll(".tb tbody tr")]
       .some(tr => /chưa gắn/.test(tr.textContent) && !tr.querySelector("[data-write]"))));
 
-  /* --- Ghi một deal vào sổ --- */
-  await intr.click('[data-write="0"]'); await intr.waitForTimeout(700);
+  /* Bảng sắp theo ngày đóng nên chỉ số dòng không đoán được — tìm theo tên. */
+  const rowIdx = async (name, attr) => intr.evaluate(([nm, at]) => {
+    const rows = [...document.querySelectorAll(".tb tbody tr")];
+    const i = rows.findIndex(tr => tr.textContent.includes(nm) && tr.querySelector("[" + at + "]"));
+    return i < 0 ? null : rows[i].querySelector("[" + at + "]").getAttribute(at);
+  }, [name, attr]);
+
+  /* --- CEO duyệt TRƯỚC, ghi sổ SAU --- */
+  F("CEO chưa duyệt thì không có nút ghi sổ",
+    await intr.evaluate(() => [...document.querySelectorAll(".tb tbody tr")]
+      .some(tr => /chờ CEO duyệt/.test(tr.textContent) && !tr.querySelector("[data-write]"))));
+  const beforeLedger = await intr.evaluate(() =>
+    HAUSTEK.admin.rates.scheduleFor("L:0").filter(r => /^CRM /.test(r.note || "")).length);
+  F("sổ chưa bị ghi gì khi CEO chưa gật", beforeLedger === 0);
+
+  const iYes = await rowIdx(deals[0].name, "data-yes");
+  F("tìm được dòng deal cần CEO duyệt", iYes !== null);
+  await intr.click('[data-yes="' + iYes + '"]'); await intr.waitForTimeout(600);
+  F("CEO duyệt ghi vào khoá chiều về",
+    await intr.evaluate(() => {
+      const j = JSON.parse(localStorage.getItem("haustek.portal.contracts.v1") || "null");
+      return !!j && j.deals.some(d => d.status === "ceo_approved");
+    }));
+  F("CEO duyệt xong mới hiện nút ghi sổ",
+    await intr.evaluate(() => !!document.querySelector('[data-write]')));
+
+  const iWrite = await rowIdx(deals[0].name, "data-write");
+  await intr.click('[data-write="' + iWrite + '"]'); await intr.waitForTimeout(700);
   const after = await intr.evaluate(() => {
     const A = HAUSTEK.admin, sch = A.rates.scheduleFor("L:0");
     return { last: sch[sch.length - 1], adv: A.advances.list().find(a => a.partyKey === "L:0"),
@@ -114,8 +141,11 @@ try {
   F("ghi chú mang dấu CRM <mã deal>", after.last.note.startsWith("CRM " + deals[0].id + " "));
   F("tạm ứng vào sổ đúng số", !!after.adv && after.adv.opening === deals[0].adv);
   F("portal có ghi nhật ký", after.audit > 0);
-  F("dòng chuyển sang trạng thái đã ghi",
-    await intr.evaluate(() => document.querySelector(".tb tbody tr .ch-st").textContent.trim() === "đã ghi"));
+  F("ghi sổ xong chuyển sang Legal đang soạn",
+    await intr.evaluate(() => {
+      const j = JSON.parse(localStorage.getItem("haustek.portal.contracts.v1"));
+      return j.deals.some(d => d.status === "drafting");
+    }));
 
   /* --- Bất biến: nguồn sự thật là SỔ, không phải biến trong RAM --- */
   await intr.reload();
@@ -123,22 +153,62 @@ try {
   await intr.evaluate(() => { location.hash = "#crm-handoff"; });
   await intr.waitForTimeout(900);
   F("tải lại intranet vẫn nhớ deal đã ghi",
-    await intr.evaluate(() => document.querySelector(".tb tbody tr .ch-st").textContent.trim() === "đã ghi"));
+    await intr.evaluate(nm => [...document.querySelectorAll(".tb tbody tr")]
+      .some(tr => tr.textContent.includes(nm) && /đã ghi sổ/.test(tr.textContent)), deals[0].name));
   F("không ghi trùng lần hai",
     await intr.evaluate(() => HAUSTEK.admin.rates.scheduleFor("L:0").filter(r => /^CRM /.test(r.note || "")).length === 1));
 
+  /* --- Legal đẩy hợp đồng tới "sẵn sàng" --- */
+  const iFlow = await rowIdx(deals[0].name, "data-flow");
+  await intr.selectOption('[data-flow="' + iFlow + '"]', "ready"); await intr.waitForTimeout(600);
+  F("legal đổi được trạng thái hợp đồng",
+    await intr.evaluate(() => {
+      const j = JSON.parse(localStorage.getItem("haustek.portal.contracts.v1"));
+      return j.deals.some(d => d.status === "ready");
+    }));
+
+  /* --- CHIỀU NGƯỢC: A&R mở CRM và thấy deal của mình đi tới đâu --- */
+  await crm.reload(); await crm.waitForTimeout(900);
+  const back = await crm.evaluate(id => {
+    const o = DB.opps.find(x => x.id === id);
+    return { stage: o.stage, contract: o.contract };
+  }, deals[0].id);
+  F("CRM nhận trạng thái hợp đồng từ portal (" + (back.contract || {}).status + ")",
+    !!back.contract && back.contract.status === "ready");
+  F("CRM tự chuyển giai đoạn theo portal (" + back.stage + ")", back.stage === "signature");
+  F("CRM KHÔNG ghi vào khoá chiều về",
+    await crm.evaluate(() => {
+      const before = localStorage.getItem("haustek.portal.contracts.v1");
+      go("opps"); saveNow();
+      return localStorage.getItem("haustek.portal.contracts.v1") === before;
+    }));
+  F("giai đoạn portal cầm lái thì CRM không đẩy tiếp được",
+    await crm.evaluate(id => {
+      const o = DB.opps.find(x => x.id === id);
+      const s0 = o.stage; advance(id, 1); return DB.opps.find(x => x.id === id).stage === s0;
+    }, deals[0].id));
+
   /* --- Chốt chặn: advances.set() THAY THẾ chứ không cộng dồn --- */
   await intr.evaluate(() => HAUSTEK.admin.advances.set("A:0", 99999, "khoản cũ không phải từ CRM"));
+  /* Cho deal thứ hai qua cửa CEO để có nút ghi sổ mà thử chốt chặn. Truyền id
+     thẳng qua tham số — gán vào window thì mất sạch ở lần reload phía trên. */
+  await intr.evaluate(id => {
+    const j = JSON.parse(localStorage.getItem("haustek.portal.contracts.v1"));
+    j.deals.push({dealId: id, status: "ceo_approved", note: "", by: "portal", updatedAt: "2026-09-15T00:00:00Z"});
+    localStorage.setItem("haustek.portal.contracts.v1", JSON.stringify(j));
+  }, deals[1].id);
   await intr.evaluate(() => { location.hash = "#overview"; }); await intr.waitForTimeout(300);
   await intr.evaluate(() => { location.hash = "#crm-handoff"; }); await intr.waitForTimeout(800);
-  const guard = await intr.evaluate(async () => {
-    const btn = document.querySelector("[data-write]"); if (!btn) return "";
+  const iGuard = await rowIdx(deals[1].name, "data-write");
+  F("deal thứ hai qua cửa CEO, hiện nút ghi sổ", iGuard !== null);
+  const guard = await intr.evaluate(async (i) => {
+    const btn = document.querySelector('[data-write="' + i + '"]'); if (!btn) return "";
     btn.click(); await new Promise(r => setTimeout(r, 500));
     const m = document.querySelector(".modal"); const txt = m ? m.textContent : "";
     const cancel = [...(m ? m.querySelectorAll("button") : [])].find(x => /Hu[ỷỵ]|Cancel/i.test(x.textContent));
     if (cancel) cancel.click();
     return txt;
-  });
+  }, iGuard);
   F("cảnh báo trước khi đè khoản tạm ứng đang có", /THAY TH[ẾE]/i.test(guard));
   F("bấm huỷ thì sổ không đổi",
     await intr.evaluate(() => HAUSTEK.admin.advances.list().find(a => a.partyKey === "A:0").opening === 99999));
@@ -150,5 +220,5 @@ try {
 } finally {
   srv.close();
 }
-console.log(FAILED ? "\n" + FAILED + " phép kiểm HỎNG" : "\n17 đạt · 0 hỏng");
+console.log(FAILED ? "\n" + FAILED + " phép kiểm HỎNG" : "\n28 đạt · 0 hỏng");
 process.exit(FAILED ? 1 : 0);

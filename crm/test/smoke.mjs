@@ -5,7 +5,7 @@
    crm.html là một file HTML với script nội tuyến, đụng vào document ngay
    lúc nạp, nên phải kiểm trong trình duyệt thật.
 
-   24 phép kiểm, phủ đúng những gì dễ vỡ nhất khi sửa file 5000+ dòng này:
+   42 phép kiểm, phủ đúng những gì dễ vỡ nhất khi sửa file 5000+ dòng này:
    ranh giới quyền · thoát HTML · song ngữ và hai tiền tệ · chỉ số tuần ·
    lưu trạng thái và hồi sinh kiểu Date · cả 12 tab · drawer/chi tiết/import ·
    hiệu năng bảng ảo hoá · không tràn ngang ở khổ điện thoại ·
@@ -124,7 +124,83 @@ F('tên và ngày KHÔNG bị ép font mono', await p.evaluate(()=>{
   const e=document.querySelector('.rec-m-v');
   return !e || !/Plex/.test(getComputedStyle(e).fontFamily); }));
 
-// 10 mobile
+// 10 chuỗi duyệt hai cấp, saved views, bulk actions
+/* Tắt STORE_READY trước khi xoá: handler 'pagehide' gọi saveNow() lúc rời trang
+   nên xoá xong mà reload ngay thì trạng thái cũ được ghi lại y nguyên. */
+await p.evaluate(()=>{ window.STORE_READY = false; localStorage.clear(); });
+await p.reload(); await p.waitForTimeout(1000); await p.click('.login-btn'); await p.waitForTimeout(400);
+
+const chain = await p.evaluate(()=>{
+  const big = DB.opps.find(o=>o.stage==='negotiation' && o.amount>REGION_THRESHOLD);
+  const small = DB.opps.find(o=>o.stage==='negotiation' && o.amount>0 && o.amount<REGION_THRESHOLD);
+  advance(big.id,1); advance(small.id,1);
+  const afterSubmit = {big:DB.opps.find(o=>o.id===big.id).stage, small:DB.opps.find(o=>o.id===small.id).stage};
+  setUser('Trần Quốc Bảo');                 /* sếp country */
+  advance(big.id,1); advance(small.id,1);
+  const afterCountry = {big:DB.opps.find(o=>o.id===big.id).stage, small:DB.opps.find(o=>o.id===small.id).stage};
+  setUser('Priya Raman');                   /* sếp vùng */
+  advance(big.id,1);
+  const afterRegion = DB.opps.find(o=>o.id===big.id).stage;
+  setUser('Ethan Nguyen');
+  return {bigAmt:big.amount, smallAmt:small.amount, thr:REGION_THRESHOLD, afterSubmit, afterCountry, afterRegion, bigId:big.id};
+});
+F('A&R trình lên sếp country', chain.afterSubmit.big==='waiting' && chain.afterSubmit.small==='waiting');
+F('deal lớn qua country thì tới sếp vùng', chain.afterCountry.big==='region');
+F('deal nhỏ ('+chain.smallAmt+'<'+chain.thr+') bỏ qua sếp vùng, lên thẳng portal', chain.afterCountry.small==='portal');
+F('deal CHƯA điền giá trị vẫn phải qua sếp vùng', await p.evaluate(()=>{
+  const o=DB.opps.find(x=>x.stage==='negotiation' && !x.amount);
+  if(!o) return true;
+  advance(o.id,1); setUser('Trần Quốc Bảo'); advance(o.id,1);
+  const st=DB.opps.find(x=>x.id===o.id).stage; setUser('Ethan Nguyen');
+  return st==='region'; }));
+F('sếp vùng duyệt xong thì lên portal', chain.afterRegion==='portal');
+F('sếp country KHÔNG ký thay được cấp vùng', await p.evaluate(()=>{
+  const o=DB.opps.find(x=>x.stage==='region'); if(!o) return true;
+  setUser('Trần Quốc Bảo'); const ok=canAdvance(o); setUser('Ethan Nguyen'); return !ok; }));
+F('A&R KHÔNG tự duyệt deal của mình được', await p.evaluate(()=>{
+  const o=DB.opps.find(x=>x.stage==='waiting'); if(!o) return true;
+  setUser('Nguyen Ngoc Lam'); const ok=canAdvance(o); setUser('Ethan Nguyen'); return !ok; }));
+F('từ chối trả deal về đàm phán, không giết deal', await p.evaluate(()=>{
+  const o=DB.opps.find(x=>x.stage==='waiting'); if(!o) return true;
+  advance(o.id,0); return DB.opps.find(x=>x.id===o.id).stage==='negotiation'; }));
+F('CRM không đẩy tiếp được giai đoạn do portal cầm', await p.evaluate(()=>{
+  const o=DB.opps.find(x=>x.stage==='won'); const s0=o.stage;
+  advance(o.id,1); return DB.opps.find(x=>x.id===o.id).stage===s0; }));
+F('bàn giao lấy deal từ giai đoạn portal trở đi', await p.evaluate(id=>
+  handoffRows().some(r=>r.dealId===id), chain.bigId));
+
+// saved views
+await p.evaluate(()=>{ go('opps'); setOppF('negotiation'); sortBy('amount');
+  state.views={}; state.views.opps=[Object.assign({name:'Deal đàm phán'}, viewSnap('opps'))];
+  setOppF('all'); state.sort={key:null,dir:1}; render(); });
+F('view đã lưu hiện thành chip', await p.evaluate(()=>!!document.querySelector('#view .viewchip')));
+F('bấm view khôi phục đúng bộ lọc và thứ tự', await p.evaluate(()=>{
+  viewApply('opps',0); return state.oppFilter==='negotiation' && state.sort.key==='amount'; }));
+F('view sống qua reload', await p.evaluate(()=>{ saveNow(); return true; }));
+await p.reload(); await p.waitForTimeout(800);
+F('view còn sau khi tải lại', await p.evaluate(()=>viewsFor('opps').length===1));
+
+// bulk actions
+const bulk = await p.evaluate(()=>{
+  go('opps');
+  const ids = DB.opps.filter(o=>o.stage==='negotiation' && o.owner===ME).slice(0,3).map(o=>o.id);
+  ids.forEach(id=>selToggle('opps', id));
+  return {n:state.sel.ids.length, kind:state.sel.kind, bar:!!document.querySelector('.bulkbar')};
+});
+F('chọn nhiều dòng hiện thanh hành động ('+bulk.n+')', bulk.n===3 && bulk.bar);
+F('đổi tab thì bỏ lựa chọn', await p.evaluate(()=>{ go('leads'); return state.sel.ids.length===0; }));
+F('chọn một loại khác thì bỏ lựa chọn cũ', await p.evaluate(()=>{
+  go('opps'); selToggle('opps', DB.opps[0].id);
+  selToggle('leads', DB.leads[0].id);
+  return state.sel.kind==='leads' && state.sel.ids.length===1; }));
+F('duyệt hàng loạt chỉ chạm deal đúng quyền', await p.evaluate(()=>{
+  selClear(); go('opps');
+  const mine = DB.opps.filter(o=>o.stage==='negotiation' && canEdit(o.owner)).slice(0,2);
+  mine.forEach(o=>selToggle('opps', o.id));
+  bulkRun('advance');
+  return mine.every(o=>DB.opps.find(x=>x.id===o.id).stage==='waiting'); }));
+
+// 11 mobile
 const m=await b.newPage({viewport:{width:390,height:844}});
 await m.goto(FILE); await m.click('.login-btn'); await m.waitForTimeout(400);
 let ov=0; for(const v of ['home','leads','opps','accounts','contacts','tasks','people','approvals','handoff','reports','audit','perms']){
@@ -134,5 +210,5 @@ if(errs.length) FAILED++;
 console.log('\nLỗi JS: '+errs.length);
 errs.slice(0,5).forEach(e=>console.log('  '+e));
 await b.close();
-console.log(FAILED ? ('\n'+FAILED+' phép kiểm HỎNG') : '\n24 đạt · 0 hỏng');
+console.log(FAILED ? ('\n'+FAILED+' phép kiểm HỎNG') : '\n42 đạt · 0 hỏng');
 process.exit(FAILED?1:0);

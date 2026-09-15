@@ -343,6 +343,53 @@ kbd{
 .search input:focus ~ .search-k{display:none}
 @media(max-width:640px){.search-k{display:none}}
 
+/* ---------- chọn hàng loạt + view đã lưu ---------- */
+.selcell{width:36px;padding-left:12px!important;padding-right:0!important}
+th.selcell{padding-left:12px!important}
+.cbx{width:15px;height:15px;border:1.4px solid #c3cad3;border-radius:3px;display:inline-grid;
+  place-items:center;font-size:10px;color:#fff;line-height:1;cursor:pointer;flex:0 0 auto;
+  background:var(--paper);vertical-align:middle}
+.cbx:hover{border-color:var(--ink-2)}
+/* .cbx.on ở phần "home bottom sections" tô đỏ (việc cần làm đã xong — đỏ ở đó
+   có nghĩa). Ô tích chọn hàng loạt thì không: chọn 3 dòng không phải chuyện gấp.
+   Nâng độ cụ thể thay vì đổi rule kia, để hai chỗ giữ được hai ý nghĩa riêng. */
+.selcell .cbx.on,th.selcell .cbx.on{background:var(--ink);border-color:var(--ink)}
+.bulkbar{
+  display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px;
+  background:var(--ink);color:#fff;border-radius:8px;padding:8px 12px;
+  box-shadow:0 2px 10px rgba(10,10,13,.18);animation:bulkin .13s ease-out;
+}
+@keyframes bulkin{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+.bulk-n{font-family:var(--mono);font-size:12px;font-weight:700;background:rgba(255,255,255,.16);
+  border-radius:5px;padding:2px 8px;font-variant-numeric:tabular-nums}
+.bulk-l{font-size:12.5px;color:#d7d7de}
+.bulk-warn{font-size:11.5px;color:#ffc9d2}
+.bulk-acts{margin-left:auto;display:flex;gap:6px;flex-wrap:wrap}
+.bulkbar .btn{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.22);color:#fff}
+.bulkbar .btn:hover{background:rgba(255,255,255,.18)}
+.bulkbar .btn-primary{background:var(--brand);border-color:var(--brand)}
+.bulkbar .btn-primary:hover{background:var(--brand-dark)}
+
+.views{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:11px}
+.viewchip{display:inline-flex;align-items:center;border:1px solid var(--line);background:#fff;
+  border-radius:14px;overflow:hidden;font-size:12px}
+.viewchip button{padding:4px 4px 4px 11px;color:var(--ink-2)}
+.viewchip .viewx{padding:4px 9px 4px 5px;color:var(--muted-2);font-size:13px;line-height:1}
+.viewchip .viewx:hover{color:var(--brand)}
+.viewchip:hover{border-color:#c6ccd6}
+.viewchip.on{background:var(--ink);border-color:var(--ink)}
+.viewchip.on button{color:#fff}
+.viewchip.on .viewx{color:rgba(255,255,255,.55)}
+.viewchip.on .viewx:hover{color:#fff}
+.viewadd{font-size:12px;color:var(--muted);padding:4px 10px;border:1px dashed var(--line);
+  border-radius:14px}
+.viewadd:hover{color:var(--ink);border-color:#c6ccd6}
+
+.thrrow{display:flex;gap:9px;align-items:center;flex-wrap:wrap}
+.thrrow .curin{max-width:210px}
+.btnpair{display:flex;gap:6px;justify-content:flex-end}
+.ct-sub{font-size:11px;color:var(--muted);font-weight:400;margin-top:3px;line-height:1.45}
+
 /* ---------- chỉ số quan hệ ---------- */
 .rel{display:flex;align-items:center;gap:8px;min-width:0}
 .rel-bar{width:42px;height:4px;border-radius:2px;background:var(--line);flex:0 0 auto;overflow:hidden}
@@ -393,7 +440,7 @@ kbd{
 .empty-s{font-size:12.5px;color:var(--muted);margin-bottom:14px}
 
 /* ---------- kanban ---------- */
-.kan{display:grid;grid-template-columns:repeat(6,minmax(214px,1fr));gap:12px;overflow-x:auto;padding-bottom:6px}
+.kan{display:grid;grid-template-columns:repeat(8,minmax(198px,1fr));gap:12px;overflow-x:auto;padding-bottom:6px}
 .kcol{background:var(--paper);border:1px solid var(--line);border-radius:8px;display:flex;flex-direction:column;min-width:214px}
 .kcol-h{padding:10px 12px;border-bottom:1px solid var(--line-2);border-top:2px solid;border-radius:8px 8px 0 0}
 .kcol-t{font-size:12px;font-weight:600;display:flex;align-items:center;gap:6px}
@@ -1031,7 +1078,8 @@ vi:{
   cDeals:'Deal', cLastAct:'Hoạt động cuối', cSubject:'Nội dung', cDue:'Hạn', cRelated:'Liên quan',
   cSubmitted:'Ngày gửi', cRequester:'Người gửi',
   /* stages & statuses */
-  st_negotiation:'Đàm phán', st_waiting:'Chờ duyệt', st_legal:'Bên pháp chế', st_signature:'Chờ ký',
+  st_negotiation:'Đàm phán', st_waiting:'Chờ sếp country', st_region:'Chờ sếp vùng',
+  st_portal:'Đã trình portal', st_legal:'Legal soạn hợp đồng', st_signature:'Chờ ký',
   st_won:'Đã ký', st_lost:'Thất bại',
   ls_new:'Mới', ls_contacted:'Đã liên hệ', ls_followup:'Đã gửi follow-up',
   ls_hold:'Tạm dừng', ls_converted:'Đã chuyển đổi', ls_lost:'Thất bại',
@@ -1042,6 +1090,24 @@ vi:{
   save:'Lưu thay đổi', cancel:'Huỷ', convert:'Chuyển thành cơ hội', saved:'Đã lưu',
   converted:'Đã chuyển {n} thành cơ hội', approve:'Duyệt', reject:'Từ chối',
   approved:'Đã duyệt {n}', rejected:'Đã từ chối {n}', created:'Đã tạo {n}',
+  sentBack:'Đã trả {n} về đàm phán', sentPortal:'Đã trình {n} lên portal',
+  skipRegion:'bỏ qua sếp vùng',
+  bulkSel:'đã chọn', bulkClear:'Bỏ chọn', bulkOwner:'Đổi phụ trách', bulkStatus:'Đổi trạng thái',
+  bulkAdvance:'Duyệt {n} deal', bulkDone:'Đã xử lý {n} bản ghi',
+  bulkSkip:'{n} bản ghi không thuộc quyền bạn sẽ bị bỏ qua',
+  viewsTitle:'View đã lưu', viewSave:'Lưu view này', viewSaveT:'Đặt tên cho view',
+  viewPh:'vd: Deal lớn chờ tôi duyệt', viewSaved:'Đã lưu view {n}', viewDrop:'Xoá view',
+  ct_ceo_approved:'CEO đã duyệt', ct_ceo_rejected:'CEO không duyệt',
+  ct_drafting:'Legal đang soạn', ct_ready:'Hợp đồng sẵn sàng', ct_signed:'Đã ký',
+  cContract:'Hợp đồng', ctFrom:'Portal cập nhật', ctNone:'Chưa có',
+  ctOpenPortal:'Mở portal để xem hợp đồng',
+  chainNote:'Chuỗi duyệt: A&R trình → sếp country → sếp vùng → trình lên portal cho CEO duyệt. Deal dưới ngưỡng bỏ qua sếp vùng. Từ khi lên portal, giai đoạn do portal điều khiển và CRM chỉ nhận trạng thái ngược về.',
+  noRight:'Bạn không có quyền ở bước này', stagePortalOwned:'Giai đoạn này do portal điều khiển',
+  submitCountry:'Trình sếp country', approveC:'Duyệt (country)', approveR:'Duyệt (vùng)',
+  sendBack:'Trả lại', role_country:'Giám đốc quốc gia', role_region:'Giám đốc khu vực',
+  pApproveCountry:'Duyệt cấp country', pApproveRegion:'Duyệt cấp vùng',
+  thrTitle:'Ngưỡng bỏ qua sếp vùng', thrHint:'Deal dưới mức này chỉ cần sếp country duyệt rồi trình thẳng portal.',
+  thrSaved:'Đã đổi ngưỡng thành {n}',
   dist:'Distribution', pub:'Publishing', yt:'YouTube',
   noContacts:'Chưa có người liên hệ nào', noDeals:'Chưa có deal nào', noActivity:'Chưa có hoạt động',
   noResult:'Không tìm thấy kết quả', noResultSub:'Thử từ khoá khác hoặc bỏ bộ lọc.',
@@ -1140,12 +1206,13 @@ vi:{
   permsNote:'Manager thấy toàn hệ thống. A/R và Label Manager chỉ thao tác trên bản ghi của mình.',
   roleMatrix:'Bảng quyền theo nhóm', userList:'Danh sách người dùng',
   role_manager:'Manager', role_ar:'Artist Relations (A/R)', role_lm:'Label Manager (LM)',
-  roleGroup1:'Nhóm 1', roleGroup2:'Nhóm 2',
+  roleGroup1:'Nhóm 1', roleGroup2:'Nhóm 2', roleGroup3:'Nhóm 3',
   cRole:'Nhóm quyền', cScope:'Phạm vi dữ liệu', cPermission:'Quyền',
   scopeAll:'Toàn bộ hệ thống', scopeOwn:'Chỉ bản ghi của mình',
   pm_viewAll:'Xem mọi khách hàng, lead và cơ hội',
   pm_editAll:'Sửa bản ghi của người khác',
-  pm_approve:'Duyệt / từ chối deal',
+  pm_approveCountry:'Duyệt deal ở cấp quốc gia',
+  pm_approveRegion:'Duyệt deal ở cấp khu vực',
   pm_reports:'Xem báo cáo toàn hệ thống',
   pm_audit:'Xem nhật ký chỉnh sửa của mọi bản ghi',
   pm_export:'Xuất dữ liệu ra CSV',
@@ -1261,7 +1328,8 @@ en:{
   cClose:'Close date', cRights:'Rights', cAccount:'Account', cType:'Type', cContacts:'Contacts',
   cDeals:'Deals', cLastAct:'Last activity', cSubject:'Subject', cDue:'Due', cRelated:'Related to',
   cSubmitted:'Submitted', cRequester:'Requested by',
-  st_negotiation:'Negotiation', st_waiting:'Waiting on approvals', st_legal:'With legal', st_signature:'Awaiting signature',
+  st_negotiation:'Negotiation', st_waiting:'Country head review', st_region:'Regional head review',
+  st_portal:'Submitted to portal', st_legal:'Legal drafting', st_signature:'Awaiting signature',
   st_won:'Closed won', st_lost:'Closed lost',
   ls_new:'New', ls_contacted:'Contacted', ls_followup:'Follow up sent',
   ls_hold:'On hold', ls_converted:'Converted', ls_lost:'Lost',
@@ -1271,6 +1339,24 @@ en:{
   save:'Save changes', cancel:'Cancel', convert:'Convert to opportunity', saved:'Saved',
   converted:'Converted {n} to an opportunity', approve:'Approve', reject:'Reject',
   approved:'Approved {n}', rejected:'Rejected {n}', created:'Created {n}',
+  sentBack:'Sent {n} back to negotiation', sentPortal:'Submitted {n} to the portal',
+  skipRegion:'skips regional',
+  bulkSel:'selected', bulkClear:'Clear', bulkOwner:'Change owner', bulkStatus:'Change status',
+  bulkAdvance:'Approve {n} deals', bulkDone:'{n} records updated',
+  bulkSkip:'{n} records outside your scope will be skipped',
+  viewsTitle:'Saved views', viewSave:'Save this view', viewSaveT:'Name this view',
+  viewPh:'e.g. Big deals waiting on me', viewSaved:'Saved view {n}', viewDrop:'Remove view',
+  ct_ceo_approved:'CEO approved', ct_ceo_rejected:'CEO declined',
+  ct_drafting:'Legal drafting', ct_ready:'Contract ready', ct_signed:'Signed',
+  cContract:'Contract', ctFrom:'Portal update', ctNone:'None yet',
+  ctOpenPortal:'Open the portal to read the contract',
+  chainNote:'Approval chain: A&R submits → country head → regional head → submitted to the portal for CEO approval. Deals below the threshold skip the regional step. Once on the portal, the stage is driven there and the CRM only receives status back.',
+  noRight:'You cannot act at this step', stagePortalOwned:'This stage is driven by the portal',
+  submitCountry:'Submit to country head', approveC:'Approve (country)', approveR:'Approve (region)',
+  sendBack:'Send back', role_country:'Country head', role_region:'Regional head',
+  pApproveCountry:'Approve at country level', pApproveRegion:'Approve at regional level',
+  thrTitle:'Regional-step threshold', thrHint:'Deals below this only need the country head, then go straight to the portal.',
+  thrSaved:'Threshold changed to {n}',
   dist:'Distribution', pub:'Publishing', yt:'YouTube',
   noContacts:'No contacts yet', noDeals:'No deals yet', noActivity:'No activity yet',
   noResult:'No matches', noResultSub:'Try another term or clear the filters.',
@@ -1366,12 +1452,13 @@ en:{
   permsNote:'Managers see the whole system. A/R and Label Managers work only on their own records.',
   roleMatrix:'Permissions by group', userList:'Users',
   role_manager:'Manager', role_ar:'Artist Relations (A/R)', role_lm:'Label Manager (LM)',
-  roleGroup1:'Group 1', roleGroup2:'Group 2',
+  roleGroup1:'Group 1', roleGroup2:'Group 2', roleGroup3:'Group 3',
   cRole:'Group', cScope:'Data scope', cPermission:'Permission',
   scopeAll:'Entire system', scopeOwn:'Own records only',
   pm_viewAll:'See every account, lead and opportunity',
   pm_editAll:"Edit other people's records",
-  pm_approve:'Approve / reject deals',
+  pm_approveCountry:'Approve deals at country level',
+  pm_approveRegion:'Approve deals at regional level',
   pm_reports:'View system-wide reports',
   pm_audit:'View the audit log for all records',
   pm_export:'Export data to CSV',
@@ -1474,15 +1561,37 @@ function t(k, vars){ let s = (I18N[lang]&&I18N[lang][k]) || (I18N.en[k]) || k;
   if(vars) for(const key in vars) s = s.replace('{'+key+'}', vars[key]); return s; }
 
 /* ============================ config ============================ */
+/* Chuỗi giai đoạn chia làm hai nửa, và ranh giới giữa chúng là chỗ deal rời CRM.
+
+   CRM cầm lái  → negotiation · waiting · region · portal
+   Portal cầm lái → legal · signature · won
+
+   A&R dựng deal, sếp country duyệt, sếp vùng duyệt, rồi TRÌNH lên portal. Từ
+   giây đó CEO duyệt và legal soạn hợp đồng bên portal; CRM không còn quyền đẩy
+   deal đi tiếp, chỉ nhận trạng thái ngược về và hiện chỉ-đọc. Giữ CRM ở đúng
+   phần việc chuyên sâu của A&R, không ôm khâu pháp lý.
+
+   Giữ nguyên id 'waiting', 'legal', 'signature' của bản cũ — đổi id thì toàn bộ
+   dữ liệu mẫu, nhật ký và bản lưu localStorage của người dùng thành rác. */
 const STAGES = [
   {id:'negotiation', color:'var(--amber)',  raw:'#dd8a12'},
   {id:'waiting',     color:'var(--violet)', raw:'#7059d6'},
+  {id:'region',      color:'#7a5cc6',       raw:'#7a5cc6'},
+  {id:'portal',      color:'#1d8e83',       raw:'#1d8e83'},
   {id:'legal',       color:'#3a6fb0',       raw:'#3a6fb0'},
   {id:'signature',   color:'var(--ice-dark)',raw:'#0b6b80'},
   {id:'won',         color:'var(--green)',  raw:'#2e8b57'},
   {id:'lost',        color:'var(--red)',    raw:'#8e1d2c'},
 ];
-const OPEN_STAGES = ['negotiation','waiting','legal','signature'];
+const OPEN_STAGES = ['negotiation','waiting','region','portal','legal','signature'];
+/* Giai đoạn do portal điều khiển — CRM chỉ phản ánh, không tự đặt được */
+const PORTAL_STAGES = ['legal','signature','won'];
+/* Chuỗi duyệt trong CRM: mỗi bước biết bước kế tiếp và ai có quyền đẩy */
+const APPROVAL = {
+  negotiation:{ next:'waiting', perm:null,             act:'submitCountry' },
+  waiting:    { next:'region',  perm:'approveCountry', act:'approveC' },
+  region:     { next:'portal',  perm:'approveRegion',  act:'approveR' }
+};
 const LEAD_STATUS = [
   {id:'new', raw:'#3a6fb0'}, {id:'contacted', raw:'#dd8a12'},
   {id:'followup', raw:'#7059d6'}, {id:'meeting', raw:'#1d8e83'}, {id:'hold', raw:'#8b94a1'},
@@ -1589,18 +1698,29 @@ function auditVal(field, v){
   if(f==='source') return (SOURCES[v]||{})[lang] || v;
   return String(v);
 }
-const PERM_KEYS = ['viewAll','editAll','approve','reports','audit','export','import','users'];
+const PERM_KEYS = ['viewAll','editAll','approveCountry','approveRegion','reports','audit','export','import','users'];
+/* Hai cấp duyệt tách riêng, không gộp thành một quyền 'approve'. Gộp lại thì
+   sếp country ký được cả chữ ký của sếp vùng — mà chuỗi duyệt hai cấp sinh ra
+   chính là để điều đó không xảy ra. */
 const ROLES = {
-  manager:{ group:1, perms:{viewAll:1,editAll:1,approve:1,reports:1,audit:1,export:1,import:1,users:1} },
-  ar:     { group:2, perms:{import:1} },
-  lm:     { group:2, perms:{import:1} }
+  manager:{ group:1, perms:{viewAll:1,editAll:1,approveCountry:1,approveRegion:1,reports:1,audit:1,export:1,import:1,users:1} },
+  region: { group:1, perms:{viewAll:1,approveRegion:1,reports:1,export:1} },
+  country:{ group:2, perms:{viewAll:1,approveCountry:1,reports:1,import:1} },
+  ar:     { group:3, perms:{import:1} },
+  lm:     { group:3, perms:{import:1} }
 };
 const USERS = [
   {name:'Ethan Nguyen',    role:'manager', email:'ethan.nguyen@haustek-group.com',  init:'EN'},
+  {name:'Priya Raman',     role:'region',  email:'priya.raman@haustek-group.com',   init:'PR'},
+  {name:'Trần Quốc Bảo',   role:'country', email:'bao.tran@haustek-group.com',      init:'QB'},
   {name:'Nguyen Ngoc Lam', role:'ar',      email:'lam.nguyen@haustek-group.com',    init:'NL'},
   {name:'Hannah Le',       role:'lm',      email:'hannah.le@haustek-group.com',     init:'HL'},
   {name:'Valeria Tinoco',  role:'ar',      email:'valeria.tinoco@haustek-group.com',init:'VT'}
 ];
+/* Deal dưới ngưỡng này bỏ qua sếp vùng, trình thẳng lên portal sau khi sếp
+   country duyệt. Sếp country vẫn thấy mọi deal trong vùng mình — chỉ bớt một
+   chặng cho deal nhỏ, không bớt người giám sát. Manager sửa được ở tab Phân quyền. */
+var REGION_THRESHOLD = 10000;
 let ME = 'Ethan Nguyen';
 /* Thời gian sử dụng. Trong demo, số liệu 6 ngày trước là dữ liệu mẫu;
    ngày hôm nay được đếm thật từ lúc mở trang. */
@@ -1648,7 +1768,15 @@ function usageWeek(name){
 }
 setInterval(tickUsage, 1000);
 function meUser(){ return USERS.find(u=>u.name===ME) || USERS[0]; }
-function can(p){ return !!ROLES[meUser().role].perms[p]; }
+function can(p){
+  const perms = ROLES[meUser().role].perms;
+  /* 'approve' là quyền ảo: "duyệt được ở ÍT NHẤT một cấp". Dùng cho những chỗ
+     chỉ cần biết người này có nằm trong chuỗi duyệt hay không (mục điều hướng,
+     thanh việc cần duyệt ở trang chính). Còn khi thật sự đẩy deal đi tiếp thì
+     phải hỏi đúng cấp qua canAdvance() — đừng dùng quyền ảo này ở đó. */
+  if(p==='approve') return !!(perms.approveCountry || perms.approveRegion);
+  return !!perms[p];
+}
 function inScope(ownerName){ return can('viewAll') || ownerName===ME; }
 function canEdit(ownerName){ return can('editAll') || ownerName===ME; }
 /* phạm vi dữ liệu theo quyền */
@@ -2034,6 +2162,8 @@ function vtable(opts){
     if(!head) return;
     head.style.gridTemplateColumns = grid();
     head.innerHTML = cols.map(c=>{
+      if(c.bulkHead) return '<span class="selcell"><span class="cbx'+(c.on?' on':'')+
+        '" data-selall="1">'+(c.on?'✓':'')+'</span></span>';
       const on = c.k && opts.sortKey===c.k;
       return '<span class="'+(c.num?'num ':'')+(c.k?'sortable':'')+'"'+
         (c.k?' onclick="sortBy(\''+c.k+'\')"':'')+'>'+esc(c.lab)+
@@ -2077,21 +2207,46 @@ function vtable(opts){
    của ô chỉ viết một lần. onRow là HÀM thật, cả hai đường đều gắn bằng uỷ
    quyền sự kiện — không nhét lời gọi vào thuộc tính onclick, vì dòng ảo hoá
    được vẽ lại liên tục và chuỗi trong thuộc tính sẽ phải qua eval. */
-function listTable(cols, rows, cells, onRow, rowCls){
+function listTable(cols, rows, cells, onRow, rowCls, bulk){
   const id = 'lt'+(++VT_SEQ);
+  /* Cột chọn hàng loạt chèn ở đây chứ không bắt từng view tự dựng: bốn bảng
+     dùng chung một ô tích, một luật "chọn hết trang", một chỗ đọc state.sel.
+     Chép ra bốn nơi là bốn nơi sẽ lệch nhau sau vài lần sửa. */
+  if(bulk){
+    const ids = rows.map(r=>r.id);
+    const allOn = ids.length && ids.every(x=>state.sel.ids.indexOf(x)>=0);
+    cols = [{k:null, w:'36px', bulkHead:1, on:allOn, ids:ids}].concat(cols);
+    const inner = cells;
+    cells = (r)=>[{c:'selcell', h:'<span class="cbx'+(state.sel.ids.indexOf(r.id)>=0?' on':'')+
+      '" data-sel="'+esc(r.id)+'">'+(state.sel.ids.indexOf(r.id)>=0?'✓':'')+'</span>'}].concat(inner(r));
+  }
   const hit = (e)=>{
     if(!onRow) return null;
-    if(e.target.closest('.iedit,select,input,button,a')) return null;
+    if(e.target.closest('.iedit,select,input,button,a,[data-sel],[data-selall]')) return null;
     return e.target.closest('[data-r]');
+  };
+  /* Bấm ô tích không được mở bản ghi — bắt ở pha capture, trước handler mở dòng */
+  const bindSel = (root)=>{
+    if(!bulk || !root) return;
+    root.addEventListener('click', (e)=>{
+      const one = e.target.closest('[data-sel]');
+      if(one){ e.stopPropagation(); selToggle(bulk, one.dataset.sel); return; }
+      const all = e.target.closest('[data-selall]');
+      if(all){ e.stopPropagation(); selToggleAll(bulk, rows.map(r=>r.id)); }
+    }, true);
   };
   if(rows.length < VT_MIN){
     onMount(()=>{
       const el = document.getElementById(id); if(!el) return;
+      bindSel(el);
       el.onclick = (e)=>{ const r = hit(e); if(r) onRow(rows[+r.dataset.r]); };
     });
     return '<div class="tw" id="'+id+'"><div class="tscroll"><table><thead><tr>'+
-      cols.map(c=>c.k ? th(c.lab, c.k, c.num?'num':'')
-                      : '<th'+(c.num?' class="num"':'')+'>'+esc(c.lab)+'</th>').join('')+
+      cols.map(c=>c.bulkHead
+                    ? '<th class="selcell"><span class="cbx'+(c.on?' on':'')+'" data-selall="1">'+
+                      (c.on?'✓':'')+'</span></th>'
+                    : c.k ? th(c.lab, c.k, c.num?'num':'')
+                          : '<th'+(c.num?' class="num"':'')+'>'+esc(c.lab)+'</th>').join('')+
       '</tr></thead><tbody>'+
       rows.map((r,i)=>'<tr data-r="'+i+'" class="'+(rowCls?rowCls(r):'')+'">'+
         cells(r).map(c=>'<td class="'+(c.c||'')+'"'+(c.s?' style="'+c.s+'"':'')+'>'+c.h+'</td>').join('')+
@@ -2100,6 +2255,8 @@ function listTable(cols, rows, cells, onRow, rowCls){
   }
   onMount(()=>{
     const bodyEl = document.getElementById(id+'b'); if(!bodyEl) return;
+    bindSel(bodyEl);
+    bindSel(document.getElementById(id+'h'));
     vtable({
       body: bodyEl, spacer: document.getElementById(id+'s'), head: document.getElementById(id+'h'),
       rows: rows, cols: cols, sortKey: state.sort.key, sortDir: state.sort.dir,
@@ -2110,6 +2267,160 @@ function listTable(cols, rows, cells, onRow, rowCls){
   return '<div class="vt"><div class="vt-head" id="'+id+'h"></div>'+
     '<div class="vt-body" id="'+id+'b"><div class="vt-spacer" id="'+id+'s"></div></div>'+
     '<div class="vt-note">'+esc(t('vtNote',{n:rows.length}))+'</div></div>';
+}
+
+/* ===================== chọn hàng loạt =====================
+   state.sel giữ ĐÚNG MỘT loại bản ghi. Chọn 5 cơ hội rồi nhảy sang tab lead
+   thì lựa chọn cũ bị bỏ, không mang theo — mang theo thì thanh hành động sẽ
+   mời làm những việc không áp dụng được cho thứ đang chọn. */
+function selClear(){ state.sel = {kind:null, ids:[]}; }
+function selToggle(kind, id){
+  if(state.sel.kind !== kind) state.sel = {kind:kind, ids:[]};
+  const i = state.sel.ids.indexOf(id);
+  if(i>=0) state.sel.ids.splice(i,1); else state.sel.ids.push(id);
+  if(!state.sel.ids.length) state.sel.kind = null;
+  render();
+}
+function selToggleAll(kind, ids){
+  if(state.sel.kind !== kind) state.sel = {kind:kind, ids:[]};
+  const on = ids.length && ids.every(x=>state.sel.ids.indexOf(x)>=0);
+  state.sel.ids = on ? [] : ids.slice();
+  state.sel.kind = state.sel.ids.length ? kind : null;
+  render();
+}
+function selRows(){
+  const k = state.sel.kind;
+  const src = k==='opps' ? DB.opps : k==='leads' ? DB.leads
+            : k==='accounts' ? DB.accounts : k==='contacts' ? DB.contacts : [];
+  return state.sel.ids.map(id=>src.find(r=>r.id===id)).filter(Boolean);
+}
+/* Thanh hành động chỉ hiện việc LÀM ĐƯỢC với đúng thứ đang chọn và đúng quyền
+   của người đang đăng nhập. Hiện nút rồi báo lỗi khi bấm là cách chắc chắn nhất
+   để người ta mất niềm tin vào cái thanh này. */
+function bulkBar(){
+  const rows = selRows(); if(!rows.length) return '';
+  const k = state.sel.kind;
+  const mine = rows.filter(r=>canEdit(r.owner));
+  const btn = (act,lab,cls)=>'<button class="btn btn-sm'+(cls?' '+cls:'')+
+    '" onclick="bulkRun(\''+act+'\')">'+esc(lab)+'</button>';
+  let acts = '';
+  if(k==='opps'){
+    const adv = rows.filter(o=>canAdvance(o));
+    if(adv.length) acts += btn('advance', t('bulkAdvance',{n:adv.length}), 'btn-primary');
+  }
+  if(mine.length || can('editAll')) acts += btn('owner', t('bulkOwner'));
+  if(k==='leads' && (mine.length||can('editAll'))) acts += btn('status', t('bulkStatus'));
+  return '<div class="bulkbar">'+
+    '<span class="bulk-n">'+rows.length+'</span>'+
+    '<span class="bulk-l">'+esc(t('bulkSel'))+'</span>'+
+    (mine.length < rows.length
+      ? '<span class="bulk-warn">'+esc(t('bulkSkip',{n:rows.length-mine.length}))+'</span>' : '')+
+    '<span class="bulk-acts">'+acts+
+      '<button class="btn btn-sm" onclick="selClear();render()">'+esc(t('bulkClear'))+'</button></span>'+
+  '</div>';
+}
+async function bulkRun(act){
+  const rows = selRows(); if(!rows.length) return;
+  if(act==='advance'){
+    const list = rows.filter(o=>canAdvance(o));
+    if(!list.length){ toast(t('noRight')); return; }
+    list.forEach(o=>advance(o.id, 1));
+    selClear(); toast(t('bulkDone',{n:list.length})); render(); return;
+  }
+  if(act==='owner'){
+    const who = await pickOne(t('bulkOwner'), USERS.map(u=>[u.name,u.name]));
+    if(!who) return;
+    let n=0;
+    rows.forEach(r=>{ if(!canEdit(r.owner)) return;
+      logDiff(state.sel.kind==='opps'?'opp':'lead', r.id, r.name, 'owner', r.owner, who);
+      r.owner = who; n++; });
+    selClear(); toast(t('bulkDone',{n:n})); render(); return;
+  }
+  if(act==='status'){
+    const st = await pickOne(t('bulkStatus'), LEAD_STATUS.map(x=>[x.id, t('ls_'+x.id)]));
+    if(!st) return;
+    let n=0;
+    rows.forEach(r=>{ if(!canEdit(r.owner)) return;
+      logDiff('lead', r.id, r.name, 'status', r.status, st); r.status = st; n++; });
+    selClear(); toast(t('bulkDone',{n:n})); render();
+  }
+}
+/* Hộp chọn một giá trị, dùng chung cho các hành động hàng loạt */
+function pickOne(title, opts){
+  return new Promise(resolve=>{
+    document.getElementById('overlay').innerHTML = shell(t('bulkSel'), title,
+      '<div class="fld"><select class="in" id="bulkPick">'+
+        opts.map(o=>'<option value="'+esc(o[0])+'">'+esc(o[1])+'</option>').join('')+
+      '</select></div>',
+      '<button class="btn" data-x="1">'+esc(t('cancel'))+'</button>'+
+      '<button class="btn btn-primary" data-ok="1">'+esc(t('save'))+'</button>');
+    const ov = document.getElementById('overlay');
+    ov.querySelector('[data-ok]').onclick = ()=>{
+      const v = document.getElementById('bulkPick').value; closeDrawer(); resolve(v); };
+    ov.querySelector('[data-x]').onclick = ()=>{ closeDrawer(); resolve(null); };
+  });
+}
+
+/* ===================== view đã lưu =====================
+   Bộ lọc + từ khoá + thứ tự sắp xếp, đặt tên và lưu lại. Thứ người ta thật sự
+   làm hằng ngày không phải "lọc theo giai đoạn" mà là "mở lại đúng cái danh
+   sách tôi nhìn mỗi sáng" — Attio coi đây là trụ cột của CRM hiện đại. */
+function viewsFor(kind){ return (state.views && state.views[kind]) || []; }
+function viewSnap(kind){
+  return {q:state.q, sort:{key:state.sort.key, dir:state.sort.dir},
+          filter: kind==='opps' ? state.oppFilter : kind==='leads' ? state.leadFilter : 'all'};
+}
+function viewSame(kind, v){
+  const c = viewSnap(kind);
+  return v.filter===c.filter && (v.q||'')===(c.q||'') &&
+         (v.sort.key||null)===(c.sort.key||null) && v.sort.dir===c.sort.dir;
+}
+function viewApply(kind, i){
+  const v = viewsFor(kind)[i]; if(!v) return;
+  state.q = v.q || '';
+  const box = document.getElementById('q'); if(box) box.value = state.q;
+  state.sort = {key:v.sort.key, dir:v.sort.dir};
+  if(kind==='opps') state.oppFilter = v.filter; else if(kind==='leads') state.leadFilter = v.filter;
+  selClear(); render();
+}
+async function viewSave(kind){
+  const name = await pickName(t('viewSaveT'));
+  if(!name) return;
+  if(!state.views) state.views = {};
+  if(!state.views[kind]) state.views[kind] = [];
+  state.views[kind].push(Object.assign({name:name}, viewSnap(kind)));
+  logAudit({objType:'system', objName:name, action:'create', note:'view'});
+  toast(t('viewSaved',{n:name})); render();
+}
+function viewDrop(kind, i){
+  const v = viewsFor(kind)[i]; if(!v) return;
+  state.views[kind].splice(i,1);
+  logAudit({objType:'system', objName:v.name, action:'update', note:'view-remove'});
+  saveSoon(); render();
+}
+function pickName(title){
+  return new Promise(resolve=>{
+    document.getElementById('overlay').innerHTML = shell(t('viewsTitle'), title,
+      '<div class="fld"><input class="in" id="vName" maxlength="40" placeholder="'+esc(t('viewPh'))+'"></div>',
+      '<button class="btn" data-x="1">'+esc(t('cancel'))+'</button>'+
+      '<button class="btn btn-primary" data-ok="1">'+esc(t('save'))+'</button>');
+    const ov = document.getElementById('overlay');
+    const inp = document.getElementById('vName'); inp.focus();
+    const ok = ()=>{ const v=inp.value.trim(); closeDrawer(); resolve(v||null); };
+    inp.onkeydown = e=>{ if(e.key==='Enter') ok(); };
+    ov.querySelector('[data-ok]').onclick = ok;
+    ov.querySelector('[data-x]').onclick = ()=>{ closeDrawer(); resolve(null); };
+  });
+}
+function viewBar(kind){
+  const list = viewsFor(kind);
+  return '<div class="views">'+
+    list.map((v,i)=>'<span class="viewchip'+(viewSame(kind,v)?' on':'')+'">'+
+      '<button onclick="viewApply(\''+kind+'\','+i+')">'+esc(v.name)+'</button>'+
+      '<button class="viewx" title="'+esc(t('viewDrop'))+'" onclick="viewDrop(\''+kind+'\','+i+')">×</button>'+
+    '</span>').join('')+
+    '<button class="viewadd" onclick="viewSave(\''+kind+'\')">+ '+esc(t('viewSave'))+'</button>'+
+  '</div>';
 }
 
 /* ===================== trí tuệ quan hệ =====================
@@ -2201,6 +2512,7 @@ const state = { view:'home', q:'', leadFilter:'all', oppFilter:'all', oppView:'t
   oppId:null, oppTab:'details', actTab:'call', detEdit:null,
   audUser:'all', audObj:'all', audAct:'all', audFrom:'', audTo:'',
   recentOpps:RECENT_SEED.slice(), recentLeads:[],
+  sel:{kind:null, ids:[]}, views:{},
   taskFilter:'open', sort:{key:null,dir:1}, drawer:null };
 
 /* ======================= lưu trạng thái (localStorage) =======================
@@ -2257,8 +2569,8 @@ function snapshot(){
   return {
     v: STORE_VERSION, at: new Date().toISOString(),
     me: ME, auth: AUTHED, lang: lang, cur: cur, uid: uid,
-    usage: USAGE, goals: USER_GOALS, handoff: HANDOFF_BIND,
-    recentOpps: state.recentOpps, recentLeads: state.recentLeads,
+    usage: USAGE, goals: USER_GOALS, handoff: HANDOFF_BIND, inbox: INBOX_SEEN, thr: REGION_THRESHOLD,
+    recentOpps: state.recentOpps, recentLeads: state.recentLeads, views: state.views,
     db: DB
   };
 }
@@ -2276,8 +2588,11 @@ function applySnapshot(s){
   if(s.usage) Object.keys(s.usage).forEach(n=>{ if(USAGE[n]) USAGE[n] = s.usage[n]; });
   if(s.goals) Object.keys(s.goals).forEach(n=>{ USER_GOALS[n] = s.goals[n]; });
   HANDOFF_BIND = (s.handoff && typeof s.handoff==='object') ? s.handoff : {};
+  INBOX_SEEN   = (s.inbox   && typeof s.inbox  ==='object') ? s.inbox   : {};
+  if(typeof s.thr === 'number' && s.thr >= 0) REGION_THRESHOLD = s.thr;
   if(Array.isArray(s.recentOpps))  state.recentOpps  = s.recentOpps.slice(0,5);
   if(Array.isArray(s.recentLeads)) state.recentLeads = s.recentLeads.slice(0,5);
+  if(s.views && typeof s.views==='object') state.views = s.views;
   const u = USERS.find(x=>x.name===s.me);
   ME = u ? u.name : USERS[0].name;
   AUTHED = !!s.auth && !!u;   /* người dùng lạ thì bắt đăng nhập lại */
@@ -2369,7 +2684,10 @@ function handoffOf(o){
   };
 }
 function handoffRows(){
-  return DB.opps.filter(o=>o.stage==='won').map(handoffOf)
+  /* Trình lên portal ở giai đoạn 'portal' — tức NGAY SAU khi chuỗi duyệt trong
+     CRM xong, chứ không đợi tới lúc đã ký. Đợi tới 'won' thì CEO chẳng còn gì
+     để duyệt: hợp đồng ký rồi mới đưa lên là trình cho có. */
+  return DB.opps.filter(o=>o.stage==='portal' || PORTAL_STAGES.includes(o.stage)).map(handoffOf)
     .sort((x,y)=>String(y.closeDate||'').localeCompare(String(x.closeDate||'')));
 }
 function handoffPayload(){
@@ -2395,11 +2713,71 @@ function handoffCalls(r){
              ', "CRM '+r.dealId+' — ký '+(r.closeDate||'')+'")');
   return out;
 }
+/* ===================== kênh ngược: portal → CRM =====================
+   Chiều đi (CRM → portal) là quyết định thương mại. Chiều về chỉ là TRẠNG THÁI,
+   và CRM đọc chỉ-đọc: nó không sửa được hợp đồng, không ghi vào khoá này, và
+   không suy diễn gì thêm. Portal là chủ của mọi thứ sau khi CEO duyệt.
+
+   Vì sao vẫn cần chiều về: A&R phải thấy deal của mình đi tới đâu. Không có nó
+   thì deal "biến mất" khỏi CRM lúc trình lên portal, và người dựng deal phải mở
+   app khác để biết hợp đồng xong chưa — đúng kiểu quy trình làm người ta bỏ
+   không cập nhật CRM nữa. */
+const INBOX_KEY = 'haustek.portal.contracts.v1';
+const INBOX_VERSION = '1.0.0';
+/* Trạng thái portal gửi về → giai đoạn tương ứng trong CRM */
+const INBOX_STAGE = {
+  ceo_rejected:'negotiation', ceo_approved:'legal',
+  drafting:'legal', ready:'signature', signed:'won'
+};
+function inboxRead(){
+  try {
+    const raw = localStorage.getItem(INBOX_KEY);
+    if(!raw) return null;
+    const j = JSON.parse(raw);
+    if(!j || j.v !== INBOX_VERSION || !Array.isArray(j.deals)) return null;
+    return j;
+  } catch(e){ return null; }
+}
+var INBOX_SEEN = {};   /* dealId -> updatedAt đã áp dụng, để không áp lại mãi */
+/* Áp trạng thái portal gửi về. Chỉ động vào deal ĐANG ở phần portal cầm lái —
+   deal còn trong chuỗi duyệt CRM thì portal không có quyền kéo đi. */
+function inboxApply(){
+  const j = inboxRead(); if(!j) return 0;
+  let n = 0;
+  j.deals.forEach(d=>{
+    const o = DB.opps.find(x=>x.id===d.dealId); if(!o) return;
+    if(o.stage !== 'portal' && !PORTAL_STAGES.includes(o.stage)) return;
+    if(INBOX_SEEN[d.dealId] === d.updatedAt) return;
+    const to = INBOX_STAGE[d.status];
+    o.contract = {status:d.status, at:d.updatedAt, note:d.note||'', by:d.by||''};
+    if(to && to !== o.stage){
+      logAudit({objType:'opp',objId:o.id,objName:o.name,action:'update',
+        field:'stage',oldV:o.stage,newV:to,note:'portal'});
+      o.stage = to; o.lastAct = TODAY;
+      DB.acts.push({id:'v'+(++uid),refId:o.id,type:'stage',
+        text:L(['Portal cập nhật: '+t('ct_'+d.status),'Portal update: '+t('ct_'+d.status)]),
+        date:TODAY, who:d.by||'portal'});
+    }
+    INBOX_SEEN[d.dealId] = d.updatedAt;
+    n++;
+  });
+  if(n) saveSoon();
+  return n;
+}
+function contractBadge(o){
+  if(!o.contract) return '';
+  const st = o.contract.status;
+  const col = st==='signed' ? 'var(--green)' : st==='ceo_rejected' ? 'var(--brand)'
+            : st==='ready'  ? 'var(--ice-dark)' : 'var(--amber)';
+  return '<span class="badge"><span class="dot" style="background:'+col+'"></span>'+
+    esc(t('ct_'+st))+'</span>';
+}
 function bootStore(){
   STORE_READY = store.available();
   if(!STORE_READY) return;
   const s = store.load();
   if(s) applySnapshot(s); else store.save();
+  inboxApply();   /* nhận trạng thái hợp đồng portal đã gửi về từ lần trước */
 }
 
 
@@ -2425,7 +2803,7 @@ function navCount(id){
   if(id==='accounts') return sAccounts().length;
   if(id==='contacts') return sContacts().length;
   if(id==='tasks') return sTasks().filter(x=>!x.done).length;
-  if(id==='approvals') return sOpps().filter(o=>o.stage==='waiting').length;
+  if(id==='approvals') return myApprovals().length;
   if(id==='handoff') return handoffRows().filter(r=>!r.portalPartyKey).length;
   if(id==='perms') return USERS.length;
   if(id==='people') return USERS.length;
@@ -2465,7 +2843,7 @@ function renderNav(){
 }
 function setLang(l){ lang=l; saveSoon(); renderLogin(); render(); if(state.drawer) openDrawer(state.drawer.kind, state.drawer.id); }
 function setCur(c){ cur=c; saveSoon(); render(); if(state.drawer) openDrawer(state.drawer.kind, state.drawer.id); }
-function go(v){ state.view=v; state.q=''; document.getElementById('q').value=''; state.sort={key:null,dir:1};
+function go(v){ inboxApply(); selClear(); state.view=v; state.q=''; document.getElementById('q').value=''; state.sort={key:null,dir:1};
   closeDrawer(); render(); }
 function onSearch(v){ state.q=v.trim().toLowerCase(); render(); }
 function render(){
@@ -2584,9 +2962,9 @@ VIEWS.home = function(){
   const myWon     = mine.filter(o=>o.stage==='won');
   const myLeads   = DB.leads.filter(l=>l.owner===ME);
   const myOpenLds = myLeads.filter(l=>l.status!=='converted' && l.status!=='lost');
-  const waiting   = sOpps().filter(o=>o.stage==='waiting');
 
   /* ---------- 1. Mục cần duyệt ---------- */
+  const waiting = myApprovals();
   const approveBar = !can('approve') ? '' : '<div class="approve-bar">'+
     '<div class="approve-h"><span class="card-t">'+esc(t('itemsApprove'))+'</span>'+
     (waiting.length?'<span class="approve-n">'+waiting.length+'</span>':'')+
@@ -2597,8 +2975,9 @@ VIEWS.home = function(){
           '<span class="ar-name" onclick="openDrawer(\'opp\',\''+o.id+'\')">'+esc(o.name)+'</span>'+
           '<span class="ar-acc">'+esc(accName(o.accountId))+'</span>'+
           '<span class="ar-amt">'+esc(money(o.amount))+'</span>'+
-          '<span class="ar-btn"><button class="btn btn-sm" onclick="decide(\''+o.id+'\',0)">'+esc(t('reject'))+'</button>'+
-          '<button class="btn btn-sm btn-primary" onclick="decide(\''+o.id+'\',1)">'+esc(t('approve'))+'</button></span>'+
+          '<span class="ar-btn"><button class="btn btn-sm" onclick="advance(\''+o.id+'\',0)">'+esc(t('sendBack'))+'</button>'+
+          '<button class="btn btn-sm btn-primary" onclick="advance(\''+o.id+'\',1)">'+
+            esc(t(o.stage==='waiting'?'approveC':'approveR'))+'</button></span>'+
         '</div>').join('')
       : '<div class="approve-empty">'+esc(t('noApproveNeeded'))+'</div>')+
   '</div>';
@@ -3065,12 +3444,13 @@ function detSave(id,k,val){
   }
   toast(t('saved')); render();
 }
-function markStageDone(id){
-  const o = DB.opps.find(x=>x.id===id); if(!o || !canEdit(o.owner)) return;
-  const order = ['negotiation','waiting','legal','signature','won'];
-  const i = order.indexOf(o.stage);
-  if(i<0 || i>=order.length-1) return;
-  detSave(id,'stage',order[i+1]);
+/* Nút "đi tiếp" trên trang chi tiết giờ đi qua đúng chuỗi duyệt, không còn nhảy
+   tuần tự theo một mảng cứng. Ở giai đoạn do portal điều khiển thì không có nút. */
+function markStageDone(id){ advance(id, 1); }
+function stageBtnLabel(o){
+  const step = APPROVAL[o.stage];
+  if(!step) return null;
+  return t(step.act);
 }
 /* ---- hoạt động & chatter ---- */
 function actSave(id, kind){
@@ -3132,15 +3512,24 @@ VIEWS.oppDetail = function(){
       '<div class="rec-acts">'+
         '<button class="btn" onclick="go(\'opps\')">← '+esc(t('opps'))+'</button>'+
         (rw && idx>=0 && idx<order.length-1
-          ? '<button class="btn btn-primary" onclick="markStageDone(\''+o.id+'\')">'+
-            esc(L(['Hoàn thành giai đoạn','Mark stage complete']))+'</button>' : '')+
+          ? (stageBtnLabel(o) && canAdvance(o)
+              ? '<button class="btn btn-primary" onclick="markStageDone(\''+o.id+'\')">'+
+                esc(stageBtnLabel(o))+'</button>'
+              : (PORTAL_STAGES.includes(o.stage)
+                  ? '<span class="pill" style="padding:7px 12px">'+esc(t('stagePortalOwned'))+'</span>' : ''))
+          : '')+
       '</div></div>'+
     '<div class="rec-meta">'+
       [[t('cAccount'), esc(accName(o.accountId))],
        [t('cClose'),   esc(fdate(o.closeDate))],
        [t('cDealValue'), esc(money(o.amount))],
        [t('cOwner'),   esc(o.owner)],
-       [t('cStage'),   stageBadge(o.stage)]]
+       [t('cStage'),   stageBadge(o.stage)],
+       [t('cContract'), o.contract
+          ? contractBadge(o)+'<div class="ct-sub">'+esc(t('ctFrom'))+' · '+
+            esc(String(o.contract.at||'').replace('T',' ').slice(0,16))+
+            (o.contract.note?'<br>'+esc(o.contract.note):'')+'</div>'
+          : '<span class="dim">'+esc(t('ctNone'))+'</span>']]
       .map(x=>'<div><div class="rec-m-l">'+esc(x[0])+'</div><div class="rec-m-v">'+x[1]+'</div></div>').join('')+
     '</div></div>';
 
@@ -3326,14 +3715,15 @@ VIEWS.leads = function(){
        {k:'status', lab:t('cStatus'), w:'minmax(112px,1fr)'},
        {k:null,     lab:t('cSource'), w:'minmax(112px,1fr)'},
        {k:'owner',  lab:t('cOwner'),  w:'minmax(112px,1fr)'}],
-      rows, leadCells, (l)=>openDrawer('lead', l.id), (l)=>visible(l.owner)?'':'locked')
+      rows, leadCells, (l)=>openDrawer('lead', l.id), (l)=>visible(l.owner)?'':'locked', 'leads')
     : emptyBox(t('noResult'), t('noResultSub'));
 
   return phead(t('leads'), rows.length+' '+t('items'),
       (can('import')?'<button class="btn" onclick="openImport()">'+esc(t('importBtn'))+'</button>':'')+
       '<button class="btn btn-primary" onclick="openNew(\'lead\')">'+esc(t('newLead'))+'</button>')+
     searchNote(rows.filter(l=>l.owner!==ME).length)+
-    '<div class="tools">'+chips+'</div>'+body;
+    viewBar('leads')+
+    '<div class="tools">'+chips+'</div>'+bulkBar()+body;
 };
 function setLeadF(f){ state.leadFilter=f; render(); }
 
@@ -3455,7 +3845,10 @@ VIEWS.opps = function(){
       return [
         {c:'t-name trunc', h:esc(o.name)},
         {c:'trunc',        h:esc(accName(o.accountId))},
-        {c:'',             h:v?cellEdit(o,'stage',stageBadge(o.stage)):lock},
+        {c:'',             h:v ? (PORTAL_STAGES.includes(o.stage) || o.stage==='portal'
+                                  /* giai đoạn do portal cầm — không cho sửa tại chỗ */
+                                  ? stageBadge(o.stage)
+                                  : cellEdit(o,'stage',stageBadge(o.stage))) : lock},
         {c:'',             h:v?rightsCell(o.rights):lock},
         {c:'num',          h:v?cellEdit(o,'amount','<span>'+esc(money(o.amount))+'</span>',1):lock},
         {c:(v&&late?'':'dim'), s:(v&&late?'color:var(--red);font-weight:500':''),
@@ -3471,13 +3864,14 @@ VIEWS.opps = function(){
        {k:'amount', lab:t('cAmount'), w:'minmax(104px,1fr)', num:1},
        {k:'close',  lab:t('cClose'),  w:'minmax(112px,1fr)'},
        {k:'owner',  lab:t('cOwner'),  w:'minmax(112px,1fr)'}],
-      rows, cells, (o)=>openOpp(o.id), (o)=>visible(o.owner)?'':'locked');
+      rows, cells, (o)=>openOpp(o.id), (o)=>visible(o.owner)?'':'locked', 'opps');
   } else body = emptyBox(t('noResult'), t('noResultSub'));
 
   return phead(t('opps'), rows.length+' '+t('items'),
       '<button class="btn btn-primary" onclick="openNew(\'opp\')">'+esc(t('newOpp'))+'</button>')+
     searchNote(rows.filter(o=>o.owner!==ME).length)+
-    '<div class="tools">'+chips+'</div>'+body;
+    viewBar('opps')+
+    '<div class="tools">'+chips+'</div>'+bulkBar()+body;
 };
 function cellEdit(o, f, display, isNum){
   const on = state.inline && state.inline.id===o.id && state.inline.f===f;
@@ -3567,11 +3961,11 @@ VIEWS.accounts = function(){
        {k:'deals', lab:t('cDeals'),   w:'minmax(80px,.7fr)',  num:1},
        {k:null,    lab:t('cAmount'),  w:'minmax(112px,1.1fr)',num:1},
        {k:'owner', lab:t('cOwner'),   w:'minmax(112px,1fr)'}],
-      rows, accCells, (a)=>openDrawer('account', a.id))
+      rows, accCells, (a)=>openDrawer('account', a.id), null, 'accounts')
     : emptyBox(t('noResult'), t('noResultSub'));
 
   return phead(t('accounts'), rows.length+' '+t('items'),
-    '<button class="btn btn-primary" onclick="openNew(\'account\')">'+esc(t('newAcc'))+'</button>')+body;
+    '<button class="btn btn-primary" onclick="openNew(\'account\')">'+esc(t('newAcc'))+'</button>')+ bulkBar() + body;
 };
 
 VIEWS.contacts = function(){
@@ -3593,11 +3987,11 @@ VIEWS.contacts = function(){
        {k:null,     lab:t('cEmail'),  w:'minmax(150px,1.8fr)'},
        {k:null,     lab:t('cPhone'),  w:'minmax(120px,1.1fr)'},
        {k:'owner',  lab:t('cOwner'),  w:'minmax(112px,1fr)'}],
-      rows, conCells, (c)=>openDrawer('contact', c.id))
+      rows, conCells, (c)=>openDrawer('contact', c.id), null, 'contacts')
     : emptyBox(t('noResult'), t('noResultSub'));
 
   return phead(t('contacts'), rows.length+' '+t('items'),
-    '<button class="btn btn-primary" onclick="openNew(\'contact\')">'+esc(t('newContact'))+'</button>')+body;
+    '<button class="btn btn-primary" onclick="openNew(\'contact\')">'+esc(t('newContact'))+'</button>')+ bulkBar() + body;
 };
 
 VIEWS.tasks = function(){
@@ -3633,37 +4027,105 @@ function toggleTask(id){
   x.done=!x.done; render();
 }
 
+/* Deal đang chờ ĐÚNG cấp của người đang đăng nhập. Sếp country không thấy việc
+   của sếp vùng và ngược lại — thấy cả hai thì cái danh sách này lại thành đống
+   hỗn độn mà ai cũng tưởng người kia lo rồi. */
+function myApprovals(){
+  return sOpps().filter(o=>APPROVAL[o.stage] && APPROVAL[o.stage].perm && canAdvance(o));
+}
 VIEWS.approvals = function(){
-  const rows = sOpps().filter(o=>o.stage==='waiting' &&
-    (matches(o.name)||matches(accName(o.accountId)))).sort((a,b)=>b.amount-a.amount);
+  const rows = myApprovals()
+    .filter(o=>matches(o.name)||matches(accName(o.accountId)))
+    .sort((a,b)=>b.amount-a.amount);
 
-  const body = rows.length ? '<div class="tw"><div class="tscroll"><table><thead><tr>'+
-    '<th>'+esc(t('cName'))+'</th><th>'+esc(t('cAccount'))+'</th><th>'+esc(t('cRights'))+'</th>'+
-    '<th class="num">'+esc(t('cAmount'))+'</th><th>'+esc(t('cSubmitted'))+'</th>'+
-    '<th>'+esc(t('cRequester'))+'</th><th></th></tr></thead><tbody>'+
-    rows.map(o=>'<tr>'+
-      '<td class="t-name trunc" onclick="openDrawer(\'opp\',\''+o.id+'\')">'+esc(o.name)+'</td>'+
-      '<td class="trunc">'+esc(accName(o.accountId))+'</td><td>'+rightsCell(o.rights)+'</td>'+
-      '<td class="num">'+esc(money(o.amount))+'</td>'+
-      '<td class="dim">'+esc(fdate(o.lastAct))+'</td><td class="dim">'+esc(o.owner)+'</td>'+
-      '<td style="text-align:right;white-space:nowrap">'+
-      '<button class="btn btn-sm" onclick="event.stopPropagation();decide(\''+o.id+'\',0)">'+esc(t('reject'))+'</button> '+
-      '<button class="btn btn-sm btn-primary" onclick="event.stopPropagation();decide(\''+o.id+'\',1)">'+esc(t('approve'))+'</button>'+
-      '</td></tr>').join('')+'</tbody></table></div></div>'
+  const cells = (o)=>{
+    const skip = o.stage==='waiting' && o.amount > 0 && o.amount < REGION_THRESHOLD;
+    return [
+      {c:'t-name trunc', h:esc(o.name)},
+      {c:'trunc',        h:esc(accName(o.accountId))},
+      {c:'',             h:stageBadge(o.stage)},
+      {c:'num',          h:esc(money(o.amount))+(skip
+          ? ' <span class="pill" title="'+esc(t('thrHint'))+'">'+esc(t('skipRegion'))+'</span>' : '')},
+      {c:'dim',          h:esc(fdate(o.lastAct))},
+      {c:'dim',          h:esc(o.owner)},
+      {c:'num',          h:'<span class="btnpair">'+
+          '<button class="btn btn-sm" onclick="event.stopPropagation();advance(\''+o.id+'\',0)">'+esc(t('sendBack'))+'</button>'+
+          '<button class="btn btn-sm btn-primary" onclick="event.stopPropagation();advance(\''+o.id+'\',1)">'+
+            esc(t(o.stage==='waiting'?'approveC':'approveR'))+'</button></span>'}
+    ];
+  };
+  const body = rows.length ? listTable(
+    [{k:null, lab:t('cName'),      w:'minmax(160px,2fr)'},
+     {k:null, lab:t('cAccount'),   w:'minmax(130px,1.4fr)'},
+     {k:null, lab:t('cStage'),     w:'minmax(132px,1.1fr)'},
+     {k:null, lab:t('cAmount'),    w:'minmax(150px,1.3fr)', num:1},
+     {k:null, lab:t('cSubmitted'), w:'minmax(104px,.9fr)'},
+     {k:null, lab:t('cRequester'), w:'minmax(112px,1fr)'},
+     {k:null, lab:'',              w:'minmax(176px,0fr)', num:1}],
+    rows, cells, (o)=>openDrawer('opp', o.id))
     : emptyBox(t('noApprovals'), t('noApprovalsSub'));
 
-  return phead(t('approvals'), rows.length+' '+t('items'))+body+
-    '<div style="height:16px"></div>'+transferBar();
+  return phead(t('approvals'), rows.length+' '+t('items'))+
+    '<div class="card" style="margin-bottom:14px"><div class="card-b"><div class="unote" style="margin:0">'+
+      esc(t('chainNote'))+'</div></div></div>'+
+    body + '<div style="height:16px"></div>' + transferBar();
 };
-function decide(id,ok){
-  const o=DB.opps.find(x=>x.id===id);
-  logAudit({objType:'opp',objId:o.id,objName:o.name,action:ok?'approve':'reject',
-    field:'stage',oldV:o.stage,newV:ok?'signature':'lost'});
-  o.stage = ok?'legal':'lost';
-  DB.acts.push({id:'v'+(++uid),refId:o.id,type:'stage',text:ok?'Duyệt giá, chuyển sang chờ ký.':'Từ chối duyệt.',date:TODAY,who:ME});
-  toast(t(ok?'approved':'rejected',{n:o.name}));
+/* Bước kế tiếp của một deal trong chuỗi duyệt CRM, đã tính cả ngưỡng bỏ qua
+   sếp vùng. Trả null nếu deal không còn ở phần CRM cầm lái. */
+function nextStage(o){
+  const step = APPROVAL[o.stage];
+  if(!step) return null;
+  /* Deal nhỏ: sếp country duyệt xong là trình thẳng portal, không qua sếp vùng.
+     Nhưng deal CHƯA ĐIỀN giá trị thì không tính là nhỏ — amount 0 nghĩa là chưa
+     ai định giá, không phải "đáng 0 đồng". Cho nó lọt cửa vì amount rỗng là mở
+     đúng một đường để deal lớn né sếp vùng: bỏ trống ô giá trị. */
+  if(o.stage==='waiting' && o.amount > 0 && o.amount < REGION_THRESHOLD) return 'portal';
+  return step.next;
+}
+function canAdvance(o){
+  if(!o || !APPROVAL[o.stage]) return false;
+  const step = APPROVAL[o.stage];
+  if(step.perm) return can(step.perm);
+  return canEdit(o.owner);          /* A&R tự trình deal của mình lên sếp country */
+}
+/* Đẩy một deal đi tiếp một bước, hoặc từ chối. Mọi thay đổi giai đoạn do CRM
+   điều khiển đều đi qua đây — để có đúng một chỗ ghi nhật ký và kiểm quyền. */
+function advance(id, ok){
+  const o = DB.opps.find(x=>x.id===id);
+  if(!o) return;
+  if(PORTAL_STAGES.includes(o.stage)){ toast(t('stagePortalOwned')); return; }
+  if(!canAdvance(o)){ toast(t('noRight')); return; }
+  const from = o.stage;
+  if(!ok){
+    logAudit({objType:'opp',objId:o.id,objName:o.name,action:'reject',
+      field:'stage',oldV:from,newV:'negotiation'});
+    /* Từ chối KHÔNG giết deal — trả về đàm phán để A&R sửa rồi trình lại.
+       Bản cũ đẩy thẳng sang 'lost', tức là một cái lắc đầu của sếp là mất trắng
+       cơ hội, không có đường quay lại. */
+    o.stage = 'negotiation';
+    DB.acts.push({id:'v'+(++uid),refId:o.id,type:'stage',
+      text:L(['Không duyệt, trả lại đàm phán.','Sent back to negotiation.']),date:TODAY,who:ME});
+    o.lastAct = TODAY;
+    toast(t('sentBack',{n:o.name}));
+    render(); return;
+  }
+  const to = nextStage(o);
+  if(!to) return;
+  logAudit({objType:'opp',objId:o.id,objName:o.name,action:'approve',
+    field:'stage',oldV:from,newV:to});
+  o.stage = to; o.lastAct = TODAY;
+  const skipped = (from==='waiting' && to==='portal');
+  DB.acts.push({id:'v'+(++uid),refId:o.id,type:'stage',
+    text: to==='portal'
+      ? L(['Trình lên portal chờ CEO duyệt.'+(skipped?' Dưới ngưỡng nên bỏ qua sếp vùng.':''),
+           'Submitted to the portal for CEO approval.'+(skipped?' Below threshold, regional step skipped.':'')])
+      : L(['Duyệt, chuyển sang '+t('st_'+to)+'.','Approved, moved to '+t('st_'+to)+'.']),
+    date:TODAY,who:ME});
+  toast(t(to==='portal'?'sentPortal':'approved',{n:o.name}));
   render();
 }
+/* giữ tên cũ: nhiều chỗ trong giao diện và bộ kiểm đang gọi decide() */
+function decide(id, ok){ advance(id, ok); }
 
 VIEWS.reports = function(){
   if(!can('reports')) return myReports();
@@ -4508,6 +4970,19 @@ function goalPreview(){
   set('gp_won', won);
   set('gp_week', money(Math.round(yr/GOAL_WEEKS)));
 }
+function saveThreshold(){
+  if(!can('users')) return;
+  const e = document.getElementById('thrIn');
+  const raw = parseFloat(e ? e.value : 0);
+  if(isNaN(raw) || raw < 0){ toast(t('completeField')); return; }
+  const usd = Math.round(cur==='VND' ? raw/FX : raw);
+  const old = REGION_THRESHOLD;
+  if(usd === old) return;
+  REGION_THRESHOLD = usd;
+  logAudit({objType:'system', objName:t('thrTitle'), action:'update',
+            field:'thr', oldV:old, newV:usd});
+  toast(t('thrSaved',{n:money(usd)})); render();
+}
 function saveGoal(name){
   const n = id => { const e=document.getElementById(id); const v=parseFloat(e?e.value:0); return isNaN(v)?0:v; };
   const old = goalFor(name);
@@ -4565,7 +5040,7 @@ VIEWS.perms = function(){
     '<div class="noperm-t">'+esc(t('noPermTitle'))+'</div>'+
     '<div class="noperm-s">'+esc(t('noPermSub'))+'</div></div></div>';
 
-  const roleIds = ['manager','ar','lm'];
+  const roleIds = ['manager','region','country','ar','lm'];
   const matrix = '<div class="tw"><div class="card-h"><span class="card-t">'+esc(t('roleMatrix'))+'</span>'+
     '<span class="card-note">'+esc(t('permsNote'))+'</span></div>'+
     '<div class="tscroll"><table><thead><tr><th>'+esc(t('cPermission'))+'</th>'+
@@ -4620,7 +5095,16 @@ VIEWS.perms = function(){
         '<td><div class="btrack"><div class="bfill" style="width:'+Math.max(2,(w/uMaxAll)*100)+
           '%;background:'+(u.name===ME?'var(--brand)':'var(--ice-dark)')+'"></div></div></td></tr>';
     }).join('')+'</tbody></table></div></div>';
-  return phead(t('permsTitle'), t('permsNote')) + matrix + users + usageTbl;
+  const thrCard = '<div class="card" style="margin-bottom:14px">'+
+    '<div class="card-h"><span class="card-t">'+esc(t('thrTitle'))+'</span></div>'+
+    '<div class="card-b">'+
+      '<div class="unote" style="margin:0 0 10px">'+esc(t('thrHint'))+'</div>'+
+      '<div class="thrrow">'+
+        '<div class="curin" data-cur="'+esc(cur)+'"><input class="in" type="number" id="thrIn" '+
+          'value="'+Math.round(fx(REGION_THRESHOLD))+'"></div>'+
+        '<button class="btn btn-primary" onclick="saveThreshold()">'+esc(t('save'))+'</button>'+
+      '</div></div></div>';
+  return phead(t('permsTitle'), t('permsNote')) + thrCard + matrix + users + usageTbl;
 };
 function setRole(name, role){
   const u = USERS.find(x=>x.name===name); if(!u) return;

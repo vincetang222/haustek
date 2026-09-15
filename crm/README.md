@@ -6,8 +6,8 @@ Hệ **song song** với portal, không phải một phần của nó. Một fil
 |---|---|
 | `index.html` | Toàn bộ CRM — lead, cơ hội, khách hàng, người liên hệ, việc, nhân sự, duyệt giá, báo cáo, nhật ký, phân quyền, bàn giao portal |
 | `HANDOFF.md` | Giao kèo bàn giao sang portal, và những gì nó chưa làm |
-| `test/smoke.mjs` | 24 phép kiểm trên chính CRM |
-| `test/handoff-e2e.mjs` | 17 phép kiểm xuyên hai app — CRM ghi, intranet đọc và vào sổ |
+| `test/smoke.mjs` | 42 phép kiểm trên chính CRM |
+| `test/handoff-e2e.mjs` | 28 phép kiểm xuyên hai app — cả chuỗi CEO duyệt và chiều ngược |
 
 ## Vì sao để riêng, không nhét vào `portal/`
 
@@ -52,6 +52,7 @@ Safari chặn `localStorage` với file mở thẳng từ ổ đĩa. Khi đó d�
 |---|---|---|
 | `haustek.crm.v1` | CRM | toàn bộ trạng thái CRM, có phiên bản, sai phiên bản thì bỏ qua |
 | `haustek.crm.handoff.v1` | CRM | bản tin bàn giao, portal đọc |
+| `haustek.portal.contracts.v1` | **chỉ portal** | trạng thái hợp đồng, CRM đọc chỉ-đọc |
 | `haustek.portal.v1` | **chỉ portal** | CRM không bao giờ ghi vào đây |
 
 ## Đăng nhập
@@ -63,7 +64,9 @@ phải có phiên đăng nhập trên máy chủ.
 
 | Tài khoản | Vai trò |
 |---|---|
-| `ethan.nguyen` | Manager — thấy tất cả, duyệt giá, xem nhật ký, phân quyền, bàn giao |
+| `ethan.nguyen` | Manager — thấy tất cả, duyệt cả hai cấp, nhật ký, phân quyền |
+| `priya.raman` | Giám đốc khu vực — duyệt cấp vùng |
+| `bao.tran` | Giám đốc quốc gia — duyệt cấp country |
 | `lam.nguyen` · `valeria.tinoco` | A&R — chỉ thấy bản ghi của mình |
 | `hannah.le` | Label Manager — chỉ thấy bản ghi của mình |
 
@@ -73,8 +76,8 @@ tiết vẫn bị che nếu không có quyền xem tất cả.
 ## Kiểm thử
 
 ```bash
-node crm/test/smoke.mjs         # 24 phép kiểm trên CRM
-node crm/test/handoff-e2e.mjs   # 17 phép kiểm CRM → portal
+node crm/test/smoke.mjs         # 42 phép kiểm trên CRM
+node crm/test/handoff-e2e.mjs   # 28 phép kiểm CRM ↔ portal
 ```
 
 Cần Playwright (`npm i -D playwright`). Cả hai tự tìm bản cài global.
@@ -118,3 +121,68 @@ hàng đó không tồn tại.
 Palette đi qua đúng các hàm phạm vi như bảng (`poolOpps`, `sAccounts`…), nên nó
 không phải cửa sau để A&R thấy bản ghi của đồng nghiệp — có phép kiểm riêng cho
 điều này.
+
+## Chuỗi duyệt
+
+```
+CRM cầm lái                              Portal cầm lái
+A&R dựng deal
+  → Chờ sếp country      (waiting)
+  → Chờ sếp vùng         (region)   ← deal dưới ngưỡng bỏ qua bước này
+  → Đã trình portal      (portal)  ──→ CEO duyệt
+                                        ↓ duyệt xong mới ghi sổ
+                                      tỷ lệ chia + tạm ứng vào sổ
+                                        ↓
+                                      Legal soạn hợp đồng (legal)
+                                      Hợp đồng sẵn sàng   (signature)
+                                      Đã ký               (won)
+  A&R thấy trạng thái  ←──────────────  chiều ngược, chỉ-đọc
+```
+
+Bốn điều đáng nói:
+
+**Hai cấp duyệt tách thành hai quyền riêng**, không gộp thành một quyền `approve`.
+Gộp lại thì sếp country ký được cả chữ ký của sếp vùng — mà chuỗi hai cấp sinh ra
+chính là để điều đó không xảy ra. Tab Chờ duyệt cũng chỉ hiện việc của đúng cấp
+người đang đăng nhập.
+
+**Từ chối không giết deal.** Bản trước đẩy thẳng sang `lost`: một cái lắc đầu của
+sếp là mất trắng cơ hội, không đường quay lại. Giờ trả về đàm phán để A&R sửa rồi
+trình lại.
+
+**Ngưỡng bỏ qua sếp vùng** sửa được ở tab Phân quyền, mặc định 10.000 USD. Deal
+**chưa điền giá trị** không tính là nhỏ — `amount` bằng 0 nghĩa là chưa ai định
+giá, không phải "đáng 0 đồng". Cho nó lọt cửa là mở đúng một đường để deal lớn né
+sếp vùng: bỏ trống ô giá trị.
+
+**CEO duyệt trước, ghi sổ sau.** Ghi tỷ lệ và tạm ứng vào sổ khi CEO chưa gật là
+ghi một cam kết thương mại chưa ai phê. Màn hình bên portal không hiện nút ghi sổ
+cho tới khi CEO bấm duyệt.
+
+## Chiều ngược portal → CRM
+
+Chiều đi là quyết định thương mại. Chiều về **chỉ là trạng thái**, và CRM đọc
+chỉ-đọc: không sửa được hợp đồng, không ghi vào khoá đó, không suy diễn thêm.
+
+| Portal gửi | CRM chuyển giai đoạn thành |
+|---|---|
+| `ceo_rejected` | Đàm phán (A&R sửa rồi trình lại) |
+| `ceo_approved` · `drafting` | Legal soạn hợp đồng |
+| `ready` | Chờ ký |
+| `signed` | Đã ký |
+
+Vì sao vẫn cần chiều về: không có nó thì deal "biến mất" khỏi CRM đúng lúc trình
+lên portal, và người dựng deal phải mở app khác để biết hợp đồng xong chưa — đúng
+kiểu quy trình làm người ta bỏ không cập nhật CRM nữa.
+
+## View đã lưu và chọn hàng loạt
+
+**View đã lưu** gói bộ lọc + từ khoá + thứ tự sắp xếp thành một chip đặt tên, lưu
+cùng trạng thái nên sống qua reload. Thứ người ta làm hằng ngày không phải "lọc
+theo giai đoạn" mà là "mở lại đúng danh sách tôi nhìn mỗi sáng".
+
+**Chọn hàng loạt** có ở cả bốn bảng. `state.sel` giữ đúng một loại bản ghi — đổi
+tab hoặc chọn loại khác là bỏ lựa chọn cũ, vì mang theo thì thanh hành động sẽ mời
+làm những việc không áp dụng được cho thứ đang chọn. Thanh chỉ hiện việc làm được
+với đúng quyền của người đang đăng nhập, và báo trước bao nhiêu bản ghi sẽ bị bỏ
+qua vì ngoài phạm vi.
