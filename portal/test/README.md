@@ -57,3 +57,5 @@ của mảng rỗng, hoặc so với kỳ trước không tồn tại.
 
 Biến môi trường: `BASE` (mặc định `http://127.0.0.1:8099`), `CHROMIUM` (đường dẫn
 chromium nếu playwright không tự tìm được), `SHOTS` (nơi lưu ảnh chụp).
+
+Kiểm thử của CRM nằm ở `crm/test/smoke.mjs` — xem `crm/README.md`.
