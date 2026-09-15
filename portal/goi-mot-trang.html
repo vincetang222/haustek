@@ -6067,7 +6067,16 @@ function applyApproved(pr, by) {
     const nextOpen = PERIODS.find(p => !state.approved[p.k]);
     const from = nextOpen ? nextOpen.k : PERIODS[P - 1].k;
     const start = new Date(ASOF.getFullYear(), ASOF.getMonth(), 1), end = new Date(start.getFullYear(), start.getMonth() + pr.terms.months, 0);
-    lazyState("contracts", {})[pr.partyKey] = { proposalId: pr.id, months: pr.terms.months, feePct: pr.terms.feePct, exclusive: !!pr.terms.exclusive, from: isoDate(start), fromKey: from, to: isoDate(end), approvedAt: nowISO(), by: by || "" };
+    /* GIỮ các khoá khác của bản ghi hợp đồng, đừng thay nguyên cục.
+       Trước vòng 26 dòng này gán đè cả object, nên duyệt một đề xuất hợp
+       đồng XOÁ SẠCH labelTuTra — cờ quyết định Haustek trả thẳng cho nghệ
+       sĩ của label hay để label tự trả. Đo được: đặt labelTuTra = true cho
+       một label rồi duyệt một đề xuất hợp đồng của chính label ấy, cờ về
+       false, tức là ai nhận tiền vừa đổi mà không ai bấm gì vào chuyện đó.
+       Hiếm gặp tới giờ vì hai việc ít đi cùng nhau; nhưng luồng nhận
+       thương vụ từ CRM thì tạo-rồi-duyệt là đường đi mặc định. */
+    const cuHD = lazyState("contracts", {})[pr.partyKey] || {};
+    lazyState("contracts", {})[pr.partyKey] = Object.assign({}, cuHD, { proposalId: pr.id, months: pr.terms.months, feePct: pr.terms.feePct, exclusive: !!pr.terms.exclusive, from: isoDate(start), fromKey: from, to: isoDate(end), approvedAt: nowISO(), by: by || "" });
     demHopDong(); invalidateRates(); _ebp.clear();
     pr.applied = { contractTo: isoDate(end), feeFrom: from, at: nowISO() };
   }

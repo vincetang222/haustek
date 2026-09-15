@@ -277,6 +277,31 @@ check("Mọi kỳ chưa duyệt đều bị chặn ở cổng đối tác, khôn
   return chua.length + " kỳ chưa duyệt · đều bị chặn";
 });
 
+/* Duyệt một đề xuất hợp đồng KHÔNG được đổi ai là người trả tiền cho
+   nghệ sĩ của label. Trước vòng 26, applyApproved gán đè cả bản ghi
+   state.contracts[bên], nên cờ labelTuTra — cờ quyết định Haustek trả
+   thẳng cho nghệ sĩ hay để label tự trả — bị xoá sạch mỗi lần duyệt.
+   Đo được thật: đặt cờ true rồi duyệt, cờ về false.
+
+   Không phải chuyện lý thuyết: luồng nhận thương vụ từ CRM (đang thiết
+   kế) lấy tạo-rồi-duyệt làm đường đi mặc định, nên lỗi này sẽ gặp ở
+   từng deal chứ không phải thỉnh thoảng. */
+check("Duyệt hợp đồng không xoá cờ labelTuTra của bên", () => {
+  const dangCo = new Set(A.proposals.list()
+    .filter(p => p.kind === "contract" && ["submitted", "checked", "returned"].includes(p.status))
+    .map(p => p.partyKey));
+  const pk = DT.map(x => x.partyKey).filter(k => k && k[0] === "L" && !dangCo.has(k))[0];
+  must(pk, "không tìm được label nào chưa có đề xuất hợp đồng đang xử lý");
+  A.staff.dangNhapBang("mgmt@haustek-group.com");
+  A.parties.datLabelTuTra(pk, true);
+  must(A.parties.labelTuTra(pk) === true, "đặt cờ không ăn");
+  const dx = A.proposals.proposeContract(pk, { months: 24, feePct: 0.2 }, "mgmt@haustek-group.com", "mgmt");
+  A.proposals.review(dx.id, "approve", "kiểm bất biến", "mgmt@haustek-group.com", "mgmt");
+  must(A.parties.labelTuTra(pk) === true,
+    "duyệt hợp đồng xoá mất labelTuTra của " + pk + " — ai nhận tiền vừa đổi mà không ai quyết định chuyện đó");
+  return pk + " · cờ giữ nguyên qua một lượt duyệt";
+});
+
 /* ===================== KẾT QUẢ ===================== */
 console.log(ra.map(([k, n, m]) => (k === "ok" ? "  ok   " : "  LỖI  ") + n + (m ? "\n         " + m : "")).join("\n"));
 console.log("\n" + pass + " đạt · " + fail + " hỏng");
