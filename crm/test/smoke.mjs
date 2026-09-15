@@ -5,10 +5,11 @@
    crm.html là một file HTML với script nội tuyến, đụng vào document ngay
    lúc nạp, nên phải kiểm trong trình duyệt thật.
 
-   16 phép kiểm, phủ đúng những gì dễ vỡ nhất khi sửa file 5000 dòng này:
+   24 phép kiểm, phủ đúng những gì dễ vỡ nhất khi sửa file 5000+ dòng này:
    ranh giới quyền · thoát HTML · song ngữ và hai tiền tệ · chỉ số tuần ·
    lưu trạng thái và hồi sinh kiểu Date · cả 12 tab · drawer/chi tiết/import ·
-   hiệu năng bảng ảo hoá · không tràn ngang ở khổ điện thoại.
+   hiệu năng bảng ảo hoá · không tràn ngang ở khổ điện thoại ·
+   sidebar · điểm quan hệ · command palette.
 
        node crm/test/smoke.mjs
    ===================================================================== */
@@ -90,7 +91,40 @@ const perf = await p.evaluate(()=>{ const s=DB.opps.slice(); for(let i=0;i<5000;
   const t0=performance.now(); go('opps'); const t1=performance.now();
   return {ms:Math.round(t1-t0), dom:document.querySelectorAll('#view *').length}; });
 F('5k cơ hội vẽ <200ms ('+perf.ms+'ms, '+perf.dom+' node)', perf.ms<200&&perf.dom<3000);
-// 9 mobile
+// 9 sidebar + trí tuệ quan hệ + command palette
+const nav = await p.evaluate(()=>({g:[...document.querySelectorAll('.navgrp')].map(e=>e.textContent),
+  n:document.querySelectorAll('.side .tab').length, amp:document.body.innerHTML.includes('&amp;amp;')}));
+F('sidebar 3 nhóm · 12 mục · không thoát HTML hai lần', nav.g.length===3 && nav.n===12 && !nav.amp);
+const rel = await p.evaluate(()=>{const i=relIndex();
+  const bad=[...i.values()].filter(r=>!(r.score>=0&&r.score<=100)).length;
+  return {n:i.size, bad, cooling:relCooling().length};});
+F('điểm quan hệ tính được ('+rel.n+' khách, '+rel.cooling+' đang nguội)', rel.n>5 && rel.bad===0 && rel.cooling>0);
+F('sắp xếp theo điểm quan hệ đúng', await p.evaluate(()=>{ go('accounts'); sortBy('rel');
+  const a=[...document.querySelectorAll('#view .rel-n')].map(e=>+e.textContent);
+  sortBy('rel');
+  const d=[...document.querySelectorAll('#view .rel-n')].map(e=>+e.textContent);
+  return a.length>3 && a.every((v,i)=>i===0||a[i-1]<=v) && d.every((v,i)=>i===0||d[i-1]>=v); }));
+await p.evaluate(()=>go('home')); await p.waitForTimeout(150);
+await p.keyboard.press('Control+k'); await p.waitForTimeout(250);
+F('⌘K mở command palette', await p.evaluate(()=>!!document.querySelector('.pal')));
+/* 'music' chứ không phải 'flyaway': phép kiểm XSS ở trên đã đổi tên bản ghi
+   Flyaway, nên gõ 'flyaway' chỉ còn khớp một người liên hệ — test sẽ hỏng vì
+   dữ liệu đã bị chính test làm bẩn, không phải vì palette sai. */
+await p.keyboard.type('music'); await p.waitForTimeout(250);
+F('palette tìm xuyên nhiều loại bản ghi', await p.evaluate(()=>{
+  const k=[...document.querySelectorAll('.pal-kind')].map(e=>e.textContent);
+  return new Set(k).size>1; }));
+await p.keyboard.press('Enter'); await p.waitForTimeout(400);
+F('Enter mở bản ghi rồi đóng palette', await p.evaluate(()=>!document.querySelector('.pal') && !!state.oppId));
+F('palette tôn trọng phân quyền', await p.evaluate(()=>{ setUser('Hannah Le');
+  const mine=palBuild('a').filter(x=>x.k==='opp').length; const all=DB.opps.length;
+  setUser('Ethan Nguyen'); return mine<all; }));
+F('tên và ngày KHÔNG bị ép font mono', await p.evaluate(()=>{
+  go('opps'); openOpp(DB.opps.find(o=>o.stage!=='lost').id);
+  const e=document.querySelector('.rec-m-v');
+  return !e || !/Plex/.test(getComputedStyle(e).fontFamily); }));
+
+// 10 mobile
 const m=await b.newPage({viewport:{width:390,height:844}});
 await m.goto(FILE); await m.click('.login-btn'); await m.waitForTimeout(400);
 let ov=0; for(const v of ['home','leads','opps','accounts','contacts','tasks','people','approvals','handoff','reports','audit','perms']){
@@ -100,5 +134,5 @@ if(errs.length) FAILED++;
 console.log('\nLỗi JS: '+errs.length);
 errs.slice(0,5).forEach(e=>console.log('  '+e));
 await b.close();
-console.log(FAILED ? ('\n'+FAILED+' phép kiểm HỎNG') : '\n16 đạt · 0 hỏng');
+console.log(FAILED ? ('\n'+FAILED+' phép kiểm HỎNG') : '\n24 đạt · 0 hỏng');
 process.exit(FAILED?1:0);

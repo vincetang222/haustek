@@ -29,6 +29,8 @@
   --nav:#0a0a0d;
   --nav-2:#9a9aa4;
   --radius:6px;
+  --side:212px;
+  --muted-2:#9aa3b0;
   /* Ba mặt chữ trong playbook thương hiệu (docs/haustek-brand-playbook.html) và
      cũng đúng bộ portal dùng. Trước đây CRM chỉ nạp Be Vietnam Pro rồi giả lập
      số thẳng hàng bằng font-feature-settings:'tnum' — giờ dùng thẳng IBM Plex
@@ -147,22 +149,41 @@ a:hover{text-decoration:underline}
 .me-name{font-size:12.5px;font-weight:500;color:#fff;line-height:1.25}
 .me-role{font-size:11px;color:var(--nav-2);line-height:1.25}
 
-.tabsrow{background:var(--paper);border-bottom:1px solid var(--line);box-shadow:0 1px 2px rgba(10,10,13,.07)}
-.tabs{display:flex;gap:2px;padding:0 14px;max-width:1600px;margin:0 auto;overflow-x:auto;scrollbar-width:none}
-.tabs::-webkit-scrollbar{display:none}
+/* ---------- sidebar ----------
+   Trước đây là dải tab ngang: 12 mục không đủ chỗ ở 1580px nên "Phân quyền"
+   bị cắt cụt. Cột trái xếp được cả 12 mục, nhóm theo việc, và khớp đúng bố cục
+   intranet bên portal — hai sản phẩm nhìn như một bộ. */
+.shell{display:flex;flex:1;min-height:0;align-items:flex-start}
+.side{
+  width:var(--side);flex:0 0 var(--side);position:sticky;top:58px;
+  height:calc(100vh - 58px);overflow-y:auto;overscroll-behavior:contain;
+  background:var(--paper);border-right:1px solid var(--line);padding:14px 10px 20px;
+}
+.side::-webkit-scrollbar{width:8px}
+.side::-webkit-scrollbar-thumb{background:#dfe3ea;border-radius:4px;border:2px solid var(--paper)}
+.navgrp{
+  font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--muted-2);padding:14px 10px 6px;
+}
+.navgrp:first-child{padding-top:2px}
 .tab{
-  display:flex;align-items:center;gap:7px;padding:10px 13px 8px;font-size:13px;
-  color:var(--ink-2);border-bottom:3px solid transparent;white-space:nowrap;
-  border-radius:5px 5px 0 0;
+  display:flex;align-items:center;gap:10px;width:100%;padding:7px 10px;font-size:13px;
+  color:var(--ink-2);border-radius:7px;text-align:left;line-height:1.35;
+  border-left:2px solid transparent;
 }
 .tab:hover{background:var(--surface);color:var(--ink)}
-.tab.active{color:var(--brand-dark);border-bottom-color:var(--brand);font-weight:600;background:var(--brand-tint)}
-.tab-ico{width:15px;height:15px;flex:0 0 auto;opacity:.7}
+.tab.active{background:var(--brand-tint);color:var(--brand-dark);font-weight:600;border-left-color:var(--brand)}
+.tab-ico{width:15px;height:15px;flex:0 0 auto;opacity:.65}
 .tab.active .tab-ico{opacity:1}
-.tab-count{font-size:11px;font-weight:500;color:var(--muted);background:var(--surface);padding:1px 6px;border-radius:9px}
+.tab>span:first-of-type{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tab-count{
+  font-size:10.5px;font-weight:600;color:var(--muted);background:var(--surface);
+  padding:1px 6px;border-radius:9px;flex:0 0 auto;font-variant-numeric:tabular-nums;
+}
+.tab:hover .tab-count{background:#e7ebf1}
 .tab.active .tab-count{background:#fff;color:var(--brand-dark)}
 
-.content{padding:20px;flex:1;max-width:1600px;margin:0 auto;width:100%}
+.content{padding:22px 26px 40px;flex:1;min-width:0;max-width:1500px}
 
 /* ---------- page head ---------- */
 .phead{display:flex;align-items:flex-end;gap:16px;margin-bottom:16px;flex-wrap:wrap}
@@ -229,7 +250,10 @@ a:hover{text-decoration:underline}
   font-size:12px;color:var(--ink-2);
 }
 .chip:hover{border-color:#c6ccd6}
-.chip.on{background:var(--brand);border-color:var(--brand);color:#fff;font-weight:500}
+/* Chip đang chọn dùng MỰC, không dùng đỏ. Signal Red là màu nhấn của thương
+   hiệu — rải nó lên chip lọc, nút tạo, ô quyền và tab đang mở cùng lúc thì nó
+   không còn nhấn được gì. Giữ đỏ cho hành động chính và trạng thái gấp. */
+.chip.on{background:var(--ink);border-color:var(--ink);color:#fff;font-weight:500}
 .seg{display:flex;border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;margin-left:auto}
 .seg button{padding:5px 12px;font-size:12px;color:var(--muted)}
 .seg button.on{background:var(--surface);color:var(--ink);font-weight:600}
@@ -238,13 +262,13 @@ a:hover{text-decoration:underline}
 .tscroll{overflow-x:auto}
 table{width:100%;border-collapse:collapse}
 th{
-  text-align:left;font-size:11.5px;font-weight:600;color:var(--muted);
-  padding:9px 14px;border-bottom:1px solid var(--line);background:#fafbfc;white-space:nowrap;
+  text-align:left;font-size:10.5px;font-weight:600;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;
+  padding:8px 14px;border-bottom:1px solid var(--line);background:#fafbfc;white-space:nowrap;
 }
 th.sortable{cursor:pointer;user-select:none}
 th.sortable:hover{color:var(--ink)}
 th .arw{opacity:.5;font-size:9px;margin-left:3px}
-td{padding:10px 14px;border-bottom:1px solid var(--line-2);font-size:13px;vertical-align:middle}
+td{padding:8px 14px;border-bottom:1px solid var(--line-2);font-size:13px;vertical-align:middle}
 tr:last-child td{border-bottom:none}
 tbody tr:hover{background:#fafbfc;cursor:pointer}
 .t-name{font-weight:500;color:var(--ice-dark)}
@@ -258,7 +282,8 @@ tbody tr:hover .t-name{text-decoration:underline}
    padding 10px/14px và cỡ chữ 13px, nên đổi qua lại không thấy khác. */
 .vt{background:var(--paper);border:1px solid var(--line);border-radius:8px;overflow:hidden}
 .vt-head{display:grid;background:#fafbfc;border-bottom:1px solid var(--line)}
-.vt-head>span{padding:9px 14px;font-size:11.5px;font-weight:600;color:var(--muted);white-space:nowrap}
+.vt-head>span{padding:8px 14px;font-size:10.5px;font-weight:600;color:var(--muted);white-space:nowrap;
+  letter-spacing:.06em;text-transform:uppercase}
 .vt-head>span.sortable{cursor:pointer;user-select:none}
 .vt-head>span.sortable:hover{color:var(--ink)}
 .vt-head>span.num{text-align:right}
@@ -268,19 +293,87 @@ tbody tr:hover .t-name{text-decoration:underline}
   border-bottom:1px solid var(--line-2);cursor:pointer;background:var(--paper)}
 .vt-row:hover{background:#fafbfc}
 .vt-row:hover .t-name{text-decoration:underline}
-.vt-row>div{padding:10px 14px;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.vt-row>div{padding:8px 14px;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .vt-row>div.num{text-align:right;font-variant-numeric:tabular-nums}
 .vt-row>div.dim{color:var(--muted)}
 .vt-note{padding:7px 14px;font-size:11.5px;color:var(--muted);border-top:1px solid var(--line-2);background:#fafbfc}
+
+/* ---------- command palette ---------- */
+.pal-scrim{position:fixed;inset:0;background:rgba(10,10,13,.42);z-index:80;animation:fade .12s ease-out}
+.pal{
+  position:fixed;z-index:81;left:50%;top:14vh;transform:translateX(-50%);
+  width:min(620px,calc(100vw - 32px));background:var(--paper);border-radius:12px;
+  box-shadow:0 18px 50px rgba(10,10,13,.28),0 2px 8px rgba(10,10,13,.12);
+  overflow:hidden;animation:palin .13s ease-out;
+}
+@keyframes palin{from{opacity:0;transform:translate(-50%,-6px)}to{opacity:1;transform:translate(-50%,0)}}
+.pal-in{display:flex;align-items:center;gap:10px;padding:13px 15px;border-bottom:1px solid var(--line)}
+.pal-in svg{color:var(--muted);flex:0 0 auto}
+.pal-in input{flex:1;border:0;outline:none;font-size:15px;background:transparent;min-width:0}
+.pal-in input::placeholder{color:var(--muted-2)}
+.pal-list{max-height:min(46vh,380px);overflow-y:auto;padding:5px}
+.pal-row{
+  display:grid;grid-template-columns:96px minmax(0,1fr) auto;gap:11px;align-items:baseline;
+  width:100%;text-align:left;padding:8px 10px;border-radius:7px;
+}
+.pal-row.on{background:var(--brand-tint)}
+.pal-kind{
+  font-size:9.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+.pal-row.on .pal-kind{color:var(--brand-dark)}
+.pal-lab{font-size:13.5px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pal-sub{font-size:11.5px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  max-width:230px;text-align:right}
+.pal-empty{padding:30px 16px;text-align:center;color:var(--muted);font-size:13px}
+.pal-foot{
+  display:flex;gap:6px;align-items:center;padding:8px 14px;border-top:1px solid var(--line-2);
+  background:#fafbfc;font-size:11px;color:var(--muted);
+}
+kbd{
+  font-family:var(--mono);font-size:10px;background:var(--surface);border:1px solid var(--line);
+  border-bottom-width:2px;border-radius:4px;padding:1px 5px;color:var(--ink-2);
+}
+.pal-in kbd{flex:0 0 auto}
+.search-k{
+  position:absolute;right:9px;top:50%;transform:translateY(-50%);pointer-events:none;
+  font-family:var(--mono);font-size:10px;color:#8b8b95;border:1px solid rgba(255,255,255,.2);
+  border-radius:4px;padding:1px 5px;
+}
+.search input:focus ~ .search-k{display:none}
+@media(max-width:640px){.search-k{display:none}}
+
+/* ---------- chỉ số quan hệ ---------- */
+.rel{display:flex;align-items:center;gap:8px;min-width:0}
+.rel-bar{width:42px;height:4px;border-radius:2px;background:var(--line);flex:0 0 auto;overflow:hidden}
+.rel-bar i{display:block;height:100%;border-radius:2px}
+.rel-n{font-family:var(--mono);font-size:11.5px;font-weight:600;font-variant-numeric:tabular-nums;
+  width:22px;text-align:right;flex:0 0 auto}
+.rel-w{font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cool-row{display:flex;align-items:center;gap:11px;padding:9px 16px;border-bottom:1px solid var(--line-2);
+  width:100%;text-align:left}
+.cool-row:last-child{border-bottom:none}
+.cool-row:hover{background:var(--surface)}
+.cool-main{flex:1;min-width:0}
+.cool-n{font-size:12.5px;font-weight:500;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cool-s{font-size:11px;color:var(--muted);display:block;margin-top:1px}
+.cool-v{font-family:var(--mono);font-size:12px;font-weight:600;font-variant-numeric:tabular-nums;flex:0 0 auto}
+.cool-d{font-size:11px;font-weight:600;flex:0 0 auto;text-align:right;white-space:nowrap}
 
 /* ---------- số và tiền ----------
    Portal dùng IBM Plex Mono cho mọi cột tiền để chữ số thẳng hàng theo cột;
    CRM trước đây chỉ bật 'tnum' trên Be Vietnam Pro, gần đúng nhưng không bằng.
    Gom hết ô mang chữ số về một chỗ để hai sản phẩm đọc giống nhau. */
+/* CHỈ những ô chắc chắn mang chữ số. Trước đây danh sách này gồm cả .rec-m-v,
+   .acres, .acsug — nhưng chúng chứa cả tên khách ("damnboy!") lẫn ngày tháng,
+   và IBM Plex Mono làm tên người trông như mã máy. Số thì thẳng cột, chữ thì
+   không — đừng gộp hai thứ vào một selector. */
 .num,.vt-row>div.num,.stat-v,.kpi-num,.kpi-num b,.lr-n,.ubig,.kcard-a,.ar-amt,
-.kcol-v,.rec-m-v,.acres,.acsug,.t-amt,.hero-v{
+.kcol-v,.t-amt,.hero-v,.tab-count{
   font-family:var(--mono);font-variant-numeric:tabular-nums;letter-spacing:-.01em;
 }
+/* trong thẻ tóm tắt bản ghi, chỉ ô tiền mới mono — tên và ngày giữ chữ thường */
+.rec-m-v.is-num{font-family:var(--mono);font-variant-numeric:tabular-nums}
 /* Tiêu đề lớn và wordmark dùng Archivo */
 .ptitle,.lr-h,.hero-n,.sec-head{font-family:var(--disp);letter-spacing:-.025em}
 
@@ -288,11 +381,12 @@ tbody tr:hover .t-name{text-decoration:underline}
 .badge .dot{width:7px;height:7px;border-radius:50%}
 .pill{display:inline-block;padding:2px 8px;border-radius:11px;font-size:11px;font-weight:500;background:var(--surface);color:var(--ink-2);border:1px solid var(--line)}
 .rights{display:flex;gap:3px}
+.rights{display:flex;gap:2px}
 .r{
-  width:20px;height:19px;border-radius:3px;display:grid;place-items:center;
-  font-size:9.5px;font-weight:700;background:var(--surface);color:#aab2bd;border:1px solid var(--line-2);
+  width:19px;height:18px;border-radius:4px;display:grid;place-items:center;
+  font-size:9.5px;font-weight:700;background:transparent;color:#c2c8d2;border:1px solid var(--line);
 }
-.r.on{background:var(--brand-tint);color:var(--brand-dark);border-color:#bfdfcd}
+.r.on{background:var(--ink);color:#fff;border-color:var(--ink)}
 
 .empty{padding:56px 20px;text-align:center}
 .empty-t{font-size:14px;font-weight:500;margin-bottom:4px}
@@ -814,6 +908,21 @@ tbody tr:hover .ipen{opacity:1}
    Breakpoint nhỏ nhất trước đây là 560px nên không có gì đỡ cho điện thoại.
    Cho hàng trên xuống dòng và đẩy ô tìm kiếm thành một hàng riêng full-width.
    .tabs vốn đã có overflow-x:auto — nó chỉ tràn theo vì bị .hrow kéo rộng. */
+/* Dưới 900px cột trái chuyển thành dải ngang cuộn được, dính dưới thanh trên —
+   màn hẹp không đủ chỗ cho 212px cột mà vẫn còn chỗ đọc nội dung. */
+@media(max-width:900px){
+  .shell{display:block}
+  .side{
+    width:auto;flex:none;position:sticky;top:58px;height:auto;z-index:20;
+    display:flex;gap:4px;overflow-x:auto;overflow-y:hidden;scrollbar-width:none;
+    border-right:0;border-bottom:1px solid var(--line);padding:7px 10px;
+  }
+  .side::-webkit-scrollbar{display:none}
+  .navgrp{display:none}
+  .tab{width:auto;flex:0 0 auto;border-left:0;padding:6px 11px}
+  .tab.active{border-left:0}
+  .content{max-width:none;padding:16px 14px 32px}
+}
 @media(max-width:640px){
   .hrow{height:auto;padding:8px 12px}
   .hrow-in{flex-wrap:wrap;gap:9px}
@@ -854,6 +963,7 @@ tbody tr:hover .ipen{opacity:1}
         <div class="search">
           <input id="q" oninput="onSearch(this.value)" autocomplete="off">
           <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="7" cy="7" r="4.6"/><path d="M10.5 10.5L14 14"/></svg>
+          <span class="search-k">⌘K</span>
         </div>
         <div class="lang">
           <button id="cu" onclick="setCur('USD')">USD</button>
@@ -882,11 +992,14 @@ tbody tr:hover .ipen{opacity:1}
         </div>
       </div>
     </div>
-    <div class="tabsrow"><nav class="tabs" id="nav"></nav></div>
   </header>
-  <main class="content" id="view"></main>
+  <div class="shell">
+    <aside class="side"><nav id="nav"></nav></aside>
+    <main class="content" id="view"></main>
+  </div>
 </div>
 <div id="overlay"></div>
+<div id="pal"></div>
 <div id="toast"></div>
 
 <script>
@@ -894,7 +1007,7 @@ tbody tr:hover .ipen{opacity:1}
 const I18N = {
 vi:{
   brandSub:'Kinh doanh & A&R', meRole:'Quản lý A&R', searchPh:'Tìm nghệ sĩ, label, deal…',
-  navMain:'Làm việc', navData:'Dữ liệu', navInsight:'Phân tích',
+  navMain:'Làm việc', navOps:'Vận hành', navAdmin:'Phân tích & quản trị',
   home:'Trang chính', leads:'Khách tiềm năng', opps:'Cơ hội', accounts:'Khách hàng',
   contacts:'Người liên hệ', tasks:'Việc cần làm', approvals:'Chờ duyệt', reports:'Báo cáo',
   demoNote:'Bản demo · dữ liệu mẫu',
@@ -965,6 +1078,14 @@ vi:{
   kpiK5:'Giá trị đã ký', goalYearNote:'Giá trị năm chia đều cho 52 tuần. Manager đặt mục tiêu riêng cho từng người ở tab Nhân sự.',
   kpiConv:'Tỷ lệ chuyển đổi', kpiGoal:'chuẩn 50%', kpiRatio:'Tỷ lệ',
   vtNote:'{n} dòng · bảng ảo hoá, chỉ vẽ phần đang nhìn thấy',
+  cRel:'Quan hệ', relDays:'{n} ngày trước', relNever:'chưa liên hệ', openDeals:'deal đang mở',
+  palTitle:'Tìm nhanh', palPh:'Tìm deal, khách, người liên hệ… hoặc gõ tên trang',
+  palGo:'Chuyển tới', palNone:'Không tìm thấy gì', palMove:'chọn', palOpen:'mở',
+  relHot:'Đang ấm', relWarm:'Ổn định', relCool:'Nguội dần', relCold:'Nguội',
+  relTitle:'Quan hệ đang nguội', relSub:'Deal đang mở mà lâu không ai liên hệ',
+  relNone:'Không có deal nào bị bỏ quên', relNoneSub:'Mọi khách có deal đang mở đều được liên hệ gần đây.',
+  relScore:'Điểm quan hệ', relTouch:'Lần chạm gần nhất', relTouch90:'Số lần chạm 90 ngày',
+  relHow:'Điểm cân hai thứ: liên hệ gần đây tới mức nào (chu kỳ bán rã 30 ngày) và đều tới mức nào (6 lần/90 ngày là đủ đầy).',
   handoff:'Bàn giao portal', hoSigned:'deal đã ký', hoDeal:'Deal', hoShare:'Tỷ lệ NS',
   hoAdvance:'Tạm ứng', hoParty:'Party bên portal', hoUnbound:'Chưa gắn',
   hoExport:'Xuất JSON', hoExported:'Đã xuất file bàn giao',
@@ -1121,7 +1242,7 @@ vi:{
 },
 en:{
   brandSub:'Sales & A&R', meRole:'A&R Manager', searchPh:'Search artists, labels, deals…',
-  navMain:'Work', navData:'Records', navInsight:'Insights',
+  navMain:'Work', navOps:'Operations', navAdmin:'Insight & admin',
   home:'Home', leads:'Leads', opps:'Opportunities', accounts:'Accounts',
   contacts:'Contacts', tasks:'Tasks', approvals:'Approvals', reports:'Reports',
   demoNote:'Demo · sample data',
@@ -1183,6 +1304,14 @@ en:{
   kpiK5:'Signed value', goalYearNote:'The annual figure is split over 52 weeks. Managers set it per person under People.',
   kpiConv:'Conversion', kpiGoal:'50% benchmark', kpiRatio:'Ratio',
   vtNote:'{n} rows · virtualised table, only the visible rows are drawn',
+  cRel:'Relationship', relDays:'{n}d ago', relNever:'never contacted', openDeals:'open deals',
+  palTitle:'Quick find', palPh:'Search deals, accounts, contacts… or type a page name',
+  palGo:'Go to', palNone:'Nothing found', palMove:'move', palOpen:'open',
+  relHot:'Warm', relWarm:'Steady', relCool:'Cooling', relCold:'Cold',
+  relTitle:'Cooling relationships', relSub:'Open deals nobody has touched in a while',
+  relNone:'No deal is being forgotten', relNoneSub:'Every account with an open deal was contacted recently.',
+  relScore:'Relationship score', relTouch:'Last touch', relTouch90:'Touches in 90 days',
+  relHow:'The score balances two things: how recently you talked (30-day half-life) and how steadily (6 touches per 90 days counts as full).',
   handoff:'Portal handoff', hoSigned:'signed deals', hoDeal:'Deal', hoShare:'Artist share',
   hoAdvance:'Advance', hoParty:'Portal party', hoUnbound:'Unbound',
   hoExport:'Export JSON', hoExported:'Handoff file exported',
@@ -1893,7 +2022,7 @@ function matches(s){ return !state.q || String(s||'').toLowerCase().includes(sta
    view đẩy hàm vào lúc dựng chuỗi, render() gọi chúng ngay sau khi gán xong. */
 var MOUNTS = [];
 function onMount(fn){ MOUNTS.push(fn); }
-const VT_ROW_H = 41;    /* = padding 10+10 + dòng chữ 19.5 + viền 1, khớp <td> */
+const VT_ROW_H = 37;    /* = padding 8+8 + dòng chữ 19.5 + viền 1, khớp <td> */
 const VT_MIN   = 150;   /* dưới ngưỡng này giữ <table> thường cho nhẹ và đủ dùng */
 let VT_SEQ = 0;
 function vtable(opts){
@@ -1981,6 +2110,88 @@ function listTable(cols, rows, cells, onRow, rowCls){
   return '<div class="vt"><div class="vt-head" id="'+id+'h"></div>'+
     '<div class="vt-body" id="'+id+'b"><div class="vt-spacer" id="'+id+'s"></div></div>'+
     '<div class="vt-note">'+esc(t('vtNote',{n:rows.length}))+'</div></div>';
+}
+
+/* ===================== trí tuệ quan hệ =====================
+   Mô phỏng cách Affinity chấm điểm quan hệ: KHÔNG đếm số lần liên hệ trần,
+   mà cân hai thứ — liên hệ GẦN ĐÂY tới mức nào, và ĐỀU tới mức nào. Một khách
+   gọi 10 lần hồi tháng 3 rồi im bặt thì quan hệ đang nguội, dù tổng số cao;
+   một khách vừa nói chuyện tuần trước thì đang ấm, dù mới quen.
+
+   Độ gần đây tính bằng phân rã theo chu kỳ bán rã 30 ngày: sau 30 ngày không
+   liên hệ, phần điểm này còn một nửa; sau 60 ngày còn một phần tư. Tần suất
+   lấy số lần chạm trong 90 ngày, coi 6 lần là đủ đầy — trên mức đó không cộng
+   thêm, vì gọi 20 lần một quý không có nghĩa quan hệ tốt gấp ba lần gọi 6 lần.
+
+   Hoạt động gắn vào refId của cơ hội hoặc lead, không gắn thẳng vào khách
+   hàng, nên phải map ngược qua opp.accountId. Chỉ quét MỘT vòng qua DB.acts
+   rồi dựng chỉ mục, không lặp lại cho từng dòng bảng. */
+const REL_HALFLIFE = 30, REL_FULL_TOUCHES = 6, REL_WINDOW = 90;
+/* `var`, không phải `let`: seedAudit gọi logAudit hàng trăm lần lúc dựng dữ liệu,
+   mà logAudit gọi saveSoon → relInvalidate. Tất cả chạy TRƯỚC dòng này, nên
+   `let` sẽ vỡ vùng chết tạm thời và trang không boot nổi. */
+var REL_CACHE = null;
+function relInvalidate(){ REL_CACHE = null; }
+function relIndex(){
+  if(REL_CACHE) return REL_CACHE;
+  const oppAcc = new Map();
+  DB.opps.forEach(o=>oppAcc.set(o.id, o.accountId));
+  const idx = new Map();
+  const win = new Date(TODAY.getTime() - REL_WINDOW*86400000);
+  for(let i=0;i<DB.acts.length;i++){
+    const a = DB.acts[i];
+    const accId = oppAcc.get(a.refId);
+    if(!accId || !(a.date instanceof Date)) continue;
+    let r = idx.get(accId);
+    if(!r){ r = {last:null, n:0, n90:0, byType:{}}; idx.set(accId, r); }
+    r.n++;
+    if(!r.last || a.date > r.last) r.last = a.date;
+    if(a.date >= win) r.n90++;
+    r.byType[a.type] = (r.byType[a.type]||0) + 1;
+  }
+  idx.forEach(r=>{
+    const days = r.last ? Math.max(0, daysBetween(r.last, TODAY)) : 9999;
+    const recency = Math.pow(0.5, days / REL_HALFLIFE);
+    const freq    = Math.min(1, r.n90 / REL_FULL_TOUCHES);
+    r.days  = days;
+    r.score = Math.round(100 * (0.6*recency + 0.4*freq));
+  });
+  REL_CACHE = idx;
+  return idx;
+}
+function relOf(accountId){
+  return relIndex().get(accountId) || {last:null, n:0, n90:0, days:9999, score:0, byType:{}};
+}
+/* Bốn mức, đặt tên theo việc cần làm chứ không theo con số */
+function relBand(score){
+  return score >= 55 ? ['hot',  'relHot',  'var(--green)']
+       : score >= 28 ? ['warm', 'relWarm', 'var(--ice-dark)']
+       : score >= 12 ? ['cool', 'relCool', 'var(--amber)']
+                     : ['cold', 'relCold', 'var(--muted)'];
+}
+function relCell(accountId){
+  const r = relOf(accountId), b = relBand(r.score);
+  const when = r.last ? t('relDays',{n:r.days}) : t('relNever');
+  return '<span class="rel"><span class="rel-bar"><i style="width:'+Math.max(4,r.score)+'%;background:'+b[2]+'"></i></span>'+
+    '<span class="rel-n">'+r.score+'</span><span class="rel-w">'+esc(when)+'</span></span>';
+}
+/* Việc cần làm thật sự: khách CÓ deal đang mở mà quan hệ đã nguội. Đây là chỗ
+   deal chết âm thầm — không phải vì mất, mà vì không ai gọi lại. */
+function relCooling(){
+  const openByAcc = new Map();
+  DB.opps.forEach(o=>{
+    if(!OPEN_STAGES.includes(o.stage) || !inScope(o.owner)) return;
+    const cur = openByAcc.get(o.accountId) || {n:0, val:0, owner:o.owner};
+    cur.n++; cur.val += (o.amount||0);
+    openByAcc.set(o.accountId, cur);
+  });
+  const out = [];
+  openByAcc.forEach((v,accId)=>{
+    const r = relOf(accId);
+    if(r.score >= 28) return;                 /* còn ấm thì chưa cần nhắc */
+    out.push({accId, rel:r, open:v.n, val:v.val, owner:v.owner});
+  });
+  return out.sort((a,b)=> (b.val - a.val) || (b.rel.days - a.rel.days));
 }
 
 /* ============================ state ============================ */
@@ -2100,6 +2311,7 @@ const store = {
   }
 };
 function saveSoon(){
+  relInvalidate();   /* dữ liệu vừa đổi — điểm quan hệ phải tính lại */
   if(!STORE_READY) return;
   clearTimeout(SAVE_T);
   SAVE_T = setTimeout(()=>store.save(), 400);
@@ -2192,18 +2404,18 @@ function bootStore(){
 
 
 const NAV = [
-  {id:'home',      icon:'M2 7l6-4.6L14 7v6.4a.9.9 0 01-.9.9H2.9a.9.9 0 01-.9-.9z'},
-  {id:'leads',     icon:'M8 8.6a2.7 2.7 0 100-5.4 2.7 2.7 0 000 5.4zM2.6 14c0-2.6 2.4-4.2 5.4-4.2s5.4 1.6 5.4 4.2'},
-  {id:'opps',      icon:'M2.4 5.4h11.2v8.2H2.4zM5.4 5.4V3.6c0-.6.5-1.1 1.1-1.1h3c.6 0 1.1.5 1.1 1.1v1.8'},
-  {id:'accounts',  icon:'M3 14V3.4c0-.5.4-.9.9-.9h5.4c.5 0 .9.4.9.9V14M10.2 14V6.6h2.4c.5 0 .8.4.8.9V14M5.2 5.6h2.6M5.2 8.2h2.6M5.2 10.8h2.6'},
-  {id:'contacts',  icon:'M6 8a2.4 2.4 0 100-4.8A2.4 2.4 0 006 8zM1.8 13.6c0-2.3 1.9-3.7 4.2-3.7s4.2 1.4 4.2 3.7M11.6 4.4a2 2 0 010 4M12.4 10.2c1.2.4 2 1.3 2 2.6'},
-  {id:'tasks',     icon:'M5.5 8.2l1.8 1.8 3.4-3.6M8 1.6A6.4 6.4 0 108 14.4 6.4 6.4 0 008 1.6z'},
-  {id:'people',    icon:'M6 8a2.4 2.4 0 100-4.8A2.4 2.4 0 006 8zM1.8 13.6c0-2.3 1.9-3.7 4.2-3.7s4.2 1.4 4.2 3.7M11.6 4.4a2 2 0 010 4M12.4 10.2c1.2.4 2 1.3 2 2.6'},
-  {id:'approvals', icon:'M8 1.6l5.4 2.4v3.7c0 3.2-2.2 5.6-5.4 6.7-3.2-1.1-5.4-3.5-5.4-6.7V4z'},
-  {id:'handoff',   icon:'M2.6 8h10.8M9.6 4.4L13.4 8l-3.8 3.6M2.6 3.2v9.6'},
-  {id:'reports',   icon:'M2.6 13.4h10.8M4.6 13.4V8M8 13.4V3.6M11.4 13.4V6.4'},
-  {id:'audit',     icon:'M8 4.2v4l2.6 1.6M8 1.8A6.2 6.2 0 108 14.2 6.2 6.2 0 008 1.8z'},
-  {id:'perms',     icon:'M8 1.9l5 2.2v3.5c0 3-2.1 5.3-5 6.4-2.9-1.1-5-3.4-5-6.4V4.1zM6.2 8l1.3 1.3L10 6.6'},
+  {id:'home',      g:'work', icon:'M2 7l6-4.6L14 7v6.4a.9.9 0 01-.9.9H2.9a.9.9 0 01-.9-.9z'},
+  {id:'leads',     g:'work', icon:'M8 8.6a2.7 2.7 0 100-5.4 2.7 2.7 0 000 5.4zM2.6 14c0-2.6 2.4-4.2 5.4-4.2s5.4 1.6 5.4 4.2'},
+  {id:'opps',      g:'work', icon:'M2.4 5.4h11.2v8.2H2.4zM5.4 5.4V3.6c0-.6.5-1.1 1.1-1.1h3c.6 0 1.1.5 1.1 1.1v1.8'},
+  {id:'accounts',  g:'work', icon:'M3 14V3.4c0-.5.4-.9.9-.9h5.4c.5 0 .9.4.9.9V14M10.2 14V6.6h2.4c.5 0 .8.4.8.9V14M5.2 5.6h2.6M5.2 8.2h2.6M5.2 10.8h2.6'},
+  {id:'contacts',  g:'work', icon:'M6 8a2.4 2.4 0 100-4.8A2.4 2.4 0 006 8zM1.8 13.6c0-2.3 1.9-3.7 4.2-3.7s4.2 1.4 4.2 3.7M11.6 4.4a2 2 0 010 4M12.4 10.2c1.2.4 2 1.3 2 2.6'},
+  {id:'tasks',     g:'work', icon:'M5.5 8.2l1.8 1.8 3.4-3.6M8 1.6A6.4 6.4 0 108 14.4 6.4 6.4 0 008 1.6z'},
+  {id:'people',    g:'ops',  icon:'M6 8a2.4 2.4 0 100-4.8A2.4 2.4 0 006 8zM1.8 13.6c0-2.3 1.9-3.7 4.2-3.7s4.2 1.4 4.2 3.7M11.6 4.4a2 2 0 010 4M12.4 10.2c1.2.4 2 1.3 2 2.6'},
+  {id:'approvals', g:'ops',  icon:'M8 1.6l5.4 2.4v3.7c0 3.2-2.2 5.6-5.4 6.7-3.2-1.1-5.4-3.5-5.4-6.7V4z'},
+  {id:'handoff',   g:'ops',  icon:'M2.6 8h10.8M9.6 4.4L13.4 8l-3.8 3.6M2.6 3.2v9.6'},
+  {id:'reports',   g:'admin',icon:'M2.6 13.4h10.8M4.6 13.4V8M8 13.4V3.6M11.4 13.4V6.4'},
+  {id:'audit',     g:'admin',icon:'M8 4.2v4l2.6 1.6M8 1.8A6.2 6.2 0 108 14.2 6.2 6.2 0 008 1.8z'},
+  {id:'perms',     g:'admin',icon:'M8 1.9l5 2.2v3.5c0 3-2.1 5.3-5 6.4-2.9-1.1-5-3.4-5-6.4V4.1zM6.2 8l1.3 1.3L10 6.6'},
 ];
 const NAV_PERM = {approvals:'approve', audit:'audit', perms:'users', handoff:'approve'};
 function navAllowed(id){ const p = NAV_PERM[id]; return !p || can(p); }
@@ -2221,12 +2433,18 @@ function navCount(id){
 }
 
 /* ============================ chrome ============================ */
+const NAV_GROUPS = [['work','navMain'],['ops','navOps'],['admin','navAdmin']];
 function renderNav(){
-  document.getElementById('nav').innerHTML = NAV.filter(it=>navAllowed(it.id)).map(it=>{
-    const c = navCount(it.id);
-    return '<button class="tab'+(state.view===it.id?' active':'')+'" onclick="go(\''+it.id+'\')">'+
-      '<svg class="tab-ico" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.35" stroke-linecap="round" stroke-linejoin="round"><path d="'+it.icon+'"/></svg>'+
-      '<span>'+esc(t(it.id))+'</span>'+(c?'<span class="tab-count">'+c+'</span>':'')+'</button>';
+  const allowed = NAV.filter(it=>navAllowed(it.id));
+  document.getElementById('nav').innerHTML = NAV_GROUPS.map(g=>{
+    const items = allowed.filter(it=>it.g===g[0]);
+    if(!items.length) return '';
+    return '<div class="navgrp">'+esc(t(g[1]))+'</div>'+ items.map(it=>{
+      const c = navCount(it.id);
+      return '<button class="tab'+(state.view===it.id?' active':'')+'" onclick="go(\''+it.id+'\')">'+
+        '<svg class="tab-ico" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.35" stroke-linecap="round" stroke-linejoin="round"><path d="'+it.icon+'"/></svg>'+
+        '<span>'+esc(t(it.id))+'</span>'+(c?'<span class="tab-count">'+c+'</span>':'')+'</button>';
+    }).join('');
   }).join('');
   document.getElementById('demoTag').textContent = t('demoNote');
   const u = meUser();
@@ -2568,6 +2786,27 @@ VIEWS.home = function(){
       : '<div class="approve-empty">'+esc(t('noApprovals'))+'</div>')+
   '</div>';
 
+  /* ---------- 10b. Quan hệ đang nguội (Affinity) ---------- */
+  const cooling = relCooling().slice(0,6);
+  const coolCard = '<div class="card"><div class="card-h">'+
+    '<span class="card-t">'+esc(t('relTitle'))+'</span>'+
+    (cooling.length?'<span class="card-note">'+esc(t('relSub'))+'</span>':'')+
+    '</div>'+
+    (cooling.length
+      ? cooling.map(x=>{
+          const a = DB.accounts.find(y=>y.id===x.accId);
+          const b = relBand(x.rel.score);
+          return '<button class="cool-row" onclick="openDrawer(\'account\',\''+x.accId+'\')">'+
+            '<span class="cool-main"><span class="cool-n">'+esc(a?a.name:'—')+'</span>'+
+            '<span class="cool-s">'+x.open+' '+esc(t('openDeals'))+' · '+esc(x.owner)+'</span></span>'+
+            '<span class="cool-v">'+esc(money(x.val))+'</span>'+
+            '<span class="cool-d" style="color:'+b[2]+'">'+
+              esc(x.rel.last ? t('relDays',{n:x.rel.days}) : t('relNever'))+'</span>'+
+          '</button>';
+        }).join('')
+      : '<div class="mini-empty">'+esc(t('relNone'))+'<br><span style="font-size:11.5px">'+esc(t('relNoneSub'))+'</span></div>')+
+    '</div>';
+
   /* ---------- 11. Cần xử lý ---------- */
   const att=[];
   open.forEach(o=>{
@@ -2697,7 +2936,8 @@ VIEWS.home = function(){
     approveBar + transferBar() + hero + stats + kpiCard + usageCard +
     '<div class="grid3">'+ wOpen + wLeadsBig + wClosed +'</div>'+
     '<div class="grid3">'+ wByStage + wLeadDonut + wPast +'</div>'+
-    '<div class="grid3">'+ wWait + wAtt + wRecent +'</div>'+
+    '<div class="grid3">'+ coolCard + wAtt + wRecent +'</div>'+
+    '<div class="grid3">'+ wWait +'</div>'+
     bottom;
 };
 function stat(l,v,d){
@@ -3303,6 +3543,7 @@ function setOppV(v){ state.oppView=v; render(); }
 VIEWS.accounts = function(){
   let rows = sAccounts().filter(a=>matches(a.name)||matches(a.owner));
   rows = applySort(rows,{name:r=>r.name,type:r=>t('ty_'+r.type),owner:r=>r.owner,
+    rel:r=>relOf(r.id).score,
     deals:r=>DB.opps.filter(o=>o.accountId===r.id).length});
 
   const accCells = (a)=>{
@@ -3311,7 +3552,7 @@ VIEWS.accounts = function(){
       return [
         {c:'t-name',  h:esc(a.name)},
         {c:'',        h:'<span class="pill">'+esc(t('ty_'+a.type))+'</span>'},
-        {c:'dim',     h:esc(a.phone||'—')},
+        {c:'',        h:relCell(a.id)},
         {c:'num dim', h:String(cs.length)},
         {c:'num dim', h:String(os.length)},
         {c:'num',     h:esc(money(os.reduce((s,o)=>s+o.amount,0)))},
@@ -3319,11 +3560,11 @@ VIEWS.accounts = function(){
       ];
     };
   const body = rows.length ? listTable(
-      [{k:'name',  lab:t('cName'),    w:'minmax(150px,2fr)'},
-       {k:'type',  lab:t('cType'),    w:'minmax(104px,1fr)'},
-       {k:null,    lab:t('cPhone'),   w:'minmax(124px,1.2fr)'},
-       {k:null,    lab:t('cContacts'),w:'minmax(88px,.8fr)',  num:1},
-       {k:'deals', lab:t('cDeals'),   w:'minmax(88px,.8fr)',  num:1},
+      [{k:'name',  lab:t('cName'),    w:'minmax(150px,1.8fr)'},
+       {k:'type',  lab:t('cType'),    w:'minmax(96px,.9fr)'},
+       {k:'rel',   lab:t('cRel'),     w:'minmax(150px,1.5fr)'},
+       {k:null,    lab:t('cContacts'),w:'minmax(80px,.7fr)',  num:1},
+       {k:'deals', lab:t('cDeals'),   w:'minmax(80px,.7fr)',  num:1},
        {k:null,    lab:t('cAmount'),  w:'minmax(112px,1.1fr)',num:1},
        {k:'owner', lab:t('cOwner'),   w:'minmax(112px,1fr)'}],
       rows, accCells, (a)=>openDrawer('account', a.id))
@@ -5594,6 +5835,111 @@ function createNew(kind){
   logAudit({objType:kind, objId:created?created.id:'', objName:name, action:'create'});
   closeDrawer(); toast(t('created',{n:name})); render();
 }
+
+/* ===================== command palette (⌘K) =====================
+   Thứ phân biệt CRM hiện đại (Attio, Linear) với CRM cũ: không phải thêm nút,
+   mà bỏ bớt cú bấm. Người dùng thạo việc không đi tìm menu — họ gõ tên deal
+   rồi Enter. Một ô duy nhất tìm cả bốn loại bản ghi và cả các lệnh điều hướng.
+
+   Tôn trọng phân quyền: chỉ tìm trong phạm vi poolOpps/poolLeads/sAccounts/
+   sContacts, đúng như các bảng. Palette không được là cửa sau để A&R thấy
+   bản ghi của đồng nghiệp. */
+let PAL = {open:false, q:'', sel:0, items:[]};
+const PAL_MAX = 10;
+function palMatch(s, q){ return String(s||'').toLowerCase().indexOf(q) >= 0; }
+function palBuild(q){
+  const out = [];
+  if(!q){
+    NAV.filter(it=>navAllowed(it.id)).forEach(it=>
+      out.push({k:'go', id:it.id, lab:t(it.id), sub:t('palGo'), ico:it.icon}));
+    return out.slice(0, 10);
+  }
+  /* Hạn ngạch theo TỪNG loại, không cắt theo tổng. Nếu cắt theo tổng thì loại
+     nào quét trước sẽ ăn hết chỗ — với vài nghìn cơ hội, người dùng gõ tên một
+     label sẽ chỉ thấy toàn deal và tưởng khách hàng đó không tồn tại. Luôn để
+     dành chỗ cho mỗi loại, rồi mới cắt phần thừa. */
+  const take = (list, n, fn)=>{
+    const r = [];
+    for(let i=0;i<list.length && r.length<n;i++){ const x = fn(list[i]); if(x) r.push(x); }
+    return r;
+  };
+  const Q = 3;
+  out.push(...take(poolOpps(), Q, o=>(palMatch(o.name,q)||palMatch(accName(o.accountId),q))
+    ? {k:'opp', id:o.id, lab:o.name, sub:t('opps')+' · '+accName(o.accountId)+' · '+money(o.amount)} : null));
+  out.push(...take(poolLeads(), Q, l=>(palMatch(l.name,q)||palMatch(l.company,q))
+    ? {k:'lead', id:l.id, lab:l.name, sub:t('leads')+(l.company?' · '+l.company:'')} : null));
+  out.push(...take(sAccounts(), Q, a=>palMatch(a.name,q)
+    ? {k:'account', id:a.id, lab:a.name, sub:t('accounts')+' · '+t('ty_'+a.type)} : null));
+  out.push(...take(sContacts(), Q, c=>(palMatch(c.name,q)||palMatch(c.email,q))
+    ? {k:'contact', id:c.id, lab:c.name, sub:t('contacts')+(c.email?' · '+c.email:'')} : null));
+  out.push(...take(NAV.filter(it=>navAllowed(it.id)), 2, it=>palMatch(t(it.id),q)
+    ? {k:'go', id:it.id, lab:t(it.id), sub:t('palGo'), ico:it.icon} : null));
+  return out.slice(0, PAL_MAX);
+}
+function palRender(){
+  const el = document.getElementById('pal');
+  if(!PAL.open){ el.innerHTML=''; return; }
+  PAL.items = palBuild(PAL.q.trim().toLowerCase());
+  if(PAL.sel >= PAL.items.length) PAL.sel = Math.max(0, PAL.items.length-1);
+  const KIND = {opp:'opps', lead:'leads', account:'accounts', contact:'contacts', go:'palGo'};
+  el.innerHTML =
+    '<div class="pal-scrim" onclick="palClose()"></div>'+
+    '<div class="pal" role="dialog" aria-modal="true" aria-label="'+esc(t('palTitle'))+'">'+
+      '<div class="pal-in">'+
+        '<svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7">'+
+          '<circle cx="7" cy="7" r="4.6"/><path d="M10.5 10.5L14 14"/></svg>'+
+        '<input id="palQ" placeholder="'+esc(t('palPh'))+'" autocomplete="off" value="'+esc(PAL.q)+'">'+
+        '<kbd>esc</kbd>'+
+      '</div>'+
+      (PAL.items.length
+        ? '<div class="pal-list">'+PAL.items.map((it,i)=>
+            '<button class="pal-row'+(i===PAL.sel?' on':'')+'" data-i="'+i+'">'+
+              '<span class="pal-kind">'+esc(t(KIND[it.k]||'palGo'))+'</span>'+
+              '<span class="pal-lab">'+esc(it.lab)+'</span>'+
+              '<span class="pal-sub">'+esc(it.sub)+'</span>'+
+            '</button>').join('')+'</div>'
+        : '<div class="pal-empty">'+esc(t('palNone'))+'</div>')+
+      '<div class="pal-foot"><kbd>↑</kbd><kbd>↓</kbd> '+esc(t('palMove'))+
+        ' <kbd>↵</kbd> '+esc(t('palOpen'))+'</div>'+
+    '</div>';
+  const inp = document.getElementById('palQ');
+  inp.focus(); inp.setSelectionRange(PAL.q.length, PAL.q.length);
+  inp.oninput = ()=>{ PAL.q = inp.value; PAL.sel = 0; palRender(); };
+  el.querySelectorAll('.pal-row').forEach(b=>{
+    b.onmouseenter = ()=>{ PAL.sel = +b.dataset.i; el.querySelectorAll('.pal-row').forEach(x=>
+      x.classList.toggle('on', x===b)); };
+    b.onclick = ()=>palGo(+b.dataset.i);
+  });
+}
+function palOpen(){ PAL.open=true; PAL.q=''; PAL.sel=0; palRender(); }
+function palClose(){ PAL.open=false; palRender(); }
+function palGo(i){
+  const it = PAL.items[i]; if(!it) return;
+  palClose();
+  if(it.k==='go')       go(it.id);
+  else if(it.k==='opp'){ closeDrawer(); openOpp(it.id); }
+  else                   openDrawer(it.k, it.id);
+}
+document.addEventListener('keydown', e=>{
+  const typing = /^(INPUT|TEXTAREA|SELECT)$/.test((e.target.tagName||'')) || e.target.isContentEditable;
+  if((e.metaKey||e.ctrlKey) && e.key.toLowerCase()==='k'){
+    e.preventDefault();
+    if(document.getElementById('app').style.display==='none') return;
+    PAL.open ? palClose() : palOpen();
+    return;
+  }
+  if(!PAL.open){
+    /* "/" mở palette như Linear — nhưng không cướp phím khi đang gõ vào ô nhập */
+    if(e.key==='/' && !typing && document.getElementById('app').style.display!=='none'){
+      e.preventDefault(); palOpen();
+    }
+    return;
+  }
+  if(e.key==='Escape'){ e.preventDefault(); palClose(); }
+  else if(e.key==='ArrowDown'){ e.preventDefault(); PAL.sel=Math.min(PAL.sel+1, PAL.items.length-1); palRender(); }
+  else if(e.key==='ArrowUp'){   e.preventDefault(); PAL.sel=Math.max(PAL.sel-1, 0); palRender(); }
+  else if(e.key==='Enter'){     e.preventDefault(); palGo(PAL.sel); }
+});
 
 /* ---------- đăng nhập ---------- */
 const LOGO_DARK = 'data:image/png;base64,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';
