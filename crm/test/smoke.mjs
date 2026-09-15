@@ -10,7 +10,7 @@
    lưu trạng thái và hồi sinh kiểu Date · cả 12 tab · drawer/chi tiết/import ·
    hiệu năng bảng ảo hoá · không tràn ngang ở khổ điện thoại.
 
-       node portal/test/crm-smoke.mjs
+       node crm/test/smoke.mjs
    ===================================================================== */
 import { pathToFileURL } from 'node:url';
 import path from 'node:path';
@@ -30,8 +30,8 @@ async function loadChromium(){
 }
 const chromium = await loadChromium();
 
-/* chạy từ thư mục gốc repo:  node portal/test/crm-smoke.mjs */
-const FILE = pathToFileURL(path.resolve('portal/crm.html')).href;
+/* chạy từ thư mục gốc repo:  node crm/test/smoke.mjs */
+const FILE = pathToFileURL(path.resolve('crm/index.html')).href;
 let FAILED = 0;
 const b=await chromium.launch(); const p=await b.newPage({viewport:{width:1600,height:1000}});
 const errs=[]; p.on('pageerror',e=>errs.push('PE '+e.message));

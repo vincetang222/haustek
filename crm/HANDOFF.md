@@ -109,9 +109,43 @@ Muốn lên thật thì cả ba khoá `localStorage` phải thành bảng trong 
 `partyKey` phải lấy từ phiên đăng nhập trên máy chủ — đúng cảnh báo mà
 `portal/test/api-guard.js` đã ghi sẵn cho phía portal.
 
-## Bước tiếp theo nếu muốn nối chặt hơn
+## Phía portal: màn hình Bàn giao CRM
 
-Viết `portal/screens/crm-handoff.js` theo `screens/_CONTRACT.md`: đọc
-`haustek.crm.handoff.v1`, liệt kê deal đã gắn mà chưa ghi sổ, cho admin chọn kỳ
-hiệu lực rồi gọi thẳng `A.rates.add()` và `A.advances.set()`. Lúc đó vòng bàn giao
-khép kín trong portal, CRM không phải đổi gì.
+`portal/screens/crm-handoff.js` đọc khoá này và ghi vào sổ. Nó nằm ở nhóm
+**Quản trị** trong intranet, con số đỏ cạnh mục là số deal đang sẵn sàng ghi.
+
+Mỗi dòng rơi vào đúng một trạng thái:
+
+| Trạng thái | Nghĩa | Ghi được? |
+|---|---|---|
+| `chưa gắn` | `portalPartyKey` còn `null` | không — gắn bên CRM trước |
+| `chưa có điều khoản` | deal ký nhưng không chạy máy tính advance | không — chưa có gì để ghi |
+| `party không có thật` | partyKey đúng hình thức nhưng id không có trong danh mục | không |
+| `sẵn sàng` | đã gắn, party có thật, chưa ghi | có |
+| `đã ghi` | đã vào sổ rồi | không mời ghi lại |
+
+**Kỳ hiệu lực do admin chọn, và chỉ chọn được kỳ CÒN MỞ.** Lõi từ chối đặt tỷ lệ
+hiệu lực vào kỳ đã chốt — đúng như vậy, kỳ đã duyệt thì tiền đã chia xong. Ngày
+ký của deal không nói được tiền bắt đầu chia từ kỳ nào; đó là quyết định thương
+mại, không suy ra được từ dữ liệu.
+
+**Biết deal nào đã ghi bằng cách nào.** Ghi chú trong sổ mang dấu
+`CRM <mã deal> — <tên deal>`. Màn hình dò chính dấu đó trong
+`A.rates.scheduleFor()` và `A.advances.list()`, chứ không nuôi thêm một danh sách
+"đã xử lý" ở đâu khác — hai nguồn sự thật thì kiểu gì cũng có ngày lệch nhau.
+Hệ quả: **đừng sửa tay ghi chú đó**, sửa là màn hình quên mất deal đã xử lý.
+Đổi lại, tải lại trang hay xoá cache đều không làm nó ghi trùng.
+
+**Chốt chặn tạm ứng.** `A.advances.set()` THAY THẾ số gốc chứ không cộng dồn.
+Nếu bên nhận đã có một khoản ứng từ nguồn khác, màn hình hỏi trước và nói rõ số
+cũ, số mới, phần đã thu hồi. Im lặng đè lên là xoá mất một khoản nợ có thật.
+Muốn cộng hai khoản thì sửa tay ở màn hình Tạm ứng.
+
+Kiểm thử xuyên hai app: `node crm/test/handoff-e2e.mjs` — 17 phép kiểm.
+
+## Còn thiếu gì để nối chặt hơn nữa
+
+- Portal không biết khi CRM sửa một deal **đã ghi**. Đổi tỷ lệ bên CRM sau khi đã
+  vào sổ thì phải tự xử lý bên màn hình Tỷ lệ chia.
+- Không có chiều ngược: portal thu hồi kỳ hay đổi tỷ lệ thì CRM không hay biết.
+- Một deal ghi cho một party. Deal nhiều bên (đồng sở hữu) phải tách tay.

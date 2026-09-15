@@ -58,27 +58,4 @@ của mảng rỗng, hoặc so với kỳ trước không tồn tại.
 Biến môi trường: `BASE` (mặc định `http://127.0.0.1:8099`), `CHROMIUM` (đường dẫn
 chromium nếu playwright không tự tìm được), `SHOTS` (nơi lưu ảnh chụp).
 
-## 3. CRM — chạy trong trình duyệt thật
-
-```bash
-node portal/test/crm-smoke.mjs
-```
-
-16 phép kiểm trên `portal/crm.html`. Khác với `api-guard.js`, file này phải mở
-trình duyệt: CRM là một file HTML có script nội tuyến, đụng vào `document` ngay
-lúc nạp, không tách ra chạy bằng Node được.
-
-Cần Playwright (`npm i -D playwright`). Test tự tìm cả bản cài global.
-
-Phủ những chỗ dễ vỡ nhất khi sửa file 5000 dòng đó:
-
-- ranh giới quyền — A&R không vào được Nhật ký, Phân quyền, Bàn giao portal;
-  không sửa được bản ghi người khác; chỉ thấy phần của mình
-- mọi chuỗi từ dữ liệu vẫn qua `esc()` — thử nhét `<img onerror>` vào tên deal
-- song ngữ VI/EN và hai tiền tệ USD/VND
-- hai con số "tuần này" trên trang chính phải bằng nhau
-- lưu trạng thái: đổi trạng thái rồi tải lại trang vẫn còn, và **không trường
-  `Date` nào bị JSON biến thành chuỗi** — đây là phép kiểm quan trọng nhất
-- cả 12 tab vẽ được, drawer, trang chi tiết, import wizard
-- bảng ảo hoá: 5.000 cơ hội phải vẽ dưới 200ms
-- khổ 390px: không view nào tràn ngang
+Kiểm thử của CRM nằm ở `crm/test/smoke.mjs` — xem `crm/README.md`.
