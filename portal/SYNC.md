@@ -410,7 +410,7 @@ node crm/test/handoff-e2e.mjs   # 34 phép kiểm xuyên hai app
 node crm/test/smoke.mjs         # 74 phép kiểm trên CRM
 node crm/test/upgrade.mjs       # 19 phép kiểm đường nâng cấp CRM
 node portal/test/api-guard.js   # 21 phép kiểm ranh giới quyền portal
-node portal/test/upgrade.js     # 25 phép kiểm đường nâng cấp portal
+node portal/test/upgrade.mjs     # 25 phép kiểm đường nâng cấp portal
 ```
 
 `handoff-e2e.mjs` tự dựng máy chủ tĩnh rồi mở **cả hai app trên cùng origin**, đi
@@ -518,7 +518,7 @@ Luật bây giờ, giống hệt nhau ở cả hai app:
 Không có bước tự chuyển lược đồ, và đó là cố ý: không ai viết nổi phép chuyển sang
 một lược đồ tương lai chưa tồn tại. Việc của chỗ này là **giữ**, không phải đoán.
 
-`node portal/test/upgrade.js` và `node crm/test/upgrade.mjs` kiểm đúng bốn điều
+`node portal/test/upgrade.mjs` và `node crm/test/upgrade.mjs` kiểm đúng bốn điều
 trên, gồm cả trường hợp hết dung lượng (chặn `setItem` lên khoá sao lưu) và
 trường hợp JSON hỏng giữa chừng.
 
@@ -553,7 +553,7 @@ dẫn cho người dùng.
 
 - [ ] Đã chọn một trong ba đường ở trên cho lớp bảo vệ `/crm`.
 - [ ] Cả hai app cùng origin — kiểm bằng cách mở hai tab và soi `location.origin`.
-- [ ] Chạy `node portal/test/upgrade.js` và `node crm/test/upgrade.mjs` trên đúng
+- [ ] Chạy `node portal/test/upgrade.mjs` và `node crm/test/upgrade.mjs` trên đúng
       bản sắp lên.
 - [ ] Bảo người vận hành bấm **Snapshot → Tải snapshot về máy** trước khi lên bản
       có đổi `CFG.VERSION`. Băng cứu dữ liệu là lưới an toàn, không phải kế hoạch.

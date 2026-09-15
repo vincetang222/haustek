@@ -12,7 +12,7 @@
    Bản trước đây xử lý phiên bản lạ bằng cách trả null — lõi tưởng máy
    trắng, seed lại, rồi lần store.save() đầu tiên ghi đè.
 
-       node portal/test/upgrade.js
+       node portal/test/upgrade.mjs
 
    Cần Playwright. Máy chủ tĩnh nằm sẵn trong file này, phải chạy qua HTTP:
    Chromium coi mỗi file:// là một origin mờ riêng nên localStorage không

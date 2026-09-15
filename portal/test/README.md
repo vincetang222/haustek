@@ -58,7 +58,7 @@ của mảng rỗng, hoặc so với kỳ trước không tồn tại.
 ## 3. Đường nâng cấp — dữ liệu có sống sót khi lên bản mới không
 
 ```bash
-node portal/test/upgrade.js
+node portal/test/upgrade.mjs
 ```
 
 25 phép kiểm. Đây là phép kiểm bảo vệ thứ duy nhất trong portal **không dựng lại
