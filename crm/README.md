@@ -7,8 +7,43 @@ Hệ **song song** với portal, không phải một phần của nó. Một fil
 | `index.html` | Toàn bộ CRM — lead, cơ hội, khách hàng, người liên hệ, việc, nhân sự, duyệt giá, báo cáo, nhật ký, phân quyền, bàn giao portal |
 | `HANDOFF.md` | Giao kèo bàn giao sang portal, và những gì nó chưa làm |
 | `../portal/SYNC.md` | Hướng dẫn đồng bộ hai chiều, viết cho đội làm portal |
-| `test/smoke.mjs` | 55 phép kiểm trên chính CRM |
+| `test/smoke.mjs` | 74 phép kiểm trên chính CRM |
 | `test/handoff-e2e.mjs` | 34 phép kiểm xuyên hai app — cả chuỗi CEO duyệt và chiều ngược |
+| `test/finmodel.mjs` | 38 phép kiểm mô hình tài chính, đối chiếu với số tính tay |
+
+## Mô hình tài chính
+
+Gặp khách, nhập điều khoản, ra ngay bảng lời lỗ từng năm. Không hiện công thức —
+người ngồi đàm phán cần câu trả lời, không cần biết nó ra từ đâu.
+
+Hiện ở hai chỗ: trong form tạo cơ hội (cập nhật ngay lúc gõ) và trên trang chi
+tiết deal.
+
+**Cho ra:** hoà vốn tiền mặt tháng thứ mấy · thu hồi xong advance tháng thứ mấy ·
+lời lỗ từng năm với luỹ kế · lợi nhuận toàn kỳ · bội số vốn · tỷ suất mỗi năm ·
+giá trị quy về hôm nay · ba kịch bản thận trọng/cơ sở/lạc quan · **trần advance**
+theo mức lãi muốn giữ.
+
+**Khác gì bảng ROI cũ.** Bảng cũ trả lời được một câu: toàn kỳ lời mấy lần. Nó bỏ
+qua ba thứ:
+
+1. **Doanh thu phẳng.** Nó nhân doanh thu tháng hiện tại cho đủ 72 tháng.
+   Catalogue nhạc trôi xuống, giả định phẳng 6 năm là tự thổi phồng.
+2. **Không có giá trị thời gian.** Tiền năm thứ 6 cộng ngang tiền năm nay, nên
+   deal 72 tháng luôn trông đẹp hơn deal 24 tháng dù tiền về chậm hơn.
+3. **Mâu thuẫn về khoản thu hồi.** Nó tính ra "bao nhiêu tháng thu hồi advance"
+   — tức thừa nhận advance quay về từ phần chia của nghệ sĩ — nhưng lúc tính ROI
+   lại coi advance như mất hẳn. Cùng một khoản tiền, hai cách đối xử ngược nhau
+   trong cùng một bảng.
+
+Mô hình mới chạy theo **từng tháng** rồi mới gộp theo năm, vì thu hồi advance là
+sự kiện có thời điểm: tháng nào advance còn dư thì Haustek giữ lại phần của nghệ
+sĩ, hết dư thì trả. Chạy thẳng theo năm sẽ làm nhoè đúng cái mốc đó.
+
+Kiểm bằng số tính tay, không kiểm bằng chính nó. Ví dụ trong `test/finmodel.mjs`:
+1.000/tháng, nghệ sĩ 70%, ứng 10.000 → giữ 300/tháng, thu hồi 700/tháng → hoà vốn
+đúng tháng thứ 10, thu hồi xong tháng 15, tổng về 31.600. Bảng cũ cho 21.600 —
+chênh đúng 10.000, đúng bằng advance mà nó quên không tính là đã quay về.
 
 ## Vì sao để riêng, không nhét vào `portal/`
 
@@ -23,6 +58,15 @@ tháng, và sửa liên tục suốt đường đi.
 Trộn hai thứ đó vào một khung thì mỗi lần đổi CRM lại phải lo có làm vỡ sổ tiền
 hay không. Để riêng thì ranh giới rõ: **CRM không giữ đồng nào, portal không giữ
 deal nào.**
+
+## Giá trị deal ≠ doanh thu Haustek
+
+`amount` của một deal là **doanh thu catalogue của nghệ sĩ** nhân 12 tháng. Với
+tỷ lệ chia 70/30 thì deal 18.000 USD mang về cho Haustek 5.400 USD, không phải
+18.000. Đọc con số gộp như doanh thu công ty là sai hơn ba lần.
+
+Báo cáo tách rõ hai thứ này ở thẻ **Doanh thu Haustek so với giá trị deal**, và
+nói thẳng còn bao nhiêu deal chưa nhập điều khoản nên chưa tính được.
 
 Cái đi qua ranh giới chỉ là sáu trường của một deal đã ký — đủ để portal dựng
 điều khoản thương mại, không hơn. Lead, người liên hệ, hoạt động, nhật ký của
@@ -77,7 +121,8 @@ tiết vẫn bị che nếu không có quyền xem tất cả.
 ## Kiểm thử
 
 ```bash
-node crm/test/smoke.mjs         # 55 phép kiểm trên CRM
+node crm/test/smoke.mjs         # 74 phép kiểm trên CRM
+node crm/test/finmodel.mjs      # 38 phép kiểm mô hình tài chính
 node crm/test/handoff-e2e.mjs   # 34 phép kiểm CRM ↔ portal
 ```
 

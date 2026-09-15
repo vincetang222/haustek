@@ -96,7 +96,10 @@ Một phần tử `deals[]`:
   "portalPartyKey": null
 }
 ```
-
+**Mọi trường kết thúc bằng `Pct` là PHẦN TRĂM, không phải phân số.** `artistSharePct: 70`
+nghĩa là 70%, không phải 0,7. Trước bản này `findersFeePct` gửi nguyên trạng nên deal
+tạo từ form ra 0,02 còn deal cũ ra 2 — cùng một trường, hai đơn vị. Đã chuẩn hoá về
+phần trăm ở phía CRM. Nếu portal đã lỡ đọc trường đó, kiểm lại chỗ nhân chia.
 | Trường | Kiểu | Bắt buộc | Ghi chú |
 |---|---|---|---|
 | `dealId` | string | có | khoá chính, ổn định suốt đời deal |
@@ -404,7 +407,7 @@ khi lên Postgres, dịch từng phép kiểm ở đó thành một test SQL.
 
 ```bash
 node crm/test/handoff-e2e.mjs   # 34 phép kiểm xuyên hai app
-node crm/test/smoke.mjs         # 55 phép kiểm trên CRM
+node crm/test/smoke.mjs         # 74 phép kiểm trên CRM
 node portal/test/api-guard.js   # 21 phép kiểm ranh giới quyền portal
 ```
 

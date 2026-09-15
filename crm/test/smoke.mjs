@@ -301,6 +301,113 @@ F('openDrawer kind lạ thì không để overlay rỗng', qc.badKind);
 F('xuất nhật ký có báo khi giao được', qc.audToast);
 F('người xem từ chối thì không báo "đã xuất"', qc.audSilentOnDecline);
 
+// báo cáo doanh thu — mỗi phép kiểm ứng một lỗi đã đo được
+const rep = await p.evaluate(()=>{
+  const out={};
+  const d = new Date(TODAY); d.setDate(d.getDate()-90);
+  const wonAll  = DB.opps.filter(o=>o.stage==='won');
+  const lostAll = DB.opps.filter(o=>o.stage==='lost');
+  const lost90  = lostAll.filter(o=>o.closeDate>=d && o.closeDate<=TODAY);
+
+  // 1. nhãn kỳ phải nói đúng cái đang tính
+  state.period=90; go('reports');
+  out.nhan90 = document.querySelector('#view .pmeta').innerText.indexOf('3 tháng')>=0;
+  const t90 = document.getElementById('view').innerText;
+  state.period=7; render();
+  const t7 = document.getElementById('view').innerText;
+  out.doiKyDoiSo = t7 !== t90;
+
+  // 2. tỷ lệ thắng tính trên deal đóng TRONG KỲ
+  state.period=90; render();
+  const m = document.getElementById('view').innerText.match(/Tỷ lệ thắng (\d+)% \((\d+)\/(\d+)\)/);
+  out.coMauSo = !!m;
+  if(m){
+    const win=+m[1], w=+m[2], tot=+m[3];
+    out.winDung = Math.round(w/tot*100)===win;
+    // deal thua đóng ngoài cửa sổ 90 ngày thì không được kéo tỷ lệ xuống
+    out.khongTinhNgoaiKy = tot === (wonAll.filter(o=>o.closeDate>=d).length + lost90.length);
+  }
+
+  // 3. phễu phải gồm cả region và portal
+  const o1=DB.opps.find(x=>x.stage==='negotiation');
+  const before = funnelSteps(DB.opps)[1].n;
+  o1.stage='region';
+  out.pheuDemRegion = funnelSteps(DB.opps)[1].n === before+1;
+  o1.stage='portal';
+  out.pheuDemPortal = funnelSteps(DB.opps)[1].n === before+1;
+  o1.stage='negotiation';
+
+  // 4. biểu đồ tháng không được bỏ tháng trống
+  const fake=[{closeDate:new Date(2026,0,15),amount:100},
+              {closeDate:new Date(2026,3,15),amount:200}];
+  const ms = monthSeries(fake, x=>x.amount, '#000');
+  out.thangLienTuc = ms.length===4 && ms[1].v===0 && ms[2].v===0;
+
+  // 5. tổng theo giai đoạn không cộng deal thua
+  state.period=0; render();
+  const note = [...document.querySelectorAll('#view .card-note')]
+    .map(x=>x.innerText).find(x=>x.indexOf('Tổng')>=0)||'';
+  const tongHien = parseInt((note.match(/[\d,]+/)||['0'])[0].replace(/,/g,''),10);
+  const tongSong = STAGES.filter(x=>x.id!=='lost')
+    .map(x=>DB.opps.filter(o=>o.stage===x.id).reduce((a,o)=>a+o.amount,0))
+    .reduce((a,v)=>a+v,0);
+  out.tongKhongTinhThua = Math.abs(tongHien - Math.round(tongSong/1000)) <= 1 ||
+                          tongHien === tongSong;
+
+  // 6. hai quy ước phần trăm phải quy về một
+  out.pctPhanSo  = pctOf(0.02)===0.02;
+  out.pctPhanTram= pctOf(2)===0.02;
+  const fake2 = {amount:12000, ext:{advCalcResult:{artistShare:0.7, findersFeePct:2,
+                 initialAdvance:1000, marketingFund:0, termMonths:24, passThrough:0}}};
+  out.feeQuyDoi = finInputOf(fake2).fee === 0.02;
+  out.coLaiSauQuyDoi = finModel(finInputOf(fake2)).years[0].houseGr > 0;
+
+  // 7. doanh thu Haustek phải tách khỏi giá trị deal
+  const txt = document.getElementById('view').innerText;
+  out.coTheDoanhThu = txt.indexOf('Doanh thu Haustek')>=0;
+  const gross = wonAll.reduce((a,o)=>a+o.amount,0);
+  const mh = txt.match(/HAUSTEK THỰC NHẬN[^\d]*([\d,]+)/i) ||
+             txt.match(/Haustek thực nhận[^\d]*([\d,]+)/);
+  out.haustekNhoHonGop = mh ? parseInt(mh[1].replace(/,/g,''),10) < gross : false;
+  return out;
+});
+F('nhãn kỳ khớp với kỳ đang chọn', rep.nhan90);
+F('đổi kỳ thì số liệu đổi theo', rep.doiKyDoiSo);
+F('tỷ lệ thắng ghi kèm mẫu số', rep.coMauSo);
+F('tỷ lệ thắng tính đúng từ mẫu số đó', rep.winDung);
+F('deal đóng ngoài kỳ không kéo tỷ lệ thắng', rep.khongTinhNgoaiKy);
+F('phễu đếm cả deal ở giai đoạn sếp vùng', rep.pheuDemRegion);
+F('phễu đếm cả deal đã trình portal', rep.pheuDemPortal);
+F('biểu đồ tháng giữ nguyên tháng trống', rep.thangLienTuc);
+F('tổng theo giai đoạn không cộng deal thua', rep.tongKhongTinhThua);
+F('tỷ lệ dạng phân số giữ nguyên', rep.pctPhanSo);
+F('tỷ lệ dạng phần trăm được quy đổi', rep.pctPhanTram);
+F('finder fee của deal cũ quy về phân số', rep.feeQuyDoi);
+F('quy đổi xong thì deal còn lợi nhuận', rep.coLaiSauQuyDoi);
+F('báo cáo có tách doanh thu Haustek', rep.coTheDoanhThu);
+F('doanh thu Haustek nhỏ hơn giá trị deal gộp', rep.haustekNhoHonGop);
+
+// trang chi tiết deal phải dùng được ở MỌI giai đoạn
+const stg = await p.evaluate(()=>{
+  const out={};
+  const o=DB.opps.find(x=>x.owner===ME);
+  const old=o.stage;
+  ['region','portal'].forEach(st=>{
+    o.stage=st; go('opps'); openOpp(o.id);
+    const path=[...document.querySelectorAll('#view .path-s')];
+    out[st]={ buoc:path.length,
+              danhDau:path.filter(x=>x.className.indexOf('now')>=0).length,
+              coGiaiThich:!![...document.querySelectorAll('#view .rec-acts .pill,#view .rec-acts button')]
+                            .find(x=>x.innerText.indexOf('Cơ hội')<0) };
+  });
+  o.stage=old; go('opps');
+  return out;
+});
+F('deal ở giai đoạn sếp vùng có đánh dấu trên thanh tiến trình', stg.region.danhDau===1);
+F('deal ở giai đoạn sếp vùng có nút hoặc lời giải thích', stg.region.coGiaiThich);
+F('deal đã trình portal có đánh dấu trên thanh tiến trình', stg.portal.danhDau===1);
+F('deal đã trình portal nói rõ ai đang giữ', stg.portal.coGiaiThich);
+
 // 11 mobile
 const m=await b.newPage({viewport:{width:390,height:844}});
 await m.goto(FILE); await m.click('.login-btn'); await m.waitForTimeout(400);
@@ -311,5 +418,5 @@ if(errs.length) FAILED++;
 console.log('\nLỗi JS: '+errs.length);
 errs.slice(0,5).forEach(e=>console.log('  '+e));
 await b.close();
-console.log(FAILED ? ('\n'+FAILED+' phép kiểm HỎNG') : '\n55 đạt · 0 hỏng');
+console.log(FAILED ? ('\n'+FAILED+' phép kiểm HỎNG') : '\n74 đạt · 0 hỏng');
 process.exit(FAILED?1:0);

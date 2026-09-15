@@ -1085,6 +1085,39 @@ tbody tr:hover .ipen{opacity:1}
   .fgrid{grid-template-columns:1fr}
   .drawer{width:100%;max-width:100%}
 }
+/* mô hình tài chính — bảng lời lỗ theo năm */
+.finverd{padding:9px 12px;border-radius:var(--r-sm);font-weight:650;font-size:12.5px;margin-bottom:12px}
+.finkpi{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:9px;margin-bottom:14px}
+.finkpi-c{background:var(--paper);border:1px solid var(--line-2);border-radius:var(--r-sm);padding:9px 11px}
+.finkpi-l{font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;
+  margin-bottom:3px;line-height:1.55}
+.finkpi-v{font-family:var(--mono);font-size:15px;font-weight:600;color:var(--ink)}
+.finkpi-v.good{color:var(--ok)} .finkpi-v.warn{color:var(--warn)} .finkpi-v.bad{color:var(--danger)}
+.fintbl table{width:100%;border-collapse:collapse;font-size:12px}
+.fintbl th{background:var(--head);text-align:left;padding:8px 9px 7px;font-size:10.5px;
+  text-transform:uppercase;letter-spacing:.05em;color:var(--muted);white-space:nowrap;line-height:1.6}
+.fintbl td{padding:7px 9px;border-top:1px solid var(--line-2);white-space:nowrap}
+.fintbl td.num,.fintbl th.num{text-align:right;font-family:var(--mono)}
+.fintbl tbody tr:nth-child(even){background:var(--zebra)}
+.fintbl .good{color:var(--ok)} .fintbl .bad{color:var(--danger)} .fintbl .dim{color:var(--muted)}
+.finscen{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:9px}
+.finscen-c{background:var(--paper);border:1px solid var(--line-2);border-radius:var(--r-sm);padding:10px}
+.finscen-c.on{border-color:var(--accent);box-shadow:var(--shadow-lift)}
+.finscen-h{font-size:11px;font-weight:650;color:var(--muted);text-transform:uppercase;
+  letter-spacing:.05em;line-height:1.55}
+.finscen-v{font-family:var(--mono);font-size:15px;font-weight:600;margin:4px 0 6px;color:var(--ink)}
+.finmax{margin-top:14px;background:var(--paper);border:1px solid var(--line-2);
+  border-radius:var(--r-sm);padding:10px 12px}
+.finmax-t{font-size:11px;font-weight:650;color:var(--muted);text-transform:uppercase;
+  letter-spacing:.05em;margin-bottom:6px;line-height:1.55}
+.finmax-r{display:flex;align-items:baseline;gap:8px;padding:4px 0;font-size:12.5px}
+.finmax-r>span:first-child{min-width:150px;color:var(--ink-2)}
+.finmax-r b{font-family:var(--mono);margin-left:auto}
+.finmax-r .fingap{margin-left:0;min-width:128px;text-align:right}
+.fingap{font-size:11px;padding:1px 6px;border-radius:99px}
+.fingap.good{background:var(--ok-lo);color:var(--ok)}
+.fingap.bad{background:var(--danger-lo);color:var(--danger)}
+
 </style>
 </head>
 <body>
@@ -1171,6 +1204,24 @@ vi:{
   newLead:'Tạo lead', newOpp:'Tạo cơ hội', newAcc:'Tạo khách hàng', newContact:'Tạo liên hệ',
   newTask:'Tạo việc', all:'Tất cả', items:'bản ghi', table:'Bảng', board:'Theo cột',
   nOpen:'đang chạy', nPlay:'đang theo đuổi',
+  asOfNow:'tại thời điểm này', kpiNoClosed:'chưa deal nào đóng trong kỳ',
+  finLow:'Thận trọng', finBase:'Cơ sở', finHigh:'Lạc quan',
+  finVStrong:'Deal tốt — vốn về nhanh và lãi dày, có thể chốt',
+  finVOk:'Deal ổn — đạt mức lãi Haustek đặt ra',
+  finVThin:'Lãi mỏng — chỉ nên chốt nếu có lý do chiến lược',
+  finVWeak:'Lãi thấp hơn chi phí vốn — nên thương lượng lại advance hoặc tỷ lệ chia',
+  finVLoss:'Không thu hồi đủ vốn trong thời hạn deal',
+  finVnA:'Chưa nhập tiền ứng nên chưa tính được lời lỗ',
+  finNoData:'Deal này chưa có điều khoản tài chính',
+  revTitle:'Doanh thu Haustek so với giá trị deal',
+  revNote:'Giá trị deal là doanh thu catalogue của nghệ sĩ. Haustek chỉ giữ phần chia của mình.',
+  revGross:'Giá trị deal đã ký', revHouse:'Haustek thực nhận, năm đầu',
+  revRecoup:'Advance thu về, năm đầu', revShare:'Phần Haustek giữ',
+  revMissing:'{n} deal ({v}) chưa nhập điều khoản nên chưa tính được — tỷ lệ bên trên chỉ tính trên phần còn lại',
+  revAllMissing:'Chưa deal nào đã ký có điều khoản tài chính, nên chưa tách được doanh thu Haustek',
+  stageWaitOn:'Đang chờ {r}', stageNoAction:'Bạn không có quyền đẩy deal ở bước này',
+  finTitle:'Dự báo lời lỗ', finAssume:'Giả định',
+  totalLive:'Tổng chưa tính deal thua',
   audExported:'Đã xuất nhật ký ra CSV', thrSame:'Ngưỡng giữ nguyên {n}',
   /* columns */
   cName:'Tên', cCompany:'Nghệ danh / Label', cTitle:'Vai trò', cEmail:'Email', cPhone:'Điện thoại',
@@ -1399,7 +1450,7 @@ vi:{
   curNote:'Tỷ giá quy đổi', rpValueStage:'Cơ cấu giá trị theo giai đoạn', rpLeadStatus:'Lead theo trạng thái',
   rpFunnel:'Phễu chuyển đổi', rpSize:'Phân bổ quy mô deal',
   kpiLeads:'Tổng lead', kpiOpps:'Tổng cơ hội', kpiWon:'Deal đã ký', kpiWin:'Tỷ lệ thắng',
-  kpiValue:'Giá trị đã ký', kpiOpen:'Giá trị đang mở',
+  kpiValue:'Giá trị deal đã ký', kpiOpen:'Giá trị deal đang mở',
   fnAll:'Tổng cơ hội', fnAppr:'Vào vòng duyệt giá', fnLegal:'Qua bên pháp chế', fnSign:'Vào vòng ký', fnWon:'Đã ký', totalLbl:'Tổng',
   snapBtn:'Snapshot trạng thái', snapEyebrow:'Dữ liệu', snapTitle:'Snapshot trạng thái',
   snapState:'Lưu tự động', snapOn:'Đang bật — trình duyệt này ghi nhớ mọi thay đổi.',
@@ -1427,6 +1478,24 @@ en:{
   newLead:'New lead', newOpp:'New opportunity', newAcc:'New account', newContact:'New contact',
   newTask:'New task', all:'All', items:'records', table:'Table', board:'Board',
   nOpen:'open', nPlay:'in play',
+  asOfNow:'as of now', kpiNoClosed:'no deals closed in period',
+  finLow:'Cautious', finBase:'Base', finHigh:'Optimistic',
+  finVStrong:'Strong deal — money back fast with a healthy margin',
+  finVOk:'Sound deal — meets the return Haustek asks for',
+  finVThin:'Thin margin — only worth signing for strategic reasons',
+  finVWeak:'Returns below cost of capital — renegotiate the advance or the split',
+  finVLoss:'Does not recover the money within the deal term',
+  finVnA:'No advance entered yet, nothing to project',
+  finNoData:'This deal has no financial terms yet',
+  revTitle:'Haustek revenue versus deal value',
+  revNote:'Deal value is the artist catalogue revenue. Haustek only keeps its own share.',
+  revGross:'Signed deal value', revHouse:'Haustek keeps, first year',
+  revRecoup:'Advance recovered, first year', revShare:'Haustek share',
+  revMissing:'{n} deals ({v}) have no terms entered — the share above covers only the rest',
+  revAllMissing:'No signed deal has financial terms yet, so Haustek revenue cannot be separated',
+  stageWaitOn:'Waiting on {r}', stageNoAction:'You cannot advance this deal at this step',
+  finTitle:'Profit projection', finAssume:'Assumptions',
+  totalLive:'Total excluding lost',
   audExported:'Audit log exported to CSV', thrSame:'Threshold unchanged at {n}',
   cName:'Name', cCompany:'Artist / Label', cTitle:'Role', cEmail:'Email', cPhone:'Phone',
   cStatus:'Status', cSource:'Source', cOwner:'Owner', cStage:'Stage', cAmount:'Amount',
@@ -1650,7 +1719,7 @@ en:{
   curNote:'Exchange rate', rpValueStage:'Value mix by stage', rpLeadStatus:'Leads by status',
   rpFunnel:'Conversion funnel', rpSize:'Deal size distribution',
   kpiLeads:'Total leads', kpiOpps:'Total opportunities', kpiWon:'Deals signed', kpiWin:'Win rate',
-  kpiValue:'Signed value', kpiOpen:'Open value',
+  kpiValue:'Signed deal value', kpiOpen:'Open deal value',
   fnAll:'All opportunities', fnAppr:'Reached approval', fnLegal:'Reached legal', fnSign:'Reached signature', fnWon:'Signed', totalLbl:'Total',
   snapBtn:'State snapshot', snapEyebrow:'Data', snapTitle:'State snapshot',
   snapState:'Autosave', snapOn:'On — this browser is remembering every change.',
@@ -1691,8 +1760,20 @@ const STAGES = [
   {id:'lost',        color:'var(--red)',    raw:'#8e1d2c'},
 ];
 const OPEN_STAGES = ['negotiation','waiting','region','portal','legal','signature'];
+/* Thứ tự deal đi qua. Mọi nơi cần "chuỗi giai đoạn" phải đọc từ đây — trước đây
+   ba chỗ tự liệt kê tay (thanh tiến trình, phễu báo cáo, báo cáo cá nhân) và cả
+   ba đều quên cập nhật khi chuỗi duyệt dài thêm 'region' với 'portal'. Hậu quả
+   đo được: deal ở hai giai đoạn đó mở trang chi tiết ra thì thanh tiến trình
+   không đánh dấu bước nào và không có nút hành động nào — sếp vùng không duyệt
+   được từ trang deal. */
+const STAGE_ORDER = ['negotiation','waiting','region','portal','legal','signature','won'];
 /* Giai đoạn do portal điều khiển — CRM chỉ phản ánh, không tự đặt được */
 const PORTAL_STAGES = ['legal','signature','won'];
+/* 'portal' (đã trình, đang chờ CEO) cũng do portal cầm lái, nhưng nó không nằm
+   trong PORTAL_STAGES vì khoá đó dùng cho "deal đã qua cửa CEO". Hệ quả là khắp
+   file phải viết `o.stage==='portal' || PORTAL_STAGES.includes(...)` — và chỗ
+   nào quên vế đầu thì im lặng sai. Đặt tên cho tập đầy đủ để hết phải nhớ. */
+const PORTAL_OWNED = ['portal'].concat(PORTAL_STAGES);
 /* Chuỗi duyệt trong CRM: mỗi bước biết bước kế tiếp và ai có quyền đẩy */
 const APPROVAL = {
   negotiation:{ next:'waiting', perm:null,             act:'submitCountry' },
@@ -2622,7 +2703,7 @@ function relCooling(){
 /* ============================ state ============================ */
 const RECENT_SEED = ['Flyaway Records — Distribution 2026','Northern Reverie — Catalogue','Sofia — Single deal']
   .map(n=>{ const o=DB.opps.find(x=>x.name===n); return o?o.id:null; }).filter(Boolean);
-const state = { view:'home', q:'', leadFilter:'all', oppFilter:'all', oppView:'table', inline:null, period:30,
+const state = { view:'home', q:'', leadFilter:'all', oppFilter:'all', oppView:'table', inline:null, period:90,
   oppId:null, oppTab:'details', actTab:'call', detEdit:null,
   audUser:'all', audObj:'all', audAct:'all', audFrom:'', audTo:'',
   recentOpps:RECENT_SEED.slice(), recentLeads:[],
@@ -2793,7 +2874,11 @@ function handoffOf(o){
       totalAdvanceUSD:    Math.round((adv.initialAdvance||0)+(adv.marketingFund||0)),
       termMonths:         adv.termMonths||0,
       exclusivityMonths:  adv.exclusivityMonths||0,
-      findersFeePct:      adv.findersFeePct||0
+      /* Tên trường kết thúc bằng Pct nên giá trị phải là PHẦN TRĂM, y như
+         artistSharePct ngay trên. Trước đây gửi nguyên trạng: deal tạo từ form
+         gửi 0,02 còn deal cũ gửi 2 — cùng một trường, hai đơn vị, và portal
+         không có cách nào phân biệt. */
+      findersFeePct:      Math.round(pctOf(adv.findersFeePct)*1000)/10
     } : null,
     portalPartyKey: HANDOFF_BIND[o.id] || null
   };
@@ -2802,7 +2887,7 @@ function handoffRows(){
   /* Trình lên portal ở giai đoạn 'portal' — tức NGAY SAU khi chuỗi duyệt trong
      CRM xong, chứ không đợi tới lúc đã ký. Đợi tới 'won' thì CEO chẳng còn gì
      để duyệt: hợp đồng ký rồi mới đưa lên là trình cho có. */
-  return DB.opps.filter(o=>o.stage==='portal' || PORTAL_STAGES.includes(o.stage)).map(handoffOf)
+  return DB.opps.filter(o=>PORTAL_OWNED.includes(o.stage)).map(handoffOf)
     .sort((x,y)=>String(y.closeDate||'').localeCompare(String(x.closeDate||'')));
 }
 function handoffPayload(){
@@ -2912,7 +2997,7 @@ function inboxApply(){
   let n = 0;
   j.deals.forEach(d=>{
     const o = DB.opps.find(x=>x.id===d.dealId); if(!o) return;
-    if(o.stage !== 'portal' && !PORTAL_STAGES.includes(o.stage)) return;
+    if(!PORTAL_OWNED.includes(o.stage)) return;
     if(INBOX_SEEN[d.dealId] === d.updatedAt) return;
     const to = INBOX_STAGE[d.status];
     o.contract = {status:d.status, at:d.updatedAt, note:d.note||'', by:d.by||'',
@@ -3073,6 +3158,17 @@ function phead(title, meta, actions){
 }
 function emptyBox(title, sub){
   return '<div class="tw"><div class="empty"><div class="empty-t">'+esc(title)+'</div><div class="empty-s">'+esc(sub)+'</div></div></div>';
+}
+/* Vì sao trang này không cho tôi bấm gì — câu người dùng luôn hỏi khi mở một
+   deal đang nằm ở giai đoạn của người khác. Trả lời ngay trên trang. */
+function stageWaitLabel(o){
+  if(PORTAL_OWNED.includes(o.stage)) return t('stagePortalOwned');
+  const step = APPROVAL[o.stage];
+  /* gọi tên NGƯỜI đang giữ deal, không gọi tên quyền — "đang chờ sếp vùng" là
+     câu người dùng hiểu ngay, "đang chờ quyền duyệt cấp vùng" thì không */
+  const WHO = {approveCountry:'role_country', approveRegion:'role_region'};
+  if(step && WHO[step.perm]) return t('stageWaitOn',{r:t(WHO[step.perm])});
+  return t('stageNoAction');
 }
 function stageBadge(id){
   const m=stageMeta(id);
@@ -3702,7 +3798,7 @@ VIEWS.oppDetail = function(){
   const o = DB.opps.find(x=>x.id===state.oppId);
   if(!o) { state.view='opps'; return VIEWS.opps(); }
   const rw = canEdit(o.owner);
-  const order = ['negotiation','waiting','legal','signature','won'];
+  const order = STAGE_ORDER;
   const idx = order.indexOf(o.stage);
 
   const path = '<div class="path">'+order.map((sg,i)=>{
@@ -3724,8 +3820,7 @@ VIEWS.oppDetail = function(){
           ? (stageBtnLabel(o) && canAdvance(o)
               ? '<button class="btn btn-primary" onclick="markStageDone(\''+o.id+'\')">'+
                 esc(stageBtnLabel(o))+'</button>'
-              : (PORTAL_STAGES.includes(o.stage)
-                  ? '<span class="pill" style="padding:7px 12px">'+esc(t('stagePortalOwned'))+'</span>' : ''))
+              : '<span class="pill" style="padding:7px 12px">'+esc(stageWaitLabel(o))+'</span>')
           : '')+
       '</div></div>'+
     '<div class="rec-meta">'+
@@ -3749,8 +3844,14 @@ VIEWS.oppDetail = function(){
         '<li>Chốt tỷ lệ chia và thời hạn</li><li>Xác minh thu nhập hàng tháng</li><li>Tính advance và ROI</li>',
         '<li>Agree splits and term</li><li>Verify monthly income</li><li>Run the advance and ROI</li>'])
      : o.stage==='waiting' ? L([
-        '<li>Gửi hồ sơ cho Manager duyệt giá</li><li>Chuẩn bị giải trình ROI</li>',
-        '<li>Submit for pricing approval</li><li>Prepare the ROI rationale</li>'])
+        '<li>Gửi hồ sơ cho sếp country duyệt giá</li><li>Chuẩn bị giải trình lời lỗ</li>',
+        '<li>Submit to the country head for pricing approval</li><li>Prepare the profit rationale</li>'])
+     : o.stage==='region' ? L([
+        '<li>Sếp vùng soát lại advance và tỷ lệ chia</li><li>Đối chiếu với dự báo lời lỗ</li>',
+        '<li>Regional head reviews the advance and the split</li><li>Check against the profit projection</li>'])
+     : o.stage==='portal' ? L([
+        '<li>Đang chờ CEO duyệt trên portal</li><li>Không sửa điều khoản trong lúc chờ</li>',
+        '<li>Waiting for CEO approval on the portal</li><li>Do not change terms while waiting</li>'])
      : o.stage==='legal' ? L([
         '<li>Gửi bản thảo cho pháp chế</li><li>Thu thập thông tin bên cấp quyền</li>',
         '<li>Send the draft to legal</li><li>Collect licensor details</li>'])
@@ -3886,7 +3987,7 @@ VIEWS.oppDetail = function(){
       '<div class="bval">'+esc(money(x.amount))+'</div></div>').join('')+
     '</div></div></div>';
 
-  return head + path + guide +
+  return head + path + guide + finCard(o) +
     '<div class="rec-wrap"><div>'+
       '<div class="tw" style="overflow:visible">'+tabBar+tabBody+'</div>'+
     '</div><div>'+ activity + chat + report +'</div></div>';
@@ -4052,7 +4153,7 @@ VIEWS.opps = function(){
       return [
         {c:'t-name trunc', h:esc(o.name)},
         {c:'trunc',        h:esc(accName(o.accountId))},
-        {c:'',             h:v ? (PORTAL_STAGES.includes(o.stage) || o.stage==='portal'
+        {c:'',             h:v ? (PORTAL_OWNED.includes(o.stage)
                                   /* giai đoạn do portal cầm — không cho sửa tại chỗ */
                                   ? stageBadge(o.stage)
                                   : cellEdit(o,'stage',stageBadge(o.stage))) : lock},
@@ -4301,7 +4402,9 @@ function canAdvance(o){
 function advance(id, ok){
   const o = DB.opps.find(x=>x.id===id);
   if(!o) return;
-  if(PORTAL_STAGES.includes(o.stage)){ toast(t('stagePortalOwned')); return; }
+  /* deal ở 'portal' trước đây rơi xuống nhánh dưới và báo "không có quyền" —
+     đúng là chặn được, nhưng nói sai lý do: đây là deal portal đang giữ */
+  if(PORTAL_OWNED.includes(o.stage)){ toast(t('stagePortalOwned')); return; }
   if(!canAdvance(o)){ toast(t('noRight')); return; }
   const from = o.stage;
   if(!ok){
@@ -4368,25 +4471,10 @@ function myReports(){
   })).filter(x=>x.v>0);
 
   /* 3 — phễu chuyển đổi */
-  const nWait  = myO.filter(o=>o.stage==='waiting').length;
-  const nLegal = myO.filter(o=>o.stage==='legal').length;
-  const nSign  = myO.filter(o=>o.stage==='signature').length;
-  const nWon   = myO.filter(o=>o.stage==='won').length;
-  const funnel = [
-    {label:t('fnAll'),   n:myO.length,                       color:'#062b35'},
-    {label:t('fnAppr'),  n:nWait+nLegal+nSign+nWon,          color:'#0b6b80'},
-    {label:t('fnLegal'), n:nLegal+nSign+nWon,                color:'#16899f'},
-    {label:t('fnSign'),  n:nSign+nWon,                       color:'#2aa0b6'},
-    {label:t('fnWon'),   n:nWon,                             color:'#3aa3b8'}
-  ];
+  const funnel = funnelSteps(myO);
 
   /* 4 — doanh số đã ký theo tháng */
-  const months={};
-  myW.forEach(o=>{
-    const k=o.closeDate.getFullYear()+'-'+String(o.closeDate.getMonth()+1).padStart(2,'0');
-    months[k]=(months[k]||0)+o.amount;
-  });
-  const byMonth = Object.keys(months).sort().map(k=>({label:k, v:months[k], color:'#0b6b80'}));
+  const byMonth = monthSeries(myW, o=>o.amount, '#0b6b80');
 
   /* 5 — phân bổ quy mô deal */
   const buckets = [
@@ -4449,27 +4537,46 @@ function myReports(){
     '<div class="grid2">'+ goalCard + usageCard +'</div>';
 }
 function managerReports(){
-  const won  = DB.opps.filter(o=>o.stage==='won');
-  const lost = DB.opps.filter(o=>o.stage==='lost');
+  /* Trước đây màn này ghi "90 ngày qua" nhưng KHÔNG lọc gì theo ngày — mọi con
+     số đều là toàn thời gian. Hậu quả đo được: tỷ lệ thắng hiện 89% (8 thắng /
+     1 thua toàn thời gian) trong khi trong đúng 90 ngày là 100%, vì deal thua
+     duy nhất đóng ngoài cửa sổ.
+     Chia rõ hai loại số, vì trộn chúng là gốc của mọi hiểu nhầm:
+       — số theo KỲ: việc đã xảy ra trong cửa sổ (ký, thua, lead mới)
+       — số HIỆN TẠI: ảnh chụp lúc này (pipeline đang mở, phân bổ giai đoạn)
+     Nhãn của từng thẻ nói rõ nó thuộc loại nào. */
+  const p0 = periodStart();
+  const inWin = d => d && d>=p0 && d<=TODAY;
+  const won  = DB.opps.filter(o=>o.stage==='won'  && inWin(o.closeDate));
+  const lost = DB.opps.filter(o=>o.stage==='lost' && inWin(o.closeDate));
   const open = DB.opps.filter(o=>OPEN_STAGES.includes(o.stage));
+  const newL = DB.leads.filter(l=>inWin(l.created));
+  const newO = DB.opps.filter(o=>inWin(o.created));
   const wonVal  = won.reduce((a,b)=>a+b.amount,0);
   const openVal = open.reduce((a,b)=>a+b.amount,0);
-  const winRate = Math.round(won.length/((won.length+lost.length)||1)*100);
+  const closed  = won.length+lost.length;
+  const winRate = Math.round(won.length/(closed||1)*100);
+  const perLbl  = t(PERIODS.find(x=>x[0]===state.period)[1]);
 
   const kpi = '<div class="stats">'+
-    stat(t('kpiLeads'), DB.leads.length, DB.leads.filter(l=>l.status==='converted').length+' '+t('ls_converted').toLowerCase())+
-    stat(t('kpiOpps'), DB.opps.length, open.length+' '+t('ofDeals'))+
-    stat(t('kpiWon'), won.length, t('kpiWin')+' '+winRate+'%')+
-    stat(t('kpiValue'), moneyShort(wonVal), won.length+' '+t('deals'))+
-    stat(t('kpiOpen'), moneyShort(openVal), open.length+' '+t('deals'))+
+    stat(t('kpiLeads'), newL.length, perLbl)+
+    stat(t('kpiOpps'), newO.length, perLbl)+
+    /* "tỷ lệ thắng" tính trên deal ĐÃ ĐÓNG trong kỳ, không phải trên toàn bộ cơ
+       hội — ghi kèm mẫu số để không ai đọc nhầm thành "89% deal đều thắng" */
+    stat(t('kpiWon'), won.length, closed ? t('kpiWin')+' '+winRate+'% ('+won.length+'/'+closed+')' : t('kpiNoClosed'))+
+    stat(t('kpiValue'), moneyShort(wonVal), perLbl)+
+    stat(t('kpiOpen'), moneyShort(openVal), t('asOfNow')+' · '+open.length+' '+t('deals'))+
   '</div>';
 
   /* ----- donut 1: giá trị theo giai đoạn ----- */
   const dStage = STAGES.map(x=>({
-    label:t('st_'+x.id), color:x.raw,
+    id:x.id, label:t('st_'+x.id), color:x.raw,
     v:DB.opps.filter(o=>o.stage===x.id).reduce((a,b)=>a+b.amount,0)
   })).filter(x=>x.v>0);
-  const totStage = dStage.reduce((a,b)=>a+b.v,0);
+  /* Tổng KHÔNG cộng deal thất bại. Số tiền đó không tồn tại — cộng vào rồi gọi
+     là "Tổng" thì người đọc tưởng đó là giá trị danh mục đang có. */
+  const totStage = dStage.filter(x=>x.id!=='lost').reduce((a,b)=>a+b.v,0);
+  const nLive = DB.opps.filter(o=>o.stage!=='lost').length;
 
   /* ----- donut 2: lead theo trạng thái ----- */
   const dLead = LEAD_STATUS.map(x=>({
@@ -4478,16 +4585,7 @@ function managerReports(){
   })).filter(x=>x.v>0);
 
   /* ----- phễu ----- */
-  const nWait  = DB.opps.filter(o=>o.stage==='waiting').length;
-  const nLegal = DB.opps.filter(o=>o.stage==='legal').length;
-  const nSign  = DB.opps.filter(o=>o.stage==='signature').length;
-  const funnel = [
-    {label:t('fnAll'),   n:DB.opps.length,                       color:'#062b35'},
-    {label:t('fnAppr'),  n:nWait+nLegal+nSign+won.length,        color:'#0b6b80'},
-    {label:t('fnLegal'), n:nLegal+nSign+won.length,              color:'#16899f'},
-    {label:t('fnSign'),  n:nSign+won.length,                     color:'#2aa0b6'},
-    {label:t('fnWon'),   n:won.length,                           color:'#3aa3b8'},
-  ];
+  const funnel = funnelSteps(DB.opps);
 
   /* ----- phân bổ quy mô deal ----- */
   const buckets = [
@@ -4509,12 +4607,43 @@ function managerReports(){
   const bySource = Object.keys(SOURCES).map(k=>({
     label:SOURCES[k][lang], v:DB.leads.filter(l=>l.source===k).length, color:'#3a6fb0', unit:'n'
   })).filter(x=>x.v>0).sort((a,b)=>b.v-a.v);
-  const months={};
+  const byMonth = monthSeries(won, o=>o.amount, '#3aa3b8');
+
+  /* ---------- a0) doanh thu Haustek, tách khỏi giá trị deal ----------
+     "Giá trị deal" là doanh thu catalogue của nghệ sĩ nhân 12 tháng. Haustek
+     chỉ giữ phần chia của mình — với tỷ lệ 70/30 thì deal 18.000 mang về 5.400,
+     không phải 18.000. Đọc con số gộp như doanh thu công ty là sai gấp ba lần.
+     Chỉ tính được cho deal đã nhập điều khoản; số còn lại nói thẳng ra. */
+  let hGross=0, hCalc=0, hHouse=0, hTake=0, hMiss=0;
   won.forEach(o=>{
-    const k=o.closeDate.getFullYear()+'-'+String(o.closeDate.getMonth()+1).padStart(2,'0');
-    months[k]=(months[k]||0)+o.amount;
+    hGross += o.amount||0;
+    const inp = finInputOf(o);
+    if(!inp || !inp.term){ hMiss++; return; }
+    const y1 = finModel(inp).years[0];
+    /* hCalc là mẫu số ĐÚNG cho tỷ lệ: chỉ những deal tính được. Lấy hGross làm
+       mẫu số thì deal chưa nhập điều khoản kéo tỷ lệ xuống, và con số đó sai
+       theo chiều ngược lại với chính cái sai đang đi sửa. */
+    hCalc += o.amount||0; hHouse += y1.houseGr - y1.finder; hTake += y1.take;
   });
-  const byMonth = Object.keys(months).sort().map(k=>({label:k, v:months[k], color:'#3aa3b8'}));
+  const revCard = '<div class="tw"><div class="card-h">'+
+    '<span class="card-t">'+esc(t('revTitle'))+'</span>'+
+    '<span class="card-note">'+esc(t('revNote'))+'</span></div>'+
+    '<div class="card-b">'+
+      (hMiss===won.length
+        ? '<div class="unote" style="margin:0">'+esc(t('revAllMissing'))+'</div>'
+        : '<div class="finkpi">'+
+            '<div class="finkpi-c"><div class="finkpi-l">'+esc(t('revGross'))+'</div>'+
+              '<div class="finkpi-v">'+esc(money(hGross))+'</div></div>'+
+            '<div class="finkpi-c"><div class="finkpi-l">'+esc(t('revHouse'))+'</div>'+
+              '<div class="finkpi-v good">'+esc(money(Math.round(hHouse)))+'</div></div>'+
+            '<div class="finkpi-c"><div class="finkpi-l">'+esc(t('revRecoup'))+'</div>'+
+              '<div class="finkpi-v">'+esc(money(Math.round(hTake)))+'</div></div>'+
+            '<div class="finkpi-c"><div class="finkpi-l">'+esc(t('revShare'))+'</div>'+
+              '<div class="finkpi-v">'+(hCalc>0?Math.round(hHouse/hCalc*100):0)+'%</div></div>'+
+          '</div>'+
+          (hMiss ? '<div class="unote" style="margin:10px 0 0">'+
+                     esc(t('revMissing',{n:hMiss, v:money(hGross-hCalc)}))+'</div>' : ''))+
+    '</div></div>';
 
   /* ---------- a) thời gian dùng CRM theo người ---------- */
   const uMaxW = Math.max.apply(null, USERS.map(u=>usageWeek(u.name)).concat([1]));
@@ -4573,11 +4702,11 @@ function managerReports(){
     '<div class="tnote" style="color:var(--muted);background:#fafbfc">'+
       esc(t('goalYearNote'))+' · '+esc(t('kpiNote'))+'</div></div>';
 
-  return phead(t('reports'), cur==='VND' ? fxNote() : t('last90'))+
-    kpi+
+  return phead(t('reports'), cur==='VND' ? fxNote()+' · '+perLbl : perLbl)+
+    periodChips()+ kpi+
     '<div class="grid2" style="margin-bottom:16px">'+
-      donutCard(t('rpValueStage'), dStage, String(DB.opps.length), t('deals'), true,
-        t('totalLbl')+': '+moneyShort(totStage))+
+      donutCard(t('rpValueStage'), dStage, String(nLive), t('deals'), true,
+        t('totalLive')+': '+moneyShort(totStage))+
       donutCard(t('rpLeadStatus'), dLead, String(DB.leads.length), t('leadsN'), false, '')+
     '</div>'+
     '<div class="grid2" style="margin-bottom:16px">'+
@@ -4590,9 +4719,50 @@ function managerReports(){
         barCard(t('rpOwner'), byOwner)+barCard(t('rpSource'), bySource)+
       '</div>'+
     '</div>'+
+    revCard + '<div style="height:16px"></div>' +
     usageReport + '<div style="height:16px"></div>' + goalReport;
 };
 
+/* Phễu suy thẳng từ STAGE_ORDER thay vì liệt kê tay. Bản cũ liệt kê tay và
+   quên mất 'region' với 'portal' lúc chuỗi duyệt dài ra — hôm nay chưa lộ vì
+   hai giai đoạn đó đang rỗng, nhưng deal đầu tiên rơi vào đó là phễu hụt số.
+   Đếm luỹ kế: mỗi bước gồm deal đang ở đó VÀ mọi deal đã đi qua nó. */
+const FUNNEL_STEPS = [
+  {from:'negotiation', lbl:'fnAll',   color:'#062b35'},
+  {from:'waiting',     lbl:'fnAppr',  color:'#0b6b80'},
+  {from:'legal',       lbl:'fnLegal', color:'#16899f'},
+  {from:'signature',   lbl:'fnSign',  color:'#2aa0b6'},
+  {from:'won',         lbl:'fnWon',   color:'#3aa3b8'}
+];
+function funnelSteps(list){
+  return FUNNEL_STEPS.map(st=>{
+    const i = STAGE_ORDER.indexOf(st.from);
+    const reach = STAGE_ORDER.slice(i);
+    return {label:t(st.lbl), color:st.color,
+            n:list.filter(o=>reach.indexOf(o.stage)>=0).length};
+  });
+}
+/* Biểu đồ theo tháng phải có cả tháng bằng 0. Bản cũ chỉ dựng tháng nào CÓ deal,
+   nên tháng 7 không deal thì biến mất khỏi trục, và ba cột còn lại đọc thành
+   một đà tăng liên tục — trong khi thật ra ở giữa là một tháng trắng. */
+function monthSeries(list, valOf, color){
+  const m = {};
+  list.forEach(o=>{
+    const k = o.closeDate.getFullYear()+'-'+String(o.closeDate.getMonth()+1).padStart(2,'0');
+    m[k] = (m[k]||0) + valOf(o);
+  });
+  const keys = Object.keys(m).sort();
+  if(!keys.length) return [];
+  const [y0,m0] = keys[0].split('-').map(Number);
+  const [y1,m1] = keys[keys.length-1].split('-').map(Number);
+  const out = [];
+  for(let y=y0, mo=m0; y<y1 || (y===y1 && mo<=m1); mo++){
+    if(mo>12){ mo=1; y++; }
+    const k = y+'-'+String(mo).padStart(2,'0');
+    out.push({label:k, v:m[k]||0, color:color});
+  }
+  return out;
+}
 function barCard(title, rows, note){
   const max = Math.max.apply(null, rows.map(r=>r.v).concat([1]));
   return '<div class="card"><div class="card-h"><span class="card-t">'+esc(title)+'</span>'+
@@ -5642,7 +5812,16 @@ const ADV_F = [
   {id:'ac_excl', l:['Thời hạn độc quyền (tháng)','Exclusivity (months)'], k:'num', d:'36'},
   {id:'ac_fee',  l:['Finders fee','Finders fee'], k:'pct', d:'0'},
   {id:'ac_rate', l:['Ngưỡng kích hoạt trigger (% advance đã thu hồi)','Trigger threshold (% of advance recouped)'], k:'pct', d:'100'},
-  {id:'ac_cap',  l:['Cap trigger (doanh thu 12 tháng cộng thêm %)','Trigger cap (12-month revenue plus %)'], k:'pct', d:'30'}
+  {id:'ac_cap',  l:['Cap trigger (doanh thu 12 tháng cộng thêm %)','Trigger cap (12-month revenue plus %)'], k:'pct', d:'30'},
+  {id:'ac_growth', l:['Doanh thu thay đổi mỗi năm','Yearly revenue change'], k:'pct', d:'-12',
+   tip:['Catalogue không đứng yên. Số âm là trôi xuống, số dương là còn đà tăng. Mặc định −12%/năm cho catalogue không có phát hành mới.',
+        'Catalogues do not stay flat. Negative means decline, positive means still growing. Default −12%/yr for a catalogue with no new releases.']},
+  {id:'ac_dist', l:['Phí phát hành Haustek chịu','Distribution fee borne by Haustek'], k:'pct', d:'0',
+   tip:['Phần nền tảng hoặc đối tác phát hành giữ lại trước khi chia. Để 0 nếu deal đã tính trên doanh thu ròng.',
+        'What the platform or distributor keeps before the split. Leave 0 if the deal is already on net revenue.']},
+  {id:'ac_disc', l:['Chi phí vốn mỗi năm','Cost of capital per year'], k:'pct', d:'12',
+   tip:['Dùng để quy tiền các năm sau về giá trị hôm nay. Tiền năm thứ 6 không đáng bằng tiền năm nay.',
+        'Used to bring future money back to today. Money in year 6 is not worth money today.']}
 ];
 function advInput(f){
   const on = ' oninput="advCalc()" onchange="advCalc()"';
@@ -5669,6 +5848,7 @@ function advanceHTML(){
     '</div>'+
     '<div class="acbox"><div class="acbox-t">'+esc(L(['Kết quả tính','Calculated results']))+'</div>'+
       '<div class="acres" id="acRes"></div></div>'+
+    finBoxHTML()+
     '<div class="acbox">'+
       '<div class="acbox-t">'+esc(L(['Điều kiện trigger','Trigger terms']))+'</div>'+
       '<div class="actrigs" id="acTrig"></div>'+
@@ -5679,6 +5859,148 @@ function advanceHTML(){
     '</div>';
 }
 function advNum(id){ const e=document.getElementById(id); const v=parseFloat(e?e.value:0); return isNaN(v)?0:v; }
+
+/* ---- bảng lời lỗ theo năm, dựng ngay trong form ---- */
+function finBoxHTML(){
+  return '<div class="acbox" id="finBox">'+
+    '<div class="acbox-t">'+esc(L(['Dự báo lời lỗ các năm tới','Profit and loss, year by year']))+
+      '<span class="info" style="margin-left:6px" data-tip="'+esc(L([
+        'Tính theo từng tháng rồi gộp lại, vì thu hồi advance là sự kiện có thời điểm. Doanh thu được cho trôi theo mức đặt ở phần giả định, và tiền các năm sau được quy về giá trị hôm nay.',
+        'Computed month by month then grouped, because recoupment happens at a point in time. Revenue drifts by the rate set in the assumptions, and later money is brought back to today value.']))+'">?</span>'+
+    '</div>'+
+    '<div id="finVerdict"></div>'+
+    '<div class="finkpi" id="finKpi"></div>'+
+    '<div class="fintbl" id="finYears"></div>'+
+    '<div class="acbox-t" style="margin-top:14px">'+esc(L(['Khoảng dao động','Range of outcomes']))+'</div>'+
+    '<div class="finscen" id="finScen"></div>'+
+    '<div class="finmax" id="finMax"></div>'+
+  '</div>';
+}
+function finFromForm(){
+  return {
+    gross: advNum('ac_avg'), share: advNum('ac_share')/100, pass: advNum('ac_pass')/100,
+    adv: advNum('ac_adv'), mkt: advNum('ac_mkt'), prod: advNum('ac_prod'),
+    term: advNum('ac_term'), fee: advNum('ac_fee')/100,
+    growth: advNum('ac_growth'), dist: advNum('ac_dist')/100, disc: advNum('ac_disc'),
+    recoupMkt: 1
+  };
+}
+function finMonths(n){ return n ? (n+' '+L(['tháng','mo'])) : '—'; }
+function finPct(x){ return x===null ? '—' : (x*100).toFixed(0)+'%'; }
+const FIN_VC = {good:['var(--ok-lo)','var(--ok)'], warn:['var(--warn-lo)','var(--warn)'],
+                bad:['var(--danger-lo)','var(--danger)'], na:['var(--fill)','var(--muted)']};
+function finVerdictHTML(r){
+  const v = finVerdict(r);
+  return '<div class="finverd" style="background:'+FIN_VC[v.k][0]+';color:'+FIN_VC[v.k][1]+'">'+
+    esc(t(v.key))+'</div>';
+}
+function finKpiHTML(r){
+  const kpi = [
+    [['Hoà vốn tiền mặt','Cash break-even'], finMonths(r.payback), r.payback && r.payback<=24?'good':(r.payback?'warn':'bad')],
+    [['Thu hồi xong advance','Advance fully recouped'], finMonths(r.recoupMonth), r.recoupMonth?'':'bad'],
+    [['Lợi nhuận toàn kỳ','Profit over term'], acFmt(r.profit), r.profit>0?'good':'bad'],
+    [['Bội số vốn bỏ ra','Return on money in'], r.outlay>0?r.multiple.toFixed(2)+'×':'—', r.multiple>=2?'good':(r.multiple>=1?'warn':'bad')],
+    [['Tỷ suất mỗi năm','Yearly rate of return'], finPct(r.irr), r.irr>=0.25?'good':(r.irr>=0.15?'warn':'bad')],
+    [['Giá trị hôm nay','Value in today money'], acFmt(r.npv), r.npv>0?'good':'bad']
+  ];
+  return kpi.map(k=>'<div class="finkpi-c"><div class="finkpi-l">'+esc(L(k[0]))+'</div>'+
+    '<div class="finkpi-v '+k[2]+'">'+esc(k[1])+'</div></div>').join('');
+}
+function finYearsHTML(r){
+  const H = [['Năm','Year'],['Doanh thu gộp','Gross revenue'],['Nghệ sĩ nhận','To artist'],
+             ['Haustek giữ','Haustek keeps'],['Thu hồi advance','Advance recovered'],
+             ['Tiền bỏ ra','Money out'],['Lời/lỗ trong năm','Profit this year'],['Luỹ kế','Running total']];
+  return '<div class="tscroll"><table><thead><tr>'+H.map((h,i)=>
+      '<th'+(i?' class="num"':'')+'>'+esc(L(h))+'</th>').join('')+'</tr></thead><tbody>'+
+    r.years.map(y=>'<tr>'+
+      '<td><b>'+L(['Năm ','Year '])+y.y+'</b></td>'+
+      '<td class="num">'+esc(acFmt(y.gross))+'</td>'+
+      '<td class="num dim">'+esc(acFmt(y.artist))+'</td>'+
+      '<td class="num">'+esc(acFmt(y.houseGr-y.finder))+'</td>'+
+      '<td class="num">'+esc(y.take>0.5?acFmt(y.take):'—')+'</td>'+
+      '<td class="num dim">'+esc(y.cost>0.5?('−'+acFmt(y.cost)):'—')+'</td>'+
+      '<td class="num"><b class="'+(y.profit>=0?'good':'bad')+'">'+esc(acFmt(y.profit))+'</b></td>'+
+      '<td class="num '+(y.cum>=0?'good':'bad')+'">'+esc(acFmt(y.cum))+'</td>'+
+    '</tr>').join('')+'</tbody></table></div>';
+}
+function finScenHTML(inp){
+  return finScenarios(inp).map(sc=>{
+    const b2 = sc.k==='base';
+    return '<div class="finscen-c'+(b2?' on':'')+'">'+
+      '<div class="finscen-h">'+esc(t(sc.lbl))+'</div>'+
+      '<div class="finscen-v">'+esc(acFmt(sc.r.profit))+'</div>'+
+      '<div class="actrig-row"><span>'+esc(L(['Hoà vốn','Break-even']))+'</span><b>'+esc(finMonths(sc.r.payback))+'</b></div>'+
+      '<div class="actrig-row"><span>'+esc(L(['Mỗi năm','Per year']))+'</span><b>'+esc(finPct(sc.r.irr))+'</b></div>'+
+    '</div>';
+  }).join('');
+}
+/* Câu hỏi đắt nhất bàn đàm phán: ứng tới đâu thì vẫn còn lãi. */
+function finMaxHTML(inp){
+  const base = Object.assign({}, inp, {adv:0});
+  const m25 = finMaxAdvance(base, 0.25), m35 = finMaxAdvance(base, 0.35);
+  const now = inp.adv;
+  return '<div class="finmax-t">'+esc(L(['Trần advance theo mức lãi mong muốn','Advance ceiling by target return']))+'</div>'+
+    '<div class="finmax-r"><span>'+esc(L(['Giữ lãi 25%/năm','Keep 25%/yr']))+'</span>'+
+      '<b>'+esc(acFmt(m25))+'</b>'+finGap(now,m25)+'</div>'+
+    '<div class="finmax-r"><span>'+esc(L(['Giữ lãi 35%/năm','Keep 35%/yr']))+'</span>'+
+      '<b>'+esc(acFmt(m35))+'</b>'+finGap(now,m35)+'</div>';
+}
+function finRender(){
+  const host = document.getElementById('finKpi'); if(!host) return;
+  const inp = finFromForm();
+  const r = finModel(inp);
+  document.getElementById('finVerdict').innerHTML = finVerdictHTML(r);
+  host.innerHTML = finKpiHTML(r);
+  document.getElementById('finYears').innerHTML = finYearsHTML(r);
+  document.getElementById('finScen').innerHTML = finScenHTML(inp);
+  document.getElementById('finMax').innerHTML  = finMaxHTML(inp);
+}
+/* Dựng lại bộ tham số của một deal ĐÃ LƯU. Deal cũ chỉ có điều khoản chứ chưa
+   có phần giả định (trôi doanh thu, chi phí vốn) — lấy mặc định, và suy doanh
+   thu tháng từ giá trị deal, vì giá trị deal vốn là doanh thu 12 tháng. */
+/* Cùng một trường tỷ lệ đang tồn tại ở HAI quy ước: form lưu phân số (0,02) còn
+   dữ liệu có sẵn lưu phần trăm (2). Không chuẩn hoá thì mô hình nhận 2, kẹp
+   thành 100%, và finder's fee ăn sạch phần của Haustek — ba deal đã ký báo lợi
+   nhuận năm đầu bằng 0 đúng vì lý do đó. Trên 1 thì chắc chắn là phần trăm:
+   không có deal nào chia cho môi giới quá 100%. */
+function pctOf(x){ x = x||0; return x>1 ? x/100 : x; }
+function finInputOf(o){
+  const e = o.ext || {};
+  if(e.finInput) return e.finInput;
+  const a = e.advCalcResult;
+  if(!a) return null;
+  return {
+    gross: a.avg || (o.amount||0)/12,
+    share: pctOf(a.artistShare), pass: pctOf(a.passThrough),
+    adv: a.initialAdvance||0, mkt: a.marketingFund||0, prod: a.prodFund||0,
+    term: a.termMonths||0, fee: pctOf(a.findersFeePct),
+    growth: FIN_D.growth, dist: FIN_D.dist, disc: FIN_D.disc, recoupMkt: FIN_D.recoupMkt
+  };
+}
+function finCard(o){
+  const inp = finInputOf(o);
+  if(!inp || !inp.term) return '';
+  const r = finModel(inp);
+  return '<div class="tw" style="margin-top:16px"><div class="card-h">'+
+      '<span class="card-t">'+esc(t('finTitle'))+'</span>'+
+      '<span class="card-note">'+esc(
+        L(['Giả định: doanh thu ','Assumes revenue ']) +
+        (inp.growth>0?'+':'') + inp.growth + '%/' + L(['năm','yr']) + ' · ' +
+        L(['chi phí vốn ','cost of capital ']) + inp.disc + '%'
+      )+'</span></div>'+
+    '<div class="card-b">'+finVerdictHTML(r)+
+      '<div class="finkpi">'+finKpiHTML(r)+'</div>'+
+      '<div class="fintbl">'+finYearsHTML(r)+'</div>'+
+      '<div class="acbox-t" style="margin-top:14px">'+esc(L(['Khoảng dao động','Range of outcomes']))+'</div>'+
+      '<div class="finscen">'+finScenHTML(inp)+'</div>'+
+      '<div class="finmax">'+finMaxHTML(inp)+'</div>'+
+    '</div></div>';
+}
+function finGap(now, ceil){
+  if(now<=0) return '';
+  if(now<=ceil) return '<span class="fingap good">'+esc(L(['còn dư ','headroom '])+acFmt(ceil-now))+'</span>';
+  return '<span class="fingap bad">'+esc(L(['vượt ','over by '])+acFmt(now-ceil))+'</span>';
+}
 function acFmt(n){
   return new Intl.NumberFormat(cur==='VND'?'vi-VN':'en-US',
     cur==='VND'?{minimumFractionDigits:2,maximumFractionDigits:2}:{maximumFractionDigits:0})
@@ -5707,7 +6029,146 @@ function advModel(advOverride){
   const roiNet = totalAdv>0 ? (total-finder)/totalAdv : 0;
   return {avg,share,pass,adv,mkt,prod,totalAdv,term,excl,fee,net,pt,recoup,bal1,months,total,roi,roiY,finder,roiNet};
 }
+/* ===================== MÔ HÌNH TÀI CHÍNH ĐA NĂM =====================
+   Bảng ROI cũ ("Catalog ROI.") trả lời được một câu: toàn kỳ lời bao nhiêu lần.
+   Nó không trả lời được câu A&R thật sự cần khi ngồi trước mặt khách: NĂM SAU
+   lời hay lỗ, và bao giờ hoà vốn. Ba chỗ nó bỏ qua:
+
+   1. Doanh thu phẳng. Nó nhân doanh thu tháng hiện tại cho đủ 72 tháng. Catalogue
+      nhạc không đứng yên — nó trôi xuống. Giả định phẳng 6 năm là tự thổi phồng.
+   2. Không có giá trị thời gian. Tiền năm thứ 6 được cộng ngang tiền năm nay,
+      nên deal 72 tháng luôn trông đẹp hơn deal 24 tháng dù tiền về chậm hơn.
+   3. Mâu thuẫn nội tại về khoản thu hồi. Nó tính ra "bao nhiêu tháng thu hồi
+      advance" — tức là thừa nhận advance quay về từ phần chia của nghệ sĩ —
+      nhưng lúc tính ROI lại coi advance như mất hẳn. Cùng một khoản tiền, hai
+      cách đối xử ngược nhau trong cùng một bảng.
+
+   Mô hình này chạy theo TỪNG THÁNG rồi mới gộp lại theo năm, vì thu hồi advance
+   là sự kiện có thời điểm: tháng nào advance còn dư thì Haustek giữ lại phần
+   của nghệ sĩ, hết dư thì trả. Chạy theo năm sẽ làm nhoè đúng cái mốc đó. */
+
+const FIN_D = {
+  growth:-12,   /* catalogue trôi xuống ~12%/năm nếu không có phát hành mới */
+  dist:0,       /* phí nền tảng/phát hành Haustek chịu, % doanh thu gộp */
+  disc:12,      /* lãi suất chiết khấu — chi phí vốn của Haustek */
+  recoupMkt:1   /* marketing + production có được thu hồi cùng advance không */
+};
+
+function finModel(i){
+  const term   = Math.max(1, Math.round(i.term||0));
+  const share  = clamp01(i.share), pass = clamp01(i.pass);
+  const dist   = clamp01(i.dist), fee = clamp01(i.fee);
+  const gRate  = Math.pow(1 + (i.growth||0)/100, 1/12);
+  const outlay = (i.adv||0) + (i.mkt||0) + (i.prod||0);
+  const recoupable = (i.adv||0) + (i.recoupMkt ? (i.mkt||0)+(i.prod||0) : 0);
+  const rM     = Math.pow(1 + (i.disc||0)/100, 1/12);
+
+  let rec = 0, cum = -outlay, npv = -outlay, payback = 0;
+  const cf = [-outlay], months = [];
+  for(let m=1; m<=term; m++){
+    const gross   = (i.gross||0) * Math.pow(gRate, m-1);
+    const receipt = gross * (1-dist);
+    const artist  = receipt * share;
+    const houseGr = receipt - artist;
+    /* Trong lúc chưa thu hồi xong, phần của nghệ sĩ được giữ lại — trừ phần
+       pass-through đã cam kết vẫn trả. Đây chính là đường advance quay về. */
+    const take    = Math.min(Math.max(0, recoupable - rec), artist * (1-pass));
+    rec += take;
+    const finder  = houseGr * fee;
+    const net     = houseGr - finder + take;
+    cum += net; npv += net / Math.pow(rM, m);
+    cf.push(net);
+    if(!payback && cum >= 0) payback = m;
+    months.push({m, gross, artist: artist-take, houseGr, finder, take, net, cum,
+                 recouped: rec, recoupPct: recoupable>0 ? Math.min(1, rec/recoupable) : 1});
+  }
+
+  const years = [];
+  for(let y=0; y*12 < term; y++){
+    const seg = months.slice(y*12, (y+1)*12);
+    const add = (k)=>seg.reduce((a,x)=>a+x[k],0);
+    years.push({
+      y: y+1, gross: add('gross'), artist: add('artist'), houseGr: add('houseGr'),
+      finder: add('finder'), take: add('take'), net: add('net'),
+      cost: y===0 ? outlay : 0,
+      profit: add('net') - (y===0 ? outlay : 0),
+      cum: seg[seg.length-1].cum
+    });
+  }
+
+  const inflow = cf.slice(1).reduce((a,b)=>a+b, 0);
+  return {
+    months, years, outlay, recoupable,
+    inflow, profit: inflow - outlay,
+    multiple: outlay>0 ? inflow/outlay : 0,
+    margin: years.reduce((a,y)=>a+y.gross,0)>0
+            ? (inflow-outlay)/years.reduce((a,y)=>a+y.gross,0) : 0,
+    payback,                       /* tháng hoà vốn, 0 = không hoà trong kỳ */
+    recoupMonth: monthWhenRecouped(months),
+    npv, irr: irrAnnual(cf),
+    perYear: years.length
+  };
+}
+function clamp01(x){ x = (x||0); return x<0 ? 0 : (x>1 ? 1 : x); }
+function monthWhenRecouped(ms){
+  for(let k=0;k<ms.length;k++) if(ms[k].recoupPct >= 0.9999) return ms[k].m;
+  return 0;
+}
+/* IRR bằng chia đôi. Newton hay trượt khi dòng tiền đổi dấu nhiều lần; chia đôi
+   chậm hơn nhưng không bao giờ bay mất, và ở đây 80 vòng là thừa sức chính xác. */
+function irrAnnual(cf){
+  const npvAt = r => cf.reduce((a,c,k)=>a + c/Math.pow(1+r, k/12), 0);
+  if(npvAt(0) <= 0) return null;            /* tổng tiền về không bù nổi vốn */
+  let lo = 0, hi = 1;
+  while(npvAt(hi) > 0 && hi < 1000) hi *= 2;
+  if(hi >= 1000) return null;
+  for(let k=0;k<80;k++){ const mid=(lo+hi)/2; if(npvAt(mid) > 0) lo = mid; else hi = mid; }
+  return (lo+hi)/2;
+}
+
+/* Ba kịch bản. Một con số duy nhất trông chính xác hơn thực tế rất nhiều — A&R
+   ngồi đàm phán cần biết KHOẢNG, để biết mình còn co giãn được tới đâu. */
+const FIN_SCEN = [
+  {k:'low',  rev:0.75, growthAdd:-8, lbl:'finLow'},
+  {k:'base', rev:1.00, growthAdd: 0, lbl:'finBase'},
+  {k:'high', rev:1.25, growthAdd:+8, lbl:'finHigh'}
+];
+function finScenarios(inp){
+  return FIN_SCEN.map(sc=>({
+    k:sc.k, lbl:sc.lbl,
+    r:finModel(Object.assign({}, inp, {
+      gross:(inp.gross||0)*sc.rev, growth:(inp.growth||0)+sc.growthAdd }))
+  }));
+}
+/* Câu hỏi đắt nhất bàn đàm phán: ứng tối đa bao nhiêu mà vẫn đạt ngưỡng lợi
+   nhuận. Trả lời được câu này thì A&R không phải gọi về xin ý kiến. */
+function finMaxAdvance(inp, targetIrr){
+  const ok = a => {
+    /* Ứng 0 đồng thì IRR không tồn tại (không bỏ vốn thì không có tỷ suất trên
+       vốn). Đó không phải "trượt ngưỡng" mà là "chưa có gì để đo" — coi là đạt,
+       nếu không phép chia đôi sẽ dừng ngay ở 0 và luôn trả về 0. */
+    if(a <= 0) return true;
+    const r = finModel(Object.assign({}, inp, {adv:a}));
+    return r.irr !== null && r.irr >= targetIrr;
+  };
+  let lo = 0, hi = Math.max(1000, (inp.gross||0)*Math.max(12, inp.term||12));
+  while(ok(hi) && hi < 1e9) hi *= 2;
+  for(let k=0;k<60;k++){ const mid=(lo+hi)/2; if(ok(mid)) lo = mid; else hi = mid; }
+  return Math.floor(lo);
+}
+/* Kết luận một dòng. Không hiện công thức — người dùng cần câu trả lời, không
+   cần biết nó ra từ đâu. */
+function finVerdict(r){
+  if(r.outlay <= 0)              return {k:'na',   key:'finVnA'};
+  if(r.irr === null)             return {k:'bad',  key:'finVLoss'};
+  if(r.irr >= 0.35 && r.payback && r.payback <= 24) return {k:'good', key:'finVStrong'};
+  if(r.irr >= 0.25)              return {k:'good', key:'finVOk'};
+  if(r.irr >= 0.15)              return {k:'warn', key:'finVThin'};
+  return {k:'bad', key:'finVWeak'};
+}
+
 function advCalc(){
+  try { finRender(); } catch(e){ if(window.console) console.warn('finRender', e); }
   const box = document.getElementById('acRes'); if(!box) return;
   const m = advModel();
   const bandY = roiBand(m.roiY*100);
@@ -5888,8 +6349,11 @@ function saveOppForm(again){
       trigger1:{mult:15, addMonths:24, amount:am.avg*15},
       trigger2:{mult:12, addMonths:18, amount:am.avg*12}
     };
-  } catch(e){ ext.advCalcResult = null; }
-  if(!bk('advanceDeal')) ext.advCalcResult = null;
+    /* giữ nguyên bộ tham số để trang chi tiết dựng lại đúng dự báo đã cho khách
+       xem lúc gặp — không phải đoán lại từ các trường rời rạc */
+    ext.finInput = finFromForm();
+  } catch(e){ ext.advCalcResult = null; ext.finInput = null; }
+  if(!bk('advanceDeal')){ ext.advCalcResult = null; ext.finInput = null; }
 
   let acct = DB.accounts.find(a=>a.name === v('account'));
   if(!acct){
