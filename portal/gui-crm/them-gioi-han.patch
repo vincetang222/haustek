@@ -1,0 +1,90 @@
+diff --git a/portal/haustek-core.js b/portal/haustek-core.js
+index a465cf0..4e488fe 100644
+--- a/portal/haustek-core.js
++++ b/portal/haustek-core.js
+@@ -3992,10 +3992,19 @@ function advanceOfferOf(partyKey) {
+     note: "Số tối đa = " + c.capThang + " tháng thu nhập ròng dự kiến của bạn. Phí ứng " + Math.round(ADVANCE_FEE * 100) + "% cộng vào khoản phải thu hồi; thu hồi từ phần bạn được hưởng mỗi kỳ cho đến khi đủ.",
+     noteEn: "Maximum = " + c.capThang + " months of your projected net. A " + Math.round(ADVANCE_FEE * 100) + "% advance charge is added to the amount to recoup; recouped from your share each period until met." };
+ }
++/* Khoảng một hợp đồng được phép nằm trong. Khai MỘT chỗ, dùng ở
++   contractCalc, và công bố ra ngoài để hệ khác đọc thay vì chép lại con số
++   vào mã của họ. Đổi trần ở đây thì cả ba chỗ đi theo.
++
++   Vì sao phải công bố: CRM chốt deal 72 tháng với khách, gửi sang, rồi mới
++   biết Portal chỉ nhận tới 60. Lúc ấy đã hứa rồi. Người bán cần biết trần
++   LÚC DỰNG DEAL, không phải lúc trình. */
++const HD_KHOANG = { thang: { min: 6, max: 60 }, phi: { min: 0.03, max: 0.5 } };
++
+ function contractCalc(partyKey, terms) {
+   terms = terms || {};
+-  const months = Math.max(6, Math.min(60, Math.round(+terms.months || 24)));
+-  const feePct = Math.max(0.03, Math.min(0.5, +terms.feePct || CFG.HAUSTEK_FEE));
++  const months = Math.max(HD_KHOANG.thang.min, Math.min(HD_KHOANG.thang.max, Math.round(+terms.months || 24)));
++  const feePct = Math.max(HD_KHOANG.phi.min, Math.min(HD_KHOANG.phi.max, +terms.feePct || CFG.HAUSTEK_FEE));
+   const ser = partySeries(partyKey, 12), coSo = ser.filter(x => x.gross > 0);
+   const monthlyGross = cents(thongKe(coSo.map(x => x.gross)).mean), monthlyNet = cents(thongKe(coSo.map(x => x.net)).mean), monthlyKeep = cents(thongKe(coSo.map(x => x.keep)).mean);
+   const l3 = coSo.slice(-3), p3 = coSo.slice(-6, -3);
+@@ -4408,6 +4417,22 @@ function tvKiemGoi(goi) {
+    thương vụ mới, lúc làm mới một thương vụ chưa trình, và lúc so xem gói
+    tới có khác gói cũ không. Một chỗ duy nhất, để ba đường ấy không bao giờ
+    lệch nhau: thêm một trường ở đây là cả ba đường đều biết. */
++/* Điều Portal nhận, ở ĐƠN VỊ CRM DÙNG — để CRM chặn ngay trên form dựng
++   deal, trước khi người bán hứa với khách. Đọc từ HD_KHOANG, không chép
++   lại con số. artistSharePct là phần BÊN CẤP QUYỀN nhận, nên min/max lật
++   ngược so với phí Haustek. */
++function tvGioiHan() {
++  return {
++    v: TV_GOI_VER,
++    termMonths: { min: HD_KHOANG.thang.min, max: HD_KHOANG.thang.max },
++    artistSharePct: { min: Math.round((1 - HD_KHOANG.phi.max) * 1000) / 10,
++                      max: Math.round((1 - HD_KHOANG.phi.min) * 1000) / 10 },
++    /* Bước 1 chưa nối chân tạm ứng: deal có tạm ứng từ ngưỡng này trở lên
++       thì Portal từ chối, chưa phải là chặn vĩnh viễn. */
++    totalAdvanceUSD: { max: 0, nguong: 100, ghiChu: "chưa nối chân tạm ứng ở bước 1" }
++  };
++}
++
+ function tvNoiDung(d) {
+   return {
+     ten: chuoi(d.dealName || d.dealId),
+@@ -8204,7 +8229,7 @@ const admin = {
+   /* Thương vụ từ CRM. Không có hàm nào ở đây ghi vào sổ tiền: trinh() chỉ
+      dựng một đề xuất, và tiền chạm sổ ở applyApproved khi giám đốc duyệt. */
+   thuongVu: { list: tvList, dem: tvDem, kiemGoi: tvKiemGoi, nhanGoi: tvNhanGoi,
+-    ganBen: tvGanBen, trinh: tvTrinh, bo: tvBo, goiVer: TV_GOI_VER },
++    ganBen: tvGanBen, trinh: tvTrinh, bo: tvBo, goiVer: TV_GOI_VER, gioiHan: tvGioiHan },
+   tickets: {
+     types: TICKET_TYPES, statuses: TICKET_STATUS, depts: TEN_BO_PHAN, deptOf: type => boPhanCua(type),
+     gioiHan: { soBinhLuan: COMMENT_MAX, doDaiBinhLuan: COMMENT_LEN, doDaiMoTa: BODY_LEN },
+diff --git a/portal/test/thuong-vu.js b/portal/test/thuong-vu.js
+index e145ce5..1e029cb 100644
+--- a/portal/test/thuong-vu.js
++++ b/portal/test/thuong-vu.js
+@@ -350,6 +350,27 @@ check("Gửi lại gói Y NGUYÊN vẫn là bỏ qua, không đánh thức gì",
+     "gửi lại y nguyên phải chỉ là bỏ qua, nhận được " + JSON.stringify(r));
+ });
+ 
++/* ---------- 9. giới hạn công bố ---------- */
++/* Con số công bố cho CRM phải KHỚP điều Portal thật sự nhận. Nếu nó chỉ là
++   một bảng gõ tay cạnh contractCalc thì sớm muộn hai bên lệch nhau, và
++   người bán lại hứa với khách một con số Portal không nhận. */
++check("Giới hạn công bố khớp đúng điều Portal thật sự nhận", () => {
++  const gh = A.thuongVu.gioiHan();
++  const thu = (t) => trinhThu(benTrong(), Object.assign({ artistSharePct: 70, termMonths: 24, totalAdvanceUSD: 0 }, t));
++
++  must(thu({ termMonths: gh.termMonths.max }).ok, "trần " + gh.termMonths.max + " tháng phải nhận được");
++  must(!thu({ termMonths: gh.termMonths.max + 1 }).ok, "trên trần một tháng phải bị chặn");
++  must(thu({ termMonths: gh.termMonths.min }).ok, "sàn " + gh.termMonths.min + " tháng phải nhận được");
++  must(!thu({ termMonths: gh.termMonths.min - 1 }).ok, "dưới sàn một tháng phải bị chặn");
++
++  must(thu({ artistSharePct: gh.artistSharePct.min }).ok, "sàn " + gh.artistSharePct.min + "% phải nhận được");
++  must(!thu({ artistSharePct: gh.artistSharePct.min - 1 }).ok, "dưới sàn một điểm phải bị chặn");
++  must(thu({ artistSharePct: gh.artistSharePct.max }).ok, "trần " + gh.artistSharePct.max + "% phải nhận được");
++  must(!thu({ artistSharePct: gh.artistSharePct.max + 1 }).ok, "trên trần một điểm phải bị chặn");
++
++  return gh.termMonths.min + "–" + gh.termMonths.max + " tháng · "
++       + gh.artistSharePct.min + "–" + gh.artistSharePct.max + "% cho bên";
++});
+ /* ---------- kết ---------- */
+ ra.forEach(r => console.log("  " + (r[0] === "ok" ? "ok  " : "LỖI") + "  " + r[1] + (r[2] ? "  → " + r[2] : "")));
+ console.log("\n" + pass + " đạt · " + fail + " hỏng");

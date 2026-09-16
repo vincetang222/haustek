@@ -340,6 +340,31 @@ check("Đề xuất hợp đồng tự khai đúng ký mới / gia hạn", () =>
   return chua + " → ký mới · " + da + " → gia hạn";
 });
 
+/* Duyệt thẳng từ "submitted" là bỏ qua bước kế toán kiểm. Luồng cho phép —
+   giám đốc có thẩm quyền ấy — nhưng nếu không ghi lại thì lịch sử chỉ có
+   ["submitted","approved"], và người soát về sau không phân biệt được "kế
+   toán đã kiểm, thấy ổn" với "không ai kiểm". Ghim cả hai chiều. */
+check("Duyệt thẳng không qua kế toán để lại dấu vết", () => {
+  const L = A.parties.list().rows.filter(p => p.partyKey[0] === "L").map(p => p.partyKey);
+  const ben = L[L.length - 1], ben2 = L[L.length - 2];
+
+  const a = A.proposals.proposeContract(ben, { months: 36, feePct: 0.3 }, "KD", "sales");
+  const r1 = A.proposals.review(a.id, "approve", "Đồng ý", "GĐ", "mgmt");
+  must(r1.boQuaKiem === true, "duyệt thẳng phải đánh dấu boQuaKiem");
+  must(r1.history[r1.history.length - 1].boQuaKiem === true, "dòng lịch sử phải mang dấu");
+
+  const b = A.proposals.proposeContract(ben2, { months: 36, feePct: 0.3 }, "KD", "sales");
+  A.proposals.review(b.id, "check", "", "Kế toán", "accounting");
+  const r2 = A.proposals.review(b.id, "approve", "Đồng ý", "GĐ", "mgmt");
+  must(!r2.boQuaKiem, "đề xuất đã qua kiểm KHÔNG được mang dấu");
+  must(r2.history.map(h => h.status).join(">") === "submitted>checked>approved", "chuỗi trạng thái sai");
+
+  const nk = JSON.parse(H.storage.exportJSON()).audit
+    .filter(x => x.action === "proposal.approve" && /không qua/.test(x.detail || ""));
+  must(nk.length >= 1, "nhật ký phải nói rõ đã duyệt thẳng");
+  return "có dấu · không dấu · nhật ký nói rõ";
+});
+
 /* ===================== KẾT QUẢ ===================== */
 console.log(ra.map(([k, n, m]) => (k === "ok" ? "  ok   " : "  LỖI  ") + n + (m ? "\n         " + m : "")).join("\n"));
 console.log("\n" + pass + " đạt · " + fail + " hỏng");
