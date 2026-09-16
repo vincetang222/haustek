@@ -1,9 +1,27 @@
 /* Kiểm mô hình tài chính bằng số TÍNH TAY, không phải bằng chính nó.
    Mỗi phép kiểm dưới đây có một con số mà người đọc tự nhân chia lại được. */
-import { chromium } from '/opt/node22/lib/node_modules/playwright/index.mjs';
+/* Nạp Playwright theo cách DI ĐỘNG, giống bốn bộ kiểm còn lại.
+   Trước đây file này nhúng cứng /opt/node22/lib/node_modules/playwright/index.mjs
+   — đường dẫn của đúng một máy. Nó xanh ở máy đó và ERR_MODULE_NOT_FOUND ở mọi
+   nơi khác; CI bắt được ngay lần chạy thật đầu tiên trên main. */
+import { pathToFileURL } from 'node:url';
+import { execSync } from 'node:child_process';
 import http from 'node:http';
 import fs from 'node:fs';
 import path from 'node:path';
+
+async function loadChromium() {
+  for (const m of ['playwright', 'playwright-core', '@playwright/test']) {
+    try { return (await import(m)).chromium; } catch (e) {}
+  }
+  try {
+    const root = execSync('npm root -g', { stdio: ['ignore', 'pipe', 'ignore'] }).toString().trim();
+    return (await import(pathToFileURL(path.join(root, 'playwright', 'index.mjs')).href)).chromium;
+  } catch (e) {}
+  console.error('Cần Playwright:  npm i -D playwright   (hoặc npm i -g playwright)');
+  process.exit(2);
+}
+const chromium = await loadChromium();
 
 const ROOT = path.resolve(new URL('../..', import.meta.url).pathname);
 const PORT = 8273;
