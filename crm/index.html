@@ -40,7 +40,7 @@
   --app-bg:#DCDCE2;    /* CHỈ dùng ở body. Nền trang vs thẻ: 1,16 → 1,37:1.
                           Đây là lớp trung gian mà trước đây không có, giữa cột
                           nav gần đen và biển thẻ trắng. */
-  --paper:#FFFFFF;     /* mặt thẻ giữ trắng: số tiền đọc sạch nhất trên nền
+  --card:#FFFFFF;     /* mặt thẻ giữ trắng: số tiền đọc sạch nhất trên nền
                           không sắc, và bậc nền mới đã gánh việc tách thẻ rồi */
   --raised:#FFFFFF;
   --surface:#E9E9EF;   /* tint TRONG thẻ: .pill, .fsec, .dgrp, mọi :hover.
@@ -85,7 +85,7 @@
   --brand-hi:#FF5266;   /* hover nút đỏ: làm SÁNG lên nên chữ mực càng rõ —
                            ngược chiều với filter:brightness cũ, vốn làm chữ
                            trắng trượt AA đúng lúc người ta rê vào */
-  --brand-dark:#C7102E; /* VAI: "sắc đỏ mang chữ màu --paper". Ở theme tối nó
+  --brand-dark:#C7102E; /* VAI: "sắc đỏ mang chữ màu --card". Ở theme tối nó
                            lật sáng, nên cùng một rule chạy đúng ở cả hai. */
   --brand-tint:#FFE9ED;
 
@@ -146,7 +146,7 @@
     /* Chrome KHÔNG đảo vai: ở theme tối nó vẫn là mỏ neo tối nhất. Đảo nó thành
        tấm nổi đo ra là xoá mất một lớp — cột nav tụt còn 1,04:1 so với thẻ và
        biến mất khỏi màn hình. */
-    --app-bg:#15151A;  --paper:#1F1F27;   --raised:#2A2A34;
+    --app-bg:#15151A;  --card:#1F1F27;   --raised:#2A2A34;
     --surface:#2C2C37; --zebra:#242430;   --row-hover:#33333F; --fill:#3B3B48;
     --head:#34343F;    /* ĐẢO CHIỀU, GIỮ VAI: ở nền sáng dải head tối hơn thẻ, ở
                           nền tối nó sáng hơn thẻ. Cùng một nghĩa "đây là nắp,
@@ -156,7 +156,7 @@
     --line:#40404D;    --line-2:#2E2E39;  --card-line:#393946;
     --line-strong:#87879C;  /* bản tối cũ --line #2C3E4E chỉ ~1,7:1, cũng trượt */
     --brand-hi:#FF5266;
-    --brand-dark:#FF7A8D;  /* lật SÁNG để vẫn đỡ được chữ màu --paper, nay là
+    --brand-dark:#FF7A8D;  /* lật SÁNG để vẫn đỡ được chữ màu --card, nay là
                               #1F1F27. Nhờ vậy cùng một rule .login-btn ra AA ở
                               cả hai theme — đây là lý do không bao giờ được
                               hardcode #FFFFFF lên một token biết lật. */
@@ -185,7 +185,7 @@
   /* Chrome KHÔNG đảo vai: ở theme tối nó vẫn là mỏ neo tối nhất. Đảo nó thành
      tấm nổi đo ra là xoá mất một lớp — cột nav tụt còn 1,04:1 so với thẻ và
      biến mất khỏi màn hình. */
-  --app-bg:#15151A;  --paper:#1F1F27;   --raised:#2A2A34;
+  --app-bg:#15151A;  --card:#1F1F27;   --raised:#2A2A34;
   --surface:#2C2C37; --zebra:#242430;   --row-hover:#33333F; --fill:#3B3B48;
   --head:#34343F;    /* ĐẢO CHIỀU, GIỮ VAI: ở nền sáng dải head tối hơn thẻ, ở
                         nền tối nó sáng hơn thẻ. Cùng một nghĩa "đây là nắp,
@@ -195,7 +195,7 @@
   --line:#40404D;    --line-2:#2E2E39;  --card-line:#393946;
   --line-strong:#87879C;  /* bản tối cũ --line #2C3E4E chỉ ~1,7:1, cũng trượt */
   --brand-hi:#FF5266;
-  --brand-dark:#FF7A8D;  /* lật SÁNG để vẫn đỡ được chữ màu --paper, nay là
+  --brand-dark:#FF7A8D;  /* lật SÁNG để vẫn đỡ được chữ màu --card, nay là
                             #1F1F27. Nhờ vậy cùng một rule .login-btn ra AA ở
                             cả hai theme — đây là lý do không bao giờ được
                             hardcode #FFFFFF lên một token biết lật. */
@@ -240,7 +240,7 @@ a:hover{text-decoration:underline}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 
 /* ---------- login ---------- */
-.login{display:grid;grid-template-columns:1fr 1fr;min-height:100vh;background:var(--paper)}
+.login{display:grid;grid-template-columns:1fr 1fr;min-height:100vh;background:var(--card)}
 @media(max-width:980px){.login{grid-template-columns:1fr}.login-right{display:none}}
 .login-left{display:flex;flex-direction:column;align-items:center;justify-content:center;
   padding:40px 28px;position:relative}
@@ -248,7 +248,7 @@ a:hover{text-decoration:underline}
   border-radius:6px;overflow:hidden}
 .login-lang button{padding:5px 12px;font-size:12px;font-weight:600;color:var(--muted);letter-spacing:.02em}
 .login-lang button:hover{background:var(--surface)}
-.login-lang button.on{background:var(--ink);color:var(--paper)}
+.login-lang button.on{background:var(--ink);color:var(--card)}
 .login-logo{height:30px;width:auto;margin-bottom:34px}
 .login-card{width:100%;max-width:360px;border:1px solid var(--line);border-radius:10px;
   padding:26px 26px 22px;box-shadow:0 2px 10px rgba(10,10,13,.05)}
@@ -260,7 +260,7 @@ a:hover{text-decoration:underline}
 /* trắng trên #FF2E4C chỉ 3,65:1 — đang trượt AA. --brand-dark biết lật sáng ở
    theme tối nên cặp (nền, chữ) này đạt AA ở CẢ HAI mà không cần rẽ nhánh. */
 .login-btn{width:100%;margin-top:16px;padding:10px;border-radius:5px;background:var(--brand-dark);
-  color:var(--paper);font-weight:600;font-size:14px}
+  color:var(--card);font-weight:600;font-size:14px}
 .login-btn:hover{background:var(--brand);color:var(--brand-ink)}
 .login-row{display:flex;align-items:center;gap:8px;margin-top:14px;font-size:12.5px;color:var(--ink-2)}
 .login-sep{border-top:1px solid var(--line-2);margin:14px 0 12px}
@@ -320,7 +320,7 @@ a:hover{text-decoration:underline}
   border-radius:var(--radius);background:rgba(255,255,255,.1);font-size:13px;color:#fff;
 }
 .search input::placeholder{color:var(--on-chrome-3)}
-.search input:focus{background:var(--paper);color:var(--ink);border-color:var(--ice);
+.search input:focus{background:var(--card);color:var(--ink);border-color:var(--ice);
   outline:none;box-shadow:var(--ring)}
 .search input:focus::placeholder{color:var(--muted)}
 .search svg{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--on-chrome-3)}
@@ -374,7 +374,7 @@ th .dim,.vt-head .dim{color:var(--head-muted)}
   padding:1px 6px;border-radius:9px;flex:0 0 auto;font-variant-numeric:tabular-nums;
 }
 .tab:hover .tab-count{background:rgba(255,255,255,.16)}
-.tab.active .tab-count{background:var(--brand-dark);color:var(--paper)}
+.tab.active .tab-count{background:var(--brand-dark);color:var(--card)}
 
 .content{padding:22px 26px 40px;flex:1;min-width:0;max-width:1500px}
 
@@ -385,7 +385,7 @@ th .dim,.vt-head .dim{color:var(--head-muted)}
 .phead-actions{margin-left:auto;display:flex;gap:8px}
 .btn{
   padding:7px 13px;border-radius:var(--radius);font-size:12.5px;font-weight:500;
-  border:1px solid var(--line-strong);background:var(--paper);color:var(--ink-2);
+  border:1px solid var(--line-strong);background:var(--card);color:var(--ink-2);
 }
 /* #fbfcfd là hex ám xanh hardcode — ở theme tối nó cho nền sáng + chữ sáng */
 .btn:hover{border-color:var(--ink-2);background:var(--surface)}
@@ -400,7 +400,7 @@ th .dim,.vt-head .dim{color:var(--head-muted)}
 .btn-sm{padding:4px 9px;font-size:11.5px}
 
 /* ---------- cards ---------- */
-.card{background:var(--paper);border:1px solid var(--card-line);border-radius:var(--r);
+.card{background:var(--card);border:1px solid var(--card-line);border-radius:var(--r);
   box-shadow:var(--shadow);overflow:hidden}
 /* Nắp thẻ trước đây chỉ là một đường kẻ mảnh nên thẻ không có đầu có đuôi */
 /* Đầu thẻ là dải mực tối — CÙNG token với dải tiêu đề bảng (--head), nên hai
@@ -415,13 +415,21 @@ th .dim,.vt-head .dim{color:var(--head-muted)}
 .card-h .btn{background:transparent;border-color:var(--head-line);color:var(--on-head)}
 .card-h .btn:hover{background:var(--head-line);border-color:var(--head-muted);color:var(--on-head)}
 /* Bảng nằm NGAY dưới đầu thẻ thì hạ dải tiêu đề bảng xuống nền nhạt — không thì
-   hai dải tối chạm nhau thành một khối. */
+   hai dải tối chạm nhau thành một khối.
+   Nhưng hạ nền thôi thì chưa đủ: con cháu trong dải vẫn gọi --head-muted và
+   --on-head, tức mực dựng cho nền TỐI. Đo được: .dim "Nhóm 1/2/3" ở ma trận
+   quyền ra 2,03:1 — biến đúng, cặp sai, đúng loại lỗi bài tuong-phan.mjs sinh
+   ra để bắt. Sửa từng thành phần thì thành phần thêm sau lại sai tiếp, nên
+   đổi VAI của token ngay tại đây: con cháu cứ gọi tên cũ, giá trị tự đúng. */
 .card-h + .tw thead th,.card-h + table thead th,.card-h + .tscroll thead th{
-  background:var(--zebra);color:var(--ink-2);border-bottom:1px solid var(--line)}
+  background:var(--zebra);color:var(--ink-2);border-bottom:1px solid var(--line);
+  --head-muted:var(--muted);   /* 6,33:1 trên --zebra, thay cho 2,03:1 */
+  --on-head:var(--ink);
+  --head-line:var(--line)}
 .card-b{padding:14px 16px}
 
 /* ---------- pipeline strip (hero) ---------- */
-.funnel{background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:18px 18px 14px;margin-bottom:16px}
+.funnel{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:18px 18px 14px;margin-bottom:16px}
 .funnel-top{display:flex;align-items:baseline;gap:12px;margin-bottom:16px;flex-wrap:wrap}
 .funnel-val{font-size:24px;font-weight:700;letter-spacing:-.025em}
 .funnel-lbl{font-size:12.5px;color:var(--muted)}
@@ -442,7 +450,7 @@ th .dim,.vt-head .dim{color:var(--head-muted)}
 /* Năm thẻ KPI trước đây giống hệt nhau: cùng nền, cùng viền, cùng cỡ chữ. Mắt
    không biết nhìn cái nào trước nên cả dải đọc thành một khối xám. Ba việc:
    vạch màu trên đỉnh phân loại thẻ, số to hẳn lên, và thẻ tiền có màu riêng. */
-.stat{position:relative;background:var(--paper);border:1px solid var(--card-line);
+.stat{position:relative;background:var(--card);border:1px solid var(--card-line);
   border-radius:var(--r);padding:15px 16px 13px 19px;box-shadow:var(--shadow);overflow:hidden;
   transition:transform .16s var(--ease),box-shadow .16s var(--ease),border-color .16s}
 .stat:hover{transform:translateY(-2px);box-shadow:var(--shadow-hover);border-color:var(--line-strong)}
@@ -477,19 +485,19 @@ th .dim,.vt-head .dim{color:var(--head-muted)}
 /* ---------- table ---------- */
 .tools{display:flex;gap:8px;align-items:center;margin-bottom:12px;flex-wrap:wrap}
 .chip{
-  padding:5px 11px;border:1px solid var(--line-strong);background:var(--paper);border-radius:14px;
+  padding:5px 11px;border:1px solid var(--line-strong);background:var(--card);border-radius:14px;
   font-size:12px;color:var(--ink-2);
 }
 .chip:hover{border-color:var(--ink-2);background:var(--surface)}
 /* Chip đang chọn dùng MỰC, không dùng đỏ. Signal Red là màu nhấn của thương
    hiệu — rải nó lên chip lọc, nút tạo, ô quyền và tab đang mở cùng lúc thì nó
    không còn nhấn được gì. Giữ đỏ cho hành động chính và trạng thái gấp. */
-.chip.on{background:var(--ink);border-color:var(--ink);color:var(--paper);font-weight:500}
+.chip.on{background:var(--ink);border-color:var(--ink);color:var(--card);font-weight:500}
 .seg{display:flex;border:1px solid var(--line-strong);border-radius:var(--radius);overflow:hidden;margin-left:auto}
 .seg button{padding:5px 12px;font-size:12px;color:var(--muted)}
 .seg button.on{background:var(--surface);color:var(--ink);font-weight:600}
 
-.tw{background:var(--paper);border:1px solid var(--card-line);border-radius:var(--r);overflow:hidden;box-shadow:var(--shadow)}
+.tw{background:var(--card);border:1px solid var(--card-line);border-radius:var(--r);overflow:hidden;box-shadow:var(--shadow)}
 .tscroll{overflow-x:auto}
 table{width:100%;border-collapse:collapse}
 th{
@@ -518,7 +526,7 @@ tbody tr:hover .t-name{text-decoration:underline}
 /* ---------- bảng ảo hoá ----------
    Cố ý trông y hệt <table> ở trên: cùng nền đầu bảng, cùng đường kẻ, cùng
    padding 10px/14px và cỡ chữ 13px, nên đổi qua lại không thấy khác. */
-.vt{background:var(--paper);border:1px solid var(--card-line);border-radius:var(--r);overflow:hidden;box-shadow:var(--shadow)}
+.vt{background:var(--card);border:1px solid var(--card-line);border-radius:var(--r);overflow:hidden;box-shadow:var(--shadow)}
 .vt-head{display:grid;background:var(--head);border-bottom:1px solid var(--head-line)}
 .vt-head>span{padding:8px 14px;font-size:10.5px;font-weight:600;color:var(--head-muted);white-space:nowrap;
   letter-spacing:.06em;text-transform:uppercase}
@@ -528,7 +536,7 @@ tbody tr:hover .t-name{text-decoration:underline}
 .vt-body{overflow-y:auto;overflow-x:hidden;position:relative;max-height:calc(100vh - 330px);min-height:280px}
 .vt-spacer{position:relative;width:100%}
 .vt-row{position:absolute;left:0;right:0;display:grid;align-items:center;
-  border-bottom:1px solid var(--line-2);cursor:pointer;background:var(--paper)}
+  border-bottom:1px solid var(--line-2);cursor:pointer;background:var(--card)}
 .vt-odd{background:var(--zebra)}
 .vt-row:hover,.vt-odd:hover{background:var(--row-hover)}
 .vt-row:hover .t-name{text-decoration:underline}
@@ -541,7 +549,7 @@ tbody tr:hover .t-name{text-decoration:underline}
 .pal-scrim{position:fixed;inset:0;background:rgba(10,10,13,.42);z-index:80;animation:fade .12s ease-out}
 .pal{
   position:fixed;z-index:81;left:50%;top:14vh;transform:translateX(-50%);
-  width:min(620px,calc(100vw - 32px));background:var(--paper);border-radius:12px;
+  width:min(620px,calc(100vw - 32px));background:var(--card);border-radius:12px;
   box-shadow:0 18px 50px rgba(10,10,13,.28),0 2px 8px rgba(10,10,13,.12);
   overflow:hidden;animation:palin .13s ease-out;
 }
@@ -586,44 +594,44 @@ kbd{
 .selcell{width:36px;padding-left:12px!important;padding-right:0!important}
 th.selcell{padding-left:12px!important}
 .cbx{width:15px;height:15px;border:1.4px solid var(--line-strong);border-radius:3px;display:inline-grid;
-  place-items:center;font-size:10px;color:var(--paper);line-height:1;cursor:pointer;flex:0 0 auto;
-  background:var(--paper);vertical-align:middle}
+  place-items:center;font-size:10px;color:var(--card);line-height:1;cursor:pointer;flex:0 0 auto;
+  background:var(--card);vertical-align:middle}
 .cbx:hover{border-color:var(--ink-2)}
 /* .cbx.on ở phần "home bottom sections" tô đỏ (việc cần làm đã xong — đỏ ở đó
    có nghĩa). Ô tích chọn hàng loạt thì không: chọn 3 dòng không phải chuyện gấp.
    Nâng độ cụ thể thay vì đổi rule kia, để hai chỗ giữ được hai ý nghĩa riêng. */
 /* Ô tích nằm TRÊN dải head. Dùng --ink ở đây là mực-trên-mực: chỉ còn một
    vệt ✓ lơ lửng không có ô. Đây là nút chọn hàng loạt của bảng 5.000 dòng. */
-.selcell .cbx.on{background:var(--accent);border-color:var(--accent);color:var(--paper)}
+.selcell .cbx.on{background:var(--accent);border-color:var(--accent);color:var(--card)}
 th.selcell .cbx{border-color:var(--head-muted)}
 th.selcell .cbx.on{background:var(--ice);border-color:var(--ice);color:var(--chrome)}
 .bulkbar{
   display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px;
-  background:var(--ink);color:var(--paper);border-radius:var(--r-sm);padding:8px 12px;
+  background:var(--ink);color:var(--card);border-radius:var(--r-sm);padding:8px 12px;
   box-shadow:0 2px 10px rgba(10,10,13,.18);animation:bulkin .13s ease-out;
 }
 @keyframes bulkin{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
-.bulk-n{font-family:var(--mono);font-size:12px;font-weight:700;background:var(--accent);color:var(--paper);
+.bulk-n{font-family:var(--mono);font-size:12px;font-weight:700;background:var(--accent);color:var(--card);
   border-radius:5px;padding:2px 8px;font-variant-numeric:tabular-nums}
-.bulk-l{font-size:12.5px;color:var(--paper);opacity:.72}
+.bulk-l{font-size:12.5px;color:var(--card);opacity:.72}
 .bulk-warn{font-size:11.5px;color:var(--brand-hi)}
 .bulk-acts{margin-left:auto;display:flex;gap:6px;flex-wrap:wrap}
-.bulkbar .btn{background:transparent;border-color:var(--muted);color:var(--paper)}
+.bulkbar .btn{background:transparent;border-color:var(--muted);color:var(--card)}
 .bulkbar .btn:hover{background:var(--ink-2);border-color:var(--ink-2)}
 .bulkbar .btn-primary{background:var(--brand);border-color:var(--brand-dark);color:var(--brand-ink)}
 .bulkbar .btn-primary:hover{background:var(--brand-hi);border-color:var(--brand-hi)}
 
 .views{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:11px}
-.viewchip{display:inline-flex;align-items:center;border:1px solid var(--line-strong);background:var(--paper);
+.viewchip{display:inline-flex;align-items:center;border:1px solid var(--line-strong);background:var(--card);
   border-radius:14px;overflow:hidden;font-size:12px}
 .viewchip button{padding:4px 4px 4px 11px;color:var(--ink-2)}
 .viewchip .viewx{padding:4px 9px 4px 5px;color:var(--muted-2);font-size:13px;line-height:1}
 .viewchip .viewx:hover{color:var(--brand)}
 .viewchip:hover{border-color:var(--line-2)}
 .viewchip.on{background:var(--ink);border-color:var(--ink)}
-.viewchip.on button{color:var(--paper)}
-.viewchip.on .viewx{color:var(--paper);opacity:.55}
-.viewchip.on .viewx:hover{color:var(--paper);opacity:1}
+.viewchip.on button{color:var(--card)}
+.viewchip.on .viewx{color:var(--card);opacity:.55}
+.viewchip.on .viewx:hover{color:var(--card);opacity:1}
 .viewadd{font-size:12px;color:var(--muted);padding:4px 10px;border:1px dashed var(--line);
   border-radius:14px}
 .viewadd:hover{color:var(--ink);border-color:var(--line-2)}
@@ -680,7 +688,7 @@ th.selcell .cbx.on{background:var(--ice);border-color:var(--ice);color:var(--chr
   width:19px;height:18px;border-radius:4px;display:grid;place-items:center;
   font-size:9.5px;font-weight:700;background:transparent;color:var(--muted-2);border:1px solid var(--line);
 }
-.r.on{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.r.on{background:var(--ink);color:var(--card);border-color:var(--ink)}
 
 .empty{padding:56px 20px;text-align:center}
 .empty-t{font-size:14px;font-weight:500;margin-bottom:4px}
@@ -688,13 +696,13 @@ th.selcell .cbx.on{background:var(--ice);border-color:var(--ice);color:var(--chr
 
 /* ---------- kanban ---------- */
 .kan{display:grid;grid-template-columns:repeat(8,minmax(198px,1fr));gap:12px;overflow-x:auto;padding-bottom:6px}
-.kcol{background:var(--paper);border:1px solid var(--line);border-radius:8px;display:flex;flex-direction:column;min-width:214px}
+.kcol{background:var(--card);border:1px solid var(--line);border-radius:8px;display:flex;flex-direction:column;min-width:214px}
 .kcol-h{padding:10px 12px;border-bottom:1px solid var(--line-2);border-top:2px solid;border-radius:8px 8px 0 0}
 .kcol-t{font-size:12px;font-weight:600;display:flex;align-items:center;gap:6px}
 .kcol-n{margin-left:auto;font-size:11px;color:var(--muted);font-weight:500}
 .kcol-v{font-size:11.5px;color:var(--muted);margin-top:2px}
 .kcol-b{padding:8px;display:flex;flex-direction:column;gap:7px;min-height:70px}
-.kcard{border:1px solid var(--line);border-radius:6px;padding:9px 10px;text-align:left;width:100%;background:var(--paper)}
+.kcard{border:1px solid var(--line);border-radius:6px;padding:9px 10px;text-align:left;width:100%;background:var(--card)}
 .kcard:hover{border-color:var(--line-2);box-shadow:0 1px 3px rgba(12,59,40,.1)}
 .kcard-n{font-size:12.5px;font-weight:500;margin-bottom:3px}
 .kcard-m{display:flex;align-items:baseline;gap:8px;font-size:11px;color:var(--muted);flex-wrap:wrap}
@@ -741,7 +749,7 @@ th.selcell .cbx.on{background:var(--ice);border-color:var(--ice);color:var(--chr
 @media(max-width:1240px){.grid3{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:860px){.grid3{grid-template-columns:minmax(0,1fr)}}
 
-.approve-bar{background:var(--paper);border:1px solid var(--line);border-radius:8px;margin-bottom:16px;overflow:hidden}
+.approve-bar{background:var(--card);border:1px solid var(--line);border-radius:8px;margin-bottom:16px;overflow:hidden}
 /* Đầu thẻ duyệt là lớp riêng (.approve-h), không phải .card-h — nên khi .card-t
    đổi sang màu chữ sáng, riêng hai thẻ này ra chữ trắng trên nền trắng. Cho nó
    đúng dải tối như mọi đầu thẻ khác: một hệ, không phải hai. */
@@ -750,7 +758,7 @@ th.selcell .cbx.on{background:var(--ice);border-color:var(--ice);color:var(--chr
 .approve-h .card-t{font-size:13px;font-weight:700;color:var(--on-head)}
 .approve-h .card-note{color:var(--head-muted)}
 .approve-h a,.approve-h .t-name{color:var(--ice)}
-.approve-n{background:var(--brand-dark);color:var(--paper);font-size:11px;font-weight:600;padding:1px 8px;border-radius:10px}
+.approve-n{background:var(--brand-dark);color:var(--card);font-size:11px;font-weight:600;padding:1px 8px;border-radius:10px}
 .approve-empty{padding:24px 16px;text-align:center;color:var(--muted);font-size:12.5px}
 .approve-row{display:flex;align-items:center;gap:12px;padding:9px 16px;border-bottom:1px solid var(--line-2)}
 .approve-row:last-child{border-bottom:none}
@@ -784,14 +792,14 @@ th.selcell .cbx.on{background:var(--ice);border-color:var(--ice);color:var(--chr
 @media(max-width:1240px){.sec3{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:860px){.sec3{grid-template-columns:minmax(0,1fr)}}
 .sec-head{
-  background:var(--paper);border:1px solid var(--line);border-radius:8px;
+  background:var(--card);border:1px solid var(--line);border-radius:8px;
   padding:13px 16px;margin-bottom:12px;font-size:15px;font-weight:600;letter-spacing:-.015em;
 }
 .colstack{display:flex;flex-direction:column;gap:14px}
 
 .lv-h{display:flex;align-items:center;gap:11px;padding:11px 14px;border-bottom:1px solid var(--line-2)}
 .lv-ico{width:34px;height:34px;border-radius:6px;background:var(--brand-dark);display:grid;place-items:center;
-  color:var(--paper);flex:0 0 auto}
+  color:var(--card);flex:0 0 auto}
 .lv-h>span:nth-child(2){flex:1;min-width:0}
 .lv-t{font-size:13px;font-weight:600;line-height:1.25;display:block}
 .lv-s{font-size:11px;color:var(--muted);display:block}
@@ -806,7 +814,7 @@ th.selcell .cbx.on{background:var(--ice);border-color:var(--ice);color:var(--chr
 .kv-k{color:var(--muted)}
 .kv-v{color:var(--ink-2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .cbx{width:13px;height:13px;border:1.4px solid var(--line-strong);border-radius:2px;display:inline-grid;
-  place-items:center;font-size:9px;color:var(--paper);line-height:1}
+  place-items:center;font-size:9px;color:var(--card);line-height:1}
 .cbx.on{background:var(--brand);border-color:var(--brand-dark);color:var(--brand-ink)}
 
 .ev{display:flex;gap:11px;padding:10px 14px;border-bottom:1px solid var(--line-2);width:100%;text-align:left}
@@ -825,7 +833,7 @@ th.selcell .cbx.on{background:var(--ice);border-color:var(--ice);color:var(--chr
 /* ---------- record form modal ---------- */
 .mscrim{position:fixed;inset:0;background:rgba(20,22,26,.38);z-index:60;display:flex;
   align-items:flex-start;justify-content:center;padding:22px 16px;overflow-y:auto;animation:fade .18s ease-out}
-.modal{background:var(--paper);border-radius:10px;width:min(1080px,100%);max-height:calc(100vh - 44px);
+.modal{background:var(--card);border-radius:10px;width:min(1080px,100%);max-height:calc(100vh - 44px);
   display:flex;flex-direction:column;box-shadow:0 14px 44px rgba(12,59,40,.3);animation:pop .18s cubic-bezier(.22,.61,.36,1)}
 @keyframes pop{from{transform:translateY(10px);opacity:.5}to{transform:none;opacity:1}}
 .modal-h{padding:15px 22px;border-bottom:1px solid var(--line);text-align:center;position:relative;flex:0 0 auto}
@@ -844,7 +852,7 @@ th.selcell .cbx.on{background:var(--ice);border-color:var(--ice);color:var(--chr
 @media(max-width:560px){.frow{grid-template-columns:1fr;gap:4px}}
 .flabel{font-size:12.5px;color:var(--ink-2);padding-top:8px;display:flex;gap:5px;align-items:flex-start;line-height:1.35}
 .star{color:var(--red);font-weight:700;line-height:1}
-.fin{width:100%;padding:7px 10px;border:1px solid var(--line-strong);border-radius:4px;font-size:13px;background:var(--paper)}
+.fin{width:100%;padding:7px 10px;border:1px solid var(--line-strong);border-radius:4px;font-size:13px;background:var(--card)}
 .fin:focus{border-color:var(--accent);outline:none;box-shadow:var(--ring)}
 .fin.err{border-color:var(--red);box-shadow:0 0 0 3px rgba(192,65,58,.09)}
 textarea.fin{min-height:64px;resize:vertical;font-family:inherit}
@@ -854,7 +862,7 @@ textarea.fin{min-height:64px;resize:vertical;font-family:inherit}
 .substack>div:last-child{margin-bottom:0}
 .fchk{display:flex;align-items:center;gap:8px;padding-top:8px;font-size:13px}
 .fchk .cbox{cursor:pointer}
-.info{width:14px;height:14px;border-radius:50%;background:var(--muted);color:var(--paper);font-size:9px;font-weight:700;
+.info{width:14px;height:14px;border-radius:50%;background:var(--muted);color:var(--card);font-size:9px;font-weight:700;
   display:inline-grid;place-items:center;cursor:help;position:relative;flex:0 0 auto;margin-top:2px}
 .info:hover{background:var(--ink-2)}
 .info:hover::after{content:attr(data-tip);position:absolute;left:-10px;bottom:calc(100% + 9px);
@@ -873,7 +881,7 @@ textarea.fin{min-height:64px;resize:vertical;font-family:inherit}
 .imp-t{font-size:22px;font-weight:700;letter-spacing:-.02em;margin:14px 0 8px}
 .imp-s{font-size:13px;color:var(--ink-2);line-height:1.55}
 .imp-n{font-size:12.5px;color:var(--muted);line-height:1.55;margin-top:10px}
-.imp-opt{border:1px solid var(--line);border-radius:8px;background:var(--paper);padding:17px 18px;
+.imp-opt{border:1px solid var(--line);border-radius:8px;background:var(--card);padding:17px 18px;
   display:flex;gap:14px;align-items:flex-start;width:100%;text-align:left;margin-bottom:14px}
 .imp-opt:last-child{margin-bottom:0}
 .imp-opt:hover{border-color:var(--brand)}
@@ -896,7 +904,7 @@ textarea.fin{min-height:64px;resize:vertical;font-family:inherit}
 .maptbl th{text-align:left;font-size:11.5px;color:var(--head-muted);background:var(--head);padding:7px 10px;
   border-bottom:1px solid var(--head-line)}
 .maptbl td{padding:7px 10px;border-bottom:1px solid var(--line-2);vertical-align:middle}
-.maptbl select{width:100%;padding:5px 8px;border:1px solid var(--line-2);border-radius:4px;font-size:12.5px;background:var(--paper)}
+.maptbl select{width:100%;padding:5px 8px;border:1px solid var(--line-2);border-radius:4px;font-size:12.5px;background:var(--card)}
 .mapscroll{max-height:320px;overflow-y:auto;border:1px solid var(--line);border-radius:7px}
 .imp-foot{padding:12px 22px;border-top:1px solid var(--line);display:flex;align-items:center;gap:14px;
   background:var(--zebra);border-radius:0 0 10px 10px;flex:0 0 auto}
@@ -910,7 +918,7 @@ textarea.fin{min-height:64px;resize:vertical;font-family:inherit}
 /* ---------- audit log ---------- */
 .aud-tools{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:12px}
 .aud-tools select,.aud-tools input[type=date]{padding:6px 9px;border:1px solid var(--line-strong);
-  border-radius:var(--radius);font-size:12.5px;background:var(--paper);color:var(--ink)}
+  border-radius:var(--radius);font-size:12.5px;background:var(--card);color:var(--ink)}
 .aud-lbl{font-size:11.5px;color:var(--muted)}
 .aud-note{display:flex;gap:8px;align-items:flex-start;background:var(--warn-lo);border:1px solid var(--warn);
   border-radius:7px;padding:9px 13px;font-size:12px;color:var(--warn);margin-bottom:14px;line-height:1.5}
@@ -961,9 +969,9 @@ textarea.fin{min-height:64px;resize:vertical;font-family:inherit}
 .calcv{font-size:13.5px;padding-top:7px}
 .calcn{font-size:11.5px;color:var(--muted);font-style:italic;margin-top:2px}
 .dual{display:grid;grid-template-columns:1fr 30px 1fr;gap:8px;align-items:center}
-.dual select{height:132px;border:1px solid var(--line-2);border-radius:4px;font-size:12.5px;padding:4px;background:var(--paper)}
+.dual select{height:132px;border:1px solid var(--line-2);border-radius:4px;font-size:12.5px;padding:4px;background:var(--card)}
 .dual-b{display:flex;flex-direction:column;gap:6px}
-.dual-b button{border:1px solid var(--line-strong);border-radius:4px;padding:5px 0;background:var(--paper);font-size:11px}
+.dual-b button{border:1px solid var(--line-strong);border-radius:4px;padding:5px 0;background:var(--card);font-size:11px}
 .dual-b button:hover{border-color:var(--brand);color:var(--brand-dark)}
 .dual-l{font-size:11px;color:var(--muted);margin-bottom:3px}
 .pctin{position:relative}
@@ -1010,17 +1018,17 @@ textarea.fin{min-height:64px;resize:vertical;font-family:inherit}
 .acbox-t{font-size:12px;font-weight:600;color:var(--ink-2);margin-bottom:11px;
   letter-spacing:.02em;display:flex;align-items:center;gap:8px}
 .acmult{display:flex;gap:6px;margin-left:auto}
-.acmult button{border:1px solid var(--line);background:var(--paper);border-radius:5px;padding:3px 10px;font-size:11.5px}
+.acmult button{border:1px solid var(--line);background:var(--card);border-radius:5px;padding:3px 10px;font-size:11.5px}
 .acmult button:hover{border-color:var(--brand);color:var(--brand-dark);background:var(--brand-tint)}
 .acres{display:grid;grid-template-columns:repeat(auto-fit,minmax(168px,1fr));gap:2px}
 .acr{padding:8px 10px;border-radius:5px}
-.acr:hover{background:var(--paper)}
+.acr:hover{background:var(--card)}
 .acr-l{font-size:11px;color:var(--muted);line-height:1.35;min-height:30px}
 .acr-v{font-size:15px;font-weight:600;letter-spacing:-.015em;margin-top:2px}
 .acr-v.good{color:var(--green)} .acr-v.bad{color:var(--brand-dark)}
 .actrigs{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:4px}
 @media(max-width:820px){.actrigs{grid-template-columns:1fr}}
-.actrig{background:var(--paper);border:1px solid var(--line);border-radius:7px;padding:12px 14px}
+.actrig{background:var(--card);border:1px solid var(--line);border-radius:7px;padding:12px 14px}
 .actrig-h{font-size:12.5px;font-weight:600;margin-bottom:2px}
 .actrig-s{font-size:11px;color:var(--muted);margin-bottom:10px}
 .actrig-row{display:flex;justify-content:space-between;gap:10px;font-size:12px;padding:3px 0}
@@ -1031,7 +1039,7 @@ textarea.fin{min-height:64px;resize:vertical;font-family:inherit}
 
 .acsug{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
 @media(max-width:820px){.acsug{grid-template-columns:repeat(2,1fr)}}
-.acsug-c{background:var(--paper);border:1px solid var(--line);border-radius:7px;padding:11px 12px}
+.acsug-c{background:var(--card);border:1px solid var(--line);border-radius:7px;padding:11px 12px}
 .acsug-h{font-size:12px;font-weight:700;color:var(--muted);letter-spacing:.04em}
 .acsug-a{font-size:15px;font-weight:600;letter-spacing:-.015em;margin:2px 0 8px}
 .acsug-b{width:100%;margin-top:9px;padding:6px;border-radius:5px;border:1px solid;font-size:11.5px;font-weight:600}
@@ -1040,7 +1048,7 @@ textarea.fin{min-height:64px;resize:vertical;font-family:inherit}
 /* ---------- opportunity record page ---------- */
 .rec-wrap{display:grid;grid-template-columns:minmax(0,1fr) 390px;gap:16px;align-items:start}
 @media(max-width:1180px){.rec-wrap{grid-template-columns:1fr}}
-.rec-head{background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:14px 18px;margin-bottom:16px}
+.rec-head{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:14px 18px;margin-bottom:16px}
 .rec-top{display:flex;align-items:flex-start;gap:14px;flex-wrap:wrap}
 .rec-eyebrow{font-size:11.5px;color:var(--muted)}
 .rec-title{font-size:20px;font-weight:600;letter-spacing:-.02em;line-height:1.2}
@@ -1067,7 +1075,7 @@ textarea.fin{min-height:64px;resize:vertical;font-family:inherit}
    trong thẻ như ở trang chi tiết cơ hội. Trên nền --app-bg thì nhãn tab đang
    chọn (--brand-dark) chỉ đạt 4,34:1, trượt AA. Đặt nó lên mặt giấy là về
    5,93:1 — và trông cũng đúng lối hơn: mọi khối nội dung khác đều trên giấy. */
-.rtabs.solo{background:var(--paper);border:1px solid var(--line-strong);
+.rtabs.solo{background:var(--card);border:1px solid var(--line-strong);
   border-radius:8px 8px 0 0;border-bottom-color:var(--line);padding:0 6px}
 .rtab{padding:10px 14px;font-size:13px;color:var(--ink-2);border-bottom:2px solid transparent;white-space:nowrap}
 .rtab:hover{color:var(--ink);background:var(--surface)}
@@ -1147,14 +1155,14 @@ tr.locked:hover td{background:var(--row-hover)}
 .icell.num{justify-content:flex-end}
 .ipen{
   opacity:0;border:1px solid var(--line);border-radius:4px;width:21px;height:21px;
-  display:grid;place-items:center;background:var(--paper);flex:0 0 auto;color:var(--muted);
+  display:grid;place-items:center;background:var(--card);flex:0 0 auto;color:var(--muted);
 }
 tbody tr:hover .ipen{opacity:1}
 .ipen:hover{border-color:var(--brand);color:var(--brand-dark);background:var(--brand-tint)}
 .ipen:focus-visible{opacity:1}
 .iedit{
   width:100%;padding:4px 7px;border:2px solid var(--brand);border-radius:4px;
-  font-size:12.5px;background:var(--paper);box-shadow:0 2px 8px rgba(255,46,76,.18);
+  font-size:12.5px;background:var(--card);box-shadow:0 2px 8px rgba(255,46,76,.18);
 }
 .iedit:focus{outline:none}
 
@@ -1162,7 +1170,7 @@ tbody tr:hover .ipen{opacity:1}
 .scrim{position:fixed;inset:0;background:rgba(20,22,26,.28);z-index:40;animation:fade .18s ease-out}
 @keyframes fade{from{opacity:0}to{opacity:1}}
 .drawer{
-  position:fixed;top:0;right:0;bottom:0;width:min(500px,94vw);background:var(--paper);
+  position:fixed;top:0;right:0;bottom:0;width:min(500px,94vw);background:var(--card);
   z-index:41;display:flex;flex-direction:column;box-shadow:-3px 0 22px rgba(20,22,26,.16);
   animation:slide .24s var(--ease);
 }
@@ -1177,7 +1185,7 @@ tbody tr:hover .ipen{opacity:1}
 .fld{margin-bottom:13px}
 .fld-l{font-size:11.5px;color:var(--muted);margin-bottom:4px;font-weight:500}
 .fld-v{font-size:13.5px}
-.in{width:100%;padding:7px 10px;border:1px solid var(--line-strong);border-radius:var(--radius);background:var(--paper);font-size:13px}
+.in{width:100%;padding:7px 10px;border:1px solid var(--line-strong);border-radius:var(--radius);background:var(--card);font-size:13px}
 .in:focus{border-color:var(--accent);outline:none;box-shadow:var(--ring)}
 .row2{display:grid;grid-template-columns:1fr 1fr;gap:11px}
 .sec{border-top:1px solid var(--line-2);margin-top:16px;padding-top:14px}
@@ -1187,7 +1195,7 @@ tbody tr:hover .ipen{opacity:1}
 .rp.on{background:var(--ok-lo);border-color:var(--ok);color:var(--ok);font-weight:600}
 .tl{display:flex;gap:10px;padding-bottom:13px;position:relative}
 .tl:not(:last-child)::before{content:'';position:absolute;left:5px;top:15px;bottom:0;width:1px;background:var(--line)}
-.tl-d{width:11px;height:11px;border-radius:50%;border:2px solid var(--paper);background:var(--line);flex:0 0 auto;margin-top:3px;z-index:1}
+.tl-d{width:11px;height:11px;border-radius:50%;border:2px solid var(--card);background:var(--line);flex:0 0 auto;margin-top:3px;z-index:1}
 .tl-b{flex:1;min-width:0}
 .tl-t{font-size:12.5px;margin-bottom:1px}
 .tl-m{font-size:11px;color:var(--muted)}
@@ -1198,7 +1206,7 @@ tbody tr:hover .ipen{opacity:1}
 
 .toast{
   position:fixed;bottom:20px;left:50%;transform:translateX(-50%);
-  background:var(--ink);color:var(--paper);padding:9px 17px;border-radius:18px;font-size:12.5px;
+  background:var(--ink);color:var(--card);padding:9px 17px;border-radius:18px;font-size:12.5px;
   z-index:60;box-shadow:0 3px 14px rgba(20,22,26,.28);animation:up .2s ease-out;
 }
 @keyframes up{from{transform:translate(-50%,10px);opacity:0}to{transform:translate(-50%,0);opacity:1}}
@@ -1267,12 +1275,12 @@ tbody tr:hover .ipen{opacity:1}
 .rescue-a{display:flex;gap:8px;flex:0 0 auto}
 
 /* mô hình tài chính — bảng lời lỗ theo năm */
-.finhist{background:var(--paper);border:1px solid var(--line-2);border-radius:var(--r-sm);
+.finhist{background:var(--card);border:1px solid var(--line-2);border-radius:var(--r-sm);
   padding:10px 12px;margin-bottom:12px}
 .finhist-t{font-size:11px;font-weight:650;color:var(--muted);text-transform:uppercase;
   letter-spacing:.05em;margin-bottom:6px;line-height:1.55}
 .fin-ta{width:100%;box-sizing:border-box;border:1px solid var(--line-strong);border-radius:var(--r-sm);
-  padding:7px 9px;font:12px/1.5 var(--mono);color:var(--ink);background:var(--paper);resize:vertical}
+  padding:7px 9px;font:12px/1.5 var(--mono);color:var(--ink);background:var(--card);resize:vertical}
 .fin-ta:focus{outline:none;border-color:var(--accent);box-shadow:var(--shadow-lift)}
 .finhist-r{display:flex;align-items:center;gap:10px;margin-top:7px;font-size:11.5px;color:var(--ink-2)}
 .finhist-r .dim{color:var(--muted)} .finhist-r .warn{color:var(--warn)}
@@ -1297,7 +1305,7 @@ tbody tr:hover .ipen{opacity:1}
 .finstr-p{min-width:86px;text-align:right;color:var(--muted);font-size:11px}
 .finverd{padding:9px 12px;border-radius:var(--r-sm);font-weight:650;font-size:12.5px;margin-bottom:12px}
 .finkpi{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:9px;margin-bottom:14px}
-.finkpi-c{background:var(--paper);border:1px solid var(--line-2);border-radius:var(--r-sm);padding:9px 11px}
+.finkpi-c{background:var(--card);border:1px solid var(--line-2);border-radius:var(--r-sm);padding:9px 11px}
 .finkpi-l{font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;
   margin-bottom:3px;line-height:1.55}
 .finkpi-v{font-family:var(--mono);font-size:15px;font-weight:600;color:var(--ink)}
@@ -1314,12 +1322,12 @@ tbody tr:hover .ipen{opacity:1}
 .fintbl tbody tr:nth-child(even){background:var(--zebra)}
 .fintbl .good{color:var(--ok)} .fintbl .bad{color:var(--danger)} .fintbl .dim{color:var(--muted)}
 .finscen{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:9px}
-.finscen-c{background:var(--paper);border:1px solid var(--line-2);border-radius:var(--r-sm);padding:10px}
+.finscen-c{background:var(--card);border:1px solid var(--line-2);border-radius:var(--r-sm);padding:10px}
 .finscen-c.on{border-color:var(--accent);box-shadow:var(--shadow-lift)}
 .finscen-h{font-size:11px;font-weight:650;color:var(--muted);text-transform:uppercase;
   letter-spacing:.05em;line-height:1.55}
 .finscen-v{font-family:var(--mono);font-size:15px;font-weight:600;margin:4px 0 6px;color:var(--ink)}
-.finmax{margin-top:14px;background:var(--paper);border:1px solid var(--line-2);
+.finmax{margin-top:14px;background:var(--card);border:1px solid var(--line-2);
   border-radius:var(--r-sm);padding:10px 12px}
 .finmax-t{font-size:11px;font-weight:650;color:var(--muted);text-transform:uppercase;
   letter-spacing:.05em;margin-bottom:6px;line-height:1.55}
@@ -1354,13 +1362,13 @@ tbody tr:hover .ipen{opacity:1}
 /* Bản hợp đồng giữ nguyên xuống dòng của mẫu — nội dung là văn bản thuần,
    white-space:pre-wrap là thứ duy nhất cần để nó đọc được. */
 .ctr-doc{white-space:pre-wrap;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
-  font-size:11.5px;line-height:1.8;background:var(--paper);border:1px solid var(--line-strong);
+  font-size:11.5px;line-height:1.8;background:var(--card);border:1px solid var(--line-strong);
   border-radius:8px;padding:16px;color:var(--ink);overflow-x:auto}
 .ctr-doc mark{background:var(--warn-lo);color:var(--warn);border-radius:3px;padding:0 3px;font-weight:600}
 .tpl-body{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11.5px;line-height:1.7;resize:vertical}
 .fieldpick{display:flex;flex-wrap:wrap;gap:5px}
 .fchip{font-size:11px;padding:3px 9px;border:1px solid var(--line-strong);border-radius:999px;
-  background:var(--paper);color:var(--ink-2)}
+  background:var(--card);color:var(--ink-2)}
 .fchip:hover{border-color:var(--brand);color:var(--brand)}
 .printarea{display:none}
 @media print{
@@ -1401,7 +1409,7 @@ tbody tr:hover td:first-child{box-shadow:inset 3px 0 0 var(--brand)}
 .badge:has(.dot){display:inline-flex;align-items:center;gap:6px;padding:2px 9px 2px 7px;
   border-radius:999px;background:var(--surface);border:1px solid var(--line);font-size:11.5px;
   font-weight:500;color:var(--ink-2);white-space:nowrap;line-height:1.5}
-.badge:has(.dot) .dot{width:7px;height:7px;border-radius:50%;flex:none;box-shadow:0 0 0 2px var(--paper)}
+.badge:has(.dot) .dot{width:7px;height:7px;border-radius:50%;flex:none;box-shadow:0 0 0 2px var(--card)}
 </style>
 </head>
 <body>
