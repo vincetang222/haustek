@@ -4365,6 +4365,14 @@ const TV_LECH_TRAN = 20;
    dựng từ .vi, còn mẫu dịch ở LOI_MAU_EN đổi sang .en. Để hai chỗ tự gõ thì
    câu tiếng Anh lọt nhãn tiếng Việt, và bộ kiểm i18n không bắt được vì nó
    chỉ soi câu mẫu chứ không soi phần động. */
+/* Trường điều khoản bước này CHUYỂN ĐƯỢC sang đề xuất.
+   artistSharePct → feePct · termMonths → months · exclusivityMonths → exclusive
+   Ba trường tạm ứng đi vào đề xuất tạm ứng riêng; findersFeePct đi vào ghi
+   chú. Trường tiền nào KHÔNG nằm trong hai nhóm ấy thì bị chặn — trường mới
+   thêm sau này tự bị chặn thay vì tự bị nuốt. */
+const TV_CHUYEN_DUOC = ["artistSharePct", "termMonths", "exclusivityMonths",
+                        "totalAdvanceUSD", "initialAdvanceUSD", "marketingFundUSD",
+                        "findersFeePct"];
 const TV_TEN_TIEN = {
   totalAdvanceUSD:   { vi: "tổng tạm ứng",    en: "total advance" },
   initialAdvanceUSD: { vi: "tạm ứng ban đầu", en: "initial advance" },
@@ -4637,18 +4645,19 @@ function tvTrinh(id, boi, byRole) {
      Nên không liệt kê trường bị chặn, mà liệt kê trường CHUYỂN ĐƯỢC rồi
      chặn phần còn lại. Hợp đồng dữ liệu đặt tên theo đuôi (USD, Pct), nên
      trường tiền mới thêm sau này cũng tự bị chặn thay vì tự bị nuốt. */
-  const TV_CHUYEN_DUOC = ["artistSharePct", "termMonths", "exclusivityMonths"];
   const rac = [], ketDong = [];
   for (const k of Object.keys(t)) {
-    if (TV_CHUYEN_DUOC.indexOf(k) >= 0) continue;
     if (!/USD$|Pct$/.test(k)) continue;              /* chỉ soát trường mang tiền */
     const v = t[k];
     if (v === undefined || v === null || v === "") continue;
     const n = Number(v);
-    /* Rác và số âm KHÔNG được coi như 0. tvSo() nắn chúng về 0 và chốt chặn
-       không thấy gì — một lần lật dấu hay một ô chuỗi hỏng bên CRM là khoản
-       tiền đi mất lặng lẽ, đúng cái lỗi này định dẹp. */
+    /* KIỂM RÁC TRƯỚC, LỌC ĐÍCH ĐẾN SAU — thứ tự này quan trọng.
+       Lọc trước thì trường có đích đến (ba ô tạm ứng) không bao giờ được
+       soi, và totalAdvanceUSD = -5000 hay "nhiều" lại đi lọt câm, đúng cái
+       lỗi chốt chặn này sinh ra để dẹp. Rác là rác dù trường ấy có chỗ đi
+       hay không. */
     if (!isFinite(n) || n < 0) { rac.push(k + " = " + JSON.stringify(v)); continue; }
+    if (TV_CHUYEN_DUOC.indexOf(k) >= 0) continue;    /* có đích đến, không chặn */
     if (n > 0) ketDong.push((TV_TEN_TIEN[k] ? TV_TEN_TIEN[k].vi : k) + " " + (/USD$/.test(k) ? fmt.usd0(n) : n + "%"));
   }
   if (rac.length)
@@ -4656,8 +4665,21 @@ function tvTrinh(id, boi, byRole) {
       + ". Sửa bên CRM rồi gửi lại gói, đừng để bước này tự hiểu thành 0.");
   if (ketDong.length)
     throw new Error("Thương vụ mang điều khoản tiền mà bước này chưa nối chân: " + ketDong.join(" · ")
-      + ". Trình bây giờ là mất các khoản ấy. Chờ bước 3, hoặc tách thành đề xuất riêng ở trang Xét duyệt; "
+      + ". Trình bây giờ là mất các khoản ấy. Chưa có đường nào nhận chúng ở Portal; "
       + "nếu khoản ấy không có thật thì để 0 bên CRM rồi gửi lại gói.");
+
+  /* KHOẢN TẠM ỨNG — tính một lần, dùng cho cả kiểm lẫn dựng đề xuất.
+     Lấy MAX chứ không cộng: CRM gửi totalAdvanceUSD = initial + marketing,
+     nên cộng cả ba là đếm đôi. Lấy max thì gói khai đủ ba ô lẫn gói bỏ trống
+     ô tổng đều ra đúng một số. */
+  const ung = Math.max(tvSo(t.totalAdvanceUSD),
+                       tvSo(t.initialAdvanceUSD) + tvSo(t.marketingFundUSD));
+  /* Dưới 100 thì proposeAdvance từ chối, nên không dựng được đề xuất cho nó.
+     Chặn ở đây với câu nói rõ, thay vì để lỗi nổ giữa chừng sau khi đề xuất
+     hợp đồng đã được tạo. */
+  if (ung > 0 && ung < 100)
+    throw new Error("Khoản tạm ứng " + fmt.usd0(ung) + " nhỏ hơn mức tối thiểu "
+      + fmt.usd0(100) + " mà Portal dựng được đề xuất. Để 0 bên CRM nếu khoản ấy không có thật.");
 
   const thu = contractCalc(tv.khoa, { months: thang, feePct: phi });
   if (thu.months !== thang)
@@ -4665,15 +4687,79 @@ function tvTrinh(id, boi, byRole) {
   if (Math.abs(thu.feePct - phi) > 1e-9)
     throw new Error("Phí " + Math.round(phi * 1000) / 10 + "% nằm ngoài khoảng Portal nhận (gần nhất " + Math.round(thu.feePct * 1000) / 10 + "%). Chốt lại trước khi trình.");
 
+  /* MỘT DEAL SINH HAI ĐỀ XUẤT, KHÔNG PHẢI MỘT.
+     Hợp đồng và tạm ứng là hai lần giám đốc bấm, và có thể một cái được
+     duyệt còn cái kia bị trả. Dựng cả hai ở đây; tiền vẫn chỉ chạm sổ ở
+     nhánh duyệt (applyApproved CỘNG DỒN), không ở bước này.
+
+     KIỂM HẾT RỒI MỚI DỰNG. proposeAdvance có hàng rào riêng — mức tối thiểu
+     và "đối tác đã có đề xuất tạm ứng đang xử lý". Dựng hợp đồng trước rồi
+     mới vấp hàng rào ấy là để lại một đề xuất hợp đồng mồ côi trên bàn giám
+     đốc cho một thương vụ vẫn ở trạng thái "moi". Hỏi trước, dựng sau. */
+  if (ung >= 100) {
+    const trung = A_deXuatChoCuaBen(tv.khoa, "advance");
+    if (trung)
+      throw new Error("Đối tác đã có đề xuất tạm ứng " + trung.id + " đang xử lý. "
+        + "Xử lý xong đề xuất ấy rồi hãy trình thương vụ này.");
+  }
+  const trungHd = A_deXuatChoCuaBen(tv.khoa, "contract");
+  if (trungHd)
+    throw new Error("Đối tác đã có đề xuất hợp đồng " + trungHd.id + " đang xử lý. "
+      + "Xử lý xong đề xuất ấy rồi hãy trình thương vụ này.");
+
+  /* findersFeePct KHÔNG có sổ nào bên Portal — nó chỉ là đầu vào của bảng
+     ROI, một khoản Haustek trả cho người môi giới, không phải số dư của bên
+     cấp quyền. Chặn vì nó là chặn vĩnh viễn. Ghi vào ghi chú đề xuất để
+     giám đốc thấy, rồi cho qua. */
+  const phiMg = tvSo(t.findersFeePct);
+  const ghiChu = "Từ CRM " + tv.dealId + " · " + tv.ten
+    + (phiMg > 0 ? " · phí môi giới " + phiMg + "% (Haustek trả, không vào sổ bên)" : "");
+
   const pr = proposeContract(tv.khoa, {
-    months: thang, feePct: phi, exclusive: tvSo(t.exclusivityMonths) > 0,
-    note: "Từ CRM " + tv.dealId + " · " + tv.ten
+    months: thang, feePct: phi, exclusive: tvSo(t.exclusivityMonths) > 0, note: ghiChu
   }, boi, byRole || "sales");
 
-  tv.trangThai = "daTrinh"; tv.deXuatId = pr.id; tv.trinhLuc = nowISO();
-  audit.log("thuongVu.trinh", tv.id + " → " + pr.id + " · " + partyName(tv.khoa), boi);
+  let prUng = null;
+  if (ung >= 100) {
+    try {
+      /* KHÔNG truyền feePct: để proposeAdvance dùng mức mặc định của Portal
+         (ADVANCE_FEE). CRM có mô hình tạm ứng riêng, nhưng mức phí thu hồi
+         là chính sách của Portal, không phải con số CRM gửi sang — và giám
+         đốc thấy số sau phí trên bảng xét duyệt trước khi bấm. Nói rõ trong
+         ghi chú để không ai phải đoán vì sao số trên bàn khác số CRM gửi. */
+      prUng = proposeAdvance(tv.khoa, { amount: ung,
+        note: "Từ CRM " + tv.dealId + " · đi kèm đề xuất hợp đồng " + pr.id
+            + " · gốc " + fmt.usd0(ung) + ", phí tạm ứng theo mức Portal "
+            + Math.round(ADVANCE_FEE * 100) + "%" }, boi, byRole || "sales");
+    } catch (e) {
+      /* Đã hỏi trước nên không nên tới đây. Nếu vẫn tới: gỡ đề xuất hợp đồng
+         vừa dựng, đừng để lại một nửa. Thương vụ ở lại "moi" để trình lại. */
+      const ds = proposalsOf(), i = ds.findIndex(x => x.id === pr.id);
+      if (i >= 0) ds.splice(i, 1);
+      store.save();
+      throw new Error("Không dựng được đề xuất tạm ứng (" + e.message
+        + "). Đã gỡ đề xuất hợp đồng vừa tạo, thương vụ giữ nguyên để trình lại.");
+    }
+  }
+
+  const deXuat = [{ id: pr.id, loai: "hopDong", trangThai: pr.status }];
+  if (prUng) deXuat.push({ id: prUng.id, loai: "tamUng", trangThai: prUng.status });
+
+  tv.trangThai = "daTrinh";
+  tv.deXuatId = pr.id;            /* mã hợp đồng — giữ cho chỗ đọc cũ */
+  tv.deXuat = deXuat;
+  tv.trinhLuc = nowISO();
+  audit.log("thuongVu.trinh", tv.id + " → " + deXuat.map(x => x.id).join(" + ")
+    + " · " + partyName(tv.khoa) + (prUng ? " · tạm ứng " + fmt.usd0(ung) : ""), boi);
   store.save();
-  return { thuongVu: tv, deXuat: pr };
+  return { thuongVu: tv, deXuat, deXuatHopDong: pr, deXuatTamUng: prUng };
+}
+
+/* Đề xuất CÙNG LOẠI của một bên đang còn trên bàn. Dùng để hỏi trước khi
+   dựng, thay vì để proposeContract/proposeAdvance ném giữa chừng. */
+function A_deXuatChoCuaBen(khoa, loai) {
+  return proposalsOf().find(p => p.partyKey === khoa && p.type === loai
+    && ["submitted", "checked", "returned"].indexOf(p.status) >= 0) || null;
 }
 
 function tvBo(id, lyDo, boi) {
@@ -4698,10 +4784,17 @@ function tvList(f) {
   if (f.trangThai) ds = ds.filter(x => x.trangThai === f.trangThai);
   return ds.sort((a, b) => String(b.nhanLuc).localeCompare(String(a.nhanLuc))).map(x => {
     const pr = x.deXuatId ? prs.find(p => p.id === x.deXuatId) : null;
+    /* Trạng thái SỐNG của từng đề xuất, đọc lại từ bảng đề xuất chứ không
+       dùng bản chụp lúc trình — giám đốc duyệt xong thì chỗ này phải đổi. */
+    const deXuat = (x.deXuat || []).map(d => {
+      const p = prs.find(q => q.id === d.id);
+      return { id: d.id, loai: d.loai, trangThai: p ? p.status : null };
+    });
     return Object.assign({}, x, {
       tenBen: x.khoa ? partyName(x.khoa) : null,
       maBen: x.khoa ? partyClientId(x.khoa) : null,
       khopKhoa: !!(x.khoa && x.khoaCrm && x.khoa === x.khoaCrm),
+      deXuat,
       deXuatTrangThai: pr ? pr.status : null
     });
   });
@@ -5745,6 +5838,14 @@ const LOI_MAU_EN = [
   [/^Không có thương vụ (.+)$/, "No deal $1"],
   [/^Thương vụ đã trình đề xuất (.+)$/, "The deal has already been submitted as proposal $1"],
   [/^Gói thuộc phiên bản ([^·]+), bản này đọc ([^·]+)$/, "The payload is version $1; this build reads $2"],
+  [/^Khoản tạm ứng (.+) nhỏ hơn mức tối thiểu (.+) mà Portal dựng được đề xuất\. Để 0 bên CRM nếu khoản ấy không có thật\.$/,
+   "An advance of $1 is below the $2 minimum the Portal can raise a proposal for. Set it to 0 in the CRM if the amount is not real."],
+  [/^Đối tác đã có đề xuất tạm ứng (.+) đang xử lý\. Xử lý xong đề xuất ấy rồi hãy trình thương vụ này\.$/,
+   "The partner already has advance proposal $1 in flight. Resolve it before submitting this deal."],
+  [/^Đối tác đã có đề xuất hợp đồng (.+) đang xử lý\. Xử lý xong đề xuất ấy rồi hãy trình thương vụ này\.$/,
+   "The partner already has contract proposal $1 in flight. Resolve it before submitting this deal."],
+  [/^Không dựng được đề xuất tạm ứng \((.+)\)\. Đã gỡ đề xuất hợp đồng vừa tạo, thương vụ giữ nguyên để trình lại\.$/,
+   "The advance proposal could not be raised ($1). The contract proposal just created has been removed; the deal is unchanged and can be submitted again."],
   [/^Deal thứ ([^·]+) có mã deal không phải chuỗi \(([^·]+)\)$/, "Deal $1 has a deal id that is not a string ($2)"],
   [/^Deal thứ ([^·]+) có mã deal chỉ gồm khoảng trắng$/, "Deal $1 has a deal id of whitespace only"],
   [/^Mã deal ([^·]+) xuất hiện ([^·]+) lần trong cùng một gói$/, "Deal id $1 appears $2 times in the same payload"],
@@ -5760,11 +5861,11 @@ const LOI_MAU_EN = [
   [/^Deal thứ ([^·]+) thiếu mã deal$/, "Deal $1 has no deal id"],
   [/^Thương vụ có khoản tạm ứng (.+) mà bước này chưa nối chân tạm ứng\. Trình bây giờ là mất khoản ấy\. Chờ bước 3, hoặc tách tạm ứng thành một đề xuất riêng ở trang Xét duyệt\.$/,
    "This deal carries an advance of $1, and this step is not yet wired to the advance ledger. Submitting now loses that amount. Wait for step 3, or raise the advance as its own proposal on the Approvals page."],
-  [/^Thương vụ mang điều khoản tiền mà bước này chưa nối chân: (.+)\. Trình bây giờ là mất các khoản ấy\. Chờ bước 3, hoặc tách thành đề xuất riêng ở trang Xét duyệt; nếu khoản ấy không có thật thì để 0 bên CRM rồi gửi lại gói\.$/,
+  [/^Thương vụ mang điều khoản tiền mà bước này chưa nối chân: (.+)\. Trình bây giờ là mất các khoản ấy\. Chưa có đường nào nhận chúng ở Portal; nếu khoản ấy không có thật thì để 0 bên CRM rồi gửi lại gói\.$/,
    /* LOI_MAU_EN đi qua msg.replace(re, thay), nên hàm nhận (cả câu, nhóm 1, …)
       — KHÁC với NHAT_KY_MAU_EN vốn nhận mảng exec. */
    (_, ds) => "This deal carries money terms this step is not yet wired for: " + tvNhanTienEn(ds)
-        + ". Submitting now loses them. Wait for step 3, or raise them as their own proposal on the Approvals page;"
+        + ". Submitting now loses them. Nothing on the Portal accepts them yet;"
         + " if the amount is not real, set it to 0 in the CRM and resend the payload."],
   [/^Điều khoản tiền không đọc ra số: (.+)\. Sửa bên CRM rồi gửi lại gói, đừng để bước này tự hiểu thành 0\.$/,
    "A money term does not read as a number: $1. Fix it in the CRM and resend the payload; this step must not silently read it as 0."],

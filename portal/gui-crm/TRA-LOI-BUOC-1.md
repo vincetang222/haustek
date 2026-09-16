@@ -97,12 +97,24 @@ Trường tiền thêm sau này vì thế **tự bị chặn thay vì tự bị 
 Đo lại: **10/10 ca sai bị chặn · 4/4 deal sạch vẫn trình được** (kể cả deal
 ghi 0 ở cả bốn ô tiền, và hai mép 97% / 50%).
 
-> **Hệ quả vận hành, xin các bạn cân nhắc chứ đừng để chúng tôi tự quyết:**
-> `findersFeePct` trong dữ liệu mẫu của chính các bạn là `[0, 2, 3]`, tức
-> 2/3 deal có phí môi giới. Cộng với tạm ứng, **gần như mọi deal thật sẽ
-> dừng ở bước 1** cho tới khi bước 3 xong. Chúng tôi vẫn cho là chặn đúng
-> hơn nuốt — nhưng đây là một quyết định vận hành, không phải một chi tiết
-> kỹ thuật.
+### Rồi chúng tôi đo, và chặn hoá ra là chặn tất
+
+Chạy `handoffPayload()` trên dữ liệu thật của CRM:
+
+```
+tổng deal bàn giao:    13
+deal CÓ điều khoản:     6
+  có tạm ứng:           6   ← 6/6
+  sạch hoàn toàn:       0
+```
+
+**Không một deal nào đi qua được.** Chặn đúng về nguyên tắc, nhưng một hàng
+rào chặn 100% deal thật thì nó không bảo vệ ai — nó chỉ đẩy người ta quay
+lại đường cũ, tức chép tay `advances.set()`, đúng thứ chúng tôi vừa gỡ khỏi
+CRM ở mục 6 bên dưới.
+
+Nên chúng tôi **làm luôn bước 3** thay vì dựng trang bước 2. Chi tiết ở mục
+5b.
 
 ---
 
@@ -215,6 +227,72 @@ Nay gói tự mâu thuẫn thì bị chặn cả gói.
   `thuongVuDay[dealId] = {luc, boi, maGoi}` trong khi mã ghi `tvId` — mà toàn
   bộ việc chọn một trong ba đường của `nhanGoi` đọc chính trường ấy. Sai này
   có từ HEAD, không do bản vá; nhưng bản vá làm nó chịu lực. Đã khai lại.
+
+---
+
+## 5b · Chúng tôi làm bước 3 trước bước 2
+
+Lý do là con số ở mục 2: bước 1 không có bước 3 thì chặn 6/6 deal thật. Dựng
+một trang cho luồng từ chối mọi deal là dựng cho không, nên chúng tôi đảo
+thứ tự.
+
+Bước 3 hoá ra không lớn: `proposeAdvance` đã có sẵn và đã là cửa đúng.
+`tvTrinh` nay dựng **hai** đề xuất — đúng hình mục 5 tài liệu của các bạn:
+
+```js
+{ deXuat: [ { id: "DX-2609-011", loai: "hopDong", trangThai: "submitted" },
+            { id: "DX-2609-012", loai: "tamUng",  trangThai: "submitted" } ],
+  deXuatHopDong: {...}, deXuatTamUng: {...} }
+```
+
+Bốn quyết định trong đó, cùng lý do:
+
+**Lấy MAX chứ không cộng.** CRM gửi `totalAdvanceUSD = initial + marketing`,
+nên cộng cả ba ô là đếm đôi. Lấy `max(total, initial + marketing)` thì bốn
+cách CRM diễn đạt cùng một khoản 16.100 đều ra đúng một số — đã đo cả bốn.
+
+**Hỏi trước, dựng sau.** `proposeAdvance` có hàng rào riêng (mức tối thiểu
+$100, "đối tác đã có đề xuất tạm ứng đang xử lý"). Dựng hợp đồng trước rồi
+mới vấp hàng rào ấy là để lại **một đề xuất hợp đồng mồ côi trên bàn giám
+đốc** cho một thương vụ vẫn ở trạng thái `moi`. Nên kiểm cả hai hàng rào
+trước khi dựng bất cứ gì, và vẫn giữ một đường gỡ nếu lỡ tới đó.
+
+**Không truyền `feePct`.** Để `proposeAdvance` dùng `ADVANCE_FEE` mặc định
+của Portal. CRM có mô hình tạm ứng riêng, nhưng mức phí thu hồi là **chính
+sách của Portal**, không phải con số CRM gửi sang. Ghi rõ trong ghi chú đề
+xuất để không ai phải đoán vì sao số trên bàn khác số CRM gửi. *Nếu các bạn
+muốn khác, đây là chỗ đổi — nói một tiếng.*
+
+**`findersFeePct` KHÔNG chặn nữa.** Chúng tôi đi tìm sổ cho nó và không có:
+trong lõi, `findersFeePct` chỉ xuất hiện bên trong `A.roi.tinh()` — một đầu
+vào của bảng ROI, khoản Haustek trả cho người môi giới, không phải số dư của
+bên cấp quyền. Chặn vì nó là **chặn vĩnh viễn**, vì sẽ không bao giờ có chân
+để nối. Nay nó vào ghi chú đề xuất để giám đốc thấy, rồi cho qua.
+
+Chốt chặn vẫn còn nguyên cho phần còn lại: trường tiền nào **không có đích
+đến** vẫn bị chặn, nên trường mới thêm sau này tự bị chặn thay vì tự bị nuốt.
+
+### Một cái bẫy chúng tôi tự đặt rồi tự sập, ghi lại để các bạn khỏi sập
+
+Khi thêm ba ô tạm ứng vào danh sách "chuyển được", chúng tôi đặt phép lọc
+đích đến **trước** phép kiểm rác. Hệ quả: `totalAdvanceUSD = -5000` và
+`= "nhiều"` không còn được soi nữa — đúng cái lỗ chốt chặn sinh ra để bịt,
+mở lại bằng chính bản sửa. Bộ kiểm bắt được ngay vì hai bài ấy đã ghim sẵn.
+
+Thứ tự đúng: **kiểm rác trước, lọc đích đến sau.** Rác là rác dù trường ấy
+có chỗ đi hay không.
+
+### Đo được
+
+```
+sổ tạm ứng sau khi TRÌNH:  không đổi          ✓
+sổ tạm ứng sau khi DUYỆT:  null → 18.032      (16.100 gốc + phí 12%)
+hợp đồng duyệt, tạm ứng bị TRẢ: sổ không đổi  ✓
+bốn cách diễn đạt 16.100 → đúng một đề xuất 16.100, không đếm đôi
+tạm ứng $50 → chặn, và KHÔNG để lại đề xuất mồ côi nào
+```
+
+`thuong-vu.js`: 51 → **58 đạt · 0 hỏng**. Cả 16 bộ node vẫn xanh.
 
 ---
 
@@ -391,9 +469,24 @@ câu chữ thì không ai ánh xạ gì"*. Đúng — và như mục 5 trên kia
 
 ## Chúng tôi làm gì tiếp
 
-1. Gỡ `handoffCalls()` khỏi CRM (mục 6) — **ngay**
-2. `rev` + `artistShareBps` phía CRM (mục 1, 3)
-3. Đọc `lech` và hiện lên deal (việc 2 trong bảng của các bạn)
-4. Áp `them-gioi-han.patch` và gọi lúc dựng form (việc 3)
+| | Việc | Xong chưa |
+|---|---|---|
+| 1 | Áp `va-buoc-1.patch` + sửa bốn lỗ nó để lại | ✅ |
+| 2 | Bốn lỗ hai tác tử săn tìm đo được | ✅ |
+| 3 | Gỡ `handoffCalls()` khỏi CRM (mục 6) | ✅ |
+| 4 | **Bước 3 — chân tạm ứng qua `proposeAdvance`** (mục 5b) | ✅ |
+| 5 | Sửa 21 bộ kiểm trình duyệt đọc biến `CHROMIUM` (mục 7) | ✅ |
+| 6 | `rev` + `artistShareBps` phía CRM | đang làm |
+| 7 | Đọc `lech` và hiện lên deal | đang làm |
+| 8 | Áp `them-gioi-han.patch`, gọi lúc dựng form | đang làm |
 
-Chờ các bạn chốt hình đường về ở mục 5 trên kia trước khi dựng trang bước 2.
+**Hai thứ cần các bạn:**
+
+1. **Mức phí tạm ứng.** Chúng tôi để `ADVANCE_FEE` mặc định của Portal. Nếu
+   deal từ CRM phải theo mức khác, nói sớm — đổi một dòng, nhưng phải là một
+   quyết định chứ không phải một mặc định không ai để ý.
+2. **Hình đường về ở mục 5.** Không chặn chúng tôi nữa (kênh đã có sẵn),
+   nhưng `INBOX_STAGE` phía CRM vẫn cần sửa trước khi bước 2 ra mắt, và chúng
+   tôi muốn chốt hình `deXuat[]` với các bạn thay vì tự đặt.
+
+Trang bước 2 chúng tôi dựng sau, khi hai thứ trên chốt xong.

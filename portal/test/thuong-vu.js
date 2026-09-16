@@ -241,28 +241,21 @@ check("Phân số gửi vào chỗ đòi phần trăm bị gọi ĐÚNG TÊN là
    totalAdvanceUSD, nên CRM chỉ cần bỏ trống ô tổng là đúng khoản ấy lại đi
    lọt: đo được {initialAdvanceUSD: 14000, marketingFundUSD: 2100} trình
    thành hợp đồng và 16.100 không đi đâu cả. */
-[["tổng tạm ứng",                      { totalAdvanceUSD: 16100 }],
- ["tạm ứng ban đầu, không có ô tổng",   { initialAdvanceUSD: 14000 }],
- ["ban đầu + marketing khi ô tổng = 0", { initialAdvanceUSD: 14000, marketingFundUSD: 2100, totalAdvanceUSD: 0 }],
- ["quỹ marketing",                      { marketingFundUSD: 2100 }],
- ["phí môi giới",                       { findersFeePct: 5 }],
- ["khoản nhỏ dưới 100",                 { totalAdvanceUSD: 99 }]
-].forEach(([ten, tien], i) => {
-  check("Không nuốt im lặng: " + ten, () => {
-    const m = thuTrinh("o22-" + i, Object.assign({ artistSharePct: 70, termMonths: 24 }, tien));
-    must(/chưa nối chân/.test(m), "phải chặn vì chưa nối chân, thấy: " + (m || "(không chặn)"));
-    return m.slice(0, 50) + "…";
-  });
-});
-check("Số tiền trong câu lỗi đúng là số CRM gửi", () => {
-  const m = thuTrinh("o23", { artistSharePct: 70, termMonths: 24, initialAdvanceUSD: 14000, marketingFundUSD: 2100, totalAdvanceUSD: 0 });
-  must(/14,000/.test(m) && /2,100/.test(m), "phải nêu cả hai khoản, thấy: " + m);
-  return m.slice(0, 56) + "…";
+check("Trường tiền KHÔNG có đích đến vẫn bị chặn", () => {
+  /* Đây là phần còn sống của chốt chặn: trường tiền mới thêm sau này mà
+     chưa ai nối chân thì tự bị chặn, thay vì tự bị nuốt. */
+  const m = thuTrinh("o22-x", { artistSharePct: 70, termMonths: 24, bonusPoolUSD: 5000 });
+  must(/chưa nối chân/.test(m), "phải chặn vì chưa nối chân, thấy: " + (m || "(không chặn)"));
+  must(/5,000/.test(m), "phải nêu đúng số tiền, thấy: " + m);
+  return m.slice(0, 50) + "…";
 });
 [["số âm", -5000], ["chuỗi rác", "nhiều"]].forEach(([ten, v], i) => {
   check("Rác không được tự hiểu thành 0: " + ten, () => {
     /* tvSo() nắn rác và số âm về 0, nên chốt chặn không thấy gì. Một lần
-       lật dấu bên CRM là khoản tiền đi mất lặng lẽ — đúng cái lỗi ở trên. */
+       lật dấu bên CRM là khoản tiền đi mất lặng lẽ.
+       Phải kiểm RÁC TRƯỚC rồi mới lọc đích đến: lọc trước thì ba ô tạm ứng
+       (vốn CÓ đích đến từ bước 3) không bao giờ được soi, và -5000 lại đi
+       lọt câm. Bài này canh đúng thứ tự ấy. */
     const m = thuTrinh("o24-" + i, { artistSharePct: 70, termMonths: 24, totalAdvanceUSD: v });
     must(/không đọc ra số/.test(m), "phải chặn vì không đọc ra số, thấy: " + (m || "(không chặn)"));
     return m.slice(0, 50) + "…";
@@ -400,6 +393,98 @@ check("Đảo thứ tự khoá không phải là lệch", () => {
   must((A.thuongVu.list().find(x => x.id === tv.id).lech || []).length === 0, "không được ghi lệch oan");
 });
 
+/* ---------- 5f. bước 3: một deal sinh HAI đề xuất ---------- */
+/* Bên chưa có đề xuất nào đang chờ. Dùng lại bên đã có là phép kiểm "bị
+   chặn" hoá ra đang đo cái chặn trùng — xanh vì lý do không liên quan. */
+const CHO_XU_LY = ["submitted", "checked", "returned"];
+function benRanh() {
+  return A.parties.list().rows.find(p => p.partyKey[0] === "L"
+    && !A.proposals.list().some(q => q.partyKey === p.partyKey && CHO_XU_LY.indexOf(q.status) >= 0));
+}
+function trinhDeal(dealId, terms) {
+  const ben = benRanh();
+  A.thuongVu.nhanGoi(goi([deal(dealId, { terms })]), "Kiểm thử");
+  const tv = A.thuongVu.list().find(x => x.dealId === dealId);
+  A.thuongVu.ganBen(tv.id, ben.partyKey, "Kiểm thử");
+  return { ben, tv, ra: A.thuongVu.trinh(tv.id, "Kiểm thử", "sales") };
+}
+const soDu = k => { const a = snap().advances || {}; return a[k] ? a[k].opening : null; };
+
+check("Deal có tạm ứng sinh hai đề xuất, KHÔNG chạm sổ lúc trình", () => {
+  /* Đo được trước bước 3: deal mang 16.100 bị chặn thẳng, nên 6/6 deal thật
+     của CRM đứng lại ở bước 1 — cầu nối không dùng được. Nay tạm ứng đi qua
+     proposeAdvance, đúng cửa duy nhất được phép, và tiền vẫn chỉ chạm sổ ở
+     nhánh duyệt (applyApproved CỘNG DỒN, không GÁN ĐÈ như advances.set). */
+  const goc = (() => { const b = benRanh(); return { b, truoc: JSON.stringify(soDu(b.partyKey)) }; })();
+  const { ben, ra } = trinhDeal("o50", { artistSharePct: 70, termMonths: 24, exclusivityMonths: 12,
+    initialAdvanceUSD: 14000, marketingFundUSD: 2100, totalAdvanceUSD: 16100, findersFeePct: 3 });
+  must(ra.deXuat.length === 2, "phải có hai đề xuất, thấy " + ra.deXuat.length);
+  must(ra.deXuat[0].loai === "hopDong" && ra.deXuat[1].loai === "tamUng", "sai loại đề xuất");
+  must(ra.deXuatTamUng.terms.amount === 16100, "tạm ứng phải là 16100, thấy " + ra.deXuatTamUng.terms.amount);
+  must(JSON.stringify(soDu(ben.partyKey)) === goc.truoc, "TRÌNH không được chạm sổ tạm ứng");
+  /* phí môi giới không có sổ nào bên Portal — phải nằm trong ghi chú, không bị nuốt */
+  must(/môi giới 3%/.test(ra.deXuatHopDong.terms.note), "ghi chú phải nêu phí môi giới, thấy: " + ra.deXuatHopDong.terms.note);
+  return ra.deXuat.map(x => x.loai + "=" + x.id).join(" · ");
+});
+check("Duyệt rồi tiền mới vào sổ", () => {
+  const { ben, ra } = trinhDeal("o51", { artistSharePct: 70, termMonths: 24, totalAdvanceUSD: 16100 });
+  const truoc = soDu(ben.partyKey) || 0;
+  ra.deXuat.forEach(d => A.proposals.review(d.id, "approve", "ok", "Giám đốc", "mgmt"));
+  const sau = soDu(ben.partyKey) || 0;
+  must(sau > truoc, "duyệt xong tiền phải vào sổ, " + truoc + " → " + sau);
+  /* CỘNG DỒN, không GÁN ĐÈ: phần tăng phải là khoản mới, không phải khoản
+     mới thay chỗ khoản cũ. Đây đúng là lỗi advances.set() từng gây ra. */
+  must(sau - truoc >= 16100, "phần tăng phải ít nhất bằng khoản gốc, thấy " + (sau - truoc));
+  return truoc + " → " + sau;
+});
+check("Hợp đồng duyệt mà tạm ứng bị trả thì sổ vẫn trống", () => {
+  /* Hai đề xuất độc lập — đúng hình các bạn portal mô tả ở mục 5 tài liệu
+     hợp đồng dữ liệu: một cái duyệt, một cái trả. */
+  const { ben, ra } = trinhDeal("o52", { artistSharePct: 70, termMonths: 24, totalAdvanceUSD: 16100 });
+  /* So TRƯỚC với SAU, không đòi null: bên nào cũng có thể đã có tạm ứng từ
+     dữ liệu gieo sẵn, và "vắng mặt" khác "không đổi". */
+  const truoc = JSON.stringify(soDu(ben.partyKey));
+  ra.deXuat.forEach(d => A.proposals.review(d.id, d.loai === "tamUng" ? "reject" : "approve", "ok", "Giám đốc", "mgmt"));
+  must(JSON.stringify(soDu(ben.partyKey)) === truoc, "tạm ứng bị trả thì sổ không được đổi");
+  const lai = A.thuongVu.list().find(x => x.dealId === "o52");
+  must(lai.deXuat.map(d => d.loai + "=" + d.trangThai).join(" ") === "hopDong=approved tamUng=rejected",
+       "tvList phải đọc trạng thái SỐNG, thấy: " + JSON.stringify(lai.deXuat));
+  return "hopDong=approved · tamUng=rejected · sổ trống";
+});
+/* Bốn cách CRM diễn đạt cùng một khoản 16.100 — không được đếm đôi. */
+[["đủ ba ô",          { initialAdvanceUSD: 14000, marketingFundUSD: 2100, totalAdvanceUSD: 16100 }, 16100],
+ ["bỏ trống ô tổng",  { initialAdvanceUSD: 14000, marketingFundUSD: 2100 },                        16100],
+ ["ô tổng = 0",       { initialAdvanceUSD: 14000, marketingFundUSD: 2100, totalAdvanceUSD: 0 },    16100],
+ ["chỉ có ô tổng",    { totalAdvanceUSD: 16100 },                                                  16100]
+].forEach(([ten, tien, mong], i) => {
+  check("Không đếm đôi tạm ứng: " + ten, () => {
+    const { ra } = trinhDeal("o53-" + i, Object.assign({ artistSharePct: 70, termMonths: 24 }, tien));
+    must(ra.deXuatTamUng && ra.deXuatTamUng.terms.amount === mong,
+         "phải là " + mong + ", thấy " + (ra.deXuatTamUng ? ra.deXuatTamUng.terms.amount : "(không có)"));
+  });
+});
+check("Deal không tạm ứng chỉ sinh MỘT đề xuất", () => {
+  const { ra } = trinhDeal("o54", { artistSharePct: 70, termMonths: 24, findersFeePct: 2 });
+  must(ra.deXuat.length === 1 && ra.deXuat[0].loai === "hopDong", "chỉ được một đề xuất hợp đồng");
+  must(ra.deXuatTamUng === null, "không được dựng đề xuất tạm ứng");
+});
+check("Tạm ứng dưới mức Portal dựng được thì chặn, không dựng nửa vời", () => {
+  /* proposeAdvance từ chối dưới $100. Nếu dựng hợp đồng trước rồi mới vấp
+     hàng rào ấy thì để lại một đề xuất hợp đồng mồ côi trên bàn giám đốc
+     cho một thương vụ vẫn ở trạng thái "moi". Hỏi trước, dựng sau. */
+  const ben = benRanh();
+  A.thuongVu.nhanGoi(goi([deal("o55", { terms: { artistSharePct: 70, termMonths: 24, totalAdvanceUSD: 50 } })]), "Kiểm thử");
+  const tv = A.thuongVu.list().find(x => x.dealId === "o55");
+  A.thuongVu.ganBen(tv.id, ben.partyKey, "Kiểm thử");
+  const truoc = A.proposals.list().length;
+  let m = "";
+  try { A.thuongVu.trinh(tv.id, "Kiểm thử", "sales"); } catch (e) { m = e.message; }
+  must(/nhỏ hơn mức tối thiểu/.test(m), "phải chặn vì dưới mức tối thiểu, thấy: " + (m || "(trình được)"));
+  must(A.proposals.list().length === truoc, "không được để lại đề xuất mồ côi nào");
+  must(A.thuongVu.list().find(x => x.id === tv.id).trangThai === "moi", "thương vụ phải ở lại moi");
+  return m.slice(0, 50) + "…";
+});
+
 /* ---------- 6. không trình hai lần ---------- */
 check("Thương vụ đã trình thì không trình lại được", () => {
   const tv = A.thuongVu.list().find(x => x.dealId === "o10");
@@ -451,8 +536,18 @@ check("Đếm theo trạng thái khớp danh sách", () => {
 const CHUA_DUNG = HANG.map(p => p.partyKey)
   .filter(k => k[0] === "L")
   .reverse();
+/* Bên "trống" phải trống CẢ HAI loại đề xuất, không chỉ hợp đồng. Từ bước 3
+   một deal có tạm ứng sinh thêm đề xuất tạm ứng, và lõi cũng từ chối hai đề
+   xuất tạm ứng đang chờ cho cùng một bên. Bên mang sẵn đề xuất tạm ứng từ dữ
+   liệu gieo sẵn mà lọt vào đây thì bài kiểm "phải trình được" hoá ra đang đo
+   cái chặn trùng — đỏ vì một lý do không liên quan. */
+const CHO_XU_LY_HD = ["submitted", "checked", "returned"];
+function benBan(k) {
+  return A.proposals.list().some(p => p.partyKey === k && CHO_XU_LY_HD.indexOf(p.status) >= 0);
+}
 function benTrong() {
-  const k = CHUA_DUNG.shift();
+  let k;
+  while ((k = CHUA_DUNG.shift()) && benBan(k)) { /* bỏ qua bên đang có việc */ }
   if (!k) throw new Error("hết bên trống để kiểm");
   return k;
 }
@@ -466,8 +561,10 @@ function trinhThu(pk, terms) {
   A.thuongVu.ganBen(tv.id, pk, "Kiểm thử");
   try {
     const r = A.thuongVu.trinh(tv.id, "Kiểm thử", "sales");
-    return { ok: true, pr: r.deXuat, loi: "" };
-  } catch (e) { return { ok: false, pr: null, loi: e.message }; }
+    /* r.deXuat nay là MẢNG (một deal sinh hai đề xuất). Phép kiểm nào cần
+       riêng đề xuất hợp đồng thì lấy deXuatHopDong. */
+    return { ok: true, pr: r.deXuatHopDong, prUng: r.deXuatTamUng, ds: r.deXuat, loi: "" };
+  } catch (e) { return { ok: false, pr: null, prUng: null, ds: [], loi: e.message }; }
 }
 
 /* (a) Đơn vị phần trăm: chia 100 vô điều kiện, không đoán theo độ lớn.
@@ -500,13 +597,45 @@ check("Gói sai đơn vị phần trăm bị chặn, không đi lọt như gói 
 /* (b) Chân tạm ứng chưa nối thì phải TỪ CHỐI, không nuốt im lặng một điều
    khoản tiền. Đo được: deal mang 16.100 trình được thành đề xuất hợp đồng
    và khoản ấy không đi đâu cả. */
-check("Thương vụ có tạm ứng bị từ chối thay vì mất khoản tiền", () => {
+check("Thương vụ có tạm ứng đi qua ĐỀ XUẤT, không biến mất và không ghi thẳng", () => {
+  /* Trước bước 3, bài này đòi CHẶN: lúc ấy chưa có đường nào nhận khoản
+     tiền, nên chặn đúng hơn nuốt. Nhưng đo trên dữ liệu thật của CRM thì
+     6/6 deal có điều khoản đều mang tạm ứng — chặn tức là cầu nối không
+     dùng được cho deal nào. Bước 3 mở đúng một cửa: proposeAdvance. Khoản
+     tiền thành đề xuất thứ hai, giám đốc bấm riêng, và chỉ chạm sổ ở nhánh
+     duyệt (applyApproved CỘNG DỒN) — không bao giờ qua advances.set(). */
   const r = trinhThu(benTrong(), DK);   /* điều khoản mẫu: 16.100 tạm ứng */
-  must(!r.ok, "deal mang 16.100 vẫn trình được — khoản ấy biến mất không ai báo");
-  must(/tạm ứng/i.test(r.loi), "câu từ chối phải nói rõ vì tạm ứng, nhận được: " + r.loi);
+  must(r.ok, "deal mang 16.100 phải trình được qua đề xuất tạm ứng: " + r.loi);
+  must(r.prUng && r.prUng.terms.amount === 16100, "phải có đề xuất tạm ứng 16.100, thấy: "
+       + (r.prUng ? r.prUng.terms.amount : "(không có)"));
+  must(r.prUng.status === "submitted", "đề xuất tạm ứng phải đang chờ duyệt");
   const con = trinhThu(benTrong(), { artistSharePct: 70, termMonths: 24, totalAdvanceUSD: 0 });
   must(con.ok, "deal không có tạm ứng vẫn phải trình được bình thường: " + con.loi);
-  return "có tạm ứng thì chặn · không tạm ứng thì qua";
+  must(con.prUng === null, "deal không tạm ứng không được sinh đề xuất tạm ứng");
+  return "có tạm ứng → 2 đề xuất · không tạm ứng → 1";
+});
+
+/* Ba ô tạm ứng có ĐÍCH ĐẾN (đề xuất tạm ứng) nên đi tiếp; khoản dưới mức
+   tối thiểu và trường tiền KHÔNG có đích đến thì vẫn phải chặn. Bản trước
+   chặn tất, kể cả thứ chặn là chặn vĩnh viễn. */
+[["tổng tạm ứng",                      { totalAdvanceUSD: 16100 },  16100],
+ ["tạm ứng ban đầu, không có ô tổng",   { initialAdvanceUSD: 14000 }, 14000],
+ ["quỹ marketing",                      { marketingFundUSD: 2100 },   2100]
+].forEach(([ten, tien, mong], i) => {
+  check("Tạm ứng đi qua đề xuất, không bị nuốt: " + ten, () => {
+    const r = trinhThu(benTrong(), Object.assign({ artistSharePct: 70, termMonths: 24 }, tien));
+    must(r.ok, "phải trình được: " + r.loi);
+    must(r.prUng && r.prUng.terms.amount === mong, "tạm ứng phải là " + mong + ", thấy "
+         + (r.prUng ? r.prUng.terms.amount : "(không có)"));
+  });
+});
+check("Phí môi giới không có sổ nào bên Portal nên KHÔNG chặn, mà ghi vào ghi chú", () => {
+  /* findersFeePct chỉ là đầu vào bảng ROI — khoản Haustek trả cho người môi
+     giới, không phải số dư của bên cấp quyền. Chặn vì nó là chặn vĩnh viễn,
+     vì sẽ không bao giờ có sổ để nối. */
+  const r = trinhThu(benTrong(), { artistSharePct: 70, termMonths: 24, findersFeePct: 5 });
+  must(r.ok, "không được chặn: " + r.loi);
+  must(/môi giới 5%/.test(r.pr.terms.note), "phải ghi vào ghi chú đề xuất, thấy: " + r.pr.terms.note);
 });
 
 /* (c) CRM sửa deal rồi gửi lại cùng dealId. Bản trước bỏ qua vô điều kiện,
