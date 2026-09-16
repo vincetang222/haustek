@@ -6079,11 +6079,22 @@ function reviewProposal(id, action, note, by, role) {
   if ((action === "reject" || action === "return") && !(note && note.trim())) throw new Error("Cần ghi lý do");
   if ((action === "withdraw" || action === "resubmit") && !coQuyenNhom("giamSat", role) && pr.byRole !== role) throw new Error("Chỉ người đề xuất mới rút / gửi lại được");
   const now = nowISO();
+  /* Duyệt thẳng từ "submitted" là BỎ QUA bước kế toán kiểm. Luồng cho phép
+     — giám đốc có thẩm quyền ấy — nhưng trước đây nó không để lại dấu vết
+     nào: lịch sử chỉ có ["submitted","approved"], nên người soát về sau
+     không phân biệt được "kế toán đã kiểm và thấy ổn" với "không ai kiểm".
+     Ghi lại, không chặn: thẩm quyền là chuyện của giám đốc, còn việc một
+     bước kiểm đã bị bỏ qua thì phải đọc được. */
+  const boQuaKiem = action === "approve" && pr.status === "submitted";
   if (action === "resubmit") pr.calc = pr.type === "advance" ? advanceCalc(pr.partyKey, pr.terms.amount, pr.terms.feePct) : contractCalc(pr.partyKey, pr.terms);
   pr.status = fl.to; pr.updatedAt = now;
-  pr.history.push({ at: now, status: fl.to, by: by || "", note: note || "" });
+  const dong = { at: now, status: fl.to, by: by || "", note: note || "" };
+  if (boQuaKiem) { dong.boQuaKiem = true; pr.boQuaKiem = true; }
+  pr.history.push(dong);
   if (fl.to === "approved") applyApproved(pr, by);
-  audit.log("proposal." + action, pr.id + " · " + pr.party.name + (note ? " · " + note : ""), by); store.save();
+  audit.log("proposal." + action, pr.id + " · " + pr.party.name
+    + (boQuaKiem ? " · duyệt thẳng, không qua bước kế toán kiểm" : "")
+    + (note ? " · " + note : ""), by); store.save();
   return pr;
 }
 function applyApproved(pr, by) {
@@ -13831,6 +13842,8 @@ var CHU = {
     dxProj: 'Thu nhập ròng 12 tháng dự kiến', dxMax: 'Mức nên ứng tối đa', dxRepay: 'Khoản phải thu hồi', dxRecoup: 'Thời gian thu hồi', dxFee: 'Phí ứng thu về', dxRetained: 'Haustek giữ trong thời gian thu hồi', dxRoi: 'ROI trên vốn ứng', dxRoiH: 'Hiệu quả vốn ứng (trong thời gian thu hồi)', dxRoiFee: 'Lợi suất phí ứng / năm', dxRoiA: 'quy năm', dxCover: 'Độ phủ (thu nhập 12 tháng ÷ khoản thu hồi)',
     dxGrade: 'Hạng rủi ro', dxProjGross: 'Doanh thu gộp dự kiến cả kỳ hạn', dxNow: 'Haustek giữ theo hợp đồng hiện tại', dxNew: 'Haustek giữ theo đề xuất', dxDelta: 'Chênh lệch', dxFeeNow: 'Phí hiện tại', dxFeeNew: 'Phí đề xuất', dxEnd: 'Hợp đồng hiện tại hết hạn', dxDue: 'đến hạn gia hạn', dxTerm: 'Kỳ hạn', thang: ' tháng',
     dxKyMoi: 'Ký mới', dxGiaHan: 'Gia hạn', dxHanSuyRa: 'ngày suy ra, chưa có hợp đồng',
+    dxBoKiem: 'Không qua kế toán',
+    dxBoKiemMo: 'Đề xuất này được duyệt thẳng, không qua bước kế toán kiểm số. Luồng cho phép, nhưng lịch sử ghi lại để người soát về sau phân biệt được với đề xuất đã qua kiểm.',
     dxKyMoiMo: 'Bên này chưa có bản ghi hợp đồng nào trong hệ — đây là ký mới, không phải gia hạn. Deal ký mới thuộc quy trình CRM; nếu nó đã qua CRM thì nhận từ CRM để giữ lại chuỗi duyệt đã có.',
     dxLyDo: 'Lý do khuyến nghị', dxSeries: 'Thu nhập ròng 12 kỳ', dxHistory: 'Diễn biến', dxNote: 'Ghi chú đề xuất', dxBy: 'Người đề xuất', dxPartner: 'đối tác gửi từ cổng'
   },
@@ -13858,6 +13871,8 @@ var CHU = {
     dxProj: 'Projected 12-month net', dxMax: 'Suggested maximum advance', dxRepay: 'Amount to recoup', dxRecoup: 'Recoupment time', dxFee: 'Advance fee earned', dxRetained: 'Haustek keeps during recoupment', dxRoi: 'ROI on the advance', dxRoiH: 'Return on the advance (over recoupment)', dxRoiFee: 'Fee yield / year', dxRoiA: 'annualised', dxCover: 'Coverage (12-month net ÷ amount to recoup)',
     dxGrade: 'Risk grade', dxProjGross: 'Projected gross over the term', dxNow: 'Haustek keeps under current contract', dxNew: 'Haustek keeps under proposal', dxDelta: 'Difference', dxFeeNow: 'Current fee', dxFeeNew: 'Proposed fee', dxEnd: 'Current contract ends', dxDue: 'renewal due', dxTerm: 'Term', thang: ' months',
     dxKyMoi: 'New signing', dxGiaHan: 'Renewal', dxHanSuyRa: 'inferred date, no contract on file',
+    dxBoKiem: 'No accounting check',
+    dxBoKiemMo: 'This proposal was approved directly, without the accounting check. The flow allows it, but the history records it so a later reviewer can tell it apart from one that was checked.',
     dxKyMoiMo: 'This party has no contract record in the system — this is a new signing, not a renewal. New signings belong to the CRM process; if this one already went through the CRM, receive it from there so its approval chain survives.',
     dxLyDo: 'Why this recommendation', dxSeries: 'Net earnings, 12 periods', dxHistory: 'History', dxNote: 'Proposal note', dxBy: 'Proposed by', dxPartner: 'sent by the partner from the portal'
   }
@@ -14064,7 +14079,8 @@ function theDeXuat(pr, opts) {
   /* gia hạn là ca thường, để huy hiệu trung tính; ký mới mới cần chú ý */
   var tagViec = c.viec === 'moi' ? HM.tag(t('dxKyMoi'), 'warn')
               : c.viec === 'gia-han' ? HM.tag(t('dxGiaHan'), '') : '';
-  var dau = '<div class="bar" style="margin-bottom:10px">' + tagDx(pr.status) + tagViec + tagKn(c.recommendation) + (c.grade ? tagHang(c.grade) : '') +
+  var tagBoKiem = pr.boQuaKiem ? HM.tag(t('dxBoKiem'), 'warn') : '';
+  var dau = '<div class="bar" style="margin-bottom:10px">' + tagDx(pr.status) + tagViec + tagBoKiem + tagKn(c.recommendation) + (c.grade ? tagHang(c.grade) : '') +
     '<span class="muted" style="font-size:12.5px">' + esc(song(pr, 'moTa')) + '</span></div>';
   var html = dau;
   /* Bản tính có thể đã bị lược theo vai (kế toán, kinh doanh không thấy phần
@@ -14113,7 +14129,7 @@ function theDeXuat(pr, opts) {
     HB.o({ loai: 'cot', cao: 150, chuThich: false, dinhDang: 'tien', truc: c.series.map(function (x) { return x.label; }), chuoi: [{ ten: t('dxNet'), gt: c.series.map(function (x) { return x.net; }), mau: P[0] }] });
   if (pr.terms && pr.terms.note) html += '<p class="hint" style="margin-top:10px"><b>' + esc(t('dxNote')) + ':</b> ' + esc(song(pr.terms, 'note')) + '</p>';
   html += '<h4 class="sec" style="margin-top:14px">' + esc(t('dxHistory')) + '</h4><ul class="tl">' + pr.history.slice().reverse().map(function (h) {
-    return '<li>' + tagDx(h.status) + ' <span class="mono" style="font-size:12px">' + esc(h.at) + '</span>' + (h.by ? ' · ' + esc(h.by) : '') + (h.note ? '<div class="muted" style="font-size:12.5px">' + esc(song(h, 'note')) + '</div>' : '') + '</li>';
+    return '<li>' + tagDx(h.status) + (h.boQuaKiem ? ' ' + HM.tag(t('dxBoKiem'), 'warn') : '') + ' <span class="mono" style="font-size:12px">' + esc(h.at) + '</span>' + (h.by ? ' · ' + esc(h.by) : '') + (h.note ? '<div class="muted" style="font-size:12.5px">' + esc(song(h, 'note')) + '</div>' : '') + (h.boQuaKiem ? '<div class="muted" style="font-size:12.5px">' + esc(t('dxBoKiemMo')) + '</div>' : '') + '</li>';
   }).join('') + '</ul>';
   return html;
 }

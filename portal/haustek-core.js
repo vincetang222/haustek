@@ -4290,11 +4290,22 @@ function reviewProposal(id, action, note, by, role) {
   if ((action === "reject" || action === "return") && !(note && note.trim())) throw new Error("Cần ghi lý do");
   if ((action === "withdraw" || action === "resubmit") && !coQuyenNhom("giamSat", role) && pr.byRole !== role) throw new Error("Chỉ người đề xuất mới rút / gửi lại được");
   const now = nowISO();
+  /* Duyệt thẳng từ "submitted" là BỎ QUA bước kế toán kiểm. Luồng cho phép
+     — giám đốc có thẩm quyền ấy — nhưng trước đây nó không để lại dấu vết
+     nào: lịch sử chỉ có ["submitted","approved"], nên người soát về sau
+     không phân biệt được "kế toán đã kiểm và thấy ổn" với "không ai kiểm".
+     Ghi lại, không chặn: thẩm quyền là chuyện của giám đốc, còn việc một
+     bước kiểm đã bị bỏ qua thì phải đọc được. */
+  const boQuaKiem = action === "approve" && pr.status === "submitted";
   if (action === "resubmit") pr.calc = pr.type === "advance" ? advanceCalc(pr.partyKey, pr.terms.amount, pr.terms.feePct) : contractCalc(pr.partyKey, pr.terms);
   pr.status = fl.to; pr.updatedAt = now;
-  pr.history.push({ at: now, status: fl.to, by: by || "", note: note || "" });
+  const dong = { at: now, status: fl.to, by: by || "", note: note || "" };
+  if (boQuaKiem) { dong.boQuaKiem = true; pr.boQuaKiem = true; }
+  pr.history.push(dong);
   if (fl.to === "approved") applyApproved(pr, by);
-  audit.log("proposal." + action, pr.id + " · " + pr.party.name + (note ? " · " + note : ""), by); store.save();
+  audit.log("proposal." + action, pr.id + " · " + pr.party.name
+    + (boQuaKiem ? " · duyệt thẳng, không qua bước kế toán kiểm" : "")
+    + (note ? " · " + note : ""), by); store.save();
   return pr;
 }
 function applyApproved(pr, by) {
