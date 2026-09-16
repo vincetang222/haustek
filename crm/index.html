@@ -127,6 +127,8 @@
   --r:7px; --r-sm:5px; --radius:5px;
   --shadow:0 1px 2px rgba(10,10,20,.06), 0 2px 6px -1px rgba(10,10,20,.08);
   --shadow-2:0 2px 6px rgba(10,10,20,.08), 0 16px 40px -12px rgba(10,10,20,.24);
+  --shadow-hover:0 4px 12px rgba(10,10,20,.10), 0 24px 48px -16px rgba(10,10,20,.28);
+  --ease:cubic-bezier(.22,.61,.36,1);
   --shadow-lift:0 0 0 3px rgba(10,98,116,.24);
   --ring:0 0 0 3px rgba(10,98,116,.30);
   --side:212px;
@@ -173,6 +175,7 @@
     --nav:#08080A; --nav-2:#A8A8B4;
     --shadow:0 1px 2px rgba(0,0,0,.40), 0 2px 6px -1px rgba(0,0,0,.34);
     --shadow-2:0 2px 8px rgba(0,0,0,.42), 0 20px 50px -12px rgba(0,0,0,.72);
+    --shadow-hover:0 4px 14px rgba(0,0,0,.50), 0 28px 56px -16px rgba(0,0,0,.80);
     --shadow-lift:0 0 0 3px rgba(94,198,220,.26);
     --ring:0 0 0 3px rgba(94,198,220,.32);
   }
@@ -211,6 +214,7 @@
   --nav:#08080A; --nav-2:#A8A8B4;
   --shadow:0 1px 2px rgba(0,0,0,.40), 0 2px 6px -1px rgba(0,0,0,.34);
   --shadow-2:0 2px 8px rgba(0,0,0,.42), 0 20px 50px -12px rgba(0,0,0,.72);
+    --shadow-hover:0 4px 14px rgba(0,0,0,.50), 0 28px 56px -16px rgba(0,0,0,.80);
   --shadow-lift:0 0 0 3px rgba(94,198,220,.26);
   --ring:0 0 0 3px rgba(94,198,220,.32);
 }
@@ -376,8 +380,8 @@ th .dim,.vt-head .dim{color:var(--head-muted)}
 
 /* ---------- page head ---------- */
 .phead{display:flex;align-items:flex-end;gap:16px;margin-bottom:16px;flex-wrap:wrap}
-.ptitle{font-size:21px;font-weight:600;letter-spacing:-.02em}
-.pmeta{font-size:12px;color:var(--muted);padding-bottom:3px}
+.ptitle{font-size:24px;font-weight:700;letter-spacing:-.025em}
+.pmeta{font-size:12.5px;color:var(--muted);padding-bottom:4px}
 .phead-actions{margin-left:auto;display:flex;gap:8px}
 .btn{
   padding:7px 13px;border-radius:var(--radius);font-size:12.5px;font-weight:500;
@@ -399,11 +403,21 @@ th .dim,.vt-head .dim{color:var(--head-muted)}
 .card{background:var(--paper);border:1px solid var(--card-line);border-radius:var(--r);
   box-shadow:var(--shadow);overflow:hidden}
 /* Nắp thẻ trước đây chỉ là một đường kẻ mảnh nên thẻ không có đầu có đuôi */
-.card-h{padding:11px 16px;border-bottom:1px solid var(--line);background:var(--zebra);
-  display:flex;align-items:center;gap:10px}
-.card-t{font-size:12px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;
-  color:var(--ink-2);line-height:1.5}
-.card-note{font-size:11.5px;color:var(--muted);margin-left:auto}
+/* Đầu thẻ là dải mực tối — CÙNG token với dải tiêu đề bảng (--head), nên hai
+   thứ đọc như một hệ chứ không phải hai ý tưởng. Trước đây nó là nhãn hoa nhỏ
+   trên nền zebra, chênh với thân thẻ 1,05:1: có đầu mà không thấy đầu. */
+.card-h{padding:10px 16px;border-bottom:1px solid var(--head-line);background:var(--head);
+  display:flex;align-items:center;gap:10px;min-height:42px}
+.card-t{font-size:12.5px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;
+  color:var(--on-head);line-height:1.5}
+.card-note{font-size:11.5px;color:var(--head-muted);margin-left:auto}
+.card-h a,.card-h .t-name{color:var(--ice)}
+.card-h .btn{background:transparent;border-color:var(--head-line);color:var(--on-head)}
+.card-h .btn:hover{background:var(--head-line);border-color:var(--head-muted);color:var(--on-head)}
+/* Bảng nằm NGAY dưới đầu thẻ thì hạ dải tiêu đề bảng xuống nền nhạt — không thì
+   hai dải tối chạm nhau thành một khối. */
+.card-h + .tw thead th,.card-h + table thead th,.card-h + .tscroll thead th{
+  background:var(--zebra);color:var(--ink-2);border-bottom:1px solid var(--line)}
 .card-b{padding:14px 16px}
 
 /* ---------- pipeline strip (hero) ---------- */
@@ -429,15 +443,23 @@ th .dim,.vt-head .dim{color:var(--head-muted)}
    không biết nhìn cái nào trước nên cả dải đọc thành một khối xám. Ba việc:
    vạch màu trên đỉnh phân loại thẻ, số to hẳn lên, và thẻ tiền có màu riêng. */
 .stat{position:relative;background:var(--paper);border:1px solid var(--card-line);
-  border-radius:var(--r);padding:15px 15px 13px;box-shadow:var(--shadow);overflow:hidden}
-.stat::before{content:'';position:absolute;inset:0 0 auto;height:3px;background:var(--accent-2)}
+  border-radius:var(--r);padding:15px 16px 13px 19px;box-shadow:var(--shadow);overflow:hidden;
+  transition:transform .16s var(--ease),box-shadow .16s var(--ease),border-color .16s}
+.stat:hover{transform:translateY(-2px);box-shadow:var(--shadow-hover);border-color:var(--line-strong)}
+/* Vạch màu chuyển từ mép trên sang mép trái: đọc như một cái tab. Và mỗi ô một
+   màu quay vòng, để bốn ô cạnh nhau không thành một hàng hộp giống hệt. Các
+   biến thể .s-money/.s-risk/.s-wait đứng SAU nên vẫn thắng khi được đặt tay. */
+.stat::before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--accent)}
+.stat:nth-child(4n+2)::before{background:var(--ok)}
+.stat:nth-child(4n+3)::before{background:var(--warn)}
+.stat:nth-child(4n+4)::before{background:var(--brand)}
 .stat.s-money::before{background:var(--ok)}
 .stat.s-risk::before{background:var(--brand)}
 .stat.s-wait::before{background:var(--warn)}
-.stat-l{font-size:10.5px;color:var(--muted);margin-bottom:5px;text-transform:uppercase;
-  letter-spacing:.06em;font-weight:600;line-height:1.55}
-.stat-v{font-size:22px;font-weight:700;letter-spacing:-.02em;line-height:1.15;color:var(--ink)}
-.stat-d{font-size:11px;color:var(--muted);margin-top:3px}
+.stat-l{font-size:11px;color:var(--muted-2);margin-bottom:6px;text-transform:uppercase;
+  letter-spacing:.08em;font-weight:700;line-height:1.5}
+.stat-v{font-size:26px;font-weight:700;letter-spacing:-.025em;line-height:1.1;color:var(--ink)}
+.stat-d{font-size:11.5px;color:var(--muted);margin-top:5px}
 
 .grid2{display:grid;grid-template-columns:1.15fr .85fr;gap:16px;align-items:start}
 @media(max-width:1080px){.grid2{grid-template-columns:minmax(0,1fr)}}
@@ -720,8 +742,14 @@ th.selcell .cbx.on{background:var(--ice);border-color:var(--ice);color:var(--chr
 @media(max-width:860px){.grid3{grid-template-columns:minmax(0,1fr)}}
 
 .approve-bar{background:var(--paper);border:1px solid var(--line);border-radius:8px;margin-bottom:16px;overflow:hidden}
-.approve-h{padding:11px 16px;border-bottom:1px solid var(--line-2);display:flex;align-items:center;gap:9px}
-.approve-h .card-t{font-size:13px;font-weight:600}
+/* Đầu thẻ duyệt là lớp riêng (.approve-h), không phải .card-h — nên khi .card-t
+   đổi sang màu chữ sáng, riêng hai thẻ này ra chữ trắng trên nền trắng. Cho nó
+   đúng dải tối như mọi đầu thẻ khác: một hệ, không phải hai. */
+.approve-h{padding:10px 16px;border-bottom:1px solid var(--head-line);background:var(--head);
+  display:flex;align-items:center;gap:9px;min-height:42px}
+.approve-h .card-t{font-size:13px;font-weight:700;color:var(--on-head)}
+.approve-h .card-note{color:var(--head-muted)}
+.approve-h a,.approve-h .t-name{color:var(--ice)}
 .approve-n{background:var(--brand-dark);color:var(--paper);font-size:11px;font-weight:600;padding:1px 8px;border-radius:10px}
 .approve-empty{padding:24px 16px;text-align:center;color:var(--muted);font-size:12.5px}
 .approve-row{display:flex;align-items:center;gap:12px;padding:9px 16px;border-bottom:1px solid var(--line-2)}
@@ -796,7 +824,7 @@ th.selcell .cbx.on{background:var(--ice);border-color:var(--ice);color:var(--chr
 
 /* ---------- record form modal ---------- */
 .mscrim{position:fixed;inset:0;background:rgba(20,22,26,.38);z-index:60;display:flex;
-  align-items:flex-start;justify-content:center;padding:22px 16px;overflow-y:auto;animation:fade .14s ease-out}
+  align-items:flex-start;justify-content:center;padding:22px 16px;overflow-y:auto;animation:fade .18s ease-out}
 .modal{background:var(--paper);border-radius:10px;width:min(1080px,100%);max-height:calc(100vh - 44px);
   display:flex;flex-direction:column;box-shadow:0 14px 44px rgba(12,59,40,.3);animation:pop .18s cubic-bezier(.22,.61,.36,1)}
 @keyframes pop{from{transform:translateY(10px);opacity:.5}to{transform:none;opacity:1}}
@@ -1131,14 +1159,14 @@ tbody tr:hover .ipen{opacity:1}
 .iedit:focus{outline:none}
 
 /* ---------- drawer ---------- */
-.scrim{position:fixed;inset:0;background:rgba(20,22,26,.28);z-index:40;animation:fade .14s ease-out}
+.scrim{position:fixed;inset:0;background:rgba(20,22,26,.28);z-index:40;animation:fade .18s ease-out}
 @keyframes fade{from{opacity:0}to{opacity:1}}
 .drawer{
   position:fixed;top:0;right:0;bottom:0;width:min(500px,94vw);background:var(--paper);
   z-index:41;display:flex;flex-direction:column;box-shadow:-3px 0 22px rgba(20,22,26,.16);
-  animation:slide .2s cubic-bezier(.22,.61,.36,1);
+  animation:slide .24s var(--ease);
 }
-@keyframes slide{from{transform:translateX(22px);opacity:.4}to{transform:none;opacity:1}}
+@keyframes slide{from{transform:translateX(40px);opacity:0}to{transform:none;opacity:1}}
 .dr-h{padding:16px 18px;border-bottom:1px solid var(--line);display:flex;gap:12px;align-items:flex-start}
 .dr-eyebrow{font-size:11.5px;color:var(--muted);margin-bottom:2px}
 .dr-title{font-size:17px;font-weight:600;letter-spacing:-.015em}
@@ -1275,8 +1303,12 @@ tbody tr:hover .ipen{opacity:1}
 .finkpi-v{font-family:var(--mono);font-size:15px;font-weight:600;color:var(--ink)}
 .finkpi-v.good{color:var(--ok)} .finkpi-v.warn{color:var(--warn)} .finkpi-v.bad{color:var(--danger)}
 .fintbl table{width:100%;border-collapse:collapse;font-size:12px}
+/* Tiêu đề bảng dự báo: chữ phải là --head-muted như mọi dải tiêu đề bảng khác.
+   Trước đây dùng --muted — token cho nền SÁNG — trên dải --head tối nên chỉ đạt
+   2,12:1 ở theme sáng (theme tối vô tình đạt vì --muted tối đủ sáng). Lỗi có
+   sẵn từ trước, bộ soát toàn app lôi ra. */
 .fintbl th{background:var(--head);color:var(--head-muted);text-align:left;padding:8px 9px 7px;font-size:10.5px;
-  text-transform:uppercase;letter-spacing:.05em;color:var(--muted);white-space:nowrap;line-height:1.6}
+  text-transform:uppercase;letter-spacing:.05em;color:var(--head-muted);white-space:nowrap;line-height:1.6}
 .fintbl td{padding:7px 9px;border-top:1px solid var(--line-2);white-space:nowrap}
 .fintbl td.num,.fintbl th.num{text-align:right;font-family:var(--mono)}
 .fintbl tbody tr:nth-child(even){background:var(--zebra)}
@@ -1336,6 +1368,40 @@ tbody tr:hover .ipen{opacity:1}
   .printarea{display:block!important;white-space:pre-wrap;font-family:ui-monospace,monospace;
     font-size:11pt;line-height:1.7;color:#000;padding:0}
 }
+
+/* ================= chuyển động & độ nổi =================
+   Cả file trước đây có đúng 3 dòng transition. Giao diện không phản hồi khi
+   chạm vào thì đọc là "chết" dù màu có đúng — đây là lý do nó bị chê phẳng
+   lần thứ hai dù đã sửa bảng màu. Mọi thứ dưới đây tắt theo prefers-reduced-
+   motion nhờ luật chung ở đầu file. */
+.card{transition:box-shadow .18s var(--ease),border-color .18s}
+.btn{transition:background .14s,border-color .14s,color .14s,box-shadow .14s,transform .08s}
+.btn:active{transform:translateY(1px) scale(.985)}
+/* Nút chính có bóng màu thương hiệu, rê vào thì SÁNG lên (--brand-hi) chứ không
+   sẫm đi: chữ là mực nên sáng lên là an toàn theo đúng chiều tương phản. */
+.btn-primary{box-shadow:0 1px 2px rgba(199,16,46,.22),0 4px 12px -4px rgba(255,46,76,.45)}
+.btn-primary:hover{background:var(--brand-hi);border-color:var(--brand-dark);
+  box-shadow:0 2px 4px rgba(199,16,46,.26),0 8px 18px -6px rgba(255,46,76,.55)}
+.chip{transition:background .12s,border-color .12s,color .12s,transform .08s}
+.chip:hover{border-color:var(--ink-2);background:var(--surface)}
+.chip:active{transform:scale(.97)}
+.seg button,.rtab{transition:background .12s,color .12s,border-color .12s}
+/* Dòng bảng: nền đổi mượt và một vạch thương hiệu bên trái để mắt bám được
+   dòng đang rê, kể cả trên bảng 5.000 dòng. */
+tbody tr{transition:background .12s}
+tbody tr:hover td:first-child{box-shadow:inset 3px 0 0 var(--brand)}
+/* Nav: mục trượt nhẹ sang phải khi rê — 3px, đủ để cảm thấy nó "đáp lại". */
+.tab{transition:background .14s,color .14s,padding-left .16s var(--ease),border-color .14s}
+.tab:hover{padding-left:13px}
+.tab-ico{transition:opacity .14s,transform .16s var(--ease)}
+.tab:hover .tab-ico{transform:translateX(1px)}
+/* Huy hiệu giai đoạn/trạng thái: từ "chấm + chữ trần" thành viên thuốc có nền
+   nhẹ. Chỉ áp cho huy hiệu CÓ chấm, nên huy hiệu đếm màu đỏ ở đầu thẻ không bị
+   đụng. Chấm có quầng màu giấy để nổi rõ trên nền viên thuốc. */
+.badge:has(.dot){display:inline-flex;align-items:center;gap:6px;padding:2px 9px 2px 7px;
+  border-radius:999px;background:var(--surface);border:1px solid var(--line);font-size:11.5px;
+  font-weight:500;color:var(--ink-2);white-space:nowrap;line-height:1.5}
+.badge:has(.dot) .dot{width:7px;height:7px;border-radius:50%;flex:none;box-shadow:0 0 0 2px var(--paper)}
 </style>
 </head>
 <body>

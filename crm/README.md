@@ -437,3 +437,35 @@ chế soạn ngoài rồi portal báo ngược đường dẫn file về. Khối
 ```bash
 node crm/test/contracts.mjs    # 27 phép kiểm
 ```
+
+## Lượt thiết kế thứ hai — độ nổi và chuyển động
+
+Lượt đầu sửa bảng màu (0/830 cặp trượt AA). Vẫn bị chê phẳng, và lý do đúng:
+màu đã đúng nhưng **không có hệ thống phân cấp và không có phản hồi khi chạm**.
+Cả file khi đó có đúng 3 dòng `transition`.
+
+| Chỗ | Trước | Sau |
+|---|---|---|
+| Đầu thẻ (`.card-h`, `.approve-h`) | nhãn hoa nhỏ trên nền zebra, chênh thân thẻ 1,05:1 | dải mực tối, **cùng token `--head`** với dải tiêu đề bảng |
+| Ô KPI (`.stat`) | vạch 3px mép trên, cùng màu | vạch 4px mép **trái**, quay vòng 4 màu, nhấc lên khi rê |
+| Huy hiệu giai đoạn (`.badge:has(.dot)`) | chấm + chữ trần | viên thuốc nền nhẹ, chấm có quầng |
+| Dòng bảng rê chuột | đổi nền | đổi nền mượt + vạch thương hiệu trái |
+| Nút chính | phẳng | bóng màu thương hiệu, rê vào **sáng** lên (chữ mực nên an toàn) |
+| Nav | tĩnh | trượt 3px khi rê |
+| Drawer | trượt 22px | trượt 40px từ mờ, 240ms |
+| `transition` | 3 dòng | 11 dòng, tắt theo `prefers-reduced-motion` |
+
+**Hai lỗi lôi ra trong lúc làm**
+
+- Thẻ duyệt dùng đầu thẻ riêng `.approve-h` chứ không phải `.card-h`. Khi
+  `.card-t` đổi sang chữ sáng, riêng hai thẻ đó ra **chữ trắng trên nền trắng**.
+  Nay `.approve-h` nhận đúng dải tối — một hệ, không phải hai.
+- `.fintbl th` khai `color` hai lần: `--head-muted` rồi `--muted` đè lên, nên
+  tiêu đề bảng dự báo chỉ đạt **2,12:1** ở theme sáng. Lỗi có sẵn từ trước, bộ
+  soát toàn app mới lôi ra.
+
+**Đã kiểm:** soát tương phản trộn alpha trên 5 màn hình × 2 theme, gồm cả trạng
+thái rê dòng: **0/2.998 cặp trượt AA**. QC bấm thật 1.563 nút trên 7 vai trò,
+1 lỗi và đó là cách mở của bộ QC (nút nằm trong khối `display:none`, bật lên
+thì bấm được trong 83ms). 5.000 dòng vẫn vẽ trong 18ms — `:has()` không gây hại
+vì bảng ảo hoá chỉ dựng ~680 node.
