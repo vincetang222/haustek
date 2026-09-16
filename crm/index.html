@@ -1694,6 +1694,7 @@ vi:{
   roleMatrix:'Bảng quyền theo nhóm', userList:'Danh sách người dùng',
   role_manager:'Manager', role_ar:'Artist Relations (A/R)', role_lm:'Label Manager (LM)',
   roleGroup1:'Nhóm 1', roleGroup2:'Nhóm 2', roleGroup3:'Nhóm 3',
+  dx_hopDong:'Hợp đồng', dx_tamUng:'Tạm ứng', dxBiTra:'bị trả lại',
   cRole:'Nhóm quyền', cScope:'Phạm vi dữ liệu', cPermission:'Quyền',
   scopeAll:'Toàn bộ hệ thống', scopeOwn:'Chỉ bản ghi của mình',
   pm_viewAll:'Xem mọi khách hàng, lead và cơ hội',
@@ -2003,6 +2004,7 @@ en:{
   roleMatrix:'Permissions by group', userList:'Users',
   role_manager:'Manager', role_ar:'Artist Relations (A/R)', role_lm:'Label Manager (LM)',
   roleGroup1:'Group 1', roleGroup2:'Group 2', roleGroup3:'Group 3',
+  dx_hopDong:'Contract', dx_tamUng:'Advance', dxBiTra:'sent back',
   cRole:'Group', cScope:'Data scope', cPermission:'Permission',
   scopeAll:'Entire system', scopeOwn:'Own records only',
   pm_viewAll:'See every account, lead and opportunity',
@@ -3447,11 +3449,26 @@ function handoffSteps(r){
    không cập nhật CRM nữa. */
 const INBOX_KEY = 'haustek.portal.contracts.v1';
 const INBOX_VERSION = '1.0.0';
-/* Trạng thái portal gửi về → giai đoạn tương ứng trong CRM */
+/* Bản 1.1 của portal: một deal sinh HAI đề xuất. Nhận cả hai bản, xem inboxApply. */
+const INBOX_VERSION_11 = '1.1.0';
+/* Trạng thái portal gửi về → giai đoạn tương ứng trong CRM.
+   ĐỌC KỸ TRƯỚC KHI THÊM DÒNG: bảng này giả định MỘT deal có MỘT trạng thái.
+   Từ bản 1.1, một deal sinh hai đề xuất — hợp đồng và tạm ứng — hai lần giám
+   đốc bấm, và có thể một cái được duyệt còn cái kia bị trả. Lúc ấy không ô nào
+   trong bảng này đúng, và chọn đại một ô là đẩy deal sang "legal" trong khi
+   khoản tạm ứng vừa bị trả lại.
+   Nên với gói 1.1, giai đoạn do PORTAL tính và gửi sang ở trường giaiDoan —
+   CRM không tự suy từ deXuat[]. Để CRM suy là dựng lại đúng cái ánh xạ hai máy
+   trạng thái mà cả hai đội đều muốn tránh, chỉ khác là lần này tự tay mình
+   dựng. Bảng dưới chỉ còn phục vụ gói 1.0. */
 const INBOX_STAGE = {
   ceo_rejected:'negotiation', ceo_approved:'legal',
   drafting:'legal', ready:'signature', signed:'won'
 };
+/* Giai đoạn portal gửi sang là dữ liệu của PHÍA KHÁC, nên phải kiểm trước khi
+   ghi vào deal. Đọc từ STAGES chứ không gõ lại danh sách: gõ lại là lấy dữ kiện
+   từ một nguồn thứ hai, và hai nguồn thì sớm muộn lệch nhau. */
+function stageHopLe(id){ return STAGES.some(x=>x.id===id); }
 /* Đường dẫn hợp đồng do PHÍA KHÁC ghi vào localStorage, nên CRM không được tin.
    Không kiểm bằng cách so tiền tố chuỗi: "javascript:" viết hoa lẫn lộn, chèn tab,
    xuống dòng hay khoảng trắng đầu đều lách qua kiểu kiểm đó. Đưa cho bộ phân tích
@@ -3508,29 +3525,67 @@ function inboxRead(){
     const raw = localStorage.getItem(INBOX_KEY);
     if(!raw) return null;
     const j = JSON.parse(raw);
-    if(!j || j.v !== INBOX_VERSION || !Array.isArray(j.deals)) return null;
+    if(!j || (j.v !== INBOX_VERSION && j.v !== INBOX_VERSION_11) || !Array.isArray(j.deals)) return null;
     return j;
   } catch(e){ return null; }
 }
 var INBOX_SEEN = {};   /* dealId -> updatedAt đã áp dụng, để không áp lại mãi */
 /* Áp trạng thái portal gửi về. Chỉ động vào deal ĐANG ở phần portal cầm lái —
    deal còn trong chuỗi duyệt CRM thì portal không có quyền kéo đi. */
+/* Danh sách đề xuất portal gửi về, đã lọc sạch. Chỉ giữ ba trường và chỉ giữ
+   chuỗi — gói đến từ phía khác, không nhận object lạ vào bản ghi deal. */
+function inboxDeXuat(d){
+  if(!Array.isArray(d.deXuat)) return [];
+  return d.deXuat.filter(x=>x && typeof x==='object' && typeof x.loai==='string')
+    .map(x=>({ id: typeof x.id==='string' ? x.id.slice(0,40) : '',
+               loai: x.loai.slice(0,20),
+               trangThai: typeof x.trangThai==='string' ? x.trangThai.slice(0,20) : '' }));
+}
+/* Áp trạng thái portal gửi về. Chỉ động vào deal ĐANG ở phần portal cầm lái —
+   deal còn trong chuỗi duyệt CRM thì portal không có quyền kéo đi. */
 function inboxApply(){
   const j = inboxRead(); if(!j) return 0;
+  const moi = j.v === INBOX_VERSION_11;
   let n = 0;
   j.deals.forEach(d=>{
     const o = DB.opps.find(x=>x.id===d.dealId); if(!o) return;
     if(!PORTAL_OWNED.includes(o.stage)) return;
     if(INBOX_SEEN[d.dealId] === d.updatedAt) return;
-    const to = INBOX_STAGE[d.status];
-    o.contract = {status:d.status, at:d.updatedAt, note:d.note||'', by:d.by||'',
-                  url: safeUrl(d.url)};   /* null nếu thiếu hoặc không an toàn */
+
+    const deXuat = inboxDeXuat(d);
+    /* GIAI ĐOẠN: gói 1.1 thì PORTAL tính và gửi sang, CRM chỉ kiểm hợp lệ rồi
+       dùng. Gói 1.0 thì tra bảng như cũ. CRM KHÔNG tự suy từ deXuat[] — suy ở
+       đây là dựng lại đúng cái ánh xạ hai máy trạng thái mà cả hai đội muốn
+       tránh, và nó sẽ sai ngay ở ca hợp đồng duyệt mà tạm ứng bị trả. */
+    const to = moi ? (stageHopLe(d.giaiDoan) ? d.giaiDoan : null)
+                   : INBOX_STAGE[d.status];
+
+    o.contract = {status:d.status||'', at:d.updatedAt, note:d.note||'', by:d.by||'',
+                  url: safeUrl(d.url),   /* null nếu thiếu hoặc không an toàn */
+                  deXuat: deXuat,
+                  /* chiTiet là chuỗi CHỈ ĐỂ HIỆN, không hệ nào đọc bằng mã. Đó là
+                     chỗ portal nói những gì cột giai đoạn không nói được — ví dụ
+                     "hợp đồng đã duyệt, tạm ứng bị trả lại". */
+                  chiTiet: typeof d.chiTiet==='string' ? d.chiTiet.slice(0,200) : ''};
+
+    /* Khoá bên do portal trả về: người bên ấy đã QUYẾT deal này thuộc đối tác
+       nào. Lưu lại thì lần sau CRM gửi kèm, và ganBen bên portal từ chỗ phải
+       quyết thành chỗ chỉ xác nhận. Vẫn kiểm hình thức vì đây là dữ liệu ngoài. */
+    if(typeof d.portalPartyKey==='string' && /^[AL]:[A-Za-z0-9_-]{1,32}$/.test(d.portalPartyKey)
+       && HANDOFF_BIND[o.id] !== d.portalPartyKey){
+      HANDOFF_BIND[o.id] = d.portalPartyKey;
+    }
+
     if(to && to !== o.stage){
       logAudit({objType:'opp',objId:o.id,objName:o.name,action:'update',
         field:'stage',oldV:o.stage,newV:to,note:'portal'});
       o.stage = to; o.lastAct = TODAY;
+      /* Dòng hoạt động ưu tiên chiTiet của portal: nó nói được cái mà một mã
+         trạng thái không nói được. Không có thì quay về nhãn như cũ. */
+      const noi = o.contract.chiTiet
+        || (d.status ? t('ct_'+d.status) : L(['cập nhật','update']));
       DB.acts.push({id:'v'+(++uid),refId:o.id,type:'stage',
-        text:L(['Portal cập nhật: '+t('ct_'+d.status),'Portal update: '+t('ct_'+d.status)]),
+        text:L(['Portal cập nhật: '+noi,'Portal update: '+noi]),
         date:TODAY, who:d.by||'portal'});
     }
     INBOX_SEEN[d.dealId] = d.updatedAt;
@@ -3539,13 +3594,36 @@ function inboxApply(){
   if(n) saveSoon();
   return n;
 }
+/* Đề xuất KHÔNG được duyệt, nếu có. Đây là thứ cột giai đoạn nuốt mất: deal
+   mang hopDong approved + tamUng rejected vẫn hiện "legal" như mọi deal khác,
+   trong khi về thương mại nó có thể đã không còn là deal ấy nữa. */
+function inboxLech(o){
+  const ds = (o.contract && o.contract.deXuat) || [];
+  if(ds.length < 2) return null;
+  const xau = ds.filter(x=>x.trangThai==='rejected' || x.trangThai==='returned');
+  return xau.length ? xau : null;
+}
 function contractBadge(o){
   if(!o.contract) return '';
   const st = o.contract.status;
-  const col = st==='signed' ? 'var(--green)' : st==='ceo_rejected' ? 'var(--brand)'
-            : st==='ready'  ? 'var(--ice-dark)' : 'var(--amber)';
-  return '<span class="badge"><span class="dot" style="background:'+col+'"></span>'+
-    esc(t('ct_'+st))+'</span>';
+  let ra = '';
+  if(st){
+    const col = st==='signed' ? 'var(--green)' : st==='ceo_rejected' ? 'var(--brand)'
+              : st==='ready'  ? 'var(--ice-dark)' : 'var(--amber)';
+    ra = '<span class="badge"><span class="dot" style="background:'+col+'"></span>'+
+      esc(t('ct_'+st))+'</span>';
+  }
+  /* Deal có đề xuất bị trả thì PHẢI thấy ngay cạnh giai đoạn. Giai đoạn do
+     portal tính chỉ nhìn đề xuất hợp đồng — đúng cho máy, nhưng một deal mất
+     khoản tạm ứng có thể không còn là deal ấy nữa. Không có huy hiệu này thì
+     nó trông hệt mọi deal đang ở "legal". */
+  const lech = inboxLech(o);
+  if(lech){
+    ra += '<span class="badge" title="'+esc(o.contract.chiTiet||'')+'">'+
+      '<span class="dot" style="background:var(--brand)"></span>'+
+      esc(lech.map(x=>t('dx_'+x.loai)||x.loai).join(', ')+' '+t('dxBiTra'))+'</span>';
+  }
+  return ra;
 }
 /* Nút mở hợp đồng. target _blank kèm rel noopener để trang đích không với được
    window.opener của CRM; noreferrer để không rò đường dẫn nội bộ nếu link trỏ ra

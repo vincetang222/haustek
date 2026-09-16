@@ -289,6 +289,68 @@ try {
   F("bấm huỷ thì sổ không đổi",
     await intr.evaluate(() => HAUSTEK.admin.advances.list().find(a => a.partyKey === "A:0").opening === 99999));
 
+  /* ---------- KÊNH NGƯỢC 1.1: MỘT DEAL, HAI ĐỀ XUẤT ----------
+     Từ bước 3 bên portal, một deal sinh hai đề xuất — hợp đồng và tạm ứng —
+     hai lần giám đốc bấm, và có thể một cái duyệt còn cái kia bị trả. Bảng
+     INBOX_STAGE của CRM giả định MỘT deal có MỘT trạng thái, nên đúng ca ấy
+     không ô nào trong bảng đúng. Ba phép dưới ghim cách xử lý mới. */
+  const dealId = await crm.evaluate(() => {
+    const o = DB.opps.find(x => PORTAL_OWNED.includes(x.stage));
+    return o ? o.id : null;
+  });
+  F("có deal đang ở phần portal cầm lái để kiểm", !!dealId);
+
+  async function goiVe(goi) {
+    await crm.evaluate(([k, g]) => {
+      localStorage.setItem(k, JSON.stringify(g));
+      INBOX_SEEN = {};            /* để lần áp này không bị coi là đã áp */
+      inboxApply();
+    }, ["haustek.portal.contracts.v1", goi]);
+    await crm.waitForTimeout(120);
+    return crm.evaluate(id => {
+      const o = DB.opps.find(x => x.id === id);
+      return { stage: o.stage, ct: o.contract, khoa: HANDOFF_BIND[id] || null,
+               lech: inboxLech(o), badge: contractBadge(o) };
+    }, dealId);
+  }
+
+  const r11 = await goiVe({
+    v: "1.1.0", deals: [{
+      dealId, updatedAt: "2026-09-16T10:00:00.000Z", by: "portal",
+      portalPartyKey: "L:38", giaiDoan: "legal",
+      chiTiet: "Hợp đồng đã duyệt · tạm ứng bị trả lại, chờ dựng lại đề xuất",
+      deXuat: [{ id: "DX-2609-011", loai: "hopDong", trangThai: "approved" },
+               { id: "DX-2609-012", loai: "tamUng",  trangThai: "rejected" }]
+    }]
+  });
+  F("gói 1.1 dùng giaiDoan do PORTAL tính, không tự suy từ deXuat[]",
+    r11.stage === "legal");
+  F("giữ đủ hai đề xuất trên deal", (r11.ct.deXuat || []).length === 2);
+  F("đề xuất bị trả KHÔNG bị cột giai đoạn nuốt — có huy hiệu riêng",
+    !!r11.lech && /bị trả lại|sent back/i.test(r11.badge));
+  F("chiTiet của portal hiện nguyên văn, CRM không ánh xạ lại",
+    r11.ct.chiTiet === "Hợp đồng đã duyệt · tạm ứng bị trả lại, chờ dựng lại đề xuất");
+  F("khoá bên portal trả về được lưu để lần sau gửi kèm",
+    r11.khoa === "L:38");
+
+  /* Giai đoạn là dữ liệu của PHÍA KHÁC. Gói bịa một giai đoạn không có thật
+     thì phải bị bỏ qua, không được ghi vào deal. */
+  const rBay = await goiVe({
+    v: "1.1.0", deals: [{ dealId, updatedAt: "2026-09-16T11:00:00.000Z",
+      giaiDoan: "khong-co-that", portalPartyKey: "<script>", deXuat: [] }]
+  });
+  F("giai đoạn lạ bị bỏ qua, deal không bị kéo đi",
+    rBay.stage === "legal");
+  F("khoá bên sai hình thức bị bỏ qua", rBay.khoa === "L:38");
+
+  /* Gói 1.0 cũ vẫn phải chạy y như trước — portal chưa đổi thì CRM không được vỡ. */
+  const r10 = await goiVe({
+    v: "1.0.0", deals: [{ dealId, updatedAt: "2026-09-16T12:00:00.000Z",
+      status: "signed", by: "portal" }]
+  });
+  F("gói 1.0 vẫn tra bảng INBOX_STAGE như cũ", r10.stage === "won");
+  F("gói 1.0 không có đề xuất nào thì không hiện huy hiệu lệch", r10.lech === null);
+
   /* CRM KHÔNG ĐƯỢC DỰNG SẴN LỜI GỌI GHI SỔ CHO NGƯỜI TA CHÉP.
      Bản trước in ra hai chuỗi để người vận hành dán sang portal:
          A.rates.add("L:38", 0.7, …)
@@ -314,5 +376,5 @@ try {
 } finally {
   srv.close();
 }
-console.log(FAILED ? "\n" + FAILED + " phép kiểm HỎNG" : "\n36 đạt · 0 hỏng");
+console.log(FAILED ? "\n" + FAILED + " phép kiểm HỎNG" : "\n45 đạt · 0 hỏng");
 process.exit(FAILED ? 1 : 0);
