@@ -317,6 +317,32 @@ Chính `README.md` của các bạn đã khai biến `CHROMIUM` và `BASE`, và
 không. Chúng tôi đã sửa cả 21 cho khớp với chính quy ước của các bạn — đổi
 đúng một biểu thức mỗi file, đo lại `chromium.launch()` trần chạy được ở đây.
 
+### Và một bộ kiểm của các bạn chưa bao giờ chạy ở đâu khác
+
+`v2-tuong-phan.js` gọi `require('/home/user/haustek/portal/test/font-that.js')`
+— đường dẫn tuyệt đối tới một chỗ chỉ tồn tại trên máy các bạn. Ở bất kỳ
+checkout nào khác nó chết ngay bằng `MODULE_NOT_FOUND`, trước cả phép kiểm
+đầu tiên.
+
+Sửa đúng dòng ấy rồi chạy trên **cây gốc của các bạn, chưa có một thay đổi
+nào của chúng tôi**:
+
+```
+>>> 45 chỗ dưới chuẩn
+```
+
+Chạy trên cây đã áp mọi thay đổi của chúng tôi: **cũng đúng 45**. Nên con số
+này thuộc hệ giao diện v2, không phải do cầu nối — nhưng nó chưa từng hiện
+ra ở đâu, vì bộ kiểm không chạy nổi tới chỗ đo.
+
+Chính README của các bạn ghi *"đo theo cặp biến CSS thì ra 21/21 đạt; đo trên
+trang đã render thì ra 685 chỗ dưới chuẩn"*. Bài này là bài đo đúng cách ấy,
+và 45 là phần còn lại. Chúng tôi **không sửa** — đây là hệ giao diện của các
+bạn. Nhưng sau khi CI chạy được, đây sẽ là **ô đỏ duy nhất** trong 39 bộ.
+
+Toàn cảnh sau khi sửa: `api-guard` 152/152 · nhóm node **16/16** · nhóm trình
+duyệt **21/22**.
+
 `BASE` thì chúng tôi **để nguyên**: 21 file gõ cứng `http://127.0.0.1:8099`,
 mà CI cũng phục vụ đúng địa chỉ ấy nên không hỏng gì. Các bạn tự quyết có
 muốn dọn không.
