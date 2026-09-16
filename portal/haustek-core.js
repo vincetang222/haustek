@@ -4007,8 +4007,31 @@ function contractCalc(partyKey, terms) {
   if (coSo.length < 3) reasons.push({ vi: "Chưa đủ 3 kỳ có số để ước tính", en: "Fewer than three periods with figures" });
   if (months > 36 && feePct < 0.15) reasons.push({ vi: "Hạn dài hơn 36 tháng với phí thấp", en: "Term longer than 36 months at a low fee" });
   const recommendation = !reasons.length ? "approve" : feePct >= 0.10 ? "review" : "decline";
+  /* KÝ MỚI hay GIA HẠN — suy ra, không hỏi người gõ.
+     Hai việc này là hai quyết định khác hẳn nhau: gia hạn là định giá lại
+     một quan hệ đã có số liệu, ký mới là nhận một bên chưa từng chạy qua
+     hệ. Trước vòng 27 không có gì phân biệt chúng: cả ba đề xuất trong dữ
+     liệu mẫu đều ghi "Gia hạn trước hạn" ở ô ghi chú tự do, mà hai trong
+     ba là cho bên KHÔNG có bản ghi hợp đồng nào. Ghi chú là văn xuôi —
+     không lọc được, không đếm được, không định tuyến được.
+
+     Vì sao quan trọng ngay lúc này: ký mới là việc của CRM (CRM có cả một
+     chuỗi duyệt cho nó). Đánh dấu được thì mới nhìn ra chỗ hai hệ giẫm
+     chân nhau, và mới nói được câu "deal mới thì nhận từ CRM".
+
+     KHÔNG đẩy vào `reasons`: reasons quyết định `recommendation`, mà
+     425/428 bên hiện chưa có bản ghi hợp đồng — thêm vào đó là đổi khuyến
+     nghị của gần như mọi đề xuất. Đây là chuyện PHÂN LOẠI, không phải
+     chuyện rủi ro. */
+  const coHopDong = !!ct;
+  /* contractEndOf() SUY RA ngày hết hạn từ hash mã bên khi không có hợp
+     đồng thật. Nói ra để giao diện đừng trình một con số suy diễn như một
+     dữ kiện: 138 bên đang nằm trong hàng đợi "sắp hết hạn" mà chỉ 2 bên
+     có bản ghi hợp đồng. */
+  const hanSuyRa = !(ct && ct.to);
   return { partyKey, months, feePct, currentFeePct, monthlyGross, monthlyNet, monthlyKeep, growth, periods: coSo.length, projectedGross, projectedNet: cents(projectedGross * (1 - feePct)),
     retainedNow, retainedNew, delta: cents(retainedNew - retainedNow), marginNew: feePct,
+    coHopDong, viec: coHopDong ? "gia-han" : "moi", hanSuyRa,
     contractEnd: end, daysToEnd, renewalDue: daysToEnd <= 180, recommendation, reasons, series: ser };
 }
 /* =====================================================================

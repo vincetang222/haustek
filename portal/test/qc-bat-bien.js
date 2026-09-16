@@ -302,6 +302,44 @@ check("Duyệt hợp đồng không xoá cờ labelTuTra của bên", () => {
   return pk + " · cờ giữ nguyên qua một lượt duyệt";
 });
 
+/* Đề xuất hợp đồng phải TỰ KHAI nó là ký mới hay gia hạn, và lời khai ấy
+   phải khớp với dữ liệu — không phải với ô ghi chú tự do.
+
+   Vì sao có bài này: cả ba đề xuất hợp đồng trong dữ liệu mẫu đều ghi
+   "Gia hạn trước hạn" ở ghi chú, nhưng hai trong ba là cho bên KHÔNG có
+   bản ghi hợp đồng nào, tức là chẳng có gì để gia hạn. Ghi chú là văn
+   xuôi: không lọc được, không đếm được, và người duyệt đọc xong vẫn không
+   biết mình đang ký mới hay định giá lại.
+
+   Phân biệt được hai việc này là điều kiện để nói chuyện trùng lặp với
+   CRM: ký mới là việc CRM đã có cả một chuỗi duyệt riêng. */
+check("Đề xuất hợp đồng tự khai đúng ký mới / gia hạn", () => {
+  A.staff.dangNhapBang("mgmt@haustek-group.com");
+  const st = JSON.parse(A.store.exportJSON());
+  const coHD = k => !!(st.contracts && st.contracts[k]);
+  const dangCo = new Set(A.proposals.list()
+    .filter(p => p.type === "contract" && ["submitted", "checked", "returned"].includes(p.status))
+    .map(p => p.partyKey));
+  const rows = DT.map(x => x.partyKey).filter(k => k && !dangCo.has(k));
+  const chua = rows.filter(k => !coHD(k))[0], da = rows.filter(k => coHD(k))[0];
+  must(chua && da, "cần cả một bên có và một bên chưa có hợp đồng để so");
+
+  const a = A.proposals.proposeContract(chua, { months: 24, feePct: 0.2, note: "Gia hạn trước hạn" }, "kiểm", "sales");
+  must(a.calc.viec === "moi",
+    "bên " + chua + " chưa có hợp đồng nào mà đề xuất vẫn khai '" + a.calc.viec + "' — ghi chú nói 'gia hạn' không được phép quyết định chuyện này");
+  must(a.calc.coHopDong === false, "coHopDong phải false khi không có bản ghi hợp đồng");
+
+  const b = A.proposals.proposeContract(da, { months: 24, feePct: 0.2 }, "kiểm", "sales");
+  must(b.calc.viec === "gia-han",
+    "bên " + da + " đã có hợp đồng mà đề xuất khai '" + b.calc.viec + "'");
+
+  /* Ngày hết hạn suy ra từ hash mã bên khi không có hợp đồng thật — phải
+     tự khai là suy ra, để giao diện đừng tô "sắp hết hạn" cho một ngày
+     mình tự nghĩ ra. */
+  must(a.calc.hanSuyRa === true, "hạn của bên chưa có hợp đồng phải tự khai là suy ra");
+  return chua + " → ký mới · " + da + " → gia hạn";
+});
+
 /* ===================== KẾT QUẢ ===================== */
 console.log(ra.map(([k, n, m]) => (k === "ok" ? "  ok   " : "  LỖI  ") + n + (m ? "\n         " + m : "")).join("\n"));
 console.log("\n" + pass + " đạt · " + fail + " hỏng");

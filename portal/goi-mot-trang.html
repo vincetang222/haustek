@@ -5788,8 +5788,31 @@ function contractCalc(partyKey, terms) {
   if (coSo.length < 3) reasons.push({ vi: "Chưa đủ 3 kỳ có số để ước tính", en: "Fewer than three periods with figures" });
   if (months > 36 && feePct < 0.15) reasons.push({ vi: "Hạn dài hơn 36 tháng với phí thấp", en: "Term longer than 36 months at a low fee" });
   const recommendation = !reasons.length ? "approve" : feePct >= 0.10 ? "review" : "decline";
+  /* KÝ MỚI hay GIA HẠN — suy ra, không hỏi người gõ.
+     Hai việc này là hai quyết định khác hẳn nhau: gia hạn là định giá lại
+     một quan hệ đã có số liệu, ký mới là nhận một bên chưa từng chạy qua
+     hệ. Trước vòng 27 không có gì phân biệt chúng: cả ba đề xuất trong dữ
+     liệu mẫu đều ghi "Gia hạn trước hạn" ở ô ghi chú tự do, mà hai trong
+     ba là cho bên KHÔNG có bản ghi hợp đồng nào. Ghi chú là văn xuôi —
+     không lọc được, không đếm được, không định tuyến được.
+
+     Vì sao quan trọng ngay lúc này: ký mới là việc của CRM (CRM có cả một
+     chuỗi duyệt cho nó). Đánh dấu được thì mới nhìn ra chỗ hai hệ giẫm
+     chân nhau, và mới nói được câu "deal mới thì nhận từ CRM".
+
+     KHÔNG đẩy vào `reasons`: reasons quyết định `recommendation`, mà
+     425/428 bên hiện chưa có bản ghi hợp đồng — thêm vào đó là đổi khuyến
+     nghị của gần như mọi đề xuất. Đây là chuyện PHÂN LOẠI, không phải
+     chuyện rủi ro. */
+  const coHopDong = !!ct;
+  /* contractEndOf() SUY RA ngày hết hạn từ hash mã bên khi không có hợp
+     đồng thật. Nói ra để giao diện đừng trình một con số suy diễn như một
+     dữ kiện: 138 bên đang nằm trong hàng đợi "sắp hết hạn" mà chỉ 2 bên
+     có bản ghi hợp đồng. */
+  const hanSuyRa = !(ct && ct.to);
   return { partyKey, months, feePct, currentFeePct, monthlyGross, monthlyNet, monthlyKeep, growth, periods: coSo.length, projectedGross, projectedNet: cents(projectedGross * (1 - feePct)),
     retainedNow, retainedNew, delta: cents(retainedNew - retainedNow), marginNew: feePct,
+    coHopDong, viec: coHopDong ? "gia-han" : "moi", hanSuyRa,
     contractEnd: end, daysToEnd, renewalDue: daysToEnd <= 180, recommendation, reasons, series: ser };
 }
 /* =====================================================================
@@ -13799,6 +13822,8 @@ var CHU = {
     dxNet: 'Thu nhập ròng / tháng', dxNetS: 'trung bình {n} kỳ đã xét duyệt', dxGross: 'Doanh thu gộp / tháng', dxKeep: 'Haustek giữ / tháng', dxGrowth: 'Tăng trưởng 3 kỳ', dxCv: 'Độ dao động', dxConc: 'Tập trung bài đầu',
     dxProj: 'Thu nhập ròng 12 tháng dự kiến', dxMax: 'Mức nên ứng tối đa', dxRepay: 'Khoản phải thu hồi', dxRecoup: 'Thời gian thu hồi', dxFee: 'Phí ứng thu về', dxRetained: 'Haustek giữ trong thời gian thu hồi', dxRoi: 'ROI trên vốn ứng', dxRoiH: 'Hiệu quả vốn ứng (trong thời gian thu hồi)', dxRoiFee: 'Lợi suất phí ứng / năm', dxRoiA: 'quy năm', dxCover: 'Độ phủ (thu nhập 12 tháng ÷ khoản thu hồi)',
     dxGrade: 'Hạng rủi ro', dxProjGross: 'Doanh thu gộp dự kiến cả kỳ hạn', dxNow: 'Haustek giữ theo hợp đồng hiện tại', dxNew: 'Haustek giữ theo đề xuất', dxDelta: 'Chênh lệch', dxFeeNow: 'Phí hiện tại', dxFeeNew: 'Phí đề xuất', dxEnd: 'Hợp đồng hiện tại hết hạn', dxDue: 'đến hạn gia hạn', dxTerm: 'Kỳ hạn', thang: ' tháng',
+    dxKyMoi: 'Ký mới', dxGiaHan: 'Gia hạn', dxHanSuyRa: 'ngày suy ra, chưa có hợp đồng',
+    dxKyMoiMo: 'Bên này chưa có bản ghi hợp đồng nào trong hệ — đây là ký mới, không phải gia hạn. Deal ký mới thuộc quy trình CRM; nếu nó đã qua CRM thì nhận từ CRM để giữ lại chuỗi duyệt đã có.',
     dxLyDo: 'Lý do khuyến nghị', dxSeries: 'Thu nhập ròng 12 kỳ', dxHistory: 'Diễn biến', dxNote: 'Ghi chú đề xuất', dxBy: 'Người đề xuất', dxPartner: 'đối tác gửi từ cổng'
   },
   en: {
@@ -13824,6 +13849,8 @@ var CHU = {
     dxNet: 'Net earnings / month', dxNetS: 'average over {n} approved periods', dxGross: 'Gross revenue / month', dxKeep: 'Haustek keeps / month', dxGrowth: 'Growth, 3 periods', dxCv: 'Volatility', dxConc: 'Top-track concentration',
     dxProj: 'Projected 12-month net', dxMax: 'Suggested maximum advance', dxRepay: 'Amount to recoup', dxRecoup: 'Recoupment time', dxFee: 'Advance fee earned', dxRetained: 'Haustek keeps during recoupment', dxRoi: 'ROI on the advance', dxRoiH: 'Return on the advance (over recoupment)', dxRoiFee: 'Fee yield / year', dxRoiA: 'annualised', dxCover: 'Coverage (12-month net ÷ amount to recoup)',
     dxGrade: 'Risk grade', dxProjGross: 'Projected gross over the term', dxNow: 'Haustek keeps under current contract', dxNew: 'Haustek keeps under proposal', dxDelta: 'Difference', dxFeeNow: 'Current fee', dxFeeNew: 'Proposed fee', dxEnd: 'Current contract ends', dxDue: 'renewal due', dxTerm: 'Term', thang: ' months',
+    dxKyMoi: 'New signing', dxGiaHan: 'Renewal', dxHanSuyRa: 'inferred date, no contract on file',
+    dxKyMoiMo: 'This party has no contract record in the system — this is a new signing, not a renewal. New signings belong to the CRM process; if this one already went through the CRM, receive it from there so its approval chain survives.',
     dxLyDo: 'Why this recommendation', dxSeries: 'Net earnings, 12 periods', dxHistory: 'History', dxNote: 'Proposal note', dxBy: 'Proposed by', dxPartner: 'sent by the partner from the portal'
   }
 };
@@ -14021,7 +14048,15 @@ function oSo(l, v, s, hit) { return '<div class="sig-i' + (hit ? ' hit' : '') + 
 /* Bản tính của đề xuất; opts.tien định dạng tiền (nội bộ theo tiền tệ đang chọn). */
 function theDeXuat(pr, opts) {
   opts = opts || {}; var tien = opts.tien || HT.fmt.usd, c = pr.calc, P = HB.dayMau();
-  var dau = '<div class="bar" style="margin-bottom:10px">' + tagDx(pr.status) + tagKn(c.recommendation) + (c.grade ? tagHang(c.grade) : '') +
+  /* KÝ MỚI hay GIA HẠN: hai quyết định khác hẳn nhau, nên nói ngay ở hàng
+     huy hiệu chứ đừng để người duyệt tự suy từ ô "phí hiện tại".
+     `viec` do lõi suy ra từ việc bên đã có bản ghi hợp đồng hay chưa —
+     không phải từ ô ghi chú tự do, thứ mà cả ba đề xuất mẫu đều ghi
+     "Gia hạn trước hạn" kể cả khi không có gì để gia hạn. */
+  /* gia hạn là ca thường, để huy hiệu trung tính; ký mới mới cần chú ý */
+  var tagViec = c.viec === 'moi' ? HM.tag(t('dxKyMoi'), 'warn')
+              : c.viec === 'gia-han' ? HM.tag(t('dxGiaHan'), '') : '';
+  var dau = '<div class="bar" style="margin-bottom:10px">' + tagDx(pr.status) + tagViec + tagKn(c.recommendation) + (c.grade ? tagHang(c.grade) : '') +
     '<span class="muted" style="font-size:12.5px">' + esc(song(pr, 'moTa')) + '</span></div>';
   var html = dau;
   /* Bản tính có thể đã bị lược theo vai (kế toán, kinh doanh không thấy phần
@@ -14050,8 +14085,14 @@ function theDeXuat(pr, opts) {
       oSo(t('dxTerm'), c.months + t('thang')) +
       neu(c.currentFeePct, function () { return oSo(t('dxFeeNow'), pct(c.currentFeePct)); }) +
       oSo(t('dxFeeNew'), pct(c.feePct), null, c.feePct < 0.12) +
-      neu(c.contractEnd, function () { return oSo(t('dxEnd'), HT.fmt.date(c.contractEnd), c.renewalDue ? t('dxDue') : null, c.renewalDue); }) +
+      /* Không có hợp đồng thật thì ngày hết hạn là SUY RA từ mã bên, không
+         phải một dữ kiện. Nói ra, và đừng tô đỏ "sắp hết hạn" cho một ngày
+         mình tự nghĩ ra: 138 bên đang nằm trong hàng đợi sắp-hết-hạn mà chỉ
+         2 bên có bản ghi hợp đồng. */
+      neu(c.contractEnd, function () { return oSo(t('dxEnd'), HT.fmt.date(c.contractEnd),
+        c.hanSuyRa ? t('dxHanSuyRa') : (c.renewalDue ? t('dxDue') : null), c.renewalDue && !c.hanSuyRa); }) +
       '</div>' +
+      (c.viec === 'moi' ? '<p class="hint" style="margin-top:10px">' + esc(t('dxKyMoiMo')) + '</p>' : '') +
       (c.projectedGross != null || c.retainedNow != null ? '<h4 class="sec" style="margin-top:14px">' + esc(t('dxProjGross')) + '</h4><div class="sig">' +
         neu(c.projectedGross, function () { return oSo(t('dxProjGross'), tien(c.projectedGross)); }) +
         neu(c.retainedNow, function () { return oSo(t('dxNow'), tien(c.retainedNow)); }) +
