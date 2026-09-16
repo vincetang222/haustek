@@ -3,8 +3,13 @@
 Soát trên commit `6207602`, dựng từ `829907e`. Mọi kết luận dưới đây đều
 chạy thật trên nhánh của các bạn, không đọc chay.
 
-**Kết luận: thông qua bước 1, sau khi sửa hai chỗ.** Kiến trúc đúng như đã
+**Kết luận: thông qua bước 1, sau khi sửa bốn chỗ.** Kiến trúc đúng như đã
 chốt, và có một chỗ các bạn làm tốt hơn bản đặc tả.
+
+**Bốn chỗ ấy chúng tôi đã sửa và kiểm sẵn**, để các bạn khỏi phải gõ lại:
+`portal/gui-crm/va-buoc-1.patch`, áp một lệnh. Chúng tôi không đẩy lên nhánh
+của các bạn — nhánh ấy là của các bạn. Mỗi bài kiểm mới đều đã kiểm ngược:
+trả bản sửa về như cũ thì đúng bài ấy đỏ, và chỉ bài ấy.
 
 ---
 
@@ -21,7 +26,8 @@ chốt, và có một chỗ các bạn làm tốt hơn bản đặc tả.
 
 Bộ kiểm của chúng tôi chạy trên nhánh các bạn: `api-guard` 103 · `qc-bat-bien`
 15 · `qc-quyen` 14 · `luoc-do` 12 · `aaa` 11 · `ranh-gioi-trang` 7 ·
-`tien-ba-lop` 23 · `ma-dinh-danh` 8 · `thuong-vu` 28. Không bộ nào đỏ.
+`tien-ba-lop` 23 · `ma-dinh-danh` 8 · `thuong-vu` 28 — không bộ nào đỏ.
+**Trừ một bộ**: `i18n-loi` 211 đạt · 8 hỏng, xem mục 2(d).
 
 **Phân quyền làm khéo hơn chúng tôi dặn.** Chúng tôi khuyên khai từng thành
 viên, tránh luật cấp đối tượng. Các bạn khai cả hai — và đó mới đúng, vì
@@ -51,7 +57,7 @@ số về cùng một deal mà không bên nào báo gì.
 
 ---
 
-## 2 · Hai chỗ phải sửa trước bước 2
+## 2 · Bốn chỗ phải sửa trước bước 2
 
 ### (a) `tvPhanTram` đoán đơn vị — CHẶN
 
@@ -66,7 +72,6 @@ không bao giờ `0.85`. Đoán theo độ lớn thì:
 ```
 artistSharePct = 85    → phí Haustek 0.15   ✓ đúng
 artistSharePct = 0.85  → phí Haustek 0.15   ✗ gói sai đơn vị ĐI LỌT, y như gói đúng
-artistSharePct = 1     → NÉM "tỷ lệ không hợp lệ"   ✗ bên nhận 1% là hợp lệ
 ```
 
 Dòng thứ hai là vấn đề: theo hợp đồng, `0.85` nghĩa là bên cấp quyền nhận
@@ -87,6 +92,22 @@ function tvPhanTram(v) {
   return n / 100;
 }
 ```
+
+**Một chỗ chúng tôi nói sai trong bản soát trước, xin đính chính.** Chúng tôi
+viết rằng bản cũ ném nhầm `artistSharePct = 1` vì so `1` với `1`, và rằng
+"bên nhận 1% là hợp lệ". Đo lại sau khi sửa thì không phải vậy:
+
+```
+85     TRÌNH ĐƯỢC · phí 0.15
+0.85   CHẶN · Phí 99.2% nằm ngoài khoảng Portal nhận (gần nhất 50%)…
+1      CHẶN · Phí 99% nằm ngoài khoảng Portal nhận (gần nhất 50%)…
+60     TRÌNH ĐƯỢC · phí 0.40
+```
+
+`1` vẫn bị chặn — nhưng **chặn ở đúng chỗ và nói đúng lý do**: bên nhận 1%
+nghĩa là Haustek giữ 99%, ngoài khoảng 3–50% lõi nhận. Câu từ chối nêu luôn
+mức gần nhất. Đó mới là điều ta muốn; cái sai của bản cũ là đo bằng độ lớn
+(`> 1` hay `< 1`) chứ không phải đo bằng thước của lõi.
 
 Gói sai đơn vị khi đó bị từ chối ngay ở cửa thay vì đi lọt — đúng thứ ta muốn
 với dữ liệu từ hệ khác.
@@ -115,6 +136,62 @@ if (tvSo(t.totalAdvanceUSD) >= 100)
 ```
 
 Ngưỡng 100 lấy theo `advanceCalc`, khớp với chỗ bản đặc tả đã nêu.
+
+### (c) CRM sửa deal rồi gửi lại: bản sửa biến mất — CHẶN
+
+Chỗ này chúng tôi tìm thêm khi đọc `tvNhanGoi`, rồi đo lại cho chắc:
+
+```
+lần 1 nhận D-GUI-LAI (artistSharePct 70)  → {"them":1,"bo":0}
+CRM sửa điều khoản 70% → 80%, gửi LẠI cùng dealId
+lần 2 nhận                                 → {"them":0,"bo":1}
+điều khoản Portal CÒN GIỮ: 70%
+→ Bản sửa bị bỏ IM LẶNG. Portal giữ 70%, CRM tin là đã gửi 80%.
+```
+
+`day[d.dealId]` chặn nhận trùng — đúng, và cần. Nhưng nó đang chặn **cả bản
+sửa**. Một deal đổi điều khoản là chuyện thường ngày ở CRM, và đây lại đúng
+là cái mà cầu nối này sinh ra để tránh: hai hệ, hai con số, không ai báo gì.
+
+Sửa: tách ba đường thay vì một.
+
+```
+gói y nguyên          → bỏ qua, như cũ (gửi lại cả lô là chuyện thường)
+khác, CHƯA trình      → làm mới, quyết định chưa lên bàn ai
+khác, ĐÃ trình/đã bỏ  → ĐÓNG BĂNG điều khoản, ghi một dòng `lech`
+```
+
+Đường thứ ba là chỗ đáng bàn. Chúng tôi chọn **không** để gói tới sau đè lên
+một deal đã trình: giám đốc đang duyệt trên bản nào thì phải còn nguyên bản
+ấy. Nhưng cũng không để nó biến mất — `tv.lech` giữ lại cả bản cũ lẫn bản
+CRM vừa gửi, và `nhanGoi` trả về `{ them, capNhat, lech, bo, ids, idLech }`.
+
+**Việc này chỉ xong một nửa ở phía chúng tôi.** Nửa còn lại là CRM phải *đọc*
+`lech` và hiện nó lên chính deal đó — không thì chúng tôi chỉ dời chỗ im lặng
+từ Portal sang CRM. Xem `HOP-DONG-DU-LIEU-1-1.md` mục 4.
+
+### (d) Tám câu lỗi mới chưa có bản tiếng Anh — CHẶN
+
+Cái này không phải lỗi logic, nhưng nó chặn merge, nên nói sớm hơn muộn.
+
+```
+node portal/test/i18n-loi.js   trên nhánh các bạn → 211 đạt · 8 hỏng
+```
+
+Lõi ném lỗi bằng tiếng Việt, khung dịch lúc hiện qua `HAUSTEK.i18n.loi`.
+`test/i18n-loi.js` đọc mã nguồn, lấy mọi chuỗi `new Error(...)` và đòi mỗi
+chuỗi phải dịch ra một câu không còn dấu tiếng Việt. Tám câu của bước 1 chưa
+có trong bảng `LOI_EN`.
+
+Bộ kiểm này không nằm trong `thuong-vu.js` nên các bạn không thấy — hợp lý.
+Bản vá thêm đủ bản dịch, và thêm một chỗ nữa: `tvNhanGoi` ném cả danh sách
+lỗi của một gói trong một câu ghép bằng `" · "`, nên `dichLoi()` nay dịch
+**từng vế**:
+
+```
+VI: Gói không mang dấu "haustek-crm" · Deal thứ 1 thiếu mã deal
+EN: The payload does not carry the "haustek-crm" marker · Deal 1 has no deal id
+```
 
 ---
 
@@ -196,9 +273,17 @@ Sửa cùng lúc với việc hợp nhất, không phải trước hay sau.
 
 ## 5 · Đề nghị
 
-1. Sửa (a) và (b) ở mục 2 — đều nhỏ, đều có mã sẵn ở trên.
+1. Áp `portal/gui-crm/va-buoc-1.patch` — cả bốn chỗ ở mục 2, kèm bốn bài
+   kiểm. Hoặc gõ lại theo ý mình; mã đều nằm ở trên.
 2. **Làm bước 2 đi**, đừng chờ chuyện `main`. Bước 2 là trang, không đụng
    chuỗi tiền, và mỗi bước vẫn đi riêng được như bảng đã chốt.
-3. Chuyện `main` để chủ dự án quyết. Nếu chọn hợp nhất, chúng tôi lo phần
+3. Cân nhắc `them-gioi-han.patch`: Portal công bố khoảng nó nhận
+   (6–60 tháng · 50–97% cho bên) để CRM chặn ngay trên form dựng deal, thay
+   vì để người bán hứa 72 tháng rồi mới biết. Tuỳ chọn, nhưng nó đóng lại
+   chính lỗi các bạn tìm ra, ở phía còn lại.
+4. Đọc `HOP-DONG-DU-LIEU-1-1.md` trước khi làm bước 2 — có một việc phải
+   chốt trước: **một deal sinh hai đề xuất** (hợp đồng và tạm ứng), nên hình
+   dòng dữ liệu đường về phải đổi, và đổi sau khi dựng trang thì tốn hơn.
+5. Chuyện `main` để chủ dự án quyết. Nếu chọn hợp nhất, chúng tôi lo phần
    dọn v1 và sửa CI; các bạn giữ `crm/` nguyên vẹn — nó không đụng gì tới
    `portal/v2/`.
