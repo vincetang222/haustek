@@ -17,7 +17,7 @@
 const { chromium } = require('playwright');
 const fs = require('fs'), path = require('path');
 
-const NGUON = process.argv[2] || '/home/user/haustek/portal/goi-mot-trang.html';
+const NGUON = process.argv[2] || require('path').join(__dirname, '..', 'goi-mot-trang.html');
 const RA = '/tmp/nhu-art';
 
 /* Bọc y như trình xem: doctype, head có charset + reset, nội dung vào body. */
@@ -38,7 +38,7 @@ function bocNhuTrinhXem(noiDung) {
   const sv = spawn('python3', ['-m', 'http.server', '8131'], { cwd: RA, stdio: 'ignore' });
   await new Promise(r => setTimeout(r, 1200));
 
-  const b = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium-1194/chrome-linux/chrome' });
+  const b = await chromium.launch({ executablePath: process.env.CHROMIUM || undefined });
   require('./vao-cua.js').gan(b);   /* vòng 25: mỗi trang mở ra đã có phiên, khỏi qua cửa */
   const ctx = await b.newContext({ viewport: { width: 1400, height: 900 } });
   /* chặn sạch mạng ngoài — trang phải tự đủ */

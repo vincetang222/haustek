@@ -26,7 +26,7 @@ const CHO = 'main .card-h p, main .kpi .l, main .kpi .s, main th, ' +
   '.nav a span, .nav-grp, .top-note, main .help';
 
 (async () => {
-  const b = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium-1194/chrome-linux/chrome' });
+  const b = await chromium.launch({ executablePath: process.env.CHROMIUM || undefined });
   require('./vao-cua.js').gan(b);   /* vòng 25: mỗi trang mở ra đã có phiên, khỏi qua cửa */
   let hong = 0;
   for (const trang of ['v2/intranet.html', 'v2/khach.html']) {

@@ -7,7 +7,7 @@ const dungFontThat = require('./font-that.js');
 const { doiTaiKhoan } = require('./vao-cua.js');
 
 (async () => {
-  const b = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium-1194/chrome-linux/chrome' });
+  const b = await chromium.launch({ executablePath: process.env.CHROMIUM || undefined });
   const ctx = await b.newContext({ viewport: { width: 1440, height: 1100 } });
   const p = await ctx.newPage();
   /* addInitScript chứ không evaluate: evaluate lúc này chạy trên about:blank,

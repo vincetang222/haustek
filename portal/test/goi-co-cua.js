@@ -37,7 +37,7 @@ const oCua  = p => p.evaluate(() => !!document.querySelector(".cua"));
 const oCong = p => p.evaluate(() => !!document.querySelector(".app .nav"));
 
 (async () => {
-  const b = await chromium.launch({ executablePath: "/opt/pw-browsers/chromium-1194/chrome-linux/chrome" });
+  const b = await chromium.launch({ executablePath: process.env.CHROMIUM || undefined });
   /* KHÔNG gọi vao-cua.js: bài này kiểm đúng cái cửa mà bài khác đi vòng qua. */
   const ctx = await b.newContext();
   const p = await ctx.newPage();

@@ -11,7 +11,7 @@ const KHONG_BAM = ['data-duyet', 'data-boqua', 'data-thuhoi', 'data-xoahet',
   'data-nhapjson', 'data-xuatjson', 'data-in', 'data-reset'];
 
 (async () => {
-  const b = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium-1194/chrome-linux/chrome' });
+  const b = await chromium.launch({ executablePath: process.env.CHROMIUM || undefined });
   require('./vao-cua.js').gan(b);   /* vòng 25: mỗi trang mở ra đã có phiên, khỏi qua cửa */
   let hong = 0;
 

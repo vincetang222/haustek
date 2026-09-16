@@ -20,7 +20,7 @@ const TRANG = process.argv[2] || 'v2/intranet.html';
 const RONG = (process.argv[3] || '1500').split(',').map(Number);
 
 (async () => {
-  const b = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium-1194/chrome-linux/chrome' });
+  const b = await chromium.launch({ executablePath: process.env.CHROMIUM || undefined });
   require('./vao-cua.js').gan(b);   /* vòng 25: mỗi trang mở ra đã có phiên, khỏi qua cửa */
   let hong = 0;
 
