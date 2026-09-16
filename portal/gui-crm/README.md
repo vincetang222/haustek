@@ -24,6 +24,7 @@ cd portal && node test/thuong-vu.js      # 63 đạt
 | `HOP-DONG-DU-LIEU-1-1.md` | Portal | sáu đề nghị để hai hệ đi cùng nhịp |
 | `NOTE-GUI-CRM.md` | Portal | bản chất bốn lỗi, hai luật kiểm thử, thương hiệu chung |
 | `QUY-TRINH-KY-HOP-DONG.md` | Portal | tư vấn quy trình ký điện tử, và một lỗ trong chuỗi tiền |
+| `TAM-UNG-VA-VIEC-CAN-CRM.md` | Portal | phí tạm ứng là gì (đo thật), và toàn bộ việc CRM cần đáp ứng |
 | `TRA-LOI-BUOC-1.md` · `TRA-LOI-BUOC-3.md` | CRM ↔ Portal | soát bước 1 và bước 3 |
 | `CHOT-TOKEN-HEAD.md` | CRM | chốt `--head` là dải tối, kèm số đo và ảnh dựng |
 | `GUI-PORTAL-VONG-31.md` | CRM | ba việc xong, hai việc cần Portal, hai quyết định |
@@ -44,6 +45,9 @@ cd portal && node test/thuong-vu.js      # 63 đạt
 1. `feeOf` đọc `signedAt` hay `approvedAt` — **chặn cả luồng ký điện tử**.
 2. Phí mới chạy từ kỳ ký, kỳ duyệt, hay kỳ thoả thuận (hiện hồi tố 3 tháng,
    không ai từng quyết).
+3. **Phí tạm ứng 12% hay 0%** — Haustek kiếm tiền bằng 30% hợp đồng, thì
+   khoản ứng có tính phí nữa không? Ảnh hưởng thẳng tới con số hoà vốn A&R
+   hứa với đối tác. Xem `TAM-UNG-VA-VIEC-CAN-CRM.md` mục 1.
 
 ## Lệ chung rút ra, cả hai đội cùng giữ
 
