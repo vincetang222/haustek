@@ -381,7 +381,7 @@ function veDangNhap(c, dn) {
             (d.soLan > 1 ? '<div class="muted" style="font-size:12px">' + HM.esc(HT.fmt.luc(d.denLuc)) + '</div>' : '') + '</td></tr>';
       }).join('') + '</tbody></table></div>' +
       '<p class="say">' + HM.esc(vi
-        ? 'Có một dòng không phải bạn? Gửi một việc hỗ trợ ngay bằng nút ở đầu trang — Haustek sẽ khoá tài khoản và kiểm lại mọi lệnh rút tiền gần đây.'
+        ? 'Có một dòng không phải bạn? Gửi một việc hỗ trợ ngay bằng nút ở đầu trang. Haustek sẽ khoá tài khoản và kiểm lại mọi yêu cầu rút tiền gần đây.'
         : 'A line that was not you? Open a support request with the button at the top of this page — Haustek will lock the account and re-check every recent withdrawal.') + '</p>'
     : HM.trong({
         icon: 'clock',

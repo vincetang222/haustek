@@ -172,21 +172,12 @@ if (cua === 'khach') {
                   : a.kind === 'artist-indie' ? (HT.lang === 'en' ? 'Independent artist' : 'Nghệ sĩ độc lập')
                   : (HT.lang === 'en' ? 'Artist' : 'Nghệ sĩ') };
     }),
-    phai: {
-      nhan: HT.lang === 'en' ? 'Partner portal' : 'Cổng đối tác',
-      h: HT.lang === 'en'
-        ? ['Your money, ', 'explained', ' line by line']
-        : ['Tiền của bạn, ', 'giải thích được', ' từng dòng'],
-      p: HT.lang === 'en'
-        ? 'What each period paid, which platform it came from, what is sitting in your wallet, and where a withdrawal has got to. The figures here are yours — nobody else’s are mixed in.'
-        : 'Từng kỳ trả bao nhiêu, đến từ nền tảng nào, ví còn bao nhiêu, và lệnh rút đang đi tới đâu. Số ở đây là của bạn — không lẫn của ai khác.',
-      trich: HT.lang === 'en'
-        ? 'Every figure on this side is NET: what reaches you after the fee. You never have to work out what was taken off along the way.'
-        : 'Mọi con số ở phía này đều là NET: phần về tới tay bạn sau khi trừ phí. Bạn không phải tự tính xem dọc đường đã trừ những gì.',
-      trichAi: HT.lang === 'en' ? 'How this portal is built' : 'Cách cổng này được dựng',
+    /* Chữ lấy từ haustek-cua.js — cùng nguồn với hai trang thật. Chép tay
+       lại ở đây là dựng lại đúng cái đã làm bản gói mất cửa ở vòng 26. */
+    phai: Object.assign({}, HTCua.chu(HT.lang).doiTac, {
       the: ['Spotify', 'YouTube Music', 'TikTok', 'Apple Music', 'Zing MP3',
             'NhacCuaTui', 'Facebook', 'Amazon Music', 'Deezer', 'SoundCloud']
-    },
+    }),
     them: oChonCua(HT.lang, '<p>' + HT.esc(HT.lang === 'vi'
       ? 'Bản gói một trang: đổi cổng để xem phía còn lại. Hệ thật không có ô chọn này.'
       : 'Single-page bundle: switch door to see the other side. The real system has no such control.') + '</p>'),
@@ -310,26 +301,15 @@ if (cua === 'khach') {
     mau: A.staff.list().filter(function (s) { return s.active !== false; }).map(function (s) {
       return { email: s.email, ten: s.name, phu: HT.lang === 'en' ? s.titleEn : s.title };
     }),
-    phai: {
-      nhan: HT.lang === 'en' ? 'Internal portal' : 'Cổng nội bộ',
-      h: HT.lang === 'en'
-        ? ['Every dollar ', 'traces back', ' to one track']
-        : ['Mỗi đồng đều ', 'lần ngược được', ' về một bài hát'],
-      p: HT.lang === 'en'
-        ? 'Revenue arrives by period and by source, the split chain runs, and every figure on every page opens up until you reach the track that produced it.'
-        : 'Doanh thu về theo từng kỳ và từng nguồn, chuỗi chia chạy, và mọi con số trên mọi trang đều mở ra được cho tới đúng bài hát sinh ra nó.',
+    /* Chữ lấy từ haustek-cua.js — cùng nguồn với hai trang thật. */
+    phai: Object.assign({}, HTCua.chu(HT.lang).noiBo, {
       so: [
         { n: HT.fmt.n(A.counts.tracks),  s: HT.lang === 'en' ? 'tracks' : 'bài hát' },
         { n: HT.fmt.n(A.counts.artists), s: HT.lang === 'en' ? 'artists' : 'nghệ sĩ' },
         { n: HT.fmt.n(A.counts.labels),  s: HT.lang === 'en' ? 'labels' : 'label' }
       ],
-      trich: HT.lang === 'en'
-        ? 'A partner only ever sees NET. The fee, the gross figure and the distributor’s name do not exist on that side of the wall.'
-        : 'Đối tác chỉ thấy số NET. Phí, số gộp và tên đơn vị phân phối không tồn tại ở phía bên kia bức tường.',
-      trichAi: HT.lang === 'en' ? 'Design rule · guarded by test/api-guard.js'
-                                : 'Nguyên tắc dựng hệ · có test/api-guard.js canh',
       the: A.stores.slice(0, 10)
-    },
+    }),
     them: oChonCua(HT.lang, '<p>' + HT.esc(HT.lang === 'vi'
       ? 'Bản gói một trang: đổi cổng để xem phía còn lại. Hệ thật không có ô chọn này.'
       : 'Single-page bundle: switch door to see the other side. The real system has no such control.') + '</p>'),
