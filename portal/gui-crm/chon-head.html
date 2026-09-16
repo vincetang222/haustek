@@ -1,0 +1,70 @@
+<!doctype html><meta charset="utf-8">
+<style>
+ @import url('https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600&display=swap');
+ *{box-sizing:border-box}
+ body{margin:0;font:14px/1.5 'Be Vietnam Pro',system-ui,sans-serif}
+ .half{padding:28px 30px}
+ .sang{background:#EBEEF3;color:#1A2129}
+ .toi {background:#0B141B;color:#E8EEF4}
+ h2{font-size:13px;letter-spacing:.08em;text-transform:uppercase;margin:0 0 4px;opacity:.6;font-weight:600}
+ .sub{font-size:12px;opacity:.55;margin:0 0 18px}
+ .row{display:flex;gap:16px;flex-wrap:wrap}
+ .card{border-radius:10px;overflow:hidden;width:262px;box-shadow:0 1px 3px rgba(0,0,0,.14)}
+ .sang .card{background:#FFF}
+ .toi  .card{background:#172532}
+ table{width:100%;border-collapse:collapse;font-size:12px}
+ th{text-align:left;padding:9px 12px;font-size:10.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase}
+ td{padding:8px 12px;font-size:12.5px}
+ .sang td{border-bottom:1px solid #E6EAEF;color:#1A2129}
+ .toi  td{border-bottom:1px solid #22313E;color:#E8EEF4}
+ tr:last-child td{border-bottom:0}
+ .tag{font-size:10.5px;padding:7px 12px 0;opacity:.6;font-weight:600;letter-spacing:.04em}
+ .note{font-size:11px;padding:2px 12px 11px;opacity:.45;line-height:1.45}
+ .num{text-align:right;font-variant-numeric:tabular-nums}
+</style>
+<div class="half sang">
+  <h2>Chế độ sáng · dải head</h2>
+  <p class="sub">Thẻ trắng. Đi đậm có 21:1 đất — dư sức. Câu hỏi chỉ là đậm tới đâu.</p>
+  <div class="row" id="s"></div>
+</div>
+<div class="half toi">
+  <h2>Chế độ tối · dải head</h2>
+  <p class="sub">Thẻ #172532 đã sát sàn. E/F/G đi đậm · H/I đi nhạt. Số trong ngoặc là tương phản với thẻ.</p>
+  <div class="row" id="t"></div>
+</div>
+<script>
+const SANG=[
+ ['A','#24242E','#3A3A48','#F2F2F6','#A9A9B6','15,36:1','Lấy nguyên của CRM (H240)'],
+ ['B','#0E1A24','#2A3B48','#F3F6F9','#A8B6C4','17,62:1','= --chrome của Portal'],
+ ['C','#1D2935','#364554','#F3F5F7','#A5B2C0','14,78:1','Graphite hệ Portal — đề nghị'],
+ ['D','#263340','#3E4C5A','#F1F4F7','#A7B4C1','12,88:1','Nhạt hơn một bậc'],
+];
+const TOI=[
+ ['E','#121C26','#243343','#ECF0F4','#9FAEBE','1,10:1','đậm hơn thẻ, không đen'],
+ ['F','#0B141B','#22313E','#ECF0F4','#9FAEBE','1,19:1','= nền trang'],
+ ['G','#0E171F','#22313E','#ECF0F4','#9FAEBE','1,16:1','đậm hơn cả nền trang'],
+ ['H','#21323F','#33475A','#ECF0F4','#A3B2C2','1,18:1','đang dùng'],
+ ['I','#293E51','#425D76','#ECF0F4','#A3B2C2','1,41:1','nhạt hơn — đề nghị'],
+];
+function ve(list, el){
+  el.innerHTML = list.map(([k,bg,line,on,mu,cr,note])=>`
+   <div>
+    <div class="card">
+      <table>
+        <thead><tr style="background:${bg};border-bottom:1px solid ${line}">
+          <th style="color:${on}">Bài hát</th><th class="num" style="color:${mu}">Kỳ 09</th>
+        </tr></thead>
+        <tbody>
+          <tr><td>Gần</td><td class="num">$1.284</td></tr>
+          <tr><td>Rỗng của tôi</td><td class="num">$867</td></tr>
+          <tr><td>Đêm vô tận</td><td class="num">$412</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="tag">${k} · ${bg} · ${cr}</div>
+    <div class="note">${note}</div>
+   </div>`).join('');
+}
+ve(SANG, document.getElementById('s'));
+ve(TOI,  document.getElementById('t'));
+</script>

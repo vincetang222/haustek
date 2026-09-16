@@ -1,7 +1,21 @@
 # Chốt · `--head` là dải TỐI
 
-Chủ dự án đã quyết: **lấy nếp của CRM — dải đầu bảng và đầu thẻ là một dải
-tối, tách hẳn khỏi thân bảng.** Portal đi theo.
+Chủ dự án đã quyết: **dải đầu bảng và đầu thẻ là một dải tối, tách hẳn khỏi
+thân bảng** — nếp của CRM. Và đã chốt luôn giá trị cụ thể:
+
+```css
+/* chế độ sáng */              /* chế độ tối */
+--head:       #1D2935;         --head:       #293E51;
+--head-line:  #364554;         --head-line:  #425D76;
+--on-head:    #F3F5F7;         --on-head:    #ECF0F4;
+--head-muted: #A5B2C0;         --head-muted: #A3B2C2;
+```
+
+**Dựng trong hệ màu H210 của chính Portal, không mượn H240 của CRM.** Chúng
+tôi có cân nhắc đưa các bạn thẳng `#24242E` của CRM cho khớp ngay, nhưng một
+dải H240 nằm giữa một app H207–217 sẽ đọc ra là lệch chứ không ra là chung.
+Trọng lượng mới là thứ phải khớp, và nó khớp: 14,78:1 so với 15,36:1 của CRM.
+Khi trục xám về H240 (mục 7) thì hai bên tự hội tụ nốt phần sắc độ.
 
 Note này nói đủ để các bạn làm một lượt, và nói cả chỗ chúng tôi đo ra là
 việc này **nhỏ hơn nó nghe**.
@@ -39,13 +53,20 @@ nền #24242E · mực #1A2129  →  1.06 : 1
 Chữ biến mất. Chuẩn AA đòi 4,5.
 
 CRM làm được vì `--head` ở đó không đứng một mình — nó đi thành **bộ bốn**,
-mực ghim vào dải chứ không mượn mực của trang:
+mực ghim vào dải chứ không mượn mực của trang. Bộ chốt cho Portal, kèm số đo:
 
 ```css
---head:       #24242E;   /* dải */
---head-line:  #3A3A48;   /* kẻ dưới — để --card-line ở đây sẽ thành vạch 10:1 */
---on-head:    #F2F2F6;   /* mực thường trên dải */
---head-muted: #A9A9B6;   /* mực phụ; chữ 10,5px VIẾT HOA cần dư ngưỡng */
+/* chế độ sáng — thẻ #FFFFFF */
+--head:       #1D2935;   /* ↔ thẻ  14,78:1 */
+--head-line:  #364554;   /* kẻ dưới — để --card-line ở đây sẽ thành vạch chói */
+--on-head:    #F3F5F7;   /* ↔ dải  13,52:1 */
+--head-muted: #A5B2C0;   /* ↔ dải   6,85:1 — chữ 10,5px HOA cần dư ngưỡng */
+
+/* chế độ tối — thẻ #172532 */
+--head:       #293E51;   /* ↔ thẻ   1,41:1 */
+--head-line:  #425D76;
+--on-head:    #ECF0F4;   /* ↔ dải   9,64:1 */
+--head-muted: #A3B2C2;   /* ↔ dải   5,10:1 */
 ```
 
 Đây đúng loại lỗi bài `v2-tuong-phan.js` của các bạn sinh ra để bắt: **biến
@@ -77,6 +98,38 @@ biểu đúng ra là:
 > **Dải head luôn tương phản với thẻ — tối hơn ở nền sáng, sáng hơn ở nền
 > tối.** Nó là một vạch ghim ngang mỗi bảng, cho mắt một mốc cố định khi
 > cuộn.
+
+### Chế độ tối: chúng tôi đã thử đi ĐẬM, và đo ra nó phản tác dụng
+
+Hướng đầu tiên của chủ dự án là "đậm hơn nhạt" — áp cho cả hai chế độ. Chúng
+tôi dựng thử năm phương án ở chế độ tối trên thẻ `#172532` rồi mới kết luận:
+
+```
+                                         ↔ thẻ    ↔ nền trang
+E  #121C26   đậm hơn thẻ, chưa đen       1,10:1      1,08:1
+F  #0B141B   đúng bằng nền trang         1,19:1      1,00:1
+G  #0E171F   đậm hơn cả nền trang        1,16:1      1,03:1
+H  #21323F   đang dùng (sáng hơn thẻ)    1,18:1      1,41:1
+I  #293E51   ĐÃ CHỐT (sáng hơn nữa)      1,41:1      1,68:1
+```
+
+Ba phương án đi đậm **làm dải mờ đi**, không rõ lên. Lý do là trần vật lý:
+thẻ `#172532` đã sát sàn, nên ngay cả đen tuyền `#000000` cũng chỉ cho
+**1,35:1** so với thẻ. Muốn đạt 3:1 theo hướng đậm thì cần độ sáng **âm** —
+không tồn tại. Và tệ hơn con số: dải càng đậm thì càng giống **nền trang**
+(E còn 1,08:1 với nền trang), nên mắt đọc nó thành một lỗ thủng xuyên qua
+thẻ chứ không phải một dải tiêu đề.
+
+`#293E51` cho **1,41:1** — tách rõ nhất trong cả năm, và tách khỏi cả thẻ
+lẫn nền trang. Nó cũng là thứ gần nhất với nếp CRM tối đang dùng (1,33:1).
+
+Nói gọn: cái ta thật sự muốn không phải "đậm", mà là "tách khỏi thẻ". Ở nền
+sáng thì tách = đậm xuống; ở nền tối thì tách = sáng lên. Cùng một nếp, chiều
+đảo theo chế độ.
+
+**Ảnh dựng thật kèm theo:** `chon-head.png` (nguồn: `chon-head.html`, mở
+thẳng bằng trình duyệt). Chín phương án dựng thành bảng thật trên đúng nền
+của hai chế độ. Ở hàng dưới nhìn là thấy ngay E/F/G gần như không còn dải.
 
 Chú thích trong mã CRM nói thẳng lý do chọn graphite chứ không gần-đen:
 *"để không dựng thêm một vùng 17:1 thứ hai trong tầm mắt suốt tám tiếng."*
@@ -168,9 +221,12 @@ gộp hai thay đổi màu vào một lượt — hỏng thì không biết tạ
 
 ## Tóm tắt
 
-1. `--head` = dải tối, nếp CRM. **Đã chốt.**
+1. `--head` = dải tối, nếp CRM. **Đã chốt**, và chốt luôn giá trị:
+   sáng `#1D2935` · tối `#293E51`, dựng ở hệ màu H210 của Portal.
 2. Lấy **cả bộ bốn**, không lấy mỗi `--head` — nếu không là 1,06:1.
-3. Chỉ chế độ **sáng** đổi; chế độ tối hai bên đã đồng ý sẵn.
+3. Chỉ chế độ **sáng** đổi hướng. Chế độ tối giữ "dải sáng hơn thẻ" — đã
+   thử ba phương án đi đậm và đo ra chúng làm dải MỜ ĐI (1,10–1,19:1 so với
+   1,41:1), vì thẻ đã sát sàn: đen tuyền cũng chỉ được 1,35:1.
 4. Năm selector · 115 bảng trên 41 trang, 9 đầu thẻ, 4 bảng ma trận.
 5. `--card` và `--muted` thắng hai tên còn lại — đổi tên, không đổi mặt.
 6. Trục xám để lượt sau.
