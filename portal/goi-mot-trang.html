@@ -190,7 +190,39 @@
      dù chữ vẫn đạt AA. Mỗi lớp dưới đây tách hẳn khỏi lớp trên nó. */
   --line:    #D2D9E2;   /* kẻ giữa hai dòng — 1,30:1 so với mặt thẻ trắng */
   --line-2:  #B4BFCC;   /* kẻ dưới đầu cột và trên dòng tổng — 1,62:1 */
-  --head:    #E2E7EE;   /* dải đầu cột — tách rõ khỏi thân bảng */
+  /* DẢI HEAD LÀ MỘT DẢI TỐI, không phải một tint nhạt của thẻ.
+     Chốt chung với đội CRM (portal/gui-crm/CHOT-TOKEN-HEAD.md): cùng tên
+     thì phải cùng nghĩa, và nghĩa là "một vạch ghim ngang mỗi bảng cho mắt
+     một mốc cố định khi cuộn", chứ không phải "thân bảng tối hơn một chút".
+     Bản trước #E2E7EE tách khỏi thẻ trắng đúng 1,24:1 — mắt đọc ra một dòng
+     dữ liệu in đậm, không đọc ra một tầng riêng.
+     Dựng ở H210 của chính Portal chứ không mượn #24242E (H240) của CRM: một
+     dải H240 giữa app H207–217 đọc ra là lệch, không ra là chung. Thứ khớp
+     là TRỌNG LƯỢNG — 14,78:1 ở đây so với 15,36:1 bên CRM.
+     Mực phải đi theo dải, xem --on-head / --head-muted ngay dưới: lấy dải
+     tối mà giữ color:var(--ink) thì ra 1,06:1, chữ biến mất. */
+  --head:      #1D2935;   /* ↔ thẻ trắng 14,78:1 */
+  --head-line: #364554;   /* kẻ dưới dải — --line-2 ở đây sẽ thành vạch chói */
+  --on-head:   #F3F5F7;   /* ↔ dải 13,52:1 */
+  --head-muted:#A5B2C0;   /* ↔ dải 6,85:1 — chữ 10,5px VIẾT HOA cần dư ngưỡng */
+  --head-fill: #2A3948;   /* nền rê chuột TRÊN dải — --fill là tint sáng, đặt lên dải tối thành đốm */
+  /* MÀU NGHĨA TRÊN DẢI. Dải tối ở CẢ HAI chế độ, nên ba màu này không cần
+     khai lại theo chế độ — khai một lần là đủ, và đó chính là dấu hiệu dải
+     head đã thành một mặt riêng chứ không còn là một tint của thẻ.
+     Bản sáng của --ok (#136E46) được chọn "đậm một bậc để đọc được trên nền
+     dải đầu cột" — đúng khi dải còn sáng, và thành 2,36:1 khi dải hoá tối.
+     Bài v2-tuong-phan.js bắt đúng chỗ ấy.
+     --danger-head sáng hơn bản tối #FF6B80 một bậc vì bản ấy chỉ được
+     4,03:1 trên dải tối; giữ nguyên H351 của thương hiệu. */
+  --ok-head:     #4FC98F;   /* dải sáng 7,10:1 · dải tối 5,30:1 */
+  --danger-head: #FF8FA0;   /* dải sáng 6,82:1 · dải tối 5,09:1 */
+  --warn-head:   #E5A24A;   /* dải sáng 6,76:1 · dải tối 5,05:1 */
+  /* Huy hiệu đi theo CẶP chữ + nền tint (.chip, .kpi .d). Đổi chữ mà để
+     nguyên tint là chữ sáng trên tint sáng — đo được 1,92:1, và đó chính là
+     lỗi bản sửa trước của tôi tự đẻ ra: 1 chỗ đỏ thành 9. Lấy cả cặp. */
+  --ok-lo-head:     #122F24;   /* chữ trên tint 6,92:1 */
+  --danger-lo-head: #33161C;   /* chữ trên tint 7,62:1 */
+  --warn-lo-head:   #2E2413;   /* chữ trên tint 6,97:1 */
   --zebra:   #F3F6FA;
   --fill:    #DAE1E9;
   --band:    #EAEFF5;
@@ -262,7 +294,14 @@
     --faint:   #909FAD;
     --line:    #32475A;
     --line-2:  #445D73;
-    --head:    #21323F;
+    /* Ở nền tối thì "tách khỏi thẻ" = SÁNG hơn thẻ, không phải đậm hơn: thẻ
+       đã sát sàn nên đen tuyền cũng chỉ cho 1,35:1, còn dải càng đậm càng
+       giống nền trang. Đo năm phương án ở CHOT-TOKEN-HEAD.md mục 3. */
+    --head:      #293E51;   /* ↔ thẻ 1,41:1 — tách rõ nhất trong năm */
+    --head-line: #425D76;
+    --on-head:   #ECF0F4;   /* ↔ dải 9,64:1 */
+    --head-muted:#A3B2C2;   /* ↔ dải 5,10:1 */
+    --head-fill: #36506A;
     --zebra:   #1B2C39;
     --fill:    #2C3F51;
     --band:    #1F3140;
@@ -315,7 +354,11 @@
   --faint:   #909FAD;
   --line:    #2C3E4E;
   --line-2:  #3C5265;
-  --head:    #1E2C39;
+  --head:      #293E51;   /* ↔ thẻ #15212B 1,48:1 */
+  --head-line: #425D76;
+  --on-head:   #ECF0F4;
+  --head-muted:#A3B2C2;
+  --head-fill: #36506A;
   --zebra:   #19262F;
   --fill:    #2A3A48;
   --band:    #1D2C39;
@@ -577,8 +620,34 @@ details.hoc>div{margin-top:10px}
    nhãn của khối" khỏi "đây là nội dung" mà không cần đọc. Không có dải này
    thì tiêu đề và số liệu nằm trên cùng một mặt phẳng trắng — chính là chỗ
    trông phẳng. */
+/* ---- MỌI THỨ NẰM TRONG DẢI PHẢI LẤY MỰC VÀ MẶT CỦA DẢI ----
+   Dải head chứa .pager, .help, .range, .chip, .btn, ô .band… — tất cả đều
+   gọi var(--ink-2), var(--card), var(--band), tức mực và MẶT của TRANG.
+   Trên dải sáng cũ chúng đúng; trên dải tối thì .btn thành nút TRẮNG chữ
+   trắng (đo được 1,09:1) và ô .band thành nền sáng chữ sáng (1,06:1).
+   Sửa từng thành phần là lặp lại đúng lỗi nút Đăng xuất — một lỗi, 45 chỗ —
+   và thành phần thêm sau này lại sai tiếp. Nên đổi VAI của token ngay tại
+   phạm vi dải, một lần cho cả bốn chỗ: con cháu cứ gọi tên cũ, giá trị tự
+   đúng. Bài v2-tuong-phan.js canh chỗ này. */
+.card-h, table.t th, table.t tfoot td, .mx th {
+  --ink:       var(--on-head);
+  --ink-2:     var(--head-muted);
+  --faint:     var(--head-muted);
+  --card:      var(--head-fill);   /* mặt nút, mặt ô dính trong dải */
+  --band:      var(--head-fill);   /* cột được tô đậm, ở dòng tổng */
+  --zebra:     var(--head-fill);
+  --fill:      var(--head-fill);
+  --line:      var(--head-line);
+  --line-2:    var(--head-line);
+  --card-line: var(--head-line);
+  --ok:        var(--ok-head);      --ok-lo:     var(--ok-lo-head);
+  --danger:    var(--danger-head);  --danger-lo: var(--danger-lo-head);
+  --warn:      var(--warn-head);    --warn-lo:   var(--warn-lo-head);
+}
+
 .card-h{display:flex;align-items:center;gap:12px;padding:11px 14px;flex-wrap:wrap;
-  background:var(--head);border-bottom:1px solid var(--card-line)}
+  background:var(--head);border-bottom:1px solid var(--head-line);
+  color:var(--on-head)}
 .card-h .sp{flex:1}
 .card-b{padding:16px 18px}
 
@@ -738,8 +807,8 @@ table.t{min-width:720px;border-collapse:separate;border-spacing:0}
 .two table.t,.g2 table.t,.g3 table.t,.drawer table.t{min-width:0}
 /* Đầu cột phải là một tầng riêng, không phải một dòng dữ liệu chữ nhỏ:
    đậm hơn, tối hơn, và kẻ dưới dày gấp đôi kẻ giữa các dòng. */
-table.t th{background:var(--head);font-size:11.5px;font-weight:600;color:var(--ink);
-  text-align:left;padding:9px 14px;white-space:nowrap;border-bottom:2px solid var(--line-2);
+table.t th{background:var(--head);font-size:11.5px;font-weight:600;color:var(--on-head);
+  text-align:left;padding:9px 14px;white-space:nowrap;border-bottom:2px solid var(--head-line);
   position:relative;letter-spacing:.01em;text-transform:none}
 table.t th.s{cursor:pointer;user-select:none}
 table.t th.s:hover{color:var(--ink);background:var(--fill)}
@@ -782,8 +851,8 @@ table.t td.num{font-variant-numeric:tabular-nums;white-space:nowrap}
 table.t td.num b{font-weight:600}
 table.t td.band,table.t th.band{background:var(--band)}
 table.t tbody tr:hover td.band{background:var(--fill)}
-table.t tfoot td{border-top:2px solid var(--line-2);border-bottom:0;font-weight:600;
-  background:var(--head);color:var(--ink)}
+table.t tfoot td{border-top:2px solid var(--head-line);border-bottom:0;font-weight:600;
+  background:var(--head);color:var(--on-head)}
 /* sọc xen kẽ chỉ khi bảng tự xin (.zebra): bảng rất rộng, nhiều cột số */
 table.t.zebra tbody tr:nth-child(even) td{background:var(--zebra)}
 /* mật độ chặt: người dùng nội bộ quét hàng trăm dòng */
@@ -986,7 +1055,9 @@ h4.sec:first-child{margin-top:0}
   .page-kpis{gap:18px}
   .page-kpi .v{font-size:17px}
   .kpi{padding:12px 14px}
-  .card-h{padding:14px 14px 0}
+  /* Bản hẹp trước đây bỏ padding đáy vì dải gần như cùng màu thẻ, không ai
+     thấy. Dải tối thì chữ sẽ dính sát mép dưới — trả lại padding. */
+  .card-h{padding:14px}
   .card-b{padding:14px}
   .card-f{padding:10px 14px}
   .tabs{gap:18px}
@@ -1145,7 +1216,7 @@ h4.sec:first-child{margin-top:0}
 /* ---- lưới kỳ × luồng ---- */
 .mx{overflow-x:auto}
 .mx table{min-width:640px}
-.mx th{font-size:11.5px;color:var(--ink-2);font-weight:600;padding:8px 10px;text-align:left;
+.mx th{font-size:11.5px;color:var(--head-muted);font-weight:600;padding:8px 10px;text-align:left;
   background:var(--head);white-space:nowrap}
 .mx th.num{text-align:right}
 .mx td{padding:0;border-bottom:1px solid var(--line)}
@@ -1279,7 +1350,7 @@ h4.sec:first-child{margin-top:0}
 .seg.mx-seg button.on{background:var(--sel);color:var(--link)}
 .mx-w{max-width:100%}
 table.mx th:first-child,table.mx td:first-child{position:sticky;left:0;background:var(--card);z-index:1;min-width:128px}
-table.mx thead th:first-child{background:var(--head)}
+table.mx thead th:first-child{background:var(--head);color:var(--head-muted)}
 table.mx tfoot td:first-child{background:var(--band)}
 table.mx td.num{position:relative;font-variant-numeric:tabular-nums;white-space:nowrap}
 table.mx tbody td.num::before{content:"";position:absolute;left:6px;bottom:3px;height:3px;border-radius:2px;
