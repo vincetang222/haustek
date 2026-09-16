@@ -4744,9 +4744,15 @@ function tvTrinh(id, boi, byRole) {
             + Math.round(ADVANCE_FEE * 100) + "%" }, boi, byRole || "sales");
     } catch (e) {
       /* Đã hỏi trước nên không nên tới đây. Nếu vẫn tới: gỡ đề xuất hợp đồng
-         vừa dựng, đừng để lại một nửa. Thương vụ ở lại "moi" để trình lại. */
+         vừa dựng, đừng để lại một nửa. Thương vụ ở lại "moi" để trình lại.
+         NHẬT KÝ CHỈ GHI THÊM, KHÔNG XOÁ. proposeContract đã ghi một dòng
+         proposal.contract cho pr.id; gỡ đề xuất mà xoá luôn dòng ấy là sửa
+         lại quá khứ. Để nguyên và ghi một dòng bù, nên người soát đọc được
+         cả hai: đã dựng, rồi đã gỡ, vì lý do gì. (Đội portal chỉ ra chỗ này
+         khi soát bước 3 — dòng cũ trỏ tới một mã không còn tồn tại.) */
       const ds = proposalsOf(), i = ds.findIndex(x => x.id === pr.id);
       if (i >= 0) ds.splice(i, 1);
+      audit.log("proposal.rollback", pr.id + " · gỡ vì không dựng được đề xuất tạm ứng", boi);
       store.save();
       throw new Error("Không dựng được đề xuất tạm ứng (" + e.message
         + "). Đã gỡ đề xuất hợp đồng vừa tạo, thương vụ giữ nguyên để trình lại.");

@@ -79,8 +79,8 @@ HTCua.mo({
   ten: 'internal',
   tieuDe: HT.lang === 'en' ? 'Haustek internal' : 'Cổng nội bộ Haustek',
   phu: HT.lang === 'en'
-    ? 'Your desk, your department queue, and what you are allowed to approve.'
-    : 'Bàn làm việc của bạn, hàng đợi của bộ phận, và những gì bạn được duyệt.',
+    ? 'Your desk, your department queue, and the approvals that are yours to make.'
+    : 'Bàn làm việc của bạn, hàng đợi của bộ phận, và những việc bạn có quyền duyệt.',
   dangNhap: function (email) { return A.staff.dangNhapBang(email); },
   mau: A.staff.list().filter(function (s) { return s.active !== false; }).map(function (s) {
     return { email: s.email, ten: s.name, phu: HT.lang === 'en' ? s.titleEn : s.title };

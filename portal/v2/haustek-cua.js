@@ -86,20 +86,31 @@ function vePhai(p) {
    --------------------------------------------------------------------- */
 function ve(c) {
   var vi = HT.lang !== 'en';
+  /* GIỌNG CỦA THẺ NÀY.
+     Bản trước nói ĐÚNG mọi thứ nhưng nói về CHÍNH NÓ năm lần quanh ba ô
+     nhập: dưới ô mật khẩu, dưới nút, ở tiêu đề danh sách mẫu, ở mô tả danh
+     sách ấy, rồi ở chân thẻ. Người đến đây để đăng nhập, không để đọc ghi
+     chú phát hành, nên năm khối chữ ấy đọc như máy đọc.
+     Nay nói một lần, ngay chỗ nó liên quan, bằng câu có chủ ngữ. Và hai thứ
+     phải giữ nguyên vì chúng là lời khai thật, không phải trang trí: "không
+     kiểm mật khẩu" (bộ kiểm cua-dang-nhap.js canh đúng câu này — một bản
+     mẫu giấu chuyện ấy đi là lừa người dùng) và câu về nhật ký đăng nhập.
+     Hai thứ tiếng viết riêng, không dịch chữ sang chữ: tiếng Việt cần chủ
+     ngữ ở chỗ tiếng Anh bỏ được, và "bản chính thức" tự nhiên hơn "hệ thật". */
   var t = {
-    email:    vi ? 'Email' : 'Email',
+    email:    'Email',
     matKhau:  vi ? 'Mật khẩu' : 'Password',
-    mkMo:     vi ? 'Bản mẫu không kiểm mật khẩu — gõ gì cũng được, hoặc để trống.'
-                 : 'The prototype does not check passwords — type anything, or leave it empty.',
-    nut:      vi ? 'Vào cổng' : 'Sign in',
+    mkMo:     vi ? 'Bản mẫu không kiểm mật khẩu, nên bạn gõ gì cũng vào được — hoặc cứ để trống.'
+                 : 'This prototype does not check passwords, so type anything you like — or leave it blank.',
+    nut:      vi ? 'Đăng nhập' : 'Sign in',
     quen:     vi ? 'Quên mật khẩu?' : 'Forgot your password?',
-    quenMo:   vi ? 'Hệ thật gửi link đặt lại qua email. Bản mẫu chưa có bước ấy.'
-                 : 'The real system emails a reset link. The prototype has no such step yet.',
-    mauTd:    vi ? 'Tài khoản mẫu của bản mẫu' : 'Prototype sample accounts',
-    mauMo:    vi ? 'Bấm một dòng để điền email. Hệ thật không bao giờ liệt kê ai có tài khoản — danh sách này là thang gỗ của bản mẫu và sẽ bỏ đi.'
-                 : 'Click a row to fill the email. The real system never lists who has an account — this is prototype scaffolding and goes away.',
-    ghiChu:   vi ? 'Mỗi lần vào, kể cả lần bị từ chối, để lại một dòng ở nhật ký đăng nhập.'
-                 : 'Every sign-in, refused ones included, leaves a line in the sign-in log.',
+    quenMo:   vi ? 'Bản chính thức sẽ gửi email đặt lại giúp bạn.'
+                 : 'The live system will email you a reset link.',
+    mauTd:    vi ? 'Xem thử bằng một tài khoản có sẵn' : 'Look around with a sample account',
+    mauMo:    vi ? 'Chọn một dòng để điền sẵn email. Bản chính thức sẽ không liệt kê ai có tài khoản — danh sách này chỉ có ở đây, để bạn xem thử.'
+                 : 'Pick a row and we will fill the email in for you. The live system will never list who has an account — this list exists only here, so you can look around.',
+    ghiChu:   vi ? 'Mọi lần đăng nhập đều được ghi lại, kể cả lần bị từ chối.'
+                 : 'Every sign-in is recorded, including the ones that are turned away.',
     doiNgu:   vi ? 'English' : 'Tiếng Việt'
   };
 
