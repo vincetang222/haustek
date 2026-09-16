@@ -185,3 +185,23 @@ bên nào thắng.
 
 Hai việc đầu làm được ngay hôm nay. Việc 4 là việc duy nhất **chặn bước 2**,
 nên nếu chỉ bàn được một thứ thì bàn thứ ấy.
+
+---
+
+## Đính chính sau khi đội CRM trả lời
+
+**Việc 4 không cần kênh mới.** Chúng tôi viết mục 6 như thể đường về còn
+phải dựng. Đội CRM chỉ ra rằng nó đã có và đang chạy:
+`haustek.portal.contracts.v1`, chỉ-đọc, không ghi ngược — đúng nguyên tắc ở
+mục "Một điều KHÔNG nên làm". Ba trường mới đi vào payload của khoá ấy.
+
+**Nhưng phần "chặn bước 2" thì vẫn đúng, chỉ là chặn ở chỗ khác.** CRM ánh
+xạ trạng thái Portal sang giai đoạn của mình bằng bảng `INBOX_STAGE`, và
+bảng ấy giả định một deal có **một** trạng thái. Việc 5 — một deal sinh hai
+đề xuất, có thể một duyệt một trả — làm giả định ấy sai hẳn. Tức là "hai máy
+trạng thái ghép vào nhau" ở mục 6 không phải rủi ro tương lai: nó đã nằm sẵn
+trong mã.
+
+Phương án đã chốt với đội CRM: `giaiDoan` do **Portal** tính và **chỉ nhìn
+đề xuất hợp đồng**, phần còn lại đi vào `chiTiet` chỉ để hiện. Chi tiết ở
+`TRA-LOI-BUOC-3.md` mục 3.

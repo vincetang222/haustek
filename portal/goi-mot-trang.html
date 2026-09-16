@@ -675,6 +675,14 @@ details.hoc>div{margin-top:10px}
 .btn.dang:hover{background:var(--danger-lo)}
 .btn.ghost{border-color:transparent;background:transparent;color:var(--ink-2)}
 .btn.ghost:hover{background:var(--fill);color:var(--ink)}
+/* Thanh trên và ngăn điều hướng là mặt CHROME: nền tối ở CẢ HAI chế độ. Nút
+   ghost mặc định mặc mực của trang (--ink-2 = #4F5964), và trên nền ấy nó đo
+   được 2.47 ở chế độ sáng — dưới chuẩn AA, lặp ở 45 chỗ vì nút Đăng xuất nằm
+   dưới ngăn điều hướng của mọi trang. Chế độ tối lọt lưới vì --ink-2 lúc ấy
+   vốn đã sáng. Mực của trang không dùng được trên mặt chrome; ở đây phải là
+   mực chrome, y như .nav a và .side-foot. */
+.top .btn.ghost,.side .btn.ghost{color:var(--on-chrome-2)}
+.top .btn.ghost:hover,.side .btn.ghost:hover{background:rgba(255,255,255,.08);color:var(--on-chrome)}
 .btn:disabled{opacity:.45;cursor:not-allowed;border-color:var(--line)}
 .btn.sm{height:28px;padding:0 11px;font-size:12.5px}
 .btn.link{border:0;background:0;color:var(--link);height:auto;padding:0;font-weight:600;
