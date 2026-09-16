@@ -271,6 +271,24 @@ try {
   F("bấm huỷ thì sổ không đổi",
     await intr.evaluate(() => HAUSTEK.admin.advances.list().find(a => a.partyKey === "A:0").opening === 99999));
 
+  /* CRM KHÔNG ĐƯỢC DỰNG SẴN LỜI GỌI GHI SỔ CHO NGƯỜI TA CHÉP.
+     Bản trước in ra hai chuỗi để người vận hành dán sang portal:
+         A.rates.add("L:38", 0.7, …)
+         A.advances.set("L:38", 16100, …)
+     CRM không tự chạy chúng, nhưng in ra công thức của lỗi đắt nhất hai đội
+     đã gặp rồi mời người ta gõ vào thì cũng vậy: advances.set() GÁN ĐÈ số dư
+     gốc, còn nhánh duyệt applyApproved() CỘNG DỒN — một lượt chép tay là xoá
+     mất khoản tạm ứng giám đốc đã duyệt kỳ trước, và không gì báo.
+     Kiểm trên MÃ NGUỒN, không trên giao diện: chỗ nguy hiểm là phép nối
+     chuỗi dựng ra lời gọi, và nó có thể sống ở một nhánh giao diện mà phép
+     kiểm không bấm tới. Câu cảnh báo nhắc TÊN hai hàm thì vẫn được — thứ bị
+     cấm là dựng ra lời gọi. */
+  const nguon = fs.readFileSync(path.resolve(ROOT, "crm", "index.html"), "utf8");
+  F("CRM không dựng sẵn lời gọi advances.set để người ta chép",
+    !/['"`]\s*A\.advances\.set\s*\(/.test(nguon));
+  F("CRM không dựng sẵn lời gọi rates.add để người ta chép",
+    !/['"`]\s*A\.rates\.add\s*\(/.test(nguon));
+
   if (errs.length) FAILED++;
   console.log("\nLỗi JS: " + errs.length);
   errs.slice(0, 5).forEach(e => console.log("  " + e));
@@ -278,5 +296,5 @@ try {
 } finally {
   srv.close();
 }
-console.log(FAILED ? "\n" + FAILED + " phép kiểm HỎNG" : "\n34 đạt · 0 hỏng");
+console.log(FAILED ? "\n" + FAILED + " phép kiểm HỎNG" : "\n36 đạt · 0 hỏng");
 process.exit(FAILED ? 1 : 0);

@@ -1630,8 +1630,13 @@ vi:{
   hoAdvance:'Tạm ứng', hoParty:'Party bên portal', hoUnbound:'Chưa gắn',
   hoExport:'Xuất JSON', hoExported:'Đã xuất file bàn giao',
   hoBound:'Đã gắn vào {k}', hoBadKey:'Sai hình thức. Phải là A:<id> hoặc L:<id>',
-  hoUnbind:'Gỡ gắn', hoCalls:'Hai lời gọi portal sẽ chạy', hoBindHint:'Nhập partyKey bên portal. Nghệ sĩ là A:<id>, label là L:<id>. Danh mục portal không có trong CRM nên phải tra bên intranet rồi gắn tay.',
-  hoCallsNote:'CRM chỉ dựng sẵn chuỗi để đối chiếu. Người vận hành chạy chúng bên intranet — chỉ portal mới có quyền ghi vào sổ tỷ lệ và sổ tạm ứng.',
+  hoUnbind:'Gỡ gắn', hoCalls:'Bàn giao sang portal thế nào',
+  hoStep1:'1 · Xuất gói bàn giao (nút Xuất ở trang Bàn giao CRM).',
+  hoStep2:'2 · Bên intranet, mở màn Thương vụ, dán gói, gắn deal vào {k}.',
+  hoStep3:'3 · Bấm Trình. Deal thành một đề xuất chờ giám đốc duyệt — tiền chỉ vào sổ khi được duyệt.',
+  hoStepAdv:'⚠ Deal này có điều khoản tiền (tạm ứng / quỹ marketing / phí môi giới). Bước 1 của portal chưa nối chân tạm ứng nên sẽ TỪ CHỐI deal, thay vì nuốt im lặng khoản ấy. Tách tạm ứng thành đề xuất riêng bên portal, hoặc chờ bước 3.',
+  hoBindHint:'Nhập partyKey bên portal. Nghệ sĩ là A:<id>, label là L:<id>. Danh mục portal không có trong CRM nên phải tra bên intranet rồi gắn tay.',
+  hoCallsNote:'CRM không ghi gì sang portal. Tỷ lệ và tạm ứng chỉ vào sổ qua nhánh duyệt của portal — đừng gọi thẳng advances.set() hay rates.add(), hai hàm ấy GÁN ĐÈ số dư đã duyệt.',
   hoBoundN:'đã gắn {a}/{b}',
   hoNote1:'Deal ở giai đoạn Đã ký được đẩy sang portal dưới dạng điều khoản thương mại: tỷ lệ chia và tạm ứng.',
   hoNote2:'Danh mục hai bên không khớp tên nên không có khớp tự động — mỗi deal phải gắn tay vào một party của portal. CRM chỉ ghi vào khoá riêng của mình, không bao giờ đụng vào haustek.portal.v1:',
@@ -1934,8 +1939,13 @@ en:{
   hoAdvance:'Advance', hoParty:'Portal party', hoUnbound:'Unbound',
   hoExport:'Export JSON', hoExported:'Handoff file exported',
   hoBound:'Bound to {k}', hoBadKey:'Wrong shape. Must be A:<id> or L:<id>',
-  hoUnbind:'Unbind', hoCalls:'Portal calls this will make', hoBindHint:'Enter the portal partyKey. Artists are A:<id>, labels L:<id>. The portal roster is not loaded in the CRM, so look the id up in the intranet and bind it by hand.',
-  hoCallsNote:'The CRM only composes these strings so you can check them. An operator runs them in the intranet — only the portal may write to the rate and advance ledgers.',
+  hoUnbind:'Unbind', hoCalls:'How this hands off to the portal',
+  hoStep1:'1 · Export the handoff payload (Export on the CRM Handoff page).',
+  hoStep2:'2 · In the intranet, open the Deals screen, paste the payload, attach the deal to {k}.',
+  hoStep3:'3 · Press Submit. The deal becomes a proposal awaiting the director — money reaches the ledger only once approved.',
+  hoStepAdv:'⚠ This deal carries money terms (advance / marketing fund / finder\'s fee). Step 1 on the portal is not yet wired to the advance ledger, so it will REJECT the deal rather than silently swallow the amount. Raise the advance as its own proposal on the portal, or wait for step 3.',
+  hoBindHint:'Enter the portal partyKey. Artists are A:<id>, labels L:<id>. The portal roster is not loaded in the CRM, so look the id up in the intranet and bind it by hand.',
+  hoCallsNote:'The CRM writes nothing to the portal. Rates and advances reach the ledger only through the portal\'s approval branch — never call advances.set() or rates.add() directly; both OVERWRITE an approved balance.',
   hoBoundN:'{a}/{b} bound',
   hoNote1:'Deals at the Signed stage are handed to the portal as commercial terms: the split rate and the advance.',
   hoNote2:'The two rosters do not share names, so there is no automatic match — every deal is bound to a portal party by hand. The CRM writes only to its own key and never touches haustek.portal.v1:',
@@ -3389,18 +3399,33 @@ function handoffPublish(){
   try { localStorage.setItem(HANDOFF_KEY, JSON.stringify(handoffPayload())); return true; }
   catch(e){ return false; }
 }
-/* Hai lời gọi portal mà một deal đã gắn sẽ sinh ra. Chỉ DỰNG chuỗi để người
-   vận hành đọc và đối chiếu — CRM không tự chạy chúng, vì portal mới là nơi
-   có quyền ghi vào sổ tỷ lệ và sổ tạm ứng. */
-function handoffCalls(r){
+/* ĐƯỜNG BÀN GIAO, KHÔNG PHẢI LỜI GỌI.
+
+   Bản trước dựng sẵn hai chuỗi cho người vận hành chép sang portal:
+
+       A.rates.add("L:38", 0.7, …)
+       A.advances.set("L:38", 16100, …)
+
+   CRM không tự chạy chúng, nhưng nó đang IN RA CÔNG THỨC của lỗi đắt nhất
+   hai đội đã gặp và mời người ta gõ vào. advances.set() GÁN ĐÈ số dư gốc,
+   trong khi nhánh duyệt applyApproved() CỘNG DỒN — một lượt chép tay là xoá
+   mất khoản tạm ứng giám đốc đã duyệt kỳ trước, và không gì báo.
+
+   Portal nay có đường đi đúng: gói bàn giao vào màn Thương vụ, người gắn
+   bên, trình thành ĐỀ XUẤT, giám đốc duyệt. Tiền chỉ chạm sổ ở nhánh duyệt,
+   đúng một chỗ. Nên chỗ này không dựng lời gọi nữa — nó chỉ nhắc các bước.
+
+   Trả về mảng chuỗi (rỗng nghĩa là chưa gắn bên, chưa bàn giao được). */
+function handoffSteps(r){
   if(!r.portalPartyKey) return [];
-  const out = [];
-  if(r.terms && r.terms.artistSharePct)
-    out.push('A.rates.add("'+r.portalPartyKey+'", '+(r.terms.artistSharePct/100)+
-             ', "<kỳ hiệu lực>", "'+r.owner+'", "CRM '+r.dealId+' — '+r.dealName+'")');
-  if(r.terms && r.terms.totalAdvanceUSD)
-    out.push('A.advances.set("'+r.portalPartyKey+'", '+r.terms.totalAdvanceUSD+
-             ', "CRM '+r.dealId+' — ký '+(r.closeDate||'')+'")');
+  const out = [t('hoStep1'), t('hoStep2',{k:r.portalPartyKey}), t('hoStep3')];
+  /* Điều khoản tiền bước 1 của portal CHƯA nối chân: nó từ chối thẳng deal
+     mang tạm ứng thay vì nuốt im lặng. Nói trước ở đây để A&R không mang
+     deal sang rồi mới biết. */
+  const tm = r.terms || {};
+  const tien = Math.max(tm.totalAdvanceUSD || 0,
+                        (tm.initialAdvanceUSD || 0) + (tm.marketingFundUSD || 0));
+  if(tien > 0 || (tm.findersFeePct || 0) > 0) out.push(t('hoStepAdv'));
   return out;
 }
 /* ===================== kênh ngược: portal → CRM =====================
@@ -4615,7 +4640,7 @@ function openBind(dealId){
   if(!can('approve')) return;
   const o = DB.opps.find(x=>x.id===dealId); if(!o) return;
   const r = handoffOf(o);
-  const calls = handoffCalls(r);
+  const calls = handoffSteps(r);
   document.getElementById('overlay').innerHTML = shell(t('handoff'), r.dealName,
     '<div class="fld"><div class="fld-l">'+esc(t('hoParty'))+'</div>'+
       '<input class="in" id="bindKey" placeholder="A:123  /  L:7" value="'+esc(r.portalPartyKey||'')+'"></div>'+
