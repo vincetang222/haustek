@@ -47,15 +47,33 @@ const ROOT = process.cwd();
    BỎ QUA, đừng báo hỏng. Hỏng nghĩa là "có lỗi phải sửa"; ở đây chỉ là "nửa kia
    không nằm trên nhánh này", hai chuyện khác hẳn nhau.
    Khi tách repo, đây chính là phép kiểm phải chuyển sang repo nào giữ cả hai. */
-const CAN_PORTAL = ["portal/screens/crm-handoff.js", "portal/intranet.html",
-                    "portal/haustek-core.js"];
+/* HAI TÌNH HUỐNG RẤT KHÁC NHAU, ĐỪNG GỘP LÀM MỘT.
+
+   (1) Nhánh KHÔNG CÓ portal. Nửa kia không nằm ở đây — bỏ qua là đúng.
+   (2) Nhánh CÓ portal, nhưng portal đã đổi hình và những file bài này trỏ
+       tới không còn. Đó KHÔNG phải "nửa kia vắng mặt", đó là bài kiểm đã
+       lạc hậu — và bỏ qua nó là báo XANH trong khi không kiểm gì.
+
+   Bản trước gộp cả hai vào một phép đếm file thiếu. Đo được: trộn portal v2
+   vào main thì v1 (screens/, intranet.html) bị gỡ, bài này in "BỎ QUA" rồi
+   thoát 0 — cổng kiểm thử xanh trong khi đường bàn giao CRM↔portal không
+   còn được kiểm một dòng nào. Đây là lần thứ ba cùng một kiểu lỗi trong dự
+   án này: xanh vì một lý do không liên quan đến thứ định kiểm. */
+const CO_PORTAL = fs.existsSync(path.resolve(ROOT, "portal/haustek-core.js"));
+if (!CO_PORTAL) {
+  console.log("BỎ QUA — nhánh này không có portal, phép kiểm cần cả hai app trên cùng một cây nguồn.");
+  console.log("   Chạy nó trên nhánh có cả hai nửa.");
+  process.exit(0);
+}
+const CAN_PORTAL = ["portal/screens/crm-handoff.js", "portal/intranet.html"];
 const MISSING = CAN_PORTAL.filter(f => !fs.existsSync(path.resolve(ROOT, f)));
 if (MISSING.length) {
-  console.log("BỎ QUA — phép kiểm này cần cả hai app trên cùng một cây nguồn.");
-  MISSING.forEach(f => console.log("   thiếu: " + f));
-  console.log("\nNhánh này chỉ có CRM. Chạy nó trên nhánh có cả portal:");
-  console.log("   git checkout portal-crm-sync && node crm/test/handoff-e2e.mjs");
-  process.exit(0);
+  console.error("HỎNG — portal CÓ mặt nhưng đã đổi hình, bài kiểm này đang trỏ vào chỗ không còn:");
+  MISSING.forEach(f => console.error("   thiếu: " + f));
+  console.error("\nĐường bàn giao CRM→portal nay đi qua màn Thương vụ (A.thuongVu), không còn");
+  console.error("qua portal/screens/crm-handoff.js. Sửa bài kiểm trỏ sang đường mới —");
+  console.error("đừng nới điều kiện bỏ qua, vì như thế là báo xanh mà không kiểm gì.");
+  process.exit(1);
 }
 function serve() {
   return new Promise(resolve => {
