@@ -1,0 +1,10 @@
+# Ảnh chụp do bộ kiểm thử sinh ra. Chúng là SẢN PHẨM của một lần chạy, không
+# phải nguồn: chạy lại là có, và mỗi lần chạy lại đẻ ra một bộ khác nhau tới
+# từng pixel. Đưa vào git thì mỗi lần chạy test là một diff nhị phân vài MB.
+portal/test/shots/
+crm/test/shots/
+
+# Rác thường gặp
+node_modules/
+.DS_Store
+*.log

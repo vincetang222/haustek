@@ -378,19 +378,72 @@ let state = null;
    localStorage là kênh chính. Mở bằng file:// trên Safari thì localStorage
    bị chặn — nên có thêm đường xuất/nhập một file JSON nhỏ.
    --------------------------------------------------------------------- */
+/* ═══ CỨU DỮ LIỆU KHI LÊN BẢN MỚI ═══════════════════════════════════════════
+   Nâng CFG.VERSION là việc bình thường mỗi khi đổi lược đồ. Bản trước xử lý
+   phiên bản lạ bằng cách trả null — lõi tưởng chưa có sổ, dựng lại bộ mẫu, rồi
+   lần save() đầu tiên GHI ĐÈ lên sổ thật. Không có bản sao nào.
+
+   Sổ của portal là tỷ lệ chia, tạm ứng và các kỳ đã duyệt — mất là mất tiền
+   thật, không dựng lại được từ đâu.
+
+   Luật: thấy phiên bản lạ thì CHÉP nguyên văn sang khoá sao lưu trước đã.
+   Chép không được thì KHOÁ đường ghi — thà không lưu được còn hơn nuốt mất sổ.
+   Không tự chuyển lược đồ: không ai viết nổi phép chuyển sang một lược đồ
+   tương lai chưa tồn tại. Việc của chỗ này là GIỮ, không phải đoán. */
+const BAK_PREFIX = "haustek.portal.bak.";
+const BAK_KEEP = 3;
+let STORE_RESCUED = null;
+let STORE_LOCKED = false;
+
+function bakList() {
+  const out = [];
+  try {
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      if (k && k.indexOf(BAK_PREFIX) === 0) out.push(k);
+    }
+  } catch (e) {}
+  return out.sort();
+}
+function storeRescue(raw, parsed) {
+  const v = parsed && parsed.v ? String(parsed.v) : "khong-ro";
+  const key = BAK_PREFIX + v + "." + new Date().toISOString().replace(/[:.]/g, "-");
+  try {
+    localStorage.setItem(key, raw);
+    STORE_RESCUED = { key, v, bytes: raw.length };
+    const all = bakList();
+    while (all.length > BAK_KEEP) { try { localStorage.removeItem(all.shift()); } catch (e) { break; } }
+    return true;
+  } catch (e) {
+    try {
+      bakList().forEach(k => localStorage.removeItem(k));
+      localStorage.setItem(key, raw);
+      STORE_RESCUED = { key, v, bytes: raw.length };
+      return true;
+    } catch (e2) { return false; }
+  }
+}
+
 const store = {
   save() {
+    if (STORE_LOCKED) return false;
     try { localStorage.setItem(CFG.STORE_KEY, JSON.stringify(state)); return true; }
     catch (e) { return false; }
   },
   load() {
-    try {
-      const raw = localStorage.getItem(CFG.STORE_KEY);
-      if (!raw) return null;
-      const s = JSON.parse(raw);
-      return (s && s.v === CFG.VERSION) ? s : null;
-    } catch (e) { return null; }
+    let raw = null;
+    try { raw = localStorage.getItem(CFG.STORE_KEY); } catch (e) { return null; }
+    if (!raw) return null;
+    let s = null;
+    try { s = JSON.parse(raw); } catch (e) { s = null; }
+    if (s && s.v === CFG.VERSION) return s;
+    STORE_LOCKED = !storeRescue(raw, s);
+    return null;
   },
+  rescued() { return STORE_RESCUED; },
+  locked() { return STORE_LOCKED; },
+  backups() { return bakList(); },
+  readBackup(key) { try { return localStorage.getItem(key); } catch (e) { return null; } },
   clear() { try { localStorage.removeItem(CFG.STORE_KEY); } catch (e) {} },
   exportJSON() { return JSON.stringify(state, null, 1); },
   importJSON(txt) {
@@ -1756,7 +1809,11 @@ const H = {
   fmt, esc, vtable, barChart, cents,
   screens, registerScreen,
   api, admin,
-  storage: { available: store.available, exportJSON: () => store.exportJSON(), importJSON: t => store.importJSON(t) },
+  /* rescued/locked/backups để màn hình nào cũng hỏi được: có sổ bản cũ đang
+     nằm chờ không, và đường ghi có đang bị khoá không */
+  storage: { available: store.available, exportJSON: () => store.exportJSON(), importJSON: t => store.importJSON(t),
+             rescued: () => store.rescued(), locked: () => store.locked(),
+             backups: () => store.backups(), readBackup: k => store.readBackup(k) },
 
   /* dashboard.html gọi hàm này ngay dòng đầu. Sau đó HAUSTEK.admin không
      còn tồn tại trong trình duyệt khách — cả dữ liệu thô, cả tên đơn vị
