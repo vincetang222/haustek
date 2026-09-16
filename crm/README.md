@@ -381,3 +381,59 @@ tab hoặc chọn loại khác là bỏ lựa chọn cũ, vì mang theo thì tha
 làm những việc không áp dụng được cho thứ đang chọn. Thanh chỉ hiện việc làm được
 với đúng quyền của người đang đăng nhập, và báo trước bao nhiêu bản ghi sẽ bị bỏ
 qua vì ngoài phạm vi.
+
+## Hợp đồng
+
+Soạn hợp đồng ngay trên deal, tự điền từ chính các trường đã nhập. Nhận từ bản
+R&D `crm-demo_091626_QC.html`, sửa ba chỗ trước khi đưa vào (xem khối bình luận
+đầu phần HỢP ĐỒNG trong `index.html`).
+
+**Vì sao nó thuộc về CRM.** Chuỗi giai đoạn có bước `legal` — CEO đã duyệt trên
+portal, pháp chế đang soạn — nhưng trước đây CRM không có chỗ nào để soạn. Pháp
+chế soạn ngoài rồi portal báo ngược đường dẫn file về. Khối này lấp đúng lỗ đó.
+
+| | |
+|---|---|
+| Kho | `DB.contracts`, `DB.templates` — nằm trong `snapshot()` nên lưu như mọi thứ khác |
+| Trường | 34, khai ở `CONTRACT_FIELDS`, mỗi trường ghi rõ lấy từ tab nào của form cơ hội |
+| Mẫu | 3 mẫu sẵn; `{{mã_trường}}` là chỗ tự điền; sửa được ở tab Mẫu hợp đồng |
+| Giai đoạn | chỉ soạn được cho deal ở `legal`, `signature`, `won` (`CTR_STAGES`) |
+| Trạng thái | `draft → pending → approved → sent → signed` |
+| Quyền | `contracts` — Manager và Pháp chế có; A&R, Label Manager không |
+
+**Ba chỗ đã sửa so với bản R&D**
+
+1. **XSS.** `fillTemplate()` của họ trả chuỗi thô rồi được gán vào `innerHTML`.
+   Giá trị thay vào là trường người dùng nhập, nên gõ một thẻ `img` kèm
+   `onerror` vào ô *Ghi chú pháp lý* của một deal là chạy được mã khi pháp chế
+   mở hợp đồng ra xem — không cần quyền gì đặc biệt để gài. Đã tái hiện thật
+   trên bản của họ trước khi sửa. Nay `ctrFillHTML()` duyệt mẫu và escape từng
+   đoạn; chỉ thẻ `<mark>` của ô còn trống là HTML do chính hàm đó sinh ra.
+   `crm/test/contracts.mjs` dựng lại đúng cú đó theo cả ba đường: trường của
+   deal, giá trị gõ tay, và nội dung mẫu.
+2. **Tên hàm toàn cục.** Họ đặt `e()`, `adv()`, `pct()`, `mny()`. Riêng `e` là
+   bẫy: file này có 21 chỗ dùng `e` làm biến `catch` hoặc tham số, ai gọi `e(o)`
+   bên trong một `catch(e)` sẽ nhận về đối tượng lỗi thay vì `o.ext`. Đổi thành
+   `ctrExt` / `ctrAdv` / `ctrPct` / `ctrMny`.
+3. **Không có lưu trữ.** Bản R&D không gọi `localStorage` một lần nào — sửa
+   xong F5 là mất sạch. Ở đây mọi thay đổi đi qua `saveNow()`, và hai kho mới
+   khai trong `DATE_FIELDS` để `created`/`updated` hồi sinh thành `Date` chứ
+   không phải chuỗi.
+
+**Bổ sung thêm, không có ở bản R&D**
+
+- Seed hồ sơ pháp nhân bên cấp quyền cho mọi deal ở `CTR_STAGES`. Không có bộ
+  này thì mở màn hình Hợp đồng ra là **27/34 ô trống** — tính năng trông như
+  hỏng trong khi nó chỉ thiếu dữ liệu mẫu. Bản R&D còn trống nhiều hơn: 31/34.
+  Nay trung bình 3,1 ô trống trên 13 deal soạn được, và phần còn trống là cố ý
+  (deal của nghệ sĩ không có mã số thuế công ty).
+- `ctrDrift()` có sẵn ở bản R&D nhưng chưa dùng ảnh chụp — nay mỗi hợp đồng giữ
+  `snap` lúc soạn, deal đổi sau đó thì băng cảnh báo chỉ đúng trường đã lệch.
+- Thanh tab đặt lên mặt giấy: trên nền trang, nhãn tab đang chọn chỉ đạt
+  **4,34:1**, trượt WCAG AA. Nay 5,93:1 — **0 chỗ trượt ở cả hai theme**.
+- `crm/test/smoke.mjs` lấy danh sách tab từ `NAV` thay vì chép tay 12 tên, nên
+  thêm tab mới thì test tự phủ.
+
+```bash
+node crm/test/contracts.mjs    # 27 phép kiểm
+```

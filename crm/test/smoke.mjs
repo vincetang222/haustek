@@ -75,13 +75,14 @@ const tid = await p.evaluate(()=>window.__t);
 await p.reload(); await p.waitForTimeout(900);
 F('trạng thái sống qua reload', await p.evaluate(id=>DB.opps.find(o=>o.id===id)?.stage!=='waiting', tid));
 F('0 trường Date hỏng kiểu', (await p.evaluate(()=>Object.keys(DATE_FIELDS).flatMap(c=>DB[c].flatMap(r=>DATE_FIELDS[c].filter(k=>k in r&&r[k]!=null&&!(r[k] instanceof Date)))).length))===0);
-// 6 all tabs
+// 6 all tabs — danh sách lấy từ NAV, không chép tay
+const TABS = await p.evaluate(()=>NAV.map(n=>n.id));
 let allok=true;
-for (const v of ['home','leads','opps','accounts','contacts','tasks','people','approvals','handoff','reports','audit','perms']) {
+for (const v of TABS) {
   const ok = await p.evaluate(vv=>{ try{ go(vv); return document.getElementById('view').children.length>0; }catch(e){ return false; } }, v);
   if(!ok) allok=false;
 }
-F('cả 12 tab vẽ được', allok);
+F('cả '+TABS.length+' tab vẽ được', allok);
 // 7 drawer / record / import
 F('drawer mở được', await p.evaluate(()=>{ go('opps'); openDrawer('opp',DB.opps[0].id); const o=!!document.querySelector('.drawer'); closeDrawer(); return o; }));
 F('trang chi tiết mở được', await p.evaluate(()=>{ openOpp(DB.opps.find(o=>o.stage!=='lost').id); return !!document.querySelector('.rtabs'); }));
@@ -94,7 +95,8 @@ F('5k cơ hội vẽ <200ms ('+perf.ms+'ms, '+perf.dom+' node)', perf.ms<200&&pe
 // 9 sidebar + trí tuệ quan hệ + command palette
 const nav = await p.evaluate(()=>({g:[...document.querySelectorAll('.navgrp')].map(e=>e.textContent),
   n:document.querySelectorAll('.side .tab').length, amp:document.body.innerHTML.includes('&amp;amp;')}));
-F('sidebar 3 nhóm · 12 mục · không thoát HTML hai lần', nav.g.length===3 && nav.n===12 && !nav.amp);
+F('sidebar 3 nhóm · '+TABS.length+' mục · không thoát HTML hai lần',
+  nav.g.length===3 && nav.n===TABS.length && !nav.amp);
 const rel = await p.evaluate(()=>{const i=relIndex();
   const bad=[...i.values()].filter(r=>!(r.score>=0&&r.score<=100)).length;
   return {n:i.size, bad, cooling:relCooling().length};});
@@ -412,7 +414,7 @@ F('deal đã trình portal nói rõ ai đang giữ', stg.portal.coGiaiThich);
 // 11 mobile
 const m=await b.newPage({viewport:{width:390,height:844}});
 await m.goto(FILE); await m.click('.login-btn'); await m.waitForTimeout(400);
-let ov=0; for(const v of ['home','leads','opps','accounts','contacts','tasks','people','approvals','handoff','reports','audit','perms']){
+let ov=0; for(const v of TABS){
   const r=await m.evaluate(vv=>{go(vv);return document.documentElement.scrollWidth-window.innerWidth;},v); if(r>1)ov++; }
 F('390px: không view nào tràn ngang', ov===0);
 if(errs.length) FAILED++;

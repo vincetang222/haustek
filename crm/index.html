@@ -1035,6 +1035,12 @@ textarea.fin{min-height:64px;resize:vertical;font-family:inherit}
 .path-s:hover{filter:brightness(.97)}
 
 .rtabs{display:flex;gap:2px;border-bottom:1px solid var(--line);margin-bottom:0;overflow-x:auto}
+/* Thanh tab đứng một mình trên nền trang (màn hình Hợp đồng) chứ không nằm
+   trong thẻ như ở trang chi tiết cơ hội. Trên nền --app-bg thì nhãn tab đang
+   chọn (--brand-dark) chỉ đạt 4,34:1, trượt AA. Đặt nó lên mặt giấy là về
+   5,93:1 — và trông cũng đúng lối hơn: mọi khối nội dung khác đều trên giấy. */
+.rtabs.solo{background:var(--paper);border:1px solid var(--line-strong);
+  border-radius:8px 8px 0 0;border-bottom-color:var(--line);padding:0 6px}
 .rtab{padding:10px 14px;font-size:13px;color:var(--ink-2);border-bottom:2px solid transparent;white-space:nowrap}
 .rtab:hover{color:var(--ink);background:var(--surface)}
 .rtab.on{color:var(--brand-dark);border-bottom-color:var(--brand);font-weight:600}
@@ -1293,6 +1299,43 @@ tbody tr:hover .ipen{opacity:1}
 .fingap.good{background:var(--ok-lo);color:var(--ok)}
 .fingap.bad{background:var(--danger-lo);color:var(--danger)}
 
+
+/* ---------- hợp đồng ---------- */
+.ctr-badge{display:inline-block;font-size:10.5px;font-weight:700;letter-spacing:.04em;
+  text-transform:uppercase;padding:2px 8px;border:1px solid;border-radius:999px}
+.ctr-top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}
+.ctr-alert{font-size:12px;padding:9px 12px;border-radius:8px;margin-bottom:9px;line-height:1.6}
+.ctr-alert.ok  {background:var(--ok-lo);  border:1px solid var(--ok);   color:var(--ok)}
+.ctr-alert.no  {background:var(--danger-lo);border:1px solid var(--danger);color:var(--danger)}
+.ctr-alert.warn{background:var(--warn-lo);border:1px solid var(--warn); color:var(--warn)}
+.mtable{border:1px solid var(--line-strong);border-radius:8px;overflow:hidden;margin-bottom:6px}
+.mrow{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px;align-items:center;
+  padding:8px 11px;border-bottom:1px solid var(--line)}
+.mrow:last-child{border-bottom:none}
+.mrow:nth-child(even){background:var(--zebra)}
+/* Ô còn trống phải nhìn ra ngay — đây là lý do duy nhất người ta mở bảng này. */
+.mrow.miss{background:var(--danger-lo);box-shadow:inset 3px 0 0 var(--danger)}
+.mrow-n{font-size:12.5px;font-weight:600;color:var(--ink)}
+.mrow-s{font-size:10.5px;color:var(--muted);margin-top:1px}
+.mrow-s code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:10px}
+.in-sm{padding:5px 8px;font-size:12px}
+/* Bản hợp đồng giữ nguyên xuống dòng của mẫu — nội dung là văn bản thuần,
+   white-space:pre-wrap là thứ duy nhất cần để nó đọc được. */
+.ctr-doc{white-space:pre-wrap;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
+  font-size:11.5px;line-height:1.8;background:var(--paper);border:1px solid var(--line-strong);
+  border-radius:8px;padding:16px;color:var(--ink);overflow-x:auto}
+.ctr-doc mark{background:var(--warn-lo);color:var(--warn);border-radius:3px;padding:0 3px;font-weight:600}
+.tpl-body{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11.5px;line-height:1.7;resize:vertical}
+.fieldpick{display:flex;flex-wrap:wrap;gap:5px}
+.fchip{font-size:11px;padding:3px 9px;border:1px solid var(--line-strong);border-radius:999px;
+  background:var(--paper);color:var(--ink-2)}
+.fchip:hover{border-color:var(--brand);color:var(--brand)}
+.printarea{display:none}
+@media print{
+  body>*{display:none!important}
+  .printarea{display:block!important;white-space:pre-wrap;font-family:ui-monospace,monospace;
+    font-size:11pt;line-height:1.7;color:#000;padding:0}
+}
 </style>
 </head>
 <body>
@@ -1360,6 +1403,25 @@ tbody tr:hover .ipen{opacity:1}
 /* ============================ i18n ============================ */
 const I18N = {
 vi:{
+  /* ---- Hợp đồng ---- */
+  contracts:'Hợp đồng', contractsTitle:'Hợp đồng', tplTab:'Mẫu hợp đồng', ctrTab:'Hợp đồng đã soạn',
+  ctrNew:'Soạn hợp đồng', ctrPickDeal:'Chọn deal đã qua duyệt', ctrPickTpl:'Chọn mẫu hợp đồng',
+  ctrNoDeal:'Chưa có deal nào tới giai đoạn soạn hợp đồng.',
+  cs_draft:'Nháp', cs_pending:'Chờ duyệt', cs_approved:'Đã duyệt', cs_sent:'Đã gửi ký', cs_signed:'Đã ký',
+  ctrSend:'Gửi duyệt', ctrApprove:'Duyệt hợp đồng', ctrReject:'Trả lại',
+  ctrPrint:'In / Xuất PDF', ctrSave:'Lưu bản nháp',
+  ctrMap:'Đối chiếu dữ liệu', ctrField:'Trường trong hợp đồng', ctrSource:'Lấy từ', ctrValue:'Giá trị',
+  ctrMissing:'Còn trống', ctrFilled:'Đã có', ctrMissingN:'{n} trường còn trống',
+  ctrAllFilled:'Đã điền đủ mọi trường.', ctrPreview:'Bản hợp đồng',
+  ctrDrift:'Deal đã thay đổi sau khi soạn hợp đồng', ctrDriftN:'{n} trường lệch so với lúc soạn',
+  ctrSentOk:'Đã gửi duyệt', ctrApproveOk:'Đã duyệt hợp đồng {n}', ctrRejectOk:'Đã trả lại {n}',
+  ctrByLegal:'Người soạn', ctrNotes:'Ghi chú của người duyệt', ctrFields:'trường',
+  ctrCreated:'Ngày soạn',
+  ctrOpenDeal:'Mở deal', ctrDelete:'Xoá hợp đồng',
+  tplNew:'Tạo mẫu mới', tplName:'Tên mẫu', tplType:'Áp dụng cho', tplBody:'Nội dung mẫu',
+  tplHint:'Dùng {{mã_trường}} để hệ thống tự điền. Bấm một trường bên phải để chèn vào chỗ con trỏ.',
+  tplFields:'Trường có thể chèn', tplSaved:'Đã lưu mẫu', tplUpdated:'Cập nhật',
+  legal:'Pháp chế',
   brandSub:'Kinh doanh & A&R', meRole:'Quản lý A&R', searchPh:'Tìm nghệ sĩ, label, deal…',
   navMain:'Làm việc', navOps:'Vận hành', navAdmin:'Phân tích & quản trị',
   home:'Trang chính', leads:'Khách tiềm năng', opps:'Cơ hội', accounts:'Khách hàng',
@@ -1654,6 +1716,25 @@ vi:{
   snapBadVer:'Snapshot không đúng phiên bản ',
 },
 en:{
+  /* ---- Contracts ---- */
+  contracts:'Contracts', contractsTitle:'Contracts', tplTab:'Templates', ctrTab:'Drafted contracts',
+  ctrNew:'Draft a contract', ctrPickDeal:'Pick an approved deal', ctrPickTpl:'Pick a template',
+  ctrNoDeal:'No deal has reached the drafting stage yet.',
+  cs_draft:'Draft', cs_pending:'Pending approval', cs_approved:'Approved', cs_sent:'Sent for signature', cs_signed:'Signed',
+  ctrSend:'Send for approval', ctrApprove:'Approve contract', ctrReject:'Send back',
+  ctrPrint:'Print / Save as PDF', ctrSave:'Save draft',
+  ctrMap:'Field mapping', ctrField:'Contract field', ctrSource:'Source', ctrValue:'Value',
+  ctrMissing:'Missing', ctrFilled:'Filled', ctrMissingN:'{n} field(s) still empty',
+  ctrAllFilled:'Every field is filled.', ctrPreview:'Contract',
+  ctrDrift:'The deal changed after this contract was drafted', ctrDriftN:'{n} field(s) differ from the draft',
+  ctrSentOk:'Sent for approval', ctrApproveOk:'Approved {n}', ctrRejectOk:'Sent back {n}',
+  ctrByLegal:'Drafted by', ctrNotes:'Approver notes', ctrFields:'fields',
+  ctrCreated:'Drafted on',
+  ctrOpenDeal:'Open deal', ctrDelete:'Delete contract',
+  tplNew:'New template', tplName:'Template name', tplType:'Applies to', tplBody:'Template body',
+  tplHint:'Use {{field_code}} for auto-fill. Click a field on the right to insert it at the cursor.',
+  tplFields:'Available fields', tplSaved:'Template saved', tplUpdated:'Updated',
+  legal:'Legal',
   brandSub:'Sales & A&R', meRole:'A&R Manager', searchPh:'Search artists, labels, deals…',
   navMain:'Work', navOps:'Operations', navAdmin:'Insight & admin',
   home:'Home', leads:'Leads', opps:'Opportunities', accounts:'Accounts',
@@ -2046,7 +2127,12 @@ function weekStart(){ return new Date(TODAY.getTime() - (WEEK_DAYS-1)*86400000);
 
 /* ============================ data ============================ */
 let uid = 100;
-const DB = { accounts:[], contacts:[], leads:[], opps:[], tasks:[], acts:[], events:[], audit:[], transfers:[], chat:[] };
+const DB = { accounts:[], contacts:[], leads:[], opps:[], tasks:[], acts:[], events:[], audit:[], transfers:[], chat:[],
+             /* Hợp đồng soạn trong CRM và mẫu dùng để soạn. snapshot() lưu nguyên
+                cả DB nên hai kho này tự được ghi; chỉ cần khai trường ngày ở
+                DATE_FIELDS, không thì sau khi nạp lại chúng là chuỗi chứ không
+                phải Date và fdate() vỡ âm thầm. */
+             contracts:[], templates:[] };
 /* IP & thiết bị mô phỏng theo từng người dùng — bản thật lấy từ phiên đăng nhập trên máy chủ */
 const USER_NET = {
   'Ethan Nguyen': [
@@ -2109,11 +2195,14 @@ const PERM_KEYS = ['viewAll','editAll','approveCountry','approveRegion','reports
    sếp country ký được cả chữ ký của sếp vùng — mà chuỗi duyệt hai cấp sinh ra
    chính là để điều đó không xảy ra. */
 const ROLES = {
-  manager:{ group:1, perms:{viewAll:1,editAll:1,approveCountry:1,approveRegion:1,reports:1,audit:1,export:1,import:1,users:1} },
+  manager:{ group:1, perms:{viewAll:1,editAll:1,approveCountry:1,approveRegion:1,reports:1,audit:1,export:1,import:1,users:1,contracts:1,templates:1} },
   region: { group:1, perms:{viewAll:1,approveRegion:1,reports:1,export:1} },
   country:{ group:2, perms:{viewAll:1,approveCountry:1,reports:1,import:1} },
   ar:     { group:3, perms:{import:1} },
-  lm:     { group:3, perms:{import:1} }
+  lm:     { group:3, perms:{import:1} },
+  /* Legal chỉ soạn hợp đồng: thấy được mọi deal để lấy điều khoản, nhưng không
+     duyệt giá, không nhập liệu, không đụng phân quyền. */
+  legal:  { group:3, perms:{viewAll:1, contracts:1, templates:1} }
 };
 const USERS = [
   {name:'Ethan Nguyen',    role:'manager', email:'ethan.nguyen@haustek-group.com',  init:'EN'},
@@ -2121,7 +2210,10 @@ const USERS = [
   {name:'Trần Quốc Bảo',   role:'country', email:'bao.tran@haustek-group.com',      init:'QB'},
   {name:'Nguyen Ngoc Lam', role:'ar',      email:'lam.nguyen@haustek-group.com',    init:'NL'},
   {name:'Hannah Le',       role:'lm',      email:'hannah.le@haustek-group.com',     init:'HL'},
-  {name:'Valeria Tinoco',  role:'ar',      email:'valeria.tinoco@haustek-group.com',init:'VT'}
+  {name:'Valeria Tinoco',  role:'ar',      email:'valeria.tinoco@haustek-group.com',init:'VT'},
+  /* Pháp chế: chỉ soạn hợp đồng. Thấy mọi deal để lấy điều khoản, nhưng
+     không duyệt giá, không nhập liệu, không đụng phân quyền. */
+  {name:'Bùi Chánh Án',    role:'legal',   email:'an.bui@haustek-group.com',       init:'BA'}
 ];
 /* Deal dưới ngưỡng này bỏ qua sếp vùng, trình thẳng lên portal sau khi sếp
    country duyệt. Sếp country vẫn thấy mọi deal trong vùng mình — chỉ bớt một
@@ -2490,6 +2582,56 @@ DB.opps.forEach((o,i)=>{ o.created = new Date(TODAY.getTime() - (((i*3)%30)+1)*8
 /* Điều khoản thương mại cho vài deal đã ký. Bản thật do máy tính advance trong
    form cơ hội sinh ra (o.ext.advCalcResult); seed sẵn ở đây để tab Bàn giao
    portal có số thật mà đối chiếu, thay vì cột tỷ lệ và tạm ứng trống trơn. */
+/* Hồ sơ pháp nhân và tỷ lệ chia của bên cấp quyền.
+
+   Vòng này KHÁC vòng advCalcResult ngay dưới: cái kia chỉ chạy cho deal đã ký
+   và cố ý chừa mỗi deal thứ ba, vì nó phục vụ tab Bàn giao portal. Hợp đồng
+   thì soạn từ giai đoạn `legal` trở đi, nên phải phủ đúng CTR_STAGES — không
+   thì mở màn hình Hợp đồng của một deal đang ở `legal` ra là 31/34 ô trống.
+
+   Bản R&D bỏ trống hẳn chỗ này (31/34 trống trên mọi deal), nên đây là phần
+   bổ sung, không phải phần chép lại. */
+DB.opps.filter(o=>['legal','signature','won'].indexOf(o.stage)>=0).forEach((o,i)=>{
+  const acc  = DB.accounts.find(a=>a.id===o.accountId) || {};
+  const isCo = acc.type === 'label';
+  const slug = String(acc.name||'ben-cap-quyen').toLowerCase()
+                 .normalize('NFD').replace(/[̀-ͯ]/g,'')
+                 .replace(/đ/g,'d').replace(/[^a-z0-9]+/g,'.').replace(/^\.|\.$/g,'');
+  o.ext = o.ext || {};
+  o.ext.artistLegal  = acc.name || '';
+  o.ext.coName       = isCo ? (acc.name+' Co., Ltd') : '';
+  o.ext.address      = ['12 Nguyễn Huệ, Q1, TP.HCM','88 Láng Hạ, Đống Đa, Hà Nội',
+                        '45 Trần Phú, Hải Châu, Đà Nẵng'][i%3];
+  o.ext.entityEmail  = slug + '@' + (isCo ? 'label.vn' : 'artist.vn');
+  o.ext.taxPersonal  = '8' + String(300000000 + i*137).slice(0,9);
+  o.ext.taxCompany   = isCo ? ('03' + String(10000000 + i*911).slice(0,8)) : '';
+  o.ext.signor       = (acc.name||'') + (isCo ? ' — Giám đốc' : ' — Chính chủ');
+  o.ext.terr         = ['Toàn cầu','Việt Nam','Đông Nam Á'][i%3];
+  o.ext.dealType     = o.ext.dealType || ['Distribution','Distribution + Publishing','YouTube only'][i%3];
+  o.ext.deliverables = [(i%3)+2+' single/năm', '1 EP + 3 single', '1 album/năm'][i%3];
+  o.ext.licTerm      = [72,60,48][i%3];
+  o.ext.exclTerm     = [36,24,18][i%3];
+  o.ext.licType      = ['Trọn đời bản quyền','Cố định theo năm','Cố định theo năm'][i%3];
+  o.ext.exclType     = ['Độc quyền toàn phần','Độc quyền phân phối','Độc quyền phân phối'][i%3];
+  /* Tỷ lệ là PHẦN BÊN CẤP QUYỀN NHẬN, tính bằng phần trăm — cùng quy ước với
+     mọi trường đuôi Pct khác trong file và trong payload gửi sang portal. */
+  o.ext.pctDist      = [70,75,65][i%3];
+  o.ext.pctDistNew   = [75,80,70][i%3];
+  o.ext.pctYT        = 70;
+  o.ext.pctUGC       = [60,65,55][i%3];
+  o.ext.pct3rd       = [50,55,50][i%3];
+  o.ext.pctNeigh     = 85;
+  o.ext.pctSync      = 50;
+  o.ext.pctPub       = [75,80,70][i%3];
+  o.ext.recoupRate   = [100,80,70][i%3];
+  o.ext.advDetails   = 'Chia hai đợt: 60% khi ký, 40% khi giao sản phẩm đầu tiên.';
+  o.ext.triggers     = 'Giải ngân đợt hai khi đủ '+((i%3)+2)+' sản phẩm đã phát hành.';
+  o.ext.optionDetails= (i%2) ? 'Haustek có quyền chọn gia hạn thêm 12 tháng cùng điều khoản.' : '';
+  o.ext.ourLawyer    = 'Bùi Chánh Án';
+  o.ext.legalNotes   = ['Bên cấp quyền giữ quyền tác phẩm; hợp đồng này chỉ điều chỉnh bản ghi.',
+                        'Có điều khoản audit một lần mỗi năm tài chính.',
+                        'Ưu tiên gia hạn 30 ngày trước khi hết hạn.'][i%3];
+});
 DB.opps.filter(o=>o.stage==='won').forEach((o,i)=>{
   if(i%3===2) return;                       /* chừa vài deal chưa có điều khoản */
   const share = [0.7,0.75,0.65,0.8][i%4];
@@ -2499,7 +2641,8 @@ DB.opps.filter(o=>o.stage==='won').forEach((o,i)=>{
   o.ext.advCalcResult = {
     artistShare:share, initialAdvance:adv, marketingFund:Math.round(adv*0.15),
     termMonths:[72,60,48][i%3], exclusivityMonths:[36,24,18][i%3],
-    findersFeePct:[0,2,3][i%3], passThrough:0
+    findersFeePct:[0,2,3][i%3], passThrough:0,
+    productionFund:Math.round(adv*0.10)
   };
 });
 DB.opps.forEach(o=>{
@@ -2957,7 +3100,9 @@ const DATE_FIELDS = {
   events:    ['date'],
   audit:     ['ts'],
   transfers: ['date'],
-  chat:      ['ts']
+  chat:      ['ts'],
+  contracts: ['created'],
+  templates: ['updated']
 };
 function toDate(v){
   if(v===null || v===undefined || v==='') return v;
@@ -3364,12 +3509,13 @@ const NAV = [
   {id:'tasks',     g:'work', icon:'M5.5 8.2l1.8 1.8 3.4-3.6M8 1.6A6.4 6.4 0 108 14.4 6.4 6.4 0 008 1.6z'},
   {id:'people',    g:'ops',  icon:'M6 8a2.4 2.4 0 100-4.8A2.4 2.4 0 006 8zM1.8 13.6c0-2.3 1.9-3.7 4.2-3.7s4.2 1.4 4.2 3.7M11.6 4.4a2 2 0 010 4M12.4 10.2c1.2.4 2 1.3 2 2.6'},
   {id:'approvals', g:'ops',  icon:'M8 1.6l5.4 2.4v3.7c0 3.2-2.2 5.6-5.4 6.7-3.2-1.1-5.4-3.5-5.4-6.7V4z'},
+  {id:'contracts', g:'ops',  icon:'M4 2.4h5.6L12.6 5.4v8.2H4zM9.4 2.4v3.2h3.2M6 8.6h4.4M6 11h3'},
   {id:'handoff',   g:'ops',  icon:'M2.6 8h10.8M9.6 4.4L13.4 8l-3.8 3.6M2.6 3.2v9.6'},
   {id:'reports',   g:'admin',icon:'M2.6 13.4h10.8M4.6 13.4V8M8 13.4V3.6M11.4 13.4V6.4'},
   {id:'audit',     g:'admin',icon:'M8 4.2v4l2.6 1.6M8 1.8A6.2 6.2 0 108 14.2 6.2 6.2 0 008 1.8z'},
   {id:'perms',     g:'admin',icon:'M8 1.9l5 2.2v3.5c0 3-2.1 5.3-5 6.4-2.9-1.1-5-3.4-5-6.4V4.1zM6.2 8l1.3 1.3L10 6.6'},
 ];
-const NAV_PERM = {approvals:'approve', audit:'audit', perms:'users', handoff:'approve'};
+const NAV_PERM = {approvals:'approve', audit:'audit', perms:'users', handoff:'approve', contracts:'contracts'};
 function navAllowed(id){ const p = NAV_PERM[id]; return !p || can(p); }
 function navCount(id){
   if(id==='leads') return sLeads().filter(l=>l.status!=='converted'&&l.status!=='lost').length;
@@ -5479,7 +5625,459 @@ function lockedDrawer(kind, rec){
       (pend?'':'<button class="btn btn-primary" onclick="requestTransfer(\''+kind+'\',\''+rec.id+'\')">'+
         esc(t('reqTransfer'))+'</button>'));
 }
-const DRAWER_KINDS = ['opp','lead','account','contact'];
+
+/* ===================== HỢP ĐỒNG =====================
+   Lấy từ bản R&D (crm-demo_091626_QC), sửa ba chỗ trước khi nhận vào.
+
+   VÌ SAO NÓ THUỘC VỀ ĐÂY. Luồng hiện tại có giai đoạn `legal` — CEO đã duyệt
+   trên portal, pháp chế đang soạn hợp đồng — nhưng CRM không có chỗ nào để
+   soạn. Pháp chế soạn ngoài rồi portal báo ngược đường dẫn file về. Khối này
+   lấp đúng lỗ đó: soạn ngay trên deal, tự điền từ chính các trường đã nhập.
+
+   BA CHỖ ĐÃ SỬA SO VỚI BẢN R&D
+   1. fillTemplate() của họ đổ thẳng vào innerHTML. Giá trị thay vào là trường
+      người dùng nhập, nên gõ một thẻ img kèm onerror vào ô "Ghi chú pháp lý"
+      của một deal là chạy được mã khi pháp chế mở hợp đồng ra xem. Đã tái
+      hiện thật trên bản của họ trước khi sửa.
+   2. Họ đặt hàm toàn cục tên e(), adv(), pct(), mny(). Riêng `e` là bẫy: file
+      này có 21 chỗ dùng `e` làm biến catch hoặc tham số, ai gọi e(o) bên
+      trong một catch(e) sẽ nhận về đối tượng lỗi thay vì o.ext.
+   3. Bản R&D không có lưu trữ — sửa xong F5 là mất. Ở đây mọi thay đổi đi qua
+      saveNow() như phần còn lại của app.
+   ==================================================== */
+
+/* 34 trường một hợp đồng cần. Mỗi trường nói rõ LẤY TỪ ĐÂU — người soạn nhìn
+   bảng đối chiếu là biết phải quay lại tab nào của form cơ hội để điền nốt,
+   thay vì đoán. */
+const CONTRACT_FIELDS = [
+  {k:'artist_legal_name', l:['Tên pháp lý nghệ sĩ','Artist legal name'], src:['Cơ hội · Bên cấp quyền','Opp · Licensor'], g:o=>ctrExt(o).artistLegal},
+  {k:'company_name',      l:['Tên công ty bên cấp quyền','Licensor company'], src:['Cơ hội · Bên cấp quyền','Opp · Licensor'], g:o=>ctrExt(o).coName},
+  {k:'account_name',      l:['Khách hàng','Account'], src:['Cơ hội','Opportunity'], g:o=>accName(o.accountId)},
+  {k:'signor',            l:['Người ký & tư cách','Signor and capacity'], src:['Cơ hội · Pháp lý','Opp · Legal'], g:o=>ctrExt(o).signor||ctrExt(o).signor2},
+  {k:'tax_personal',      l:['Mã số thuế cá nhân','Personal tax ID'], src:['Cơ hội · Bên cấp quyền','Opp · Licensor'], g:o=>ctrExt(o).taxPersonal},
+  {k:'tax_company',       l:['Mã số thuế công ty','Company tax ID'], src:['Cơ hội · Bên cấp quyền','Opp · Licensor'], g:o=>ctrExt(o).taxCompany},
+  {k:'address',           l:['Địa chỉ bên cấp quyền','Licensor address'], src:['Cơ hội · Bên cấp quyền','Opp · Licensor'], g:o=>ctrExt(o).address},
+  {k:'entity_email',      l:['Email pháp nhân','Entity email'], src:['Cơ hội · Bên cấp quyền','Opp · Licensor'], g:o=>ctrExt(o).entityEmail},
+  {k:'territory',         l:['Lãnh thổ','Territory'], src:['Cơ hội','Opportunity'], g:o=>ctrExt(o).terr},
+  {k:'deal_type',         l:['Loại hợp đồng','Deal type'], src:['Cơ hội','Opportunity'], g:o=>ctrExt(o).dealType},
+  {k:'term_months',       l:['Tổng thời hạn (tháng)','Total term (months)'], src:['Cơ hội · Điều khoản','Opp · Terms'], g:o=>ctrAdv(o).termMonths||ctrExt(o).licTerm},
+  {k:'exclusivity',       l:['Thời hạn độc quyền','Exclusivity term'], src:['Cơ hội · Điều khoản','Opp · Terms'], g:o=>ctrAdv(o).exclusivityMonths||ctrExt(o).exclTerm},
+  {k:'excl_type',         l:['Kiểu thời hạn độc quyền','Exclusivity term type'], src:['Cơ hội · Điều khoản','Opp · Terms'], g:o=>ctrExt(o).exclType},
+  {k:'lic_type',          l:['Kiểu thời hạn license','Licence term type'], src:['Cơ hội · Điều khoản','Opp · Terms'], g:o=>ctrExt(o).licType},
+  {k:'deliverables',      l:['Sản phẩm cam kết','Deliverables'], src:['Cơ hội · Điều khoản','Opp · Terms'], g:o=>ctrExt(o).deliverables},
+  {k:'pct_dist',          l:['Distribution %','Distribution %'], src:['Cơ hội · Điều khoản','Opp · Terms'], g:o=>ctrPct(ctrExt(o).pctDist)},
+  {k:'pct_dist_new',      l:['Bản phát hành mới %','New releases %'], src:['Cơ hội · Điều khoản','Opp · Terms'], g:o=>ctrPct(ctrExt(o).pctDistNew)},
+  {k:'pct_ugc',           l:['UGC %','UGC %'], src:['Cơ hội · Điều khoản','Opp · Terms'], g:o=>ctrPct(ctrExt(o).pctUGC)},
+  {k:'pct_yt',            l:['YouTube %','YouTube %'], src:['Cơ hội · Điều khoản','Opp · Terms'], g:o=>ctrPct(ctrExt(o).pctYT)},
+  {k:'pct_3rd',           l:['Video bên thứ ba %','Third party videos %'], src:['Cơ hội · Điều khoản','Opp · Terms'], g:o=>ctrPct(ctrExt(o).pct3rd)},
+  {k:'pct_neigh',         l:['Quyền liên quan %','Neighboring rights %'], src:['Cơ hội · Điều khoản','Opp · Terms'], g:o=>ctrPct(ctrExt(o).pctNeigh)},
+  {k:'pct_sync',          l:['Sync %','Sync %'], src:['Cơ hội · Điều khoản','Opp · Terms'], g:o=>ctrPct(ctrExt(o).pctSync)},
+  {k:'pct_pub',           l:['Publishing %','Publishing %'], src:['Cơ hội · Điều khoản','Opp · Terms'], g:o=>ctrPct(ctrExt(o).pctPub)},
+  {k:'advance',           l:['Tiền tạm ứng','Advance'], src:['Cơ hội · Tài chính','Opp · Financials'], g:o=>ctrMny(ctrAdv(o).initialAdvance!==undefined?ctrAdv(o).initialAdvance:ctrExt(o).advance)},
+  {k:'advance_details',   l:['Chi tiết tạm ứng','Advance details'], src:['Cơ hội · Tài chính','Opp · Financials'], g:o=>ctrExt(o).advDetails},
+  {k:'marketing_budget',  l:['Ngân sách marketing','Marketing budget'], src:['Cơ hội · Tài chính','Opp · Financials'], g:o=>ctrMny(ctrAdv(o).marketingFund!==undefined?ctrAdv(o).marketingFund:ctrExt(o).mktBudget)},
+  {k:'production_fund',   l:['Quỹ sản xuất','Production fund'], src:['Cơ hội · Tài chính','Opp · Financials'], g:o=>ctrMny(ctrAdv(o).productionFund!==undefined?ctrAdv(o).productionFund:ctrExt(o).prodFund)},
+  {k:'recoup_rate',       l:['Tỷ lệ thu hồi','Recoupment rate'], src:['Cơ hội · Tài chính','Opp · Financials'], g:o=>ctrPct(ctrExt(o).recoupRate)},
+  {k:'triggers',          l:['Điều kiện kích hoạt','Triggers'], src:['Cơ hội · Tài chính','Opp · Financials'], g:o=>ctrExt(o).triggers},
+  {k:'option_details',    l:['Chi tiết quyền chọn','Option details'], src:['Cơ hội · Tài chính','Opp · Financials'], g:o=>ctrExt(o).optionDetails},
+  {k:'legal_notes',       l:['Ghi chú pháp lý','Legal notes'], src:['Cơ hội · Pháp lý','Opp · Legal'], g:o=>ctrExt(o).legalNotes},
+  {k:'our_lawyer',        l:['Luật sư HAUSTEK','HAUSTEK lawyer'], src:['Cơ hội · Pháp lý','Opp · Legal'], g:o=>ctrExt(o).ourLawyer},
+  {k:'close_date',        l:['Ngày đóng deal','Close date'], src:['Cơ hội','Opportunity'], g:o=>o.closeDate?fdate(o.closeDate):''},
+  {k:'today',             l:['Ngày lập hợp đồng','Contract date'], src:['Hệ thống','System'], g:()=>fdate(TODAY)}
+];
+function ctrExt(o){ return (o && o.ext) || {}; }
+function ctrAdv(o){ return (o && o.ext && o.ext.advCalcResult) || {}; }
+function ctrPct(v){ return (v===undefined||v===null||v==='') ? '' : (String(v).indexOf('%')>=0?String(v):v+'%'); }
+function ctrMny(v){ if(v===undefined||v===null||v==='') return ''; const n=Number(v); return isNaN(n)?'':money(n); }
+const CONTRACT_STATES = ['draft','pending','approved','sent','signed'];
+/* Chỉ soạn được cho deal đã qua cửa CEO. Trước đó điều khoản còn đang đàm
+   phán, soạn ra là soạn trên số sắp đổi. */
+const CTR_STAGES = ['legal','signature','won'];
+
+function ctrFieldVals(o){
+  const out = {};
+  CONTRACT_FIELDS.forEach(f=>{
+    let v; try { v = f.g(o); } catch(err){ v = ''; }
+    out[f.k] = (v===undefined||v===null) ? '' : String(v);
+  });
+  return out;
+}
+function ctrVals(c, o){
+  const out = ctrFieldVals(o);
+  /* giá trị gõ tay đè lên giá trị tự điền — pháp chế là người chốt */
+  Object.keys(c.manual||{}).forEach(k=>{ if(c.manual[k]) out[k] = c.manual[k]; });
+  return out;
+}
+function tplBody(c){ const tp = DB.templates.find(x=>x.id===c.templateId); return tp ? tp.body : ''; }
+function ctrMissing(c, o){
+  const used = (String(tplBody(c)).match(/\{\{(\w+)\}\}/g)||[]).map(x=>x.replace(/[{}]/g,''));
+  const vals = ctrVals(c, o);
+  return used.filter(k=>!vals[k]);
+}
+/* Deal đổi sau khi hợp đồng đã soạn thì bản đang cầm không còn khớp sổ nữa.
+   So giá trị tự điền hiện tại với ảnh chụp lúc soạn. */
+function ctrDrift(c, o){
+  if(!c.snap) return [];
+  const now = ctrFieldVals(o);
+  return Object.keys(c.snap).filter(k=>String(c.snap[k]||'') !== String(now[k]||''));
+}
+
+/* Điền mẫu, trả về HTML ĐÃ AN TOÀN.
+   Đây là chỗ bản R&D thủng: họ trả chuỗi thô rồi gán vào innerHTML. Không
+   dùng ký tự canh chừng rồi escape cả cụm — vừa thừa vừa dễ sai thứ tự. Duyệt
+   thẳng mẫu, escape từng đoạn văn bản và từng giá trị, chỉ thẻ <mark> của ô
+   còn trống là HTML do chính hàm này sinh ra. */
+function ctrFillHTML(body, vals){
+  const src = String(body||'');
+  const re = /\{\{(\w+)\}\}/g;
+  let out = '', last = 0, m;
+  while((m = re.exec(src))){
+    out += esc(src.slice(last, m.index));
+    const v = vals[m[1]];
+    out += (v===undefined || v==='')
+      ? '<mark>〔'+esc(m[1])+'〕</mark>'
+      : esc(v);
+    last = m.index + m[0].length;
+  }
+  return out + esc(src.slice(last));
+}
+/* Bản chữ thuần để in. Không đi qua DOM nên không escape — và KHÔNG ĐƯỢC
+   escape, nếu không in ra giấy thấy &amp; nằm giữa tên công ty. */
+function ctrFillText(body, vals){
+  const src = String(body||'');
+  return src.replace(/\{\{(\w+)\}\}/g, (m,k)=>{
+    const v = vals[k];
+    return (v===undefined || v==='') ? ('〔'+k+'〕') : v;
+  });
+}
+
+/* ---- ba mẫu có sẵn ---- */
+(function seedTemplates(){
+  const dist =
+'HỢP ĐỒNG PHÂN PHỐI BẢN GHI\n'+
+'Số: HTK-{{today}}\n\n'+
+'Giữa: CÔNG TY HAUSTEK ("HAUSTEK")\n'+
+'Và:   {{artist_legal_name}} — {{company_name}} ("Bên cấp quyền")\n'+
+'Địa chỉ: {{address}}\n'+
+'Email: {{entity_email}}   MST cá nhân: {{tax_personal}}   MST công ty: {{tax_company}}\n'+
+'Người ký: {{signor}}\n\n'+
+'1. PHẠM VI\n'+
+'Bên cấp quyền trao cho HAUSTEK quyền phân phối trên lãnh thổ {{territory}}.\n'+
+'Loại hợp đồng: {{deal_type}}. Sản phẩm cam kết: {{deliverables}}\n\n'+
+'2. THỜI HẠN\n'+
+'Tổng thời hạn gồm licensing: {{term_months}} tháng ({{lic_type}}).\n'+
+'Thời hạn độc quyền: {{exclusivity}} tháng ({{excl_type}}).\n\n'+
+'3. TỶ LỆ CHIA DOANH THU (phần Bên cấp quyền nhận)\n'+
+'Distribution: {{pct_dist}}      Bản phát hành mới: {{pct_dist_new}}\n'+
+'UGC: {{pct_ugc}}          YouTube: {{pct_yt}}\n'+
+'Video bên thứ ba: {{pct_3rd}}   Quyền liên quan: {{pct_neigh}}\n'+
+'Sync: {{pct_sync}}         Publishing: {{pct_pub}}\n\n'+
+'4. TẠM ỨNG VÀ NGÂN SÁCH\n'+
+'Tiền tạm ứng: {{advance}}\n'+
+'Chi tiết: {{advance_details}}\n'+
+'Ngân sách marketing: {{marketing_budget}}   Quỹ sản xuất: {{production_fund}}\n'+
+'Tỷ lệ thu hồi: {{recoup_rate}}\n\n'+
+'5. ĐIỀU KIỆN KÍCH HOẠT VÀ QUYỀN CHỌN\n'+
+'{{triggers}}\n'+
+'{{option_details}}\n\n'+
+'6. GHI CHÚ PHÁP LÝ\n'+
+'{{legal_notes}}\n\n'+
+'Ngày {{today}} — Đại diện HAUSTEK: {{our_lawyer}}';
+
+  const pub =
+'HỢP ĐỒNG XUẤT BẢN ÂM NHẠC\n'+
+'Số: HTK-PUB-{{today}}\n\n'+
+'Bên cấp quyền: {{artist_legal_name}} ({{account_name}})\n'+
+'Địa chỉ: {{address}}   Email: {{entity_email}}\n'+
+'Người ký: {{signor}}   MST: {{tax_personal}}\n\n'+
+'Phạm vi: quyền tác phẩm trên lãnh thổ {{territory}}, thời hạn {{term_months}} tháng.\n'+
+'Tỷ lệ Publishing (phần Bên cấp quyền nhận): {{pct_pub}}\n'+
+'Sync: {{pct_sync}}\n'+
+'Tạm ứng: {{advance}}   Tỷ lệ thu hồi: {{recoup_rate}}\n\n'+
+'Ghi chú pháp lý: {{legal_notes}}\n\n'+
+'Ngày {{today}} — {{our_lawyer}}';
+
+  const yt =
+'PHỤ LỤC QUẢN LÝ KÊNH YOUTUBE\n'+
+'Số: HTK-YT-{{today}}\n\n'+
+'Bên cấp quyền: {{artist_legal_name}} ({{account_name}})\n'+
+'Lãnh thổ: {{territory}} — Thời hạn: {{term_months}} tháng\n\n'+
+'Tỷ lệ YouTube: {{pct_yt}}   UGC: {{pct_ugc}}   Video bên thứ ba: {{pct_3rd}}\n'+
+'Tạm ứng: {{advance}}   Ngân sách marketing: {{marketing_budget}}\n\n'+
+'Ngày {{today}} — {{our_lawyer}}';
+
+  DB.templates.push(
+    {id:'tp1', name:'Hợp đồng phân phối bản ghi', type:'Distribution', body:dist, owner:'Bùi Chánh Án', updated:TODAY},
+    {id:'tp2', name:'Hợp đồng xuất bản âm nhạc',  type:'Publishing',   body:pub,  owner:'Bùi Chánh Án', updated:TODAY},
+    {id:'tp3', name:'Phụ lục kênh YouTube',       type:'YouTube only', body:yt,   owner:'Bùi Chánh Án', updated:TODAY}
+  );
+})();
+
+/* ---------- màn hình Hợp đồng ---------- */
+function ctrBadge(st){
+  /* Chỉ dùng token có thật trong :root — --amber/--green/--teal là của bản
+     R&D, ở đây không tồn tại nên sẽ ra màu mặc định của trình duyệt. */
+  const col = {draft:'var(--muted)', pending:'var(--warn)', approved:'var(--ok)',
+               sent:'var(--accent)', signed:'var(--ok)'}[st] || 'var(--muted)';
+  return '<span class="ctr-badge" style="color:'+col+';border-color:'+col+'">'+esc(t('cs_'+st))+'</span>';
+}
+VIEWS.contracts = function(){
+  if(!can('contracts')) return '<div class="tw"><div class="noperm">'+
+    '<div class="noperm-t">'+esc(t('noPermTitle'))+'</div>'+
+    '<div class="noperm-s">'+esc(t('noPermSub'))+'</div></div></div>';
+  const tab = state.ctrTab || 'list';
+  const bar = '<div class="rtabs solo" style="margin-bottom:14px">'+
+    [['list','ctrTab'],['tpl','tplTab']].map(x=>
+      '<button class="rtab'+(tab===x[0]?' on':'')+'" onclick="state.ctrTab=\''+x[0]+'\';render()">'+
+      esc(t(x[1]))+'</button>').join('')+'</div>';
+
+  if(tab==='tpl'){
+    const rows = DB.templates.filter(x=>matches(x.name)||matches(x.type));
+    const body = rows.length ? '<div class="tw"><div class="tscroll"><table><thead><tr>'+
+      '<th>'+esc(t('tplName'))+'</th><th>'+esc(t('tplType'))+'</th>'+
+      '<th class="num">'+esc(t('ctrFields'))+'</th>'+
+      '<th>'+esc(t('cOwner'))+'</th><th>'+esc(t('tplUpdated'))+'</th></tr></thead><tbody>'+
+      rows.map(x=>{
+        const n = (String(x.body).match(/\{\{\w+\}\}/g)||[]).length;
+        return '<tr onclick="openTemplate(\''+esc(x.id)+'\')">'+
+          '<td class="t-name">'+esc(x.name)+'</td><td><span class="pill">'+esc(x.type)+'</span></td>'+
+          '<td class="num dim">'+n+'</td><td class="dim">'+esc(x.owner)+'</td>'+
+          '<td class="dim">'+esc(fdate(x.updated))+'</td></tr>';
+      }).join('')+'</tbody></table></div></div>'
+      : emptyBox(t('tplTab'), t('tplNew'));
+    return phead(t('contractsTitle'), rows.length+' '+t('items'),
+      '<button class="btn btn-primary" onclick="openTemplate(null)">'+esc(t('tplNew'))+'</button>')+bar+body;
+  }
+
+  const rows = DB.contracts.filter(c=>matches(c.name)||matches(t('cs_'+c.status)));
+  const body = rows.length ? '<div class="tw"><div class="tscroll"><table><thead><tr>'+
+      '<th>'+esc(t('cName'))+'</th><th>'+esc(t('opp'))+'</th><th>'+esc(t('cStatus'))+'</th>'+
+      '<th class="num">'+esc(t('ctrMissing'))+'</th><th>'+esc(t('ctrByLegal'))+'</th>'+
+      '<th>'+esc(t('ctrCreated'))+'</th></tr></thead><tbody>'+
+      rows.map(c=>{
+        const o = DB.opps.find(x=>x.id===c.oppId);
+        const miss = o ? ctrMissing(c,o).length : 0;
+        return '<tr onclick="openContract(\''+esc(c.id)+'\')">'+
+          '<td class="t-name trunc">'+esc(c.name)+'</td>'+
+          '<td class="trunc">'+esc(o?o.name:'—')+'</td>'+
+          '<td>'+ctrBadge(c.status)+'</td>'+
+          '<td class="num">'+(miss?'<span class="mtag mt-no">'+miss+'</span>'
+                                  :'<span class="mtag mt-ok">0</span>')+'</td>'+
+          '<td class="dim">'+esc(c.by)+'</td>'+
+          '<td class="dim">'+esc(fdate(c.created))+'</td></tr>';
+      }).join('')+'</tbody></table></div></div>'
+    : emptyBox(t('ctrTab'), t('ctrNew'));
+  return phead(t('contractsTitle'), rows.length+' '+t('items'),
+    '<button class="btn btn-primary" onclick="openNewContract()">'+esc(t('ctrNew'))+'</button>')+bar+body;
+};
+
+/* ---------- tạo hợp đồng ---------- */
+function ctrDeals(){
+  /* Chỉ deal đã qua cửa CEO. Lọc thêm theo tầm nhìn của người đang đăng nhập
+     để A&R không soạn hợp đồng cho deal của người khác. */
+  return DB.opps.filter(o=>CTR_STAGES.indexOf(o.stage)>=0 && visible(o));
+}
+function openNewContract(){
+  const deals = ctrDeals();
+  if(!deals.length){ toast(t('ctrNoDeal')); return; }
+  if(!DB.templates.length){ toast(t('tplNew')); return; }
+  state.drawer = null;
+  const body =
+    '<div class="fld"><div class="fld-l">'+esc(t('ctrPickDeal'))+'</div>'+
+      '<select class="in" id="nc_opp">'+deals.map(o=>'<option value="'+esc(o.id)+'">'+
+        esc(o.name)+' — '+esc(t('st_'+o.stage))+'</option>').join('')+'</select></div>'+
+    '<div class="fld"><div class="fld-l">'+esc(t('ctrPickTpl'))+'</div>'+
+      '<select class="in" id="nc_tpl">'+DB.templates.map(x=>'<option value="'+esc(x.id)+'">'+
+        esc(x.name)+' ('+esc(x.type)+')</option>').join('')+'</select></div>';
+  document.getElementById('overlay').innerHTML =
+    shell(t('ctrNew'), t('contractsTitle'), body,
+      '<button class="btn" onclick="closeDrawer()">'+esc(t('cancel'))+'</button>'+
+      '<button class="btn btn-primary" onclick="makeContract()">'+esc(t('ctrNew'))+'</button>');
+}
+function makeContract(){
+  const oid = document.getElementById('nc_opp').value;
+  const tid = document.getElementById('nc_tpl').value;
+  const o  = DB.opps.find(x=>x.id===oid);
+  const tp = DB.templates.find(x=>x.id===tid);
+  if(!o || !tp) return;
+  const c = {
+    id:'ct'+(++uid), name:tp.name+' — '+o.name, oppId:o.id, templateId:tp.id,
+    status:'draft', by:ME, created:new Date(TODAY), manual:{}, notes:'',
+    /* Ảnh chụp giá trị tự điền lúc soạn. Deal đổi sau đó thì ctrDrift() so ra
+       được — không có ảnh này thì không cách nào biết bản đang cầm đã cũ. */
+    snap: ctrFieldVals(o)
+  };
+  DB.contracts.unshift(c);
+  logAudit({objType:'contract', objId:c.id, objName:c.name, action:'create',
+            note:'Soạn từ mẫu '+tp.name});
+  saveNow();
+  closeDrawer();
+  /* render() trước: closeDrawer() chỉ xoá overlay, bảng phía sau vẫn đang
+     hiển thị số cũ và sẽ ghi "0 bản ghi" ngay sau khi vừa tạo xong. */
+  render();
+  openContract(c.id);
+}
+/* Đi qua openDrawer như mọi drawer khác, thay vì tự đặt state.drawer rồi
+   render() như bản R&D. Đổi lại được: setLang/setCur gọi lại
+   openDrawer(state.drawer.kind, id) nên drawer tự vẽ lại đúng ngôn ngữ. */
+function openContract(id){ openDrawer('contract', id); }
+
+function ctrSetManual(cid, k, v){
+  const c = DB.contracts.find(x=>x.id===cid); if(!c) return;
+  c.manual = c.manual || {};
+  if(v) c.manual[k] = v; else delete c.manual[k];
+  const o = DB.opps.find(x=>x.id===c.oppId);
+  saveSoon();
+  /* Vẽ lại tại chỗ thay vì render() cả trang: người soạn đang gõ dở, render()
+     sẽ dựng lại ô nhập và con trỏ nhảy về đầu. */
+  const vals = o ? ctrVals(c,o) : {};
+  const doc = document.querySelector('.ctr-doc');
+  if(doc) doc.innerHTML = ctrFillHTML(tplBody(c), vals);
+  const row = document.querySelector('.mrow[data-k="'+k+'"]');
+  if(row) row.classList.toggle('miss', !vals[k]);
+  const box = document.getElementById('ctrAlerts');
+  if(box && o){
+    const n = ctrMissing(c,o).length;
+    box.innerHTML = n
+      ? '<div class="ctr-alert no">'+esc(t('ctrMissingN').replace('{n}', n))+'</div>'
+      : '<div class="ctr-alert ok">'+esc(t('ctrAllFilled'))+'</div>';
+  }
+}
+function ctrSetStatus(cid, st, okKey){
+  const c = DB.contracts.find(x=>x.id===cid); if(!c) return;
+  const old = c.status;
+  c.status = st;
+  logAudit({objType:'contract', objId:c.id, objName:c.name, action:'update',
+            field:'status', oldV:t('cs_'+old), newV:t('cs_'+st)});
+  saveNow();
+  toast(t(okKey).replace('{n}', c.name));
+  render();
+}
+function ctrDelete(cid){
+  const i = DB.contracts.findIndex(x=>x.id===cid); if(i<0) return;
+  const c = DB.contracts[i];
+  logAudit({objType:'contract', objId:c.id, objName:c.name, action:'delete'});
+  DB.contracts.splice(i,1);
+  saveNow(); closeDrawer(); render();
+}
+function ctrPrint(cid){
+  const c = DB.contracts.find(x=>x.id===cid); if(!c) return;
+  const o = DB.opps.find(x=>x.id===c.oppId);
+  let area = document.getElementById('printArea');
+  if(!area){ area = document.createElement('div'); area.id='printArea'; area.className='printarea';
+             document.body.appendChild(area); }
+  /* textContent, không innerHTML: bản in là văn bản thuần, và đây cũng là
+     đường duy nhất nội dung hợp đồng ra khỏi DOM đã escape. */
+  area.textContent = ctrFillText(tplBody(c), o ? ctrVals(c,o) : {});
+  window.print();
+}
+
+/* ---------- drawer chi tiết hợp đồng ----------
+   Trả về HTML, openDrawer() gán vào #overlay. */
+function contractDrawer(id){
+  const c = DB.contracts.find(x=>x.id===id);
+  if(!c) return '';
+  const o = DB.opps.find(x=>x.id===c.oppId);
+  const vals = o ? ctrVals(c,o) : {};
+  const miss = o ? ctrMissing(c,o) : [];
+  const drift = o ? ctrDrift(c,o) : [];
+  const used = (String(tplBody(c)).match(/\{\{(\w+)\}\}/g)||[]).map(x=>x.replace(/[{}]/g,''));
+  const seen = {}; const uniq = used.filter(k=>seen[k]?false:(seen[k]=1));
+
+  const alerts =
+    '<div id="ctrAlerts">'+ (miss.length
+      ? '<div class="ctr-alert no">'+esc(t('ctrMissingN').replace('{n}', miss.length))+'</div>'
+      : '<div class="ctr-alert ok">'+esc(t('ctrAllFilled'))+'</div>')+'</div>'+
+    (drift.length ? '<div class="ctr-alert warn"><b>'+esc(t('ctrDrift'))+'</b><br>'+
+      esc(t('ctrDriftN').replace('{n}', drift.length))+' — '+
+      drift.slice(0,5).map(k=>{ const f=CONTRACT_FIELDS.find(x=>x.k===k); return esc(f?L(f.l):k); }).join(', ')+
+      (drift.length>5?'…':'')+'</div>' : '');
+
+  /* Bảng đối chiếu: mỗi trường mẫu dùng tới, lấy từ đâu, giá trị đang là gì.
+     Ô trống gõ tay được ngay đây — nhưng giá trị gõ tay chỉ nằm trên hợp đồng
+     này, KHÔNG ghi ngược vào deal. Deal là sổ, hợp đồng là bản trích. */
+  const rows = uniq.map(k=>{
+    const f = CONTRACT_FIELDS.find(x=>x.k===k);
+    const v = vals[k] || '';
+    const manual = (c.manual||{})[k] || '';
+    return '<div class="mrow'+(v?'':' miss')+'" data-k="'+esc(k)+'">'+
+      '<div class="mrow-l"><div class="mrow-n">'+esc(f?L(f.l):k)+'</div>'+
+        '<div class="mrow-s">'+esc(f?L(f.src):'—')+' · <code>'+esc(k)+'</code></div></div>'+
+      '<div class="mrow-v"><input class="in in-sm" value="'+esc(manual||v)+'" '+
+        'placeholder="'+esc(t('ctrValue'))+'" '+
+        'oninput="ctrSetManual(\''+esc(c.id)+'\',\''+esc(k)+'\',this.value)"></div></div>';
+  }).join('');
+
+  const st = c.status;
+  const canApprove = can('approveCountry') || can('approveRegion') || can('editAll');
+  const acts = [];
+  if(st==='draft')    acts.push('<button class="btn btn-primary" onclick="ctrSetStatus(\''+esc(c.id)+'\',\'pending\',\'ctrSentOk\')">'+esc(t('ctrSend'))+'</button>');
+  if(st==='pending' && canApprove){
+    acts.push('<button class="btn" onclick="ctrSetStatus(\''+esc(c.id)+'\',\'draft\',\'ctrRejectOk\')">'+esc(t('ctrReject'))+'</button>');
+    acts.push('<button class="btn btn-primary" onclick="ctrSetStatus(\''+esc(c.id)+'\',\'approved\',\'ctrApproveOk\')">'+esc(t('ctrApprove'))+'</button>');
+  }
+  if(st==='approved') acts.push('<button class="btn btn-primary" onclick="ctrSetStatus(\''+esc(c.id)+'\',\'sent\',\'ctrSentOk\')">'+esc(t('ctrSend'))+'</button>');
+  acts.push('<button class="btn" onclick="ctrPrint(\''+esc(c.id)+'\')">'+esc(t('ctrPrint'))+'</button>');
+
+  const body =
+    '<div class="ctr-top">'+ctrBadge(st)+
+      (o?'<button class="btn btn-sm" onclick="closeDrawer();openOpp(\''+esc(o.id)+'\')">'+esc(t('ctrOpenDeal'))+'</button>':'')+
+    '</div>'+ alerts +
+    '<div class="sec-h">'+esc(t('ctrMap'))+'</div><div class="mtable">'+rows+'</div>'+
+    '<div class="sec-h">'+esc(t('ctrPreview'))+'</div>'+
+    '<div class="ctr-doc">'+ctrFillHTML(tplBody(c), vals)+'</div>';
+
+  return shell(t('contractsTitle'), c.name, body,
+    acts.join('')+'<button class="btn btn-danger" onclick="ctrDelete(\''+esc(c.id)+'\')">'+esc(t('ctrDelete'))+'</button>');
+}
+
+/* ---------- trình soạn mẫu ---------- */
+function openTemplate(id){
+  const tp = id ? DB.templates.find(x=>x.id===id) : null;
+  state.drawer = null;
+  const picker = '<div class="fieldpick">'+CONTRACT_FIELDS.map(f=>
+    '<button type="button" class="fchip" onclick="insertField(\''+esc(f.k)+'\')" '+
+    'title="'+esc(L(f.src))+'">'+esc(L(f.l))+'</button>').join('')+'</div>';
+  const body =
+    '<div class="fld"><div class="fld-l">'+esc(t('tplName'))+'</div>'+
+      '<input class="in" id="tp_name" value="'+esc(tp?tp.name:'')+'"></div>'+
+    '<div class="fld"><div class="fld-l">'+esc(t('tplType'))+'</div>'+
+      '<input class="in" id="tp_type" value="'+esc(tp?tp.type:'')+'"></div>'+
+    '<div class="fld"><div class="fld-l">'+esc(t('tplBody'))+'</div>'+
+      '<div class="fld-h">'+esc(t('tplHint'))+'</div>'+
+      '<textarea class="in tpl-body" id="tp_body" rows="16">'+esc(tp?tp.body:'')+'</textarea></div>'+
+    '<div class="sec-h">'+esc(t('tplFields'))+'</div>'+picker;
+  document.getElementById('overlay').innerHTML =
+    shell(t('contractsTitle'), tp?tp.name:t('tplNew'), body,
+      '<button class="btn" onclick="closeDrawer()">'+esc(t('cancel'))+'</button>'+
+      '<button class="btn btn-primary" onclick="saveTemplate('+(tp?'\''+tp.id+'\'':'null')+')">'+esc(t('save'))+'</button>');
+}
+function insertField(k){
+  const ta = document.getElementById('tp_body'); if(!ta) return;
+  const tag = '{{'+k+'}}';
+  const a = ta.selectionStart, b = ta.selectionEnd;
+  ta.value = ta.value.slice(0,a) + tag + ta.value.slice(b);
+  ta.focus();
+  ta.selectionStart = ta.selectionEnd = a + tag.length;
+}
+function saveTemplate(id){
+  const g = x => { const el = document.getElementById(x); return el ? el.value.trim() : ''; };
+  const name = g('tp_name'); if(!name){ toast(t('tplName')); return; }
+  if(id){
+    const tp = DB.templates.find(x=>x.id===id); if(!tp) return;
+    tp.name = name; tp.type = g('tp_type')||'—'; tp.body = g('tp_body');
+    tp.updated = new Date(TODAY);
+    logAudit({objType:'template', objId:tp.id, objName:tp.name, action:'update'});
+  } else {
+    const tp = {id:'tp'+(++uid), name:name, type:g('tp_type')||'—', body:g('tp_body'),
+                owner:ME, updated:new Date(TODAY)};
+    DB.templates.unshift(tp);
+    logAudit({objType:'template', objId:tp.id, objName:tp.name, action:'create'});
+  }
+  saveNow(); closeDrawer(); toast(t('tplSaved')); render();
+}
+
+const DRAWER_KINDS = ['opp','lead','account','contact','contract'];
 function openDrawer(kind,id){
   /* Kind lạ trước đây vẫn set state.drawer rồi để overlay rỗng — nhìn như bấm
      hụt. Chặn ở đây để cái sai lộ ra lúc phát triển thay vì im lặng. */
@@ -5494,6 +6092,12 @@ function openDrawer(kind,id){
   trackRecent(kind,id);
   state.drawer={kind,id};
   const ov=document.getElementById('overlay');
+  if(kind==='contract'){
+    const html = contractDrawer(id);
+    /* Hợp đồng bị xoá mà drawer còn trỏ tới thì đóng lại, đừng để overlay rỗng. */
+    if(!html){ closeDrawer(); return; }
+    ov.innerHTML = html; return;
+  }
   if(kind==='opp'){
     const o=DB.opps.find(x=>x.id===id);
     const body =
@@ -5752,7 +6356,7 @@ VIEWS.perms = function(){
     '<div class="noperm-t">'+esc(t('noPermTitle'))+'</div>'+
     '<div class="noperm-s">'+esc(t('noPermSub'))+'</div></div></div>';
 
-  const roleIds = ['manager','region','country','ar','lm'];
+  const roleIds = ['manager','region','country','ar','lm','legal'];
   const matrix = '<div class="tw"><div class="card-h"><span class="card-t">'+esc(t('roleMatrix'))+'</span>'+
     '<span class="card-note">'+esc(t('permsNote'))+'</span></div>'+
     '<div class="tscroll"><table><thead><tr><th>'+esc(t('cPermission'))+'</th>'+
