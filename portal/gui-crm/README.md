@@ -1,28 +1,53 @@
-# Gửi đội CRM · vòng 28
+# Hộp thư hai chiều · Portal ↔ CRM
 
-Hai bản vá cho nhánh `crm-cau-noi-v2`, và một đề nghị cho hợp đồng dữ liệu
-bước sau.
+Thư mục này bắt đầu ở vòng 28 như một chiều gửi sang CRM; từ vòng 31 cả hai
+đội cùng đặt file vào đây. Đọc từ dưới lên theo vòng.
 
-Chúng tôi **không đẩy lên nhánh của các bạn** — nhánh ấy là của các bạn.
-Dưới đây là mã đã chạy được, các bạn áp một lệnh là xong, hoặc gõ lại theo
-ý mình cũng được.
+## Bản vá gửi CRM — áp bằng `git apply`
+
+| File | Vòng | Nội dung | Trạng thái |
+|---|---|---|---|
+| `va-buoc-1.patch` | 28 | 4 lỗi cầu nối + 4 bài kiểm | CRM đã áp, và tìm thêm 4 lỗi trong đó |
+| `them-gioi-han.patch` | 28 | Portal công bố khoảng nó nhận (`thuongVu.gioiHan`) | **chưa áp** |
+| `phat-goi-1-1.patch` | 32 | Portal phát gói 1.1 trả về CRM | mời áp — CRM đang chờ đúng cái này |
 
 ```bash
 git checkout crm-cau-noi-v2
-git apply va-buoc-1.patch        # bốn chỗ phải sửa
-git apply them-gioi-han.patch    # tuỳ chọn, xem mục 2 tài liệu hợp đồng
-cd portal && node test/thuong-vu.js
+git apply phat-goi-1-1.patch
+cd portal && node test/thuong-vu.js      # 63 đạt
 ```
 
-| File | Nội dung | Bắt buộc? |
+## Tài liệu
+
+| File | Của ai | Nội dung |
 |---|---|---|
-| `va-buoc-1.patch` | 4 lỗi + 4 bài kiểm mới | **có** — xem `SOAT-CAU-NOI-CRM.md` mục 2 |
-| `them-gioi-han.patch` | Portal công bố khoảng nó nhận, để CRM chặn ngay trên form | không, nhưng nên |
-| `HOP-DONG-DU-LIEU-1-1.md` | sáu đề nghị để hai hệ đi cùng nhịp | để bàn |
+| `HOP-DONG-DU-LIEU-1-1.md` | Portal | sáu đề nghị để hai hệ đi cùng nhịp |
+| `NOTE-GUI-CRM.md` | Portal | bản chất bốn lỗi, hai luật kiểm thử, thương hiệu chung |
+| `QUY-TRINH-KY-HOP-DONG.md` | Portal | tư vấn quy trình ký điện tử, và một lỗ trong chuỗi tiền |
+| `TRA-LOI-BUOC-1.md` · `TRA-LOI-BUOC-3.md` | CRM ↔ Portal | soát bước 1 và bước 3 |
+| `CHOT-TOKEN-HEAD.md` | CRM | chốt `--head` là dải tối, kèm số đo và ảnh dựng |
+| `GUI-PORTAL-VONG-31.md` | CRM | ba việc xong, hai việc cần Portal, hai quyết định |
+| `chon-head.html` · `.png` | CRM | chín phương án dải head dựng thật, hai chế độ |
 
-Đã đo trên bản áp sạch từ `origin/crm-cau-noi-v2`:
-`thuong-vu` 33 · `i18n-loi` 219 · `api-guard` 103 · `qc-quyen` 14 ·
-`qc-bat-bien` 15 · `luoc-do` 12 · `aaa` 11 · `tien-ba-lop` 23. Không bộ nào đỏ.
+## Quyết định đã chốt
 
-Mỗi bài kiểm mới đều đã kiểm ngược: trả bản sửa về như cũ thì đúng bài ấy
-đỏ, và chỉ bài ấy.
+| | Quyết định | Vòng |
+|---|---|---|
+| `--head` | dải **tối**, nếp CRM · sáng `#1D2935` · tối `#293E51`, dựng ở H210 của Portal | 31 |
+| Chế độ tối | **không** kéo theo phép ghim `tương phản(--card, --head) ≥ 3:1`. Thẻ tối đã sát sàn, đen tuyền cũng chỉ được 1,35:1 — ghim 3:1 chỉ cho chế độ sáng | 32 |
+| Trục xám H240 | **có đổi**, nhưng để **một lượt riêng** trên cây đã xanh. Gộp hai thay đổi màu vào một lượt thì hỏng không biết tại cái nào | 32 |
+| `--card` / `--muted` | thắng `--paper` / `--faint`. Đổi tên, không đổi một pixel nào | 31 |
+| Phí tạm ứng deal CRM | giữ `ADVANCE_FEE` của Portal cho tới khi có chỉ đạo khác, xem `QUY-TRINH-KY-HOP-DONG.md` mục 7 | 32 |
+
+## Còn chờ quyết
+
+1. `feeOf` đọc `signedAt` hay `approvedAt` — **chặn cả luồng ký điện tử**.
+2. Phí mới chạy từ kỳ ký, kỳ duyệt, hay kỳ thoả thuận (hiện hồi tố 3 tháng,
+   không ai từng quyết).
+
+## Lệ chung rút ra, cả hai đội cùng giữ
+
+1. Bài kiểm phải nêu được **cơ chế** chặn, không chỉ **kết quả** chặn.
+2. Bài kiểm **không được lấy dữ kiện từ cùng nguồn** với thứ nó kiểm.
+3. Bỏ qua một chặng duyệt thì phải **đọc được**, dù luồng có cho phép.
+4. Sửa một lỗi hiện ở N chỗ thì sửa ở **phạm vi**, đừng sửa N chỗ.
