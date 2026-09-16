@@ -515,7 +515,13 @@ const LUOC_DO = {
   notifRead:     { kieu: "bang", nhom: "van-hanh",  mo: "thông báo đã đọc theo người" },
   answers:       { kieu: "bang", nhom: "van-hanh",  mo: "câu trả lời cho các câu hỏi còn treo" },
   audit:         { kieu: "mang", nhom: "van-hanh",  mo: "nhật ký thao tác (trần 400 dòng)" },
-  dangNhap:      { kieu: "mang", nhom: "van-hanh",  mo: "nhật ký đăng nhập hai cổng (trần 300 dòng · giữ 180 ngày); ip LUÔN null vì bản mẫu chạy trong trình duyệt, không có máy chủ để đọc địa chỉ" }
+  dangNhap:      { kieu: "mang", nhom: "van-hanh",  mo: "nhật ký đăng nhập hai cổng (trần 300 dòng · giữ 180 ngày); ip LUÔN null vì bản mẫu chạy trong trình duyệt, không có máy chủ để đọc địa chỉ" },
+  /* Thương vụ nhận từ CRM. Hai bảng, đều kieu "bang" nên ensureShape tự dựng
+     và KHÔNG cần nâng LUOC_DO_VER: thêm khoá mới không đổi hình dạng khoá cũ.
+     thuongVu[id]    = bản ghi thương vụ (điều khoản giữ NGUYÊN VĂN theo đơn vị CRM)
+     thuongVuDay[id] = dấu vết mỗi lần nhận gói, để không nhận trùng một deal */
+  thuongVu:      { kieu: "bang", nhom: "nghiep-vu", mo: "thuongVu[id] = deal nhận từ CRM đang chờ gắn bên và trình đề xuất" },
+  thuongVuDay:   { kieu: "bang", nhom: "nghiep-vu", mo: "thuongVuDay[dealId] = {luc, boi, maGoi}: đã nhận gói nào, lúc nào, tránh nhận trùng" }
 };
 function ensureShape(s) {
   Object.keys(LUOC_DO).forEach(k => {
@@ -630,7 +636,8 @@ const MA_DINH_DANH = {
   chienDich: { tienTo: "",      pad: 2 },   /* CD-bài-KI-nn   chiến dịch (đuôi) */
   hangCho:   { tienTo: "Q",     pad: 5 },   /* Qnnnnn         hàng chờ khớp */
   nhapTay:   { tienTo: "N-",    pad: 4 },   /* N-nnnn         số gõ tay */
-  nhanSu:    { tienTo: "S",     pad: 2 }    /* Snn            nhân sự */
+  nhanSu:    { tienTo: "S",     pad: 2 },   /* Snn            nhân sự */
+  thuongVu:  { tienTo: "TV-",  pad: 3 }    /* TV-YYMM-nnn   thương vụ từ CRM */
 };
 function demMa(loai, nhom) {
   const md = (state.maDem && typeof state.maDem === "object") ? state.maDem : (state.maDem = {});
@@ -4323,6 +4330,189 @@ function applyApproved(pr, by) {
     pr.applied = { contractTo: isoDate(end), feeFrom: from, at: nowISO() };
   }
 }
+/* =====================================================================
+   THƯƠNG VỤ TỪ CRM
+   ---------------------------------------------------------------------
+   CRM đẩy sang một GÓI deal đã qua chuỗi duyệt của nó. Portal nhận gói ấy
+   như một ĐỀ XUẤT chờ người quyết, không phải một sổ mới.
+
+   Vì sao không ghi thẳng vào sổ (đây là chỗ bản trước làm sai):
+   CRM từng gọi advances.set() — hàm ấy GÁN ĐÈ số dư gốc, trong khi nhánh
+   duyệt applyApproved() CỘNG DỒN (cur.opening + rep). Một lượt đẩy từ CRM
+   xoá mất khoản tạm ứng giám đốc đã duyệt kỳ trước, và hàng rào duy nhất ở
+   đó chỉ chặn hạ xuống dưới phần đã thu hồi. rates.add() cũng nhắm sai
+   bảng: nó ghi tỷ lệ label ↔ nghệ sĩ, không phải phí Haustek.
+
+   Nên ở đây KHÔNG có đường ghi tiền nào mới. trinh() gọi đúng hai hàm đề
+   xuất sẵn có; tiền chỉ chạm sổ khi giám đốc bấm duyệt, qua applyApproved,
+   có kiểm số của kế toán và có nhật ký.
+
+   Hai khoá tách nhau có chủ ý:
+     khoaCrm — CRM KHAI là bên nào. Dữ liệu từ hệ khác, không tin được.
+     khoa    — Portal QUYẾT là bên nào. Chỉ người ghi được, sau khi đọc tên
+               đối tác và mã HTK. Đây là hàng rào còn đứng vững kể cả khi
+               gói bị sửa tay.
+
+   terms giữ NGUYÊN VĂN theo đơn vị của CRM. Bản ghi là bằng chứng về điều
+   hệ khác nói. Quy đổi đúng MỘT chỗ — ở trinh(), ranh giới trình đề xuất.
+   Quy đổi lần thứ hai ở bất cứ đâu là một lỗi tiền câm.
+   ===================================================================== */
+const TV_GOI_VER = "1.0.0";
+function thuongVuOf() { return lazyState("thuongVu", {}); }
+function thuongVuDayOf() { return lazyState("thuongVuDay", {}); }
+function thuongVuId(now) { return sinhMa("thuongVu", nhomThang(now), ma => !!thuongVuOf()[ma]); }
+
+/* Phần trăm từ CRM: mọi trường đuôi Pct là PHẦN TRĂM (70 = 70%), không phải
+   phân số. Đây là quy ước CRM đã chuẩn hoá; đọc sai là lệch 100 lần. */
+function tvPhanTram(v) {
+  const n = Number(v);
+  if (!isFinite(n) || n < 0) return null;
+  return n > 1 ? n / 100 : n;          /* 70 → 0.70 ; 0.7 → 0.7 */
+}
+function tvSo(v) { const n = Number(v); return isFinite(n) && n >= 0 ? n : 0; }
+
+/* Kiểm phong bì gói. Trả {ok, loi[], deals[]} — không ném, vì người dán gói
+   cần thấy HẾT chỗ sai một lượt chứ không phải sửa từng cái một. */
+function tvKiemGoi(goi) {
+  const loi = [];
+  let g = goi;
+  if (typeof g === "string") { try { g = JSON.parse(g); } catch (e) { return { ok: false, loi: ["Không phải JSON hợp lệ"], deals: [] }; } }
+  if (!g || typeof g !== "object") return { ok: false, loi: ["Gói rỗng"], deals: [] };
+  if (g.source !== "haustek-crm") loi.push('Gói không mang dấu "haustek-crm"');
+  if (!g.v) loi.push("Gói thiếu số phiên bản");
+  else if (String(g.v).split(".")[0] !== TV_GOI_VER.split(".")[0])
+    loi.push("Gói thuộc phiên bản " + g.v + ", bản này đọc " + TV_GOI_VER);
+  if (!Array.isArray(g.deals)) { loi.push("Gói không có danh sách deals"); return { ok: false, loi, deals: [] }; }
+  const deals = [];
+  g.deals.forEach((d, i) => {
+    if (!d || typeof d !== "object") { loi.push("Deal thứ " + (i + 1) + " không đọc được"); return; }
+    if (!d.dealId) { loi.push("Deal thứ " + (i + 1) + " thiếu mã deal"); return; }
+    deals.push(d);
+  });
+  return { ok: loi.length === 0, loi, deals };
+}
+
+/* Nhận gói. Deal đã nhận rồi thì BỎ QUA, không nhận trùng: CRM ghi lại toàn
+   bộ khoá bàn giao mỗi lần nó lưu, nên cùng một deal sẽ tới nhiều lần. */
+function tvNhanGoi(goi, boi) {
+  const kq = tvKiemGoi(goi);
+  if (!kq.ok) throw new Error(kq.loi.join(" · "));
+  const now = nowISO(), day = thuongVuDayOf(), kho = thuongVuOf();
+  const them = [], bo = [];
+  kq.deals.forEach(d => {
+    if (day[d.dealId]) { bo.push(d.dealId); return; }
+    const id = thuongVuId(now);
+    kho[id] = {
+      id, dealId: String(d.dealId), ten: chuoi(d.dealName || d.dealId),
+      khoaCrm: d.portalPartyKey ? String(d.portalPartyKey) : null,
+      khoa: null,                      /* chỉ người ghi, xem ganBen */
+      tenCrm: chuoi(d.account || ""), loaiBen: d.accountType === "label" ? "label" : "artist",
+      nuoc: chuoi(d.country || ""), phuTrach: chuoi(d.owner || ""),
+      giaTri: tvSo(d.amountUSD), ngayDong: d.closeDate ? String(d.closeDate) : null,
+      quyen: { dist: !!(d.rights && d.rights.dist), pub: !!(d.rights && d.rights.pub), yt: !!(d.rights && d.rights.yt) },
+      /* NGUYÊN VĂN, không quy đổi ở đây */
+      terms: d.terms && typeof d.terms === "object" ? JSON.parse(JSON.stringify(d.terms)) : null,
+      trangThai: "moi", deXuatId: null, nhanLuc: now, boi: boi || "",
+      lyDo: ""
+    };
+    day[d.dealId] = { luc: now, boi: boi || "", tvId: id };
+    them.push(kho[id]);
+  });
+  audit.log("thuongVu.nhan", them.length + " thương vụ mới" + (bo.length ? " · bỏ qua " + bo.length + " đã có" : ""), boi);
+  store.save();
+  return { them: them.length, bo: bo.length, ids: them.map(x => x.id) };
+}
+
+/* Người đọc tên đối tác và mã HTK rồi QUYẾT đây là bên nào. Tách hẳn khỏi
+   khoaCrm: gói có thể sai hoặc bị sửa, quyết định này thì có danh tính. */
+function tvGanBen(id, khoa, boi) {
+  const tv = thuongVuOf()[id];
+  if (!tv) throw new Error("Không có thương vụ " + id);
+  if (tv.trangThai === "daTrinh") throw new Error("Thương vụ đã trình đề xuất " + tv.deXuatId);
+  if (!coDoiTac(khoa)) throw new Error("Không có đối tác " + khoa);
+  const cu = tv.khoa;
+  tv.khoa = String(khoa);
+  audit.log("thuongVu.ganBen", tv.id + " · " + partyName(khoa) + (cu && cu !== khoa ? " (đổi từ " + cu + ")" : ""), boi);
+  store.save();
+  return tv;
+}
+
+/* Trình thương vụ thành đề xuất. ĐÂY là ranh giới quy đổi duy nhất:
+   phần trăm của CRM → phân số của Portal, đúng một lần, ở đúng chỗ này. */
+function tvTrinh(id, boi, byRole) {
+  const tv = thuongVuOf()[id];
+  if (!tv) throw new Error("Không có thương vụ " + id);
+  if (tv.trangThai === "daTrinh") throw new Error("Thương vụ đã trình đề xuất " + tv.deXuatId);
+  if (!tv.khoa) throw new Error("Chưa gắn bên cho thương vụ này");
+  if (!tv.terms) throw new Error("Thương vụ không có điều khoản để trình");
+
+  const t = tv.terms;
+  const thang = Math.round(tvSo(t.termMonths));
+  if (!(thang > 0)) throw new Error("Điều khoản thiếu thời hạn hợp đồng");
+  /* Phí Haustek = phần Haustek giữ = 1 − phần bên cấp quyền nhận. CRM gửi
+     artistSharePct (phần NGHỆ SĨ nhận), nên phải lật lại. Lấy nhầm chiều là
+     phí 70% thay vì 30%. */
+  const phanBen = tvPhanTram(t.artistSharePct);
+  if (phanBen === null || phanBen <= 0 || phanBen >= 1) throw new Error("Tỷ lệ chia của bên cấp quyền không hợp lệ");
+  const phi = Math.round((1 - phanBen) * 10000) / 10000;
+
+  /* Lõi chặn thời hạn và phí vào khoảng của nó (contractCalc: 6–60 tháng,
+     phí 3–50%). CRM thì thường ra deal 72 tháng. Nếu cứ trình, hợp đồng
+     ghi 60 trong khi CRM đã hứa 72 — hai hệ nói hai số về cùng một deal,
+     và KHÔNG bên nào báo lỗi. Đo được: 72 vào, 60 ra.
+
+     Nên chặn ở đây và bắt người quyết, thay vì để mã tự cắt. Đọc khoảng
+     hợp lệ bằng cách hỏi chính contractCalc, không chép lại con số —
+     họ đổi trần thì chỗ này đi theo. */
+  const thu = contractCalc(tv.khoa, { months: thang, feePct: phi });
+  if (thu.months !== thang)
+    throw new Error("Thời hạn " + thang + " tháng nằm ngoài khoảng Portal nhận (" + thu.months + " tháng là mức gần nhất). Sửa điều khoản bên CRM hoặc chốt lại với khách trước khi trình.");
+  if (Math.abs(thu.feePct - phi) > 1e-9)
+    throw new Error("Phí " + Math.round(phi * 1000) / 10 + "% nằm ngoài khoảng Portal nhận (gần nhất " + Math.round(thu.feePct * 1000) / 10 + "%). Chốt lại trước khi trình.");
+
+  const pr = proposeContract(tv.khoa, {
+    months: thang, feePct: phi, exclusive: tvSo(t.exclusivityMonths) > 0,
+    note: "Từ CRM " + tv.dealId + " · " + tv.ten
+  }, boi, byRole || "sales");
+
+  tv.trangThai = "daTrinh"; tv.deXuatId = pr.id; tv.trinhLuc = nowISO();
+  audit.log("thuongVu.trinh", tv.id + " → " + pr.id + " · " + partyName(tv.khoa), boi);
+  store.save();
+  return { thuongVu: tv, deXuat: pr };
+}
+
+function tvBo(id, lyDo, boi) {
+  const tv = thuongVuOf()[id];
+  if (!tv) throw new Error("Không có thương vụ " + id);
+  if (tv.trangThai === "daTrinh") throw new Error("Thương vụ đã trình đề xuất " + tv.deXuatId);
+  tv.trangThai = "daBo"; tv.lyDo = chuoi(lyDo || "");
+  audit.log("thuongVu.bo", tv.id + (tv.lyDo ? " · " + tv.lyDo : ""), boi);
+  store.save();
+  return tv;
+}
+
+/* Danh sách cho trang. Trang KHÔNG đọc state thô, nên mọi thứ nó cần hiện
+   phải ra từ đây — gồm cả tên bên đã gắn và trạng thái đề xuất tương ứng. */
+function tvList(f) {
+  f = f || {};
+  const prs = proposalsOf();
+  let ds = Object.keys(thuongVuOf()).map(k => thuongVuOf()[k]);
+  if (f.trangThai) ds = ds.filter(x => x.trangThai === f.trangThai);
+  return ds.sort((a, b) => String(b.nhanLuc).localeCompare(String(a.nhanLuc))).map(x => {
+    const pr = x.deXuatId ? prs.find(p => p.id === x.deXuatId) : null;
+    return Object.assign({}, x, {
+      tenBen: x.khoa ? partyName(x.khoa) : null,
+      maBen: x.khoa ? partyClientId(x.khoa) : null,
+      khopKhoa: !!(x.khoa && x.khoaCrm && x.khoa === x.khoaCrm),
+      deXuatTrangThai: pr ? pr.status : null
+    });
+  });
+}
+function tvDem() {
+  const ds = Object.keys(thuongVuOf()).map(k => thuongVuOf()[k]);
+  return { moi: ds.filter(x => x.trangThai === "moi").length, daTrinh: ds.filter(x => x.trangThai === "daTrinh").length, daBo: ds.filter(x => x.trangThai === "daBo").length };
+}
+
 function proposalsList(f) {
   f = f || {};
   let ds = proposalsOf().slice();
@@ -6755,6 +6945,10 @@ const QUYEN_HAM = {
   /* Mức trả đầy đủ mang biên của Haustek: chỉ nhóm "tong" (giám đốc) mới gọi. */
   platformRatesFull: "tong", setPlatformRate: "tong", clearPlatformRate: "tong", importPlatformRates: "tong", mucTraTacDong: "tong",
   proposals: "deXuat", "proposals.proposeAdvance": "deXuatTao", "proposals.proposeContract": "deXuatTao", advanceCalc: "deXuat", contractCalc: "deXuat", partySeries: "deXuat", advanceOfferOf: "deXuat",
+  /* Đọc thương vụ đi cùng nhóm deXuat; mọi hàm ĐỔI trạng thái đi cùng
+     deXuatTao — cùng cửa với việc tạo đề xuất, vì đó đúng là việc nó làm. */
+  thuongVu: "deXuat", "thuongVu.nhanGoi": "deXuatTao", "thuongVu.ganBen": "deXuatTao",
+  "thuongVu.trinh": "deXuatTao", "thuongVu.bo": "deXuatTao",
   roi: "deXuat",
   tickets: "hoTro", claims: "khieuNai", videoSettings: "khieuNai",
   accounts: "quanTri", answers: "quanTri", reset: "quanTri", store: "quanTri",
@@ -7910,6 +8104,10 @@ const admin = {
   quyen: quyenXuat,
   proposals: { list: f => proposalsListChoVai(f), counts: () => proposalCountsChoVai(), get: id => proposalGetChoVai(id),
     proposeAdvance, proposeContract, review: reviewProposal, flow: PROPOSAL_FLOW },
+  /* Thương vụ từ CRM. Không có hàm nào ở đây ghi vào sổ tiền: trinh() chỉ
+     dựng một đề xuất, và tiền chạm sổ ở applyApproved khi giám đốc duyệt. */
+  thuongVu: { list: tvList, dem: tvDem, kiemGoi: tvKiemGoi, nhanGoi: tvNhanGoi,
+    ganBen: tvGanBen, trinh: tvTrinh, bo: tvBo, goiVer: TV_GOI_VER },
   tickets: {
     types: TICKET_TYPES, statuses: TICKET_STATUS, depts: TEN_BO_PHAN, deptOf: type => boPhanCua(type),
     gioiHan: { soBinhLuan: COMMENT_MAX, doDaiBinhLuan: COMMENT_LEN, doDaiMoTa: BODY_LEN },

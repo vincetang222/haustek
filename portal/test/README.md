@@ -185,3 +185,38 @@ Ghi lại để lần sau đỡ mất thời gian tìm lại:
 8. **Cỡ chữ theo `vw`.** Con số trong ô số co theo bề rộng cửa sổ vẫn tràn khi dải ô
    nằm trong một thẻ hẹp hơn. Cỡ chữ phải theo bề rộng Ô (`cqi`), và bài kiểm phải đo
    `scrollWidth > clientWidth` của từng ô chứ không chỉ so với mép `main`.
+
+## Thương vụ từ CRM — không mở đường ghi tiền
+
+```bash
+node portal/test/thuong-vu.js
+```
+
+28 phép kiểm. Nhóm quan trọng nhất là **"không mở đường ghi tiền"**.
+
+Bản cầu nối trước gọi thẳng `advances.set()` và `rates.add()` từ phía CRM.
+`advances.set()` **gán đè** số dư gốc, trong khi nhánh duyệt `applyApproved()`
+**cộng dồn** (`cur.opening + rep`) — nên một lượt đẩy từ CRM xoá mất khoản tạm
+ứng giám đốc đã duyệt kỳ trước. `rates.add()` thì nhắm sai bảng: nó ghi tỷ lệ
+label ↔ nghệ sĩ, không phải phí Haustek.
+
+Ở đây `trinh()` chỉ dựng một đề xuất `DX-`; tiền chỉ chạm sổ khi giám đốc bấm
+duyệt, qua `applyApproved`, có kiểm số của kế toán và có nhật ký. Ai cho
+`trinh()` ghi thẳng vào `state.advances` hay `state.rates` thì hai phép kiểm
+ấy đỏ ngay.
+
+Kiểm những gì:
+
+- phong bì gói: sai dấu, lệch phiên bản lớn, JSON hỏng, deal thiếu mã
+- nhận trùng: cùng một `dealId` tới lần hai thì bỏ qua, không nhân đôi
+- `khoaCrm` (CRM *khai*) tách khỏi `khoa` (Portal *quyết*) — chưa gắn bên thì
+  không trình được, gắn bên không có thật thì bị chặn
+- điều khoản giữ **nguyên văn** theo đơn vị CRM; quy đổi đúng một chỗ ở `trinh()`
+- `artistSharePct: 70` → phí Haustek **30%**, không phải 70% (lấy nhầm chiều)
+- **thời hạn 72 tháng của CRM bị CHẶN, không bị cắt câm thành 60.** `contractCalc`
+  chặn trần 60 tháng; CRM thường ra deal 72. Trước bản sửa, 72 vào thì hợp đồng
+  ghi 60 và không ai biết — CRM đã hứa với khách 72. Nay ném lỗi nói rõ cả hai
+  con số và bắt người quyết.
+- không trình hai lần, đã trình thì không đổi bên
+- hai bảng mới khai đủ trong `LUOC_DO`, không cần nâng `LUOC_DO_VER`
+- mỗi bước vào nhật ký
