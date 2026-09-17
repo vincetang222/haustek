@@ -2196,13 +2196,32 @@ let cur = 'USD';
    tiền. Người ký deal ở Berlin phải tự nhẩm ra đô la trước khi gõ. */
 const CURRENCIES = ['USD','VND','EUR'];
 var VCB = {VND:25500, EUR:27720};   /* đồng cho 1 USD · đồng cho 1 EUR */
+/* TỶ GIÁ GHIM. Khi khác null, mọi phép quy đổi trong lượt ấy dùng tỷ giá
+   này thay vì tỷ giá hiện hành. Dùng cho văn bản đã chốt với bên kia: một
+   hợp đồng đã ký phải in ra đúng con số đã ký.
+   Vì sao ghim ở ĐÂY chứ không truyền tham số xuống từng chỗ: các hàm lấy
+   giá trị trong CONTRACT_FIELDS đều khai báo `g: o => …`, một tham số. Thêm
+   tham số thứ hai thì phải sửa cả bảng, và bỏ sót một dòng là dòng ấy lặng
+   lẽ trôi theo tỷ giá — đúng cái lỗi đang sửa. Ghim ở gốc thì mọi đường đi
+   qua rate() đều được phủ, kể cả đường chưa ai nghĩ tới. */
+var FX_GHIM = null;
 /* đơn vị của tiền tệ c trên MỘT đô la — đây là hệ số nhân khi hiển thị */
 function rate(c){
   const k = c || cur;
+  if(FX_GHIM && FX_GHIM.donVi === k) return FX_GHIM.tyGia;
   if(k === 'USD') return 1;
   if(k === 'VND') return VCB.VND;
   if(k === 'EUR') return VCB.VND / VCB.EUR;   /* suy ra, không nhập riêng */
   return 1;
+}
+/* Chạy fn với tỷ giá và đồng tiền ghim, rồi trả lại nguyên trạng — kể cả
+   khi fn ném lỗi. */
+function voiGhim(ghim, fn){
+  if(!ghim) return fn();
+  const cuG = FX_GHIM, cuC = cur;
+  FX_GHIM = ghim;
+  if(CURRENCIES.indexOf(ghim.donVi) >= 0) cur = ghim.donVi;
+  try { return fn(); } finally { FX_GHIM = cuG; cur = cuC; }
 }
 /* Số chữ số thập phân khi HIỂN THỊ, theo tập quán của từng đồng tiền.
    Đồng Việt Nam trên thực tế không có đơn vị nhỏ hơn đồng. Bản trước hiện
@@ -3383,11 +3402,20 @@ function snapshot(){
   };
 }
 function applySnapshot(s){
-  /* DB là const (dòng 1286) — thay ruột từng mảng, không gán lại. */
+  /* DB là const (dòng 1286) — thay ruột từng mảng, không gán lại.
+     CHÉP RA TRƯỚC KHI XOÁ. snapshot() trả `db: DB` theo THAM CHIẾU, nên
+     applySnapshot(snapshot()) sẽ xoá sạch mảng rồi đọc lại từ chính mảng
+     vừa xoá — toàn bộ dữ liệu biến mất. Đường chạy thật luôn đi qua
+     JSON.parse nên chưa bao giờ chạm phải; nhưng một hàm mà gọi với chính
+     đầu ra của hàm anh em lại xoá trắng sổ thì là một cái bẫy đặt sẵn,
+     và nó đã sập đúng một lần trong bài kiểm. */
+  const nguon = {};
   Object.keys(DB).forEach(k=>{
-    const rows = (s.db && Array.isArray(s.db[k])) ? s.db[k] : [];
+    nguon[k] = (s.db && Array.isArray(s.db[k])) ? s.db[k].slice() : [];
+  });
+  Object.keys(DB).forEach(k=>{
     DB[k].length = 0;
-    for(let i=0;i<rows.length;i++) DB[k].push(rows[i]);
+    for(let i=0;i<nguon[k].length;i++) DB[k].push(nguon[k][i]);
   });
   reviveDB(DB);
   if(typeof s.uid === 'number' && s.uid > 0) uid = s.uid;
@@ -6132,22 +6160,43 @@ const CONTRACT_FIELDS = [
 function ctrExt(o){ return (o && o.ext) || {}; }
 function ctrAdv(o){ return (o && o.ext && o.ext.advCalcResult) || {}; }
 function ctrPct(v){ return (v===undefined||v===null||v==='') ? '' : (String(v).indexOf('%')>=0?String(v):v+'%'); }
+/* Tiền trên hợp đồng.
+   ═══ VÌ SAO CÓ THAM SỐ `ghim` ═══
+   Hàm này từng gọi thẳng money(), tức quy đổi theo TỶ GIÁ VÀ ĐỒNG TIỀN
+   ĐANG HIỂN THỊ tại lúc ai đó mở bản hợp đồng ra xem. Khi tỷ giá còn là
+   hằng số trong mã thì chuyện ấy không lộ ra. Sửa được tỷ giá là nó thành
+   thật ngay: đo được, một hợp đồng ĐÃ KÝ với tạm ứng 357.000.000 ₫ in ra
+   420.000.000 ₫ sau khi tỷ giá đổi từ 25.500 lên 30.000 — ba trường cùng
+   trôi (tạm ứng, ngân sách marketing, quỹ sản xuất), không ai chạm vào deal.
+   Một văn bản hai bên đã ký thì phải in ra đúng con số đã ký, bằng đúng
+   đồng tiền đã ký — bất kể hôm nay thanh tiền tệ đang để gì. */
 function ctrMny(v){ if(v===undefined||v===null||v==='') return ''; const n=Number(v); return isNaN(n)?'':money(n); }
 const CONTRACT_STATES = ['draft','pending','approved','sent','signed'];
 /* Chỉ soạn được cho deal đã qua cửa CEO. Trước đó điều khoản còn đang đàm
    phán, soạn ra là soạn trên số sắp đổi. */
 const CTR_STAGES = ['legal','signature','won'];
 
-function ctrFieldVals(o){
-  const out = {};
-  CONTRACT_FIELDS.forEach(f=>{
-    let v; try { v = f.g(o); } catch(err){ v = ''; }
-    out[f.k] = (v===undefined||v===null) ? '' : String(v);
+function ctrFieldVals(o, ghim){
+  return voiGhim(ghim, function(){
+    const out = {};
+    CONTRACT_FIELDS.forEach(f=>{
+      let v; try { v = f.g(o); } catch(err){ v = ''; }
+      out[f.k] = (v===undefined||v===null) ? '' : String(v);
+    });
+    return out;
   });
-  return out;
+}
+/* Trạng thái mà con số đã chốt với bên kia: từ đây trở đi văn bản không
+   được đổi số theo tỷ giá nữa. 'draft' và 'pending' thì vẫn tính sống —
+   pháp chế đang soạn, thấy số mới là đúng ý. */
+const CTR_DONG_BANG = ['approved','sent','signed'];
+function ctrGhim(c){
+  if(!c || CTR_DONG_BANG.indexOf(c.status) < 0) return null;
+  if(!c.donVi || !(c.tyGia > 0)) return null;   /* hợp đồng cũ chưa đóng dấu */
+  return {donVi: c.donVi, tyGia: c.tyGia};
 }
 function ctrVals(c, o){
-  const out = ctrFieldVals(o);
+  const out = ctrFieldVals(o, ctrGhim(c));
   /* giá trị gõ tay đè lên giá trị tự điền — pháp chế là người chốt */
   Object.keys(c.manual||{}).forEach(k=>{ if(c.manual[k]) out[k] = c.manual[k]; });
   return out;
@@ -6162,7 +6211,10 @@ function ctrMissing(c, o){
    So giá trị tự điền hiện tại với ảnh chụp lúc soạn. */
 function ctrDrift(c, o){
   if(!c.snap) return [];
-  const now = ctrFieldVals(o);
+  /* So với CÙNG hệ quy chiếu đã chụp. Không ghim thì đổi thanh tiền tệ là
+     mọi trường tiền đều "trôi", và người soạn thấy một cảnh báo không có
+     thật mỗi lần bấm USD/VND. */
+  const now = ctrFieldVals(o, ctrGhim(c));
   return Object.keys(c.snap).filter(k=>String(c.snap[k]||'') !== String(now[k]||''));
 }
 
@@ -6347,6 +6399,10 @@ function makeContract(){
   const c = {
     id:'ct'+(++uid), name:tp.name+' — '+o.name, oppId:o.id, templateId:tp.id,
     status:'draft', by:ME, created:new Date(TODAY), manual:{}, notes:'',
+    /* Đồng tiền và tỷ giá văn bản này được dựng lên. Đóng dấu lại mỗi lần
+       trạng thái tiến một bước, để con số đông cứng đúng lúc chốt chứ không
+       phải lúc mới mở bản nháp. */
+    donVi: cur, tyGia: rate(cur),
     /* Ảnh chụp giá trị tự điền lúc soạn. Deal đổi sau đó thì ctrDrift() so ra
        được — không có ảnh này thì không cách nào biết bản đang cầm đã cũ. */
     snap: ctrFieldVals(o)
@@ -6390,6 +6446,13 @@ function ctrSetManual(cid, k, v){
 function ctrSetStatus(cid, st, okKey){
   const c = DB.contracts.find(x=>x.id===cid); if(!c) return;
   const old = c.status;
+  /* Đóng dấu lại NGAY TRƯỚC khi bước sang trạng thái đông cứng, và cũng khi
+     bị trả về nháp — để bản nháp lại chạy theo tỷ giá hiện hành. Chụp lại
+     `snap` cùng lúc: hai thứ phải cùng một thời điểm, lệch nhau là ctrDrift
+     báo trôi trong khi chẳng ai chạm vào deal. */
+  const o0 = DB.opps.find(x=>x.id===c.oppId);
+  c.donVi = cur; c.tyGia = rate(cur);
+  if(o0) c.snap = ctrFieldVals(o0, CTR_DONG_BANG.indexOf(st)>=0 ? {donVi:c.donVi, tyGia:c.tyGia} : null);
   c.status = st;
   logAudit({objType:'contract', objId:c.id, objName:c.name, action:'update',
             field:'status', oldV:t('cs_'+old), newV:t('cs_'+st)});

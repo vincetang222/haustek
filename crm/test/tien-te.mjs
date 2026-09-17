@@ -175,7 +175,9 @@ try {
 
   const ban = await p.evaluate(() => {
     /* bản lưu bị sửa tay / đến từ phiên bản khác */
-    const s = snapshot(); s.fx = { VND: 5, EUR: -1 }; s.cur = "JPY"; s.fxLog = "không phải mảng";
+    /* Bản sao SÂU: snapshot() trả `db` theo tham chiếu. */
+    const s = JSON.parse(JSON.stringify(snapshot()));
+    s.fx = { VND: 5, EUR: -1 }; s.cur = "JPY"; s.fxLog = "không phải mảng";
     const cuV = VCB.VND, cuC = cur;
     applySnapshot(s);
     const ra = { vnd: VCB.VND, cur: cur, log: Array.isArray(FX_LOG) };
@@ -186,6 +188,18 @@ try {
     ban.vnd !== 5, "VCB.VND = " + ban.vnd);
   F("đồng tiền lạ trong bản lưu bị chặn", ban.cur !== "JPY", ban.cur);
   F("fxLog không phải mảng thì thành mảng rỗng, không nổ", ban.log === true);
+
+  /* applySnapshot(snapshot()) không được xoá trắng sổ. snapshot() trả `db`
+     theo THAM CHIẾU, nên bản trước xoá mảng rồi đọc lại từ chính mảng vừa
+     xoá. Đường chạy thật luôn đi qua JSON.parse nên chưa chạm phải — nhưng
+     cái bẫy ấy đã sập đúng một lần ngay trong file kiểm này. */
+  const tuNap = await p.evaluate(() => {
+    const truoc = DB.opps.length;
+    applySnapshot(snapshot());
+    return { truoc, sau: DB.opps.length };
+  });
+  F("applySnapshot(snapshot()) giữ nguyên dữ liệu, không xoá trắng",
+    tuNap.sau === tuNap.truoc && tuNap.truoc > 0, tuNap.truoc + " → " + tuNap.sau);
 
   /* ---------- 6. setCur không nhận đồng tiền lạ ---------- */
   const sc = await p.evaluate(() => {
@@ -312,10 +326,60 @@ try {
     hai.USD.share === hai.VND.share && hai.USD.term === hai.VND.term,
     JSON.stringify([hai.USD.share, hai.VND.share, hai.USD.term, hai.VND.term]));
 
+  /* ---------- 9. VĂN BẢN ĐÃ CHỐT KHÔNG ĐƯỢC ĐỔI SỐ THEO TỶ GIÁ ----------
+     Tỷ giá sửa được là một tiện ích; nhưng nếu tiền trên hợp đồng vẫn quy
+     đổi theo tỷ giá HIỆN HÀNH thì mỗi lần đổi tỷ giá là định giá lại mọi
+     văn bản đã ký. Đo được trước khi sửa: một hợp đồng ĐÃ KÝ với tạm ứng
+     357.000.000 ₫ in ra 420.000.000 ₫ sau khi tỷ giá lên 30.000 — ba trường
+     cùng trôi, không ai chạm vào deal. */
+  const hd = await p.evaluate(() => {
+    const o = DB.opps.find(x => CTR_STAGES.indexOf(x.stage) >= 0 && x.ext && x.ext.advCalcResult);
+    if (!o || !DB.templates.length) return { khong: true,
+      soDeal: DB.opps.length,
+      hopLe: DB.opps.filter(x => CTR_STAGES.indexOf(x.stage) >= 0).length,
+      coExt: DB.opps.filter(x => x.ext && x.ext.advCalcResult).length,
+      soMau: DB.templates.length };
+    const cu = cur;
+    setCur("VND");
+    const c = { id: "ctThuTien", name: "thử ghim", oppId: o.id, templateId: DB.templates[0].id,
+                status: "draft", by: ME, created: new Date(TODAY), manual: {}, notes: "",
+                donVi: cur, tyGia: rate(cur), snap: ctrFieldVals(o) };
+    DB.contracts.unshift(c);
+    const nhap = ctrVals(c, o).advance;                 /* còn nháp: tính sống */
+    ctrSetStatus(c.id, "approved", "ctrApproveOk");
+    ctrSetStatus(c.id, "signed", "ctrSentOk");
+    const kyLuc = ctrVals(c, o).advance;
+    const tyCu = VCB.VND; VCB.VND = 30000;
+    const sauDoiTyGia = ctrVals(c, o).advance;
+    setCur("EUR");
+    const sauDoiDongTien = ctrVals(c, o).advance;
+    const troi = ctrDrift(c, o).length;
+    /* nhưng bản NHÁP thì vẫn phải chạy theo tỷ giá mới */
+    setCur("VND");
+    const c2 = { id: "ctNhap", name: "nháp", oppId: o.id, templateId: DB.templates[0].id,
+                 status: "draft", by: ME, created: new Date(TODAY), manual: {}, notes: "",
+                 donVi: cur, tyGia: 25500, snap: ctrFieldVals(o) };
+    DB.contracts.unshift(c2);
+    const nhapSau = ctrVals(c2, o).advance;
+    VCB.VND = tyCu; setCur(cu);
+    [c, c2].forEach(x => DB.contracts.splice(DB.contracts.indexOf(x), 1));
+    return { nhap, kyLuc, sauDoiTyGia, sauDoiDongTien, troi, nhapSau, ghimCon: FX_GHIM };
+  });
+  F("hợp đồng ĐÃ KÝ in ra đúng con số lúc ký, dù tỷ giá đã đổi",
+    !hd.khong && hd.sauDoiTyGia === hd.kyLuc, JSON.stringify(hd));
+  F("và vẫn in bằng ĐỒNG TIỀN đã ký, dù người xem đang để EUR",
+    !hd.khong && hd.sauDoiDongTien === hd.kyLuc, hd.sauDoiDongTien);
+  F("ctrDrift không báo trôi khi chẳng ai chạm vào deal",
+    hd.troi === 0, "trôi " + hd.troi + " trường");
+  F("nhưng bản NHÁP vẫn chạy theo tỷ giá mới — pháp chế đang soạn, thấy số mới là đúng",
+    hd.nhapSau !== hd.nhap, hd.nhap + " → " + hd.nhapSau);
+  F("ghim được trả lại sau mỗi lượt, không rò sang phần còn lại của ứng dụng",
+    hd.ghimCon === null, JSON.stringify(hd.ghimCon));
+
   F("không lỗi JavaScript nào", loi.length === 0, loi[0]);
 } finally {
   await b.close();
   srv.close();
 }
-console.log(FAILED ? "\n" + FAILED + " phép kiểm HỎNG" : "\n35 đạt · 0 hỏng");
+console.log(FAILED ? "\n" + FAILED + " phép kiểm HỎNG" : "\n41 đạt · 0 hỏng");
 process.exit(FAILED ? 1 : 0);
