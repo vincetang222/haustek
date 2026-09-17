@@ -365,6 +365,29 @@ check("Duyệt thẳng không qua kế toán để lại dấu vết", () => {
   return "có dấu · không dấu · nhật ký nói rõ";
 });
 
+/* artistShare của roi.tuDoiTac phải là phần bên ấy THẬT SỰ nhận, không
+   phải 1 − phí Haustek. Với label để Haustek trả nghệ sĩ, "1 − phí" còn bao
+   cả phần nghệ sĩ: đo được hệ báo 0,850 trong khi label nhận 0,265, vống
+   3,2 lần trên 37/40 label — và nó chảy vào bảng định giá deal. */
+check("roi.tuDoiTac báo đúng phần bên cấp quyền thật sự nhận", () => {
+  const L = A.parties.list().rows.filter(p => p.partyKey[0] === "L");
+  let n = 0, vong = 0, xa = 0;
+  L.forEach(p => {
+    const d = A.roi.tuDoiTac(p.partyKey);
+    if (!d || d.artistShare == null || !d.periods) return;
+    const c = A.advanceCalc(p.partyKey, 1, 0.12);
+    if (!(c.monthlyGross > 0)) return;
+    const that = c.monthlyNet / c.monthlyGross;
+    n++;
+    if (d.artistShare > that * 1.05) vong++;
+    if (Math.abs(d.artistShare - that) > 0.01) xa++;
+  });
+  must(n >= 10, "cần đủ label có số để kiểm, chỉ thấy " + n);
+  must(!vong, vong + "/" + n + " label bị báo VỐNG so với phần thật sự nhận");
+  must(!xa, xa + "/" + n + " label lệch quá 1 điểm phần trăm");
+  return n + " label · khớp phần thật sự nhận";
+});
+
 /* ===================== KẾT QUẢ ===================== */
 console.log(ra.map(([k, n, m]) => (k === "ok" ? "  ok   " : "  LỖI  ") + n + (m ? "\n         " + m : "")).join("\n"));
 console.log("\n" + pass + " đạt · " + fail + " hỏng");

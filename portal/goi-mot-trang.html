@@ -6015,11 +6015,21 @@ function dealRoiTuDoiTac(partyKey) {
   if (!coSo.length) return { partyKey, name: partyName(partyKey), monthlyIncome: 0, artistShare: null, periods: 0 };
   const monthlyGross = cents(thongKe(coSo.map(x => x.gross)).mean);
   const monthlyKeep  = cents(thongKe(coSo.map(x => x.keep)).mean);
+  const monthlyNet   = cents(thongKe(coSo.map(x => x.net)).mean);
   const ct = state.contracts && state.contracts[partyKey];
   const phi = ct && ct.feePct != null ? ct.feePct : (monthlyGross > 0 ? monthlyKeep / monthlyGross : CFG.HAUSTEK_FEE);
+  /* PHẦN BÊN ẤY THẬT SỰ NHẬN, không phải 1 − phí Haustek.
+     Với nghệ sĩ độc lập và label tự trả nghệ sĩ thì hai cái bằng nhau. Với
+     label để Haustek trả nghệ sĩ thì "1 − phí" còn bao cả phần nghệ sĩ:
+     đo được hệ báo 0,850 trong khi label thật sự nhận 0,265 — vống 3,2 lần
+     trên 37/40 label. Và nó chảy thẳng vào bảng định giá deal, nơi
+     companyMonthly = monthlyIncome × (1 − artistShare): phần Haustek trông
+     nhỏ đi, nguồn thu hồi trông lớn lên, deal trông tốt hơn thực tế.
+     partySeries đã trả sẵn net; số đúng vẫn nằm trong tay mà không dùng. */
+  const phanBen = monthlyGross > 0 ? monthlyNet / monthlyGross : (1 - phi);
   const adv = state.advances && state.advances[partyKey];
   return { partyKey, name: partyName(partyKey), clientId: partyClientId(partyKey), periods: coSo.length,
-    monthlyIncome: monthlyGross, artistShare: Math.round((1 - phi) * 1e4) / 1e4,
+    monthlyIncome: monthlyGross, artistShare: Math.round(phanBen * 1e4) / 1e4,
     advanceOpen: adv ? advanceBalance(partyKey) : 0,
     termMonths: ct && ct.months ? ct.months : null, series: ser };
 }
