@@ -4323,6 +4323,16 @@ function reviewProposal(id, action, note, by, role) {
   audit.log("proposal." + action, pr.id + " · " + pr.party.name
     + (boQuaKiem ? " · duyệt thẳng, không qua bước kế toán kiểm" : "")
     + (note ? " · " + note : ""), by); store.save();
+  /* Đề xuất này đến từ một thương vụ CRM thì phát lại gói trả về ngay.
+     Để người dùng tự bấm thì "CRM đang chờ" chỉ hết khi có ai nhớ ra —
+     mà cái A&R cần biết chính là lúc giám đốc vừa quyết xong. Phát lỗi
+     không được làm hỏng việc duyệt: tiền đã chạm sổ rồi, còn gói trả về
+     chỉ là bản tin. */
+  try {
+    if (thuongVuLienQuan(pr.id)) tvPhatGoi(by);
+  } catch (e) {
+    audit.log("thuongVu.phatLoi", pr.id + " · " + e.message, by); store.save();
+  }
   return pr;
 }
 function applyApproved(pr, by) {
@@ -4489,6 +4499,97 @@ function tvKiemGoi(goi) {
    thương vụ mới, lúc làm mới một thương vụ chưa trình, và lúc so xem gói
    tới có khác gói cũ không. Một chỗ duy nhất, để ba đường ấy không bao giờ
    lệch nhau: thêm một trường ở đây là cả ba đường đều biết. */
+/* =====================================================================
+   GÓI 1.1 TRẢ VỀ CRM — một chiều ghi, một chiều đọc
+   ---------------------------------------------------------------------
+   CRM ghi sang Portal (gói deal); Portal KHÔNG ghi ngược vào CRM. Chỗ này
+   chỉ CÔNG BỐ kết quả ra một khoá riêng để CRM tự đọc. Khác nhau ở chỗ:
+   CRM bỏ qua khoá này thì không gì hỏng, chỉ là A&R không biết. Nếu Portal
+   ghi thẳng vào sổ CRM thì hai bên đè nhau và không ai biết bên nào thắng.
+
+   BA ĐIỀU VỀ NGHĨA, đã chốt với đội CRM:
+   1. giaiDoan do PORTAL tính, và CHỈ nhìn đề xuất HỢP ĐỒNG. Để CRM tự suy
+      từ deXuat[] là dựng lại đúng cái ánh xạ hai máy trạng thái mà cả hai
+      đội muốn tránh, chỉ khác là lần ấy tự tay mình dựng.
+   2. chiTiet là chuỗi CHỈ ĐỂ HIỆN, không hệ nào đọc bằng mã. Nhờ thế A&R
+      biết deal nằm đâu mà CRM không phải thêm trạng thái nào vào máy
+      trạng thái của mình.
+   3. Một deal sinh HAI đề xuất, có thể một cái duyệt một cái trả. Nên
+      deXuat là MẢNG, không phải một mã.
+
+   Cố ý KHÔNG gửi boQuaKiem: ai bỏ qua bước kế toán là dữ kiện kiểm soát
+   nội bộ của Haustek, không phải việc của bên kia.
+   ===================================================================== */
+const TV_TRA_VER  = "1.1.0";
+const TV_TRA_KHOA = "haustek.portal.contracts.v1";
+/* id giai đoạn của CRM (STAGES). "portal" = deal đang ở phía Portal chờ
+   quyết; "legal" = đã duyệt, tới lượt pháp chế soạn hợp đồng. */
+const TV_GIAI_DOAN = {
+  submitted: "portal", checked: "portal", approved: "legal",
+  rejected: "negotiation", returned: "negotiation", withdrawn: "negotiation"
+};
+function tvTrangThaiDx(id) {
+  const pr = id ? proposalsOf().find(x => x.id === id) : null;
+  return pr ? pr.status : null;
+}
+/* Câu cho người đọc. Nói thẳng khi hợp đồng duyệt mà tạm ứng bị trả: một
+   deal mất khoản tạm ứng có thể không còn là deal ấy nữa, nên nó không
+   được trông hệt mọi deal khác đang ở "legal". */
+function tvChiTiet(hd, ung) {
+  const ra = [];
+  if (hd === "submitted") ra.push("Đề xuất hợp đồng đang chờ kế toán soát");
+  else if (hd === "checked") ra.push("Kế toán đã soát, đang chờ giám đốc duyệt");
+  else if (hd === "approved") ra.push("Hợp đồng đã duyệt");
+  else if (hd === "rejected") ra.push("Giám đốc không duyệt hợp đồng");
+  else if (hd === "returned") ra.push("Đề xuất hợp đồng bị trả lại để sửa");
+  else if (hd === "withdrawn") ra.push("Đề xuất hợp đồng đã rút");
+  if (ung === "rejected") ra.push("tạm ứng bị trả lại, chờ dựng lại đề xuất");
+  else if (ung === "approved") ra.push("tạm ứng đã duyệt");
+  else if (ung) ra.push("tạm ứng đang chờ");
+  return ra.join(" · ");
+}
+/* Đề xuất này có phải do một thương vụ CRM trình lên không. Quét kho
+   thương vụ chứ không gắn ngược mã vào đề xuất: đề xuất là vật của luồng
+   xét duyệt, không nên mang theo dấu vết của hệ khác. */
+function thuongVuLienQuan(deXuatId) {
+  const kho = thuongVuOf();
+  return Object.keys(kho).some(id => {
+    const tv = kho[id];
+    if (!tv || tv.trangThai !== "daTrinh") return false;
+    if (tv.deXuatId === deXuatId) return true;
+    return !!(tv.deXuat && tv.deXuat.some(x => x.id === deXuatId));
+  });
+}
+function tvGoiTra() {
+  const kho = thuongVuOf(), deals = [];
+  Object.keys(kho).forEach(id => {
+    const tv = kho[id];
+    if (!tv || tv.trangThai !== "daTrinh") return;   /* chưa trình thì chưa có gì để báo */
+    const ds = (tv.deXuat && tv.deXuat.length ? tv.deXuat
+              : (tv.deXuatId ? [{ id: tv.deXuatId, loai: "hopDong" }] : []))
+      .map(x => ({ id: x.id, loai: x.loai, trangThai: tvTrangThaiDx(x.id) }))
+      .filter(x => x.trangThai);
+    const hd  = (ds.find(x => x.loai === "hopDong") || {}).trangThai || null;
+    const ung = (ds.find(x => x.loai === "tamUng")  || {}).trangThai || null;
+    deals.push({
+      dealId: tv.dealId, updatedAt: nowISO(), by: "portal",
+      portalPartyKey: tv.khoa || null,
+      giaiDoan: TV_GIAI_DOAN[hd] || "portal",
+      chiTiet: tvChiTiet(hd, ung),
+      deXuat: ds
+    });
+  });
+  return { v: TV_TRA_VER, source: "haustek-portal", at: nowISO(), total: deals.length, deals };
+}
+function tvPhatGoi(boi) {
+  const g = tvGoiTra();
+  try { localStorage.setItem(TV_TRA_KHOA, JSON.stringify(g)); }
+  catch (e) { throw new Error("Không ghi được gói trả về: " + e.message); }
+  audit.log("thuongVu.phat", g.deals.length + " thương vụ · bản " + TV_TRA_VER, boi);
+  store.save();
+  return g;
+}
+
 function tvNoiDung(d) {
   return {
     ten: chuoi(d.dealName || d.dealId),
@@ -5862,6 +5963,7 @@ const LOI_MAU_EN = [
   [/^Đã có khối (.+)$/, "Unit $1 already exists"],
   [/^Không có khối (.+)$/, "No unit $1"],
   [/^Đã có tổ (.+)$/, "Team $1 already exists"],
+  [/^Không ghi được gói trả về: ([^·]+)$/, "Could not write the return payload: $1"],
   [/^Không có thương vụ (.+)$/, "No deal $1"],
   [/^Thương vụ đã trình đề xuất (.+)$/, "The deal has already been submitted as proposal $1"],
   [/^Gói thuộc phiên bản ([^·]+), bản này đọc ([^·]+)$/, "The payload is version $1; this build reads $2"],
@@ -7355,7 +7457,7 @@ const QUYEN_HAM = {
   /* Đọc thương vụ đi cùng nhóm deXuat; mọi hàm ĐỔI trạng thái đi cùng
      deXuatTao — cùng cửa với việc tạo đề xuất, vì đó đúng là việc nó làm. */
   thuongVu: "deXuat", "thuongVu.nhanGoi": "deXuatTao", "thuongVu.ganBen": "deXuatTao",
-  "thuongVu.trinh": "deXuatTao", "thuongVu.bo": "deXuatTao",
+  "thuongVu.trinh": "deXuatTao", "thuongVu.bo": "deXuatTao", "thuongVu.phatGoi": "deXuatTao",
   roi: "deXuat",
   tickets: "hoTro", claims: "khieuNai", videoSettings: "khieuNai",
   accounts: "quanTri", answers: "quanTri", reset: "quanTri", store: "quanTri",
@@ -8514,7 +8616,8 @@ const admin = {
   /* Thương vụ từ CRM. Không có hàm nào ở đây ghi vào sổ tiền: trinh() chỉ
      dựng một đề xuất, và tiền chạm sổ ở applyApproved khi giám đốc duyệt. */
   thuongVu: { list: tvList, dem: tvDem, kiemGoi: tvKiemGoi, nhanGoi: tvNhanGoi,
-    ganBen: tvGanBen, trinh: tvTrinh, bo: tvBo, goiVer: TV_GOI_VER },
+    ganBen: tvGanBen, trinh: tvTrinh, bo: tvBo, goiVer: TV_GOI_VER,
+    goiTra: tvGoiTra, phatGoi: tvPhatGoi, traVer: TV_TRA_VER },
   tickets: {
     types: TICKET_TYPES, statuses: TICKET_STATUS, depts: TEN_BO_PHAN, deptOf: type => boPhanCua(type),
     gioiHan: { soBinhLuan: COMMENT_MAX, doDaiBinhLuan: COMMENT_LEN, doDaiMoTa: BODY_LEN },

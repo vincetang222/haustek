@@ -668,7 +668,60 @@ check("Gửi lại gói Y NGUYÊN vẫn là bỏ qua, không đánh thức gì",
     "gửi lại y nguyên phải chỉ là bỏ qua, nhận được " + JSON.stringify(r));
 });
 
-/* ---------- kết ---------- */
+/* ---------- kết ---------- *//* ---------- 10. gói 1.1 trả về CRM ---------- */
+function dealMoi(ma, ung) {
+  A.thuongVu.nhanGoi(goi([deal(ma, { terms: khongUng({ totalAdvanceUSD: ung || 0 }) })]), "CRM");
+  const tv = A.thuongVu.list().find(x => x.dealId === ma);
+  A.thuongVu.ganBen(tv.id, benTrong(), "KD");
+  return A.thuongVu.trinh(tv.id, "KD", "sales");
+}
+const goiRa = () => JSON.parse(KHO["haustek.portal.contracts.v1"] || "null");
+
+check("Gói trả về mang đúng dấu và đúng bản", () => {
+  const r = dealMoi("TRA-1");
+  A.proposals.review(r.deXuat[0].id, "approve", "Đồng ý", "GĐ", "mgmt");
+  const g = goiRa();
+  must(g, "chưa phát gói nào");
+  must(g.v === A.thuongVu.traVer && g.v === "1.1.0", "bản = " + g.v);
+  must(g.source === "haustek-portal", "nguồn = " + g.source);
+  return g.v + " · " + g.deals.length + " deal";
+});
+check("Tự phát khi giám đốc quyết, không chờ ai bấm", () => {
+  const r = dealMoi("TRA-2");
+  const truoc = JSON.stringify(goiRa());
+  A.proposals.review(r.deXuat[0].id, "reject", "Không duyệt", "GĐ", "mgmt");
+  must(JSON.stringify(goiRa()) !== truoc, "gói phải đổi ngay sau khi duyệt, không cần gọi phatGoi");
+  const d = goiRa().deals.find(x => x.dealId === "TRA-2");
+  must(d.giaiDoan === "negotiation", "bị trả thì về negotiation, thấy " + d.giaiDoan);
+});
+check("giaiDoan CHỈ nhìn hợp đồng; tạm ứng bị trả thì nói trong chiTiet", () => {
+  const r = dealMoi("TRA-3", 16100);
+  const hd = r.deXuat.find(x => x.loai === "hopDong"), ung = r.deXuat.find(x => x.loai === "tamUng");
+  must(ung, "deal có tạm ứng phải sinh hai đề xuất");
+  A.proposals.review(hd.id, "approve", "Đồng ý", "GĐ", "mgmt");
+  A.proposals.review(ung.id, "reject", "Vốn đã kín", "GĐ", "mgmt");
+  const d = goiRa().deals.find(x => x.dealId === "TRA-3");
+  must(d.giaiDoan === "legal", "hợp đồng duyệt thì legal, dù tạm ứng bị trả — thấy " + d.giaiDoan);
+  must(/tạm ứng bị trả lại/.test(d.chiTiet), "chiTiet phải nói rõ tạm ứng bị trả: " + d.chiTiet);
+  must(d.deXuat.length === 2, "phải mang đủ hai đề xuất");
+  return d.chiTiet;
+});
+check("Không gửi boQuaKiem sang CRM — đó là kiểm soát nội bộ", () => {
+  const r = dealMoi("TRA-4");
+  A.proposals.review(r.deXuat[0].id, "approve", "Đồng ý", "GĐ", "mgmt");   /* duyệt thẳng */
+  const pr = A.proposals.get(r.deXuat[0].id);
+  must(pr.boQuaKiem === true, "dựng sai bối cảnh: đề xuất này phải mang dấu bỏ qua kiểm");
+  const d = goiRa().deals.find(x => x.dealId === "TRA-4");
+  must(!/boQuaKiem/.test(JSON.stringify(d)), "gói trả về KHÔNG được mang boQuaKiem");
+});
+check("Thương vụ chưa trình thì không có trong gói", () => {
+  A.thuongVu.nhanGoi(goi([deal("TRA-5")]), "CRM");
+  const g = A.thuongVu.goiTra();
+  must(!g.deals.some(d => d.dealId === "TRA-5"), "deal chưa trình lọt vào gói");
+  must(g.deals.every(d => d.portalPartyKey), "mọi deal trong gói phải có portalPartyKey");
+});
+
+
 ra.forEach(r => console.log("  " + (r[0] === "ok" ? "ok  " : "LỖI") + "  " + r[1] + (r[2] ? "  → " + r[2] : "")));
 console.log("\n" + pass + " đạt · " + fail + " hỏng");
 process.exit(fail ? 1 : 0);
