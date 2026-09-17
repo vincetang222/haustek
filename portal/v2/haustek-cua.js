@@ -244,6 +244,53 @@ function mo(c) {
   document.addEventListener('click', bamTrongCua);
 }
 
-global.HTCua = { mo: mo, raKhoi: raKhoi, phienCua: phienCua };
+/* =====================================================================
+   CHỮ Ở TẤM BÊN PHẢI — MỘT NGUỒN DUY NHẤT
+   ---------------------------------------------------------------------
+   Trước đây đoạn chữ này nằm nguyên văn ở BA chỗ: v2/intranet.html,
+   v2/khach.html và dung-goi.js. Ba bản chép tay của cùng một đoạn thì
+   sớm muộn lệch nhau — đúng cái đã làm bản gói mất cửa đăng nhập ở vòng
+   26, khi danh sách thư viện được gõ cứng ở hai nơi. Khai một chỗ ở đây,
+   ba nơi cùng gọi.
+
+   Chữ phải theo v2/VAN-PHONG.md. Hai điều dễ quên nhất:
+     · cổng đối tác KHÔNG nhắc phí dịch vụ, doanh thu gộp, hay chữ "NET"
+       (mục "partner-facing revenue" trong bảng thuật ngữ) — đó là đúng
+       bức chắn mà test/api-guard.js canh ở tầng dữ liệu, nên chữ trên
+       màn hình cũng phải giữ;
+     · không gạch ngang dài giữa câu (mục 2.4).
+   ===================================================================== */
+function chu(lang) {
+  var en = lang === 'en';
+  return {
+    noiBo: {
+      nhan: en ? 'Internal portal' : 'Cổng nội bộ',
+      h: en ? ['Every figure ', 'traces back', ' to one track']
+            : ['Mỗi con số đều ', 'truy ngược được', ' về một bài hát'],
+      p: en
+        ? 'Revenue is recognised by period and by source, then the three-layer split runs. Every figure on every page opens up, down to the track that produced it.'
+        : 'Doanh thu ghi nhận theo từng kỳ và từng nguồn, rồi chuỗi chia ba lớp chạy. Mọi con số trên mọi trang đều mở ra được, cho tới đúng bài hát sinh ra nó.',
+      trich: en
+        ? 'A partner only ever receives figures net of the fee. Gross revenue, the Haustek service fee and the distributor’s name are in no payload that crosses to the partner portal.'
+        : 'Đối tác chỉ nhận số đã trừ phí. Doanh thu gộp, phí dịch vụ Haustek và tên đơn vị phân phối không nằm trong bất kỳ gói dữ liệu nào gửi sang cổng đối tác.',
+      trichAi: en ? 'Design rule · test/api-guard.js checks every payload returned'
+                  : 'Nguyên tắc dựng hệ · test/api-guard.js kiểm từng gói trả về'
+    },
+    doiTac: {
+      nhan: en ? 'Partner portal' : 'Cổng đối tác',
+      h: en ? ['Your money, ', 'explained', ' line by line']
+            : ['Tiền của bạn, ', 'giải thích được', ' từng dòng'],
+      p: en
+        ? 'What each period paid, which platform it came from, what is sitting in your wallet, and where a withdrawal request has got to. The figures here are yours alone, with nobody else’s mixed in.'
+        : 'Từng kỳ trả bao nhiêu, đến từ nền tảng nào, ví còn bao nhiêu, và yêu cầu rút tiền đang đi tới đâu. Số ở đây là của riêng bạn, không lẫn của ai khác.',
+      trich: en
+        ? 'Every figure here is what you actually receive. No table asks you to add up, subtract, or work out for yourself why this period differs from the last.'
+        : 'Mọi con số ở đây đều là số bạn thực nhận. Không bảng nào bắt bạn tự cộng, tự trừ, hay tự đoán vì sao kỳ này khác kỳ trước.',
+      trichAi: en ? 'How this portal is built' : 'Cách cổng này được dựng'
+    }
+  };
+}
+
+global.HTCua = { mo: mo, raKhoi: raKhoi, phienCua: phienCua, chu: chu };
 
 })(window);
