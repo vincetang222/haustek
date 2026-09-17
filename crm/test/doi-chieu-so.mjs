@@ -148,10 +148,77 @@ try {
     /CHƯA được bên kia tôn trọng|not yet honoured/i.test(canhBao),
     canhBao.slice(0, 60));
 
+  /* ---------- 7. flow-through KHÔNG BAO GIỜ XONG ≠ XONG NGAY ---------- */
+  const f100 = await chay({ avg: GOP, share: SHARE, pass: 100, adv: 50000, ben: "artist", lrate: LRATE });
+  F("flow-through 100%: months là Infinity, KHÔNG phải 0",
+    !isFinite(f100.months) && f100.months > 0, "months = " + f100.months);
+  const f0 = await chay({ avg: GOP, share: SHARE, pass: 0, adv: 0, ben: "artist", lrate: LRATE });
+  F("không có khoản ứng: months là 0 (không có gì để thu), không phải Infinity",
+    f0.months === 0, "months = " + f0.months);
+
+  /* ---------- 8. GÓI BÀN GIAO MANG MỨC CỦA TỪNG DEAL ----------
+     Chủ dự án chốt flow-through đi theo TỪNG thương vụ. Nên phép kiểm này
+     dựng hai deal với hai mức khác nhau và đòi gói mang đúng hai số ấy —
+     một hằng số chung sẽ làm bài này đỏ. */
+  const goi = await p.evaluate(() => {
+    const lam = (id, adv) => handoffOf({
+      id, name: "deal " + id, accountId: null, amount: 12000,
+      closeDate: new Date(2026, 0, 1), owner: "test", stage: "won",
+      rights: {}, ext: { advCalcResult: adv } });
+    const co = (pass, ben, lrate) => ({
+      artistShare: 0.7, initialAdvance: 20000, marketingFund: 0, termMonths: 60,
+      exclusivityMonths: 36, findersFeePct: 0, passThrough: pass,
+      rightsHolder: ben, labelArtistRate: lrate });
+    return {
+      a:  lam("d1", co(0.30, "artist", 0.7)).terms,
+      b:  lam("d2", co(0.10, "artist", 0.7)).terms,
+      c0: lam("d3", co(0,    "artist", 0.7)).terms,
+      lb: lam("d4", co(0,    "label",  0.7)).terms,
+      tt: lam("d5", co(0,    "label_tutra", 0.7)).terms,
+      cu: lam("d6", { artistShare: 0.7, initialAdvance: 20000, marketingFund: 0,
+                      termMonths: 60, exclusivityMonths: 36, findersFeePct: 0,
+                      passThrough: 0 }).terms
+    };
+  });
+  F("gói mang flowThroughPct của CHÍNH deal ấy, không phải một mức chung",
+    goi.a.flowThroughPct === 30 && goi.b.flowThroughPct === 10,
+    "d1 " + goi.a.flowThroughPct + "% · d2 " + goi.b.flowThroughPct + "%");
+  F("flow-through 0 vẫn được gửi thành số 0, không bỏ trường",
+    goi.c0.flowThroughPct === 0, JSON.stringify(goi.c0.flowThroughPct));
+  F("gói mang rightsHolder", goi.lb.rightsHolder === "label" && goi.tt.rightsHolder === "label_tutra",
+    goi.lb.rightsHolder + " / " + goi.tt.rightsHolder);
+  F("deal cũ không có rightsHolder thì mặc định 'artist', không undefined",
+    goi.cu.rightsHolder === "artist", String(goi.cu.rightsHolder));
+
+  /* labelArtistRatePct có đuôi Pct nên rơi vào chốt chặn tiền của portal.
+     Gửi vô điều kiện là chặn đứng MỌI deal bằng một mặc định vô nghĩa. */
+  F("labelArtistRatePct chỉ gửi khi Haustek trả nghệ sĩ thay label",
+    goi.lb.labelArtistRatePct === 70
+      && !("labelArtistRatePct" in goi.tt) && !("labelArtistRatePct" in goi.c0),
+    "label " + goi.lb.labelArtistRatePct + " · tự trả " + ("labelArtistRatePct" in goi.tt));
+
+  /* ---------- 9. gói không được nói dối về "không bao giờ xong" ---------- */
+  const neverGoi = await p.evaluate(() => {
+    go("opps");
+    if (!document.getElementById("ac_avg"))
+      document.body.insertAdjacentHTML("beforeend", '<div id="__t2">' + advanceHTML() + "</div>");
+    const set = (id, v) => { const e = document.getElementById(id); if (e) e.value = String(v); };
+    set("ac_avg", 10000); set("ac_share", 70); set("ac_pass", 100);
+    set("ac_adv", 50000); set("ac_mkt", 0); set("ac_prod", 0);
+    set("ac_term", 60); set("ac_excl", 36); set("ac_fee", 0);
+    set("ac_ben", "artist"); set("ac_lrate", 70);
+    const m = advModel();
+    const ra = { monthsToRecoup: isFinite(m.months) ? m.months : null, neverRecoups: !isFinite(m.months) };
+    return { ra, quaJSON: JSON.parse(JSON.stringify(ra)) };
+  });
+  F("qua JSON, 'không bao giờ xong' không biến thành 0",
+    neverGoi.quaJSON.monthsToRecoup === null && neverGoi.quaJSON.neverRecoups === true,
+    JSON.stringify(neverGoi.quaJSON));
+
   F("không lỗi JavaScript nào", loi.length === 0, loi[0]);
 } finally {
   await b.close();
   srv.close();
 }
-console.log(FAILED ? "\n" + FAILED + " phép kiểm HỎNG" : "\n9 đạt · 0 hỏng");
+console.log(FAILED ? "\n" + FAILED + " phép kiểm HỎNG" : "\n16 đạt · 0 hỏng");
 process.exit(FAILED ? 1 : 0);

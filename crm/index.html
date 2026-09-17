@@ -1704,6 +1704,16 @@ vi:{
   cnSaiBan:'khoá có nhưng phiên bản {v} CRM không đọc được.',
   cnThieuDeals:'khoá có nhưng thiếu danh sách deals.',
   cnHongJson:'khoá có nhưng không phải JSON đọc được.',
+  ftTieuDe:'Flow-through theo từng deal',
+  ftChan:'portal sẽ chặn',
+  ftCo:'{n}/{b} deal mang flow-through (từ {lo}% tới {hi}%). Mức đi theo TỪNG deal — portal đọc mức trong gói, không đọc một tỷ lệ chung.',
+  ftChuaNoi:'Portal hiện CHẶN gói mang flowThroughPct > 0: trường này chưa có trong danh sách trường chuyển được, và sổ cái vẫn thu hồi 100%. Deal sẽ dừng ngay lúc trình, kèm câu báo — chứ không đi lọt rồi vỡ lời hứa trong im lặng. Đợi portal nối chân trước khi hứa với đối tác.',
+  ftKhong:'Chưa deal nào đặt flow-through. Ô này để 0 nghĩa là đối tác không nhận đồng nào trong suốt kỳ thu hồi.',
+  ftDeal:'Flow-through deal này',
+  ftBenCap:'Bên cấp quyền',
+  ftKhongXong:'Với mức này khoản ứng KHÔNG BAO GIỜ thu hồi xong.',
+  bc_artist:'Nghệ sĩ độc lập', bc_label_tutra:'Label · tự trả nghệ sĩ',
+  bc_label:'Label · Haustek trả nghệ sĩ',
   cRole:'Nhóm quyền', cScope:'Phạm vi dữ liệu', cPermission:'Quyền',
   scopeAll:'Toàn bộ hệ thống', scopeOwn:'Chỉ bản ghi của mình',
   pm_viewAll:'Xem mọi khách hàng, lead và cơ hội',
@@ -2023,6 +2033,16 @@ en:{
   cnSaiBan:'the key exists but version {v} is not one the CRM reads.',
   cnThieuDeals:'the key exists but has no deals list.',
   cnHongJson:'the key exists but is not readable JSON.',
+  ftTieuDe:'Per-deal flow-through',
+  ftChan:'the portal will reject these',
+  ftCo:'{n} of {b} deals carry flow-through ({lo}% to {hi}%). The rate travels WITH EACH DEAL — the portal reads the rate in the packet, not one shared figure.',
+  ftChuaNoi:'The portal currently REJECTS any packet carrying flowThroughPct > 0: the field is not on its conveyable list and its ledger still recoups 100%. The deal stops at submission with a readable message rather than slipping through and breaking the promise silently. Wait for the portal to wire it up before promising it to a partner.',
+  ftKhong:'No deal sets flow-through yet. Leaving this at 0 means the partner receives nothing at all throughout recoupment.',
+  ftDeal:'Flow-through on this deal',
+  ftBenCap:'Rights holder',
+  ftKhongXong:'At this rate the advance NEVER finishes recouping.',
+  bc_artist:'Independent artist', bc_label_tutra:'Label · pays its own artists',
+  bc_label:'Label · Haustek pays the artists',
   cRole:'Group', cScope:'Data scope', cPermission:'Permission',
   scopeAll:'Entire system', scopeOwn:'Own records only',
   pm_viewAll:'See every account, lead and opportunity',
@@ -3388,7 +3408,15 @@ function handoffOf(o){
   const a   = DB.accounts.find(x=>x.id===o.accountId) || {};
   const adv = (o.ext||{}).advCalcResult || null;
   const r   = o.rights || {};
-  return {
+  /* Tỷ lệ nghệ sĩ của label chỉ có nghĩa khi Haustek trả nghệ sĩ thay label;
+     với nghệ sĩ độc lập và label tự trả thì advModel không dùng tới nó
+     (heSoBen = 1). Gửi vô điều kiện là gửi mặc định 70 cho MỌI deal, mà
+     đuôi Pct thì rơi vào chốt chặn tiền của portal — đo được: gói mang
+     labelArtistRatePct = 70 bị chặn thẳng. Tức là một trường vô nghĩa với
+     phần lớn deal sẽ chặn đứng toàn bộ đường bàn giao. Chỉ gửi khi nó
+     thật sự quyết định con số. */
+  const theoLabel = !!adv && adv.rightsHolder === 'label';
+  const goi = {
     dealId:o.id, dealName:o.name,
     account:a.name||'', accountType:a.type||'', country:a.country||'',
     amountUSD:Math.round(o.amount||0),
@@ -3406,10 +3434,28 @@ function handoffOf(o){
          artistSharePct ngay trên. Trước đây gửi nguyên trạng: deal tạo từ form
          gửi 0,02 còn deal cũ gửi 2 — cùng một trường, hai đơn vị, và portal
          không có cách nào phân biệt. */
-      findersFeePct:      Math.round(pctOf(adv.findersFeePct)*1000)/10
+      findersFeePct:      Math.round(pctOf(adv.findersFeePct)*1000)/10,
+      /* FLOW-THROUGH ĐI THEO TỪNG DEAL, KHÔNG PHẢI MỘT MỨC CHUNG.
+         Chủ dự án chốt: mỗi thương vụ tự đặt mức của nó. Nên nó phải nằm
+         trong gói cùng các điều khoản khác — portal đọc mức của deal ấy,
+         không đọc hằng số nào.
+         Lưu ý cho người đọc mã: đo trên nhánh crm-cau-noi-v2, portal hiện
+         CHẶN gói mang flowThroughPct > 0 ("Thương vụ mang điều khoản tiền
+         mà bước này chưa nối chân"), vì trường này chưa có trong
+         TV_CHUYEN_DUOC và `recoup` chưa tôn trọng nó. Chặn như vậy là
+         ĐÚNG và tốt hơn hiện trạng: trước đây A&R gõ 30%, gói bỏ trường
+         ấy đi, portal vét 100% — lời hứa vỡ trong im lặng. Nay nó vỡ
+         thành một câu đọc được, ngay lúc trình. */
+      flowThroughPct:     Math.round(pctOf(adv.passThrough)*1000)/10,
+      /* Bên cấp quyền quyết định thu hồi lấy được từ đâu. Không đuôi USD/Pct
+         nên chốt chặn tiền của portal không đụng tới; đo được là qua. */
+      rightsHolder:       adv.rightsHolder || 'artist'
     } : null,
     portalPartyKey: HANDOFF_BIND[o.id] || null
   };
+  if(goi.terms && theoLabel)
+    goi.terms.labelArtistRatePct = Math.round(pctOf(adv.labelArtistRate)*1000)/10;
+  return goi;
 }
 function handoffRows(){
   /* Trình lên portal ở giai đoạn 'portal' — tức NGAY SAU khi chuỗi duyệt trong
@@ -4768,9 +4814,26 @@ VIEWS.handoff = function(){
         (cn.loi ? '<br><b>'+esc(t('cnViSao'))+'</b> '+esc(cn.loi) : '')+
       '</div></div></div>';
 
+  /* FLOW-THROUGH ĐI THEO TỪNG DEAL — nên nói theo từng deal, đừng nói một mức.
+     Dải này đọc mức thật của các deal đang chờ (thấp nhất tới cao nhất) thay
+     vì in ra một tỷ lệ chuẩn nào đó, vì không có tỷ lệ chuẩn nào cả. */
+  const ftMuc = rows.map(r=>r.terms ? (r.terms.flowThroughPct||0) : 0).filter(x=>x>0);
+  const ftDai =
+    '<div class="card" style="margin-bottom:16px' + (ftMuc.length?';border-color:var(--brand)':'') + '">'+
+      '<div class="card-h"><span class="card-t">'+esc(t('ftTieuDe'))+'</span>'+
+        (ftMuc.length ? '<span class="badge"><span class="dot" style="background:var(--brand)"></span>'+esc(t('ftChan'))+'</span>' : '')+
+      '</div>'+
+      '<div class="card-b"><div class="unote" style="margin:0">'+
+        (ftMuc.length
+          ? esc(t('ftCo',{n:ftMuc.length, b:rows.length,
+                          lo:Math.min.apply(null,ftMuc), hi:Math.max.apply(null,ftMuc)}))+
+            '<br><b>'+esc(t('cnViSao'))+'</b> '+esc(t('ftChuaNoi'))
+          : esc(t('ftKhong')))+
+      '</div></div></div>';
+
   return phead(t('handoff'), rows.length+' '+t('hoSigned'),
       '<button class="btn" onclick="handoffExport()">'+esc(t('hoExport'))+'</button>')+
-    dai+
+    dai+ ftDai+
     '<div class="card" style="margin-bottom:16px"><div class="card-b">'+
       '<div class="unote" style="margin:0">'+esc(t('hoNote1'))+'<br>'+esc(t('hoNote2'))+
       '<br><b>'+esc(HANDOFF_KEY)+'</b> · '+esc(t('hoBoundN',{a:rows.length-unbound, b:rows.length}))+
@@ -4789,6 +4852,12 @@ function openBind(dealId){
     '<div class="fld"><div class="fld-l">'+esc(t('hoParty'))+'</div>'+
       '<input class="in" id="bindKey" placeholder="A:123  /  L:7" value="'+esc(r.portalPartyKey||'')+'"></div>'+
     '<div class="unote">'+esc(t('hoBindHint'))+'</div>'+
+    (r.terms ? '<div class="unote">'+
+        esc(t('ftDeal'))+': <b>'+esc(String(r.terms.flowThroughPct||0))+'%</b> · '+
+        esc(t('ftBenCap'))+': <b>'+esc(t('bc_'+(r.terms.rightsHolder||'artist')))+'</b>'+
+        ((r.terms.flowThroughPct||0) >= 100 ? '<br><b>'+esc(t('ftKhongXong'))+'</b>' : '')+
+        ((r.terms.flowThroughPct||0) > 0 ? '<br>'+esc(t('ftChuaNoi')) : '')+
+      '</div>' : '')+
     (calls.length ? '<div class="sec"><div class="sec-t">'+esc(t('hoCalls'))+'</div>'+
         '<pre style="font-family:var(--mono);font-size:11.5px;white-space:pre-wrap;'+
         'background:var(--surface);border-radius:6px;padding:10px;line-height:1.6">'+
@@ -7429,7 +7498,14 @@ function advModel(advOverride){
   const phanBen = (avg - net) * heSoBen;      /* phần bên vay thật sự nhận mỗi tháng */
   const recoup = phanBen * (1 - pass);
   const bal1   = -totalAdv+recoup;
-  const months = recoup>0 ? totalAdv/recoup : 0;
+  /* "KHÔNG BAO GIỜ THU HỒI XONG" KHÁC "THU HỒI XONG NGAY" — bản trước trả 0
+     cho cả hai. Với flow-through 100% thì recoup = 0, hàm ra 0, và số 0 ấy
+     đi hai đường cùng lúc: màn hình đọc nó là falsy nên hiện "—" (nhìn như
+     chưa nhập), còn gói bàn giao mang monthsToRecoup: 0 — đọc xuôi là thu
+     hồi xong tức thì. Một con số, hai nghĩa, không nghĩa nào đúng.
+     Tách hẳn: không có khoản ứng thì 0 (đúng nghĩa: không có gì để thu),
+     có khoản ứng mà mỗi tháng thu về 0 đồng thì Infinity. */
+  const months = totalAdv<=0 ? 0 : (recoup>0 ? totalAdv/recoup : Infinity);
   const total  = net*term;
   const roi    = totalAdv>0 ? total/totalAdv : 0;
   const roiY   = term>0 ? roi/term*12 : 0;
@@ -7655,6 +7731,15 @@ function finVerdict(r){
   return {k:'bad', key:'finVWeak'};
 }
 
+/* Một chỗ duy nhất đọc `months` ra chữ, vì có BA trạng thái chứ không hai:
+   không có khoản ứng (0), thu hồi được (số tháng), và không bao giờ xong
+   (Infinity — flow-through nuốt hết phần thu hồi). Trước đây mỗi chỗ tự
+   viết `m.months ? toFixed(1) : '—'`, nên Infinity sẽ in ra chữ "Infinity". */
+function thangThuHoi(m, ngan){
+  if(!isFinite(m)) return L(ngan?['không xong','never']:['không bao giờ xong','never recouped']);
+  if(!m) return '\u2014 '+L(ngan?['tháng','mo']:['tháng','months']);
+  return m.toFixed(1)+' '+L(ngan?['tháng','mo']:['tháng','months']);
+}
 function advCalc(){
   try { finRender(); } catch(e){ if(window.console) console.warn('finRender', e); }
   const box = document.getElementById('acRes'); if(!box) return;
@@ -7667,7 +7752,7 @@ function advCalc(){
     [['Doanh thu thu hồi được / tháng','Recoupable royalties / month'], acFmt(m.recoup), ''],
     [['Số dư sau tháng đầu','Account balance after month 1'], acFmt(m.bal1), m.bal1>=0?'good':'bad'],
     [['Số tháng thu hồi vốn','Months to recoup'],
-      (m.months?m.months.toFixed(1):'—')+' '+L(['tháng','months']),
+      thangThuHoi(m.months),
       (m.months && m.months<=m.term)?'good':'bad'],
     [['Tổng thu HAUSTEK toàn kỳ','Total HAUSTEK income over term'], acFmt(m.total), ''],
     [['Finders fee','Finders fee'], acFmt(m.finder), ''],
@@ -7691,7 +7776,7 @@ function advCalc(){
         '<div class="acsug-a">'+acFmt(a)+'</div>'+
         '<div class="actrig-row"><span>'+esc(L(['Tổng advance','Total advance']))+'</span><b>'+acFmt(s2.totalAdv)+'</b></div>'+
         '<div class="actrig-row"><span>'+esc(L(['Thu hồi','Recoup']))+'</span><b>'+
-          (s2.months?s2.months.toFixed(1):'—')+' '+esc(L(['tháng','mo']))+'</b></div>'+
+          esc(thangThuHoi(s2.months, true))+'</b></div>'+
         '<div class="actrig-row"><span>'+esc(L(['ROI / năm','ROI / yr']))+'</span>'+
           '<b style="color:'+bd.col+'">'+(s2.roiY*100).toFixed(1)+'%</b></div>'+
         '<button type="button" class="acsug-b" style="background:'+bd.bg+';color:'+bd.fg+
@@ -7747,7 +7832,9 @@ function advApply(mult){
   set('mktBudget',  Math.round(m.mkt));
   set('prodFund',   Math.round(m.prod));
   set('recoupRate', advNum('ac_rate'));
-  set('monthsRecoup', m.months ? m.months.toFixed(1) : '');
+  /* Ô này kiểu 'num'. Infinity không phải một số viết được vào đó, và
+     "Infinity" là chữ. Để trống, rồi câu chữ ở advDetails nói rõ vì sao. */
+  set('monthsRecoup', (isFinite(m.months) && m.months) ? m.months.toFixed(1) : '');
   set('totalROI',   (m.roi*100).toFixed(0)+'%');
   set('roiAnnual',  (m.roiY*100).toFixed(1)+'%');
   set('roiEarnings', Math.round(m.total));
@@ -7761,9 +7848,13 @@ function advApply(mult){
     'Fires once '+advNum('ac_rate')+'% of total advance ('+acFmt(m.totalAdv)+') is recouped. Cap = '+acFmt(cap)+'.']));
   set('advDetails', L([
     'Advance ban đầu '+acFmt(m.adv)+'. Marketing fund '+acFmt(m.mkt)+'. Production fund '+acFmt(m.prod)+
-    '. Tổng '+acFmt(m.totalAdv)+', thu hồi trong '+(m.months?m.months.toFixed(1):'—')+' tháng.',
+    '. Tổng '+acFmt(m.totalAdv)+(isFinite(m.months)
+      ? ', thu hồi trong '+(m.months?m.months.toFixed(1):'\u2014')+' tháng.'
+      : '. KHÔNG BAO GIỜ THU HỒI XONG: flow-through '+(m.pass*100).toFixed(0)+'% lấy hết phần dùng để thu hồi.'),
     'Initial advance '+acFmt(m.adv)+'. Marketing fund '+acFmt(m.mkt)+'. Production fund '+acFmt(m.prod)+
-    '. Total '+acFmt(m.totalAdv)+', recouped in '+(m.months?m.months.toFixed(1):'—')+' months.']));
+    '. Total '+acFmt(m.totalAdv)+(isFinite(m.months)
+      ? ', recouped in '+(m.months?m.months.toFixed(1):'\u2014')+' months.'
+      : '. NEVER RECOUPS: flow-through of '+(m.pass*100).toFixed(0)+'% consumes everything recoupment draws on.')]));
   advCalc();
   toast(L(['Đã áp dụng xuống Chia sẻ publishing','Applied to publishing shares']));
 }
@@ -7830,7 +7921,14 @@ function saveOppForm(again){
     ext.advCalcResult = {
       avg:am.avg, artistShare:am.share, passThrough:am.pass, initialAdvance:am.adv,
       termMonths:am.term, exclusivityMonths:am.excl, findersFeePct:am.fee, marketingFund:am.mkt,
-      monthlyNet:am.net, recoupPerMonth:am.recoup, monthsToRecoup:am.months,
+      monthlyNet:am.net, recoupPerMonth:am.recoup,
+      /* JSON.stringify(Infinity) ra null, nên đừng để nó lặng lẽ thành null
+         và bị đọc lại thành 0. Gửi null CÓ CHỦ Ý kèm một cờ đọc được. */
+      monthsToRecoup: isFinite(am.months) ? am.months : null,
+      neverRecoups: !isFinite(am.months),
+      /* Bên cấp quyền quyết định thu hồi lấy được từ đâu (xem advModel).
+         Thiếu hai trường này thì chỉ CRM biết, còn portal dựng lại ra số khác. */
+      rightsHolder: am.ben, labelArtistRate: am.lrate,
       totalIncome:am.total, roi:am.roi, roiAnnual:am.roiY, roiAfterCosts:am.roiNet,
       triggerRatePct:advNum('ac_rate'), capPct:advNum('ac_cap'),
       cap:am.avg*12*(1+advNum('ac_cap')/100),
