@@ -1434,6 +1434,7 @@ tbody tr:hover td:first-child{box-shadow:inset 3px 0 0 var(--brand)}
         <div class="lang">
           <button id="cu" onclick="setCur('USD')">USD</button>
           <button id="cv" onclick="setCur('VND')">VND</button>
+          <button id="ce" onclick="setCur('EUR')">EUR</button>
         </div>
         <div class="lang" style="margin-left:0">
           <button id="lv" onclick="setLang('vi')">VI</button>
@@ -1589,6 +1590,19 @@ vi:{
   sendBack:'Trả lại', role_country:'Giám đốc quốc gia', role_region:'Giám đốc khu vực',
   pApproveCountry:'Duyệt cấp country', pApproveRegion:'Duyệt cấp vùng',
   thrTitle:'Ngưỡng bỏ qua sếp vùng', thrHint:'Deal dưới mức này chỉ cần sếp country duyệt rồi trình thẳng portal.',
+  fxTitle:'Tỷ giá quy đổi',
+  fxHint:'Số đồng cho một đơn vị ngoại tệ, đúng như bảng niêm yết Vietcombank. Tỷ giá USD↔EUR suy ra từ hai số này, không nhập riêng. Mọi con số tiền trong hệ đều lưu bằng USD; đổi tỷ giá là đổi cách HIỆN chúng, không đổi giá trị đã ký.',
+  fxPerUsd:'1 USD', fxPerEur:'1 EUR',
+  fxNotePh:'Nguồn / lý do (ví dụ: bảng VCB ngày 17/09)',
+  fxBad:'Tỷ giá phải là số đồng cho một đơn vị ngoại tệ, trong khoảng 1.000 – 1.000.000.',
+  fxSame:'Tỷ giá không đổi.',
+  fxJump:'Tỷ giá nhảy {p}% so với hiện tại. Sai một chữ số là lệch mười lần mọi báo cáo. Vẫn lưu?',
+  fxSaved:'Đã đổi tỷ giá · {r}',
+  fxNoLog:'Chưa lần nào đổi tỷ giá kể từ bản lưu này.',
+  fxWhich:'Cặp', fxOld:'Cũ', fxNew:'Mới', fxSrc:'Nguồn',
+  negErr:'Số tiền không được âm.',
+  bigErr:'Số tiền vượt mức hệ nhận ({n}). Kiểm lại đơn vị tiền đang chọn.',
+  nanErr:'Ô tiền không đọc ra số. Bản trước im lặng hiểu thành 0 — nay dừng lại để bạn sửa.',
   thrSaved:'Đã đổi ngưỡng thành {n}',
   dist:'Distribution', pub:'Publishing', yt:'YouTube',
   noContacts:'Chưa có người liên hệ nào', noDeals:'Chưa có deal nào', noActivity:'Chưa có hoạt động',
@@ -1921,6 +1935,19 @@ en:{
   sendBack:'Send back', role_country:'Country head', role_region:'Regional head',
   pApproveCountry:'Approve at country level', pApproveRegion:'Approve at regional level',
   thrTitle:'Regional-step threshold', thrHint:'Deals below this only need the country head, then go straight to the portal.',
+  fxTitle:'Exchange rates',
+  fxHint:'Dong per one unit of foreign currency, exactly as Vietcombank posts them. The USD↔EUR rate is derived from these two, never entered separately. Every money figure is stored in USD; changing a rate changes how they are SHOWN, not the value anyone signed.',
+  fxPerUsd:'1 USD', fxPerEur:'1 EUR',
+  fxNotePh:'Source / reason (e.g. VCB board, 17 Sep)',
+  fxBad:'A rate is dong per one unit of foreign currency, between 1,000 and 1,000,000.',
+  fxSame:'Rates unchanged.',
+  fxJump:'That is a {p}% jump from the current rate. One wrong digit shifts every report tenfold. Save anyway?',
+  fxSaved:'Rates updated · {r}',
+  fxNoLog:'No rate change recorded since this snapshot.',
+  fxWhich:'Pair', fxOld:'Old', fxNew:'New', fxSrc:'Source',
+  negErr:'A money amount cannot be negative.',
+  bigErr:'Amount exceeds what the system accepts ({n}). Check which currency is selected.',
+  nanErr:'That money field is not a number. The old build silently read it as 0 — now it stops so you can fix it.',
   thrSaved:'Threshold changed to {n}',
   dist:'Distribution', pub:'Publishing', yt:'YouTube',
   noContacts:'No contacts yet', noDeals:'No deals yet', noActivity:'No activity yet',
@@ -2146,7 +2173,55 @@ en:{
 }};
 let lang = 'vi';
 let cur = 'USD';
-const FX = 25500;   // 1 USD = 25.500 VND
+/* ═══ TỶ GIÁ ═══════════════════════════════════════════════════════════════
+   Trước đây chỗ này là `const FX = 25500` — một con số đóng băng trong mã.
+   Ba chuyện hỏng vì thế:
+     · đổi tỷ giá phải sửa mã và phát hành lại bản mới;
+     · không ai đọc được nó đã đổi lúc nào, do ai, lấy từ đâu;
+     · mọi con số VND đưa cho khách đều dùng chung một tỷ giá, bất kể hôm nay
+       hay sáu tháng trước.
+   Nay nó là TRẠNG THÁI, theo đúng khuôn REGION_THRESHOLD đã có sẵn trong
+   file này: lưu vào snapshot, sửa được trong ứng dụng, mỗi lần đổi có
+   logAudit, và gác bằng can('users') — cùng một quyền đang gác ngưỡng vùng.
+
+   Lưu theo cách Vietcombank niêm yết: SỐ ĐỒNG CHO MỘT ĐƠN VỊ NGOẠI TỆ.
+   Đó là thứ người Việt đọc trên bảng tỷ giá, nên nhập vào không phải tự quy
+   đổi trong đầu. Tỷ giá USD↔EUR suy ra từ hai số ấy, không nhập riêng — nhập
+   ba số cho hai quan hệ là tự mở đường cho ba số mâu thuẫn nhau.
+
+   VÌ SAO CÓ EUR. Không phải để cho nhiều. Đếm trên chính cấu hình của file
+   này: 16/74 nước trong COUNTRIES dùng đồng euro, và 4/41 đơn vị kinh doanh
+   nằm trong vùng euro (ES- Rock - Indie, ES- Urban, France, Germany). Tức là
+   CRM đã tự nhận mình làm việc ở vùng euro từ lâu mà chỉ nói được hai thứ
+   tiền. Người ký deal ở Berlin phải tự nhẩm ra đô la trước khi gõ. */
+const CURRENCIES = ['USD','VND','EUR'];
+var VCB = {VND:25500, EUR:27720};   /* đồng cho 1 USD · đồng cho 1 EUR */
+/* đơn vị của tiền tệ c trên MỘT đô la — đây là hệ số nhân khi hiển thị */
+function rate(c){
+  const k = c || cur;
+  if(k === 'USD') return 1;
+  if(k === 'VND') return VCB.VND;
+  if(k === 'EUR') return VCB.VND / VCB.EUR;   /* suy ra, không nhập riêng */
+  return 1;
+}
+/* Số chữ số thập phân khi HIỂN THỊ, theo tập quán của từng đồng tiền.
+   Đồng Việt Nam trên thực tế không có đơn vị nhỏ hơn đồng. Bản trước hiện
+   VND với 2 số lẻ: đo trên dữ liệu thật, 35/35 ô tiền đều ra đuôi ",00" —
+   hai chữ số cố định bằng không, không bao giờ mang tin gì, mà lại gợi ý
+   một độ chính xác tới phần trăm đồng mà số lưu không hề có. */
+const CUR_DEC = {USD:0, VND:0, EUR:0};
+const CUR_LOC = {USD:'en-US', VND:'vi-VN', EUR:'de-DE'};
+/* Lịch sử đổi tỷ giá. Có lưu vào snapshot — một dấu vết kiểm toán mất khi
+   tải lại trang là một dấu vết giả. */
+var FX_LOG = [];
+const FX_LOG_KEEP = 50;   /* đủ đọc lại một năm đổi tỷ giá hàng tuần */
+/* Một tỷ giá hợp lệ là SỐ ĐỒNG cho một đơn vị ngoại tệ, nên nó nằm trong
+   khoảng vạn. Chặn ở đây thay vì ở chỗ nhập, để bản lưu sửa tay và bản xuất
+   từ phiên bản khác cũng phải đi qua cùng một cửa. */
+function fxHopLe(x){
+  const n = Number(x);
+  return isFinite(n) && n >= 1000 && n <= 1000000;
+}
 function t(k, vars){ let s = (I18N[lang]&&I18N[lang][k]) || (I18N.en[k]) || k;
   if(vars) for(const key in vars) s = s.replace('{'+key+'}', vars[key]); return s; }
 
@@ -2780,19 +2855,62 @@ DB.leads.forEach(l=>{
 });
 
 /* ============================ helpers ============================ */
-function fx(n){ return cur==='VND' ? n*FX : n; }
+/* USD → đơn vị đang hiển thị */
+function fx(n){ return (n||0) * rate(cur); }
+/* đơn vị đang hiển thị → USD. MỘT chỗ duy nhất làm phép này.
+   Trước đây mỗi nơi tự viết `Math.round(x/FX)` — bảy chỗ, bảy bản sao, và
+   cả bảy cùng làm tròn về ĐÔ LA CHẴN. Đo được hậu quả: gõ 1.000.000 ₫ vào
+   một ô tiền thì hệ lưu 39 USD và hiện lại 994.500 ₫ — 5.500 ₫ bốc hơi ngay
+   trước mắt người vừa gõ. Cận trên của mất mát là nửa tỷ giá, tức 12.750 ₫
+   MỖI Ô MỖI LẦN LƯU.
+   Giữ tới XU thì cận ấy còn 127,5 ₫ — nhỏ hơn 100 lần — mà không phải đổi
+   lược đồ: 35/35 bản ghi tiền hiện có là số nguyên và vẫn nguyên giá trị,
+   nên bản lưu cũ đọc vẫn đúng. (File này cố ý không tự chuyển lược đồ; xem
+   khối CỨU DỮ LIỆU KHI LÊN BẢN MỚI.) */
+function toUSD(x){
+  const n = Number(x);
+  if(!isFinite(n)) return 0;
+  return Math.round(n / rate(cur) * 100) / 100;
+}
+/* Trần một ô tiền, tính bằng USD. Một tỷ đô cho một deal nhạc là con số
+   không tồn tại; quá mức này gần như chắc chắn là gõ nhầm đơn vị — nhập số
+   VND trong lúc thanh chọn đang để USD chẳng hạn. */
+const TIEN_TRAN_USD = 1e9;
+/* Soát mọi ô tiền trong một biểu mẫu. Trả về ô hỏng ĐẦU TIÊN kèm câu nói rõ,
+   hoặc null nếu sạch. Nhận diện ô tiền qua lớp `curin` mà mọi ô tiền trong
+   file này đều nằm trong — thêm ô tiền mới là tự được soát, không phải nhớ
+   ghi tên nó vào một danh sách nào. */
+function soatTien(tienTo){
+  const els = Array.from(document.querySelectorAll('.curin input'));
+  for(let i=0;i<els.length;i++){
+    const el = els[i];
+    if(tienTo && String(el.id).indexOf(tienTo) !== 0) continue;
+    if(el.disabled || el.readOnly) continue;
+    const raw = String(el.value).trim();
+    if(raw === '') continue;                       /* để trống là chuyện khác */
+    const n = Number(raw);
+    if(!isFinite(n))      return {el:el, msg:t('nanErr')};
+    if(n < 0)             return {el:el, msg:t('negErr')};
+    if(n / rate(cur) > TIEN_TRAN_USD)
+      return {el:el, msg:t('bigErr',{n:money(TIEN_TRAN_USD)})};
+  }
+  return null;
+}
 function fmtMoney(n, dashIfEmpty){
   if(!n && dashIfEmpty) return '—';
-  if(cur==='VND'){
-    return new Intl.NumberFormat('vi-VN',{minimumFractionDigits:2,maximumFractionDigits:2})
-      .format((n||0)*FX)+' VND';
-  }
-  return new Intl.NumberFormat('en-US',{maximumFractionDigits:0}).format(n||0)+' USD';
+  const c = CURRENCIES.indexOf(cur)>=0 ? cur : 'USD';
+  const d = CUR_DEC[c];
+  return new Intl.NumberFormat(CUR_LOC[c],
+    {minimumFractionDigits:d, maximumFractionDigits:d}).format(fx(n))+' '+c;
 }
 function money(n){ return fmtMoney(n,true); }
 function moneyShort(n){ return fmtMoney(n,false); }
 function fxNote(){
-  return t('curNote')+': 1 USD = '+new Intl.NumberFormat('vi-VN').format(FX)+' VND';
+  const fm = x => new Intl.NumberFormat('vi-VN').format(Math.round(x));
+  if(cur === 'VND') return t('curNote')+': 1 USD = '+fm(VCB.VND)+' VND';
+  if(cur === 'EUR') return t('curNote')+': 1 USD = '+
+    new Intl.NumberFormat('de-DE',{minimumFractionDigits:4,maximumFractionDigits:4}).format(rate('EUR'))+' EUR';
+  return t('curNote')+': 1 USD = '+fm(VCB.VND)+' VND · 1 EUR = '+fm(VCB.EUR)+' VND';
 }
 function fdate(dt){
   if(!dt) return '—';
@@ -3255,6 +3373,11 @@ function snapshot(){
     v: STORE_VERSION, at: new Date().toISOString(),
     me: ME, auth: AUTHED, lang: lang, cur: cur, uid: uid, theme: THEME,
     usage: USAGE, goals: USER_GOALS, handoff: HANDOFF_BIND, inbox: INBOX_SEEN, thr: REGION_THRESHOLD,
+    /* Tỷ giá và lịch sử đổi tỷ giá PHẢI nằm trong bản lưu. Bản demo của đội
+       R&D giữ chúng trong bộ nhớ: tải lại trang là tỷ giá lặng lẽ về mặc
+       định còn lịch sử biến mất — với một bản demo thì không sao, với ứng
+       dụng có sổ lưu thì đó là một dấu vết kiểm toán giả. */
+    fx: {VND: VCB.VND, EUR: VCB.EUR}, fxLog: FX_LOG,
     recentOpps: state.recentOpps, recentLeads: state.recentLeads, views: state.views,
     db: DB
   };
@@ -3269,7 +3392,17 @@ function applySnapshot(s){
   reviveDB(DB);
   if(typeof s.uid === 'number' && s.uid > 0) uid = s.uid;
   if(s.lang==='vi' || s.lang==='en')   lang = s.lang;
-  if(s.cur ==='USD'|| s.cur ==='VND')  cur  = s.cur;
+  if(CURRENCIES.indexOf(s.cur) >= 0)   cur  = s.cur;
+  /* Tỷ giá đọc lại phải qua đúng cửa kiểm như lúc nhập tay — bản lưu có thể
+     đã bị sửa bằng tay, hoặc đến từ một bản xuất của phiên bản khác. */
+  if(s.fx && typeof s.fx === 'object'){
+    if(fxHopLe(s.fx.VND)) VCB.VND = Math.round(s.fx.VND);
+    if(fxHopLe(s.fx.EUR)) VCB.EUR = Math.round(s.fx.EUR);
+  }
+  FX_LOG = Array.isArray(s.fxLog)
+    ? s.fxLog.filter(x=>x && typeof x==='object').slice(0, FX_LOG_KEEP)
+        .map(x=>Object.assign({}, x, {date: toDate(x.date)}))
+    : [];
   if(s.theme==='auto'||s.theme==='dark'||s.theme==='light') THEME = s.theme;
   if(s.usage) Object.keys(s.usage).forEach(n=>{ if(USAGE[n]) USAGE[n] = s.usage[n]; });
   if(s.goals) Object.keys(s.goals).forEach(n=>{ USER_GOALS[n] = s.goals[n]; });
@@ -3800,6 +3933,7 @@ function renderNav(){
   document.getElementById('le').className = lang==='en'?'on':'';
   document.getElementById('cu').className = cur==='USD'?'on':'';
   document.getElementById('cv').className = cur==='VND'?'on':'';
+  document.getElementById('ce').className = cur==='EUR'?'on':'';
   document.documentElement.lang = lang;
 }
 /* Ba trạng thái: 'auto' đi theo hệ điều hành (không gắn data-theme), 'light' và
@@ -3820,7 +3954,13 @@ function toggleTheme(){
    là bảng ảo hoá mất vị trí cuộn — đang xem dòng thứ 800 mà lỡ bấm USD (vốn
    đang bật) thì bị ném về đầu bảng, không rõ vì sao. */
 function setLang(l){ if(l===lang) return; lang=l; saveSoon(); renderLogin(); render(); if(state.drawer) openDrawer(state.drawer.kind, state.drawer.id); }
-function setCur(c){ if(c===cur) return; cur=c; saveSoon(); render(); if(state.drawer) openDrawer(state.drawer.kind, state.drawer.id); }
+function setCur(c){
+  /* Kiểm tên tiền tệ: hàm này nằm trong onclick, tức là ai gõ được vào thanh
+     địa chỉ cũng gọi được nó. Một `cur` lạ làm rate() trả 1 câm lặng, và cả
+     màn hình hiện số đô la mà dán nhãn tiền khác. */
+  if(CURRENCIES.indexOf(c) < 0 || c === cur) return;
+  cur=c; saveSoon(); render(); if(state.drawer) openDrawer(state.drawer.kind, state.drawer.id);
+}
 function go(v){ inboxApply(); selClear(); state.view=v; state.q=''; document.getElementById('q').value=''; state.sort={key:null,dir:1};
   closeDrawer(); render(); }
 function onSearch(v){ state.q=v.trim().toLowerCase(); render(); }
@@ -4999,7 +5139,7 @@ function inlineSave(id,f,val){
     o.stage=val; changed=true;
   }
   if(f==='amount'){
-    const n = Math.round((parseFloat(val)||0)/(cur==='VND'?FX:1));
+    const n = toUSD(parseFloat(val)||0);
     if(n!==o.amount){ logDiff('opp',o.id,o.name,'amount',o.amount,n); o.amount=n; changed=true; }
   }
   if(f==='close' && val){
@@ -5476,7 +5616,7 @@ function managerReports(){
     '<div class="tnote" style="color:var(--muted);background:var(--zebra)">'+
       esc(t('goalYearNote'))+' · '+esc(t('kpiNote'))+'</div></div>';
 
-  return phead(t('reports'), cur==='VND' ? fxNote()+' · '+perLbl : perLbl)+
+  return phead(t('reports'), cur!=='USD' ? fxNote()+' · '+perLbl : perLbl)+
     periodChips()+ kpi+
     '<div class="grid2" style="margin-bottom:16px">'+
       donutCard(t('rpValueStage'), dStage, String(nLive), t('deals'), true,
@@ -6497,7 +6637,7 @@ function saveOpp(id){
     text:t('st_'+o.stage)+' → '+t('st_'+ns),date:TODAY,who:ME});
   logDiff('opp',o.id,o.name,'stage',o.stage,ns);
   o.stage=ns;
-  const na=Math.round((parseFloat(document.getElementById('f_amount').value||0))/(cur==='VND'?FX:1));
+  const na=toUSD(parseFloat(document.getElementById('f_amount').value||0));
   logDiff('opp',o.id,o.name,'amount',o.amount,na);
   o.amount=na;
   const dv=document.getElementById('f_close').value;
@@ -6583,7 +6723,7 @@ function openGoalForm(name){
 function goalPreview(){
   const n = id => { const e=document.getElementById(id); const v=parseFloat(e?e.value:0); return isNaN(v)?0:v; };
   const nego = n('g_nego'), won = Math.round(nego*GOAL_RATE);
-  const yr   = cur==='VND' ? n('g_value')/FX : n('g_value');
+  const yr   = toUSD(n('g_value'));
   const set=(id,v)=>{ const e=document.getElementById(id); if(e) e.textContent=v; };
   set('gp_won', won);
   set('gp_week', money(Math.round(yr/GOAL_WEEKS)));
@@ -6593,7 +6733,7 @@ function saveThreshold(){
   const e = document.getElementById('thrIn');
   const raw = parseFloat(e ? e.value : 0);
   if(isNaN(raw) || raw < 0){ toast(t('completeField')); return; }
-  const usd = Math.round(cur==='VND' ? raw/FX : raw);
+  const usd = toUSD(raw);
   const old = REGION_THRESHOLD;
   /* trước đây im lặng thoát ra: người dùng bấm Lưu và không nhận được gì cả,
      không phân biệt nổi "đã lưu" với "nút hỏng" */
@@ -6608,7 +6748,7 @@ function saveGoal(name){
   const old = goalFor(name);
   const nw = {leads:Math.round(n('g_leads')), opps:Math.round(n('g_opps')),
               nego:Math.round(n('g_nego')),
-              yearUSD: Math.round(cur==='VND' ? n('g_value')/FX : n('g_value'))};
+              yearUSD: toUSD(n('g_value'))};
   [['leads','gLeads'],['opps','gOpps'],['nego','gNego'],['yearUSD','gValue']].forEach(k=>{
     const o = k[0]==='yearUSD' ? old.yearUSD : old[k[0]];
     if(o !== nw[k[0]])
@@ -6724,8 +6864,82 @@ VIEWS.perms = function(){
           'value="'+Math.round(fx(REGION_THRESHOLD))+'"></div>'+
         '<button class="btn btn-primary" onclick="saveThreshold()">'+esc(t('save'))+'</button>'+
       '</div></div></div>';
-  return phead(t('permsTitle'), t('permsNote')) + thrCard + matrix + users + usageTbl;
+  const fm = x => new Intl.NumberFormat('vi-VN').format(Math.round(x));
+  const lan = c => FX_LOG.find(x=>x && x.cur===c);
+  const lu = lan('VND'), le = lan('EUR');
+  const fxCard = '<div class="card" style="margin-bottom:14px">'+
+    '<div class="card-h"><span class="card-t">'+esc(t('fxTitle'))+'</span>'+
+      '<span class="card-note">'+esc(fxDerived())+'</span></div>'+
+    '<div class="card-b">'+
+      '<div class="unote" style="margin:0 0 10px">'+esc(t('fxHint'))+'</div>'+
+      '<div class="thrrow">'+
+        '<div class="curin" data-cur="VND"><input class="in" type="number" id="fxVnd" '+
+          'value="'+VCB.VND+'" onkeydown="if(event.key===\'Enter\')event.preventDefault()"></div>'+
+        '<span class="dim" style="font-size:12px">'+esc(t('fxPerUsd'))+
+          (lu ? ' · '+esc(fdate(lu.date))+' · '+esc(lu.by||'—') : '')+'</span>'+
+      '</div>'+
+      '<div class="thrrow" style="margin-top:8px">'+
+        '<div class="curin" data-cur="VND"><input class="in" type="number" id="fxEur" '+
+          'value="'+VCB.EUR+'" onkeydown="if(event.key===\'Enter\')event.preventDefault()"></div>'+
+        '<span class="dim" style="font-size:12px">'+esc(t('fxPerEur'))+
+          (le ? ' · '+esc(fdate(le.date))+' · '+esc(le.by||'—') : '')+'</span>'+
+      '</div>'+
+      '<div class="thrrow" style="margin-top:8px">'+
+        '<input class="in" id="fxNote" placeholder="'+esc(t('fxNotePh'))+'" style="max-width:320px">'+
+        '<button class="btn btn-primary" onclick="setFX()">'+esc(t('save'))+'</button>'+
+      '</div>'+
+      (FX_LOG.length
+        ? '<div class="tscroll" style="margin-top:12px"><table><thead><tr>'+
+            '<th>'+esc(t('cTime'))+'</th><th>'+esc(t('fxWhich'))+'</th>'+
+            '<th class="num">'+esc(t('fxOld'))+'</th><th class="num">'+esc(t('fxNew'))+'</th>'+
+            '<th>'+esc(t('cUser'))+'</th><th>'+esc(t('fxSrc'))+'</th></tr></thead><tbody>'+
+          FX_LOG.slice(0,12).map(x=>'<tr><td class="dim">'+esc(fdate(x.date))+'</td>'+
+            '<td>1 '+esc(x.cur==='EUR'?'EUR':'USD')+' → VND</td>'+
+            '<td class="num dim">'+esc(fm(x.cu))+'</td><td class="num"><b>'+esc(fm(x.moi))+'</b></td>'+
+            '<td class="dim">'+esc(x.by||'—')+'</td>'+
+            '<td class="dim trunc">'+esc(x.note||'—')+'</td></tr>').join('')+
+          '</tbody></table></div>'
+        : '<div class="unote" style="margin:12px 0 0">'+esc(t('fxNoLog'))+'</div>')+
+    '</div></div>';
+  return phead(t('permsTitle'), t('permsNote')) + fxCard + thrCard + matrix + users + usageTbl;
 };
+function fxDerived(){
+  return '1 USD = '+new Intl.NumberFormat('de-DE',
+    {minimumFractionDigits:4, maximumFractionDigits:4}).format(rate('EUR'))+' EUR';
+}
+/* Đổi tỷ giá. Cùng khuôn với saveThreshold ngay trên: kiểm quyền, kiểm giá
+   trị, so với giá trị cũ, logAudit, rồi mới ghi.
+   MỘT CHỖ KHÁC HẲN BẢN CỦA ĐỘI R&D. Bản ấy chặn bước nhảy >5% bằng cách
+   nhớ cặp số vừa bị chặn vào window.__fxConfirm, nên bấm lần thứ hai là qua
+   — mà ô nhập của họ lại gắn onkeydown Enter gọi thẳng setFX(). Gõ nhầm
+   255000 thay vì 25500 rồi nhấn Enter hai lần (đúng thói quen của người đang
+   vội) là tỷ giá sai gấp mười lần đi thẳng vào sổ, không một hộp thoại nào.
+   Ở đây: Enter trong ô KHÔNG lưu, và bước nhảy lớn phải xác nhận bằng
+   confirm() — một cử chỉ khác hẳn cử chỉ vừa làm, không phải lặp lại nó. */
+function setFX(){
+  if(!can('users')) return;
+  const doc = id => { const e=document.getElementById(id); return e ? Number(e.value) : NaN; };
+  const nv = doc('fxVnd'), ne = doc('fxEur');
+  if(!fxHopLe(nv) || !fxHopLe(ne)){ toast(t('fxBad')); return; }
+  const moiV = Math.round(nv), moiE = Math.round(ne);
+  if(moiV===VCB.VND && moiE===VCB.EUR){ toast(t('fxSame')); return; }
+  const nhay = Math.max(Math.abs(moiV-VCB.VND)/VCB.VND, Math.abs(moiE-VCB.EUR)/VCB.EUR)*100;
+  if(nhay > 5 && !window.confirm(t('fxJump',{p:nhay.toFixed(1)}))) return;
+  const ghiChu = (document.getElementById('fxNote')||{}).value || '';
+  const fm = x => new Intl.NumberFormat('vi-VN').format(x);
+  const doi = [];
+  [['VND','fxPerUsd',moiV],['EUR','fxPerEur',moiE]].forEach(function(r){
+    const c=r[0], moi=r[2], cu=VCB[c];
+    if(moi===cu) return;
+    logAudit({objType:'system', objName:t('fxTitle'), action:'update',
+              field:'fx'+c, oldV:cu, newV:moi});
+    FX_LOG.unshift({date:new Date(), cur:c, cu:cu, moi:moi, by:ME, note:ghiChu});
+    VCB[c]=moi; doi.push(t(r[1])+' = '+fm(moi));
+  });
+  if(FX_LOG.length > FX_LOG_KEEP) FX_LOG.length = FX_LOG_KEEP;
+  toast(t('fxSaved',{r:doi.join(' · ')}));
+  saveSoon(); render();
+}
 function setRole(name, role){
   const u = USERS.find(x=>x.name===name); if(!u) return;
   const old = u.role;
@@ -7469,10 +7683,14 @@ function finGap(now, ceil){
   if(now<=ceil) return '<span class="fingap good">'+esc(L(['còn dư ','headroom '])+acFmt(ceil-now))+'</span>';
   return '<span class="fingap bad">'+esc(L(['vượt ','over by '])+acFmt(now-ceil))+'</span>';
 }
+/* Máy tính advance làm việc bằng đơn vị đang hiển thị, không quy đổi — nên
+   chỗ này chỉ định dạng, không nhân tỷ giá như fmtMoney. Số lẻ theo cùng
+   bảng CUR_DEC để hai nơi không hiện cùng một số theo hai kiểu. */
 function acFmt(n){
-  return new Intl.NumberFormat(cur==='VND'?'vi-VN':'en-US',
-    cur==='VND'?{minimumFractionDigits:2,maximumFractionDigits:2}:{maximumFractionDigits:0})
-    .format(n||0)+' '+cur;
+  const c = CURRENCIES.indexOf(cur)>=0 ? cur : 'USD';
+  const d = CUR_DEC[c];
+  return new Intl.NumberFormat(CUR_LOC[c],
+    {minimumFractionDigits:d, maximumFractionDigits:d}).format(n||0)+' '+c;
 }
 function roiBand(pct){
   if(pct>=35) return {cls:'good', col:'var(--green)', bg:'#e8f5ee', fg:'#1f6b41'};
@@ -7901,7 +8119,16 @@ function saveOppForm(again){
   const v  = id => { const e=document.getElementById('of_'+id); return e ? e.value.trim() : ''; };
   const nn = id => { const x = parseFloat(v(id)); return isNaN(x) ? 0 : x; };
   const bk = id => chkOn('of_'+id);
-  const toUSD = x => cur==='VND' ? Math.round(x/FX) : x;
+
+  /* SOÁT CÁC Ô TIỀN TRƯỚC KHI GHI. Đo trên bản trước: gõ -5000 vào ô tạm ứng
+     thì lưu thẳng -5000; gõ 1e12 thì lưu một nghìn tỷ đô la; gõ "abc" thì
+     `parseFloat||0` lặng lẽ biến thành 0 và deal thành vô giá trị mà không
+     ai được báo. Cả ba đều đi qua không một lời.
+     Chỗ tệ nhất là trường hợp thứ ba: hai cái đầu còn nhìn thấy trên màn
+     hình, còn số 0 thì trông y hệt một ô người ta cố ý để trống. */
+  const loi = soatTien('of_');
+  if(loi){ loi.el.classList.add('err'); loi.el.focus();
+           loi.el.scrollIntoView({block:'center'}); toast(loi.msg); return; }
 
   const ext = {};
   OPP_FORM.forEach(sn => sn.Lc.concat(sn.Rc).forEach(fd=>{
@@ -8556,7 +8783,7 @@ function createNew(kind){
     state.view='leads'; state.leadFilter='all';
   } else if(kind==='opp'){
     const o={id:'o'+(++uid),name,accountId:val('n_acc'),stage:val('n_stage'),
-      amount:Math.round((parseFloat(val('n_amount')||0))/(cur==='VND'?FX:1)),closeDate:new Date(TODAY.getFullYear(),TODAY.getMonth()+2,0),
+      amount:toUSD(parseFloat(val('n_amount')||0)),closeDate:new Date(TODAY.getFullYear(),TODAY.getMonth()+2,0),
       owner:'Ethan Nguyen',rights:{dist:true,pub:false,yt:false},created:TODAY,lastAct:TODAY};
     DB.opps.unshift(o); state.view='opps'; state.oppFilter='all';
   } else if(kind==='account'){
