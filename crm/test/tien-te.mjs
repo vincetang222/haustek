@@ -240,10 +240,82 @@ try {
     chan.sau === chan.truoc, chan.truoc + " → " + chan.sau);
   F("và ô sai được đánh dấu để người dùng biết sửa ở đâu", chan.daDanhDau === true);
 
+  /* ---------- 8. MỘT ĐƠN VỊ DUY NHẤT QUA CẢ BIỂU MẪU ----------
+     Đây là chỗ từng lệch 25.500 lần. Bộ tính advance đọc ô tiền bằng
+     parseFloat thuần, tức làm việc bằng đơn vị đang hiển thị, trong khi
+     các ô tiền của biểu mẫu cơ hội ngay cạnh lại đi qua toUSD(). Cùng một
+     lượt lưu sinh ra hai con số cho cùng một khoản tiền, và con số SAI
+     chính là con số đi sang portal. */
+  const dv = await p.evaluate(() => {
+    const cu = cur;
+    setCur("VND");
+    go("opps"); openOppForm();
+    const s = (id, v) => { const e = document.getElementById("of_" + id); if (e) e.value = String(v); };
+    s("name", "Deal gõ bằng đồng"); s("account", "Thử đơn vị"); s("type", "New client");
+    s("stage", "won"); s("close", "2026-12-31");
+    s("ytIncome", 255000000); s("audioIncome", 0);
+    s("advance", 1275000000); s("mktBudget", 0); s("prodFund", 0);   /* = 50.000 USD */
+    const cb = document.getElementById("of_advanceDeal");
+    if (cb && cb.getAttribute("data-on") !== "1") togChk("of_advanceDeal");
+    if (document.getElementById("ac_adv")) {
+      const a = (id, v) => { const e = document.getElementById(id); if (e) e.value = String(v); };
+      a("ac_avg", 255000000); a("ac_adv", 1275000000); a("ac_mkt", 0); a("ac_prod", 0);
+      a("ac_share", 70); a("ac_pass", 0); a("ac_term", 60); a("ac_excl", 36); a("ac_fee", 0);
+    }
+    const n0 = DB.opps.length;
+    saveOppForm();
+    const o = DB.opps.find(x => x.name === "Deal gõ bằng đồng");
+    const ra = (DB.opps.length === n0 || !o || !o.ext)
+      ? { hong: "không lưu được" }
+      : { extAdvance: o.ext.advance,
+          calcInitAdv: o.ext.advCalcResult && o.ext.advCalcResult.initialAdvance,
+          goiUSD: handoffOf(o).terms && handoffOf(o).terms.initialAdvanceUSD,
+          tyGia: VCB.VND };
+    if (o) DB.opps.splice(DB.opps.indexOf(o), 1);
+    setCur(cu);
+    return ra;
+  });
+  F("lưu được deal nhập bằng VND", !dv.hong, JSON.stringify(dv.hong));
+  F("bộ tính advance và biểu mẫu ra CÙNG một con số USD",
+    dv.extAdvance === dv.calcInitAdv,
+    "biểu mẫu " + dv.extAdvance + " · bộ tính " + dv.calcInitAdv);
+  /* Mong đợi tính theo TỶ GIÁ ĐANG CHẠY, không phải 25.500 đóng cứng: phép
+     kiểm ở mục 4 phía trên đã đổi tỷ giá, và một con số mong đợi đóng cứng
+     sẽ đỏ vì lý do chẳng liên quan gì tới chuyện đang kiểm. */
+  const mongUSD = Math.round(1275000000 / dv.tyGia);
+  F("gói gửi portal mang con số USD, không phải 1.275.000.000 thô",
+    Math.abs(dv.goiUSD - mongUSD) <= 1 && dv.goiUSD < 1e6,
+    "gói " + dv.goiUSD + " · mong " + mongUSD + " ở tỷ giá " + dv.tyGia);
+
+  /* advNum vs advTien: ô tiền phải quy đổi, ô phần trăm thì không */
+  const hai = await p.evaluate(() => {
+    go("opps");
+    if (!document.getElementById("ac_avg"))
+      document.body.insertAdjacentHTML("beforeend", '<div id="__dv">' + advanceHTML() + "</div>");
+    const a = (id, v) => { const e = document.getElementById(id); if (e) e.value = String(v); };
+    const cu = cur, o = {};
+    ["USD", "VND"].forEach(c => {
+      cur = c;
+      a("ac_avg", 25500); a("ac_adv", 25500); a("ac_mkt", 0); a("ac_prod", 0);
+      a("ac_share", 70); a("ac_pass", 0); a("ac_term", 60); a("ac_excl", 36);
+      a("ac_fee", 0); a("ac_ben", "artist"); a("ac_lrate", 70);
+      const m = advModel();
+      o[c] = { adv: m.adv, share: m.share, term: m.term };
+    });
+    cur = cu;
+    return o;
+  });
+  F("cùng một con số gõ vào: ở VND ra ít USD hơn hẳn ở USD",
+    hai.USD.adv === 25500 && hai.VND.adv > 0 && hai.VND.adv < 2,
+    "USD " + hai.USD.adv + " · VND " + hai.VND.adv);
+  F("nhưng ô phần trăm và số tháng thì KHÔNG bị quy đổi",
+    hai.USD.share === hai.VND.share && hai.USD.term === hai.VND.term,
+    JSON.stringify([hai.USD.share, hai.VND.share, hai.USD.term, hai.VND.term]));
+
   F("không lỗi JavaScript nào", loi.length === 0, loi[0]);
 } finally {
   await b.close();
   srv.close();
 }
-console.log(FAILED ? "\n" + FAILED + " phép kiểm HỎNG" : "\n30 đạt · 0 hỏng");
+console.log(FAILED ? "\n" + FAILED + " phép kiểm HỎNG" : "\n35 đạt · 0 hỏng");
 process.exit(FAILED ? 1 : 0);

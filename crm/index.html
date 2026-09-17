@@ -7370,6 +7370,24 @@ function advanceHTML(){
     '</div>';
 }
 function advNum(id){ const e=document.getElementById(id); const v=parseFloat(e?e.value:0); return isNaN(v)?0:v; }
+/* Ô TIỀN của bộ tính advance, đọc ra USD.
+   ═══ VÌ SAO PHẢI CÓ HÀM RIÊNG ═══
+   Bộ tính advance từng đọc ô tiền bằng advNum() thuần — parseFloat, không
+   quy đổi. Nghĩa là nó làm việc bằng ĐƠN VỊ ĐANG HIỂN THỊ, còn các ô tiền
+   của biểu mẫu cơ hội ngay cạnh nó thì đi qua toUSD(). Hai đường, một biểu
+   mẫu, và không chỗ nào ghi lại đơn vị mình dùng.
+   Đo được hậu quả, đầu tới cuối: A&R để thanh tiền ở VND rồi gõ tạm ứng
+   1.275.000.000 ₫ (đúng 50.000 USD ở tỷ giá 25.500). Cùng một lượt lưu:
+       ext.advance                      = 50.000        ← đúng, qua toUSD
+       advCalcResult.initialAdvance     = 1.275.000.000 ← thô, không quy đổi
+       gói gửi portal initialAdvanceUSD = 1.275.000.000 ← dán nhãn USD
+   Lệch ĐÚNG 25.500 lần, và con số sai chính là con số đi sang portal. Cũng
+   con số ấy chạy vào hợp đồng qua ctrMny(), mà ctrMny lại gọi money() —
+   nhân tỷ giá LẦN NỮA.
+   Bộ mẫu không lộ ra vì deal gieo sẵn ghi thẳng bằng USD (advCalcResult
+   .initialAdvance = 14000 cho deal 18.000 USD): cùng một khoá, hai đơn vị,
+   và không ai phân biệt được bằng cách nhìn. */
+function advTien(id){ return toUSD(advNum(id)); }
 
 /* ---- bảng lời lỗ theo năm, dựng ngay trong form ---- */
 function finBoxHTML(){
@@ -7465,7 +7483,7 @@ function finFromForm(){
     /* chưa nhập theo nguồn thì dùng con số tổng ở phần advance, tỷ lệ chung */
     streams.length = 0;
     streams.push({k:'all', l:['Tổng doanh thu','Total revenue'], curve:'cat',
-                  gross: advNum('ac_avg'), share: advNum('ac_share')/100});
+                  gross: advTien('ac_avg'), share: advNum('ac_share')/100});
   }
   return {
     streams,
@@ -7475,7 +7493,7 @@ function finFromForm(){
        pass-through là phần còn lại. Hai ô này vốn là hai mặt của một số —
        trước đây nhập hai lần, sửa một chỗ thì chỗ kia sai. */
     pass: ofHas('recoupRate') ? 1-clamp01(ofNum('recoupRate')/100) : advNum('ac_pass')/100,
-    adv: advNum('ac_adv'), mkt: advNum('ac_mkt'), prod: advNum('ac_prod'),
+    adv: advTien('ac_adv'), mkt: advTien('ac_mkt'), prod: advTien('ac_prod'),
     legal: ofNum('legalFee'),
     prob: ofHas('prob') && ofNum('prob')>0 ? ofNum('prob')/100 : null,
     term: advNum('ac_term'), fee: advNum('ac_fee')/100,
@@ -7683,24 +7701,22 @@ function finGap(now, ceil){
   if(now<=ceil) return '<span class="fingap good">'+esc(L(['còn dư ','headroom '])+acFmt(ceil-now))+'</span>';
   return '<span class="fingap bad">'+esc(L(['vượt ','over by '])+acFmt(now-ceil))+'</span>';
 }
-/* Máy tính advance làm việc bằng đơn vị đang hiển thị, không quy đổi — nên
-   chỗ này chỉ định dạng, không nhân tỷ giá như fmtMoney. Số lẻ theo cùng
-   bảng CUR_DEC để hai nơi không hiện cùng một số theo hai kiểu. */
-function acFmt(n){
-  const c = CURRENCIES.indexOf(cur)>=0 ? cur : 'USD';
-  const d = CUR_DEC[c];
-  return new Intl.NumberFormat(CUR_LOC[c],
-    {minimumFractionDigits:d, maximumFractionDigits:d}).format(n||0)+' '+c;
-}
+/* Bộ tính advance nay làm việc bằng USD từ đầu tới cuối (xem advTien), nên
+   chỗ hiển thị của nó phải QUY ĐỔI y như mọi chỗ khác. Trước đây hàm này
+   chỉ định dạng rồi dán nhãn `cur` — cùng một con số, đổi thanh tiền tệ là
+   đổi mỗi cái nhãn. Dùng thẳng fmtMoney để hai nơi không bao giờ hiện cùng
+   một số theo hai kiểu. */
+function acFmt(n){ return fmtMoney(n, false); }
 function roiBand(pct){
   if(pct>=35) return {cls:'good', col:'var(--green)', bg:'#e8f5ee', fg:'#1f6b41'};
   if(pct>=25) return {cls:'warn', col:'#dd8a12',     bg:'#fdf3e0', fg:'#8a5606'};
   return          {cls:'bad',  col:'var(--brand)',  bg:'var(--brand-tint)', fg:'var(--brand-dark)'};
 }
 function advModel(advOverride){
-  const avg=advNum('ac_avg'), share=advNum('ac_share')/100, pass=advNum('ac_pass')/100;
-  const adv=(advOverride==null?advNum('ac_adv'):advOverride);
-  const mkt=advNum('ac_mkt'), prod=advNum('ac_prod');
+  /* bốn ô tiền đọc ra USD; mọi ô còn lại là phần trăm hoặc số tháng */
+  const avg=advTien('ac_avg'), share=advNum('ac_share')/100, pass=advNum('ac_pass')/100;
+  const adv=(advOverride==null?advTien('ac_adv'):advOverride);
+  const mkt=advTien('ac_mkt'), prod=advTien('ac_prod');
   const term=advNum('ac_term'), excl=advNum('ac_excl'), fee=advNum('ac_fee')/100;
   const totalAdv = adv + mkt + prod;
   const net    = avg*(1-share);      /* phần HAUSTEK giữ — phí hợp đồng */
@@ -8040,22 +8056,27 @@ function advCalc(){
 /* Chọn một gợi ý rồi đổ toàn bộ xuống phần Chia sẻ publishing */
 function advApply(mult){
   /* tính trước, ghi DOM sau, vẽ lại sau cùng — tránh vẽ lại giữa chừng làm nút bị bấm hai lần */
-  const m = advModel(mult!=null ? advNum('ac_avg')*mult : null);
+  /* m.* nay là USD (xem advTien). Mọi ô người ta nhìn và gõ thì lại nằm ở
+     ĐƠN VỊ ĐANG HIỂN THỊ, nên viết ngược ra phải fx() — đúng một lần, không
+     hơn. Thiếu chỗ này là bộ tính đổ số USD vào một ô mà lượt lưu sau đó
+     sẽ chia tỷ giá lần nữa. */
+  const m = advModel(mult!=null ? advTien('ac_avg')*mult : null);
+  const raO = v => Math.round(fx(v));
   if(mult!=null){
     const el=document.getElementById('ac_adv');
-    if(el) el.value = Math.round(m.adv);
+    if(el) el.value = raO(m.adv);
   }
   const set=(id,val)=>{ const e=document.getElementById('of_'+id); if(e) e.value=val; };
-  set('advance',    Math.round(m.adv));
-  set('mktBudget',  Math.round(m.mkt));
-  set('prodFund',   Math.round(m.prod));
+  set('advance',    raO(m.adv));
+  set('mktBudget',  raO(m.mkt));
+  set('prodFund',   raO(m.prod));
   set('recoupRate', advNum('ac_rate'));
   /* Ô này kiểu 'num'. Infinity không phải một số viết được vào đó, và
      "Infinity" là chữ. Để trống, rồi câu chữ ở advDetails nói rõ vì sao. */
   set('monthsRecoup', (isFinite(m.months) && m.months) ? m.months.toFixed(1) : '');
   set('totalROI',   (m.roi*100).toFixed(0)+'%');
   set('roiAnnual',  (m.roiY*100).toFixed(1)+'%');
-  set('roiEarnings', Math.round(m.total));
+  set('roiEarnings', acFmt(m.total));   /* ô kiểu 'text': ghi kèm đơn vị, đừng để số trần không ai biết tiền gì */
   const capPct = advNum('ac_cap')/100, cap = m.avg*12*(1+capPct);
   set('triggers', L([
     'Trigger 1: advance = doanh thu tháng × 15 = '+acFmt(m.avg*15)+', cộng thêm 24 tháng độc quyền và 24 tháng licensing.\n'+
