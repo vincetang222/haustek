@@ -2,8 +2,8 @@
 
 Chủ dự án hỏi "phí tạm ứng có cần không". Chúng tôi đo lại, và **con số
 quyết định trong `advanceCalc` đang sai gần hai lần** — theo hướng làm phí
-trông rẻ hơn thực tế. Mục 1 là chỗ đó. Mục 2–4 là việc CRM đã làm xong.
-Mục 5 trở đi là việc của các bạn.
+trông rẻ hơn thực tế. Mục 1 là chỗ đó. Mục 2–5 là việc CRM đã làm xong.
+Mục 6 trở đi là việc của các bạn.
 
 ---
 
@@ -136,13 +136,69 @@ vốn. Phí 12% trọn gói nằm giữa biên Stem công bố (5–25%). **Giá
 Phía CRM tạm thời chỉ làm được một việc: ô ấy nay tự khai thẳng rằng portal
 chưa tôn trọng số này, và bài kiểm ghim câu cảnh báo để không ai lặng lẽ gỡ.
 
-**Việc của các bạn:** thêm `flowThrough` vào `terms` của `proposeAdvance`
-và cho `recoup` tôn trọng nó. Mức bao nhiêu là quyết định kinh doanh —
-chúng tôi đề nghị đưa chủ dự án chọn trong khoảng 30–40%.
+**Chủ dự án đã chốt: mức flow-through đi theo TỪNG thương vụ, không phải
+một tỷ lệ cố định.** Nên đừng dựng một hằng số, kể cả một hằng số cấu hình
+được — mức phải đọc từ gói của deal ấy.
+
+Xem tiếp mục 4: chúng tôi đã gửi trường ấy đi rồi, và chốt chặn của các
+bạn đang chặn nó (đúng như nó nên làm).
 
 ---
 
-## 4 · 13 deal nằm im, màn hình không nói gì — **đã sửa phía CRM**
+## 4 · `flowThroughPct` đã nằm trong gói — và chốt chặn của các bạn đang chặn nó
+
+CRM nay gửi ba trường mới trong `terms`. Chúng tôi đo phản ứng của portal
+trước khi gửi, trên đúng `haustek-core.js` của nhánh `crm-cau-noi-v2`:
+
+| trường gửi | `thuongVu.trinh` phản ứng |
+|---|---|
+| `flowThroughPct: 0` | qua |
+| `flowThroughPct: 30` | **chặn** — "Thương vụ mang điều khoản tiền mà bước này chưa nối chân: flowThroughPct 30%" |
+| `labelArtistRatePct: 70` | **chặn** — cùng câu ấy |
+| `rightsHolder: "label"` | qua (không đuôi `USD`/`Pct` nên chốt chặn tiền không đụng tới) |
+
+**Chặn như vậy là đúng, và chúng tôi gửi trường ấy đi vì nó chặn.** So với
+hiện trạng — A&R gõ 30%, gói bỏ trường đi, sổ cái vét 100%, đối tác nhận 0
+đồng suốt trung vị 16 tháng — thì một câu báo ngay lúc trình là bước tiến,
+không phải bước lùi. Lời hứa vẫn vỡ, nhưng vỡ trước mặt người trình chứ
+không vỡ sau lưng đối tác.
+
+Nên **đừng vội thêm `flowThroughPct` vào `TV_CHUYEN_DUOC` để cho nó đi
+lọt.** Mở cổng mà `recoup` chưa tôn trọng thì đúng bằng quay lại lời hứa
+vỡ trong im lặng, chỉ khác là lần này có một trường trong sổ làm chứng
+rằng ai cũng biết. Hai việc phải đi cùng một lượt:
+
+```js
+/* 1. cho qua cổng */
+const TV_CHUYEN_DUOC = [..., "flowThroughPct", "labelArtistRatePct"];
+
+/* 2. và cùng lượt ấy, sổ cái tôn trọng nó — mức của CHÍNH deal ấy */
+const ft = clamp01(tvPhanTram(t.flowThroughPct));       /* 30 → 0,30 */
+const recoup = cents(Math.min(bal, gross * (1 - ft)));
+```
+
+`ft` phải theo từng khoản ứng, nên nó cần chỗ nằm trong `state.advances[pk]`
+(hoặc trong `pr.terms` của đề xuất rồi `applyApproved` chép sang), chứ không
+phải một khoá cấu hình chung.
+
+**Một chỗ xin các bạn chặn hộ:** `flowThroughPct = 100` thì `recoup` bằng 0
+và khoản ứng **không bao giờ thu hồi xong**. CRM đã tách được hai trạng thái
+ấy (trước đây cả hai cùng ra số 0, đọc xuôi thành "thu hồi xong ngay"), và
+gói gửi `monthsToRecoup: null` kèm `neverRecoups: true` thay vì để
+`JSON.stringify(Infinity)` lặng lẽ thành `null`. Nhưng người gõ số vẫn là
+người bên CRM — xin `proposeAdvance` từ chối thẳng mức làm `recoup` về 0,
+đừng nhận rồi treo vĩnh viễn.
+
+**Còn `labelArtistRatePct`:** CRM chỉ gửi khi `rightsHolder === "label"`
+(tức Haustek trả nghệ sĩ thay label). Lý do đo được: mặc định ô ấy là 70,
+mà với nghệ sĩ độc lập và label tự trả thì nó không vào công thức — gửi vô
+điều kiện là **chặn đứng mọi deal** bằng một trường vô nghĩa với phần lớn
+trong số đó. Nếu các bạn nhận trường này, xin giữ đúng giao ước ấy: vắng
+mặt nghĩa là "không áp dụng", không phải "bằng 0".
+
+---
+
+## 5 · 13 deal nằm im, màn hình không nói gì — **đã sửa phía CRM**
 
 Đo trên dữ liệu thật của CRM: **13 deal đang ở phần portal cầm lái, 158.600
 USD, 0 deal từng nhận một dòng trạng thái nào về.** Trang Bàn giao không có
@@ -164,21 +220,21 @@ giờ** kèm lý do đọc được (thiếu khoá / sai phiên bản / JSON h�
 
 ---
 
-## 5 · Việc của các bạn, xếp theo thứ tự
+## 6 · Việc của các bạn, xếp theo thứ tự
 
 | | Việc | Vì sao |
 |---|---|---|
 | 1 | **Hợp nhất một nhánh portal duy nhất** — đưa `thuongVu` và `phat-goi-1-1.patch` về cùng một cây | Mọi việc dưới đây vô nghĩa cho tới khi xong. Hiện có nhánh CÓ màn hình mà lõi cũ, và nhánh có lõi mới mà không có màn hình. |
 | 2 | Dựng màn Thương vụ thật | 13 deal đang chờ một màn hình chưa tồn tại |
 | 3 | Sửa `roi` và `roiFee` (mục 1) | Số dùng để định giá đang sai gần 2× và chạy ngược |
-| 4 | `flowThrough` vào `terms` và vào `recoup` (mục 3) | Đang có một lời hứa hệ không giữ |
+| 4 | `flowThroughPct` vào `TV_CHUYEN_DUOC` **và** vào `recoup`, cùng một lượt (mục 4) | Chủ dự án đã chốt: mức theo từng deal. Trường đã nằm trong gói và đang bị chốt chặn của các bạn chặn — mở cổng mà chưa nối sổ cái là quay lại đúng lời hứa vỡ trong im lặng |
 | 5 | `advances.set` từ chối khoản sinh từ đề xuất đã duyệt | Các bạn đã nêu; xin làm sớm |
 | 6 | `maxAdvance` trừ dư nợ đang có | Hiện một bên còn nợ vẫn được tính trần như chưa vay |
-| 7 | Gói 1.2 cho bảng theo dõi thu hồi | Chi tiết ở mục 6 |
+| 7 | Gói 1.2 cho bảng theo dõi thu hồi | Chi tiết ở mục 7 |
 
 ---
 
-## 6 · Gói 1.2 — ba chỗ cần các bạn quyết trước khi dựng
+## 7 · Gói 1.2 — ba chỗ cần các bạn quyết trước khi dựng
 
 Chúng tôi đo và thấy ba chỗ **không làm được như đề nghị ban đầu**:
 
@@ -213,18 +269,91 @@ thật. Nếu muốn có cảnh báo ấy thì việc trước là nhập hạn 
 
 ---
 
-## 7 · Hai câu chủ dự án chưa chốt
+## 8 · Hai câu chủ dự án chưa chốt
 
 Ghi lại để các bạn biết vì sao hai việc chưa chạy:
 
 1. **`feePct` 12% hay khác.** Sau khi sửa `roiFee`, con số thật là ~17%/năm
    chứ không phải 8,6%. Chủ dự án đang cân nhắc với dữ kiện mới này.
-2. **Mốc bắt đầu áp phí mới.** `feeOf` hiện đọc `fromKey` = kỳ chưa chốt
-   đầu tiên, tức hồi tố về trước ngày duyệt. Một điều chúng tôi phải đính
-   chính so với cách các bạn mô tả: kỳ **đã chốt** được bảo vệ tuyệt đối —
-   đo được 2026-03/04/05 đổi đúng 0 USD sau khi duyệt. Chỗ hồi tố chỉ là
-   các kỳ chưa chốt. Nhỏ hơn nó nghe, nhưng vẫn cần một quyết định.
+2. **Mốc bắt đầu áp phí mới.** Chỗ này chúng tôi đo kỹ lại và thấy nó lớn
+   hơn một câu hỏi chính sách: hệ đang không có mốc nào cả, và bản ghi hợp
+   đồng mang hai mốc lệch nhau 3 tháng — xem mục 9.
 
-Và một chỗ đáng lưu ý khi chốt câu 2: `feeOf` nằm **trong** `splitRec`, nên
-nâng phí của một label là hạ luôn phần của **mọi nghệ sĩ thuộc label ấy** —
-những người không ký gì, không ai đề xuất gì cho họ, và không ai hỏi họ.
+Và một câu **đã chốt**: mức flow-through đi theo **từng thương vụ**, không
+phải một tỷ lệ cố định. Chi tiết và phần CRM đã làm nằm ở mục 4.
+
+---
+
+## 9 · "Mốc bắt đầu áp phí" — hiện không phải một mốc nào cả
+
+Chủ dự án hỏi mốc ấy là gì. Đọc mã rồi đo, câu trả lời là: hệ **chưa có**
+mốc nào, nó lấy tạm một thứ không ai chọn.
+
+```js
+const nextOpen = PERIODS.find(p => !state.approved[p.k]);
+const from = nextOpen ? nextOpen.k : PERIODS[P - 1].k;
+```
+
+`fromKey` = **kỳ chưa chốt sổ đầu tiên**. Không phải ngày ký, không phải
+ngày duyệt, không phải một kỳ hai bên thoả thuận — mà là "kỳ nào tình cờ
+còn mở lúc bấm duyệt".
+
+**Đo được, trên dữ liệu mẫu đang chạy** (ASOF 2026-09-17, đã chốt tới
+2026-05, còn mở 2026-06 và 2026-07). Duyệt một hợp đồng phí 30% cho A:30:
+
+```json
+{"from":"2026-09-01", "fromKey":"2026-06", "to":"2027-08-31", "months":12}
+```
+
+Ba chỗ mâu thuẫn trong **một bản ghi**:
+
+1. `from` = 2026-09-01 (thứ người ta đọc là ngày bắt đầu) và `fromKey` =
+   2026-06 (thứ `feeOf` thật sự dùng) **cách nhau 3 tháng**. Màn hình nói
+   một đằng, tiền chạy một nẻo.
+2. `to` = `from` + 12 tháng. Hợp đồng 12 tháng, nhưng thu phí từ 2026-06
+   tới 2027-08 là **15 tháng phí**.
+3. Không cái nào là ngày duyệt (2026-09-17).
+
+**Và mốc ấy trôi theo việc kế toán chốt sổ nhanh hay chậm.** Cùng một hợp
+đồng, cùng một ngày, cùng 30%, cùng một nghệ sĩ — chỉ khác ở chỗ kế toán
+đã kịp chốt 2026-06 trước khi giám đốc bấm duyệt hay chưa:
+
+| | `feeFrom` | nghệ sĩ mất |
+|---|---|---|
+| kế toán chưa chốt 2026-06 | 2026-06 | **543,82 USD** |
+| kế toán đã chốt 2026-06 | 2026-07 | **310,83 USD** |
+
+Chênh **232,99 USD**, quyết định bởi lịch làm việc của kế toán, không phải
+bởi điều gì hai bên ký.
+
+**Chỗ chúng tôi đính chính cho các bạn:** kỳ **đã chốt** được bảo vệ tuyệt
+đối — 10 kỳ từ 2025-08 tới 2026-05 đổi đúng **0,00 USD** sau khi duyệt, và
+**0 bên khác** bị đổi tiền. Hồi tố chỉ chạm các kỳ chưa chốt. Nhỏ hơn nó
+nghe, nhưng "nhỏ" không phải "đúng".
+
+### Ba chính sách để chủ dự án chọn
+
+| | mốc | trên ví dụ trên | ưu / nhược |
+|---|---|---|---|
+| **A** | kỳ duyệt (`2026-09`) | nghệ sĩ mất 0 USD ở kỳ cũ | không hồi tố chút nào; nhưng deal duyệt chậm thì Haustek mất phí những tháng đã làm việc |
+| **B** | kỳ hai bên ghi trong hợp đồng | tuỳ điều khoản | đúng bản chất thương mại nhất; cần một ô nhập và một chỗ lưu |
+| **C** | kỳ chưa chốt đầu tiên (**hiện tại**) | 543,82 hoặc 310,83, tuỳ kế toán | không ai chọn, không ai giải thích được cho đối tác |
+
+Chúng tôi đề nghị **B, với A làm mặc định** khi hợp đồng không ghi gì: mốc
+là một điều khoản, nên nó phải nằm trong `pr.terms` và đi qua chuỗi duyệt
+như mọi điều khoản khác, chứ không suy ra từ trạng thái sổ sách. Cụ thể:
+thêm `feeFromKey` vào `terms` của `proposeContract`, `applyApproved` chép
+thẳng sang `fromKey`, và khi vắng thì lấy kỳ của ngày duyệt — **không** lấy
+`PERIODS.find(p => !state.approved[p.k])`.
+
+Việc trước mắt, dù chọn chính sách nào: **cho `from` và `fromKey` nói cùng
+một chuyện.** Hiện một bản ghi mang hai mốc khác nhau 3 tháng, và người
+đọc không có cách nào biết cái nào là thật.
+
+### Và một chỗ nữa, xin cân nhắc trước khi chốt
+
+`feeOf` nằm **trong** `splitRec`. Nên nâng phí của một label là hạ luôn
+phần của **mọi nghệ sĩ thuộc label ấy** — những người không ký gì, không ai
+đề xuất gì cho họ, và không ai hỏi họ. Hồi tố một điều khoản của A sang
+tiền của B là chuyện khác hẳn hồi tố lên chính A; nếu chọn B hay C thì đây
+là chỗ cần một quyết định riêng, không đi kèm.
