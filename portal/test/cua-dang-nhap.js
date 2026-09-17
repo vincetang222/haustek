@@ -28,7 +28,7 @@ const oCua = p => p.evaluate(() => !!document.querySelector(".cua"));
 const oCong = p => p.evaluate(() => !!document.querySelector(".app .nav"));
 
 (async () => {
-  const b = await chromium.launch({ executablePath: "/opt/pw-browsers/chromium-1194/chrome-linux/chrome" });
+  const b = await chromium.launch({ executablePath: process.env.CHROMIUM || undefined });
 
   for (const [ten, tep, dung, sai] of [
     ["nội bộ", "intranet.html", "mgmt@haustek-group.com", "khong-ai@haustek-group.com"],

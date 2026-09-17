@@ -27,7 +27,7 @@ const doiNguoi = (p, id) => p.evaluate(i => { window.HAUSTEK.admin.staff.setMe(i
 const den = async (p, man) => { await p.evaluate(m => { location.hash = '#' + m; }, man); await p.waitForTimeout(700); };
 
 (async () => {
-  const b = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium-1194/chrome-linux/chrome' });
+  const b = await chromium.launch({ executablePath: process.env.CHROMIUM || undefined });
   require('./vao-cua.js').gan(b);   /* vòng 25: mỗi trang mở ra đã có phiên, khỏi qua cửa */
   const ctx = await b.newContext({ viewport: { width: 1500, height: 1100 } });
   const p = await ctx.newPage();

@@ -15,7 +15,7 @@ const TRANG = (process.argv[2] || 'v2/intranet.html,v2/khach.html').split(',');
 const RONG = (process.argv[3] || '390,640,900,1024,1280').split(',').map(Number);
 
 (async () => {
-  const b = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium-1194/chrome-linux/chrome' });
+  const b = await chromium.launch({ executablePath: process.env.CHROMIUM || undefined });
   require('./vao-cua.js').gan(b);   /* vòng 25: mỗi trang mở ra đã có phiên, khỏi qua cửa */
   let hong = 0;
   const bao = (w, tr, m) => { console.log('  ✗ ' + w + 'px ' + tr + ' → ' + m); hong++; };

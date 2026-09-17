@@ -7,7 +7,7 @@ const dungFontThat = require('./font-that.js');
 const B = 'http://127.0.0.1:8099/v2/';
 
 (async () => {
-  const b = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium-1194/chrome-linux/chrome' });
+  const b = await chromium.launch({ executablePath: process.env.CHROMIUM || undefined });
   require('./vao-cua.js').gan(b);   /* vòng 25: mỗi trang mở ra đã có phiên, khỏi qua cửa */
   const ctx = await b.newContext({ viewport: { width: 1500, height: 1100 } });
   const p = await ctx.newPage();
