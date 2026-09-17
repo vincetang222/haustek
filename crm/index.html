@@ -1695,6 +1695,15 @@ vi:{
   role_manager:'Manager', role_ar:'Artist Relations (A/R)', role_lm:'Label Manager (LM)',
   roleGroup1:'Nhóm 1', roleGroup2:'Nhóm 2', roleGroup3:'Nhóm 3',
   dx_hopDong:'Hợp đồng', dx_tamUng:'Tạm ứng', dxBiTra:'bị trả lại',
+  cnTieuDe:'Đường về từ portal', cnGay:'chưa có tin nào về',
+  cnDangCho:'{n} deal đang ở phần portal cầm lái · {tien}',
+  cnDaNhan:'{a}/{b} deal đã nhận trạng thái từ portal · lần cuối {luc}',
+  cnChuaNhan:'Chưa deal nào nhận được trạng thái từ portal. Deal nằm im ở đây KHÔNG có nghĩa là bên kia đang xử lý.',
+  cnViSao:'Vì sao:',
+  cnKhongCoKhoa:'chưa có khoá haustek.portal.contracts.v1 — portal chưa từng ghi gì về.',
+  cnSaiBan:'khoá có nhưng phiên bản {v} CRM không đọc được.',
+  cnThieuDeals:'khoá có nhưng thiếu danh sách deals.',
+  cnHongJson:'khoá có nhưng không phải JSON đọc được.',
   cRole:'Nhóm quyền', cScope:'Phạm vi dữ liệu', cPermission:'Quyền',
   scopeAll:'Toàn bộ hệ thống', scopeOwn:'Chỉ bản ghi của mình',
   pm_viewAll:'Xem mọi khách hàng, lead và cơ hội',
@@ -2005,6 +2014,15 @@ en:{
   role_manager:'Manager', role_ar:'Artist Relations (A/R)', role_lm:'Label Manager (LM)',
   roleGroup1:'Group 1', roleGroup2:'Group 2', roleGroup3:'Group 3',
   dx_hopDong:'Contract', dx_tamUng:'Advance', dxBiTra:'sent back',
+  cnTieuDe:'Return channel from the portal', cnGay:'nothing received yet',
+  cnDangCho:'{n} deals sitting on the portal side · {tien}',
+  cnDaNhan:'{a} of {b} deals have had a status from the portal · last at {luc}',
+  cnChuaNhan:'No deal has had a status back from the portal yet. A deal sitting here does NOT mean the other side is working on it.',
+  cnViSao:'Why:',
+  cnKhongCoKhoa:'the haustek.portal.contracts.v1 key does not exist — the portal has never written anything back.',
+  cnSaiBan:'the key exists but version {v} is not one the CRM reads.',
+  cnThieuDeals:'the key exists but has no deals list.',
+  cnHongJson:'the key exists but is not readable JSON.',
   cRole:'Group', cScope:'Data scope', cPermission:'Permission',
   scopeAll:'Entire system', scopeOwn:'Own records only',
   pm_viewAll:'See every account, lead and opportunity',
@@ -4686,9 +4704,33 @@ VIEWS.leads = function(){
 };
 function setLeadF(f){ state.leadFilter=f; render(); }
 
+/* TRẠNG THÁI CẦU NỐI — vì im lặng là thứ đắt nhất ở đây.
+   Đo trên dữ liệu thật: 13 deal đang ở phần portal cầm lái, 158.600 USD, và
+   KHÔNG deal nào từng nhận một dòng trạng thái nào về. Trên màn hình không có
+   một chữ nào nói điều đó — A&R nhìn vào chỉ thấy deal nằm im và tưởng bên kia
+   đang xử lý. Dải này nói thẳng: gói xuất lúc nào, nhận tin về lần cuối lúc
+   nào, và nếu chưa bao giờ thì nói CHƯA BAO GIỜ kèm lý do đọc được. */
+function cauNoiTrangThai(){
+  const cho = DB.opps.filter(o=>PORTAL_OWNED.includes(o.stage));
+  const daNhan = cho.filter(o=>o.contract).length;
+  let j=null, loi='';
+  try {
+    const raw = localStorage.getItem(INBOX_KEY);
+    if(!raw) loi = t('cnKhongCoKhoa');
+    else {
+      const x = JSON.parse(raw);
+      if(!x || (x.v!==INBOX_VERSION && x.v!==INBOX_VERSION_11)) loi = t('cnSaiBan',{v:esc(String(x&&x.v||'?'))});
+      else if(!Array.isArray(x.deals)) loi = t('cnThieuDeals');
+      else j = x;
+    }
+  } catch(e){ loi = t('cnHongJson'); }
+  const lucCuoi = Object.values(INBOX_SEEN).sort().pop() || null;
+  return {cho:cho.length, tien:cho.reduce((a,o)=>a+(o.amount||0),0), daNhan, j, loi, lucCuoi};
+}
 VIEWS.handoff = function(){
   const rows = handoffRows();
   const unbound = rows.filter(r=>!r.portalPartyKey).length;
+  const cn = cauNoiTrangThai();
   const cells = (r)=>[
     {c:'t-name trunc', h:esc(r.dealName)},
     {c:'trunc',        h:esc(r.account)+' <span class="pill">'+esc(t('ty_'+(r.accountType||'artist')))+'</span>'},
@@ -4711,8 +4753,24 @@ VIEWS.handoff = function(){
     rows, cells, (r)=>openBind(r.dealId))
     : emptyBox(t('hoEmptyT'), t('hoEmptyS'));
 
+  /* Deal đang chờ mà CHƯA deal nào có tin về = đường về đang gãy. Nói thành
+     lời, đừng để người dùng tự suy ra từ một bảng không đổi. */
+  const gay = cn.cho > 0 && cn.daNhan === 0;
+  const dai =
+    '<div class="card" style="margin-bottom:16px' + (gay?';border-color:var(--brand)':'') + '">'+
+      '<div class="card-h"><span class="card-t">'+esc(t('cnTieuDe'))+'</span>'+
+        (gay ? '<span class="badge"><span class="dot" style="background:var(--brand)"></span>'+esc(t('cnGay'))+'</span>' : '')+
+      '</div>'+
+      '<div class="card-b"><div class="unote" style="margin:0">'+
+        esc(t('cnDangCho',{n:cn.cho, tien:money(cn.tien)}))+'<br>'+
+        esc(cn.daNhan ? t('cnDaNhan',{a:cn.daNhan, b:cn.cho, luc:cn.lucCuoi||'—'})
+                      : t('cnChuaNhan'))+
+        (cn.loi ? '<br><b>'+esc(t('cnViSao'))+'</b> '+esc(cn.loi) : '')+
+      '</div></div></div>';
+
   return phead(t('handoff'), rows.length+' '+t('hoSigned'),
       '<button class="btn" onclick="handoffExport()">'+esc(t('hoExport'))+'</button>')+
+    dai+
     '<div class="card" style="margin-bottom:16px"><div class="card-b">'+
       '<div class="unote" style="margin:0">'+esc(t('hoNote1'))+'<br>'+esc(t('hoNote2'))+
       '<br><b>'+esc(HANDOFF_KEY)+'</b> · '+esc(t('hoBoundN',{a:rows.length-unbound, b:rows.length}))+
@@ -6948,8 +7006,25 @@ const ADV_F = [
         'Pulled automatically from Monthly income in Deal details (YouTube + Audio).']},
   {id:'ac_share',l:['Tỷ lệ chia cho nghệ sĩ','Artist share'], k:'pct', d:'70'},
   {id:'ac_pass', l:['Pass through','Pass through'], k:'pct', d:'0',
-   tip:['Phần doanh thu nghệ sĩ vẫn nhận trong thời gian thu hồi vốn, dùng khi nghệ sĩ không muốn dồn 100% doanh thu vào recoupment.',
-        'The share the artist still receives during recoupment, used when they do not want 100% of revenue going to recoupment.']},
+   tip:['Phần doanh thu nghệ sĩ vẫn nhận trong thời gian thu hồi vốn. CẢNH BÁO: sổ cái portal hiện thu hồi 100% phần của bên (recoup = min(dư nợ, thu nhập kỳ)), và gói bàn giao chưa mang trường này — nên con số bạn gõ ở đây CHƯA được bên kia tôn trọng. Đừng hứa với đối tác cho tới khi portal áp.',
+        'The share the artist still receives during recoupment. WARNING: the portal ledger currently recoups 100% of the party share, and the handoff payload does not carry this field yet — what you type here is NOT yet honoured downstream. Do not promise it to the partner until the portal implements it.']},
+  /* BÊN CẤP QUYỀN LÀ AI — quyết định thu hồi lấy được từ đâu.
+     Portal chia ba lớp: gộp → phí Haustek → net, rồi net mới chia tiếp giữa
+     LABEL và NGHỆ SĨ CỦA LABEL (splitRec, portal dòng 1227-1228). Thu hồi chỉ
+     lấy từ phần bên vay THẬT SỰ nhận. Nghệ sĩ độc lập nhận trọn net nên hai
+     con số là một; label KHÔNG tự trả chỉ nhận net × (1 − tỷ lệ nghệ sĩ), nên
+     cùng một khoản ứng sẽ thu hồi chậm hơn nhiều lần.
+     Thiếu hai ô này, CRM hứa một số mà portal ra số khác — đo được quá tay
+     tới 3,4 lần trên deal label. */
+  {id:'ac_ben', l:['Bên cấp quyền','Rights holder'], k:'chon', d:'artist',
+   chon:[['artist',['Nghệ sĩ độc lập','Independent artist']],
+         ['label_tutra',['Label · tự trả nghệ sĩ','Label · pays its own artists']],
+         ['label',['Label · Haustek trả nghệ sĩ','Label · Haustek pays the artists']]],
+   tip:['Nghệ sĩ độc lập và label tự trả nhận trọn phần sau phí, nên thu hồi lấy từ toàn bộ phần ấy. Label để Haustek trả nghệ sĩ thì chỉ nhận phần label giữ lại — thu hồi chỉ lấy được từ phần đó.',
+        'An independent artist, or a label that pays its own artists, receives the whole post-fee share, so recoupment draws on all of it. A label whose artists Haustek pays keeps only the label cut — recoupment can only draw on that.']},
+  {id:'ac_lrate',l:['Tỷ lệ nghệ sĩ của label','Label\u2019s artist rate'], k:'pct', d:'70',
+   tip:['Phần net mà nghệ sĩ THUỘC LABEL được hưởng. Chỉ dùng khi Haustek trả nghệ sĩ thay label. Phần còn lại mới là phần label giữ, và thu hồi chỉ lấy từ đó.',
+        'The share of net that the label\u2019s own artists receive. Only used when Haustek pays them. What is left is the label cut, and recoupment draws only on that.']},
   {id:'ac_adv',  l:['Advance ban đầu','Initial advance'], k:'money', d:'0'},
   {id:'ac_mkt',  l:['Marketing fund','Marketing fund'], k:'money', d:'0',
    tip:['Cộng vào tổng advance và tính vào ROI.','Added to total advance and included in ROI.']},
@@ -6974,11 +7049,17 @@ function advInput(f){
   const on = ' oninput="advCalc()" onchange="advCalc()"';
   const ro = f.ro ? ' readonly style="background:#f4f5f7;color:var(--ink-2)"' : '';
   let ctrl;
-  if(f.k==='pct')        ctrl = '<div class="pctin"><input class="fin" type="number" id="'+f.id+'" value="'+f.d+'"'+ro+on+'></div>';
+  if(f.k==='chon')       ctrl = '<select class="fin" id="'+f.id+'"'+on+'>'+
+                                  f.chon.map(c=>'<option value="'+esc(c[0])+'"'+(c[0]===f.d?' selected':'')+'>'+esc(L(c[1]))+'</option>').join('')+
+                                '</select>';
+  else if(f.k==='pct')   ctrl = '<div class="pctin"><input class="fin" type="number" id="'+f.id+'" value="'+f.d+'"'+ro+on+'></div>';
   else if(f.k==='money') ctrl = '<div class="curin" data-cur="'+esc(cur)+'"><input class="fin" type="number" id="'+f.id+'" value="'+f.d+'"'+ro+on+'></div>';
   else                   ctrl = '<input class="fin" type="number" id="'+f.id+'" value="'+f.d+'"'+ro+on+'>';
   return frow(L(f.l), ctrl, {tip: f.tip ? L(f.tip) : 0});
 }
+/* Đọc ô chọn. advNum() parseFloat nên nó trả 0 cho mọi ô không phải số —
+   dùng nhầm là im lặng ra 'artist' cho mọi deal. */
+function advVal(id){ const e=document.getElementById(id); return e ? e.value : ''; }
 function advanceHTML(){
   const half = Math.ceil(ADV_F.length/2);
   return '<div class="fgrid">'+
@@ -7335,9 +7416,18 @@ function advModel(advOverride){
   const mkt=advNum('ac_mkt'), prod=advNum('ac_prod');
   const term=advNum('ac_term'), excl=advNum('ac_excl'), fee=advNum('ac_fee')/100;
   const totalAdv = adv + mkt + prod;
-  const net    = avg*(1-share);
+  const net    = avg*(1-share);      /* phần HAUSTEK giữ — phí hợp đồng */
   const pt     = (avg-net)*pass;
-  const recoup = avg-net-pt;
+  /* THU HỒI LẤY TỪ PHẦN BÊN VAY THẬT SỰ NHẬN, không phải toàn bộ phần sau phí.
+     Portal: net chia tiếp giữa label và nghệ sĩ của label (splitRec), và
+     earnedByParty của một label KHÔNG tự trả chỉ là phần label giữ lại.
+     Bản trước dùng luôn (avg − net) cho mọi loại bên, nên với label để Haustek
+     trả nghệ sĩ thì CRM hứa một con số mà portal không bao giờ ra. */
+  const ben    = advVal('ac_ben');
+  const lrate  = advNum('ac_lrate')/100;
+  const heSoBen = (ben === 'label') ? Math.max(0, 1 - lrate) : 1;
+  const phanBen = (avg - net) * heSoBen;      /* phần bên vay thật sự nhận mỗi tháng */
+  const recoup = phanBen * (1 - pass);
   const bal1   = -totalAdv+recoup;
   const months = recoup>0 ? totalAdv/recoup : 0;
   const total  = net*term;
@@ -7345,7 +7435,8 @@ function advModel(advOverride){
   const roiY   = term>0 ? roi/term*12 : 0;
   const finder = fee*(1-share)*avg*term;
   const roiNet = totalAdv>0 ? (total-finder)/totalAdv : 0;
-  return {avg,share,pass,adv,mkt,prod,totalAdv,term,excl,fee,net,pt,recoup,bal1,months,total,roi,roiY,finder,roiNet};
+  return {avg,share,pass,adv,mkt,prod,totalAdv,term,excl,fee,net,pt,recoup,bal1,months,total,roi,roiY,finder,roiNet,
+          ben,lrate,heSoBen,phanBen};
 }
 /* ===================== MÔ HÌNH TÀI CHÍNH ĐA NĂM =====================
    Bảng ROI cũ ("Catalog ROI.") trả lời được một câu: toàn kỳ lời bao nhiêu lần.

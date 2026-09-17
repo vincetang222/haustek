@@ -351,6 +351,43 @@ try {
   F("gói 1.0 vẫn tra bảng INBOX_STAGE như cũ", r10.stage === "won");
   F("gói 1.0 không có đề xuất nào thì không hiện huy hiệu lệch", r10.lech === null);
 
+  /* ---------- ĐƯỜNG VỀ GÃY THÌ PHẢI NÓI RA ----------
+     Đo trên dữ liệu thật: 13 deal ở phần portal cầm lái, 0 deal từng nhận
+     trạng thái nào về, và màn hình không có một chữ nào nói điều đó. A&R
+     nhìn vào chỉ thấy deal nằm im và tưởng bên kia đang xử lý. */
+  const daiRong = await crm.evaluate(() => {
+    try { localStorage.removeItem("haustek.portal.contracts.v1"); } catch (e) {}
+    INBOX_SEEN = {};
+    DB.opps.forEach(o => { delete o.contract; });
+    go("handoff");
+    const el = document.querySelector("#view");
+    return { html: el ? el.textContent : "", cn: cauNoiTrangThai() };
+  });
+  await crm.waitForTimeout(150);
+  F("có deal đang chờ portal để kiểm", daiRong.cn.cho > 0, "cho=" + daiRong.cn.cho);
+  F("chưa tin nào về thì màn hình NÓI RA, không im",
+    /Chưa deal nào nhận được trạng thái|No deal has had a status/i.test(daiRong.html));
+  F("và nói rõ VÌ SAO — thiếu khoá, chứ không phải 'đang xử lý'",
+    /chưa có khoá|does not exist/i.test(daiRong.html), daiRong.cn.loi);
+  F("dải cảnh báo nói thẳng nằm im KHÔNG nghĩa là bên kia đang làm",
+    /KHÔNG có nghĩa là bên kia đang xử lý|does NOT mean the other side/i.test(daiRong.html));
+
+  const daiSai = await crm.evaluate(() => {
+    localStorage.setItem("haustek.portal.contracts.v1", JSON.stringify({ v: "9.9.9", deals: [] }));
+    go("handoff");
+    return document.querySelector("#view").textContent;
+  });
+  F("khoá sai phiên bản thì nói đúng lý do ấy",
+    /phiên bản 9\.9\.9|version 9\.9\.9/i.test(daiSai), daiSai.slice(0, 80));
+
+  const daiHong = await crm.evaluate(() => {
+    localStorage.setItem("haustek.portal.contracts.v1", "{khong-phai-json");
+    go("handoff");
+    return document.querySelector("#view").textContent;
+  });
+  F("khoá hỏng JSON thì nói đúng lý do ấy",
+    /không phải JSON|not readable JSON/i.test(daiHong), daiHong.slice(0, 80));
+
   /* CRM KHÔNG ĐƯỢC DỰNG SẴN LỜI GỌI GHI SỔ CHO NGƯỜI TA CHÉP.
      Bản trước in ra hai chuỗi để người vận hành dán sang portal:
          A.rates.add("L:38", 0.7, …)
@@ -376,5 +413,5 @@ try {
 } finally {
   srv.close();
 }
-console.log(FAILED ? "\n" + FAILED + " phép kiểm HỎNG" : "\n45 đạt · 0 hỏng");
+console.log(FAILED ? "\n" + FAILED + " phép kiểm HỎNG" : "\n51 đạt · 0 hỏng");
 process.exit(FAILED ? 1 : 0);
