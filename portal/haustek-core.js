@@ -2530,7 +2530,10 @@ const TAI_SAN = [
   { id: "ticket",         vi: "Ticket hỗ trợ",     en: "Support tickets", man: "ho-tro", dem: () => state.tickets.length, gan: id => state.tickets.filter(t => t.assignee === id).length },
   { id: "khieuNai",       vi: "Khiếu nại bản quyền", en: "Rights claims", man: "quyen", dem: () => state.claims.length, gan: id => state.claims.filter(c => c.assignee === id).length }
 ];
-const MAN_TAT_CA = ["ban-lam-viec", "to-chuc", "ho-tro", "tong-quan", "theo-doi", "nhap-so-lieu", "nap-du-lieu", "khop-isrc", "doi-chieu", "phat-hanh", "chien-dich", "quyen", "muc-tra", "chia-se", "xet-duyet", "roi", "nen-tang", "ke-toan", "chi-tra", "tam-ung", "ty-le", "doi-tac", "danh-muc", "quan-tri", "hieu-suat", "hieu-qua-von", "phieu-giao", "xuat-ban"];
+const MAN_TAT_CA = ["ban-lam-viec", "to-chuc", "ho-tro", "tong-quan", "theo-doi", "nhap-so-lieu", "nap-du-lieu", "khop-isrc", "doi-chieu", "phat-hanh", "chien-dich", "quyen", "muc-tra", "chia-se", "xet-duyet", "roi", "nen-tang", "ke-toan", "chi-tra", "tam-ung", "ty-le", "doi-tac", "danh-muc", "quan-tri", "hieu-suat", "hieu-qua-von", "phieu-giao", "xuat-ban", "thuong-vu"];
+/* THÊM MỘT TRANG VÀO ĐÂY MÀ QUÊN HAI MẢNG man CỦA KHỐI thì dungQuyenTuCay
+   đặt QUYEN_MAN[id] = [] và manCoQuyen chặn MỌI vai: mảng rỗng là truthy
+   nên nó chặn, chỉ id chưa khai ở đây (v undefined) mới lọt cho mọi vai. */
 const VAI_AAA = "bod";      /* vai của hội đồng quản trị: đi qua mọi cửa */
 const NHOM_TAT_CA = ["giamSat", "tong", "tien", "tyGia", "doiSoat", "chotKy", "kiemSo", "doiTac", "doiTacTao", "deXuat", "deXuatTao", "vanHanh", "nhapLieu", "danhMuc", "theoDoi", "chienDich", "chiaSe", "khieuNai", "hoTro", "quanTri", "phatHanhHo", "nhanSu", "toChuc", "von", "hieuSuat", "quyTrinh", "tacQuyen"];
 const doiTacSapHetHan = me => partiesList({ status: "renew", manager: me && me.role === "sales" && !laTruong(me) ? me.id : undefined }).total;
@@ -2575,7 +2578,7 @@ const TO_CHUC = [
   { id: "kinh-doanh", vai: "sales", vi: "Kinh doanh", en: "Sales",
     chucNang: { vi: ["Tìm và ký đối tác mới, chăm sóc tài khoản đang có", "Đề xuất tạm ứng, hợp đồng, gia hạn", "Chiến dịch quảng bá cùng đối tác", "Tạo hồ sơ phát hành thay đối tác mình phụ trách"],
                 en: ["Sign new partners, look after existing accounts", "Propose advances, contracts and renewals", "Promotion campaigns with partners", "Create release files for managed partners"] },
-    man: ["ban-lam-viec", "to-chuc", "ho-tro", "xet-duyet", "roi", "doi-tac", "chien-dich"],
+    man: ["ban-lam-viec", "to-chuc", "ho-tro", "thuong-vu", "xet-duyet", "roi", "doi-tac", "chien-dich"],
     nhom: ["doiTac", "doiTacTao", "deXuat", "deXuatTao", "chienDich", "hoTro", "phatHanhHo", "toChuc", "quyTrinh"],
     taiSan: ["taiKhoanDoiTac", "hopDong", "chienDich"],
     to: [
@@ -2593,7 +2596,7 @@ const TO_CHUC = [
     /* Không có nhap-so-lieu và không có nhóm nhapLieu: tay nào gõ số vào
        thì tay ấy không được bỏ qua sai lệch của chính mình. Vận hành gõ,
        tài chính kiểm ở Đối soát, giám đốc chốt kỳ. */
-    man: ["ban-lam-viec", "to-chuc", "ho-tro", "ke-toan", "chi-tra", "tam-ung", "chia-se", "doi-chieu", "xet-duyet", "roi", "hieu-qua-von", "xuat-ban"],
+    man: ["ban-lam-viec", "to-chuc", "ho-tro", "ke-toan", "chi-tra", "tam-ung", "chia-se", "doi-chieu", "thuong-vu", "xet-duyet", "roi", "hieu-qua-von", "xuat-ban"],
     nhom: ["tien", "tyGia", "doiSoat", "kiemSo", "deXuat", "chiaSe", "hoTro", "toChuc", "von", "quyTrinh", "tacQuyen"],
     taiSan: ["vi", "tamUng", "bangKe"],
     to: [
@@ -4064,12 +4067,21 @@ function contractCalc(partyKey, terms) {
      425/428 bên hiện chưa có bản ghi hợp đồng — thêm vào đó là đổi khuyến
      nghị của gần như mọi đề xuất. Đây là chuyện PHÂN LOẠI, không phải
      chuyện rủi ro. */
-  const coHopDong = !!ct;
+  /* KHỞI TẠO KHÔNG PHẢI HỢP ĐỒNG. parties.create ghi một bản ghi contracts
+     vô điều kiện để giữ ngày ký và người ký, nhưng bản ghi ấy không mang
+     một điều khoản nào. Đọc "có bản ghi" = "đã có hợp đồng" thì một bên
+     vừa tạo ba mươi giây trước bị dán nhãn gia hạn. Đo được trước khi sửa:
+     coHopDong true · viec "gia-han" · hanSuyRa false, với ngày hết hạn do
+     addDays(from, 730) bịa ra. */
+  const coHopDong = !!(ct && !ct.khoiTao);
   /* contractEndOf() SUY RA ngày hết hạn từ hash mã bên khi không có hợp
      đồng thật. Nói ra để giao diện đừng trình một con số suy diễn như một
      dữ kiện: 138 bên đang nằm trong hàng đợi "sắp hết hạn" mà chỉ 2 bên
      có bản ghi hợp đồng. */
-  const hanSuyRa = !(ct && ct.to);
+  /* Bản ghi khởi tạo CÓ ct.to do addDays sinh, nên phải tự khai là suy ra
+     y như bên không có bản ghi nào; nếu không, hộp gắn đối tác sẽ trình
+     một ngày hết hạn bịa như một dữ kiện, ở đúng bước nguy nhất. */
+  const hanSuyRa = !(ct && ct.to && !ct.khoiTao);
   return { partyKey, months, feePct, currentFeePct, monthlyGross, monthlyNet, monthlyKeep, growth, periods: coSo.length, projectedGross, projectedNet: cents(projectedGross * (1 - feePct)),
     retainedNow, retainedNew, delta: cents(retainedNew - retainedNow), marginNew: feePct,
     coHopDong, viec: coHopDong ? "gia-han" : "moi", hanSuyRa,
@@ -4397,7 +4409,12 @@ function applyApproved(pr, by) {
        Hiếm gặp tới giờ vì hai việc ít đi cùng nhau; nhưng luồng nhận
        thương vụ từ CRM thì tạo-rồi-duyệt là đường đi mặc định. */
     const cuHD = lazyState("contracts", {})[pr.partyKey] || {};
-    lazyState("contracts", {})[pr.partyKey] = Object.assign({}, cuHD, { proposalId: pr.id, months: pr.terms.months, feePct: pr.terms.feePct, exclusive: !!pr.terms.exclusive, from: isoDate(start), fromKey: from, to: isoDate(end), approvedAt: nowISO(), by: by || "" });
+    /* GỠ CỜ KHỞI TẠO. Bản ghi này giờ mang điều khoản do giám đốc duyệt,
+       nên nó là hợp đồng thật. Object.assign giữ khoá cũ (cố ý, xem trên),
+       nên phải ghi đè tường minh; undefined thì JSON.stringify bỏ hẳn khoá.
+       Thiếu dòng này thì đúng luồng vòng 35 dựng ra — tạo bên ở hộp gắn,
+       trình, duyệt — là luồng bị lật ngược mục đích của chính cờ ấy. */
+    lazyState("contracts", {})[pr.partyKey] = Object.assign({}, cuHD, { khoiTao: undefined, proposalId: pr.id, months: pr.terms.months, feePct: pr.terms.feePct, exclusive: !!pr.terms.exclusive, from: isoDate(start), fromKey: from, to: isoDate(end), approvedAt: nowISO(), by: by || "" });
     demHopDong(); invalidateRates(); _ebp.clear();
     pr.applied = { contractTo: isoDate(end), feeFrom: from, at: nowISO() };
   }
@@ -4449,13 +4466,19 @@ const TV_CHUYEN_DUOC = ["artistSharePct", "totalAdvanceUSD", "initialAdvanceUSD"
    không bao giờ tra tới; giờ vòng soát bắt cả khoá lạ mang số nên chúng
    phải có chỗ đứng đúng, không thì hai trường chính đáng bị chính hàng rào
    mới chặn. */
-const TV_TEN_DK = { termMonths: 1, exclusivityMonths: 1 };
-const TV_TEN_TIEN = {
+const TV_TEN_DK = {
+  artistSharePct:    { vi: "phần bên cấp quyền nhận", en: "rights holder share" },
+  termMonths:        { vi: "thời hạn hợp đồng",  en: "contract term" },
+  exclusivityMonths: { vi: "thời hạn độc quyền",  en: "exclusivity term" },
   totalAdvanceUSD:   { vi: "tổng tạm ứng",    en: "total advance" },
   initialAdvanceUSD: { vi: "tạm ứng ban đầu", en: "initial advance" },
   marketingFundUSD:  { vi: "quỹ marketing",   en: "marketing fund" },
   findersFeePct:     { vi: "phí môi giới",    en: "finder's fee" }
 };
+/* Chỉ bốn khoá TIỀN mới đi qua bộ đổi nhãn của câu lỗi: câu "chưa nối chân"
+   chỉ liệt kê trường đuôi USD / Pct ngoài TV_CHUYEN_DUOC, nên nới vòng lặp
+   ra cả bảng là mở cửa cho bộ dịch sửa những khúc chữ nó không được đụng. */
+const TV_KHOA_TIEN = ["totalAdvanceUSD", "initialAdvanceUSD", "marketingFundUSD", "findersFeePct"];
 function thuongVuOf() { return lazyState("thuongVu", {}); }
 function thuongVuDayOf() { return lazyState("thuongVuDay", {}); }
 function thuongVuId(now) { return sinhMa("thuongVu", nhomThang(now), ma => tvTra(ma) !== null); }
@@ -4797,23 +4820,56 @@ function tvGanBen(id, khoa, boi) {
 
 /* Trình thương vụ thành đề xuất. ĐÂY là ranh giới quy đổi duy nhất:
    phần trăm của CRM → phân số của Portal, đúng một lần, ở đúng chỗ này. */
-function tvTrinh(id, boi, byRole) {
+/* KHỐI KIỂM CỦA tvTrinh, TÁCH RA ĐỂ TRANG HỎI TRƯỚC KHI BẤM.
+   Trước đây mười lăm cửa này chỉ sống bên trong tvTrinh, nên trang không có
+   cách nào biết một thương vụ trình được hay không ngoài việc bấm rồi đọc
+   lời từ chối. Với mười ba deal một gói, đó là mười ba cú bấm để nhận mười
+   ba lời từ chối.
+
+   chan[] giữ ĐÚNG THỨ TỰ cũ, nên tvTrinh ném chan[0].cau và câu người dùng
+   nhận được không đổi một chữ.
+
+   TỰ NHẬN HAI CHỖ YẾU, không giấu:
+   Một, hàm này khai là chỉ đọc, nhưng tvTra → thuongVuOf() → lazyState GHI
+   state.thuongVu nếu bảng chưa có, và A_deXuatChoCuaBen → proposalsOf()
+   cũng vậy. Bài kiểm "không ghi gì" phải chụp sau khi đã chạm bảng một lần.
+   Hai, contractCalc trên một bên chưa từng tính mất khoảng 2,8 ms, và giờ
+   nó chạy cả ở những đường mà bản cũ đã ném từ sớm. Trang phải gọi soatTrinh
+   một lần cho dòng đang mở, KHÔNG gọi trong vòng vẽ bảng. */
+function tvSoat(id) {
+  let trung0 = null;
+  const chan = [], canh = [], ch = (ma, cau) => chan.push({ ma, cau });
+  const ra = (tv, thang, phi, ung, thu, chanBoi) => ({
+    ok: !chan.length, chan, canh,
+    phi: phi == null || !isFinite(phi) ? null : phi,
+    thang: thang > 0 ? thang : null,
+    /* KHÔNG CÒN PHÍ TẠM ỨNG, nên không có trường thuHoi: thu hồi bằng đúng
+       ung, và một trường luôn bằng một trường khác là một trường mời mọi
+       thẻ in hai lần cùng một con số. */
+    ung: ung || 0,
+    docQuyen: !!(tv && tv.terms && tvSo(tv.terms.exclusivityMonths) > 0),
+    haiDeXuat: (ung || 0) >= 100,
+    coHopDong: thu ? thu.coHopDong : false,
+    viec: thu ? thu.viec : null,
+    hanSuyRa: thu ? thu.hanSuyRa : true,
+    chanBoi: chanBoi || null
+  });
   const tv = tvTra(id);
-  if (!tv) throw new Error("Không có thương vụ " + id);
-  if (tv.trangThai === "daTrinh") throw new Error("Thương vụ đã trình đề xuất " + tv.deXuatId);
+  if (!tv) { ch("khongCo", "Không có thương vụ " + id); return ra(null); }
+  if (tv.trangThai === "daTrinh") ch("daTrinh", "Thương vụ đã trình đề xuất " + tv.deXuatId);
   /* ĐÃ BỎ LÀ TRẠNG THÁI KẾT THÚC. Trước đây chỉ "daTrinh" chặn được, nên một
      deal người ta đã cố ý bỏ — có ghi lý do — chỉ cần một cú bấm Trình là vào
      thẳng hàng chờ giám đốc, mang theo lý do bỏ treo lại mâu thuẫn với trạng
      thái mới. Tệ hơn: bài kiểm tên "Bỏ thương vụ ghi lý do, và không trình
      được nữa" chưa bao giờ gọi trinh(), nên cái tên ấy bảo lãnh cho một bảo
      đảm không tồn tại. Muốn dùng lại thì CRM gửi lại deal. */
-  if (tv.trangThai === "daBo") throw new Error("Thương vụ đã bỏ" + (tv.lyDo ? " (" + tv.lyDo + ")" : "") + ", không trình được nữa. CRM gửi lại deal nếu muốn mở lại.");
-  if (!tv.khoa) throw new Error("Chưa gắn bên cho thương vụ này");
-  if (!tv.terms) throw new Error("Thương vụ không có điều khoản để trình");
+  if (tv.trangThai === "daBo") ch("daBo", "Thương vụ đã bỏ" + (tv.lyDo ? " (" + tv.lyDo + ")" : "") + ", không trình được nữa. Bỏ là quyết định cuối. Mở lại cần một mã deal mới bên CRM.");
+  if (!tv.khoa) ch("chuaGanBen", "Chưa gắn bên cho thương vụ này");
+  if (!tv.terms) { ch("khongCoDk", "Thương vụ không có điều khoản để trình"); return ra(tv); }
 
   const t = tv.terms;
   const thang = Math.round(tvSo(t.termMonths));
-  if (!(thang > 0)) throw new Error("Điều khoản thiếu thời hạn hợp đồng");
+  if (!(thang > 0)) ch("thieuThoiHan", "Điều khoản thiếu thời hạn hợp đồng");
   /* Phí Haustek = phần Haustek giữ = 1 − phần bên cấp quyền nhận. CRM gửi
      artistSharePct (phần NGHỆ SĨ nhận), nên phải lật lại. Lấy nhầm chiều là
      phí 70% thay vì 30%. */
@@ -4831,12 +4887,12 @@ function tvTrinh(id, boi, byRole) {
      bằng đúng tên của nó. */
   const raw = Number(t.artistSharePct);
   if (isFinite(raw) && raw > 0 && raw < 1)
-    throw new Error("artistSharePct = " + raw + " trông như phân số. Trường đuôi Pct phải là phần trăm, nên "
+    ch("phanSo", "artistSharePct = " + raw + " trông như phân số. Trường đuôi Pct phải là phần trăm, nên "
       + raw + " nghĩa là bên cấp quyền nhận " + raw + "%. Nếu ý là "
       + Math.round(raw * 100) + "% thì gửi " + Math.round(raw * 100) + ". Lệch 100 lần — sửa đơn vị bên CRM rồi gửi lại gói.");
   const phanBen = tvPhanTram(t.artistSharePct);
   if (phanBen === null || phanBen <= 0 || phanBen >= 1)
-    throw new Error("artistSharePct không đọc ra tỷ lệ hợp lệ (nhận " + JSON.stringify(t.artistSharePct)
+    ch("phanTramLa", "artistSharePct không đọc ra tỷ lệ hợp lệ (nhận " + JSON.stringify(t.artistSharePct)
       + ", cần một số phần trăm trong khoảng 50–97)");
   const phi = Math.round((1 - phanBen) * 10000) / 10000;
 
@@ -4884,13 +4940,13 @@ function tvTrinh(id, boi, byRole) {
        hay không. */
     if (!isFinite(n) || n < 0) { rac.push(k + " = " + JSON.stringify(v)); continue; }
     if (TV_CHUYEN_DUOC.indexOf(k) >= 0) continue;    /* có đích đến, không chặn */
-    if (n > 0) ketDong.push((TV_TEN_TIEN[k] ? TV_TEN_TIEN[k].vi : k) + " " + (/USD$/.test(k) ? fmt.usd0(n) : n + "%"));
+    if (n > 0) ketDong.push((TV_TEN_DK[k] ? TV_TEN_DK[k].vi : k) + " " + (/USD$/.test(k) ? fmt.usd0(n) : n + "%"));
   }
   if (rac.length)
-    throw new Error("Điều khoản tiền không đọc ra số: " + rac.join(", ")
+    ch("racSo", "Điều khoản tiền không đọc ra số: " + rac.join(", ")
       + ". Sửa bên CRM rồi gửi lại gói, đừng để bước này tự hiểu thành 0.");
   if (ketDong.length)
-    throw new Error("Thương vụ mang điều khoản tiền mà bước này chưa nối chân: " + ketDong.join(" · ")
+    ch("chuaNoiChan", "Thương vụ mang điều khoản tiền mà bước này chưa nối chân: " + ketDong.join(" · ")
       + ". Trình bây giờ là mất các khoản ấy. Chưa có đường nào nhận chúng ở Portal; "
       + "nếu khoản ấy không có thật thì để 0 bên CRM rồi gửi lại gói.");
 
@@ -4904,14 +4960,19 @@ function tvTrinh(id, boi, byRole) {
      Chặn ở đây với câu nói rõ, thay vì để lỗi nổ giữa chừng sau khi đề xuất
      hợp đồng đã được tạo. */
   if (ung > 0 && ung < 100)
-    throw new Error("Khoản tạm ứng " + fmt.usd0(ung) + " nhỏ hơn mức tối thiểu "
+    ch("ungQuaNho", "Khoản tạm ứng " + fmt.usd0(ung) + " nhỏ hơn mức tối thiểu "
       + fmt.usd0(100) + " mà Portal dựng được đề xuất. Để 0 bên CRM nếu khoản ấy không có thật.");
 
-  const thu = contractCalc(tv.khoa, { months: thang, feePct: phi });
+  /* RÀO RIÊNG. Bản cũ ném từ sớm nên không bao giờ chạy tới đây với khoá
+     rỗng hay phí NaN; khối chỉ-đọc này thì chạy tới, nên phải tự rào. */
+  const thu = (tv.khoa && phanBen !== null && phanBen > 0 && phanBen < 1 && thang > 0)
+    ? contractCalc(tv.khoa, { months: thang, feePct: phi }) : null;
+  if (thu) {
   if (thu.months !== thang)
-    throw new Error("Thời hạn " + thang + " tháng nằm ngoài khoảng Portal nhận (" + thu.months + " tháng là mức gần nhất). Sửa điều khoản bên CRM hoặc chốt lại với khách trước khi trình.");
+    ch("thoiHanNgoaiKhoang", "Thời hạn " + thang + " tháng nằm ngoài khoảng Portal nhận (" + thu.months + " tháng là mức gần nhất). Sửa điều khoản bên CRM hoặc chốt lại với đối tác trước khi trình.");
   if (Math.abs(thu.feePct - phi) > 1e-9)
-    throw new Error("Phí " + Math.round(phi * 1000) / 10 + "% nằm ngoài khoảng Portal nhận (gần nhất " + Math.round(thu.feePct * 1000) / 10 + "%). Chốt lại trước khi trình.");
+    ch("phiNgoaiKhoang", "Phí " + Math.round(phi * 1000) / 10 + "% nằm ngoài khoảng Portal nhận (gần nhất " + Math.round(thu.feePct * 1000) / 10 + "%). Chốt lại trước khi trình.");
+  }
 
   /* MỘT DEAL SINH HAI ĐỀ XUẤT, KHÔNG PHẢI MỘT.
      Hợp đồng và tạm ứng là hai lần giám đốc bấm, và có thể một cái được
@@ -4923,20 +4984,36 @@ function tvTrinh(id, boi, byRole) {
      mới vấp hàng rào ấy là để lại một đề xuất hợp đồng mồ côi trên bàn giám
      đốc cho một thương vụ vẫn ở trạng thái "moi". Hỏi trước, dựng sau. */
   if (ung >= 100) {
-    const trung = A_deXuatChoCuaBen(tv.khoa, "advance");
-    if (trung)
-      throw new Error("Đối tác đã có đề xuất tạm ứng " + trung.id + " đang xử lý. "
+    trung0 = tv.khoa ? A_deXuatChoCuaBen(tv.khoa, "advance") : null;
+    if (trung0)
+      ch("trungTamUng", "Đối tác đã có đề xuất tạm ứng " + trung0.id + " đang xử lý. "
         + "Xử lý xong đề xuất ấy rồi hãy trình thương vụ này.");
   }
-  const trungHd = A_deXuatChoCuaBen(tv.khoa, "contract");
+  let trungHd = tv.khoa ? A_deXuatChoCuaBen(tv.khoa, "contract") : null;
   if (trungHd)
-    throw new Error("Đối tác đã có đề xuất hợp đồng " + trungHd.id + " đang xử lý. "
+    ch("trungHopDong", "Đối tác đã có đề xuất hợp đồng " + trungHd.id + " đang xử lý. "
       + "Xử lý xong đề xuất ấy rồi hãy trình thương vụ này.");
 
   /* findersFeePct KHÔNG có sổ nào bên Portal — nó chỉ là đầu vào của bảng
      ROI, một khoản Haustek trả cho người môi giới, không phải số dư của bên
      cấp quyền. Chặn vì nó là chặn vĩnh viễn. Ghi vào ghi chú đề xuất để
      giám đốc thấy, rồi cho qua. */
+
+  /* CẢNH BÁO MỀM, KHÔNG CHẶN. CRM khai loại bên là một khẳng định của hệ
+     khác; người gắn đối tác có quyền quyết khác. Nhưng quyết ấy phải đọc
+     được trước cú bấm không quay lại được. */
+  if (tv.khoa && tv.loaiBen === "label" && String(tv.khoa)[0] === "A")
+    canh.push({ ma: "lechLoaiBen", cau: "CRM khai đây là label, đối tác đang gắn là nghệ sĩ." });
+  if (tv.khoa && tv.loaiBen === "artist" && String(tv.khoa)[0] === "L")
+    canh.push({ ma: "lechLoaiBen", cau: "CRM khai đây là nghệ sĩ, đối tác đang gắn là label." });
+  return ra(tv, thang, phi, ung, thu, (trungHd || trung0) ? (trungHd || trung0).id : null);
+}
+
+function tvTrinh(id, boi, byRole) {
+  const s = tvSoat(id);
+  if (!s.ok) throw new Error(s.chan[0].cau);   /* câu ĐẦU TIÊN, đúng thứ tự cũ */
+  const tv = tvTra(id), t = tv.terms;
+  const thang = s.thang, phi = s.phi, ung = s.ung;
   const phiMg = tvSo(t.findersFeePct);
   const ghiChu = "Từ CRM " + tv.dealId + " · " + tv.ten
     + (phiMg > 0 ? " · phí môi giới " + phiMg + "% (Haustek trả, không vào sổ bên)" : "");
@@ -5019,18 +5096,151 @@ function tvList(f) {
       const p = prs.find(q => q.id === d.id);
       return { id: d.id, loai: d.loai, trangThai: p ? p.status : null };
     });
+    /* BA TRẠNG THÁI, KHÔNG PHẢI HAI. khopKhoa là false CẢ KHI CRM không
+       khai portalPartyKey — tvNoiDung đặt khoaCrm null khi gói thiếu trường
+       ấy — nên treo huy hiệu "Khác đối tác CRM đề nghị" theo !khopKhoa là
+       dán một cảnh báo sai lên MỌI deal ký mới. Một huy hiệu kêu ở chỗ
+       không có gì xảy ra là một huy hiệu người ta học cách bỏ qua. */
+    const khoaTinh = !x.khoa ? "chuaGan"
+                   : !x.khoaCrm ? "crmKhongDeNghi"
+                   : x.khoa === x.khoaCrm ? "khop" : "khac";
     return Object.assign({}, x, {
       tenBen: x.khoa ? partyName(x.khoa) : null,
       maBen: x.khoa ? partyClientId(x.khoa) : null,
-      khopKhoa: !!(x.khoa && x.khoaCrm && x.khoa === x.khoaCrm),
+      khoaTinh,
+      khopKhoa: khoaTinh === "khop",
+      /* Chỉ những khoá KHÁC NHAU, so bằng đúng luật sắp khoá của tvChuoiOn
+         chứ không dựng luật thứ hai. Không có nó thì trang phải tự viết
+         vòng so, tức trang thành chỗ thứ hai biết hình dạng terms của CRM. */
+      lech: (x.lech || []).map(l => Object.assign({}, l, {
+        khac: (function () {
+          const a = l.truoc || {}, b = l.sau || {}, ra = [];
+          const khoa = Object.keys(a).concat(Object.keys(b))
+            .filter((k, i, arr) => arr.indexOf(k) === i);
+          khoa.forEach(k => {
+            if (tvChuoiOn(a[k]) === tvChuoiOn(b[k])) return;
+            ra.push({ khoa: k, ten: TV_TEN_DK[k] ? TV_TEN_DK[k].vi : k,
+                      tenEn: TV_TEN_DK[k] ? TV_TEN_DK[k].en : k,
+                      truoc: a[k] == null ? null : a[k], sau: b[k] == null ? null : b[k] });
+          });
+          return ra;
+        })()
+      })),
       deXuat,
       deXuatTrangThai: pr ? pr.status : null
     });
   });
 }
+/* dem() chạy MỖI LẦN vẽ điều hướng, nên nó quét đúng một bảng thương vụ và
+   không tra chéo bảng đề xuất theo từng dòng. Hai số thêm vào đây là hai số
+   ô số đầu trang và huy hiệu điều hướng cần, không hơn. */
 function tvDem() {
   const ds = Object.keys(thuongVuOf()).map(k => thuongVuOf()[k]);
-  return { moi: ds.filter(x => x.trangThai === "moi").length, daTrinh: ds.filter(x => x.trangThai === "daTrinh").length, daBo: ds.filter(x => x.trangThai === "daBo").length };
+  return {
+    moi: ds.filter(x => x.trangThai === "moi").length,
+    daTrinh: ds.filter(x => x.trangThai === "daTrinh").length,
+    daBo: ds.filter(x => x.trangThai === "daBo").length,
+    chuaGan: ds.filter(x => x.trangThai === "moi" && !x.khoa).length,
+    chenhLech: ds.filter(x => x.trangThai === "daTrinh" && x.lech && x.lech.length).length
+  };
+}
+
+/* [L3] XEM TRƯỚC MỘT GÓI, KHÔNG GHI GÌ.
+   Vì sao phải có: nhanGoi NÉM khi gói còn lỗi, và ném một câu ghép
+   kq.loi.join(" · "), nên đi theo khuôn catch → thongBao là dồn cả danh
+   sách lỗi vào MỘT dòng, mất đúng tính chất "thấy hết lỗi một lượt" mà
+   tvKiemGoi cố ý dựng ra để giữ.
+   Dùng lại tvKiemGoi, tvNoiDung, tvGiongNhau và bảng thuongVuDay, không
+   chép luật. CẠM BẪY: thuongVuDayOf() gọi lazyState, tức xem trước trên
+   một state chưa có bảng ấy VẪN tạo khoá; bài kiểm "không ghi gì" phải so
+   sau khi đã chạm bảng một lần. */
+function tvXemGoi(goi) {
+  const kq = tvKiemGoi(goi);
+  const ra = { ok: kq.ok, loi: kq.loi.slice(), tong: kq.deals.length,
+               moi: 0, lamMoi: 0, dongBang: 0, giongHet: 0, dsDongBang: [] };
+  if (!kq.ok) return ra;
+  const day = thuongVuDayOf();
+  kq.deals.forEach(d => {
+    const dau = Object.prototype.hasOwnProperty.call(day, d.dealId) ? day[d.dealId] : null;
+    const cu = dau ? tvTra(dau.tvId) : null;
+    if (!cu) { ra.moi++; return; }
+    const nd = tvNoiDung(d);
+    if (tvGiongNhau(cu, nd)) { ra.giongHet++; return; }
+    /* Chỉ khác ĐIỀU KHOẢN mới là đóng băng; khác nhãn là làm mới. */
+    if (cu.trangThai !== "moi" && tvChuoiOn(cu.terms) !== tvChuoiOn(nd.terms)) {
+      ra.dongBang++; ra.dsDongBang.push(d.dealId); return;
+    }
+    ra.lamMoi++;
+  });
+  return ra;
+}
+
+/* [L6] Gói Portal ĐÃ GHI ra cho CRM đọc, và nó có còn khớp với hiện tại không.
+   Trang không được tự đọc localStorage (test/ranh-gioi-trang.js cấm), và
+   reviewProposal bọc tvPhatGoi trong try rồi nuốt lỗi vào nhật ký — mà nhật
+   ký thì kinh doanh không có quyền đọc. Thiếu hàm này thì trang hứa "đây là
+   câu đang gửi về CRM" trong khi khoá có thể chưa ghi được. */
+function tvGoiDaPhat() {
+  let g = null;
+  try { const raw = localStorage.getItem(TV_TRA_KHOA); g = raw ? JSON.parse(raw) : null; }
+  catch (e) { g = null; }
+  if (!g) return { co: false, luc: null, total: 0, deals: [], khop: false };
+  const bay = tvGoiTra();
+  const cu = {}; (g.deals || []).forEach(d => { cu[d.dealId] = d; });
+  const khop = bay.deals.every(d => {
+    const x = cu[d.dealId];
+    return x && x.giaiDoan === d.giaiDoan && x.chiTiet === d.chiTiet;
+  }) && (g.deals || []).length === bay.deals.length;
+  return { co: true, luc: g.at || null, total: (g.deals || []).length, deals: g.deals || [], khop };
+}
+
+/* [L7] Đề xuất này ra từ thương vụ nào. Trả bản ghi đã qua tvList, để trang
+   Xét duyệt treo được hai huy hiệu và khối điều khoản CRM nguyên văn lên
+   đúng dòng đề xuất — chỗ cú bấm quyết tiền thật sự xảy ra. */
+function tvLienQuan(deXuatId) {
+  const kho = thuongVuOf();
+  const id = Object.keys(kho).find(k => {
+    const tv = kho[k];
+    if (!tv) return false;
+    if (tv.deXuatId === deXuatId) return true;
+    return !!(tv.deXuat && tv.deXuat.some(x => x.id === deXuatId));
+  });
+  if (!id) return null;
+  return tvList().find(x => x.id === id) || null;
+}
+
+/* [L8] Danh sách đối tác cho hộp gắn bên. KHÔNG mang một con số tiền nào.
+   Vì sao không dùng parties.list: partiesListChoVai đặt opts.manager = _me.id
+   với kinh doanh không phải trưởng, nên thương vụ trỏ tới bên do người khác
+   phụ trách thì hộp gắn KHÔNG CÓ DÒNG NÀO để bấm, rồi ganBen ném "Không có
+   đối tác". Gắn đối tác là quyết định phải nhìn được mọi đối tác; hàm này
+   mở đúng chừng ấy và không mở doanh thu. */
+function tvBenGoiY(id, q) {
+  const tv = tvTra(id);
+  const khoaCrm = tv && tv.khoaCrm ? String(tv.khoaCrm) : null;
+  const tim = chuoi(q || "").trim().toLowerCase();
+  const ds = partiesList({ limit: 5000 }).rows.map(r => {
+    const ct = state.contracts && state.contracts[r.partyKey];
+    const that = !!(ct && !ct.khoiTao);
+    return {
+      khoa: r.partyKey, ten: r.name, ma: r.clientId,
+      loai: String(r.partyKey)[0] === "L" ? "label" : "artist",
+      nguoiPhuTrach: r.managerName || "",
+      coHopDong: that,
+      /* Ngày hết hạn CHỈ hiện khi có hợp đồng thật. contractEndOf suy ra
+         ngày từ hash mã bên khi không có, và một tín hiệu bịa ở đúng bước
+         nguy nhất thì tệ hơn không có tín hiệu nào. */
+      hanHopDong: that && ct.to ? ct.to : null,
+      hanSuyRa: !that,
+      laCrmDeNghi: !!(khoaCrm && r.partyKey === khoaCrm)
+    };
+  });
+  const loc = tim ? ds.filter(x => (x.ten + " " + x.ma).toLowerCase().indexOf(tim) >= 0) : ds;
+  /* Bên CRM đề nghị nằm đầu, nhưng KHÔNG được chọn sẵn: lõi đã chốt là
+     người đọc rồi quyết, vì gói có thể sai hoặc bị sửa còn quyết định này
+     thì có danh tính trong nhật ký. */
+  loc.sort((a, b) => (b.laCrmDeNghi ? 1 : 0) - (a.laCrmDeNghi ? 1 : 0));
+  return loc.slice(0, 50);
 }
 
 function proposalsList(f) {
@@ -6012,8 +6222,8 @@ const LOI_EN = {
    bảng mẫu, nên không đổi ở đây thì câu tiếng Anh lọt "tạm ứng ban đầu". */
 function tvNhanTienEn(ds) {
   let ra = ds;
-  Object.keys(TV_TEN_TIEN).forEach(k => {
-    ra = ra.split(TV_TEN_TIEN[k].vi).join(TV_TEN_TIEN[k].en);
+  TV_KHOA_TIEN.forEach(k => {
+    ra = ra.split(TV_TEN_DK[k].vi).join(TV_TEN_DK[k].en);
   });
   return ra;
 }
@@ -6112,7 +6322,7 @@ const LOI_MAU_EN = [
    "artistSharePct = $1 looks like a fraction. A field ending in Pct must be a percentage, so $2 means the rights holder takes $3%. If $4% was meant, send $5. That is off by a factor of 100 — fix the unit in the CRM and resend the payload."],
   [/^artistSharePct không đọc ra tỷ lệ hợp lệ \(nhận (.+), cần một số phần trăm trong khoảng 50–97\)$/,
    "artistSharePct does not read as a valid share (got $1; a percentage between 50 and 97 is required)"],
-  [/^Thời hạn (.+) tháng nằm ngoài khoảng Portal nhận \((.+) tháng là mức gần nhất\)\. Sửa điều khoản bên CRM hoặc chốt lại với khách trước khi trình\.$/,
+  [/^Thời hạn (.+) tháng nằm ngoài khoảng Portal nhận \((.+) tháng là mức gần nhất\)\. Sửa điều khoản bên CRM hoặc chốt lại với đối tác trước khi trình\.$/,
    "A term of $1 months falls outside the range the Portal accepts ($2 months is the nearest). Amend the terms in the CRM, or re-agree them with the partner before submitting."],
   [/^Phí (.+)% nằm ngoài khoảng Portal nhận \(gần nhất (.+)%\)\. Chốt lại trước khi trình\.$/,
    "A fee of $1% falls outside the range the Portal accepts ($2% is the nearest). Re-agree it before submitting."],
@@ -7572,6 +7782,8 @@ const QUYEN_HAM = {
   /* Đọc thương vụ đi cùng nhóm deXuat; mọi hàm ĐỔI trạng thái đi cùng
      deXuatTao — cùng cửa với việc tạo đề xuất, vì đó đúng là việc nó làm. */
   thuongVu: "deXuat", "thuongVu.nhanGoi": "deXuatTao", "thuongVu.ganBen": "deXuatTao",
+  "thuongVu.xemGoi": "deXuatTao", "thuongVu.benGoiY": "deXuatTao",
+  "thuongVu.soatTrinh": "deXuat", "thuongVu.lienQuan": "deXuat", "thuongVu.goiDaPhat": "deXuat",
   "thuongVu.trinh": "deXuatTao", "thuongVu.bo": "deXuatTao", "thuongVu.phatGoi": "deXuatTao",
   roi: "deXuat",
   tickets: "hoTro", claims: "khieuNai", videoSettings: "khieuNai",
@@ -8628,7 +8840,13 @@ const admin = {
         ARTISTS.push(rec); pk = rec.key;
       }
       state.extraParties.push(Object.assign({}, rec));
-      state.contracts[pk] = Object.assign({}, state.contracts[pk] || {}, { from, to: to || addDays(from, 730), share: kind === "label" && share != null ? share : undefined,
+      /* KHỞI TẠO, KHÔNG PHẢI HỢP ĐỒNG. Người gọi không khai to / share /
+         feePct thì bản ghi này không mang một điều khoản nào — nó chỉ giữ
+         ngày tạo và người tạo. Đánh dấu đúng tên của nó, để contractCalc
+         không đọc nó thành "đã có hợp đồng". Giữ nguyên to mặc định: nhiều
+         chỗ khác đọc ct.to và đổi nó là một vòng riêng. */
+      const khoiTao = !to && share == null && feePct == null;
+      state.contracts[pk] = Object.assign({}, state.contracts[pk] || {}, { khoiTao: khoiTao || undefined, from, to: to || addDays(from, 730), share: kind === "label" && share != null ? share : undefined,
         feePct: feePct != null ? feePct : undefined, labelTuTra: kind === "label" ? !!o.labelTuTra : undefined, note: chuoi(o.note), signedBy: by || "" });
       demHopDong(); _ebp.clear();
       if (mgr) state.partyManager[pk] = mgr;
@@ -8730,7 +8948,8 @@ const admin = {
     proposeAdvance, proposeContract, review: reviewProposal, flow: PROPOSAL_FLOW },
   /* Thương vụ từ CRM. Không có hàm nào ở đây ghi vào sổ tiền: trinh() chỉ
      dựng một đề xuất, và tiền chạm sổ ở applyApproved khi giám đốc duyệt. */
-  thuongVu: { list: tvList, dem: tvDem, kiemGoi: tvKiemGoi, nhanGoi: tvNhanGoi,
+  thuongVu: { list: tvList, dem: tvDem, kiemGoi: tvKiemGoi, xemGoi: tvXemGoi, nhanGoi: tvNhanGoi,
+    soatTrinh: tvSoat, benGoiY: tvBenGoiY, lienQuan: tvLienQuan, goiDaPhat: tvGoiDaPhat,
     ganBen: tvGanBen, trinh: tvTrinh, bo: tvBo, goiVer: TV_GOI_VER,
     goiTra: tvGoiTra, phatGoi: tvPhatGoi, traVer: TV_TRA_VER },
   tickets: {

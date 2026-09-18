@@ -316,7 +316,7 @@ check("Duyệt hợp đồng không xoá cờ labelTuTra của bên", () => {
 check("Đề xuất hợp đồng tự khai đúng ký mới / gia hạn", () => {
   A.staff.dangNhapBang("mgmt@haustek-group.com");
   const st = JSON.parse(A.store.exportJSON());
-  const coHD = k => !!(st.contracts && st.contracts[k]);
+  const coHD = k => !!(st.contracts && st.contracts[k] && !st.contracts[k].khoiTao);
   const dangCo = new Set(A.proposals.list()
     .filter(p => p.type === "contract" && ["submitted", "checked", "returned"].includes(p.status))
     .map(p => p.partyKey));

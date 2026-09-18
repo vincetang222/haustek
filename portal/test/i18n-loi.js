@@ -51,7 +51,13 @@ function cauMau(bieuThuc) {
    chính nó. Thu cả hai nguồn. */
 const NGUON = [
   /new Error\(((?:[^()]|\([^()]*\))*)\)/g,
-  /\bloi\.push\(((?:[^()]|\([^()]*\))*)\)/g
+  /\bloi\.push\(((?:[^()]|\([^()]*\))*)\)/g,
+  /* Vòng 35 · mười lăm cửa của tvTrinh tách ra tvSoat và đổi throw thành
+     ch("ma", cau). Không có mẫu này thì số câu canh tụt từ 237 xuống 227:
+     mười câu lỗi rời khỏi lưới i18n vĩnh viễn, mà bài kiểm vẫn xanh vì nó
+     chỉ hỏng khi một câu ĐÃ THU ĐƯỢC dịch không ra. Một bài kiểm mất đối
+     tượng mà không kêu là một bài kiểm bảo lãnh cho một bảo đảm không còn. */
+  /\bch\("[a-zA-Z]+",\s*((?:[^()]|\([^()]*\))*)\)/g
 ];
 const mau = new Set();
 for (const re of NGUON) {

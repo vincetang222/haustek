@@ -742,6 +742,118 @@ check("Bản 1.2 báo CẢ thương vụ chưa trình và thương vụ đã b�
 });
 
 
+/* ---------- 11. bảy hàm lõi mới của vòng 35 ---------- */
+
+check("soatTrinh nói TRƯỚC cú bấm, và nói đúng câu trinh() sẽ ném", () => {
+  /* Với mười ba deal một gói, không có hàm này thì người dùng bấm mười ba
+     lần để nhận mười ba lời từ chối. Điều kiện bắt buộc: câu soatTrinh đưa
+     ra phải BẰNG ĐÚNG câu trinh() ném, nếu không trang nói một đằng lõi
+     làm một nẻo. */
+  const ca = [
+    ["SOAT-1", { termMonths: 72 }],            /* thời hạn ngoài khoảng */
+    ["SOAT-2", { artistSharePct: 0.85 }],      /* gửi phân số */
+    ["SOAT-3", { flowThroughPct: 30 }],        /* chưa nối chân */
+    ["SOAT-4", { passThrough: 30 }]            /* khoá lạ mang số */
+  ];
+  let n = 0;
+  ca.forEach(([ma, them], i) => {
+    A.thuongVu.nhanGoi(goi([deal(ma, { terms: Object.assign({ artistSharePct: 70, termMonths: 24 }, them) })]), "CRM");
+    const tv = A.thuongVu.list().find(x => x.dealId === ma);
+    A.thuongVu.ganBen(tv.id, HANG[40 + i].partyKey, "KD");
+    const s = A.thuongVu.soatTrinh(tv.id);
+    must(!s.ok && s.chan.length, ma + ": soatTrinh nói trình được mà lẽ ra phải chặn");
+    let nem = "";
+    try { A.thuongVu.trinh(tv.id, "KD", "sales"); } catch (e) { nem = e.message; }
+    must(nem === s.chan[0].cau, ma + ": soatTrinh nói \"" + s.chan[0].cau + "\" còn trinh ném \"" + nem + "\"");
+    n++;
+  });
+  return n + " ca chặn · câu soatTrinh khớp từng chữ với câu trinh ném";
+});
+
+check("soatTrinh và xemGoi không ghi gì vào sổ", () => {
+  /* Chụp SAU khi đã chạm bảng một lần: tvTra → thuongVuOf → lazyState GHI
+     state.thuongVu nếu bảng chưa có, nên chụp trước là đỏ oan. */
+  A.thuongVu.list();
+  A.thuongVu.xemGoi(goi([deal("KHONG-GHI-1")]));
+  const truoc = H.storage.exportJSON();
+  const tv = A.thuongVu.list()[0];
+  A.thuongVu.soatTrinh(tv.id);
+  A.thuongVu.soatTrinh(tv.id);
+  A.thuongVu.xemGoi(goi([deal("KHONG-GHI-2")]));
+  must(H.storage.exportJSON() === truoc, "soatTrinh hoặc xemGoi đã ghi vào sổ");
+  return "hai lượt soatTrinh cộng một lượt xemGoi · sổ không xê dịch";
+});
+
+check("xemGoi trả HẾT lỗi một lượt, không dồn vào một dòng như nhanGoi ném", () => {
+  const xau = { v: "9.0.0", deals: "không phải mảng" };
+  const x = A.thuongVu.xemGoi(xau);
+  must(!x.ok && x.loi.length === A.thuongVu.kiemGoi(xau).loi.length, "xemGoi không trả đủ danh sách lỗi");
+  must(x.loi.length >= 3, "gói ba lỗi mà xemGoi chỉ thấy " + x.loi.length);
+  const g = goi([deal("XEM-1"), deal("XEM-2")]);
+  const y = A.thuongVu.xemGoi(g);
+  must(y.tong === y.moi + y.lamMoi + y.dongBang + y.giongHet, "bốn số không cộng lại thành tổng");
+  return x.loi.length + " lỗi thấy một lượt · " + y.tong + " deal chia đúng bốn ngăn";
+});
+
+check("khoaTinh có BA trạng thái, không gộp 'CRM không đề nghị' vào 'khác'", () => {
+  /* Gộp hai ca là dán huy hiệu "Khác đối tác CRM đề nghị" lên MỌI deal ký
+     mới, vì gói ký mới không khai portalPartyKey. Một huy hiệu kêu ở chỗ
+     không có gì xảy ra là một huy hiệu người ta học cách bỏ qua. */
+  A.thuongVu.nhanGoi(goi([deal("KT-1"), deal("KT-2", { portalPartyKey: HANG[50].partyKey })]), "CRM");
+  const a = A.thuongVu.list().find(x => x.dealId === "KT-1");
+  const b = A.thuongVu.list().find(x => x.dealId === "KT-2");
+  must(a.khoaTinh === "chuaGan", "chưa gắn mà khoaTinh = " + a.khoaTinh);
+  A.thuongVu.ganBen(a.id, HANG[51].partyKey, "KD");
+  must(A.thuongVu.list().find(x => x.dealId === "KT-1").khoaTinh === "crmKhongDeNghi", "CRM không khai khoá mà vẫn bị gọi là khác");
+  A.thuongVu.ganBen(b.id, HANG[50].partyKey, "KD");
+  must(A.thuongVu.list().find(x => x.dealId === "KT-2").khoaTinh === "khop", "gắn đúng bên CRM đề nghị mà không ra khop");
+  A.thuongVu.ganBen(b.id, HANG[52].partyKey, "KD");
+  must(A.thuongVu.list().find(x => x.dealId === "KT-2").khoaTinh === "khac", "gắn khác bên CRM đề nghị mà không ra khac");
+  return "chuaGan · crmKhongDeNghi · khop · khac";
+});
+
+check("benGoiY mở mọi đối tác cho người gắn, và không mang một con số tiền nào", () => {
+  /* partiesListChoVai đặt manager = me.id với kinh doanh không phải trưởng,
+     nên thương vụ trỏ tới bên do người khác phụ trách thì hộp gắn KHÔNG CÓ
+     DÒNG NÀO để bấm, rồi ganBen ném "Không có đối tác". */
+  A.thuongVu.nhanGoi(goi([deal("GOIY-1")]), "CRM");
+  const tv = A.thuongVu.list().find(x => x.dealId === "GOIY-1");
+  const ds = A.thuongVu.benGoiY(tv.id, "");
+  must(ds.length > 1, "danh sách gợi ý chỉ có " + ds.length + " dòng");
+  must(!/revenueQ|streamsQ|"rate"|doanhThu/i.test(JSON.stringify(ds)), "gợi ý lọt số tiền");
+  /* Ngày hết hạn chỉ hiện khi có hợp đồng THẬT: contractEndOf suy ngày từ
+     hash mã bên, và một tín hiệu bịa ở bước nguy nhất tệ hơn không có. */
+  must(ds.every(x => x.hanSuyRa ? x.hanHopDong === null : true), "bên chưa có hợp đồng mà vẫn hiện ngày hết hạn");
+  return ds.length + " dòng · không số tiền · ngày hết hạn chỉ hiện khi có hợp đồng thật";
+});
+
+check("Đối tác vừa tạo là KÝ MỚI, và thành GIA HẠN sau khi giám đốc duyệt hợp đồng", () => {
+  /* parties.create ghi bản ghi contracts vô điều kiện để giữ ngày ký, nhưng
+     contractCalc đọc "có bản ghi" = "đã có hợp đồng". Đo trước khi sửa: một
+     bên tạo ba mươi giây trước đọc ra viec "gia-han". Và cờ phải có đường
+     GỠ, nếu không thì đúng luồng vòng 35 dựng ra bị lật ngược mục đích. */
+  const r = A.parties.create({ kind: "artist", name: "Bên kiểm khoiTao" }, "kiểm");
+  const a = A.contractCalc(r.partyKey, { months: 24, feePct: 0.3 });
+  must(a.viec === "moi" && !a.coHopDong && a.hanSuyRa, "bên vừa tạo đọc ra " + a.viec);
+  const pr = A.proposals.proposeContract(r.partyKey, { months: 24, feePct: 0.3, exclusive: true, note: "" }, "KD", "sales");
+  A.proposals.review(pr.id, "check", "ok", "KT", "accounting");
+  A.proposals.review(pr.id, "approve", "ok", "GĐ", "mgmt");
+  const b = A.contractCalc(r.partyKey, { months: 24, feePct: 0.3 });
+  must(b.viec === "gia-han" && b.coHopDong && !b.hanSuyRa, "sau khi duyệt vẫn đọc ra " + b.viec);
+  return "vừa tạo → moi · sau duyệt → gia-han";
+});
+
+check("lienQuan tra ngược từ đề xuất về thương vụ, goiDaPhat soi khoá đã ghi", () => {
+  const r = dealMoi("L7-1");
+  const tv = A.thuongVu.lienQuan(r.deXuat[0].id);
+  must(tv && tv.dealId === "L7-1", "không tra ngược được từ đề xuất về thương vụ");
+  must(A.thuongVu.lienQuan("KHONG-CO-MA-NAY") === null, "mã lạ mà vẫn trả về thương vụ");
+  A.proposals.review(r.deXuat[0].id, "approve", "", "GĐ", "mgmt");
+  const g = A.thuongVu.goiDaPhat();
+  must(g.co && g.khop, "gói đã ghi không khớp gói dựng lại: co=" + g.co + " khop=" + g.khop);
+  return "tra ngược đúng · gói đã ghi khớp · " + g.total + " deal";
+});
+
 ra.forEach(r => console.log("  " + (r[0] === "ok" ? "ok  " : "LỖI") + "  " + r[1] + (r[2] ? "  → " + r[2] : "")));
 console.log("\n" + pass + " đạt · " + fail + " hỏng");
 process.exit(fail ? 1 : 0);
