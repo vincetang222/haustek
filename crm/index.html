@@ -1589,10 +1589,10 @@ vi:{
   submitCountry:'Trình sếp country', approveC:'Duyệt (country)', approveR:'Duyệt (vùng)',
   sendBack:'Trả lại', role_country:'Giám đốc quốc gia', role_region:'Giám đốc khu vực',
   pApproveCountry:'Duyệt cấp country', pApproveRegion:'Duyệt cấp vùng',
-  thrTitle:'Ngưỡng bỏ qua sếp vùng', thrHint:'Deal dưới mức này chỉ cần sếp country duyệt rồi trình thẳng portal.',
-  thrTroi:'Đặt là {luc} ngày {ngay}. Ở tỷ giá hôm nay cùng con số ấy là {nay} ({p}%) — ngưỡng tính bằng USD không đổi, nhưng ý định tính bằng đơn vị lúc đặt thì đã lệch.',
+  thrTitle:'Ngưỡng bỏ qua sếp vùng', thrHint:'Deal dưới mức này chỉ cần sếp country duyệt rồi trình thẳng portal. Ngưỡng là chính sách tính bằng USD; gõ vào bằng đơn vị nào cũng được, hệ quy về đô để lưu.',
+  ctrChot:'chốt theo tỷ giá {r}',
   fxTitle:'Tỷ giá quy đổi',
-  fxHint:'Số đồng cho một đơn vị ngoại tệ, đúng như bảng niêm yết Vietcombank. Tỷ giá USD↔EUR suy ra từ hai số này, không nhập riêng. Mọi con số tiền trong hệ đều lưu bằng USD; đổi tỷ giá là đổi cách HIỆN chúng, không đổi giá trị đã ký.',
+  fxHint:'Số đồng cho một đơn vị ngoại tệ, đúng như bảng niêm yết Vietcombank. Tỷ giá USD↔EUR suy ra từ hai số này, không nhập riêng.\n\nSỔ GHI BẰNG ĐÔ LA. Mọi con số tiền đều lưu bằng USD, và đổi tỷ giá là đổi cách HIỆN chúng chứ không đổi giá trị nào. Đồng chỉ CHỐT thành một con số cố định ở ba chỗ: hợp đồng đã ký, lúc chuyển tiền cho khách, và lúc thu tiền từ nền tảng về — ba chỗ ấy ghi kèm tỷ giá lúc chốt và không trôi theo tỷ giá sau đó.',
   fxPerUsd:'1 USD', fxPerEur:'1 EUR',
   fxNotePh:'Nguồn / lý do (ví dụ: bảng VCB ngày 17/09)',
   fxBad:'Tỷ giá phải là số đồng cho một đơn vị ngoại tệ, trong khoảng 1.000 – 1.000.000.',
@@ -1937,10 +1937,10 @@ en:{
   submitCountry:'Submit to country head', approveC:'Approve (country)', approveR:'Approve (region)',
   sendBack:'Send back', role_country:'Country head', role_region:'Regional head',
   pApproveCountry:'Approve at country level', pApproveRegion:'Approve at regional level',
-  thrTitle:'Regional-step threshold', thrHint:'Deals below this only need the country head, then go straight to the portal.',
-  thrTroi:'Set as {luc} on {ngay}. At today\u2019s rate the same stored figure is {nay} ({p}%) — the USD threshold has not moved, but the intent as set in that currency has.',
+  thrTitle:'Regional-step threshold', thrHint:'Deals below this only need the country head, then go straight to the portal. The threshold is a USD policy; type it in any currency and it is converted to dollars for storage.',
+  ctrChot:'fixed at rate {r}',
   fxTitle:'Exchange rates',
-  fxHint:'Dong per one unit of foreign currency, exactly as Vietcombank posts them. The USD↔EUR rate is derived from these two, never entered separately. Every money figure is stored in USD; changing a rate changes how they are SHOWN, not the value anyone signed.',
+  fxHint:'Dong per one unit of foreign currency, exactly as Vietcombank posts them. The USD↔EUR rate is derived from these two, never entered separately.\n\nTHE BOOK IS KEPT IN DOLLARS. Every money figure is stored in USD, and changing a rate changes how they are SHOWN, never any stored value. Dong is fixed to a hard number in exactly three places: a signed contract, a payment out to a client, and a collection in from a platform — each records the rate it was fixed at and does not drift afterwards.',
   fxPerUsd:'1 USD', fxPerEur:'1 EUR',
   fxNotePh:'Source / reason (e.g. VCB board, 17 Sep)',
   fxBad:'A rate is dong per one unit of foreign currency, between 1,000 and 1,000,000.',
@@ -2442,17 +2442,15 @@ const USERS = [
 /* Deal dưới ngưỡng này bỏ qua sếp vùng, trình thẳng lên portal sau khi sếp
    country duyệt. Sếp country vẫn thấy mọi deal trong vùng mình — chỉ bớt một
    chặng cho deal nhỏ, không bớt người giám sát. Manager sửa được ở tab Phân quyền. */
+/* Ngưỡng là một CHÍNH SÁCH TÍNH BẰNG ĐÔ LA, như mọi con số trong sổ này.
+   Vòng trước chỗ này còn ghi lại "đặt bằng đơn vị nào, ở tỷ giá nào" rồi
+   cảnh báo khi con số quy ra đồng đã lệch khỏi lúc đặt. Chủ dự án đã chốt
+   luật: USD là sổ, còn đồng chỉ chốt số ở đúng hai thời điểm — chuyển tiền
+   cho khách, và thu tiền từ nền tảng về. Dưới luật ấy, ngưỡng 10.000 USD
+   quy ra bao nhiêu đồng hôm nay là chuyện của tỷ giá hôm nay, không phải
+   một sai lệch cần báo. Một cảnh báo về chuyện không sai là cách nhanh
+   nhất để người ta thôi đọc cảnh báo, nên nó đã được gỡ hẳn. */
 var REGION_THRESHOLD = 10000;
-/* NGƯỠNG ĐƯỢC ĐẶT BẰNG ĐƠN VỊ NÀO, Ở TỶ GIÁ NÀO.
-   Ngưỡng lưu bằng USD, và deal cũng lưu bằng USD, nên phép so luôn đúng và
-   việc đổi tỷ giá KHÔNG đổi deal nào phải trình ai. Chỗ trôi nằm ở Ý ĐỊNH:
-   người đặt "dưới 255 triệu ₫" ở tỷ giá 25.500 thì hệ ghi 10.000 USD; tỷ
-   giá lên 26.155 và cùng con số ấy nay là 261,55 triệu ₫. Chính sách tính
-   bằng đồng đã nới ra 2,6% mà không ai quyết định gì.
-   Không tự sửa ý định ấy — đó là việc của người đặt chính sách. Việc của
-   mã là ĐỪNG GIẤU: ghi lại đặt bằng gì, lúc nào, ở tỷ giá nào, rồi nói
-   thẳng khi con số theo đồng đã lệch khỏi lúc đặt. */
-var THR_META = null;   /* {donVi, tyGia, luc} */
 let ME = 'Ethan Nguyen';
 /* Thời gian sử dụng. Trong demo, số liệu 6 ngày trước là dữ liệu mẫu;
    ngày hôm nay được đếm thật từ lúc mở trang. */
@@ -3495,7 +3493,7 @@ function snapshot(){
        R&D giữ chúng trong bộ nhớ: tải lại trang là tỷ giá lặng lẽ về mặc
        định còn lịch sử biến mất — với một bản demo thì không sao, với ứng
        dụng có sổ lưu thì đó là một dấu vết kiểm toán giả. */
-    fx: {VND: VCB.VND, EUR: VCB.EUR}, fxLog: FX_LOG, thrMeta: THR_META,
+    fx: {VND: VCB.VND, EUR: VCB.EUR}, fxLog: FX_LOG,
     recentOpps: state.recentOpps, recentLeads: state.recentLeads, views: state.views,
     db: DB
   };
@@ -3536,9 +3534,6 @@ function applySnapshot(s){
   HANDOFF_BIND = (s.handoff && typeof s.handoff==='object') ? s.handoff : {};
   INBOX_SEEN   = (s.inbox   && typeof s.inbox  ==='object') ? s.inbox   : {};
   if(typeof s.thr === 'number' && s.thr >= 0) REGION_THRESHOLD = s.thr;
-  THR_META = (s.thrMeta && typeof s.thrMeta === 'object'
-              && CURRENCIES.indexOf(s.thrMeta.donVi) >= 0 && s.thrMeta.tyGia > 0)
-    ? {donVi: s.thrMeta.donVi, tyGia: s.thrMeta.tyGia, luc: toDate(s.thrMeta.luc)} : null;
   if(Array.isArray(s.recentOpps))  state.recentOpps  = s.recentOpps.slice(0,5);
   if(Array.isArray(s.recentLeads)) state.recentLeads = s.recentLeads.slice(0,5);
   if(s.views && typeof s.views==='object') state.views = s.views;
@@ -6327,7 +6322,29 @@ function ctrPct(v){ return (v===undefined||v===null||v==='') ? '' : (String(v).i
    quyền. Tệ hơn: bộ soát trường thiếu lọc bằng `!vals[k]`, mà "—" là chuỗi
    truthy, nên băng cảnh báo vẫn báo "Đã điền đủ mọi trường" và pháp chế
    không nhận được lời nhắc nào. Một hợp đồng không advance phải in "0 USD". */
-function ctrMny(v){ if(v===undefined||v===null||v==='') return ''; const n=Number(v); return isNaN(n)?'':fmtMoney(n,false); }
+function ctrMny(v){
+  if(v===undefined||v===null||v==='') return '';
+  const n=Number(v); if(isNaN(n)) return '';
+  /* USD LÀ ĐIỀU KHOẢN, ĐỒNG LÀ SỐ ĐÃ CHỐT.
+     Luật chủ dự án đặt: sổ ghi bằng đô, còn đồng chỉ chốt số ở đúng hai
+     thời điểm — chuyển tiền cho khách và thu tiền từ nền tảng về. Một hợp
+     đồng đã ký là thời điểm thứ ba cùng tính chất: bên kia cầm tờ giấy có
+     con số ấy, nên nó không được trôi.
+     Nên trên văn bản ĐÃ CHỐT mà dựng bằng đơn vị khác đô, in cả hai: con
+     số đô là điều khoản, con số đồng là số đã chốt kèm tỷ giá lúc chốt —
+     đúng cách hợp đồng Việt Nam vẫn viết cho nghĩa vụ tính bằng ngoại tệ.
+     Người đọc không phải đoán số nào mới là số ràng buộc.
+     Bản nháp thì in một số thôi: pháp chế đang soạn, thêm chữ chỉ tổ rối. */
+  if(FX_GHIM && FX_GHIM.donVi !== 'USD'){
+    const daChot = fmtMoney(n, false);
+    const cuC = cur; cur = 'USD';
+    const dieuKhoan = fmtMoney(n, false);
+    cur = cuC;
+    const fm = x => new Intl.NumberFormat('vi-VN').format(Math.round(x));
+    return dieuKhoan + ' (' + daChot + ' ' + t('ctrChot', {r: fm(FX_GHIM.tyGia)}) + ')';
+  }
+  return fmtMoney(n, false);
+}
 const CONTRACT_STATES = ['draft','pending','approved','sent','signed'];
 /* Chỉ soạn được cho deal đã qua cửa CEO. Trước đó điều khoản còn đang đàm
    phán, soạn ra là soạn trên số sắp đổi. */
@@ -6976,7 +6993,6 @@ function saveThreshold(){
   const rNg = tienVao(e ? e.value : '');
   if(!rNg.ok){ toast(rNg.msg); return; }
   const usd = rNg.usd;
-  THR_META = {donVi: cur, tyGia: rate(cur), luc: new Date()};
   const old = REGION_THRESHOLD;
   /* trước đây im lặng thoát ra: người dùng bấm Lưu và không nhận được gì cả,
      không phân biệt nổi "đã lưu" với "nút hỏng" */
@@ -7103,7 +7119,7 @@ VIEWS.perms = function(){
   const thrCard = '<div class="card" style="margin-bottom:14px">'+
     '<div class="card-h"><span class="card-t">'+esc(t('thrTitle'))+'</span></div>'+
     '<div class="card-b">'+
-      '<div class="unote" style="margin:0 0 10px">'+esc(t('thrHint'))+thrTroi()+'</div>'+
+      '<div class="unote" style="margin:0 0 10px">'+esc(t('thrHint'))+'</div>'+
       '<div class="thrrow">'+
         '<div class="curin" data-cur="'+esc(cur)+'"><input class="in" type="text" inputmode="decimal" id="thrIn" '+
           'value="'+esc(soTienRaO(REGION_THRESHOLD))+'"></div>'+
@@ -7185,24 +7201,6 @@ function setFX(){
   toast(t('fxSaved',{r:doi.join(' · ')}));
   saveSoon(); render();
 }
-/* Câu nói thêm dưới ô ngưỡng, chỉ hiện khi con số theo đơn vị lúc đặt đã
-   lệch khỏi lúc đặt. Im lặng khi chưa lệch — một dòng chữ hiện mãi thì
-   người ta thôi đọc nó. */
-function thrTroi(){
-  if(!THR_META || THR_META.donVi === 'USD') return '';
-  const nay = REGION_THRESHOLD * rate(THR_META.donVi);
-  const luc = REGION_THRESHOLD * THR_META.tyGia;
-  if(!isFinite(nay) || !isFinite(luc) || luc <= 0) return '';
-  const pct = (nay - luc) / luc * 100;
-  if(Math.abs(pct) < 0.5) return '';
-  const c = THR_META.donVi, d = CUR_DEC[c];
-  const fm = x => new Intl.NumberFormat(CUR_LOC[c],
-    {minimumFractionDigits:d, maximumFractionDigits:d}).format(x)+' '+c;
-  return '<br><b>'+esc(t('thrTroi',{
-    luc: fm(luc), ngay: THR_META.luc ? fdate(THR_META.luc) : '—',
-    nay: fm(nay), p: (pct>0?'+':'')+pct.toFixed(1)
-  }))+'</b>';
-}
 function setRole(name, role){
   const u = USERS.find(x=>x.name===name); if(!u) return;
   const old = u.role;
@@ -7274,8 +7272,8 @@ const OPP_FORM = [
        Nay nó không hỏi nữa mà GHI LẠI: đơn vị và tỷ giá thật sự đã dùng lúc
        lưu. Chỉ đọc, vì người dùng không chọn được chuyện đã xảy ra rồi. */
     {k:'currency', l:['Đơn vị tiền lúc nhập','Currency at entry'], f:'text', ro:1,
-      tip:['Đơn vị và tỷ giá dùng để quy đổi số tiền của deal này sang USD lúc lưu. Ghi lại, không chọn: đổi thanh tiền tệ ở đầu trang rồi lưu lại là ô này đổi theo.',
-           'The currency and rate used to convert this deal\u2019s money into USD at save time. Recorded, not chosen: switch the currency toggle and save again and this follows.']},
+      tip:['Sổ ghi bằng USD. Ô này chỉ nói người nhập đã gõ bằng đơn vị nào và ở tỷ giá nào, để về sau dựng lại được con số họ nhìn thấy lúc gõ. Ghi lại, không chọn.',
+           'The book is kept in USD. This only records which currency the figures were typed in, and at what rate, so the number they saw can be reconstructed later. Recorded, not chosen.']},
     {k:'committee', l:['Ghi chú hội đồng','Committee notes'], f:'ta'},
     {k:'prob', l:['Xác suất thành công','Probability'], f:'pct'},
     {k:'curDist', l:['Label / nhà phân phối hiện tại','Current label / distributor'], f:'sel', o:DISTRIBUTORS},

@@ -530,35 +530,65 @@ try {
     !sn.ar.oDan && !sn.ar.nut.some(x => /Nạp|Load|Đặt lại|Reset/i.test(x))
       && sn.ar.nut.some(x => /Tải|Download/i.test(x)), JSON.stringify(sn.ar.nut));
 
-  /* ---------- 16. NGƯỠNG VÙNG MANG THEO ĐƠN VỊ LÚC ĐẶT ---------- */
-  const thr = await p.evaluate(() => {
-    const cuT = REGION_THRESHOLD, cuM = THR_META, cuV = VCB.VND, cuC = cur;
+  /* ---------- 16. SỔ GHI BẰNG ĐÔ LA ----------
+     Luật chủ dự án đặt: USD là sổ; đồng chỉ chốt thành con số cố định ở
+     hợp đồng đã ký, lúc chuyển tiền cho khách, và lúc thu tiền từ nền tảng.
+     Nên ngưỡng duyệt vùng là CHÍNH SÁCH TÍNH BẰNG USD: gõ vào bằng đơn vị
+     nào cũng được, hệ quy về đô, và con số quy ra đồng trôi theo tỷ giá là
+     chuyện bình thường — KHÔNG phải một sai lệch cần báo. */
+  const doLa = await p.evaluate(() => {
+    const cuT = REGION_THRESHOLD, cuV = VCB.VND, cuC = cur;
     setCur("VND"); go("perms");
     const e = document.getElementById("thrIn");
     e.value = soRaO(255000000);
     saveThreshold();
-    const dat = { usd: REGION_THRESHOLD, donVi: THR_META && THR_META.donVi,
-                  tyGia: THR_META && THR_META.tyGia, imLang: thrTroi() === "",
-                  tyGiaDangChay: cuV };
-    const moi = Math.round(cuV * 1.08);          /* +8% so với tỷ giá đang chạy */
-    VCB.VND = moi;
-    const troi = thrTroi().replace(/<[^>]+>/g, "");
-    const nay = REGION_THRESHOLD * rate("VND");
-    VCB.VND = cuV; REGION_THRESHOLD = cuT; THR_META = cuM; setCur(cuC);
-    return { dat, troi, nay, moi };
+    const luuUSD = REGION_THRESHOLD, tyGia = rate("VND");
+    VCB.VND = Math.round(cuV * 1.08);
+    const sauTroi = REGION_THRESHOLD;
+    go("perms");
+    const the = document.querySelector(".card-b");
+    const coCanhBao = /\u00fd \u0111\u1ecbnh|intent as set/i.test(the ? the.innerHTML : "");
+    VCB.VND = cuV; REGION_THRESHOLD = cuT; setCur(cuC);
+    return { luuUSD, tyGia, sauTroi, coCanhBao, conBien: typeof window.THR_META !== "undefined" };
   });
-  /* Kỳ vọng suy từ TỶ GIÁ ĐANG CHẠY, không đóng cứng: một phép kiểm phía
-     trên trong chính file này đã đổi tỷ giá, và số đóng cứng sẽ đỏ vì lý do
-     chẳng liên quan. Đã mắc đúng lỗi ấy một lần. */
-  F("đặt ngưỡng bằng đồng thì ghi lại đơn vị và tỷ giá lúc đặt",
-    thr.dat.donVi === "VND" && thr.dat.tyGia === thr.dat.tyGiaDangChay
-      && Math.abs(thr.dat.usd - 255000000 / thr.dat.tyGiaDangChay) < 1,
-    JSON.stringify(thr.dat));
-  F("và im lặng khi chưa lệch — một dòng chữ hiện mãi thì người ta thôi đọc",
-    thr.dat.imLang === true);
-  F("tỷ giá trôi thì nói thẳng ý định đã lệch bao nhiêu",
-    /8[.,]0%/.test(thr.troi) && thr.nay > 255000000 * 1.07 && thr.nay < 255000000 * 1.09,
-    thr.troi.slice(0, 130));
+  F("g\u00f5 ng\u01b0\u1ee1ng b\u1eb1ng \u0111\u1ed3ng th\u00ec l\u01b0u ra USD, kh\u00f4ng l\u01b0u \u0111\u1ed3ng",
+    Math.abs(doLa.luuUSD - 255000000 / doLa.tyGia) < 1,
+    doLa.luuUSD + " USD \u1edf t\u1ef7 gi\u00e1 " + doLa.tyGia);
+  F("t\u1ef7 gi\u00e1 tr\u00f4i KH\u00d4NG \u0111\u1ee5ng v\u00e0o ng\u01b0\u1ee1ng \u2014 n\u00f3 l\u00e0 ch\u00ednh s\u00e1ch t\u00ednh b\u1eb1ng \u0111\u00f4",
+    doLa.sauTroi === doLa.luuUSD, doLa.luuUSD + " \u2192 " + doLa.sauTroi);
+  F("v\u00e0 kh\u00f4ng c\u00f2n c\u1ea3nh b\u00e1o \u0027\u00fd \u0111\u1ecbnh \u0111\u00e3 l\u1ec7ch\u0027 \u2014 b\u00e1o v\u1ec1 chuy\u1ec7n kh\u00f4ng sai l\u00e0 c\u00e1ch nhanh nh\u1ea5t \u0111\u1ec3 ng\u01b0\u1eddi ta th\u00f4i \u0111\u1ecdc c\u1ea3nh b\u00e1o",
+    !doLa.coCanhBao && !doLa.conBien);
+
+  /* ---------- 16b. HỢP ĐỒNG ĐÃ CHỐT: ĐÔ LÀ ĐIỀU KHOẢN, ĐỒNG LÀ SỐ CHỐT ---------- */
+  const hdc = await p.evaluate(() => {
+    const o = DB.opps.find(x => CTR_STAGES.indexOf(x.stage) >= 0 && x.ext && x.ext.advCalcResult);
+    if (!o) return { khong: true };
+    const cu = cur;
+    const lam = (id, c2) => {
+      setCur(c2);
+      const c = { id: id, name: id, oppId: o.id, templateId: DB.templates[0].id,
+                  status: "draft", by: ME, created: new Date(TODAY), manual: {}, notes: "",
+                  donVi: cur, tyGia: rate(cur), snap: ctrFieldVals(o) };
+      DB.contracts.unshift(c);
+      const nhap = ctrVals(c, o).advance;
+      ctrSetStatus(id, "approved", "ctrApproveOk");
+      ctrSetStatus(id, "signed", "ctrSentOk");
+      const ky = ctrVals(c, o).advance;
+      DB.contracts.splice(DB.contracts.indexOf(c), 1);
+      return { nhap, ky };
+    };
+    const dong = lam("ctDong", "VND"), dola = lam("ctDoLa", "USD");
+    setCur(cu);
+    return { dong, dola };
+  });
+  F("b\u1ea3n nh\u00e1p in M\u1ed8T s\u1ed1 \u2014 ph\u00e1p ch\u1ebf \u0111ang so\u1ea1n, th\u00eam ch\u1eef ch\u1ec9 t\u1ed5 r\u1ed1i",
+    !hdc.khong && hdc.dong.nhap.indexOf("(") < 0, hdc.dong.nhap);
+  F("h\u1ee3p \u0111\u1ed3ng \u0110\u00c3 K\u00dd d\u1ef1ng b\u1eb1ng \u0111\u1ed3ng in c\u1ea3 hai: \u0111\u00f4 l\u00e0 \u0111i\u1ec1u kho\u1ea3n, \u0111\u1ed3ng l\u00e0 s\u1ed1 \u0111\u00e3 ch\u1ed1t",
+    /USD \(.*VND/.test(hdc.dong.ky), hdc.dong.ky);
+  F("v\u00e0 c\u00f3 ghi r\u00f5 t\u1ef7 gi\u00e1 l\u00fac ch\u1ed1t",
+    /\d{2}\.\d{3}/.test(hdc.dong.ky), hdc.dong.ky);
+  F("h\u1ee3p \u0111\u1ed3ng d\u1ef1ng b\u1eb1ng \u0111\u00f4 v\u1eabn ch\u1ec9 in m\u1ed9t s\u1ed1 \u2014 kh\u00f4ng th\u00eam ngo\u1eb7c th\u1eeba",
+    hdc.dola.ky.indexOf("(") < 0, hdc.dola.ky);
 
   /* ---------- 17. MỘT KHOẢN TIỀN, MỘT CON SỐ ----------
      Ba khoản tạm ứng có HAI ô nhập trên cùng biểu mẫu: ô của phần Tài chính
@@ -606,5 +636,5 @@ try {
   await b.close();
   srv.close();
 }
-console.log(FAILED ? "\n" + FAILED + " phép kiểm HỎNG" : "\n67 đạt · 0 hỏng");
+console.log(FAILED ? "\n" + FAILED + " phép kiểm HỎNG" : "\n71 đạt · 0 hỏng");
 process.exit(FAILED ? 1 : 0);
