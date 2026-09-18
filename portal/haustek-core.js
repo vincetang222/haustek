@@ -4442,9 +4442,14 @@ const TV_LECH_TRAN = 20;
    Ba trường tạm ứng đi vào đề xuất tạm ứng riêng; findersFeePct đi vào ghi
    chú. Trường tiền nào KHÔNG nằm trong hai nhóm ấy thì bị chặn — trường mới
    thêm sau này tự bị chặn thay vì tự bị nuốt. */
-const TV_CHUYEN_DUOC = ["artistSharePct", "termMonths", "exclusivityMonths",
-                        "totalAdvanceUSD", "initialAdvanceUSD", "marketingFundUSD",
-                        "findersFeePct"];
+const TV_CHUYEN_DUOC = ["artistSharePct", "totalAdvanceUSD", "initialAdvanceUSD",
+                        "marketingFundUSD", "findersFeePct"];
+/* Trường điều khoản KHÔNG mang tiền, có đích đến thật. Trước đây hai trường
+   này nằm trong TV_CHUYEN_DUOC nhưng không có đuôi USD / Pct nên vòng soát
+   không bao giờ tra tới; giờ vòng soát bắt cả khoá lạ mang số nên chúng
+   phải có chỗ đứng đúng, không thì hai trường chính đáng bị chính hàng rào
+   mới chặn. */
+const TV_TEN_DK = { termMonths: 1, exclusivityMonths: 1 };
 const TV_TEN_TIEN = {
   totalAdvanceUSD:   { vi: "tổng tạm ứng",    en: "total advance" },
   initialAdvanceUSD: { vi: "tạm ứng ban đầu", en: "initial advance" },
@@ -4561,7 +4566,7 @@ function tvKiemGoi(goi) {
    Cố ý KHÔNG gửi boQuaKiem: ai bỏ qua bước kế toán là dữ kiện kiểm soát
    nội bộ của Haustek, không phải việc của bên kia.
    ===================================================================== */
-const TV_TRA_VER  = "1.1.0";
+const TV_TRA_VER  = "1.2.0";
 const TV_TRA_KHOA = "haustek.portal.contracts.v1";
 /* id giai đoạn của CRM (STAGES). "portal" = deal đang ở phía Portal chờ
    quyết; "legal" = đã duyệt, tới lượt pháp chế soạn hợp đồng. */
@@ -4576,8 +4581,13 @@ function tvTrangThaiDx(id) {
 /* Câu cho người đọc. Nói thẳng khi hợp đồng duyệt mà tạm ứng bị trả: một
    deal mất khoản tạm ứng có thể không còn là deal ấy nữa, nên nó không
    được trông hệt mọi deal khác đang ở "legal". */
-function tvChiTiet(hd, ung) {
+function tvChiTiet(hd, ung, tv) {
   const ra = [];
+  /* Ba ca của thương vụ CHƯA trình. Trước bản 1.2 gói chỉ mang thương vụ
+     đã trình, nên A&R bên CRM không đọc được dòng nào cho deal mình vừa
+     gửi: im lặng ở đúng khoảng thời gian họ cần biết nhất. */
+  if (tv && tv.trangThai === "daBo") return "Portal đã bỏ thương vụ" + (tv.lyDo ? " · " + tv.lyDo : "");
+  if (tv && tv.trangThai === "moi") return tv.khoa ? "Đã gắn đối tác, chưa trình" : "Đã nhận, chưa gắn đối tác";
   if (hd === "submitted") ra.push("Đề xuất hợp đồng đang chờ kế toán soát");
   else if (hd === "checked") ra.push("Kế toán đã soát, đang chờ giám đốc duyệt");
   else if (hd === "approved") ra.push("Hợp đồng đã duyệt");
@@ -4601,24 +4611,33 @@ function thuongVuLienQuan(deXuatId) {
     return !!(tv.deXuat && tv.deXuat.some(x => x.id === deXuatId));
   });
 }
+/* Bản 1.2: gói mang CẢ BA trạng thái, không chỉ "daTrinh".
+   Lý do: 13 deal trình xong mà chưa ai quyết, hoặc một deal Portal đã bỏ,
+   trước đây không có dòng nào bên CRM đọc được — A&R đứng nhìn một khoảng
+   trống và phải đi hỏi. Một deal chết mà nằm im không ai đếm thì tệ hơn
+   một deal chết có tên. Gói vẫn KHÔNG mang một con số tiền nào. */
 function tvGoiTra() {
   const kho = thuongVuOf(), deals = [];
   Object.keys(kho).forEach(id => {
     const tv = kho[id];
-    if (!tv || tv.trangThai !== "daTrinh") return;   /* chưa trình thì chưa có gì để báo */
+    if (!tv) return;
     const ds = (tv.deXuat && tv.deXuat.length ? tv.deXuat
               : (tv.deXuatId ? [{ id: tv.deXuatId, loai: "hopDong" }] : []))
       .map(x => ({ id: x.id, loai: x.loai, trangThai: tvTrangThaiDx(x.id) }))
       .filter(x => x.trangThai);
     const hd  = (ds.find(x => x.loai === "hopDong") || {}).trangThai || null;
     const ung = (ds.find(x => x.loai === "tamUng")  || {}).trangThai || null;
-    deals.push({
-      dealId: tv.dealId, updatedAt: nowISO(), by: "portal",
+    const d = {
+      dealId: tv.dealId, trangThai: tv.trangThai, updatedAt: nowISO(),
       portalPartyKey: tv.khoa || null,
-      giaiDoan: TV_GIAI_DOAN[hd] || "portal",
-      chiTiet: tvChiTiet(hd, ung),
+      giaiDoan: tv.trangThai === "daBo" ? "negotiation"
+              : tv.trangThai === "moi"  ? "portal"
+              : (TV_GIAI_DOAN[hd] || "portal"),
+      chiTiet: tvChiTiet(hd, ung, tv),
       deXuat: ds
-    });
+    };
+    if (tv.trangThai === "daBo" && tv.lyDo) d.lyDo = tv.lyDo;
+    deals.push(d);
   });
   return { v: TV_TRA_VER, source: "haustek-portal", at: nowISO(), total: deals.length, deals };
 }
@@ -4631,16 +4650,32 @@ function tvPhatGoi(boi) {
   return g;
 }
 
+/* MỖI TRƯỜNG Ở ĐÂY PHẢI ĐỔI ĐƯỢC MỘT QUYẾT ĐỊNH. Portal không clone CRM;
+   nó chỉ nhận đủ để chạy quy trình xét duyệt. Phép thử một dòng: trường
+   này có đổi được câu trả lời cho "nhận gói hay từ chối", "đây có phải
+   bên đúng không, trình hay không", hay "báo gì về CRM" hay không.
+     ten      · tên người Portal đọc, và là chữ CRM duy nhất ra tới ghi chú đề xuất
+     khoaCrm  · CRM đề nghị gắn vào bên nào; Portal quyết lại rồi trả về
+     tenCrm   · tên hiện khi chưa gắn đối tác
+     loaiBen  · label hay nghệ sĩ, là vế so với tiền tố A: / L:
+     phuTrach · viên lọc "Của tôi"
+     giaTri   · ô số và cột Giá trị, CHỈ ĐỂ HIỆN, không chạm sổ nào
+     quyen    · deal phân phối hay xuất bản trỏ tới hai bên khác nhau
+     terms    · đầu vào duy nhất của cửa trình
+   Đã CẮT: country, vì nó không đổi được câu "đây có phải bên đúng không";
+   và closeDate, vì nó ghi vào bản ghi rồi không dòng nào đọc — applyApproved
+   chọn kỳ bằng kỳ mở tiếp theo, nên ngày ấy không chạm một mốc tiền nào. */
 function tvNoiDung(d) {
   return {
     ten: chuoi(d.dealName || d.dealId),
     khoaCrm: d.portalPartyKey ? String(d.portalPartyKey) : null,
     tenCrm: chuoi(d.account || ""),
-    loaiBen: d.accountType === "label" ? "label" : "artist",
-    nuoc: chuoi(d.country || ""),
+    /* KHÔNG tự bịa. Gói không khai accountType thì trước đây loaiBen lặng
+       lẽ thành "artist", tức Portal dựng một khẳng định của riêng mình rồi
+       đem đi so với tiền tố khoá. */
+    loaiBen: d.accountType === "label" ? "label" : d.accountType === "artist" ? "artist" : null,
     phuTrach: chuoi(d.owner || ""),
     giaTri: tvSo(d.amountUSD),
-    ngayDong: d.closeDate ? String(d.closeDate) : null,
     quyen: { dist: !!(d.rights && d.rights.dist), pub: !!(d.rights && d.rights.pub), yt: !!(d.rights && d.rights.yt) },
     /* NGUYÊN VĂN, không quy đổi ở đây */
     terms: d.terms && typeof d.terms === "object" ? JSON.parse(JSON.stringify(d.terms)) : null
@@ -4690,7 +4725,16 @@ function tvNhanGoi(goi, boi) {
     if (cu) {
       const nd = tvNoiDung(d);
       if (tvGiongNhau(cu, nd)) { bo.push(d.dealId); return; }
-      if (cu.trangThai !== "moi") {
+      /* ĐÓNG BĂNG LÀ ĐÓNG BĂNG ĐIỀU KHOẢN, KHÔNG PHẢI ĐÓNG BĂNG NHÃN.
+         Dòng lệch chỉ lưu truoc/sau của terms, nên một khác biệt NGOÀI terms
+         sinh ra một dòng lệch có truoc trùng khít sau: một xung đột không
+         xảy ra, đặt trước mặt giám đốc. Đo được: đổi mặc định loaiBen từ
+         "artist" sang null làm một gói không đổi một chữ ra {lech: 1}.
+         Tên deal, tên tài khoản, loại bên, người phụ trách và giá trị CRM
+         khai KHÔNG đổi được quyết định đã lên bàn, nên chúng làm mới bình
+         thường kể cả trên thương vụ đã chốt. Chỉ terms mới đóng băng. */
+      const khacDk = tvChuoiOn(cu.terms) !== tvChuoiOn(nd.terms);
+      if (cu.trangThai !== "moi" && khacDk) {
         /* TRẦN VÀ CHẶN TRÙNG. terms đã đóng băng nên truoc/sau không bao giờ
            đổi; CRM đồng bộ lại cả bộ mỗi lần nó lưu, nên cùng một xung đột
            được ghi lại mãi. Đo được: 450 lần gửi lại cùng một gói → 450 bản
@@ -4704,6 +4748,13 @@ function tvNhanGoi(goi, boi) {
                             && tvChuoiOn(cuoi.truoc) === tvChuoiOn(moi.truoc);
         if (!trung) cu.lech = ds.concat([moi]).slice(-TV_LECH_TRAN);
         lech.push(d.dealId);
+      }
+      if (cu.trangThai !== "moi") {
+        const giuDk = cu.terms;
+        Object.assign(cu, nd);
+        cu.terms = giuDk;                /* điều khoản vẫn đóng băng */
+        cu.nhanLuc = now;
+        if (!khacDk) capNhat.push(d.dealId);
         return;
       }
       Object.assign(cu, nd);
@@ -4810,8 +4861,20 @@ function tvTrinh(id, boi, byRole) {
      trường tiền mới thêm sau này cũng tự bị chặn thay vì tự bị nuốt. */
   const rac = [], ketDong = [];
   for (const k of Object.keys(t)) {
-    if (!/USD$|Pct$/.test(k)) continue;              /* chỉ soát trường mang tiền */
     const v = t[k];
+    /* CHỐT CHẶN THEO ĐUÔI TÊN chỉ vững chừng nào CRM giữ đúng quy ước. Đo
+       được: gói mang passThrough 30, không đuôi Pct, TRÌNH QUA. Một lần gõ
+       sai đuôi là hàng rào biến mất. Nên khoá LẠ MANG SỐ cũng chặn.
+       Khoá lạ mang CHUỖI hoặc BOOLEAN thì cho qua, để CRM còn thêm được
+       nhãn mà không chặn cả deal. Phải kiểm typeof TRƯỚC, không được dùng
+       Number(): Number(true) là 1 và isFinite(1) là true, nên luật viết
+       bằng Number() sẽ chặn đúng boolean mà nó vừa hứa cho qua. */
+    if (!/USD$|Pct$/.test(k)) {
+      if (typeof v === "number" && isFinite(v) && v > 0
+          && TV_CHUYEN_DUOC.indexOf(k) < 0 && TV_TEN_DK[k] === undefined)
+        ketDong.push(k + " " + v + " (khoá lạ mang số)");
+      continue;
+    }
     if (v === undefined || v === null || v === "") continue;
     const n = Number(v);
     /* KIỂM RÁC TRƯỚC, LỌC ĐÍCH ĐẾN SAU — thứ tự này quan trọng.

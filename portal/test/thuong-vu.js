@@ -682,7 +682,7 @@ check("Gói trả về mang đúng dấu và đúng bản", () => {
   A.proposals.review(r.deXuat[0].id, "approve", "Đồng ý", "GĐ", "mgmt");
   const g = goiRa();
   must(g, "chưa phát gói nào");
-  must(g.v === A.thuongVu.traVer && g.v === "1.1.0", "bản = " + g.v);
+  must(g.v === A.thuongVu.traVer && g.v === "1.2.0", "bản = " + g.v);
   must(g.source === "haustek-portal", "nguồn = " + g.source);
   return g.v + " · " + g.deals.length + " deal";
 });
@@ -714,11 +714,31 @@ check("Không gửi boQuaKiem sang CRM — đó là kiểm soát nội bộ", ()
   const d = goiRa().deals.find(x => x.dealId === "TRA-4");
   must(!/boQuaKiem/.test(JSON.stringify(d)), "gói trả về KHÔNG được mang boQuaKiem");
 });
-check("Thương vụ chưa trình thì không có trong gói", () => {
+check("Bản 1.2 báo CẢ thương vụ chưa trình và thương vụ đã bỏ, vẫn không mang tiền", () => {
+  /* Trước bản 1.2 gói chỉ mang "daTrinh", nên 13 deal trình xong mà chưa ai
+     quyết, hoặc một deal Portal đã bỏ, không có dòng nào bên CRM đọc được.
+     A&R đứng nhìn một khoảng trống ở đúng lúc cần biết nhất. */
   A.thuongVu.nhanGoi(goi([deal("TRA-5")]), "CRM");
   const g = A.thuongVu.goiTra();
-  must(!g.deals.some(d => d.dealId === "TRA-5"), "deal chưa trình lọt vào gói");
-  must(g.deals.every(d => d.portalPartyKey), "mọi deal trong gói phải có portalPartyKey");
+  const d5 = g.deals.find(d => d.dealId === "TRA-5");
+  must(d5, "deal chưa trình phải có dòng trong gói");
+  must(d5.trangThai === "moi" && d5.giaiDoan === "portal", "chặng của deal chưa trình sai: " + d5.giaiDoan + "/" + d5.trangThai);
+  must(d5.chiTiet === "Đã nhận, chưa gắn đối tác", "câu cho người đọc sai: " + d5.chiTiet);
+  must(d5.portalPartyKey === null, "deal chưa gắn bên mà đã có khoá");
+
+  A.thuongVu.nhanGoi(goi([deal("TRA-6")]), "CRM");
+  const tv6 = A.thuongVu.list().find(x => x.dealId === "TRA-6");
+  A.thuongVu.bo(tv6.id, "Đối tác đổi ý", "KD");
+  const g2 = A.thuongVu.goiTra();
+  const d6 = g2.deals.find(d => d.dealId === "TRA-6");
+  must(d6 && d6.trangThai === "daBo", "deal đã bỏ phải có dòng trong gói");
+  must(d6.giaiDoan === "negotiation", "chặng của deal đã bỏ sai: " + d6.giaiDoan);
+  must(d6.lyDo === "Đối tác đổi ý", "gói không mang lý do bỏ");
+
+  /* Gói vẫn KHÔNG mang một con số tiền nào, kể cả khi mang thêm hai trạng thái. */
+  const chuoi = JSON.stringify(g2);
+  must(!/amountUSD|giaTri|USD|feePct|doanh thu/i.test(chuoi), "gói trả về lọt số tiền");
+  return g2.deals.length + " deal · ba trạng thái · không số tiền";
 });
 
 
