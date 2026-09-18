@@ -8490,6 +8490,31 @@ function saveOppForm(again){
   } catch(e){ ext.advCalcResult = null; ext.finInput = null; }
   if(!bk('advanceDeal')){ ext.advCalcResult = null; ext.finInput = null; }
 
+  /* MỘT KHOẢN TIỀN, MỘT CON SỐ — HOÀ GIẢI TRƯỚC KHI GHI.
+     Ba khoản tạm ứng có HAI ô nhập trên cùng biểu mẫu: ô của phần Tài chính
+     (of_advance / of_mktBudget / of_prodFund, đều là ô BẮT BUỘC) và ô của
+     bộ tính advance (ac_adv / ac_mkt / ac_prod). Bấm "áp dụng" trong bộ tính
+     thì hai bên khớp; gõ thẳng vào ô biểu mẫu thì không.
+     Đo được trong một vòng chạy thật: gõ quỹ sản xuất 75.000.000 ₫ vào ô
+     biểu mẫu thì ext.prodFund = 2.941,18 USD, nhưng advCalcResult
+     .productionFund = 0 — và gói gửi portal lấy từ vế sau, nên
+     productionFundUSD = 0. Đúng cái rò vừa bịt ở vòng trước, đi vào bằng
+     một cửa khác.
+     Luật: Ô BIỂU MẪU LÀ ĐIỀU KHOẢN, bộ tính chỉ là công cụ thử. Nên ô biểu
+     mẫu thắng, và con số ấy được ghi ngược vào advCalcResult để mọi nơi đọc
+     xuống dưới — hợp đồng, gói bàn giao, mô hình tài chính — đều thấy đúng
+     một số. Hoà giải ở ĐÂY, một lần, thay vì bắt từng nơi đọc tự chọn giữa
+     hai nguồn rồi mỗi nơi chọn một kiểu. */
+  if(ext.advCalcResult){
+    const hoaGiai = [['advance','initialAdvance'], ['mktBudget','marketingFund'],
+                     ['prodFund','productionFund']];
+    hoaGiai.forEach(function(c){
+      const oBieuMau = ext[c[0]];
+      if(typeof oBieuMau === 'number' && isFinite(oBieuMau))
+        ext.advCalcResult[c[1]] = oBieuMau;
+    });
+  }
+
   let acct = DB.accounts.find(a=>a.name === v('account'));
   if(!acct){
     acct = {id:'a'+(++uid), name:v('account'),

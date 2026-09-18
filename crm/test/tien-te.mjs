@@ -560,10 +560,51 @@ try {
     /8[.,]0%/.test(thr.troi) && thr.nay > 255000000 * 1.07 && thr.nay < 255000000 * 1.09,
     thr.troi.slice(0, 130));
 
+  /* ---------- 17. MỘT KHOẢN TIỀN, MỘT CON SỐ ----------
+     Ba khoản tạm ứng có HAI ô nhập trên cùng biểu mẫu: ô của phần Tài chính
+     và ô của bộ tính advance. Gõ thẳng vào ô biểu mẫu (không bấm "áp dụng")
+     thì hai bên rời nhau, và gói bàn giao lấy từ vế bộ tính. Đo được trong
+     một vòng chạy thật: quỹ sản xuất 75.000.000 ₫ vào ô biểu mẫu ra
+     ext.prodFund = 2.941,18 nhưng advCalcResult.productionFund = 0. */
+  const hg = await p.evaluate(() => {
+    const cu = cur; setCur("VND");
+    go("opps"); openOppForm();
+    const cb = document.getElementById("of_advanceDeal");
+    if (cb && cb.getAttribute("data-on") !== "1") togChk("of_advanceDeal");
+    const s2 = (id, v) => { const e = document.getElementById("of_" + id); if (e) e.value = v; };
+    s2("name", "Hoà giải hai ô"); s2("account", "Thử"); s2("type", "New client");
+    s2("stage", "won"); s2("close", "2026-12-31");
+    s2("ytIncome", soRaO(25000000)); s2("audioIncome", "0");
+    /* gõ THẲNG vào ô biểu mẫu, KHÔNG động tới bộ tính */
+    s2("advance", soRaO(510000000)); s2("mktBudget", soRaO(51000000)); s2("prodFund", soRaO(76500000));
+    saveOppForm();
+    const o = DB.opps.find(x => x.name === "Hoà giải hai ô");
+    if (!o || !o.ext) { setCur(cu); return { hong: true }; }
+    const a = o.ext.advCalcResult || {};
+    const t2 = handoffOf(o).terms;
+    const ra = {
+      oBieuMau: { adv: o.ext.advance, mkt: o.ext.mktBudget, prod: o.ext.prodFund },
+      boTinh:   { adv: a.initialAdvance, mkt: a.marketingFund, prod: a.productionFund },
+      goi:      { adv: t2.initialAdvanceUSD, prod: t2.productionFundUSD, tong: t2.totalAdvanceUSD }
+    };
+    DB.opps.splice(DB.opps.indexOf(o), 1);
+    setCur(cu);
+    return ra;
+  });
+  F("lưu được deal gõ thẳng vào ô biểu mẫu", !hg.hong);
+  F("bộ tính nhận đúng con số của ô biểu mẫu — ô biểu mẫu là điều khoản",
+    !hg.hong && hg.oBieuMau.adv === hg.boTinh.adv && hg.oBieuMau.mkt === hg.boTinh.mkt
+      && hg.oBieuMau.prod === hg.boTinh.prod,
+    JSON.stringify(hg.oBieuMau) + " vs " + JSON.stringify(hg.boTinh));
+  F("và gói bàn giao mang tổng đủ cả ba khoản",
+    !hg.hong && Math.abs(hg.goi.tong - (hg.oBieuMau.adv + hg.oBieuMau.mkt + hg.oBieuMau.prod)) <= 2
+      && hg.goi.prod > 0,
+    JSON.stringify(hg.goi));
+
   F("không lỗi JavaScript nào", loi.length === 0, loi[0]);
 } finally {
   await b.close();
   srv.close();
 }
-console.log(FAILED ? "\n" + FAILED + " phép kiểm HỎNG" : "\n64 đạt · 0 hỏng");
+console.log(FAILED ? "\n" + FAILED + " phép kiểm HỎNG" : "\n67 đạt · 0 hỏng");
 process.exit(FAILED ? 1 : 0);
