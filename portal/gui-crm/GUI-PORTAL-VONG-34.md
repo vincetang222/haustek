@@ -156,6 +156,22 @@ trước khi gửi, trên đúng `haustek-core.js` của nhánh `crm-cau-noi-v2`
 | `flowThroughPct: 30` | **chặn** — "Thương vụ mang điều khoản tiền mà bước này chưa nối chân: flowThroughPct 30%" |
 | `labelArtistRatePct: 70` | **chặn** — cùng câu ấy |
 | `rightsHolder: "label"` | qua (không đuôi `USD`/`Pct` nên chốt chặn tiền không đụng tới) |
+| `productionFundUSD: 0` | qua |
+| `productionFundUSD: 3000` | **chặn** — "…chưa nối chân: productionFundUSD $3,000" |
+
+**`productionFundUSD` là trường mới, và nó vá một chỗ rò có thật.** `advModel`
+bên CRM tính `totalAdv = tạm ứng + marketing + sản xuất`, và mọi con số A&R
+đọc — số tháng thu hồi, ROI, cảnh báo — đều dựa trên tổng ba khoản. Gói gửi
+sang các bạn thì từ trước tới nay chỉ cộng hai. Đo trên dữ liệu thật của CRM:
+**6 deal lệch, tổng 9.900 USD** (o173 thiếu 2.900, o165 thiếu 1.500). Nghĩa là
+Portal chưa từng biết khoản quỹ sản xuất ấy tồn tại, nên không ghi nợ và không
+thu hồi — tiền Haustek đã chi mà sổ bên kia không có. Và vì hai bên tính số
+tháng thu hồi trên hai mẫu số lệch nhau ~8%, chúng không bao giờ ra cùng một
+câu trả lời.
+
+Xin đưa `productionFundUSD` vào `TV_CHUYEN_DUOC` **cùng lượt** với chỗ cộng nó
+vào khoản ứng — `ung` hiện lấy `max(totalAdvanceUSD, initialAdvanceUSD +
+marketingFundUSD)`, nên thêm quỹ sản xuất vào vế thứ hai là đủ.
 
 **Chặn như vậy là đúng, và chúng tôi gửi trường ấy đi vì nó chặn.** So với
 hiện trạng — A&R gõ 30%, gói bỏ trường đi, sổ cái vét 100%, đối tác nhận 0
