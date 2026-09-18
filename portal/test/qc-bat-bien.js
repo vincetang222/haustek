@@ -375,7 +375,7 @@ check("roi.tuDoiTac báo đúng phần bên cấp quyền thật sự nhận", (
   L.forEach(p => {
     const d = A.roi.tuDoiTac(p.partyKey);
     if (!d || d.artistShare == null || !d.periods) return;
-    const c = A.advanceCalc(p.partyKey, 1, 0.12);
+    const c = A.advanceCalc(p.partyKey, 1);
     if (!(c.monthlyGross > 0)) return;
     const that = c.monthlyNet / c.monthlyGross;
     n++;

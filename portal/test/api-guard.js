@@ -820,13 +820,14 @@ check("Chỉ giám đốc duyệt / từ chối; kinh doanh và kế toán bị 
   mustThrow(() => A.proposals.review(pr.id, "approve", "", "Giám đốc", "mgmt"), "duyệt lại đề xuất đã duyệt");
   return "sales/accounting bị chặn · accounting kiểm · mgmt duyệt " + pr.id;
 });
-check("Duyệt tạm ứng ghi đúng khoản phải thu hồi vào sổ tạm ứng của đối tác", () => {
+check("Duyệt tạm ứng ghi đúng khoản đã ứng vào sổ tạm ứng của đối tác · thu hồi đúng gốc", () => {
   const pr = A.proposals.list({ partyKey: "A:" + A2.id }).filter(p => p.status === "approved" && p.type === "advance")[0];
   must(pr, "thiếu đề xuất tạm ứng đã duyệt của B");
   const s = H.api.summary("artist", A2.id, approvedKey, "rec");
-  must(s.advance && s.advance.opening >= pr.calc.repayment - 0.011, "sổ tạm ứng của B (" + (s.advance ? s.advance.opening : "không có") + ") chưa cộng khoản thu hồi " + pr.calc.repayment);
-  must(Math.abs(pr.calc.repayment - pr.terms.amount * (1 + pr.terms.feePct)) < 0.02, "khoản thu hồi ≠ số ứng × (1 + phí)");
-  return "ứng " + pr.terms.amount + " → thu hồi " + pr.calc.repayment + " · sổ mở " + s.advance.opening;
+  must(s.advance && s.advance.opening >= pr.terms.amount - 0.011, "sổ tạm ứng của B (" + (s.advance ? s.advance.opening : "không có") + ") chưa cộng khoản đã ứng " + pr.terms.amount);
+  /* KHÔNG có phí: sổ mở phải bằng đúng khoản ứng, không cộng thêm gì. */
+  must(pr.calc.repayment === undefined && pr.terms.feePct === undefined, "đề xuất tạm ứng còn mang phí");
+  return "ứng " + pr.terms.amount + " · sổ mở " + s.advance.opening;
 });
 check("Đối tác không đề nghị vượt mức tối đa; đề nghị hợp lệ vào hàng chờ với trạng thái đã gửi", () => {
   donDx("A:" + A3.id);
@@ -842,8 +843,8 @@ check("Đối tác không đề nghị vượt mức tối đa; đề nghị h�
   return pr.id + " tối đa " + o.maxAdvance + " · ROI nội bộ " + noiBo.calc.roi;
 });
 check("Gói tạm ứng của đối tác không lộ doanh thu gộp, phần Haustek giữ, biên hay ROI", () => {
-  const cam = ["gross", "monthlyGross", "keep", "monthlyKeep", "margin", "marginNew", "retainedDuringRecoup", "feeIncome", "roi", "roiAnnual", "roiFee", "calc", "currentFeePct", "retainedNow", "retainedNew"];
-  const chu = /gross|haustekFee|counterpartShare|doanh thu gộp|phí dịch vụ|service fee/i;
+  const cam = ["gross", "monthlyGross", "keep", "monthlyKeep", "margin", "marginNew", "retainedDuringRecoup", "feeIncome", "roi", "roiAnnual", "roiFee", "calc", "currentFeePct", "retainedNow", "retainedNew", "feePct", "repayment"];
+  const chu = /gross|haustekFee|counterpartShare|doanh thu gộp|phí dịch vụ|service fee|phí ứng|phí tạm ứng|advance fee|advance charge/i;
   ["artist"].forEach(r => {
     const o = H.api.advanceOffer(r, A3.id), ds = H.api.proposals(r, A3.id);
     khoaCua(o, cam, "advanceOffer"); khoaCua(ds, cam, "proposals");
@@ -896,7 +897,7 @@ check("Kế toán: chỉ tiền ra vào — dự báo doanh thu, chỉ tiêu, do
   must(A.statements.list(approvedKey).total >= 0, "kế toán không gọi được bảng kê");
   must(!A.quyen.man("tong-quan") && !A.quyen.man("doi-tac") && A.quyen.man("chi-tra") && A.quyen.man("xet-duyet"), "ma trận màn cho kế toán sai");
   const p = A.proposals.list({ type: "advance" })[0];
-  must(p && p.calc.roi === undefined && p.calc.margin === undefined && p.calc.repayment > 0, "bản tính cho kế toán vẫn mang ROI / biên");
+  must(p && p.calc.roi === undefined && p.calc.margin === undefined && p.calc.amount > 0, "bản tính cho kế toán vẫn mang ROI / biên");
   return "chặn dự báo, chỉ tiêu, tỷ lệ; sổ đối tác không doanh thu; bản tính không ROI";
 });
 check("Kinh doanh: chỉ đối tác mình phụ trách, chỉ tiêu và đề xuất của mình; ví, rút tiền, ROI bị chặn", () => {
@@ -907,7 +908,7 @@ check("Kinh doanh: chỉ đối tác mình phụ trách, chỉ tiêu và đề x
   must(A.parties.list({}).counts.all === rows.length, "ô đếm sổ đối tác cho kinh doanh vẫn đếm cả công ty");
   const ds = A.proposals.list();
   must(ds.length > 0 && ds.every(p => p.by === me.name), "kinh doanh thấy đề xuất của người khác");
-  must(ds.every(p => p.calc.roi === undefined && p.calc.feeIncome === undefined && p.calc.recommendation), "bản tính cho kinh doanh vẫn mang ROI / phí thu về");
+  must(ds.every(p => p.calc.roi === undefined && p.calc.retainedDuringRecoup === undefined && p.calc.recommendation), "bản tính cho kinh doanh vẫn mang ROI / phần Haustek giữ");
   const khac = A.staff.list().find(s => s.role === "sales" && s.id !== me.id);
   mustThrow(() => A.sales.kpi(khac.id, 9), "chỉ tiêu của người khác");
   must(A.sales.kpi(me.id, 9).accounts >= 0, "kinh doanh không xem được chỉ tiêu của mình");
@@ -1842,10 +1843,10 @@ check("Tác quyền không rời cổng nội bộ, và tác giả chỉ thấy 
 });
 
 /* ===================== VÒNG 19: ỨNG THEO SỐ THÁNG · CẢNH BÁO RỦI RO ===================== */
-check("Khoản ứng đo bằng SỐ THÁNG doanh thu (12–18), không phải phần trăm", () => {
+check("Khoản ứng đo bằng SỐ THÁNG doanh thu · thu hồi đúng số đã ứng, không có phí", () => {
   nhu("S01");
   const pk = A.parties.list().rows[0].partyKey;
-  const c0 = A.advanceCalc(pk, 0, 0.12);
+  const c0 = A.advanceCalc(pk, 0);
   must(c0.capThang === 12 || c0.capThang === 15 || c0.capThang === 18,
     "trần tạm ứng phải là 12 / 15 / 18 tháng, đang là " + c0.capThang);
   must(c0.monthlyForward > 0, "chưa có thu nhập ròng một tháng để nhân ra trần");
@@ -1853,18 +1854,23 @@ check("Khoản ứng đo bằng SỐ THÁNG doanh thu (12–18), không phải p
   must(Math.abs(c0.maxAdvance - c0.monthlyForward * c0.capThang) <= 1,
     "trần " + c0.maxAdvance + " không bằng " + c0.capThang + " × " + c0.monthlyForward);
   /* hạng tốt hơn thì được nhiều tháng hơn, và không hạng nào vượt 18 hay dưới 12 */
-  const bac = A.parties.list().rows.slice(0, 30).map(x => A.advanceCalc(x.partyKey, 0, 0.12))
+  const bac = A.parties.list().rows.slice(0, 30).map(x => A.advanceCalc(x.partyKey, 0))
     .filter(x => x.monthlyForward > 0);
   must(bac.length > 0, "không có đối tác nào để kiểm");
   must(bac.every(x => x.capThang >= 12 && x.capThang <= 18), "có hạng nằm ngoài khoảng 12–18 tháng");
   must(bac.every(x => (x.grade === "A" ? x.capThang === 18 : x.grade === "B" ? x.capThang === 15 : x.capThang === 12)),
     "số tháng không khớp hạng rủi ro");
   /* ứng đúng trần thì ungThang phải bằng capThang: người đọc biết mình đang ứng mấy tháng */
-  const cT = A.advanceCalc(pk, c0.maxAdvance, 0.12);
+  const cT = A.advanceCalc(pk, c0.maxAdvance);
   must(Math.abs(cT.ungThang - cT.capThang) <= 0.1, "ứng đúng trần mà không ra đúng số tháng");
-  /* phí ứng 12% là một thứ KHÁC, không được lẫn vào số tháng */
-  must(cT.feePct === 0.12 && Math.abs(cT.repayment - cT.amount * 1.12) < 0.01, "phí ứng không còn là 12% cộng thêm");
-  return c0.capThang + " tháng cho hạng " + c0.grade + " · trần = tháng × ròng · phí 12% tách riêng";
+  /* KHÔNG CÒN KHÁI NIỆM PHÍ ỨNG. Portal thu hồi đúng số đã ứng, nên lợi
+     nhuận trên khoản ứng chỉ còn là phần Haustek giữ trong lúc thu hồi. */
+  must(cT.feePct === undefined && cT.feeIncome === undefined && cT.roiFee === undefined && cT.repayment === undefined,
+    "advanceCalc còn khái niệm phí ứng");
+  /* roi trả về đã làm tròn 3 chữ số thập phân, nên so ở đúng mức ấy. */
+  must(Math.abs(cT.roi - cT.retainedDuringRecoup / cT.amount) < 1e-3,
+    "roi không còn là phần Haustek giữ chia khoản ứng: " + cT.roi + " so " + (cT.retainedDuringRecoup / cT.amount));
+  return c0.capThang + " tháng cho hạng " + c0.grade + " · trần = tháng × ròng · không có phí ứng, thu hồi đúng gốc";
 });
 
 check("Cảnh báo rủi ro: ROI dưới 20% hoặc hoàn vốn quá 12 tháng thì phải kêu, quá 28 tháng là mức không nên ký", () => {
@@ -1895,11 +1901,11 @@ check("Cảnh báo rủi ro: ROI dưới 20% hoặc hoàn vốn quá 12 tháng t
 check("Cảnh báo rủi ro của tạm ứng không lọt sang vai đã bị giấu ROI", () => {
   nhu("S01");
   const pk = A.parties.list().rows[0].partyKey;
-  const mg = A.advanceCalc(pk, 5000, 0.12);
+  const mg = A.advanceCalc(pk, 5000);
   must(mg.ruiRo && mg.ruiRo.muc, "giám đốc mất cảnh báo rủi ro");
   ["S03", "S07"].forEach(id => {
     const me = nhu(id);
-    const c = A.advanceCalc(pk, 5000, 0.12);
+    const c = A.advanceCalc(pk, 5000);
     must(c.roi === undefined, "vai " + me.role + " lẽ ra không thấy roi");
     must(c.ruiRo === undefined, "vai " + me.role + " đọc được ROI qua cảnh báo rủi ro");
     must(JSON.stringify(c).indexOf("dưới sàn") < 0, "câu cảnh báo mang số ROI vẫn lọt cho " + me.role);

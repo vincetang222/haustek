@@ -28,33 +28,33 @@ HT.dangKy({
     vi: {
       navXetDuyet: 'Xét duyệt', h1: 'Xét duyệt đề xuất',
       mo: 'Kinh doanh hoặc đối tác đề xuất, kế toán kiểm số, giám đốc duyệt. Mỗi đề xuất có bản tính ROI và hạng rủi ro lúc tạo.',
-      kCho: 'Chờ xét duyệt', kChoS: '{a} chờ kiểm số · {b} đã kiểm', kUng: 'Tạm ứng đề xuất đang chờ', kUngS: 'tổng số tiền', kDuyet: 'Đã duyệt', kDuyetS: '{a} tạm ứng · {b} hợp đồng', kTuChoi: 'Từ chối / trả lại', kRoi: 'ROI trung bình', kRoiS: 'trên vốn ứng · các tạm ứng đang chờ',
+      kCho: 'Chờ xét duyệt', kChoS: '{a} chờ kiểm số · {b} đã kiểm', kUng: 'Tạm ứng đề xuất đang chờ', kUngS: 'tổng số tiền', kDuyet: 'Đã duyệt', kDuyetS: '{a} tạm ứng · {b} hợp đồng', kTuChoi: 'Từ chối / trả lại', kRoi: 'ROI trung bình', kRoiS: 'phần Haustek giữ ÷ khoản ứng · các tạm ứng đang chờ',
       tabCho: 'Đang chờ', tabXong: 'Đã xử lý', tabToi: 'Của tôi',
       loaiAll: 'Mọi loại', loaiUng: 'Tạm ứng', loaiHd: 'Hợp đồng', tim: 'Tìm đối tác, mã đề xuất…',
       cDx: 'Đề xuất', cTk: 'Đối tác', cNoiDung: 'Nội dung', cRoi: 'ROI', cHang: 'Hạng', cKn: 'Khuyến nghị', cTt: 'Trạng thái', cTuoi: 'Tuổi', cThaoTac: 'Thao tác', ngay: 'ngày',
       themUng: 'Đề xuất tạm ứng', themHd: 'Đề xuất hợp đồng',
       duyet: 'Duyệt', tuChoi: 'Từ chối', traLai: 'Trả lại', kiem: 'Đã kiểm số', rut: 'Rút', guiLai: 'Gửi lại',
-      hoiDuyet: 'Duyệt {id} cho {t}?', hoiDuyetUng: 'Khoản {a} cộng phí ứng {f} được ghi vào sổ tạm ứng của đối tác và thu hồi từ phần họ được hưởng mỗi kỳ.', hoiDuyetHd: 'Phí Haustek {f} áp cho đối tác từ kỳ mở tiếp theo, hạn {m} tháng; hợp đồng cũ hết hiệu lực.',
+      hoiDuyet: 'Duyệt {id} cho {t}?', hoiDuyetUng: 'Khoản {a} được ghi vào sổ tạm ứng của {t} và thu hồi đúng số ấy từ phần đối tác được hưởng mỗi kỳ.', hoiDuyetHd: 'Phí dịch vụ Haustek {f} áp cho đối tác từ kỳ mở tiếp theo, hạn {m} tháng; hợp đồng cũ hết hiệu lực.',
       hoiTuChoi: 'Từ chối {id}', hoiTraLai: 'Trả lại {id} để bổ sung', lyDo: 'Lý do (đối tác và người đề xuất đều thấy)', hoiKiem: 'Xác nhận đã kiểm số {id}', hoiKiemMo: 'Bạn đã đối chiếu thu nhập 12 kỳ với bảng kê và sổ tạm ứng.', ghiChu: 'Ghi chú',
       daDuyet: 'Đã duyệt {id}', daTuChoi: 'Đã từ chối {id}', daTraLai: 'Đã trả lại {id}', daKiem: 'Đã ghi kiểm số {id}', daRut: 'Đã rút {id}', daGuiLai: 'Đã gửi lại {id}',
       khong: 'Không có đề xuất nào', khongMo: 'Đề xuất mới bấm ở góc phải, hoặc từ ngăn hồ sơ đối tác.', khongXong: 'Chưa có đề xuất nào đã xử lý', khongXongMo: 'Đề xuất đã duyệt, từ chối hay rút sẽ nằm ở đây. Việc đang chờ ở tab Đang chờ.', khongToi: 'Bạn chưa tạo đề xuất nào', khongToiMo: 'Đề xuất do bạn tạo, kể cả đã xử lý, sẽ nằm ở đây.', khongLoc: 'Không có đề xuất khớp bộ lọc', khongLocMo: 'Thử bỏ loại đang chọn hoặc xoá ô tìm.', veCho: 'Xem tab Đang chờ',
-      fTk: 'Đối tác (tên hoặc mã)', fSo: 'Số tiền tạm ứng (USD)', fPhi: 'Phí ứng', fGhi: 'Mục đích / ghi chú', fHan: 'Kỳ hạn (tháng)', fPhiHd: 'Phí Haustek trên doanh thu gộp', fDocQuyen: 'Độc quyền', xemTinh: 'Bản tính theo số đang nhập', khongThayTk: 'Không tìm thấy đối tác “{q}”', daTao: 'Đã tạo đề xuất {id}',
+      fTk: 'Đối tác (tên hoặc mã)', fSo: 'Số tiền tạm ứng (USD)', fGhi: 'Mục đích / ghi chú', fHan: 'Kỳ hạn (tháng)', fPhiHd: 'Phí dịch vụ Haustek trên doanh thu gộp', fDocQuyen: 'Độc quyền', xemTinh: 'Bản tính theo số đang nhập', khongThayTk: 'Không tìm thấy đối tác “{q}”', daTao: 'Đã tạo đề xuất {id}',
       chiTiet: 'Đề xuất', cuaDoiTac: 'gửi từ cổng đối tác'
     },
     en: {
       navXetDuyet: 'Approvals', h1: 'Proposal approvals',
       mo: 'Sales or partners propose, accounting checks, the director approves. Each proposal carries ROI and risk grade at creation.',
-      kCho: 'Awaiting approval', kChoS: '{a} awaiting check · {b} checked', kUng: 'Advances proposed, pending', kUngS: 'total amount', kDuyet: 'Approved', kDuyetS: '{a} advances · {b} contracts', kTuChoi: 'Rejected / returned', kRoi: 'Average ROI', kRoiS: 'on capital · pending advances',
+      kCho: 'Awaiting approval', kChoS: '{a} awaiting check · {b} checked', kUng: 'Advances proposed, pending', kUngS: 'total amount', kDuyet: 'Approved', kDuyetS: '{a} advances · {b} contracts', kTuChoi: 'Rejected / returned', kRoi: 'Average ROI', kRoiS: 'what Haustek keeps ÷ advance · pending advances',
       tabCho: 'Pending', tabXong: 'Handled', tabToi: 'Mine',
       loaiAll: 'Any kind', loaiUng: 'Advances', loaiHd: 'Contracts', tim: 'Search partner, proposal id…',
       cDx: 'Proposal', cTk: 'Partner', cNoiDung: 'Terms', cRoi: 'ROI', cHang: 'Grade', cKn: 'Recommendation', cTt: 'Status', cTuoi: 'Age', cThaoTac: 'Actions', ngay: 'days',
       themUng: 'Propose advance', themHd: 'Propose contract',
       duyet: 'Approve', tuChoi: 'Reject', traLai: 'Return', kiem: 'Checked', rut: 'Withdraw', guiLai: 'Resubmit',
-      hoiDuyet: 'Approve {id} for {t}?', hoiDuyetUng: '{a} plus the {f} advance fee is booked to the partner’s advance ledger and recouped from their share each period.', hoiDuyetHd: 'Haustek fee {f} applies to the partner from the next open period for {m} months; the old contract ends.',
+      hoiDuyet: 'Approve {id} for {t}?', hoiDuyetUng: '{a} is booked to {t}’s advance ledger and recouped at face value from their share each period.', hoiDuyetHd: 'Haustek fee {f} applies to the partner from the next open period for {m} months; the old contract ends.',
       hoiTuChoi: 'Reject {id}', hoiTraLai: 'Return {id} for changes', lyDo: 'Reason (visible to the partner and the proposer)', hoiKiem: 'Confirm figures checked for {id}', hoiKiemMo: 'You have reconciled 12 periods of earnings against statements and the advance ledger.', ghiChu: 'Note',
       daDuyet: 'Approved {id}', daTuChoi: 'Rejected {id}', daTraLai: 'Returned {id}', daKiem: 'Recorded check for {id}', daRut: 'Withdrew {id}', daGuiLai: 'Resubmitted {id}',
       khong: 'No proposals', khongMo: 'Create one at the top right, or from a partner’s drawer.', khongXong: 'Nothing decided yet', khongXongMo: 'Approved, rejected and withdrawn proposals land here. Open items are under Pending.', khongToi: 'You have not created a proposal', khongToiMo: 'Proposals you create, including decided ones, land here.', khongLoc: 'No proposals match the filter', khongLocMo: 'Clear the type or the search box.', veCho: 'Go to Pending',
-      fTk: 'Partner (name or id)', fSo: 'Advance amount (USD)', fPhi: 'Advance fee', fGhi: 'Purpose / note', fHan: 'Term (months)', fPhiHd: 'Haustek fee on gross revenue', fDocQuyen: 'Exclusive', xemTinh: 'Calculation for the figures entered', khongThayTk: 'No partner matching “{q}”', daTao: 'Created proposal {id}',
+      fTk: 'Partner (name or id)', fSo: 'Advance amount (USD)', fGhi: 'Purpose / note', fHan: 'Term (months)', fPhiHd: 'Haustek fee on gross revenue', fDocQuyen: 'Exclusive', xemTinh: 'Calculation for the figures entered', khongThayTk: 'No partner matching “{q}”', daTao: 'Created proposal {id}',
       chiTiet: 'Proposal', cuaDoiTac: 'sent from the partner portal'
     }
   },
@@ -148,7 +148,7 @@ function thaoTac(c, act, id) {
     catch (e) { c.thongBao(e.message, 'no'); }
   }
   if (act === 'approve') {
-    var mo = p.type === 'advance' ? t('hoiDuyetUng').replace('{a}', c.tien2(p.terms.amount)).replace('{f}', HT.fmt.pct(p.terms.feePct)) : t('hoiDuyetHd').replace('{f}', HT.fmt.pct(p.terms.feePct)).replace('{m}', p.terms.months);
+    var mo = p.type === 'advance' ? t('hoiDuyetUng').replace('{a}', c.tien2(p.terms.amount)).replace('{t}', p.party.name) : t('hoiDuyetHd').replace('{f}', HT.fmt.pct(p.terms.feePct)).replace('{m}', p.terms.months);
     c.hoiThoai({ tieuDe: t('hoiDuyet').replace('{id}', id).replace('{t}', p.party.name), moTa: HM.esc(mo), than: HTM.theDeXuat(p, { tien: c.tien2 }) + '<label class="fld" style="margin-top:12px">' + HM.esc(t('ghiChu')) + '</label><input class="in" data-o="note">', dong: t('duyet'), rong: true })
       .then(function (f) { if (f) chay(f.note); setTimeout(function () { var m = document.querySelector('.modal'); if (m) HB.gan(m); }, 20); });
     setTimeout(function () { var m = document.querySelector('.modal'); if (m) HB.gan(m); }, 20);
@@ -191,9 +191,9 @@ function xemTinh(c, loai) {
   var pk = pkIn && pkIn.value; if (!pk && tkIn) { var r = chonTk(c, tkIn.value); pk = r ? r.partyKey : null; }
   if (!pk) { host.innerHTML = '<p class="say">' + HM.esc(tx('fTk')) + '</p>'; return; }
   try {
-    var calc = loai === 'advance' ? A.advanceCalc(pk, +md.querySelector('[data-o="amount"]').value || 0, (+md.querySelector('[data-o="fee"]').value || 12) / 100)
+    var calc = loai === 'advance' ? A.advanceCalc(pk, +md.querySelector('[data-o="amount"]').value || 0)
       : A.contractCalc(pk, { months: +md.querySelector('[data-o="months"]').value || 24, feePct: (+md.querySelector('[data-o="fee"]').value || 15) / 100 });
-    var gia = { type: loai, status: 'submitted', calc: calc, terms: loai === 'advance' ? { amount: calc.amount, feePct: calc.feePct } : { months: calc.months, feePct: calc.feePct }, history: [], moTa: A.partyName(pk), moTaEn: A.partyName(pk) };
+    var gia = { type: loai, status: 'submitted', calc: calc, terms: loai === 'advance' ? { amount: calc.amount } : { months: calc.months, feePct: calc.feePct }, history: [], moTa: A.partyName(pk), moTaEn: A.partyName(pk) };
     host.innerHTML = '<h4 class="sec">' + HM.esc(tx('xemTinh')) + ' · ' + HM.esc(A.partyName(pk)) + '</h4>' + HTM.theDeXuat(gia, { tien: c.tien2 });
     HB.gan(host);
   } catch (e) { host.innerHTML = '<p class="say">' + HM.esc(e.message) + '</p>'; }
@@ -204,7 +204,9 @@ function hoiDeXuat(c, loai, partyKey) {
   var than = (partyKey ? '<input type="hidden" data-o="pk" value="' + HM.esc(partyKey) + '"><div class="bar" style="margin-bottom:10px">' + HM.hinh(ten, A.partyClientId(partyKey), 'sm') + '<b>' + HM.esc(ten) + '</b><span class="muted mono" style="font-size:12px">' + HM.esc(A.partyClientId(partyKey)) + '</span></div>'
       : '<label class="fld">' + HM.esc(t('fTk')) + '</label><input class="in" data-o="tk" placeholder="Nightform Records · HTK-L001">') +
     (loai === 'advance'
-      ? '<div class="grid g2" style="margin-bottom:0"><div><label class="fld">' + HM.esc(t('fSo')) + '</label><input class="in" type="number" data-o="amount" min="100" step="100" value="2000"></div><div><label class="fld">' + HM.esc(t('fPhi')) + ' (%)</label><input class="in" type="number" data-o="fee" min="0" max="50" step="1" value="' + Math.round(A.advanceFee * 100) + '"></div></div>'
+      /* KHÔNG có ô phí ứng. Portal thu hồi đúng số đã ứng; một ô gõ tay ở
+         đây là cách dựng một khoản phí sau lưng quyết định. */
+      ? '<div style="margin-bottom:0"><label class="fld">' + HM.esc(t('fSo')) + '</label><input class="in" type="number" data-o="amount" min="100" step="100" value="2000"></div>'
       : '<div class="grid g3" style="margin-bottom:0"><div><label class="fld">' + HM.esc(t('fHan')) + '</label><input class="in" type="number" data-o="months" min="6" max="60" step="6" value="24"></div><div><label class="fld">' + HM.esc(t('fPhiHd')) + ' (%)</label><input class="in" type="number" data-o="fee" min="3" max="50" step="1" value="15"></div><div><label class="fld">' + HM.esc(t('fDocQuyen')) + '</label><select class="in" data-o="exclusive"><option value="">—</option><option value="1">' + HM.esc(t('fDocQuyen')) + '</option></select></div></div>') +
     '<label class="fld" style="margin-top:12px">' + HM.esc(t('fGhi')) + '</label><input class="in" data-o="note">' +
     '<div data-tinh style="margin-top:14px"></div>';
@@ -213,7 +215,7 @@ function hoiDeXuat(c, loai, partyKey) {
       if (!f) return;
       var pk = f.pk; if (!pk) { var r = chonTk(c, f.tk); if (!r) { c.thongBao(t('khongThayTk').replace('{q}', f.tk || ''), 'no'); return; } pk = r.partyKey; }
       try {
-        var pr = loai === 'advance' ? A.proposals.proposeAdvance(pk, { amount: +f.amount, feePct: (+f.fee || 0) / 100, note: f.note }, me.name, me.role)
+        var pr = loai === 'advance' ? A.proposals.proposeAdvance(pk, { amount: +f.amount, note: f.note }, me.name, me.role)
           : A.proposals.proposeContract(pk, { months: +f.months, feePct: (+f.fee || 0) / 100, exclusive: !!f.exclusive, note: f.note }, me.name, me.role);
         c.thongBao(t('daTao').replace('{id}', pr.id), 'ok'); c.dongNgan(); c.veLai();
       } catch (e) { c.thongBao(e.message, 'no'); }

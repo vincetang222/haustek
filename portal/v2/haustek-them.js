@@ -35,7 +35,7 @@ var CHU = {
     dxSubmitted: 'Chờ kiểm số', dxChecked: 'Đã kiểm · chờ duyệt', dxApproved: 'Đã duyệt', dxRejected: 'Từ chối', dxReturned: 'Trả lại bổ sung', dxWithdrawn: 'Đã rút',
     knApprove: 'Nên duyệt', knReview: 'Cần cân nhắc', knDecline: 'Không nên duyệt',
     dxNet: 'Thu nhập ròng / tháng', dxNetS: 'trung bình {n} kỳ đã xét duyệt', dxGross: 'Doanh thu gộp / tháng', dxKeep: 'Haustek giữ / tháng', dxGrowth: 'Tăng trưởng 3 kỳ', dxCv: 'Độ dao động', dxConc: 'Tập trung bài đầu',
-    dxProj: 'Thu nhập ròng 12 tháng dự kiến', dxMax: 'Mức nên ứng tối đa', dxRepay: 'Khoản phải thu hồi', dxRecoup: 'Thời gian thu hồi', dxFee: 'Phí ứng thu về', dxRetained: 'Haustek giữ trong thời gian thu hồi', dxRoi: 'ROI trên vốn ứng', dxRoiH: 'Hiệu quả vốn ứng (trong thời gian thu hồi)', dxRoiFee: 'Lợi suất phí ứng / năm', dxRoiA: 'quy năm', dxCover: 'Độ phủ (thu nhập 12 tháng ÷ khoản thu hồi)',
+    dxProj: 'Thu nhập ròng 12 tháng dự kiến', dxMax: 'Mức nên ứng tối đa', dxUng: 'Khoản tạm ứng', dxRecoup: 'Thời gian thu hồi', dxRetained: 'Haustek giữ trong thời gian thu hồi', dxRoi: 'Phần Haustek giữ ÷ khoản ứng', dxRoiH: 'Hiệu quả vốn ứng (trong thời gian thu hồi)', dxRoiA: 'quy năm',
     dxGrade: 'Hạng rủi ro', dxProjGross: 'Doanh thu gộp dự kiến cả kỳ hạn', dxNow: 'Haustek giữ theo hợp đồng hiện tại', dxNew: 'Haustek giữ theo đề xuất', dxDelta: 'Chênh lệch', dxFeeNow: 'Phí hiện tại', dxFeeNew: 'Phí đề xuất', dxEnd: 'Hợp đồng hiện tại hết hạn', dxDue: 'đến hạn gia hạn', dxTerm: 'Kỳ hạn', thang: ' tháng',
     dxKyMoi: 'Ký mới', dxGiaHan: 'Gia hạn', dxHanSuyRa: 'ngày suy ra, chưa có hợp đồng',
     dxBoKiem: 'Không qua kế toán',
@@ -64,7 +64,7 @@ var CHU = {
     dxSubmitted: 'Awaiting check', dxChecked: 'Checked · awaiting approval', dxApproved: 'Approved', dxRejected: 'Rejected', dxReturned: 'Returned for changes', dxWithdrawn: 'Withdrawn',
     knApprove: 'Recommend approve', knReview: 'Needs judgement', knDecline: 'Recommend decline',
     dxNet: 'Net earnings / month', dxNetS: 'average over {n} approved periods', dxGross: 'Gross revenue / month', dxKeep: 'Haustek keeps / month', dxGrowth: 'Growth, 3 periods', dxCv: 'Volatility', dxConc: 'Top-track concentration',
-    dxProj: 'Projected 12-month net', dxMax: 'Suggested maximum advance', dxRepay: 'Amount to recoup', dxRecoup: 'Recoupment time', dxFee: 'Advance fee earned', dxRetained: 'Haustek keeps during recoupment', dxRoi: 'ROI on the advance', dxRoiH: 'Return on the advance (over recoupment)', dxRoiFee: 'Fee yield / year', dxRoiA: 'annualised', dxCover: 'Coverage (12-month net ÷ amount to recoup)',
+    dxProj: 'Projected 12-month net', dxMax: 'Suggested maximum advance', dxUng: 'Advance amount', dxRecoup: 'Recoupment time', dxRetained: 'Haustek keeps during recoupment', dxRoi: 'Haustek’s share ÷ advance', dxRoiH: 'Return on the advance (over recoupment)', dxRoiA: 'annualised',
     dxGrade: 'Risk grade', dxProjGross: 'Projected gross over the term', dxNow: 'Haustek keeps under current contract', dxNew: 'Haustek keeps under proposal', dxDelta: 'Difference', dxFeeNow: 'Current fee', dxFeeNew: 'Proposed fee', dxEnd: 'Current contract ends', dxDue: 'renewal due', dxTerm: 'Term', thang: ' months',
     dxKyMoi: 'New signing', dxGiaHan: 'Renewal', dxHanSuyRa: 'inferred date, no contract on file',
     dxBoKiem: 'No accounting check',
@@ -291,11 +291,9 @@ function theDeXuat(pr, opts) {
       neu(c.projected12, function () { return oSo(t('dxProj'), tien(c.projected12)); }) +
       neu(c.maxAdvance, function () { return oSo(t('dxMax'), tien(c.maxAdvance), null, c.amount > c.maxAdvance); }) +
       '</div><h4 class="sec" style="margin-top:14px">' + esc(t('dxRoiH')) + '</h4><div class="sig">' +
-      neu(c.repayment, function () { return oSo(t('dxRepay'), tien(c.repayment), pct(c.feePct) + ' ' + (HT.lang === 'en' ? 'fee' : 'phí ứng')); }) +
-      oSo(t('dxRecoup'), c.recoupMonths == null ? '—' : c.recoupMonths + t('thang'), null, c.recoupMonths != null && c.recoupMonths > 12) +
-      neu(c.feeIncome, function () { return oSo(t('dxFee'), tien(c.feeIncome)); }) +
+      neu(c.amount, function () { return oSo(t('dxUng'), tien(c.amount)); }) +
+      oSo(t('dxRecoup'), c.recoupMonths == null ? '—' : c.recoupMonths + t('thang'), null, c.recoupMonths != null && c.capThang != null && c.recoupMonths > c.capThang) +
       neu(c.retainedDuringRecoup, function () { return oSo(t('dxRetained'), tien(c.retainedDuringRecoup), pct(c.margin) + ' × ' + tien(c.monthlyGross) + t('thang')); }) +
-      neu(c.roiFee, function () { return oSo(t('dxRoiFee'), pct(c.roiFee)); }) +
       neu(c.roi, function () { return oSo(t('dxRoi'), pct(c.roi), c.roiAnnual != null && c.recoupMonths >= 6 ? pct(c.roiAnnual) + ' ' + t('dxRoiA') : null); }) +
       '</div>';
   } else {

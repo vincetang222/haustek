@@ -3936,16 +3936,47 @@ function roiRuiRo(roi, thang, ng) {
     roiSan: ng.roiSan, thangTot: ng.thangTot, thangToiDa: ng.thangToiDa };
 }
 
-const ADVANCE_FEE = 0.12;              /* phí tạm ứng mặc định 12% (Amuse 10–20%) */
+/* CỬA CẢNH BÁO CỦA TẠM ỨNG, tách khỏi ROI_RUI_RO của bảng tính hợp đồng.
+   Không có phí ứng thì roi = retained/amount, mà retained =
+   (amount/monthlyNet) × monthlyGross × margin, nên amount TRIỆT TIÊU.
+   Đo trên L:38: ứng 0,25× / 0,5× / 0,8× / 1,0× / 1,25× trần đều ra roi
+   0,489; 1,46× ra 0,491; chỉ tụt ở 1,5× (0,477) và 2,0× (0,358), khi thu
+   hồi đã vượt trần 24 tháng của dòng retained. Một ngưỡng đặt trên con số
+   không nhúc nhích theo biến người duyệt gõ thì không phải một cửa.
+   Thứ CÓ nhúc nhích là số tháng thu hồi.
+   Hai mốc, cả hai đều KHÔNG phải số mới: 24 là trần mà chính bản tính
+   thôi đếm thu nhập (Math.min(recoupMonths, 24)); capThang là số tháng
+   ADVANCE_THANG đã cấp cho hạng ấy. */
+const UNG_RUI_RO = { tranThang: 24 };
+function ungRuiRo(thang, capThang, hang) {
+  const y = [];
+  let muc = "ok";
+  if (thang == null) {
+    muc = "cao";
+    y.push({ vi: "Chưa có thu nhập ròng để thu hồi", en: "No net earnings to recoup from" });
+  } else if (thang > UNG_RUI_RO.tranThang) {
+    muc = "cao";
+    y.push({ vi: "Thu hồi mất " + thang + " tháng, quá trần " + UNG_RUI_RO.tranThang + " tháng",
+             en: "Recoupment takes " + thang + " months, past the " + UNG_RUI_RO.tranThang + "-month ceiling" });
+  } else if (thang > capThang) {
+    muc = "canh";
+    y.push({ vi: "Thu hồi mất " + thang + " tháng, quá " + capThang + " tháng cấp cho hạng " + hang,
+             en: "Recoupment takes " + thang + " months, past the " + capThang + " months granted to grade " + hang });
+  }
+  return { muc, thang, y, tranThang: UNG_RUI_RO.tranThang, capThang,
+    nhan: muc === "cao" ? { vi: "Rủi ro cao", en: "High risk" }
+        : muc === "canh" ? { vi: "Cần cân nhắc", en: "Needs a second look" }
+        : { vi: "Trong ngưỡng", en: "Within thresholds" } };
+}
 
-/* KHOẢN ỨNG ĐO BẰNG SỐ THÁNG DOANH THU, KHÔNG PHẢI PHẦN TRĂM.
+/* KHOẢN ỨNG ĐO BẰNG SỐ THÁNG DOANH THU.
    Thị trường ứng cho đối tác 12 đến 18 tháng thu nhập ròng: hạng A được
-   18 tháng, B 15, C 12. Phần trăm 12% ở trên là PHÍ ỨNG, một thứ khác
-   hẳn, không được lẫn với số tháng. */
+   18 tháng, B 15, C 12. Portal KHÔNG thu phí trên khoản ứng; thu hồi
+   đúng số đã ứng. Lợi nhuận của Haustek đến từ phí dịch vụ theo hợp
+   đồng, cắt trên doanh thu gộp, không từ một khoản thu của đối tác. */
 const ADVANCE_THANG = { A: 18, B: 15, C: 12 };
-function advanceCalc(partyKey, amount, feePct) {
+function advanceCalc(partyKey, amount) {
   amount = Math.round((+amount || 0) * 100) / 100;
-  feePct = feePct == null ? ADVANCE_FEE : Math.max(0, Math.min(0.5, +feePct));
   const ser = partySeries(partyKey, 12), coSo = ser.filter(x => x.gross > 0);
   const st = thongKe(coSo.map(x => x.net));
   const monthlyNet = cents(st.mean), monthlyGross = cents(thongKe(coSo.map(x => x.gross)).mean);
@@ -3963,34 +3994,37 @@ function advanceCalc(partyKey, amount, feePct) {
   const capThang  = ADVANCE_THANG[grade];
   const maxAdvance = Math.round(monthlyForward * capThang);
   const ungThang  = monthlyForward > 0 && amount > 0 ? Math.round(amount / monthlyForward * 10) / 10 : null;
-  const repayment = cents(amount * (1 + feePct));
-  const recoupMonths = monthlyNet > 0 && amount > 0 ? Math.round(repayment / monthlyNet * 10) / 10 : null;
-  const feeIncome = cents(amount * feePct);
+  /* THU HỒI ĐÚNG SỐ ĐÃ ỨNG. Không cộng thêm gì, nên không còn "khoản phải
+     thu hồi" tách khỏi "khoản đã ứng": hai số là một. */
+  const recoupMonths = monthlyNet > 0 && amount > 0 ? Math.round(amount / monthlyNet * 10) / 10 : null;
   const retained = recoupMonths ? cents(Math.min(recoupMonths, 24) * monthlyGross * margin) : 0;
-  const roi = amount > 0 ? (feeIncome + retained) / amount : 0;
+  const roi = amount > 0 ? retained / amount : 0;
   const roiAnnual = recoupMonths ? roi * 12 / Math.max(recoupMonths, 1) : null;
-  const roiFee = recoupMonths ? feePct * 12 / Math.max(recoupMonths, 1) : null;   /* lợi suất riêng của phí ứng, tính theo năm */
-  const coverage = repayment > 0 ? projected12 / repayment : null;
+  const coverage = amount > 0 ? projected12 / amount : null;
   const reasons = [];
   if (grade === "C") reasons.push({ vi: "Hạng rủi ro C: dao động lớn, giảm mạnh, tập trung vào một bài hoặc quá ít kỳ có số", en: "Risk grade C: volatile, falling, concentrated on one track or too few periods" });
   if (amount > maxAdvance) reasons.push({ vi: "Vượt mức nên ứng " + fmt.usd0(maxAdvance) + " (" + capThang + " tháng thu nhập ròng dự kiến)" + (ungThang ? ", khoản này bằng " + ungThang + " tháng" : ""), en: "Above the suggested cap " + fmt.usd0(maxAdvance) + " (" + capThang + " months of projected net)" + (ungThang ? "; this one is " + ungThang + " months" : "") });
-  if (recoupMonths != null && recoupMonths > 12) reasons.push({ vi: "Thu hồi mất " + recoupMonths + " tháng, quá 12 tháng", en: "Recoupment takes " + recoupMonths + " months, over 12" });
+  /* MỐC LÀ SỐ THÁNG CHÍNH SÁCH ĐÃ CẤP CHO HẠNG ẤY, không phải 12 cứng.
+     Cấp cho hạng A 18 tháng rồi kêu ở tháng 13 là một cảnh báo do chính
+     sách tự sinh ra để chống lại mình. Đo trước khi sửa: ở 0,8× trần có
+     140 bên vừa mang chip "Trong ngưỡng" vừa in lý do "quá 12 tháng". */
+  if (recoupMonths != null && recoupMonths > capThang) reasons.push({ vi: "Thu hồi mất " + recoupMonths + " tháng, quá " + capThang + " tháng cấp cho hạng " + grade, en: "Recoupment takes " + recoupMonths + " months, past the " + capThang + " months granted to grade " + grade });
   if (recoupMonths == null) reasons.push({ vi: "Chưa có thu nhập ròng để thu hồi", en: "No net earnings to recoup from" });
-  const recommendation = !reasons.length ? "approve" : (grade !== "C" && amount <= maxAdvance * 1.25 && recoupMonths != null && recoupMonths <= 18) ? "review" : "decline";
-  return { partyKey, amount, feePct, repayment, monthlyNet, monthlyGross, monthlyKeep, margin, growth, monthlyForward, capThang, ungThang, ruiRo: roiRuiRo(roi, recoupMonths), roiFee: roiFee == null ? null : Math.round(roiFee * 1000) / 1000, cv: Math.round(st.cv * 1000) / 1000, concentration: Math.round(conc * 1000) / 1000, periods: coSo.length,
-    projected12, grade, maxAdvance, recoupMonths, feeIncome, retainedDuringRecoup: retained, roi: Math.round(roi * 1000) / 1000, roiAnnual: roiAnnual == null ? null : Math.round(roiAnnual * 1000) / 1000, coverage: coverage == null ? null : Math.round(coverage * 100) / 100,
+  const recommendation = !reasons.length ? "approve" : (grade !== "C" && amount <= maxAdvance * 1.25 && recoupMonths != null && recoupMonths <= UNG_RUI_RO.tranThang) ? "review" : "decline";
+  return { partyKey, amount, monthlyNet, monthlyGross, monthlyKeep, margin, growth, monthlyForward, capThang, ungThang, ruiRo: ungRuiRo(recoupMonths, capThang, grade), cv: Math.round(st.cv * 1000) / 1000, concentration: Math.round(conc * 1000) / 1000, periods: coSo.length,
+    projected12, grade, maxAdvance, recoupMonths, retainedDuringRecoup: retained, roi: Math.round(roi * 1000) / 1000, roiAnnual: roiAnnual == null ? null : Math.round(roiAnnual * 1000) / 1000, coverage: coverage == null ? null : Math.round(coverage * 100) / 100,
     recommendation, reasons, series: ser };
 }
 /* Bản dành cho đối tác: không có gộp, biên, phần giữ lại, ROI của Haustek. */
 function advanceOfferOf(partyKey) {
-  const c = advanceCalc(partyKey, 0, ADVANCE_FEE);
-  const vd = c.maxAdvance > 0 ? advanceCalc(partyKey, c.maxAdvance, ADVANCE_FEE) : null;
+  const c = advanceCalc(partyKey, 0);
+  const vd = c.maxAdvance > 0 ? advanceCalc(partyKey, c.maxAdvance) : null;
   const eligible = c.maxAdvance >= 100 && c.grade !== "C";
-  return { monthlyNet: c.monthlyNet, projected12: c.projected12, periods: c.periods, growth: c.growth, grade: c.grade, maxAdvance: c.maxAdvance, capThang: c.capThang, feePct: ADVANCE_FEE,
+  return { monthlyNet: c.monthlyNet, projected12: c.projected12, periods: c.periods, growth: c.growth, grade: c.grade, maxAdvance: c.maxAdvance, capThang: c.capThang,
     example: vd ? { amount: vd.amount, repayment: vd.repayment, recoupMonths: vd.recoupMonths } : null, eligible,
     reason: eligible ? null : (c.grade === "C" ? { vi: "Thu nhập còn dao động hoặc chưa đủ kỳ có số; hãy đề nghị lại sau 3 kỳ.", en: "Earnings are still volatile or too few periods have figures; try again after three periods." } : { vi: "Thu nhập ròng hằng tháng chưa đủ để ứng trước.", en: "Monthly net is not yet enough for an advance." }),
-    note: "Số tối đa = " + c.capThang + " tháng thu nhập ròng dự kiến của bạn. Phí ứng " + Math.round(ADVANCE_FEE * 100) + "% cộng vào khoản phải thu hồi; thu hồi từ phần bạn được hưởng mỗi kỳ cho đến khi đủ.",
-    noteEn: "Maximum = " + c.capThang + " months of your projected net. A " + Math.round(ADVANCE_FEE * 100) + "% advance charge is added to the amount to recoup; recouped from your share each period until met." };
+    note: "Số tối đa = " + c.capThang + " tháng thu nhập ròng dự kiến của bạn. Thu hồi đúng số đã ứng, không cộng thêm, trừ dần từ phần bạn được hưởng mỗi kỳ cho đến khi hết.",
+    noteEn: "Maximum = " + c.capThang + " months of your projected net. You repay exactly what was advanced, with nothing added, offset from your share each period until it clears." };
 }
 function contractCalc(partyKey, terms) {
   terms = terms || {};
@@ -4008,8 +4042,8 @@ function contractCalc(partyKey, terms) {
   const retainedNow = cents(projectedGross * currentFeePct), retainedNew = cents(projectedGross * feePct);
   const end = contractEndOf(partyKey), daysToEnd = Math.round((new Date(end) - ASOF) / 864e5);
   const reasons = [];
-  if (feePct < 0.10) reasons.push({ vi: "Phí Haustek dưới 10%", en: "Haustek fee below 10%" });
-  else if (feePct < 0.12) reasons.push({ vi: "Phí Haustek 10–12%, thấp hơn mức thường 15–25%", en: "Haustek fee 10–12%, below the usual 15–25%" });
+  if (feePct < 0.10) reasons.push({ vi: "Phí dịch vụ Haustek dưới 10%", en: "Haustek fee below 10%" });
+  else if (feePct < 0.12) reasons.push({ vi: "Phí dịch vụ Haustek 10–12%, thấp hơn mức thường 15–25%", en: "Haustek fee 10–12%, below the usual 15–25%" });
   if (retainedNow > 0 && retainedNew < retainedNow * 0.8) reasons.push({ vi: "Phần Haustek giữ lại giảm hơn 20% so với hợp đồng hiện tại", en: "Haustek’s retained amount falls more than 20% versus the current contract" });
   if (coSo.length < 3) reasons.push({ vi: "Chưa đủ 3 kỳ có số để ước tính", en: "Fewer than three periods with figures" });
   if (months > 36 && feePct < 0.15) reasons.push({ vi: "Hạn dài hơn 36 tháng với phí thấp", en: "Term longer than 36 months at a low fee" });
@@ -4255,24 +4289,30 @@ function dealRoiTuDoiTac(partyKey) {
 function proposalId(now) { return sinhMa("deXuat", nhomThang(now), ma => proposalsOf().some(p => p.id === ma)); }
 function proposalsOf() { if (!Array.isArray(state.proposals)) state.proposals = []; return state.proposals; }
 function moTaDeXuat(pr, doiTac) {
-  if (pr.type === "advance") return { vi: "Tạm ứng " + fmt.usd0(pr.terms.amount) + " · phí ứng " + Math.round(pr.terms.feePct * 100) + "%", en: "Advance " + fmt.usd0(pr.terms.amount) + " · " + Math.round(pr.terms.feePct * 100) + "% advance charge" };
+  if (pr.type === "advance") {
+    const m = pr.calc && pr.calc.recoupMonths;
+    return { vi: "Tạm ứng " + fmt.usd0(pr.terms.amount) + (m ? " · thu hồi khoảng " + m + " tháng" : ""),
+             en: "Advance " + fmt.usd0(pr.terms.amount) + (m ? " · about " + m + " months to recoup" : "") };
+  }
   const huong = Math.round((1 - pr.terms.feePct) * 100);
   return doiTac
     ? { vi: "Hợp đồng " + pr.terms.months + " tháng · bạn hưởng " + huong + "%", en: "Contract " + pr.terms.months + " months · you keep " + huong + "%" }
-    : { vi: "Hợp đồng " + pr.terms.months + " tháng · phí Haustek " + Math.round(pr.terms.feePct * 100) + "%", en: "Contract " + pr.terms.months + " months · Haustek fee " + Math.round(pr.terms.feePct * 100) + "%" };
+    : { vi: "Hợp đồng " + pr.terms.months + " tháng · phí dịch vụ Haustek " + Math.round(pr.terms.feePct * 100) + "%", en: "Contract " + pr.terms.months + " months · Haustek fee " + Math.round(pr.terms.feePct * 100) + "%" };
 }
 function proposeAdvance(partyKey, d, by, byRole) {
   if (!coDoiTac(partyKey)) throw new Error("Không có đối tác " + partyKey);
   const amount = Math.round((+d.amount || 0) * 100) / 100;
   if (!(amount >= 100)) throw new Error("Số tiền tạm ứng tối thiểu " + fmt.usd0(100));
-  const feePct = d.feePct == null ? ADVANCE_FEE : Math.max(0, Math.min(0.5, +d.feePct));
-  const calc = advanceCalc(partyKey, amount, feePct);
+  /* d.feePct người gọi truyền vào thì BỎ QUA im lặng, không ném: CRM và mã
+     cũ có thể còn truyền, ném là làm gãy một đường đang chạy để phạt một
+     trường vô hại. Portal không thu phí trên khoản ứng. */
+  const calc = advanceCalc(partyKey, amount);
   if (byRole === "partner" && amount > calc.maxAdvance) throw new Error("Số tiền vượt mức tối đa " + fmt.usd0(calc.maxAdvance));
   const dup = proposalsOf().find(p => p.partyKey === partyKey && p.type === "advance" && ["submitted", "checked", "returned"].includes(p.status));
   if (dup) throw new Error("Đối tác đã có đề xuất tạm ứng " + dup.id + " đang xử lý");
   const now = nowISO();
   const pr = { id: proposalId(now), type: "advance", partyKey, party: { name: partyName(partyKey), clientId: partyClientId(partyKey) }, by: by || "", byRole: byRole || "sales",
-    createdAt: now, updatedAt: now, status: "submitted", terms: { amount, feePct, note: d.note || "" }, calc, history: [{ at: now, status: "submitted", by: by || "", note: d.note || "" }] };
+    createdAt: now, updatedAt: now, status: "submitted", terms: { amount, note: d.note || "" }, calc, history: [{ at: now, status: "submitted", by: by || "", note: d.note || "" }] };
   proposalsOf().unshift(pr);
   audit.log("proposal.advance", pr.id + " · " + pr.party.name + " · " + fmt.usd0(amount), by); store.save();
   return pr;
@@ -4338,9 +4378,10 @@ function reviewProposal(id, action, note, by, role) {
 function applyApproved(pr, by) {
   if (pr.type === "advance") {
     const cur = state.advances[pr.partyKey];
-    const rep = pr.calc.repayment;
-    if (cur) { cur.opening = cents(cur.opening + rep); cur.note = (cur.note ? cur.note + "; " : "") + pr.id + " tạm ứng " + fmt.usd0(pr.terms.amount) + " + phí " + Math.round(pr.terms.feePct * 100) + "%"; }
-    else state.advances[pr.partyKey] = { opening: rep, note: pr.id + " tạm ứng " + fmt.usd0(pr.terms.amount) + " + phí " + Math.round(pr.terms.feePct * 100) + "%", byPeriod: {} };
+    /* Thu hồi đúng số đã ứng: sổ mở bằng chính khoản ứng, không cộng thêm. */
+    const rep = pr.terms.amount;
+    if (cur) { cur.opening = cents(cur.opening + rep); cur.note = (cur.note ? cur.note + "; " : "") + pr.id + " tạm ứng " + fmt.usd0(pr.terms.amount); }
+    else state.advances[pr.partyKey] = { opening: rep, note: pr.id + " tạm ứng " + fmt.usd0(pr.terms.amount), byPeriod: {} };
     pr.applied = { advanceOpening: state.advances[pr.partyKey].opening, at: nowISO() };
     audit.log("advance.fromProposal", pr.party.name + " · " + fmt.usd0(rep), by);
   } else {
@@ -4844,15 +4885,12 @@ function tvTrinh(id, boi, byRole) {
   let prUng = null;
   if (ung >= 100) {
     try {
-      /* KHÔNG truyền feePct: để proposeAdvance dùng mức mặc định của Portal
-         (ADVANCE_FEE). CRM có mô hình tạm ứng riêng, nhưng mức phí thu hồi
-         là chính sách của Portal, không phải con số CRM gửi sang — và giám
-         đốc thấy số sau phí trên bảng xét duyệt trước khi bấm. Nói rõ trong
-         ghi chú để không ai phải đoán vì sao số trên bàn khác số CRM gửi. */
+      /* KHÔNG có phí tạm ứng. Portal thu hồi đúng số đã ứng, nên số trên bàn
+         giám đốc BẰNG số CRM khai. Ghi chú nói rõ nguồn deal để người soát
+         truy được, không để giải thích một chênh lệch nào. */
       prUng = proposeAdvance(tv.khoa, { amount: ung,
         note: "Từ CRM " + tv.dealId + " · đi kèm đề xuất hợp đồng " + pr.id
-            + " · gốc " + fmt.usd0(ung) + ", phí tạm ứng theo mức Portal "
-            + Math.round(ADVANCE_FEE * 100) + "%" }, boi, byRole || "sales");
+            + " · khoản tạm ứng " + fmt.usd0(ung) + ", thu hồi đúng số ấy" }, boi, byRole || "sales");
     } catch (e) {
       /* Đã hỏi trước nên không nên tới đây. Nếu vẫn tới: gỡ đề xuất hợp đồng
          vừa dựng, đừng để lại một nửa. Thương vụ ở lại "moi" để trình lại.
@@ -4952,8 +4990,17 @@ function proposalCounts() {
 function proposalForPartner(p) {
   const mt = moTaDeXuat(p, true);
   return { id: p.id, type: p.type, status: p.status, createdAt: p.createdAt, updatedAt: p.updatedAt,
-    terms: p.type === "advance" ? { amount: p.terms.amount, feePct: p.terms.feePct, note: p.terms.note, noteEn: p.terms.noteEn || ghiChuEn(p.terms.note) } : { months: p.terms.months, partnerPct: Math.round((1 - p.terms.feePct) * 1000) / 1000, note: p.terms.note, noteEn: p.terms.noteEn || ghiChuEn(p.terms.note) },
-    repayment: p.calc.repayment, recoupMonths: p.calc.recoupMonths, moTa: mt.vi, moTaEn: mt.en,
+    /* GHI CHÚ NỘI BỘ KHÔNG RA CỔNG ĐỐI TÁC. Nhánh hợp đồng đã cẩn thận lật
+       feePct thành partnerPct; nhánh tạm ứng thì trước đây đẩy thẳng cả
+       terms.note, mà note do tvTrinh dựng mang mã deal CRM và mã đề xuất
+       hợp đồng nội bộ — scrub không chặn vì đó là chuỗi tự do. Chỉ giữ ghi
+       chú khi chính đối tác là người viết nó. */
+    terms: p.type === "advance"
+      ? { amount: p.terms.amount,
+          note:   p.byRole === "partner" ? p.terms.note : "",
+          noteEn: p.byRole === "partner" ? (p.terms.noteEn || ghiChuEn(p.terms.note)) : "" }
+      : { months: p.terms.months, partnerPct: Math.round((1 - p.terms.feePct) * 1000) / 1000, note: p.terms.note, noteEn: p.terms.noteEn || ghiChuEn(p.terms.note) },
+    recoupMonths: p.calc.recoupMonths, moTa: mt.vi, moTaEn: mt.en,
     history: p.history.map(h => { const co = ["rejected", "returned", "approved"].includes(h.status); return { at: h.at, status: h.status, note: co ? h.note : "", noteEn: co ? (h.noteEn || ghiChuEn(h.note)) : "" }; }) };
 }
 /* dữ liệu mẫu: vài đề xuất đang chờ để bàn giám đốc có việc */
@@ -4965,7 +5012,7 @@ function seedProposals() {
     try {
       const by = sales[n % sales.length] ? sales[n % sales.length].name : "sales";
       if (n % 3 === 2) { const pr = proposeContract(pk, { months: [24, 36][n % 2], feePct: [0.15, 0.18, 0.12, 0.2][n % 4], note: "Gia hạn trước hạn" }, by, "sales"); if (n % 2) reviewProposal(pr.id, "check", "Số đã đối chiếu với bảng kê", "Kế toán", "accounting"); }
-      else { const c = advanceCalc(pk, 0, ADVANCE_FEE); if (c.maxAdvance >= 100) { const pr = proposeAdvance(pk, { amount: Math.round(c.maxAdvance * (0.5 + (n % 3) * 0.3) / 100) * 100, feePct: ADVANCE_FEE, note: n % 2 ? "Sản xuất album mới" : "Chiến dịch quảng bá quý 4" }, by, n === 1 ? "partner" : "sales"); if (n % 2 === 0) reviewProposal(pr.id, "check", "Đã kiểm thu nhập 12 kỳ", "Kế toán", "accounting"); } }
+      else { const c = advanceCalc(pk, 0); if (c.maxAdvance >= 100) { const pr = proposeAdvance(pk, { amount: Math.round(c.maxAdvance * (0.5 + (n % 3) * 0.3) / 100) * 100, note: n % 2 ? "Sản xuất album mới" : "Chiến dịch quảng bá quý 4" }, by, n === 1 ? "partner" : "sales"); if (n % 2 === 0) reviewProposal(pr.id, "check", "Đã kiểm thu nhập 12 kỳ", "Kế toán", "accounting"); } }
     } catch (e) { /* trùng hoặc không đủ điều kiện thì bỏ qua */ }
   });
   proposalsOf().forEach(p => { const d = new Date(Date.now() - (1 + (p.id.charCodeAt(p.id.length - 1) % 9)) * 864e5); const at = d.toISOString().slice(0, 19).replace("T", " "); p.createdAt = at; p.updatedAt = at; p.history.forEach(h => { h.at = at; }); });
@@ -5847,7 +5894,7 @@ const LOI_EN = {
   "Nền tảng chỉ giao cho Vận hành": "Platforms are assigned to Operations only",
   "Nền tảng này đã có": "This platform already exists",
   "Nội dung trống": "Empty content",
-  "Phí Haustek phải trong khoảng 0–99%": "The Haustek fee must be between 0 and 99%",
+  "Phí dịch vụ Haustek phải trong khoảng 0–99%": "The Haustek fee must be between 0 and 99%",
   "Phí chuyển tiền không được âm": "The transfer fee cannot be negative",
   "Phí chuyển tiền vượt 5.000.000 ₫, kiểm lại số đã nhập": "The transfer fee exceeds 5,000,000 ₫; check the figure",
   "Phải cấp mã trước khi đánh dấu đã phát hành": "Codes must be assigned before marking as released",
@@ -6070,7 +6117,7 @@ function dichNhatKy(detail) {
   for (const [re, fn] of NHAT_KY_MAU_EN) { const m = re.exec(detail); if (m) return fn(m); }
   /* chuỗi ghép bằng " · ": dịch từng đoạn (ghi chú mẫu, số tháng, phí, kỳ) */
   return detail.split(" · ").map(d => ghiChuEn(d)
-    .replace(/^(\d+) tháng$/, "$1 months").replace(/^phí (\d+%)$/, "fee $1").replace(/^phí ứng (\d+%)$/, "advance fee $1")
+    .replace(/^(\d+) tháng$/, "$1 months").replace(/^phí (\d+%)$/, "fee $1")
     .replace(/^kỳ (\S+)$/, "period $1").replace(/^quyền (\S+)$/, "profile $1").replace(/^Tạm ứng (.+)$/, "Advance $1").replace(/^Hợp đồng (\d+) tháng$/, "Contract $1 months")).join(" · ");
 }
 /* Ghi chú mẫu (dữ liệu gieo) — tra bảng; ghi chú người gõ để nguyên */
@@ -6083,7 +6130,12 @@ function ghiChuEn(vi) {
   if (GHI_CHU_EN[vi]) return GHI_CHU_EN[vi];
   let m = /^Chiến dịch quảng bá quý (\d)$/.exec(vi); if (m) return "Quarter " + m[1] + " promotion campaign";
   m = /^Đã kiểm thu nhập (\d+) kỳ$/.exec(vi); if (m) return "Income over " + m[1] + " periods checked";
+  /* GIỮ mẫu có "+ phí": các bản ghi sổ tạm ứng đã có trong state mang
+     "+ phí 12%" mãi mãi, xoá mẫu là làm trang Tạm ứng in tiếng Việt khi
+     bật EN cho đúng những dòng lịch sử ấy. Mẫu mới phải đứng SAU, nếu
+     không nó nuốt mẫu cũ. */
   m = /^(.+?) tạm ứng (.+?) \+ phí (.+)$/.exec(vi); if (m) return m[1] + " advance " + m[2] + " + fee " + m[3];
+  m = /^(.+?) tạm ứng (.+)$/.exec(vi); if (m) return m[1] + " advance " + m[2];
   return vi;
 }
 function nowISO() { return new Date().toISOString().slice(0, 19).replace("T", " "); }
@@ -7540,12 +7592,12 @@ function boQuyen(a) {
 /* ---- lược số liệu theo vai ---- */
 /* Bản tính ROI: giám đốc thấy hết; kế toán thấy số tiền ra vào nhưng không
    thấy biên / phần Haustek giữ / ROI; kinh doanh thấy số của đối tác mình
-   và khuyến nghị, không thấy phí thu về. */
+   và khuyến nghị, không thấy biên hay phần Haustek giữ. */
 /* "ruiRo" nói thẳng ROI ra chữ ("ROI 18%, dưới sàn 20%") nên phải giấu ở
    đúng những vai đã bị giấu ROI, không thì cảnh báo trở thành lối rò số. */
 const CALC_AN = {
-  accounting: ["roi", "roiAnnual", "roiFee", "ruiRo", "margin", "marginNew", "monthlyKeep", "retainedDuringRecoup", "retainedNow", "retainedNew", "delta"],
-  sales: ["roi", "roiAnnual", "roiFee", "ruiRo", "margin", "marginNew", "monthlyKeep", "retainedDuringRecoup", "retainedNow", "retainedNew", "delta", "feeIncome"],
+  accounting: ["roi", "roiAnnual", "ruiRo", "margin", "marginNew", "monthlyKeep", "retainedDuringRecoup", "retainedNow", "retainedNew", "delta"],
+  sales: ["roi", "roiAnnual", "ruiRo", "margin", "marginNew", "monthlyKeep", "retainedDuringRecoup", "retainedNow", "retainedNew", "delta"],
   ops: null, support: null
 };
 function seriesChoVai(ser, role) {
@@ -8499,7 +8551,7 @@ const admin = {
       const mgr = o.managerId || (vaiHienTai() === "sales" ? _me.id : null);
       if (mgr && !(staffById(mgr) && staffById(mgr).role === "sales")) throw new Error("Người phụ trách phải thuộc Kinh doanh");
       const feePct = o.feePct != null && o.feePct !== "" ? +o.feePct / 100 : null;
-      if (feePct != null && !(feePct >= 0 && feePct < 1)) throw new Error("Phí Haustek phải trong khoảng 0–99%");
+      if (feePct != null && !(feePct >= 0 && feePct < 1)) throw new Error("Phí dịch vụ Haustek phải trong khoảng 0–99%");
       let rec, pk;
       if (kind === "label") {
         const id = LABELS.length; rec = { id, key: "L:" + id, clientId: "HTK-L" + String(id + 1).padStart(3, "0"), name, baseRate: share != null ? share : 0.7, isPublisher: false, parentId: o.parentId != null && LABELS[+o.parentId] ? +o.parentId : -1, kind: "label", them: true, addedAt: isoDate(ASOF) };
@@ -8605,8 +8657,8 @@ const admin = {
   notifications: () => notificationsChoVai(), markNotifications: ids => markNotifications("admin", 0, ids),
   search: (q, limit) => searchChoVai(q, limit), campaigns: () => campaignsOf("admin", 0), campaignsFor: (role, id) => campaignsOf(role, id),
   /* 19j */
-  platformRatesFull, setPlatformRate, clearPlatformRate, importPlatformRates, vnRef: VN_REF_PER1K.slice(), advanceFee: ADVANCE_FEE,
-  advanceCalc: (pk, amount, feePct) => calcChoVai(advanceCalc(pk, amount, feePct)), contractCalc: (pk, terms) => calcChoVai(contractCalc(pk, terms)), partySeries: (pk, n) => seriesChoVai(partySeries(pk, n)), advanceOfferOf,
+  platformRatesFull, setPlatformRate, clearPlatformRate, importPlatformRates, vnRef: VN_REF_PER1K.slice(),
+  advanceCalc: (pk, amount) => calcChoVai(advanceCalc(pk, amount)), contractCalc: (pk, terms) => calcChoVai(contractCalc(pk, terms)), partySeries: (pk, n) => seriesChoVai(partySeries(pk, n)), advanceOfferOf,
   /* 19k · bảng tính ROI hợp đồng: số do người dùng gõ vào, không lấy từ sổ,
      nên kinh doanh và kế toán đều xem được đầy đủ. */
   roi: { tinh: dealRoiCalc, kichBan: dealRoiScenarios, tuDoiTac: dealRoiTuDoiTac, macDinh: ROI_MAC_DINH, nguong: ROI_NGUONG },
@@ -9352,7 +9404,7 @@ const apiGoc = {
   campaigns(role, partyId) { assertParty(role, partyId); return scrub(campaignsOf(role, partyId)); },
   /* ---- 19j: đề nghị tạm ứng và theo dõi đề xuất ---- */
   advanceOffer(role, partyId) { assertParty(role, partyId); return scrub(advanceOfferOf(benTu(role, partyId))); },
-  requestAdvance(role, partyId, d) { assertParty(role, partyId); const pk = benTu(role, partyId); return scrub(proposalForPartner(proposeAdvance(pk, { amount: d.amount, feePct: ADVANCE_FEE, note: d.note }, partyClientIdOf(role, partyId), "partner"))); },
+  requestAdvance(role, partyId, d) { assertParty(role, partyId); const pk = benTu(role, partyId); return scrub(proposalForPartner(proposeAdvance(pk, { amount: d.amount, note: d.note }, partyClientIdOf(role, partyId), "partner"))); },
   proposals(role, partyId) { assertParty(role, partyId); const pk = benTu(role, partyId); return scrub(proposalsList({ partyKey: pk }).map(proposalForPartner)); },
   withdrawProposal(role, partyId, id) { assertParty(role, partyId); const pk = benTu(role, partyId); const pr = proposalsOf().find(p => p.id === id); if (!pr || pr.partyKey !== pk) throw new Error("Không có quyền"); return scrub(proposalForPartner(reviewProposal(id, "withdraw", "", partyClientIdOf(role, partyId), "partner"))); },
   /* ---- ví, rút tiền, bảng kê ---- */

@@ -34,7 +34,7 @@ HT.dangKy({
       seChi: 'Sẽ thanh toán', donSang: 'Chuyển sang kỳ sau', thuTamUng: 'Thu hồi tạm ứng',
       phiH1: 'Phần Haustek giữ lại của kỳ này',
       phiMo: 'Phí hợp đồng thu trên gộp ghi nhận, tách theo loại chủ bài. Nghệ sĩ độc lập vẫn chia sẻ doanh thu như mọi đối tác; khác biệt duy nhất là phần sau phí về hết cho họ vì không có label đứng giữa. Cổng đối tác chỉ hiện số sau phí của chính họ, không hiện dòng này.',
-      pcLoai: 'Chủ bài', pcGop: 'Gộp ghi nhận', pcPhi: 'Phí Haustek', pcTra: 'Trả đối tác', pcBen: 'Số bên', pcBai: 'Số bài', pcTong: 'Tổng kỳ',
+      pcLoai: 'Chủ bài', pcGop: 'Gộp ghi nhận', pcPhi: 'Phí dịch vụ Haustek', pcTra: 'Trả đối tác', pcBen: 'Số bên', pcBai: 'Số bài', pcTong: 'Tổng kỳ',
       benNhan: 'bên thụ hưởng', boQua: 'Xét duyệt kèm ghi nhận ngoại lệ',
       canhBoQua: 'Ngoại lệ ghi vĩnh viễn vào hồ sơ xét duyệt kèm tên người duyệt. Chỉ dùng khi chắc lý do.',
       lyDo: 'Lý do', nguoiDuyet: 'Người xét duyệt'

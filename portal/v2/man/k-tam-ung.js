@@ -38,9 +38,9 @@ HT.dangKy({
       xong: 'Đã khấu trừ xong', xongMo: 'Khoản tạm ứng của bạn đã được khấu trừ hết. Từ kỳ sau, việc thanh toán trở lại bình thường.',
       chuaMo: 'Kỳ này chưa chốt sổ',
       dnH2: 'Đề nghị tạm ứng', dnMo: 'Haustek ứng trước cho bạn một số tháng thu nhập, tính từ thu nhập ròng các kỳ đã xét duyệt, rồi khấu trừ dần mỗi kỳ.',
-      dnNet: 'Thu nhập ròng / tháng', dnNetS: 'trung bình {n} kỳ đã xét duyệt', dnProj: 'Thu nhập 12 tháng dự kiến', dnMax: 'Có thể tạm ứng tới', dnMaxS: 'hạng {g} · {n} tháng thu nhập · tăng trưởng {t}', dnVd: 'Ví dụ: phải khấu trừ', dnVdS: 'nếu ứng {a}, hết sau khoảng {m} tháng',
+      dnNet: 'Thu nhập ròng / tháng', dnNetS: 'trung bình {n} kỳ đã xét duyệt', dnProj: 'Thu nhập 12 tháng dự kiến', dnMax: 'Có thể tạm ứng tới', dnMaxS: 'hạng {g} · {n} tháng thu nhập · tăng trưởng {t}', dnVd: 'Ví dụ: thời gian khấu trừ', dnVdS: 'nếu ứng {a}',
       dnChua: 'Chưa thể đề nghị tạm ứng', dnNut: 'Đề nghị tạm ứng', dnHoiMo: 'Tối đa {max}. Kế toán Haustek kiểm số, giám đốc xét duyệt; bạn nhận thông báo khi có kết quả.', dnSo: 'Số tiền đề nghị (USD)', dnMucDich: 'Mục đích (sản xuất, quảng bá…)', dnGui: 'Gửi đề nghị', dnDaGui: 'Đã gửi đề nghị {id}',
-      dnTinh: 'Phải khấu trừ {r} (gồm phí ứng {f}), dự kiến hết sau khoảng {m} tháng.', dnVuot: 'Vượt mức tối đa.', dnDangCho: 'Bạn có đề nghị đang chờ xử lý. Gửi đề nghị mới sau khi có kết quả.', dnDangUng: 'Khấu trừ hết khoản hiện tại rồi mới đề nghị khoản mới.',
+      dnTinh: 'Khấu trừ đúng số bạn đề nghị, dự kiến hết sau khoảng {m} tháng.', dnVuot: 'Vượt mức tối đa.', dnDangCho: 'Bạn có đề nghị đang chờ xử lý. Gửi đề nghị mới sau khi có kết quả.', dnDangUng: 'Khấu trừ hết khoản hiện tại rồi mới đề nghị khoản mới.',
       dnDs: 'Đề nghị đã gửi', dnDsMo: 'Trạng thái đổi khi Haustek kiểm số và xét duyệt. Bạn có thể rút đề nghị đang chờ.', cDx: 'Mã', cNoiDung: 'Nội dung', cTt: 'Trạng thái', cNgay: 'Cập nhật', cThaoTac: 'Thao tác', dnRut: 'Rút', dnDaRut: 'Đã rút {id}', dnRutHoi: 'Rút đề nghị {id}?', dnRutMo: 'Đề nghị sẽ đóng; bạn có thể gửi đề nghị mới sau.'
     },
     en: {
@@ -64,9 +64,9 @@ HT.dangKy({
       xong: 'Fully repaid', xongMo: 'Your advance is fully offset. Transfers resume from the next period.',
       chuaMo: 'Period not open',
       dnH2: 'Request an advance', dnMo: 'Haustek can advance part of your next 12 months, based on net earnings in approved periods, recouped each period.',
-      dnNet: 'Net earnings / month', dnNetS: 'average over {n} approved periods', dnProj: 'Projected 12-month earnings', dnMax: 'You can request up to', dnMaxS: 'grade {g} · {n} months of earnings · growth {t}', dnVd: 'Example: amount to recoup', dnVdS: 'for a {a} advance, cleared in about {m} months',
+      dnNet: 'Net earnings / month', dnNetS: 'average over {n} approved periods', dnProj: 'Projected 12-month earnings', dnMax: 'You can request up to', dnMaxS: 'grade {g} · {n} months of earnings · growth {t}', dnVd: 'Example: time to clear', dnVdS: 'for a {a} advance',
       dnChua: 'An advance is not available yet', dnNut: 'Request an advance', dnHoiMo: 'Up to {max}. Haustek accounting checks the figures and the director approves; you are notified of the outcome.', dnSo: 'Amount requested (USD)', dnMucDich: 'Purpose (production, promotion…)', dnGui: 'Send request', dnDaGui: 'Request {id} sent',
-      dnTinh: '{r} to recoup (including the {f} advance charge), cleared in about {m} months.', dnVuot: 'Above the maximum.', dnDangCho: 'You have a request in progress. Send a new one once it is decided.', dnDangUng: 'Your current advance must be recouped before a new request.',
+      dnTinh: 'Offset at face value, cleared in about {m} months.', dnVuot: 'Above the maximum.', dnDangCho: 'You have a request in progress. Send a new one once it is decided.', dnDangUng: 'Your current advance must be recouped before a new request.',
       dnDs: 'Requests sent', dnDsMo: 'Status moves as Haustek checks and approves. You can withdraw a pending request.', cDx: 'Id', cNoiDung: 'Terms', cTt: 'Status', cNgay: 'Updated', cThaoTac: 'Actions', dnRut: 'Withdraw', dnDaRut: 'Withdrew {id}', dnRutHoi: 'Withdraw request {id}?', dnRutMo: 'The request closes; you can send a new one later.'
     }
   },
@@ -226,7 +226,7 @@ function veDeNghi(c, dn, dangUng) {
         HTM.oSo(t('dnNet'), HT.fmt.usd(o.monthlyNet), t('dnNetS').replace('{n}', o.periods)) +
         HTM.oSo(t('dnProj'), HT.fmt.usd0(o.projected12)) +
         HTM.oSo(t('dnMax'), HT.fmt.usd0(o.maxAdvance), t('dnMaxS').replace('{g}', o.grade).replace('{n}', o.capThang).replace('{t}', o.growth == null ? '—' : (o.growth >= 0 ? '+' : '') + HT.fmt.pct(o.growth))) +
-        (o.example ? HTM.oSo(t('dnVd'), HT.fmt.usd0(o.example.repayment), t('dnVdS').replace('{a}', HT.fmt.usd0(o.example.amount)).replace('{m}', o.example.recoupMonths == null ? '—' : o.example.recoupMonths)) : '') +
+        (o.example ? HTM.oSo(t('dnVd'), o.example.recoupMonths == null ? '—' : o.example.recoupMonths + (vi ? ' tháng' : ' months'), t('dnVdS').replace('{a}', HT.fmt.usd0(o.example.amount))) : '') +
         '</div>';
       if (cho.length) than += HM.ghi({ kieu: 'info', tieuDe: HM.esc(t('dnDangCho')) });
       else if (dangUng) than += HM.ghi({ kieu: 'info', tieuDe: HM.esc(t('dnDangUng')) });
@@ -282,8 +282,8 @@ function hoiDeNghi(c, o) {
   setTimeout(function () {
     var md = document.querySelector('.modal'); if (!md) return;
     function tinh() {
-      var a = +md.querySelector('[data-o="amount"]').value || 0, rp = a * (1 + o.feePct), th = o.monthlyNet > 0 ? Math.ceil(rp / o.monthlyNet) : null;
-      md.querySelector('[data-tinh]').innerHTML = HM.esc(t('dnTinh').replace('{r}', HT.fmt.usd0(rp)).replace('{f}', HT.fmt.pct(o.feePct)).replace('{m}', th == null ? '—' : th)) + (a > o.maxAdvance ? ' <b class="neg">' + HM.esc(t('dnVuot')) + '</b>' : '');
+      var a = +md.querySelector('[data-o="amount"]').value || 0, th = o.monthlyNet > 0 ? Math.ceil(a / o.monthlyNet) : null;
+      md.querySelector('[data-tinh]').innerHTML = HM.esc(t('dnTinh').replace('{m}', th == null ? '—' : th)) + (a > o.maxAdvance ? ' <b class="neg">' + HM.esc(t('dnVuot')) + '</b>' : '');
     }
     tinh(); md.addEventListener('input', tinh);
   }, 30);

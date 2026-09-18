@@ -143,7 +143,7 @@ const khoaThat = async p => (await khoaLot(p)).filter(x => STORE.indexOf(x) < 0)
   console.log('\n### tạm ứng nói bằng số tháng, không nói bằng phần trăm');
   const ung = await p.evaluate(() => {
     const A = window.HAUSTEK.admin, pk = A.parties.list().rows[0].partyKey;
-    const c = A.advanceCalc(pk, 0, 0.12);
+    const c = A.advanceCalc(pk, 0);
     return { capThang: c.capThang, grade: c.grade, max: c.maxAdvance, thang: c.monthlyForward };
   });
   must(ung.capThang >= 12 && ung.capThang <= 18, 'trần tạm ứng nằm trong 12–18 tháng', String(ung.capThang));
