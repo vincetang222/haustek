@@ -47,15 +47,33 @@ const ROOT = process.cwd();
    BỎ QUA, đừng báo hỏng. Hỏng nghĩa là "có lỗi phải sửa"; ở đây chỉ là "nửa kia
    không nằm trên nhánh này", hai chuyện khác hẳn nhau.
    Khi tách repo, đây chính là phép kiểm phải chuyển sang repo nào giữ cả hai. */
-const CAN_PORTAL = ["portal/screens/crm-handoff.js", "portal/intranet.html",
-                    "portal/haustek-core.js"];
+/* HAI TÌNH HUỐNG RẤT KHÁC NHAU, ĐỪNG GỘP LÀM MỘT.
+
+   (1) Nhánh KHÔNG CÓ portal. Nửa kia không nằm ở đây — bỏ qua là đúng.
+   (2) Nhánh CÓ portal, nhưng portal đã đổi hình và những file bài này trỏ
+       tới không còn. Đó KHÔNG phải "nửa kia vắng mặt", đó là bài kiểm đã
+       lạc hậu — và bỏ qua nó là báo XANH trong khi không kiểm gì.
+
+   Bản trước gộp cả hai vào một phép đếm file thiếu. Đo được: trộn portal v2
+   vào main thì v1 (screens/, intranet.html) bị gỡ, bài này in "BỎ QUA" rồi
+   thoát 0 — cổng kiểm thử xanh trong khi đường bàn giao CRM↔portal không
+   còn được kiểm một dòng nào. Đây là lần thứ ba cùng một kiểu lỗi trong dự
+   án này: xanh vì một lý do không liên quan đến thứ định kiểm. */
+const CO_PORTAL = fs.existsSync(path.resolve(ROOT, "portal/haustek-core.js"));
+if (!CO_PORTAL) {
+  console.log("BỎ QUA — nhánh này không có portal, phép kiểm cần cả hai app trên cùng một cây nguồn.");
+  console.log("   Chạy nó trên nhánh có cả hai nửa.");
+  process.exit(0);
+}
+const CAN_PORTAL = ["portal/screens/crm-handoff.js", "portal/intranet.html"];
 const MISSING = CAN_PORTAL.filter(f => !fs.existsSync(path.resolve(ROOT, f)));
 if (MISSING.length) {
-  console.log("BỎ QUA — phép kiểm này cần cả hai app trên cùng một cây nguồn.");
-  MISSING.forEach(f => console.log("   thiếu: " + f));
-  console.log("\nNhánh này chỉ có CRM. Chạy nó trên nhánh có cả portal:");
-  console.log("   git checkout portal-crm-sync && node crm/test/handoff-e2e.mjs");
-  process.exit(0);
+  console.error("HỎNG — portal CÓ mặt nhưng đã đổi hình, bài kiểm này đang trỏ vào chỗ không còn:");
+  MISSING.forEach(f => console.error("   thiếu: " + f));
+  console.error("\nĐường bàn giao CRM→portal nay đi qua màn Thương vụ (A.thuongVu), không còn");
+  console.error("qua portal/screens/crm-handoff.js. Sửa bài kiểm trỏ sang đường mới —");
+  console.error("đừng nới điều kiện bỏ qua, vì như thế là báo xanh mà không kiểm gì.");
+  process.exit(1);
 }
 function serve() {
   return new Promise(resolve => {
@@ -271,6 +289,123 @@ try {
   F("bấm huỷ thì sổ không đổi",
     await intr.evaluate(() => HAUSTEK.admin.advances.list().find(a => a.partyKey === "A:0").opening === 99999));
 
+  /* ---------- KÊNH NGƯỢC 1.1: MỘT DEAL, HAI ĐỀ XUẤT ----------
+     Từ bước 3 bên portal, một deal sinh hai đề xuất — hợp đồng và tạm ứng —
+     hai lần giám đốc bấm, và có thể một cái duyệt còn cái kia bị trả. Bảng
+     INBOX_STAGE của CRM giả định MỘT deal có MỘT trạng thái, nên đúng ca ấy
+     không ô nào trong bảng đúng. Ba phép dưới ghim cách xử lý mới. */
+  const dealId = await crm.evaluate(() => {
+    const o = DB.opps.find(x => PORTAL_OWNED.includes(x.stage));
+    return o ? o.id : null;
+  });
+  F("có deal đang ở phần portal cầm lái để kiểm", !!dealId);
+
+  async function goiVe(goi) {
+    await crm.evaluate(([k, g]) => {
+      localStorage.setItem(k, JSON.stringify(g));
+      INBOX_SEEN = {};            /* để lần áp này không bị coi là đã áp */
+      inboxApply();
+    }, ["haustek.portal.contracts.v1", goi]);
+    await crm.waitForTimeout(120);
+    return crm.evaluate(id => {
+      const o = DB.opps.find(x => x.id === id);
+      return { stage: o.stage, ct: o.contract, khoa: HANDOFF_BIND[id] || null,
+               lech: inboxLech(o), badge: contractBadge(o) };
+    }, dealId);
+  }
+
+  const r11 = await goiVe({
+    v: "1.1.0", deals: [{
+      dealId, updatedAt: "2026-09-16T10:00:00.000Z", by: "portal",
+      portalPartyKey: "L:38", giaiDoan: "legal",
+      chiTiet: "Hợp đồng đã duyệt · tạm ứng bị trả lại, chờ dựng lại đề xuất",
+      deXuat: [{ id: "DX-2609-011", loai: "hopDong", trangThai: "approved" },
+               { id: "DX-2609-012", loai: "tamUng",  trangThai: "rejected" }]
+    }]
+  });
+  F("gói 1.1 dùng giaiDoan do PORTAL tính, không tự suy từ deXuat[]",
+    r11.stage === "legal");
+  F("giữ đủ hai đề xuất trên deal", (r11.ct.deXuat || []).length === 2);
+  F("đề xuất bị trả KHÔNG bị cột giai đoạn nuốt — có huy hiệu riêng",
+    !!r11.lech && /bị trả lại|sent back/i.test(r11.badge));
+  F("chiTiet của portal hiện nguyên văn, CRM không ánh xạ lại",
+    r11.ct.chiTiet === "Hợp đồng đã duyệt · tạm ứng bị trả lại, chờ dựng lại đề xuất");
+  F("khoá bên portal trả về được lưu để lần sau gửi kèm",
+    r11.khoa === "L:38");
+
+  /* Giai đoạn là dữ liệu của PHÍA KHÁC. Gói bịa một giai đoạn không có thật
+     thì phải bị bỏ qua, không được ghi vào deal. */
+  const rBay = await goiVe({
+    v: "1.1.0", deals: [{ dealId, updatedAt: "2026-09-16T11:00:00.000Z",
+      giaiDoan: "khong-co-that", portalPartyKey: "<script>", deXuat: [] }]
+  });
+  F("giai đoạn lạ bị bỏ qua, deal không bị kéo đi",
+    rBay.stage === "legal");
+  F("khoá bên sai hình thức bị bỏ qua", rBay.khoa === "L:38");
+
+  /* Gói 1.0 cũ vẫn phải chạy y như trước — portal chưa đổi thì CRM không được vỡ. */
+  const r10 = await goiVe({
+    v: "1.0.0", deals: [{ dealId, updatedAt: "2026-09-16T12:00:00.000Z",
+      status: "signed", by: "portal" }]
+  });
+  F("gói 1.0 vẫn tra bảng INBOX_STAGE như cũ", r10.stage === "won");
+  F("gói 1.0 không có đề xuất nào thì không hiện huy hiệu lệch", r10.lech === null);
+
+  /* ---------- ĐƯỜNG VỀ GÃY THÌ PHẢI NÓI RA ----------
+     Đo trên dữ liệu thật: 13 deal ở phần portal cầm lái, 0 deal từng nhận
+     trạng thái nào về, và màn hình không có một chữ nào nói điều đó. A&R
+     nhìn vào chỉ thấy deal nằm im và tưởng bên kia đang xử lý. */
+  const daiRong = await crm.evaluate(() => {
+    try { localStorage.removeItem("haustek.portal.contracts.v1"); } catch (e) {}
+    INBOX_SEEN = {};
+    DB.opps.forEach(o => { delete o.contract; });
+    go("handoff");
+    const el = document.querySelector("#view");
+    return { html: el ? el.textContent : "", cn: cauNoiTrangThai() };
+  });
+  await crm.waitForTimeout(150);
+  F("có deal đang chờ portal để kiểm", daiRong.cn.cho > 0, "cho=" + daiRong.cn.cho);
+  F("chưa tin nào về thì màn hình NÓI RA, không im",
+    /Chưa deal nào nhận được trạng thái|No deal has had a status/i.test(daiRong.html));
+  F("và nói rõ VÌ SAO — thiếu khoá, chứ không phải 'đang xử lý'",
+    /chưa có khoá|does not exist/i.test(daiRong.html), daiRong.cn.loi);
+  F("dải cảnh báo nói thẳng nằm im KHÔNG nghĩa là bên kia đang làm",
+    /KHÔNG có nghĩa là bên kia đang xử lý|does NOT mean the other side/i.test(daiRong.html));
+
+  const daiSai = await crm.evaluate(() => {
+    localStorage.setItem("haustek.portal.contracts.v1", JSON.stringify({ v: "9.9.9", deals: [] }));
+    go("handoff");
+    return document.querySelector("#view").textContent;
+  });
+  F("khoá sai phiên bản thì nói đúng lý do ấy",
+    /phiên bản 9\.9\.9|version 9\.9\.9/i.test(daiSai), daiSai.slice(0, 80));
+
+  const daiHong = await crm.evaluate(() => {
+    localStorage.setItem("haustek.portal.contracts.v1", "{khong-phai-json");
+    go("handoff");
+    return document.querySelector("#view").textContent;
+  });
+  F("khoá hỏng JSON thì nói đúng lý do ấy",
+    /không phải JSON|not readable JSON/i.test(daiHong), daiHong.slice(0, 80));
+
+  /* CRM KHÔNG ĐƯỢC DỰNG SẴN LỜI GỌI GHI SỔ CHO NGƯỜI TA CHÉP.
+     Bản trước in ra hai chuỗi để người vận hành dán sang portal:
+         A.rates.add("L:38", 0.7, …)
+         A.advances.set("L:38", 16100, …)
+     CRM không tự chạy chúng, nhưng in ra công thức của lỗi đắt nhất hai đội
+     đã gặp rồi mời người ta gõ vào thì cũng vậy: advances.set() GÁN ĐÈ số dư
+     gốc, còn nhánh duyệt applyApproved() CỘNG DỒN — một lượt chép tay là xoá
+     mất khoản tạm ứng giám đốc đã duyệt kỳ trước, và không gì báo.
+     Kiểm trên MÃ NGUỒN, không trên giao diện: chỗ nguy hiểm là phép nối
+     chuỗi dựng ra lời gọi, và nó có thể sống ở một nhánh giao diện mà phép
+     kiểm không bấm tới. Câu cảnh báo nhắc TÊN hai hàm thì vẫn được — thứ bị
+     cấm là dựng ra lời gọi. */
+  const nguon = fs.readFileSync(path.resolve(ROOT, "crm", "index.html"), "utf8");
+  F("CRM không dựng sẵn lời gọi advances.set để người ta chép",
+    !/['"`]\s*A\.advances\.set\s*\(/.test(nguon));
+  F("CRM không dựng sẵn lời gọi rates.add để người ta chép",
+    !/['"`]\s*A\.rates\.add\s*\(/.test(nguon));
+
   if (errs.length) FAILED++;
   console.log("\nLỗi JS: " + errs.length);
   errs.slice(0, 5).forEach(e => console.log("  " + e));
@@ -278,5 +413,5 @@ try {
 } finally {
   srv.close();
 }
-console.log(FAILED ? "\n" + FAILED + " phép kiểm HỎNG" : "\n34 đạt · 0 hỏng");
+console.log(FAILED ? "\n" + FAILED + " phép kiểm HỎNG" : "\n51 đạt · 0 hỏng");
 process.exit(FAILED ? 1 : 0);

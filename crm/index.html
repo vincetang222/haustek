@@ -40,7 +40,7 @@
   --app-bg:#DCDCE2;    /* CHỈ dùng ở body. Nền trang vs thẻ: 1,16 → 1,37:1.
                           Đây là lớp trung gian mà trước đây không có, giữa cột
                           nav gần đen và biển thẻ trắng. */
-  --paper:#FFFFFF;     /* mặt thẻ giữ trắng: số tiền đọc sạch nhất trên nền
+  --card:#FFFFFF;     /* mặt thẻ giữ trắng: số tiền đọc sạch nhất trên nền
                           không sắc, và bậc nền mới đã gánh việc tách thẻ rồi */
   --raised:#FFFFFF;
   --surface:#E9E9EF;   /* tint TRONG thẻ: .pill, .fsec, .dgrp, mọi :hover.
@@ -85,7 +85,7 @@
   --brand-hi:#FF5266;   /* hover nút đỏ: làm SÁNG lên nên chữ mực càng rõ —
                            ngược chiều với filter:brightness cũ, vốn làm chữ
                            trắng trượt AA đúng lúc người ta rê vào */
-  --brand-dark:#C7102E; /* VAI: "sắc đỏ mang chữ màu --paper". Ở theme tối nó
+  --brand-dark:#C7102E; /* VAI: "sắc đỏ mang chữ màu --card". Ở theme tối nó
                            lật sáng, nên cùng một rule chạy đúng ở cả hai. */
   --brand-tint:#FFE9ED;
 
@@ -146,7 +146,7 @@
     /* Chrome KHÔNG đảo vai: ở theme tối nó vẫn là mỏ neo tối nhất. Đảo nó thành
        tấm nổi đo ra là xoá mất một lớp — cột nav tụt còn 1,04:1 so với thẻ và
        biến mất khỏi màn hình. */
-    --app-bg:#15151A;  --paper:#1F1F27;   --raised:#2A2A34;
+    --app-bg:#15151A;  --card:#1F1F27;   --raised:#2A2A34;
     --surface:#2C2C37; --zebra:#242430;   --row-hover:#33333F; --fill:#3B3B48;
     --head:#34343F;    /* ĐẢO CHIỀU, GIỮ VAI: ở nền sáng dải head tối hơn thẻ, ở
                           nền tối nó sáng hơn thẻ. Cùng một nghĩa "đây là nắp,
@@ -156,7 +156,7 @@
     --line:#40404D;    --line-2:#2E2E39;  --card-line:#393946;
     --line-strong:#87879C;  /* bản tối cũ --line #2C3E4E chỉ ~1,7:1, cũng trượt */
     --brand-hi:#FF5266;
-    --brand-dark:#FF7A8D;  /* lật SÁNG để vẫn đỡ được chữ màu --paper, nay là
+    --brand-dark:#FF7A8D;  /* lật SÁNG để vẫn đỡ được chữ màu --card, nay là
                               #1F1F27. Nhờ vậy cùng một rule .login-btn ra AA ở
                               cả hai theme — đây là lý do không bao giờ được
                               hardcode #FFFFFF lên một token biết lật. */
@@ -185,7 +185,7 @@
   /* Chrome KHÔNG đảo vai: ở theme tối nó vẫn là mỏ neo tối nhất. Đảo nó thành
      tấm nổi đo ra là xoá mất một lớp — cột nav tụt còn 1,04:1 so với thẻ và
      biến mất khỏi màn hình. */
-  --app-bg:#15151A;  --paper:#1F1F27;   --raised:#2A2A34;
+  --app-bg:#15151A;  --card:#1F1F27;   --raised:#2A2A34;
   --surface:#2C2C37; --zebra:#242430;   --row-hover:#33333F; --fill:#3B3B48;
   --head:#34343F;    /* ĐẢO CHIỀU, GIỮ VAI: ở nền sáng dải head tối hơn thẻ, ở
                         nền tối nó sáng hơn thẻ. Cùng một nghĩa "đây là nắp,
@@ -195,7 +195,7 @@
   --line:#40404D;    --line-2:#2E2E39;  --card-line:#393946;
   --line-strong:#87879C;  /* bản tối cũ --line #2C3E4E chỉ ~1,7:1, cũng trượt */
   --brand-hi:#FF5266;
-  --brand-dark:#FF7A8D;  /* lật SÁNG để vẫn đỡ được chữ màu --paper, nay là
+  --brand-dark:#FF7A8D;  /* lật SÁNG để vẫn đỡ được chữ màu --card, nay là
                             #1F1F27. Nhờ vậy cùng một rule .login-btn ra AA ở
                             cả hai theme — đây là lý do không bao giờ được
                             hardcode #FFFFFF lên một token biết lật. */
@@ -240,7 +240,7 @@ a:hover{text-decoration:underline}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 
 /* ---------- login ---------- */
-.login{display:grid;grid-template-columns:1fr 1fr;min-height:100vh;background:var(--paper)}
+.login{display:grid;grid-template-columns:1fr 1fr;min-height:100vh;background:var(--card)}
 @media(max-width:980px){.login{grid-template-columns:1fr}.login-right{display:none}}
 .login-left{display:flex;flex-direction:column;align-items:center;justify-content:center;
   padding:40px 28px;position:relative}
@@ -248,7 +248,7 @@ a:hover{text-decoration:underline}
   border-radius:6px;overflow:hidden}
 .login-lang button{padding:5px 12px;font-size:12px;font-weight:600;color:var(--muted);letter-spacing:.02em}
 .login-lang button:hover{background:var(--surface)}
-.login-lang button.on{background:var(--ink);color:var(--paper)}
+.login-lang button.on{background:var(--ink);color:var(--card)}
 .login-logo{height:30px;width:auto;margin-bottom:34px}
 .login-card{width:100%;max-width:360px;border:1px solid var(--line);border-radius:10px;
   padding:26px 26px 22px;box-shadow:0 2px 10px rgba(10,10,13,.05)}
@@ -260,7 +260,7 @@ a:hover{text-decoration:underline}
 /* trắng trên #FF2E4C chỉ 3,65:1 — đang trượt AA. --brand-dark biết lật sáng ở
    theme tối nên cặp (nền, chữ) này đạt AA ở CẢ HAI mà không cần rẽ nhánh. */
 .login-btn{width:100%;margin-top:16px;padding:10px;border-radius:5px;background:var(--brand-dark);
-  color:var(--paper);font-weight:600;font-size:14px}
+  color:var(--card);font-weight:600;font-size:14px}
 .login-btn:hover{background:var(--brand);color:var(--brand-ink)}
 .login-row{display:flex;align-items:center;gap:8px;margin-top:14px;font-size:12.5px;color:var(--ink-2)}
 .login-sep{border-top:1px solid var(--line-2);margin:14px 0 12px}
@@ -320,7 +320,7 @@ a:hover{text-decoration:underline}
   border-radius:var(--radius);background:rgba(255,255,255,.1);font-size:13px;color:#fff;
 }
 .search input::placeholder{color:var(--on-chrome-3)}
-.search input:focus{background:var(--paper);color:var(--ink);border-color:var(--ice);
+.search input:focus{background:var(--card);color:var(--ink);border-color:var(--ice);
   outline:none;box-shadow:var(--ring)}
 .search input:focus::placeholder{color:var(--muted)}
 .search svg{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--on-chrome-3)}
@@ -374,7 +374,7 @@ th .dim,.vt-head .dim{color:var(--head-muted)}
   padding:1px 6px;border-radius:9px;flex:0 0 auto;font-variant-numeric:tabular-nums;
 }
 .tab:hover .tab-count{background:rgba(255,255,255,.16)}
-.tab.active .tab-count{background:var(--brand-dark);color:var(--paper)}
+.tab.active .tab-count{background:var(--brand-dark);color:var(--card)}
 
 .content{padding:22px 26px 40px;flex:1;min-width:0;max-width:1500px}
 
@@ -385,7 +385,7 @@ th .dim,.vt-head .dim{color:var(--head-muted)}
 .phead-actions{margin-left:auto;display:flex;gap:8px}
 .btn{
   padding:7px 13px;border-radius:var(--radius);font-size:12.5px;font-weight:500;
-  border:1px solid var(--line-strong);background:var(--paper);color:var(--ink-2);
+  border:1px solid var(--line-strong);background:var(--card);color:var(--ink-2);
 }
 /* #fbfcfd là hex ám xanh hardcode — ở theme tối nó cho nền sáng + chữ sáng */
 .btn:hover{border-color:var(--ink-2);background:var(--surface)}
@@ -400,7 +400,7 @@ th .dim,.vt-head .dim{color:var(--head-muted)}
 .btn-sm{padding:4px 9px;font-size:11.5px}
 
 /* ---------- cards ---------- */
-.card{background:var(--paper);border:1px solid var(--card-line);border-radius:var(--r);
+.card{background:var(--card);border:1px solid var(--card-line);border-radius:var(--r);
   box-shadow:var(--shadow);overflow:hidden}
 /* Nắp thẻ trước đây chỉ là một đường kẻ mảnh nên thẻ không có đầu có đuôi */
 /* Đầu thẻ là dải mực tối — CÙNG token với dải tiêu đề bảng (--head), nên hai
@@ -415,13 +415,21 @@ th .dim,.vt-head .dim{color:var(--head-muted)}
 .card-h .btn{background:transparent;border-color:var(--head-line);color:var(--on-head)}
 .card-h .btn:hover{background:var(--head-line);border-color:var(--head-muted);color:var(--on-head)}
 /* Bảng nằm NGAY dưới đầu thẻ thì hạ dải tiêu đề bảng xuống nền nhạt — không thì
-   hai dải tối chạm nhau thành một khối. */
+   hai dải tối chạm nhau thành một khối.
+   Nhưng hạ nền thôi thì chưa đủ: con cháu trong dải vẫn gọi --head-muted và
+   --on-head, tức mực dựng cho nền TỐI. Đo được: .dim "Nhóm 1/2/3" ở ma trận
+   quyền ra 2,03:1 — biến đúng, cặp sai, đúng loại lỗi bài tuong-phan.mjs sinh
+   ra để bắt. Sửa từng thành phần thì thành phần thêm sau lại sai tiếp, nên
+   đổi VAI của token ngay tại đây: con cháu cứ gọi tên cũ, giá trị tự đúng. */
 .card-h + .tw thead th,.card-h + table thead th,.card-h + .tscroll thead th{
-  background:var(--zebra);color:var(--ink-2);border-bottom:1px solid var(--line)}
+  background:var(--zebra);color:var(--ink-2);border-bottom:1px solid var(--line);
+  --head-muted:var(--muted);   /* 6,33:1 trên --zebra, thay cho 2,03:1 */
+  --on-head:var(--ink);
+  --head-line:var(--line)}
 .card-b{padding:14px 16px}
 
 /* ---------- pipeline strip (hero) ---------- */
-.funnel{background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:18px 18px 14px;margin-bottom:16px}
+.funnel{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:18px 18px 14px;margin-bottom:16px}
 .funnel-top{display:flex;align-items:baseline;gap:12px;margin-bottom:16px;flex-wrap:wrap}
 .funnel-val{font-size:24px;font-weight:700;letter-spacing:-.025em}
 .funnel-lbl{font-size:12.5px;color:var(--muted)}
@@ -442,7 +450,7 @@ th .dim,.vt-head .dim{color:var(--head-muted)}
 /* Năm thẻ KPI trước đây giống hệt nhau: cùng nền, cùng viền, cùng cỡ chữ. Mắt
    không biết nhìn cái nào trước nên cả dải đọc thành một khối xám. Ba việc:
    vạch màu trên đỉnh phân loại thẻ, số to hẳn lên, và thẻ tiền có màu riêng. */
-.stat{position:relative;background:var(--paper);border:1px solid var(--card-line);
+.stat{position:relative;background:var(--card);border:1px solid var(--card-line);
   border-radius:var(--r);padding:15px 16px 13px 19px;box-shadow:var(--shadow);overflow:hidden;
   transition:transform .16s var(--ease),box-shadow .16s var(--ease),border-color .16s}
 .stat:hover{transform:translateY(-2px);box-shadow:var(--shadow-hover);border-color:var(--line-strong)}
@@ -477,19 +485,19 @@ th .dim,.vt-head .dim{color:var(--head-muted)}
 /* ---------- table ---------- */
 .tools{display:flex;gap:8px;align-items:center;margin-bottom:12px;flex-wrap:wrap}
 .chip{
-  padding:5px 11px;border:1px solid var(--line-strong);background:var(--paper);border-radius:14px;
+  padding:5px 11px;border:1px solid var(--line-strong);background:var(--card);border-radius:14px;
   font-size:12px;color:var(--ink-2);
 }
 .chip:hover{border-color:var(--ink-2);background:var(--surface)}
 /* Chip đang chọn dùng MỰC, không dùng đỏ. Signal Red là màu nhấn của thương
    hiệu — rải nó lên chip lọc, nút tạo, ô quyền và tab đang mở cùng lúc thì nó
    không còn nhấn được gì. Giữ đỏ cho hành động chính và trạng thái gấp. */
-.chip.on{background:var(--ink);border-color:var(--ink);color:var(--paper);font-weight:500}
+.chip.on{background:var(--ink);border-color:var(--ink);color:var(--card);font-weight:500}
 .seg{display:flex;border:1px solid var(--line-strong);border-radius:var(--radius);overflow:hidden;margin-left:auto}
 .seg button{padding:5px 12px;font-size:12px;color:var(--muted)}
 .seg button.on{background:var(--surface);color:var(--ink);font-weight:600}
 
-.tw{background:var(--paper);border:1px solid var(--card-line);border-radius:var(--r);overflow:hidden;box-shadow:var(--shadow)}
+.tw{background:var(--card);border:1px solid var(--card-line);border-radius:var(--r);overflow:hidden;box-shadow:var(--shadow)}
 .tscroll{overflow-x:auto}
 table{width:100%;border-collapse:collapse}
 th{
@@ -511,6 +519,20 @@ tbody tr:nth-child(even){background:var(--zebra)}
 tbody tr:hover,tbody tr:nth-child(even):hover{background:var(--row-hover);cursor:pointer}
 .t-name{font-weight:500;color:var(--ice-dark)}
 tbody tr:hover .t-name{text-decoration:underline}
+/* Dòng con số dưới tên deal ở màn Chờ duyệt. Tách hẳn khỏi kiểu của tên:
+   nó không phải một phần của cái link, nên không gạch chân theo và không
+   lấy màu theo. `white-space:nowrap` của .trunc cũng phải gỡ ở đây, nếu
+   không ba con số sẽ tràn ra ngoài ô. */
+.t-sub{display:flex;gap:9px;flex-wrap:wrap;align-items:baseline;margin-top:2px;
+  font-size:11.5px;font-weight:400;line-height:1.35;white-space:normal;
+  color:var(--ink-2);text-decoration:none}
+tbody tr:hover .t-sub{text-decoration:none}
+.t-sub b{font-weight:600;color:var(--ink)}
+.t-sub .sep{opacity:.4}
+.t-sub .xau b{color:var(--brand-dark)}
+/* ô tên ở màn Chờ duyệt cần cao hai dòng, nên bỏ cắt một dòng */
+.t-name-2{max-width:260px;white-space:normal;overflow:visible}
+.t-name-2 .t-name{display:inline-block}
 .num{text-align:right;font-variant-numeric:tabular-nums}
 .dim{color:var(--muted)}
 .trunc{max-width:210px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -518,7 +540,7 @@ tbody tr:hover .t-name{text-decoration:underline}
 /* ---------- bảng ảo hoá ----------
    Cố ý trông y hệt <table> ở trên: cùng nền đầu bảng, cùng đường kẻ, cùng
    padding 10px/14px và cỡ chữ 13px, nên đổi qua lại không thấy khác. */
-.vt{background:var(--paper);border:1px solid var(--card-line);border-radius:var(--r);overflow:hidden;box-shadow:var(--shadow)}
+.vt{background:var(--card);border:1px solid var(--card-line);border-radius:var(--r);overflow:hidden;box-shadow:var(--shadow)}
 .vt-head{display:grid;background:var(--head);border-bottom:1px solid var(--head-line)}
 .vt-head>span{padding:8px 14px;font-size:10.5px;font-weight:600;color:var(--head-muted);white-space:nowrap;
   letter-spacing:.06em;text-transform:uppercase}
@@ -528,7 +550,7 @@ tbody tr:hover .t-name{text-decoration:underline}
 .vt-body{overflow-y:auto;overflow-x:hidden;position:relative;max-height:calc(100vh - 330px);min-height:280px}
 .vt-spacer{position:relative;width:100%}
 .vt-row{position:absolute;left:0;right:0;display:grid;align-items:center;
-  border-bottom:1px solid var(--line-2);cursor:pointer;background:var(--paper)}
+  border-bottom:1px solid var(--line-2);cursor:pointer;background:var(--card)}
 .vt-odd{background:var(--zebra)}
 .vt-row:hover,.vt-odd:hover{background:var(--row-hover)}
 .vt-row:hover .t-name{text-decoration:underline}
@@ -541,7 +563,7 @@ tbody tr:hover .t-name{text-decoration:underline}
 .pal-scrim{position:fixed;inset:0;background:rgba(10,10,13,.42);z-index:80;animation:fade .12s ease-out}
 .pal{
   position:fixed;z-index:81;left:50%;top:14vh;transform:translateX(-50%);
-  width:min(620px,calc(100vw - 32px));background:var(--paper);border-radius:12px;
+  width:min(620px,calc(100vw - 32px));background:var(--card);border-radius:12px;
   box-shadow:0 18px 50px rgba(10,10,13,.28),0 2px 8px rgba(10,10,13,.12);
   overflow:hidden;animation:palin .13s ease-out;
 }
@@ -586,44 +608,44 @@ kbd{
 .selcell{width:36px;padding-left:12px!important;padding-right:0!important}
 th.selcell{padding-left:12px!important}
 .cbx{width:15px;height:15px;border:1.4px solid var(--line-strong);border-radius:3px;display:inline-grid;
-  place-items:center;font-size:10px;color:var(--paper);line-height:1;cursor:pointer;flex:0 0 auto;
-  background:var(--paper);vertical-align:middle}
+  place-items:center;font-size:10px;color:var(--card);line-height:1;cursor:pointer;flex:0 0 auto;
+  background:var(--card);vertical-align:middle}
 .cbx:hover{border-color:var(--ink-2)}
 /* .cbx.on ở phần "home bottom sections" tô đỏ (việc cần làm đã xong — đỏ ở đó
    có nghĩa). Ô tích chọn hàng loạt thì không: chọn 3 dòng không phải chuyện gấp.
    Nâng độ cụ thể thay vì đổi rule kia, để hai chỗ giữ được hai ý nghĩa riêng. */
 /* Ô tích nằm TRÊN dải head. Dùng --ink ở đây là mực-trên-mực: chỉ còn một
    vệt ✓ lơ lửng không có ô. Đây là nút chọn hàng loạt của bảng 5.000 dòng. */
-.selcell .cbx.on{background:var(--accent);border-color:var(--accent);color:var(--paper)}
+.selcell .cbx.on{background:var(--accent);border-color:var(--accent);color:var(--card)}
 th.selcell .cbx{border-color:var(--head-muted)}
 th.selcell .cbx.on{background:var(--ice);border-color:var(--ice);color:var(--chrome)}
 .bulkbar{
   display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px;
-  background:var(--ink);color:var(--paper);border-radius:var(--r-sm);padding:8px 12px;
+  background:var(--ink);color:var(--card);border-radius:var(--r-sm);padding:8px 12px;
   box-shadow:0 2px 10px rgba(10,10,13,.18);animation:bulkin .13s ease-out;
 }
 @keyframes bulkin{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
-.bulk-n{font-family:var(--mono);font-size:12px;font-weight:700;background:var(--accent);color:var(--paper);
+.bulk-n{font-family:var(--mono);font-size:12px;font-weight:700;background:var(--accent);color:var(--card);
   border-radius:5px;padding:2px 8px;font-variant-numeric:tabular-nums}
-.bulk-l{font-size:12.5px;color:var(--paper);opacity:.72}
+.bulk-l{font-size:12.5px;color:var(--card);opacity:.72}
 .bulk-warn{font-size:11.5px;color:var(--brand-hi)}
 .bulk-acts{margin-left:auto;display:flex;gap:6px;flex-wrap:wrap}
-.bulkbar .btn{background:transparent;border-color:var(--muted);color:var(--paper)}
+.bulkbar .btn{background:transparent;border-color:var(--muted);color:var(--card)}
 .bulkbar .btn:hover{background:var(--ink-2);border-color:var(--ink-2)}
 .bulkbar .btn-primary{background:var(--brand);border-color:var(--brand-dark);color:var(--brand-ink)}
 .bulkbar .btn-primary:hover{background:var(--brand-hi);border-color:var(--brand-hi)}
 
 .views{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:11px}
-.viewchip{display:inline-flex;align-items:center;border:1px solid var(--line-strong);background:var(--paper);
+.viewchip{display:inline-flex;align-items:center;border:1px solid var(--line-strong);background:var(--card);
   border-radius:14px;overflow:hidden;font-size:12px}
 .viewchip button{padding:4px 4px 4px 11px;color:var(--ink-2)}
 .viewchip .viewx{padding:4px 9px 4px 5px;color:var(--muted-2);font-size:13px;line-height:1}
 .viewchip .viewx:hover{color:var(--brand)}
 .viewchip:hover{border-color:var(--line-2)}
 .viewchip.on{background:var(--ink);border-color:var(--ink)}
-.viewchip.on button{color:var(--paper)}
-.viewchip.on .viewx{color:var(--paper);opacity:.55}
-.viewchip.on .viewx:hover{color:var(--paper);opacity:1}
+.viewchip.on button{color:var(--card)}
+.viewchip.on .viewx{color:var(--card);opacity:.55}
+.viewchip.on .viewx:hover{color:var(--card);opacity:1}
 .viewadd{font-size:12px;color:var(--muted);padding:4px 10px;border:1px dashed var(--line);
   border-radius:14px}
 .viewadd:hover{color:var(--ink);border-color:var(--line-2)}
@@ -680,7 +702,7 @@ th.selcell .cbx.on{background:var(--ice);border-color:var(--ice);color:var(--chr
   width:19px;height:18px;border-radius:4px;display:grid;place-items:center;
   font-size:9.5px;font-weight:700;background:transparent;color:var(--muted-2);border:1px solid var(--line);
 }
-.r.on{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.r.on{background:var(--ink);color:var(--card);border-color:var(--ink)}
 
 .empty{padding:56px 20px;text-align:center}
 .empty-t{font-size:14px;font-weight:500;margin-bottom:4px}
@@ -688,13 +710,13 @@ th.selcell .cbx.on{background:var(--ice);border-color:var(--ice);color:var(--chr
 
 /* ---------- kanban ---------- */
 .kan{display:grid;grid-template-columns:repeat(8,minmax(198px,1fr));gap:12px;overflow-x:auto;padding-bottom:6px}
-.kcol{background:var(--paper);border:1px solid var(--line);border-radius:8px;display:flex;flex-direction:column;min-width:214px}
+.kcol{background:var(--card);border:1px solid var(--line);border-radius:8px;display:flex;flex-direction:column;min-width:214px}
 .kcol-h{padding:10px 12px;border-bottom:1px solid var(--line-2);border-top:2px solid;border-radius:8px 8px 0 0}
 .kcol-t{font-size:12px;font-weight:600;display:flex;align-items:center;gap:6px}
 .kcol-n{margin-left:auto;font-size:11px;color:var(--muted);font-weight:500}
 .kcol-v{font-size:11.5px;color:var(--muted);margin-top:2px}
 .kcol-b{padding:8px;display:flex;flex-direction:column;gap:7px;min-height:70px}
-.kcard{border:1px solid var(--line);border-radius:6px;padding:9px 10px;text-align:left;width:100%;background:var(--paper)}
+.kcard{border:1px solid var(--line);border-radius:6px;padding:9px 10px;text-align:left;width:100%;background:var(--card)}
 .kcard:hover{border-color:var(--line-2);box-shadow:0 1px 3px rgba(12,59,40,.1)}
 .kcard-n{font-size:12.5px;font-weight:500;margin-bottom:3px}
 .kcard-m{display:flex;align-items:baseline;gap:8px;font-size:11px;color:var(--muted);flex-wrap:wrap}
@@ -741,7 +763,7 @@ th.selcell .cbx.on{background:var(--ice);border-color:var(--ice);color:var(--chr
 @media(max-width:1240px){.grid3{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:860px){.grid3{grid-template-columns:minmax(0,1fr)}}
 
-.approve-bar{background:var(--paper);border:1px solid var(--line);border-radius:8px;margin-bottom:16px;overflow:hidden}
+.approve-bar{background:var(--card);border:1px solid var(--line);border-radius:8px;margin-bottom:16px;overflow:hidden}
 /* Đầu thẻ duyệt là lớp riêng (.approve-h), không phải .card-h — nên khi .card-t
    đổi sang màu chữ sáng, riêng hai thẻ này ra chữ trắng trên nền trắng. Cho nó
    đúng dải tối như mọi đầu thẻ khác: một hệ, không phải hai. */
@@ -750,7 +772,7 @@ th.selcell .cbx.on{background:var(--ice);border-color:var(--ice);color:var(--chr
 .approve-h .card-t{font-size:13px;font-weight:700;color:var(--on-head)}
 .approve-h .card-note{color:var(--head-muted)}
 .approve-h a,.approve-h .t-name{color:var(--ice)}
-.approve-n{background:var(--brand-dark);color:var(--paper);font-size:11px;font-weight:600;padding:1px 8px;border-radius:10px}
+.approve-n{background:var(--brand-dark);color:var(--card);font-size:11px;font-weight:600;padding:1px 8px;border-radius:10px}
 .approve-empty{padding:24px 16px;text-align:center;color:var(--muted);font-size:12.5px}
 .approve-row{display:flex;align-items:center;gap:12px;padding:9px 16px;border-bottom:1px solid var(--line-2)}
 .approve-row:last-child{border-bottom:none}
@@ -784,14 +806,14 @@ th.selcell .cbx.on{background:var(--ice);border-color:var(--ice);color:var(--chr
 @media(max-width:1240px){.sec3{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:860px){.sec3{grid-template-columns:minmax(0,1fr)}}
 .sec-head{
-  background:var(--paper);border:1px solid var(--line);border-radius:8px;
+  background:var(--card);border:1px solid var(--line);border-radius:8px;
   padding:13px 16px;margin-bottom:12px;font-size:15px;font-weight:600;letter-spacing:-.015em;
 }
 .colstack{display:flex;flex-direction:column;gap:14px}
 
 .lv-h{display:flex;align-items:center;gap:11px;padding:11px 14px;border-bottom:1px solid var(--line-2)}
 .lv-ico{width:34px;height:34px;border-radius:6px;background:var(--brand-dark);display:grid;place-items:center;
-  color:var(--paper);flex:0 0 auto}
+  color:var(--card);flex:0 0 auto}
 .lv-h>span:nth-child(2){flex:1;min-width:0}
 .lv-t{font-size:13px;font-weight:600;line-height:1.25;display:block}
 .lv-s{font-size:11px;color:var(--muted);display:block}
@@ -806,7 +828,7 @@ th.selcell .cbx.on{background:var(--ice);border-color:var(--ice);color:var(--chr
 .kv-k{color:var(--muted)}
 .kv-v{color:var(--ink-2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .cbx{width:13px;height:13px;border:1.4px solid var(--line-strong);border-radius:2px;display:inline-grid;
-  place-items:center;font-size:9px;color:var(--paper);line-height:1}
+  place-items:center;font-size:9px;color:var(--card);line-height:1}
 .cbx.on{background:var(--brand);border-color:var(--brand-dark);color:var(--brand-ink)}
 
 .ev{display:flex;gap:11px;padding:10px 14px;border-bottom:1px solid var(--line-2);width:100%;text-align:left}
@@ -825,7 +847,7 @@ th.selcell .cbx.on{background:var(--ice);border-color:var(--ice);color:var(--chr
 /* ---------- record form modal ---------- */
 .mscrim{position:fixed;inset:0;background:rgba(20,22,26,.38);z-index:60;display:flex;
   align-items:flex-start;justify-content:center;padding:22px 16px;overflow-y:auto;animation:fade .18s ease-out}
-.modal{background:var(--paper);border-radius:10px;width:min(1080px,100%);max-height:calc(100vh - 44px);
+.modal{background:var(--card);border-radius:10px;width:min(1080px,100%);max-height:calc(100vh - 44px);
   display:flex;flex-direction:column;box-shadow:0 14px 44px rgba(12,59,40,.3);animation:pop .18s cubic-bezier(.22,.61,.36,1)}
 @keyframes pop{from{transform:translateY(10px);opacity:.5}to{transform:none;opacity:1}}
 .modal-h{padding:15px 22px;border-bottom:1px solid var(--line);text-align:center;position:relative;flex:0 0 auto}
@@ -844,7 +866,7 @@ th.selcell .cbx.on{background:var(--ice);border-color:var(--ice);color:var(--chr
 @media(max-width:560px){.frow{grid-template-columns:1fr;gap:4px}}
 .flabel{font-size:12.5px;color:var(--ink-2);padding-top:8px;display:flex;gap:5px;align-items:flex-start;line-height:1.35}
 .star{color:var(--red);font-weight:700;line-height:1}
-.fin{width:100%;padding:7px 10px;border:1px solid var(--line-strong);border-radius:4px;font-size:13px;background:var(--paper)}
+.fin{width:100%;padding:7px 10px;border:1px solid var(--line-strong);border-radius:4px;font-size:13px;background:var(--card)}
 .fin:focus{border-color:var(--accent);outline:none;box-shadow:var(--ring)}
 .fin.err{border-color:var(--red);box-shadow:0 0 0 3px rgba(192,65,58,.09)}
 textarea.fin{min-height:64px;resize:vertical;font-family:inherit}
@@ -854,7 +876,7 @@ textarea.fin{min-height:64px;resize:vertical;font-family:inherit}
 .substack>div:last-child{margin-bottom:0}
 .fchk{display:flex;align-items:center;gap:8px;padding-top:8px;font-size:13px}
 .fchk .cbox{cursor:pointer}
-.info{width:14px;height:14px;border-radius:50%;background:var(--muted);color:var(--paper);font-size:9px;font-weight:700;
+.info{width:14px;height:14px;border-radius:50%;background:var(--muted);color:var(--card);font-size:9px;font-weight:700;
   display:inline-grid;place-items:center;cursor:help;position:relative;flex:0 0 auto;margin-top:2px}
 .info:hover{background:var(--ink-2)}
 .info:hover::after{content:attr(data-tip);position:absolute;left:-10px;bottom:calc(100% + 9px);
@@ -873,7 +895,7 @@ textarea.fin{min-height:64px;resize:vertical;font-family:inherit}
 .imp-t{font-size:22px;font-weight:700;letter-spacing:-.02em;margin:14px 0 8px}
 .imp-s{font-size:13px;color:var(--ink-2);line-height:1.55}
 .imp-n{font-size:12.5px;color:var(--muted);line-height:1.55;margin-top:10px}
-.imp-opt{border:1px solid var(--line);border-radius:8px;background:var(--paper);padding:17px 18px;
+.imp-opt{border:1px solid var(--line);border-radius:8px;background:var(--card);padding:17px 18px;
   display:flex;gap:14px;align-items:flex-start;width:100%;text-align:left;margin-bottom:14px}
 .imp-opt:last-child{margin-bottom:0}
 .imp-opt:hover{border-color:var(--brand)}
@@ -896,7 +918,7 @@ textarea.fin{min-height:64px;resize:vertical;font-family:inherit}
 .maptbl th{text-align:left;font-size:11.5px;color:var(--head-muted);background:var(--head);padding:7px 10px;
   border-bottom:1px solid var(--head-line)}
 .maptbl td{padding:7px 10px;border-bottom:1px solid var(--line-2);vertical-align:middle}
-.maptbl select{width:100%;padding:5px 8px;border:1px solid var(--line-2);border-radius:4px;font-size:12.5px;background:var(--paper)}
+.maptbl select{width:100%;padding:5px 8px;border:1px solid var(--line-2);border-radius:4px;font-size:12.5px;background:var(--card)}
 .mapscroll{max-height:320px;overflow-y:auto;border:1px solid var(--line);border-radius:7px}
 .imp-foot{padding:12px 22px;border-top:1px solid var(--line);display:flex;align-items:center;gap:14px;
   background:var(--zebra);border-radius:0 0 10px 10px;flex:0 0 auto}
@@ -910,7 +932,7 @@ textarea.fin{min-height:64px;resize:vertical;font-family:inherit}
 /* ---------- audit log ---------- */
 .aud-tools{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:12px}
 .aud-tools select,.aud-tools input[type=date]{padding:6px 9px;border:1px solid var(--line-strong);
-  border-radius:var(--radius);font-size:12.5px;background:var(--paper);color:var(--ink)}
+  border-radius:var(--radius);font-size:12.5px;background:var(--card);color:var(--ink)}
 .aud-lbl{font-size:11.5px;color:var(--muted)}
 .aud-note{display:flex;gap:8px;align-items:flex-start;background:var(--warn-lo);border:1px solid var(--warn);
   border-radius:7px;padding:9px 13px;font-size:12px;color:var(--warn);margin-bottom:14px;line-height:1.5}
@@ -961,9 +983,9 @@ textarea.fin{min-height:64px;resize:vertical;font-family:inherit}
 .calcv{font-size:13.5px;padding-top:7px}
 .calcn{font-size:11.5px;color:var(--muted);font-style:italic;margin-top:2px}
 .dual{display:grid;grid-template-columns:1fr 30px 1fr;gap:8px;align-items:center}
-.dual select{height:132px;border:1px solid var(--line-2);border-radius:4px;font-size:12.5px;padding:4px;background:var(--paper)}
+.dual select{height:132px;border:1px solid var(--line-2);border-radius:4px;font-size:12.5px;padding:4px;background:var(--card)}
 .dual-b{display:flex;flex-direction:column;gap:6px}
-.dual-b button{border:1px solid var(--line-strong);border-radius:4px;padding:5px 0;background:var(--paper);font-size:11px}
+.dual-b button{border:1px solid var(--line-strong);border-radius:4px;padding:5px 0;background:var(--card);font-size:11px}
 .dual-b button:hover{border-color:var(--brand);color:var(--brand-dark)}
 .dual-l{font-size:11px;color:var(--muted);margin-bottom:3px}
 .pctin{position:relative}
@@ -1010,17 +1032,17 @@ textarea.fin{min-height:64px;resize:vertical;font-family:inherit}
 .acbox-t{font-size:12px;font-weight:600;color:var(--ink-2);margin-bottom:11px;
   letter-spacing:.02em;display:flex;align-items:center;gap:8px}
 .acmult{display:flex;gap:6px;margin-left:auto}
-.acmult button{border:1px solid var(--line);background:var(--paper);border-radius:5px;padding:3px 10px;font-size:11.5px}
+.acmult button{border:1px solid var(--line);background:var(--card);border-radius:5px;padding:3px 10px;font-size:11.5px}
 .acmult button:hover{border-color:var(--brand);color:var(--brand-dark);background:var(--brand-tint)}
 .acres{display:grid;grid-template-columns:repeat(auto-fit,minmax(168px,1fr));gap:2px}
 .acr{padding:8px 10px;border-radius:5px}
-.acr:hover{background:var(--paper)}
+.acr:hover{background:var(--card)}
 .acr-l{font-size:11px;color:var(--muted);line-height:1.35;min-height:30px}
 .acr-v{font-size:15px;font-weight:600;letter-spacing:-.015em;margin-top:2px}
 .acr-v.good{color:var(--green)} .acr-v.bad{color:var(--brand-dark)}
 .actrigs{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:4px}
 @media(max-width:820px){.actrigs{grid-template-columns:1fr}}
-.actrig{background:var(--paper);border:1px solid var(--line);border-radius:7px;padding:12px 14px}
+.actrig{background:var(--card);border:1px solid var(--line);border-radius:7px;padding:12px 14px}
 .actrig-h{font-size:12.5px;font-weight:600;margin-bottom:2px}
 .actrig-s{font-size:11px;color:var(--muted);margin-bottom:10px}
 .actrig-row{display:flex;justify-content:space-between;gap:10px;font-size:12px;padding:3px 0}
@@ -1031,7 +1053,7 @@ textarea.fin{min-height:64px;resize:vertical;font-family:inherit}
 
 .acsug{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
 @media(max-width:820px){.acsug{grid-template-columns:repeat(2,1fr)}}
-.acsug-c{background:var(--paper);border:1px solid var(--line);border-radius:7px;padding:11px 12px}
+.acsug-c{background:var(--card);border:1px solid var(--line);border-radius:7px;padding:11px 12px}
 .acsug-h{font-size:12px;font-weight:700;color:var(--muted);letter-spacing:.04em}
 .acsug-a{font-size:15px;font-weight:600;letter-spacing:-.015em;margin:2px 0 8px}
 .acsug-b{width:100%;margin-top:9px;padding:6px;border-radius:5px;border:1px solid;font-size:11.5px;font-weight:600}
@@ -1040,7 +1062,7 @@ textarea.fin{min-height:64px;resize:vertical;font-family:inherit}
 /* ---------- opportunity record page ---------- */
 .rec-wrap{display:grid;grid-template-columns:minmax(0,1fr) 390px;gap:16px;align-items:start}
 @media(max-width:1180px){.rec-wrap{grid-template-columns:1fr}}
-.rec-head{background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:14px 18px;margin-bottom:16px}
+.rec-head{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:14px 18px;margin-bottom:16px}
 .rec-top{display:flex;align-items:flex-start;gap:14px;flex-wrap:wrap}
 .rec-eyebrow{font-size:11.5px;color:var(--muted)}
 .rec-title{font-size:20px;font-weight:600;letter-spacing:-.02em;line-height:1.2}
@@ -1067,7 +1089,7 @@ textarea.fin{min-height:64px;resize:vertical;font-family:inherit}
    trong thẻ như ở trang chi tiết cơ hội. Trên nền --app-bg thì nhãn tab đang
    chọn (--brand-dark) chỉ đạt 4,34:1, trượt AA. Đặt nó lên mặt giấy là về
    5,93:1 — và trông cũng đúng lối hơn: mọi khối nội dung khác đều trên giấy. */
-.rtabs.solo{background:var(--paper);border:1px solid var(--line-strong);
+.rtabs.solo{background:var(--card);border:1px solid var(--line-strong);
   border-radius:8px 8px 0 0;border-bottom-color:var(--line);padding:0 6px}
 .rtab{padding:10px 14px;font-size:13px;color:var(--ink-2);border-bottom:2px solid transparent;white-space:nowrap}
 .rtab:hover{color:var(--ink);background:var(--surface)}
@@ -1147,14 +1169,14 @@ tr.locked:hover td{background:var(--row-hover)}
 .icell.num{justify-content:flex-end}
 .ipen{
   opacity:0;border:1px solid var(--line);border-radius:4px;width:21px;height:21px;
-  display:grid;place-items:center;background:var(--paper);flex:0 0 auto;color:var(--muted);
+  display:grid;place-items:center;background:var(--card);flex:0 0 auto;color:var(--muted);
 }
 tbody tr:hover .ipen{opacity:1}
 .ipen:hover{border-color:var(--brand);color:var(--brand-dark);background:var(--brand-tint)}
 .ipen:focus-visible{opacity:1}
 .iedit{
   width:100%;padding:4px 7px;border:2px solid var(--brand);border-radius:4px;
-  font-size:12.5px;background:var(--paper);box-shadow:0 2px 8px rgba(255,46,76,.18);
+  font-size:12.5px;background:var(--card);box-shadow:0 2px 8px rgba(255,46,76,.18);
 }
 .iedit:focus{outline:none}
 
@@ -1162,7 +1184,7 @@ tbody tr:hover .ipen{opacity:1}
 .scrim{position:fixed;inset:0;background:rgba(20,22,26,.28);z-index:40;animation:fade .18s ease-out}
 @keyframes fade{from{opacity:0}to{opacity:1}}
 .drawer{
-  position:fixed;top:0;right:0;bottom:0;width:min(500px,94vw);background:var(--paper);
+  position:fixed;top:0;right:0;bottom:0;width:min(500px,94vw);background:var(--card);
   z-index:41;display:flex;flex-direction:column;box-shadow:-3px 0 22px rgba(20,22,26,.16);
   animation:slide .24s var(--ease);
 }
@@ -1177,7 +1199,7 @@ tbody tr:hover .ipen{opacity:1}
 .fld{margin-bottom:13px}
 .fld-l{font-size:11.5px;color:var(--muted);margin-bottom:4px;font-weight:500}
 .fld-v{font-size:13.5px}
-.in{width:100%;padding:7px 10px;border:1px solid var(--line-strong);border-radius:var(--radius);background:var(--paper);font-size:13px}
+.in{width:100%;padding:7px 10px;border:1px solid var(--line-strong);border-radius:var(--radius);background:var(--card);font-size:13px}
 .in:focus{border-color:var(--accent);outline:none;box-shadow:var(--ring)}
 .row2{display:grid;grid-template-columns:1fr 1fr;gap:11px}
 .sec{border-top:1px solid var(--line-2);margin-top:16px;padding-top:14px}
@@ -1187,7 +1209,7 @@ tbody tr:hover .ipen{opacity:1}
 .rp.on{background:var(--ok-lo);border-color:var(--ok);color:var(--ok);font-weight:600}
 .tl{display:flex;gap:10px;padding-bottom:13px;position:relative}
 .tl:not(:last-child)::before{content:'';position:absolute;left:5px;top:15px;bottom:0;width:1px;background:var(--line)}
-.tl-d{width:11px;height:11px;border-radius:50%;border:2px solid var(--paper);background:var(--line);flex:0 0 auto;margin-top:3px;z-index:1}
+.tl-d{width:11px;height:11px;border-radius:50%;border:2px solid var(--card);background:var(--line);flex:0 0 auto;margin-top:3px;z-index:1}
 .tl-b{flex:1;min-width:0}
 .tl-t{font-size:12.5px;margin-bottom:1px}
 .tl-m{font-size:11px;color:var(--muted)}
@@ -1198,7 +1220,7 @@ tbody tr:hover .ipen{opacity:1}
 
 .toast{
   position:fixed;bottom:20px;left:50%;transform:translateX(-50%);
-  background:var(--ink);color:var(--paper);padding:9px 17px;border-radius:18px;font-size:12.5px;
+  background:var(--ink);color:var(--card);padding:9px 17px;border-radius:18px;font-size:12.5px;
   z-index:60;box-shadow:0 3px 14px rgba(20,22,26,.28);animation:up .2s ease-out;
 }
 @keyframes up{from{transform:translate(-50%,10px);opacity:0}to{transform:translate(-50%,0);opacity:1}}
@@ -1267,12 +1289,12 @@ tbody tr:hover .ipen{opacity:1}
 .rescue-a{display:flex;gap:8px;flex:0 0 auto}
 
 /* mô hình tài chính — bảng lời lỗ theo năm */
-.finhist{background:var(--paper);border:1px solid var(--line-2);border-radius:var(--r-sm);
+.finhist{background:var(--card);border:1px solid var(--line-2);border-radius:var(--r-sm);
   padding:10px 12px;margin-bottom:12px}
 .finhist-t{font-size:11px;font-weight:650;color:var(--muted);text-transform:uppercase;
   letter-spacing:.05em;margin-bottom:6px;line-height:1.55}
 .fin-ta{width:100%;box-sizing:border-box;border:1px solid var(--line-strong);border-radius:var(--r-sm);
-  padding:7px 9px;font:12px/1.5 var(--mono);color:var(--ink);background:var(--paper);resize:vertical}
+  padding:7px 9px;font:12px/1.5 var(--mono);color:var(--ink);background:var(--card);resize:vertical}
 .fin-ta:focus{outline:none;border-color:var(--accent);box-shadow:var(--shadow-lift)}
 .finhist-r{display:flex;align-items:center;gap:10px;margin-top:7px;font-size:11.5px;color:var(--ink-2)}
 .finhist-r .dim{color:var(--muted)} .finhist-r .warn{color:var(--warn)}
@@ -1297,7 +1319,7 @@ tbody tr:hover .ipen{opacity:1}
 .finstr-p{min-width:86px;text-align:right;color:var(--muted);font-size:11px}
 .finverd{padding:9px 12px;border-radius:var(--r-sm);font-weight:650;font-size:12.5px;margin-bottom:12px}
 .finkpi{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:9px;margin-bottom:14px}
-.finkpi-c{background:var(--paper);border:1px solid var(--line-2);border-radius:var(--r-sm);padding:9px 11px}
+.finkpi-c{background:var(--card);border:1px solid var(--line-2);border-radius:var(--r-sm);padding:9px 11px}
 .finkpi-l{font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;
   margin-bottom:3px;line-height:1.55}
 .finkpi-v{font-family:var(--mono);font-size:15px;font-weight:600;color:var(--ink)}
@@ -1314,12 +1336,12 @@ tbody tr:hover .ipen{opacity:1}
 .fintbl tbody tr:nth-child(even){background:var(--zebra)}
 .fintbl .good{color:var(--ok)} .fintbl .bad{color:var(--danger)} .fintbl .dim{color:var(--muted)}
 .finscen{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:9px}
-.finscen-c{background:var(--paper);border:1px solid var(--line-2);border-radius:var(--r-sm);padding:10px}
+.finscen-c{background:var(--card);border:1px solid var(--line-2);border-radius:var(--r-sm);padding:10px}
 .finscen-c.on{border-color:var(--accent);box-shadow:var(--shadow-lift)}
 .finscen-h{font-size:11px;font-weight:650;color:var(--muted);text-transform:uppercase;
   letter-spacing:.05em;line-height:1.55}
 .finscen-v{font-family:var(--mono);font-size:15px;font-weight:600;margin:4px 0 6px;color:var(--ink)}
-.finmax{margin-top:14px;background:var(--paper);border:1px solid var(--line-2);
+.finmax{margin-top:14px;background:var(--card);border:1px solid var(--line-2);
   border-radius:var(--r-sm);padding:10px 12px}
 .finmax-t{font-size:11px;font-weight:650;color:var(--muted);text-transform:uppercase;
   letter-spacing:.05em;margin-bottom:6px;line-height:1.55}
@@ -1354,13 +1376,13 @@ tbody tr:hover .ipen{opacity:1}
 /* Bản hợp đồng giữ nguyên xuống dòng của mẫu — nội dung là văn bản thuần,
    white-space:pre-wrap là thứ duy nhất cần để nó đọc được. */
 .ctr-doc{white-space:pre-wrap;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
-  font-size:11.5px;line-height:1.8;background:var(--paper);border:1px solid var(--line-strong);
+  font-size:11.5px;line-height:1.8;background:var(--card);border:1px solid var(--line-strong);
   border-radius:8px;padding:16px;color:var(--ink);overflow-x:auto}
 .ctr-doc mark{background:var(--warn-lo);color:var(--warn);border-radius:3px;padding:0 3px;font-weight:600}
 .tpl-body{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11.5px;line-height:1.7;resize:vertical}
 .fieldpick{display:flex;flex-wrap:wrap;gap:5px}
 .fchip{font-size:11px;padding:3px 9px;border:1px solid var(--line-strong);border-radius:999px;
-  background:var(--paper);color:var(--ink-2)}
+  background:var(--card);color:var(--ink-2)}
 .fchip:hover{border-color:var(--brand);color:var(--brand)}
 .printarea{display:none}
 @media print{
@@ -1401,7 +1423,7 @@ tbody tr:hover td:first-child{box-shadow:inset 3px 0 0 var(--brand)}
 .badge:has(.dot){display:inline-flex;align-items:center;gap:6px;padding:2px 9px 2px 7px;
   border-radius:999px;background:var(--surface);border:1px solid var(--line);font-size:11.5px;
   font-weight:500;color:var(--ink-2);white-space:nowrap;line-height:1.5}
-.badge:has(.dot) .dot{width:7px;height:7px;border-radius:50%;flex:none;box-shadow:0 0 0 2px var(--paper)}
+.badge:has(.dot) .dot{width:7px;height:7px;border-radius:50%;flex:none;box-shadow:0 0 0 2px var(--card)}
 </style>
 </head>
 <body>
@@ -1426,6 +1448,7 @@ tbody tr:hover td:first-child{box-shadow:inset 3px 0 0 var(--brand)}
         <div class="lang">
           <button id="cu" onclick="setCur('USD')">USD</button>
           <button id="cv" onclick="setCur('VND')">VND</button>
+          <button id="ce" onclick="setCur('EUR')">EUR</button>
         </div>
         <div class="lang" style="margin-left:0">
           <button id="lv" onclick="setLang('vi')">VI</button>
@@ -1580,7 +1603,29 @@ vi:{
   submitCountry:'Trình sếp country', approveC:'Duyệt (country)', approveR:'Duyệt (vùng)',
   sendBack:'Trả lại', role_country:'Giám đốc quốc gia', role_region:'Giám đốc khu vực',
   pApproveCountry:'Duyệt cấp country', pApproveRegion:'Duyệt cấp vùng',
-  thrTitle:'Ngưỡng bỏ qua sếp vùng', thrHint:'Deal dưới mức này chỉ cần sếp country duyệt rồi trình thẳng portal.',
+  advTitle:'Tính toán advance', advOpen:'Tính advance', advRecalc:'Tính lại',
+  advSaved:'Đã lưu tính toán advance vào deal',
+  advNoAmount:'Chưa có khoản advance nào để lưu — nhập tạm ứng hoặc chọn một bội số.',
+  advPortalLock:'Deal đang ở phía portal cầm lái. Xem và thử số thì được; không sửa điều khoản trong lúc chờ duyệt — muốn đổi thì rút deal về trước.',
+  apUng:'tạm ứng', apThuHoi:'thu hồi', apThang:'tháng', apRoi:'ROI/năm',
+  apKhongThuHoi:'KHÔNG thu hồi xong',
+  apChuaDinhGia:'chưa định giá',
+  apChuaDinhGiaHint:'Deal chưa điền giá trị. Giá trị 0 nghĩa là chưa ai định giá, không phải "đáng 0 đồng" — nên nó KHÔNG được coi là deal nhỏ để bỏ qua sếp vùng.',
+  thrTitle:'Ngưỡng bỏ qua sếp vùng', thrHint:'Deal dưới mức này chỉ cần sếp country duyệt rồi trình thẳng portal. Ngưỡng là chính sách tính bằng USD; gõ vào bằng đơn vị nào cũng được, hệ quy về đô để lưu.',
+  ctrChot:'chốt theo tỷ giá {r}',
+  fxTitle:'Tỷ giá quy đổi',
+  fxHint:'Số đồng cho một đơn vị ngoại tệ, đúng như bảng niêm yết Vietcombank. Tỷ giá USD↔EUR suy ra từ hai số này, không nhập riêng.\n\nSỔ GHI BẰNG ĐÔ LA. Mọi con số tiền đều lưu bằng USD, và đổi tỷ giá là đổi cách HIỆN chúng chứ không đổi giá trị nào. Đồng chỉ CHỐT thành một con số cố định ở ba chỗ: hợp đồng đã ký, lúc chuyển tiền cho khách, và lúc thu tiền từ nền tảng về — ba chỗ ấy ghi kèm tỷ giá lúc chốt và không trôi theo tỷ giá sau đó.\n\nTỷ giá ở đây dùng để BÁO GIÁ. Tỷ giá RÀNG BUỘC lúc chi trả là tỷ giá Portal chốt cho từng kỳ (tỷ giá bán ra Vietcombank ngày cuối tháng của kỳ ấy, khoá lại không đổi). Giữ con số ở đây khớp với Portal, đừng để hai app báo hai tỷ giá.',
+  fxPerUsd:'1 USD', fxPerEur:'1 EUR',
+  fxNotePh:'Nguồn / lý do (ví dụ: bảng VCB ngày 17/09)',
+  fxBad:'Tỷ giá phải là số đồng cho một đơn vị ngoại tệ, trong khoảng 1.000 – 1.000.000.',
+  fxSame:'Tỷ giá không đổi.',
+  fxJump:'Tỷ giá nhảy {p}% so với hiện tại. Sai một chữ số là lệch mười lần mọi báo cáo. Vẫn lưu?',
+  fxSaved:'Đã đổi tỷ giá · {r}',
+  fxNoLog:'Chưa lần nào đổi tỷ giá kể từ bản lưu này.',
+  fxWhich:'Cặp', fxOld:'Cũ', fxNew:'Mới', fxSrc:'Nguồn',
+  negErr:'Số tiền không được âm.',
+  bigErr:'Số tiền vượt mức hệ nhận ({n}). Kiểm lại đơn vị tiền đang chọn.',
+  nanErr:'Ô tiền không đọc ra số. Bản trước im lặng hiểu thành 0 — nay dừng lại để bạn sửa.',
   thrSaved:'Đã đổi ngưỡng thành {n}',
   dist:'Distribution', pub:'Publishing', yt:'YouTube',
   noContacts:'Chưa có người liên hệ nào', noDeals:'Chưa có deal nào', noActivity:'Chưa có hoạt động',
@@ -1630,8 +1675,13 @@ vi:{
   hoAdvance:'Tạm ứng', hoParty:'Party bên portal', hoUnbound:'Chưa gắn',
   hoExport:'Xuất JSON', hoExported:'Đã xuất file bàn giao',
   hoBound:'Đã gắn vào {k}', hoBadKey:'Sai hình thức. Phải là A:<id> hoặc L:<id>',
-  hoUnbind:'Gỡ gắn', hoCalls:'Hai lời gọi portal sẽ chạy', hoBindHint:'Nhập partyKey bên portal. Nghệ sĩ là A:<id>, label là L:<id>. Danh mục portal không có trong CRM nên phải tra bên intranet rồi gắn tay.',
-  hoCallsNote:'CRM chỉ dựng sẵn chuỗi để đối chiếu. Người vận hành chạy chúng bên intranet — chỉ portal mới có quyền ghi vào sổ tỷ lệ và sổ tạm ứng.',
+  hoUnbind:'Gỡ gắn', hoCalls:'Bàn giao sang portal thế nào',
+  hoStep1:'1 · Xuất gói bàn giao (nút Xuất ở trang Bàn giao CRM).',
+  hoStep2:'2 · Bên intranet, mở màn Thương vụ, dán gói, gắn deal vào {k}.',
+  hoStep3:'3 · Bấm Trình. Deal thành một đề xuất chờ giám đốc duyệt — tiền chỉ vào sổ khi được duyệt.',
+  hoStepAdv:'⚠ Deal này có điều khoản tiền (tạm ứng / quỹ marketing / phí môi giới). Bước 1 của portal chưa nối chân tạm ứng nên sẽ TỪ CHỐI deal, thay vì nuốt im lặng khoản ấy. Tách tạm ứng thành đề xuất riêng bên portal, hoặc chờ bước 3.',
+  hoBindHint:'Nhập partyKey bên portal. Nghệ sĩ là A:<id>, label là L:<id>. Danh mục portal không có trong CRM nên phải tra bên intranet rồi gắn tay.',
+  hoCallsNote:'CRM không ghi gì sang portal. Tỷ lệ và tạm ứng chỉ vào sổ qua nhánh duyệt của portal — đừng gọi thẳng advances.set() hay rates.add(), hai hàm ấy GÁN ĐÈ số dư đã duyệt.',
   hoBoundN:'đã gắn {a}/{b}',
   hoNote1:'Deal ở giai đoạn Đã ký được đẩy sang portal dưới dạng điều khoản thương mại: tỷ lệ chia và tạm ứng.',
   hoNote2:'Danh mục hai bên không khớp tên nên không có khớp tự động — mỗi deal phải gắn tay vào một party của portal. CRM chỉ ghi vào khoá riêng của mình, không bao giờ đụng vào haustek.portal.v1:',
@@ -1681,6 +1731,26 @@ vi:{
   roleMatrix:'Bảng quyền theo nhóm', userList:'Danh sách người dùng',
   role_manager:'Manager', role_ar:'Artist Relations (A/R)', role_lm:'Label Manager (LM)',
   roleGroup1:'Nhóm 1', roleGroup2:'Nhóm 2', roleGroup3:'Nhóm 3',
+  dx_hopDong:'Hợp đồng', dx_tamUng:'Tạm ứng', dxBiTra:'bị trả lại',
+  cnTieuDe:'Đường về từ portal', cnGay:'chưa có tin nào về',
+  cnDangCho:'{n} deal đang ở phần portal cầm lái · {tien}',
+  cnDaNhan:'{a}/{b} deal đã nhận trạng thái từ portal · lần cuối {luc}',
+  cnChuaNhan:'Chưa deal nào nhận được trạng thái từ portal. Deal nằm im ở đây KHÔNG có nghĩa là bên kia đang xử lý.',
+  cnViSao:'Vì sao:',
+  cnKhongCoKhoa:'chưa có khoá haustek.portal.contracts.v1 — portal chưa từng ghi gì về.',
+  cnSaiBan:'khoá có nhưng phiên bản {v} CRM không đọc được.',
+  cnThieuDeals:'khoá có nhưng thiếu danh sách deals.',
+  cnHongJson:'khoá có nhưng không phải JSON đọc được.',
+  ftTieuDe:'Flow-through theo từng deal',
+  ftChan:'portal sẽ chặn',
+  ftCo:'{n}/{b} deal mang flow-through (từ {lo}% tới {hi}%). Mức đi theo TỪNG deal — portal đọc mức trong gói, không đọc một tỷ lệ chung.',
+  ftChuaNoi:'Portal hiện CHẶN gói mang flowThroughPct > 0: trường này chưa có trong danh sách trường chuyển được, và sổ cái vẫn thu hồi 100%. Deal sẽ dừng ngay lúc trình, kèm câu báo — chứ không đi lọt rồi vỡ lời hứa trong im lặng. Đợi portal nối chân trước khi hứa với đối tác.',
+  ftKhong:'Chưa deal nào đặt flow-through. Ô này để 0 nghĩa là đối tác không nhận đồng nào trong suốt kỳ thu hồi.',
+  ftDeal:'Flow-through deal này',
+  ftBenCap:'Bên cấp quyền',
+  ftKhongXong:'Với mức này khoản ứng KHÔNG BAO GIỜ thu hồi xong.',
+  bc_artist:'Nghệ sĩ độc lập', bc_label_tutra:'Label · tự trả nghệ sĩ',
+  bc_label:'Label · Haustek trả nghệ sĩ',
   cRole:'Nhóm quyền', cScope:'Phạm vi dữ liệu', cPermission:'Quyền',
   scopeAll:'Toàn bộ hệ thống', scopeOwn:'Chỉ bản ghi của mình',
   pm_viewAll:'Xem mọi khách hàng, lead và cơ hội',
@@ -1779,6 +1849,8 @@ vi:{
   snapLoad:'Nạp snapshot', snapReset:'Đặt lại toàn bộ',
   snapResetAsk:'Đặt lại toàn bộ? Mọi thay đổi đã làm sẽ mất, dữ liệu mẫu sinh lại y hệt.',
   snapLoaded:'Đã nạp snapshot', snapSaved:'Đã tải snapshot về máy',
+  snapFrom:'thay cho sổ đang có ({n} cơ hội)',
+  snapChiTai:'Bạn tải được bản lưu của mình về máy. Nạp một bản lưu là thay toàn bộ sổ — kể cả tỷ giá, ngưỡng duyệt và phân quyền — nên việc ấy dành cho Manager.',
   snapBadVer:'Snapshot không đúng phiên bản ',
 },
 en:{
@@ -1887,7 +1959,29 @@ en:{
   submitCountry:'Submit to country head', approveC:'Approve (country)', approveR:'Approve (region)',
   sendBack:'Send back', role_country:'Country head', role_region:'Regional head',
   pApproveCountry:'Approve at country level', pApproveRegion:'Approve at regional level',
-  thrTitle:'Regional-step threshold', thrHint:'Deals below this only need the country head, then go straight to the portal.',
+  advTitle:'Advance calculation', advOpen:'Run advance calculation', advRecalc:'Recalculate',
+  advSaved:'Advance calculation saved to the deal',
+  advNoAmount:'No advance amount to save — enter an advance or pick a multiple.',
+  advPortalLock:'The portal holds this deal now. You can view and try figures; terms cannot change while it awaits approval — pull the deal back first.',
+  apUng:'advance', apThuHoi:'recoups in', apThang:'months', apRoi:'ROI/yr',
+  apKhongThuHoi:'NEVER recoups',
+  apChuaDinhGia:'not valued',
+  apChuaDinhGiaHint:'No deal value entered. A value of 0 means nobody has priced it, not "worth nothing" — so it does NOT count as a small deal that skips the regional head.',
+  thrTitle:'Regional-step threshold', thrHint:'Deals below this only need the country head, then go straight to the portal. The threshold is a USD policy; type it in any currency and it is converted to dollars for storage.',
+  ctrChot:'fixed at rate {r}',
+  fxTitle:'Exchange rates',
+  fxHint:'Dong per one unit of foreign currency, exactly as Vietcombank posts them. The USD↔EUR rate is derived from these two, never entered separately.\n\nTHE BOOK IS KEPT IN DOLLARS. Every money figure is stored in USD, and changing a rate changes how they are SHOWN, never any stored value. Dong is fixed to a hard number in exactly three places: a signed contract, a payment out to a client, and a collection in from a platform — each records the rate it was fixed at and does not drift afterwards.\n\nThe rate here is for QUOTING. The BINDING rate at payout is the one the Portal locks per period (Vietcombank selling rate on the last day of that period\u2019s month, frozen thereafter). Keep this figure in step with the Portal; two apps posting two rates is two answers to the same question.',
+  fxPerUsd:'1 USD', fxPerEur:'1 EUR',
+  fxNotePh:'Source / reason (e.g. VCB board, 17 Sep)',
+  fxBad:'A rate is dong per one unit of foreign currency, between 1,000 and 1,000,000.',
+  fxSame:'Rates unchanged.',
+  fxJump:'That is a {p}% jump from the current rate. One wrong digit shifts every report tenfold. Save anyway?',
+  fxSaved:'Rates updated · {r}',
+  fxNoLog:'No rate change recorded since this snapshot.',
+  fxWhich:'Pair', fxOld:'Old', fxNew:'New', fxSrc:'Source',
+  negErr:'A money amount cannot be negative.',
+  bigErr:'Amount exceeds what the system accepts ({n}). Check which currency is selected.',
+  nanErr:'That money field is not a number. The old build silently read it as 0 — now it stops so you can fix it.',
   thrSaved:'Threshold changed to {n}',
   dist:'Distribution', pub:'Publishing', yt:'YouTube',
   noContacts:'No contacts yet', noDeals:'No deals yet', noActivity:'No activity yet',
@@ -1934,8 +2028,13 @@ en:{
   hoAdvance:'Advance', hoParty:'Portal party', hoUnbound:'Unbound',
   hoExport:'Export JSON', hoExported:'Handoff file exported',
   hoBound:'Bound to {k}', hoBadKey:'Wrong shape. Must be A:<id> or L:<id>',
-  hoUnbind:'Unbind', hoCalls:'Portal calls this will make', hoBindHint:'Enter the portal partyKey. Artists are A:<id>, labels L:<id>. The portal roster is not loaded in the CRM, so look the id up in the intranet and bind it by hand.',
-  hoCallsNote:'The CRM only composes these strings so you can check them. An operator runs them in the intranet — only the portal may write to the rate and advance ledgers.',
+  hoUnbind:'Unbind', hoCalls:'How this hands off to the portal',
+  hoStep1:'1 · Export the handoff payload (Export on the CRM Handoff page).',
+  hoStep2:'2 · In the intranet, open the Deals screen, paste the payload, attach the deal to {k}.',
+  hoStep3:'3 · Press Submit. The deal becomes a proposal awaiting the director — money reaches the ledger only once approved.',
+  hoStepAdv:'⚠ This deal carries money terms (advance / marketing fund / finder\'s fee). Step 1 on the portal is not yet wired to the advance ledger, so it will REJECT the deal rather than silently swallow the amount. Raise the advance as its own proposal on the portal, or wait for step 3.',
+  hoBindHint:'Enter the portal partyKey. Artists are A:<id>, labels L:<id>. The portal roster is not loaded in the CRM, so look the id up in the intranet and bind it by hand.',
+  hoCallsNote:'The CRM writes nothing to the portal. Rates and advances reach the ledger only through the portal\'s approval branch — never call advances.set() or rates.add() directly; both OVERWRITE an approved balance.',
   hoBoundN:'{a}/{b} bound',
   hoNote1:'Deals at the Signed stage are handed to the portal as commercial terms: the split rate and the advance.',
   hoNote2:'The two rosters do not share names, so there is no automatic match — every deal is bound to a portal party by hand. The CRM writes only to its own key and never touches haustek.portal.v1:',
@@ -1985,6 +2084,26 @@ en:{
   roleMatrix:'Permissions by group', userList:'Users',
   role_manager:'Manager', role_ar:'Artist Relations (A/R)', role_lm:'Label Manager (LM)',
   roleGroup1:'Group 1', roleGroup2:'Group 2', roleGroup3:'Group 3',
+  dx_hopDong:'Contract', dx_tamUng:'Advance', dxBiTra:'sent back',
+  cnTieuDe:'Return channel from the portal', cnGay:'nothing received yet',
+  cnDangCho:'{n} deals sitting on the portal side · {tien}',
+  cnDaNhan:'{a} of {b} deals have had a status from the portal · last at {luc}',
+  cnChuaNhan:'No deal has had a status back from the portal yet. A deal sitting here does NOT mean the other side is working on it.',
+  cnViSao:'Why:',
+  cnKhongCoKhoa:'the haustek.portal.contracts.v1 key does not exist — the portal has never written anything back.',
+  cnSaiBan:'the key exists but version {v} is not one the CRM reads.',
+  cnThieuDeals:'the key exists but has no deals list.',
+  cnHongJson:'the key exists but is not readable JSON.',
+  ftTieuDe:'Per-deal flow-through',
+  ftChan:'the portal will reject these',
+  ftCo:'{n} of {b} deals carry flow-through ({lo}% to {hi}%). The rate travels WITH EACH DEAL — the portal reads the rate in the packet, not one shared figure.',
+  ftChuaNoi:'The portal currently REJECTS any packet carrying flowThroughPct > 0: the field is not on its conveyable list and its ledger still recoups 100%. The deal stops at submission with a readable message rather than slipping through and breaking the promise silently. Wait for the portal to wire it up before promising it to a partner.',
+  ftKhong:'No deal sets flow-through yet. Leaving this at 0 means the partner receives nothing at all throughout recoupment.',
+  ftDeal:'Flow-through on this deal',
+  ftBenCap:'Rights holder',
+  ftKhongXong:'At this rate the advance NEVER finishes recouping.',
+  bc_artist:'Independent artist', bc_label_tutra:'Label · pays its own artists',
+  bc_label:'Label · Haustek pays the artists',
   cRole:'Group', cScope:'Data scope', cPermission:'Permission',
   scopeAll:'Entire system', scopeOwn:'Own records only',
   pm_viewAll:'See every account, lead and opportunity',
@@ -2084,11 +2203,85 @@ en:{
   snapLoad:'Load snapshot', snapReset:'Reset everything',
   snapResetAsk:'Reset everything? Every change you made is lost; the sample data regenerates identically.',
   snapLoaded:'Snapshot loaded', snapSaved:'Snapshot downloaded',
+  snapFrom:'replacing the current book ({n} opportunities)',
+  snapChiTai:'You can download your own snapshot. Loading one replaces the entire book — rates, approval thresholds and permissions included — so that is a Manager action.',
   snapBadVer:'Snapshot is not version ',
 }};
 let lang = 'vi';
 let cur = 'USD';
-const FX = 25500;   // 1 USD = 25.500 VND
+/* ═══ TỶ GIÁ ═══════════════════════════════════════════════════════════════
+   Trước đây chỗ này là `const FX = 25500` — một con số đóng băng trong mã.
+   Ba chuyện hỏng vì thế:
+     · đổi tỷ giá phải sửa mã và phát hành lại bản mới;
+     · không ai đọc được nó đã đổi lúc nào, do ai, lấy từ đâu;
+     · mọi con số VND đưa cho khách đều dùng chung một tỷ giá, bất kể hôm nay
+       hay sáu tháng trước.
+   Nay nó là TRẠNG THÁI, theo đúng khuôn REGION_THRESHOLD đã có sẵn trong
+   file này: lưu vào snapshot, sửa được trong ứng dụng, mỗi lần đổi có
+   logAudit, và gác bằng can('users') — cùng một quyền đang gác ngưỡng vùng.
+
+   Lưu theo cách Vietcombank niêm yết: SỐ ĐỒNG CHO MỘT ĐƠN VỊ NGOẠI TỆ.
+   Đó là thứ người Việt đọc trên bảng tỷ giá, nên nhập vào không phải tự quy
+   đổi trong đầu. Tỷ giá USD↔EUR suy ra từ hai số ấy, không nhập riêng — nhập
+   ba số cho hai quan hệ là tự mở đường cho ba số mâu thuẫn nhau.
+
+   VÌ SAO CÓ EUR. Không phải để cho nhiều. Đếm trên chính cấu hình của file
+   này: 16/74 nước trong COUNTRIES dùng đồng euro, và 4/41 đơn vị kinh doanh
+   nằm trong vùng euro (ES- Rock - Indie, ES- Urban, France, Germany). Tức là
+   CRM đã tự nhận mình làm việc ở vùng euro từ lâu mà chỉ nói được hai thứ
+   tiền. Người ký deal ở Berlin phải tự nhẩm ra đô la trước khi gõ. */
+const CURRENCIES = ['USD','VND','EUR'];
+/* Mặc định khớp tỷ giá portal đang giữ (state.fx.rate = 26.150) chứ không
+   phải một con số riêng. Đo được lúc chưa khớp: CRM 25.500 so với portal
+   26.150 — lệch 2,55%, tức 32,5 triệu ₫ trên một khoản ứng 50.000 USD. Một
+   công ty mà hai app báo hai tỷ giá thì mọi con số đồng đưa cho khách đều
+   tuỳ vào việc họ đang nhìn màn hình nào. */
+var VCB = {VND:26150, EUR:28430};   /* đồng cho 1 USD · đồng cho 1 EUR */
+/* TỶ GIÁ GHIM. Khi khác null, mọi phép quy đổi trong lượt ấy dùng tỷ giá
+   này thay vì tỷ giá hiện hành. Dùng cho văn bản đã chốt với bên kia: một
+   hợp đồng đã ký phải in ra đúng con số đã ký.
+   Vì sao ghim ở ĐÂY chứ không truyền tham số xuống từng chỗ: các hàm lấy
+   giá trị trong CONTRACT_FIELDS đều khai báo `g: o => …`, một tham số. Thêm
+   tham số thứ hai thì phải sửa cả bảng, và bỏ sót một dòng là dòng ấy lặng
+   lẽ trôi theo tỷ giá — đúng cái lỗi đang sửa. Ghim ở gốc thì mọi đường đi
+   qua rate() đều được phủ, kể cả đường chưa ai nghĩ tới. */
+var FX_GHIM = null;
+/* đơn vị của tiền tệ c trên MỘT đô la — đây là hệ số nhân khi hiển thị */
+function rate(c){
+  const k = c || cur;
+  if(FX_GHIM && FX_GHIM.donVi === k) return FX_GHIM.tyGia;
+  if(k === 'USD') return 1;
+  if(k === 'VND') return VCB.VND;
+  if(k === 'EUR') return VCB.VND / VCB.EUR;   /* suy ra, không nhập riêng */
+  return 1;
+}
+/* Chạy fn với tỷ giá và đồng tiền ghim, rồi trả lại nguyên trạng — kể cả
+   khi fn ném lỗi. */
+function voiGhim(ghim, fn){
+  if(!ghim) return fn();
+  const cuG = FX_GHIM, cuC = cur;
+  FX_GHIM = ghim;
+  if(CURRENCIES.indexOf(ghim.donVi) >= 0) cur = ghim.donVi;
+  try { return fn(); } finally { FX_GHIM = cuG; cur = cuC; }
+}
+/* Số chữ số thập phân khi HIỂN THỊ, theo tập quán của từng đồng tiền.
+   Đồng Việt Nam trên thực tế không có đơn vị nhỏ hơn đồng. Bản trước hiện
+   VND với 2 số lẻ: đo trên dữ liệu thật, 35/35 ô tiền đều ra đuôi ",00" —
+   hai chữ số cố định bằng không, không bao giờ mang tin gì, mà lại gợi ý
+   một độ chính xác tới phần trăm đồng mà số lưu không hề có. */
+const CUR_DEC = {USD:0, VND:0, EUR:0};
+const CUR_LOC = {USD:'en-US', VND:'vi-VN', EUR:'de-DE'};
+/* Lịch sử đổi tỷ giá. Có lưu vào snapshot — một dấu vết kiểm toán mất khi
+   tải lại trang là một dấu vết giả. */
+var FX_LOG = [];
+const FX_LOG_KEEP = 50;   /* đủ đọc lại một năm đổi tỷ giá hàng tuần */
+/* Một tỷ giá hợp lệ là SỐ ĐỒNG cho một đơn vị ngoại tệ, nên nó nằm trong
+   khoảng vạn. Chặn ở đây thay vì ở chỗ nhập, để bản lưu sửa tay và bản xuất
+   từ phiên bản khác cũng phải đi qua cùng một cửa. */
+function fxHopLe(x){
+  const n = Number(x);
+  return isFinite(n) && n >= 1000 && n <= 1000000;
+}
 function t(k, vars){ let s = (I18N[lang]&&I18N[lang][k]) || (I18N.en[k]) || k;
   if(vars) for(const key in vars) s = s.replace('{'+key+'}', vars[key]); return s; }
 
@@ -2284,6 +2477,14 @@ const USERS = [
 /* Deal dưới ngưỡng này bỏ qua sếp vùng, trình thẳng lên portal sau khi sếp
    country duyệt. Sếp country vẫn thấy mọi deal trong vùng mình — chỉ bớt một
    chặng cho deal nhỏ, không bớt người giám sát. Manager sửa được ở tab Phân quyền. */
+/* Ngưỡng là một CHÍNH SÁCH TÍNH BẰNG ĐÔ LA, như mọi con số trong sổ này.
+   Vòng trước chỗ này còn ghi lại "đặt bằng đơn vị nào, ở tỷ giá nào" rồi
+   cảnh báo khi con số quy ra đồng đã lệch khỏi lúc đặt. Chủ dự án đã chốt
+   luật: USD là sổ, còn đồng chỉ chốt số ở đúng hai thời điểm — chuyển tiền
+   cho khách, và thu tiền từ nền tảng về. Dưới luật ấy, ngưỡng 10.000 USD
+   quy ra bao nhiêu đồng hôm nay là chuyện của tỷ giá hôm nay, không phải
+   một sai lệch cần báo. Một cảnh báo về chuyện không sai là cách nhanh
+   nhất để người ta thôi đọc cảnh báo, nên nó đã được gỡ hẳn. */
 var REGION_THRESHOLD = 10000;
 let ME = 'Ethan Nguyen';
 /* Thời gian sử dụng. Trong demo, số liệu 6 ngày trước là dữ liệu mẫu;
@@ -2698,17 +2899,43 @@ DB.opps.filter(o=>['legal','signature','won'].indexOf(o.stage)>=0).forEach((o,i)
                         'Có điều khoản audit một lần mỗi năm tài chính.',
                         'Ưu tiên gia hạn 30 ngày trước khi hết hạn.'][i%3];
 });
-DB.opps.filter(o=>o.stage==='won').forEach((o,i)=>{
+/* Gắn điều khoản cho deal ĐANG CHỜ DUYỆT nữa, không chỉ deal đã ký.
+   Bản trước chỉ gắn cho stage 'won', nên đo ra 0/6 deal trên màn Chờ duyệt
+   có điều khoản — tức màn quan trọng nhất của bộ mẫu không có gì để trình
+   bày, và một khiếm khuyết thật của sản phẩm (sếp duyệt tiền mà không
+   thấy số) bị bộ dữ liệu che đi. Chờ duyệt chính là chỗ con số tạm ứng có
+   trọng lượng nhất: sau khi bấm Duyệt là tiền đi. */
+DB.opps.filter(o=>o.stage==='won' || APPROVAL[o.stage]).forEach((o,i)=>{
   if(i%3===2) return;                       /* chừa vài deal chưa có điều khoản */
   const share = [0.7,0.75,0.65,0.8][i%4];
   /* tạm ứng bám theo giá trị deal — bội số 0,6–1,4 lần, làm tròn nghìn */
   const adv   = Math.max(2000, Math.round((o.amount||5000)*[0.8,1.2,0.6,1.4][i%4]/1000)*1000);
   o.ext = o.ext || {};
+  /* Dẫn ra các con số phái sinh bằng ĐÚNG công thức advModel dùng, chứ
+     không gieo số rời. Bản trước chỉ gieo bảy trường đầu vào, nên màn Chờ
+     duyệt có điều khoản mà vẫn không hiện nổi số tháng thu hồi hay ROI —
+     và nếu gieo bừa hai con số ấy thì bộ mẫu sẽ dạy người đọc một quan hệ
+     sai giữa chúng. Một công thức, hai nơi dùng. */
+  const mkt  = Math.round(adv*0.15), prod = Math.round(adv*0.10);
+  const term = [72,60,48][i%3];
+  const avg  = (o.amount||0)/12;                 /* giá trị deal = thu nhập tháng × 12 */
+  const net  = avg*(1-share);                    /* phần Haustek giữ */
+  const recoup = avg - net;                      /* nghệ sĩ độc lập, pass-through 0 */
+  const tong = adv + mkt + prod;
+  const months = tong<=0 ? 0 : (recoup>0 ? tong/recoup : Infinity);
+  const total = net*term;
+  const roi   = tong>0 ? total/tong : 0;
   o.ext.advCalcResult = {
-    artistShare:share, initialAdvance:adv, marketingFund:Math.round(adv*0.15),
-    termMonths:[72,60,48][i%3], exclusivityMonths:[36,24,18][i%3],
+    avg:avg,
+    artistShare:share, initialAdvance:adv, marketingFund:mkt,
+    termMonths:term, exclusivityMonths:[36,24,18][i%3],
     findersFeePct:[0,2,3][i%3], passThrough:0,
-    productionFund:Math.round(adv*0.10)
+    productionFund:prod,
+    monthlyNet:net, recoupPerMonth:recoup,
+    monthsToRecoup: isFinite(months) ? months : null,
+    neverRecoups: !isFinite(months),
+    rightsHolder:'artist', labelArtistRate:0.7,
+    totalIncome:total, roi:roi, roiAnnual: term>0 ? roi/term*12 : 0
   };
 });
 DB.opps.forEach(o=>{
@@ -2722,19 +2949,149 @@ DB.leads.forEach(l=>{
 });
 
 /* ============================ helpers ============================ */
-function fx(n){ return cur==='VND' ? n*FX : n; }
+/* USD → đơn vị đang hiển thị */
+function fx(n){ return (n||0) * rate(cur); }
+/* đơn vị đang hiển thị → USD. MỘT chỗ duy nhất làm phép này.
+   Trước đây mỗi nơi tự viết `Math.round(x/FX)` — bảy chỗ, bảy bản sao, và
+   cả bảy cùng làm tròn về ĐÔ LA CHẴN. Đo được hậu quả: gõ 1.000.000 ₫ vào
+   một ô tiền thì hệ lưu 39 USD và hiện lại 994.500 ₫ — 5.500 ₫ bốc hơi ngay
+   trước mắt người vừa gõ. Cận trên của mất mát là nửa tỷ giá, tức 12.750 ₫
+   MỖI Ô MỖI LẦN LƯU.
+   Giữ tới XU thì cận ấy còn 127,5 ₫ — nhỏ hơn 100 lần — mà không phải đổi
+   lược đồ: 35/35 bản ghi tiền hiện có là số nguyên và vẫn nguyên giá trị,
+   nên bản lưu cũ đọc vẫn đúng. (File này cố ý không tự chuyển lược đồ; xem
+   khối CỨU DỮ LIỆU KHI LÊN BẢN MỚI.) */
+function toUSD(x){
+  const n = Number(x);
+  if(!isFinite(n)) return 0;
+  return Math.round(n / rate(cur) * 100) / 100;
+}
+/* Trần một ô tiền, tính bằng USD. Một tỷ đô cho một deal nhạc là con số
+   không tồn tại; quá mức này gần như chắc chắn là gõ nhầm đơn vị — nhập số
+   VND trong lúc thanh chọn đang để USD chẳng hạn. */
+const TIEN_TRAN_USD = 1e9;
+/* Soát mọi ô tiền trong một biểu mẫu. Trả về ô hỏng ĐẦU TIÊN kèm câu nói rõ,
+   hoặc null nếu sạch. Nhận diện ô tiền qua lớp `curin` mà mọi ô tiền trong
+   file này đều nằm trong — thêm ô tiền mới là tự được soát, không phải nhớ
+   ghi tên nó vào một danh sách nào. */
+/* ĐỌC MỘT SỐ TIỀN NGƯỜI VIỆT GÕ RA.
+   ═══ VÌ SAO KHÔNG DÙNG Number() ═══
+   Ô tiền từng khai type="number". Gõ "25.000.000" — cách viết hai mươi lăm
+   triệu mà mọi người Việt đều dùng — thì CHÍNH TRÌNH DUYỆT nuốt dấu chấm
+   thứ hai trước khi JavaScript nhìn thấy gì: ô còn "25.000000", Number()
+   đọc ra 25, và hai mươi lăm triệu đồng vào sổ thành 0 USD. Đo bằng bàn
+   phím thật trên Chromium:
+       gõ 25.000.000  → ô giữ "25.000000" → Number 25   → lưu 0 USD
+       gõ  1.000.000  → ô giữ "1.000000"  → Number 1    → lưu 0 USD
+       gõ  2,500,000  → ô giữ "2500000"   → Number 2,5tr → lưu 98,04 USD ✓
+   Tức là hệ đọc đúng dấu phẩy kiểu Anh–Mỹ và đọc sai dấu chấm kiểu Việt —
+   đúng cái ký hiệu người dùng của nó viết. Không phép kiểm nào bắt được,
+   vì sau khi trình duyệt cắt xong thì 25 là một con số hoàn toàn hợp lệ.
+   Chốt chặn âm/quá lớn/không phải số đều cho qua.
+
+   Nên ô tiền chuyển sang type="text" inputmode="decimal" và đi qua hàm này.
+   Luật: dấu XUẤT HIỆN SAU CÙNG là dấu thập phân, dấu còn lại là phân nhóm.
+   Một dấu duy nhất mà theo sau đúng ba chữ số tới hết chuỗi thì coi là phân
+   nhóm — "25.000" là hai mươi lăm nghìn, không phải hai mươi lăm phẩy không.
+   Đó là quy ước gây tranh cãi duy nhất, và nó nghiêng về phía số tiền tròn
+   nghìn, thứ chiếm gần hết dữ liệu thật. Muốn ghi phần lẻ thì viết "25.000,50". */
+function docSoTien(raw){
+  let x = String(raw === undefined || raw === null ? '' : raw)
+            .replace(/[\s\u00A0\u202F]/g, '');
+  if(x === '') return null;
+  let dau = '';
+  if(x[0] === '-' || x[0] === '+'){ dau = x[0]; x = x.slice(1); }
+  if(!/^[0-9.,]+$/.test(x)) return NaN;
+  const cham = x.lastIndexOf('.'), phay = x.lastIndexOf(',');
+  let thapPhan = -1;
+  if(cham >= 0 && phay >= 0) thapPhan = Math.max(cham, phay);
+  else if(cham >= 0 || phay >= 0){
+    const i = Math.max(cham, phay);
+    const duoi = x.length - i - 1;
+    const soDau = (x.match(/[.,]/g) || []).length;
+    /* nhiều dấu cùng loại → chắc chắn phân nhóm; một dấu + đúng 3 số → phân nhóm */
+    thapPhan = (soDau > 1 || duoi === 3) ? -1 : i;
+  }
+  const nguyen = (thapPhan < 0 ? x : x.slice(0, thapPhan)).replace(/[.,]/g, '');
+  const le     = thapPhan < 0 ? '' : x.slice(thapPhan + 1).replace(/[.,]/g, '');
+  if(nguyen === '' && le === '') return NaN;
+  const n = Number(dau + (nguyen || '0') + (le ? '.' + le : ''));
+  return isFinite(n) ? n : NaN;
+}
+/* SỐ TIỀN VIẾT VÀO MỘT Ô NHẬP — có phân nhóm, không có tên tiền tệ.
+   Ô nhập trước đây nhận số trần: mở một deal 18.000 USD ở chế độ VND thì ô
+   hiện "459000000". Chín chữ số liền nhau, trong khi chính người ấy vừa gõ
+   vào đó "459.000.000". Đọc lại một con số như thế là việc mắt phải tự đếm
+   hàng — và đếm nhầm một hàng là sai mười lần.
+   Phân nhóm theo đúng tập quán của đồng tiền đang hiển thị, và docSoTien()
+   đọc ngược lại được, nên gõ vào rồi lưu ra vẫn đúng một số. Tên tiền tệ
+   thì không viết vào ô: nó đã nằm ở nhãn .curin bên trái rồi. */
+function soRaO(n){                 /* số ĐÃ ở đơn vị hiển thị */
+  const c = CURRENCIES.indexOf(cur)>=0 ? cur : 'USD';
+  /* Ô NHẬP giữ tới xu, KHÔNG làm tròn theo kiểu hiển thị. fmtMoney hiện
+     "342 USD" là đúng cho một bảng; nhưng đổ "342" vào ô nhập rồi đọc lại
+     là mất 0,67 — đo được: doanh thu tháng 341,67 → ô "342" → ×12 ra 4.104
+     thay vì 4.100. Cùng lớp lỗi làm tròn ở biên đã vá ở toUSD. Tối đa hai
+     số lẻ, không ép số 0 đuôi, nên số chẵn vẫn gọn như trước. */
+  return new Intl.NumberFormat(CUR_LOC[c],
+    {minimumFractionDigits:0, maximumFractionDigits:2}).format(Number(n)||0);
+}
+function soTienRaO(usd){ return soRaO(fx(usd)); }   /* số đang ở USD */
+/* Một ô tiền đơn lẻ: đọc ra USD và nói rõ vì sao nếu không đọc được.
+   soatTien() ở dưới lo cho cả một biểu mẫu và tô đỏ ô sai; hàm này lo cho
+   những chỗ chỉ có MỘT ô — sửa nhanh trên bảng, ngăn deal, ô mục tiêu, hộp
+   tạo nhanh. Bốn chỗ ấy trước đây không kiểm gì cả, nên chốt chặn ở biểu
+   mẫu lớn chỉ là khoá cửa trước rồi để ngỏ bốn cửa sau. */
+function tienVao(raw){
+  const n = docSoTien(raw);
+  if(n === null) return {ok:true, usd:0};
+  if(!isFinite(n))              return {ok:false, msg:t('nanErr')};
+  if(n < 0)                     return {ok:false, msg:t('negErr')};
+  if(n / rate(cur) > TIEN_TRAN_USD)
+                                return {ok:false, msg:t('bigErr',{n:money(TIEN_TRAN_USD)})};
+  return {ok:true, usd:toUSD(n)};
+}
+function soatTien(tienTo){
+  /* `tienTo` nhận một tiền tố hoặc một MẢNG tiền tố. Bản trước chỉ nhận một
+     chuỗi, và chỗ gọi truyền 'of_' — nên toàn bộ ô tiền của bộ tính advance
+     (ac_adv, ac_mkt, ac_prod, ac_avg) nằm ngoài tầm soát, dù chúng ở ngay
+     trong cùng biểu mẫu và nằm trong .curin y hệt. Đo được: gõ -50000 vào
+     ô "Tiền tạm ứng" của biểu mẫu thì bị chặn; gõ đúng con số ấy vào ô tạm
+     ứng của bộ tính thì đi lọt, rồi in ra hợp đồng "Tiền tạm ứng: -50.000
+     USD" và sang portal thành totalAdvanceUSD âm. Hai ô mang đúng một ý
+     nghĩa, một ô khoá một ô mở, và ô mở mới là ô chảy ra ngoài. */
+  const dsTo = tienTo == null ? null : (Array.isArray(tienTo) ? tienTo : [tienTo]);
+  const els = Array.from(document.querySelectorAll('.curin input'));
+  for(let i=0;i<els.length;i++){
+    const el = els[i];
+    if(dsTo && !dsTo.some(x => String(el.id).indexOf(x) === 0)) continue;
+    if(el.disabled || el.readOnly) continue;
+    /* Ô đang ẩn thì không soát: không ai sửa được thứ không nhìn thấy. */
+    if(!el.offsetParent && el.getClientRects().length === 0) continue;
+    const n = docSoTien(el.value);
+    if(n === null) continue;                       /* để trống là chuyện khác */
+    if(!isFinite(n))      return {el:el, msg:t('nanErr')};
+    if(n < 0)             return {el:el, msg:t('negErr')};
+    if(n / rate(cur) > TIEN_TRAN_USD)
+      return {el:el, msg:t('bigErr',{n:money(TIEN_TRAN_USD)})};
+  }
+  return null;
+}
 function fmtMoney(n, dashIfEmpty){
   if(!n && dashIfEmpty) return '—';
-  if(cur==='VND'){
-    return new Intl.NumberFormat('vi-VN',{minimumFractionDigits:2,maximumFractionDigits:2})
-      .format((n||0)*FX)+' VND';
-  }
-  return new Intl.NumberFormat('en-US',{maximumFractionDigits:0}).format(n||0)+' USD';
+  const c = CURRENCIES.indexOf(cur)>=0 ? cur : 'USD';
+  const d = CUR_DEC[c];
+  return new Intl.NumberFormat(CUR_LOC[c],
+    {minimumFractionDigits:d, maximumFractionDigits:d}).format(fx(n))+' '+c;
 }
 function money(n){ return fmtMoney(n,true); }
 function moneyShort(n){ return fmtMoney(n,false); }
 function fxNote(){
-  return t('curNote')+': 1 USD = '+new Intl.NumberFormat('vi-VN').format(FX)+' VND';
+  const fm = x => new Intl.NumberFormat('vi-VN').format(Math.round(x));
+  if(cur === 'VND') return t('curNote')+': 1 USD = '+fm(VCB.VND)+' VND';
+  if(cur === 'EUR') return t('curNote')+': 1 USD = '+
+    new Intl.NumberFormat('de-DE',{minimumFractionDigits:4,maximumFractionDigits:4}).format(rate('EUR'))+' EUR';
+  return t('curNote')+': 1 USD = '+fm(VCB.VND)+' VND · 1 EUR = '+fm(VCB.EUR)+' VND';
 }
 function fdate(dt){
   if(!dt) return '—';
@@ -3197,21 +3554,45 @@ function snapshot(){
     v: STORE_VERSION, at: new Date().toISOString(),
     me: ME, auth: AUTHED, lang: lang, cur: cur, uid: uid, theme: THEME,
     usage: USAGE, goals: USER_GOALS, handoff: HANDOFF_BIND, inbox: INBOX_SEEN, thr: REGION_THRESHOLD,
+    /* Tỷ giá và lịch sử đổi tỷ giá PHẢI nằm trong bản lưu. Bản demo của đội
+       R&D giữ chúng trong bộ nhớ: tải lại trang là tỷ giá lặng lẽ về mặc
+       định còn lịch sử biến mất — với một bản demo thì không sao, với ứng
+       dụng có sổ lưu thì đó là một dấu vết kiểm toán giả. */
+    fx: {VND: VCB.VND, EUR: VCB.EUR}, fxLog: FX_LOG,
     recentOpps: state.recentOpps, recentLeads: state.recentLeads, views: state.views,
     db: DB
   };
 }
 function applySnapshot(s){
-  /* DB là const (dòng 1286) — thay ruột từng mảng, không gán lại. */
+  /* DB là const (dòng 1286) — thay ruột từng mảng, không gán lại.
+     CHÉP RA TRƯỚC KHI XOÁ. snapshot() trả `db: DB` theo THAM CHIẾU, nên
+     applySnapshot(snapshot()) sẽ xoá sạch mảng rồi đọc lại từ chính mảng
+     vừa xoá — toàn bộ dữ liệu biến mất. Đường chạy thật luôn đi qua
+     JSON.parse nên chưa bao giờ chạm phải; nhưng một hàm mà gọi với chính
+     đầu ra của hàm anh em lại xoá trắng sổ thì là một cái bẫy đặt sẵn,
+     và nó đã sập đúng một lần trong bài kiểm. */
+  const nguon = {};
   Object.keys(DB).forEach(k=>{
-    const rows = (s.db && Array.isArray(s.db[k])) ? s.db[k] : [];
+    nguon[k] = (s.db && Array.isArray(s.db[k])) ? s.db[k].slice() : [];
+  });
+  Object.keys(DB).forEach(k=>{
     DB[k].length = 0;
-    for(let i=0;i<rows.length;i++) DB[k].push(rows[i]);
+    for(let i=0;i<nguon[k].length;i++) DB[k].push(nguon[k][i]);
   });
   reviveDB(DB);
   if(typeof s.uid === 'number' && s.uid > 0) uid = s.uid;
   if(s.lang==='vi' || s.lang==='en')   lang = s.lang;
-  if(s.cur ==='USD'|| s.cur ==='VND')  cur  = s.cur;
+  if(CURRENCIES.indexOf(s.cur) >= 0)   cur  = s.cur;
+  /* Tỷ giá đọc lại phải qua đúng cửa kiểm như lúc nhập tay — bản lưu có thể
+     đã bị sửa bằng tay, hoặc đến từ một bản xuất của phiên bản khác. */
+  if(s.fx && typeof s.fx === 'object'){
+    if(fxHopLe(s.fx.VND)) VCB.VND = Math.round(s.fx.VND);
+    if(fxHopLe(s.fx.EUR)) VCB.EUR = Math.round(s.fx.EUR);
+  }
+  FX_LOG = Array.isArray(s.fxLog)
+    ? s.fxLog.filter(x=>x && typeof x==='object').slice(0, FX_LOG_KEEP)
+        .map(x=>Object.assign({}, x, {date: toDate(x.date)}))
+    : [];
   if(s.theme==='auto'||s.theme==='dark'||s.theme==='light') THEME = s.theme;
   if(s.usage) Object.keys(s.usage).forEach(n=>{ if(USAGE[n]) USAGE[n] = s.usage[n]; });
   if(s.goals) Object.keys(s.goals).forEach(n=>{ USER_GOALS[n] = s.goals[n]; });
@@ -3346,11 +3727,28 @@ function isoDay(dt){
   const p = n=>String(n).padStart(2,'0');
   return dt.getFullYear()+'-'+p(dt.getMonth()+1)+'-'+p(dt.getDate());
 }
+/* Quỹ sản xuất từng mang hai tên: `productionFund` ở bộ mẫu, `prodFund` ở
+   ext của biểu mẫu. Bản ghi cũ vẫn còn nguyên trên máy người dùng, nên đọc
+   cả hai; ghi thì chỉ ghi một. */
+function prodOf(adv){
+  if(!adv) return 0;
+  const v = adv.productionFund !== undefined ? adv.productionFund : adv.prodFund;
+  const n = Number(v);
+  return isFinite(n) ? n : 0;
+}
 function handoffOf(o){
   const a   = DB.accounts.find(x=>x.id===o.accountId) || {};
   const adv = (o.ext||{}).advCalcResult || null;
   const r   = o.rights || {};
-  return {
+  /* Tỷ lệ nghệ sĩ của label chỉ có nghĩa khi Haustek trả nghệ sĩ thay label;
+     với nghệ sĩ độc lập và label tự trả thì advModel không dùng tới nó
+     (heSoBen = 1). Gửi vô điều kiện là gửi mặc định 70 cho MỌI deal, mà
+     đuôi Pct thì rơi vào chốt chặn tiền của portal — đo được: gói mang
+     labelArtistRatePct = 70 bị chặn thẳng. Tức là một trường vô nghĩa với
+     phần lớn deal sẽ chặn đứng toàn bộ đường bàn giao. Chỉ gửi khi nó
+     thật sự quyết định con số. */
+  const theoLabel = !!adv && adv.rightsHolder === 'label';
+  const goi = {
     dealId:o.id, dealName:o.name,
     account:a.name||'', accountType:a.type||'', country:a.country||'',
     amountUSD:Math.round(o.amount||0),
@@ -3361,17 +3759,44 @@ function handoffOf(o){
       artistSharePct:     Math.round((adv.artistShare||0)*1000)/10,
       initialAdvanceUSD:  Math.round(adv.initialAdvance||0),
       marketingFundUSD:   Math.round(adv.marketingFund||0),
-      totalAdvanceUSD:    Math.round((adv.initialAdvance||0)+(adv.marketingFund||0)),
+      /* QUỸ SẢN XUẤT RỤNG Ở ĐÂY. advModel tính totalAdv = adv + mkt + prod,
+         và mọi con số A&R nhìn thấy (số tháng thu hồi, ROI, cảnh báo) đều
+         dựa trên tổng ba khoản. Gói gửi đi thì chỉ cộng hai. Đo trên dữ liệu
+         mẫu: 6 deal lệch, tổng 9.900 USD — o173 thiếu 2.900, o165 thiếu
+         1.500. Portal không biết khoản ấy tồn tại nên không bao giờ ghi nợ
+         và không bao giờ thu hồi: tiền Haustek đã chi mà sổ bên kia không
+         có. Thêm nữa hai app tính số tháng thu hồi trên hai mẫu số lệch
+         nhau ~8%, nên chúng không bao giờ ra cùng một câu trả lời. */
+      productionFundUSD:  Math.round(prodOf(adv)),
+      totalAdvanceUSD:    Math.round((adv.initialAdvance||0)+(adv.marketingFund||0)+prodOf(adv)),
       termMonths:         adv.termMonths||0,
       exclusivityMonths:  adv.exclusivityMonths||0,
       /* Tên trường kết thúc bằng Pct nên giá trị phải là PHẦN TRĂM, y như
          artistSharePct ngay trên. Trước đây gửi nguyên trạng: deal tạo từ form
          gửi 0,02 còn deal cũ gửi 2 — cùng một trường, hai đơn vị, và portal
          không có cách nào phân biệt. */
-      findersFeePct:      Math.round(pctOf(adv.findersFeePct)*1000)/10
+      findersFeePct:      Math.round(pctOf(adv.findersFeePct)*1000)/10,
+      /* FLOW-THROUGH ĐI THEO TỪNG DEAL, KHÔNG PHẢI MỘT MỨC CHUNG.
+         Chủ dự án chốt: mỗi thương vụ tự đặt mức của nó. Nên nó phải nằm
+         trong gói cùng các điều khoản khác — portal đọc mức của deal ấy,
+         không đọc hằng số nào.
+         Lưu ý cho người đọc mã: đo trên nhánh crm-cau-noi-v2, portal hiện
+         CHẶN gói mang flowThroughPct > 0 ("Thương vụ mang điều khoản tiền
+         mà bước này chưa nối chân"), vì trường này chưa có trong
+         TV_CHUYEN_DUOC và `recoup` chưa tôn trọng nó. Chặn như vậy là
+         ĐÚNG và tốt hơn hiện trạng: trước đây A&R gõ 30%, gói bỏ trường
+         ấy đi, portal vét 100% — lời hứa vỡ trong im lặng. Nay nó vỡ
+         thành một câu đọc được, ngay lúc trình. */
+      flowThroughPct:     Math.round(pctOf(adv.passThrough)*1000)/10,
+      /* Bên cấp quyền quyết định thu hồi lấy được từ đâu. Không đuôi USD/Pct
+         nên chốt chặn tiền của portal không đụng tới; đo được là qua. */
+      rightsHolder:       adv.rightsHolder || 'artist'
     } : null,
     portalPartyKey: HANDOFF_BIND[o.id] || null
   };
+  if(goi.terms && theoLabel)
+    goi.terms.labelArtistRatePct = Math.round(pctOf(adv.labelArtistRate)*1000)/10;
+  return goi;
 }
 function handoffRows(){
   /* Trình lên portal ở giai đoạn 'portal' — tức NGAY SAU khi chuỗi duyệt trong
@@ -3389,18 +3814,33 @@ function handoffPublish(){
   try { localStorage.setItem(HANDOFF_KEY, JSON.stringify(handoffPayload())); return true; }
   catch(e){ return false; }
 }
-/* Hai lời gọi portal mà một deal đã gắn sẽ sinh ra. Chỉ DỰNG chuỗi để người
-   vận hành đọc và đối chiếu — CRM không tự chạy chúng, vì portal mới là nơi
-   có quyền ghi vào sổ tỷ lệ và sổ tạm ứng. */
-function handoffCalls(r){
+/* ĐƯỜNG BÀN GIAO, KHÔNG PHẢI LỜI GỌI.
+
+   Bản trước dựng sẵn hai chuỗi cho người vận hành chép sang portal:
+
+       A.rates.add("L:38", 0.7, …)
+       A.advances.set("L:38", 16100, …)
+
+   CRM không tự chạy chúng, nhưng nó đang IN RA CÔNG THỨC của lỗi đắt nhất
+   hai đội đã gặp và mời người ta gõ vào. advances.set() GÁN ĐÈ số dư gốc,
+   trong khi nhánh duyệt applyApproved() CỘNG DỒN — một lượt chép tay là xoá
+   mất khoản tạm ứng giám đốc đã duyệt kỳ trước, và không gì báo.
+
+   Portal nay có đường đi đúng: gói bàn giao vào màn Thương vụ, người gắn
+   bên, trình thành ĐỀ XUẤT, giám đốc duyệt. Tiền chỉ chạm sổ ở nhánh duyệt,
+   đúng một chỗ. Nên chỗ này không dựng lời gọi nữa — nó chỉ nhắc các bước.
+
+   Trả về mảng chuỗi (rỗng nghĩa là chưa gắn bên, chưa bàn giao được). */
+function handoffSteps(r){
   if(!r.portalPartyKey) return [];
-  const out = [];
-  if(r.terms && r.terms.artistSharePct)
-    out.push('A.rates.add("'+r.portalPartyKey+'", '+(r.terms.artistSharePct/100)+
-             ', "<kỳ hiệu lực>", "'+r.owner+'", "CRM '+r.dealId+' — '+r.dealName+'")');
-  if(r.terms && r.terms.totalAdvanceUSD)
-    out.push('A.advances.set("'+r.portalPartyKey+'", '+r.terms.totalAdvanceUSD+
-             ', "CRM '+r.dealId+' — ký '+(r.closeDate||'')+'")');
+  const out = [t('hoStep1'), t('hoStep2',{k:r.portalPartyKey}), t('hoStep3')];
+  /* Điều khoản tiền bước 1 của portal CHƯA nối chân: nó từ chối thẳng deal
+     mang tạm ứng thay vì nuốt im lặng. Nói trước ở đây để A&R không mang
+     deal sang rồi mới biết. */
+  const tm = r.terms || {};
+  const tien = Math.max(tm.totalAdvanceUSD || 0,
+                        (tm.initialAdvanceUSD || 0) + (tm.marketingFundUSD || 0));
+  if(tien > 0 || (tm.findersFeePct || 0) > 0) out.push(t('hoStepAdv'));
   return out;
 }
 /* ===================== kênh ngược: portal → CRM =====================
@@ -3414,11 +3854,26 @@ function handoffCalls(r){
    không cập nhật CRM nữa. */
 const INBOX_KEY = 'haustek.portal.contracts.v1';
 const INBOX_VERSION = '1.0.0';
-/* Trạng thái portal gửi về → giai đoạn tương ứng trong CRM */
+/* Bản 1.1 của portal: một deal sinh HAI đề xuất. Nhận cả hai bản, xem inboxApply. */
+const INBOX_VERSION_11 = '1.1.0';
+/* Trạng thái portal gửi về → giai đoạn tương ứng trong CRM.
+   ĐỌC KỸ TRƯỚC KHI THÊM DÒNG: bảng này giả định MỘT deal có MỘT trạng thái.
+   Từ bản 1.1, một deal sinh hai đề xuất — hợp đồng và tạm ứng — hai lần giám
+   đốc bấm, và có thể một cái được duyệt còn cái kia bị trả. Lúc ấy không ô nào
+   trong bảng này đúng, và chọn đại một ô là đẩy deal sang "legal" trong khi
+   khoản tạm ứng vừa bị trả lại.
+   Nên với gói 1.1, giai đoạn do PORTAL tính và gửi sang ở trường giaiDoan —
+   CRM không tự suy từ deXuat[]. Để CRM suy là dựng lại đúng cái ánh xạ hai máy
+   trạng thái mà cả hai đội đều muốn tránh, chỉ khác là lần này tự tay mình
+   dựng. Bảng dưới chỉ còn phục vụ gói 1.0. */
 const INBOX_STAGE = {
   ceo_rejected:'negotiation', ceo_approved:'legal',
   drafting:'legal', ready:'signature', signed:'won'
 };
+/* Giai đoạn portal gửi sang là dữ liệu của PHÍA KHÁC, nên phải kiểm trước khi
+   ghi vào deal. Đọc từ STAGES chứ không gõ lại danh sách: gõ lại là lấy dữ kiện
+   từ một nguồn thứ hai, và hai nguồn thì sớm muộn lệch nhau. */
+function stageHopLe(id){ return STAGES.some(x=>x.id===id); }
 /* Đường dẫn hợp đồng do PHÍA KHÁC ghi vào localStorage, nên CRM không được tin.
    Không kiểm bằng cách so tiền tố chuỗi: "javascript:" viết hoa lẫn lộn, chèn tab,
    xuống dòng hay khoảng trắng đầu đều lách qua kiểu kiểm đó. Đưa cho bộ phân tích
@@ -3475,29 +3930,67 @@ function inboxRead(){
     const raw = localStorage.getItem(INBOX_KEY);
     if(!raw) return null;
     const j = JSON.parse(raw);
-    if(!j || j.v !== INBOX_VERSION || !Array.isArray(j.deals)) return null;
+    if(!j || (j.v !== INBOX_VERSION && j.v !== INBOX_VERSION_11) || !Array.isArray(j.deals)) return null;
     return j;
   } catch(e){ return null; }
 }
 var INBOX_SEEN = {};   /* dealId -> updatedAt đã áp dụng, để không áp lại mãi */
 /* Áp trạng thái portal gửi về. Chỉ động vào deal ĐANG ở phần portal cầm lái —
    deal còn trong chuỗi duyệt CRM thì portal không có quyền kéo đi. */
+/* Danh sách đề xuất portal gửi về, đã lọc sạch. Chỉ giữ ba trường và chỉ giữ
+   chuỗi — gói đến từ phía khác, không nhận object lạ vào bản ghi deal. */
+function inboxDeXuat(d){
+  if(!Array.isArray(d.deXuat)) return [];
+  return d.deXuat.filter(x=>x && typeof x==='object' && typeof x.loai==='string')
+    .map(x=>({ id: typeof x.id==='string' ? x.id.slice(0,40) : '',
+               loai: x.loai.slice(0,20),
+               trangThai: typeof x.trangThai==='string' ? x.trangThai.slice(0,20) : '' }));
+}
+/* Áp trạng thái portal gửi về. Chỉ động vào deal ĐANG ở phần portal cầm lái —
+   deal còn trong chuỗi duyệt CRM thì portal không có quyền kéo đi. */
 function inboxApply(){
   const j = inboxRead(); if(!j) return 0;
+  const moi = j.v === INBOX_VERSION_11;
   let n = 0;
   j.deals.forEach(d=>{
     const o = DB.opps.find(x=>x.id===d.dealId); if(!o) return;
     if(!PORTAL_OWNED.includes(o.stage)) return;
     if(INBOX_SEEN[d.dealId] === d.updatedAt) return;
-    const to = INBOX_STAGE[d.status];
-    o.contract = {status:d.status, at:d.updatedAt, note:d.note||'', by:d.by||'',
-                  url: safeUrl(d.url)};   /* null nếu thiếu hoặc không an toàn */
+
+    const deXuat = inboxDeXuat(d);
+    /* GIAI ĐOẠN: gói 1.1 thì PORTAL tính và gửi sang, CRM chỉ kiểm hợp lệ rồi
+       dùng. Gói 1.0 thì tra bảng như cũ. CRM KHÔNG tự suy từ deXuat[] — suy ở
+       đây là dựng lại đúng cái ánh xạ hai máy trạng thái mà cả hai đội muốn
+       tránh, và nó sẽ sai ngay ở ca hợp đồng duyệt mà tạm ứng bị trả. */
+    const to = moi ? (stageHopLe(d.giaiDoan) ? d.giaiDoan : null)
+                   : INBOX_STAGE[d.status];
+
+    o.contract = {status:d.status||'', at:d.updatedAt, note:d.note||'', by:d.by||'',
+                  url: safeUrl(d.url),   /* null nếu thiếu hoặc không an toàn */
+                  deXuat: deXuat,
+                  /* chiTiet là chuỗi CHỈ ĐỂ HIỆN, không hệ nào đọc bằng mã. Đó là
+                     chỗ portal nói những gì cột giai đoạn không nói được — ví dụ
+                     "hợp đồng đã duyệt, tạm ứng bị trả lại". */
+                  chiTiet: typeof d.chiTiet==='string' ? d.chiTiet.slice(0,200) : ''};
+
+    /* Khoá bên do portal trả về: người bên ấy đã QUYẾT deal này thuộc đối tác
+       nào. Lưu lại thì lần sau CRM gửi kèm, và ganBen bên portal từ chỗ phải
+       quyết thành chỗ chỉ xác nhận. Vẫn kiểm hình thức vì đây là dữ liệu ngoài. */
+    if(typeof d.portalPartyKey==='string' && /^[AL]:[A-Za-z0-9_-]{1,32}$/.test(d.portalPartyKey)
+       && HANDOFF_BIND[o.id] !== d.portalPartyKey){
+      HANDOFF_BIND[o.id] = d.portalPartyKey;
+    }
+
     if(to && to !== o.stage){
       logAudit({objType:'opp',objId:o.id,objName:o.name,action:'update',
         field:'stage',oldV:o.stage,newV:to,note:'portal'});
       o.stage = to; o.lastAct = TODAY;
+      /* Dòng hoạt động ưu tiên chiTiet của portal: nó nói được cái mà một mã
+         trạng thái không nói được. Không có thì quay về nhãn như cũ. */
+      const noi = o.contract.chiTiet
+        || (d.status ? t('ct_'+d.status) : L(['cập nhật','update']));
       DB.acts.push({id:'v'+(++uid),refId:o.id,type:'stage',
-        text:L(['Portal cập nhật: '+t('ct_'+d.status),'Portal update: '+t('ct_'+d.status)]),
+        text:L(['Portal cập nhật: '+noi,'Portal update: '+noi]),
         date:TODAY, who:d.by||'portal'});
     }
     INBOX_SEEN[d.dealId] = d.updatedAt;
@@ -3506,13 +3999,36 @@ function inboxApply(){
   if(n) saveSoon();
   return n;
 }
+/* Đề xuất KHÔNG được duyệt, nếu có. Đây là thứ cột giai đoạn nuốt mất: deal
+   mang hopDong approved + tamUng rejected vẫn hiện "legal" như mọi deal khác,
+   trong khi về thương mại nó có thể đã không còn là deal ấy nữa. */
+function inboxLech(o){
+  const ds = (o.contract && o.contract.deXuat) || [];
+  if(ds.length < 2) return null;
+  const xau = ds.filter(x=>x.trangThai==='rejected' || x.trangThai==='returned');
+  return xau.length ? xau : null;
+}
 function contractBadge(o){
   if(!o.contract) return '';
   const st = o.contract.status;
-  const col = st==='signed' ? 'var(--green)' : st==='ceo_rejected' ? 'var(--brand)'
-            : st==='ready'  ? 'var(--ice-dark)' : 'var(--amber)';
-  return '<span class="badge"><span class="dot" style="background:'+col+'"></span>'+
-    esc(t('ct_'+st))+'</span>';
+  let ra = '';
+  if(st){
+    const col = st==='signed' ? 'var(--green)' : st==='ceo_rejected' ? 'var(--brand)'
+              : st==='ready'  ? 'var(--ice-dark)' : 'var(--amber)';
+    ra = '<span class="badge"><span class="dot" style="background:'+col+'"></span>'+
+      esc(t('ct_'+st))+'</span>';
+  }
+  /* Deal có đề xuất bị trả thì PHẢI thấy ngay cạnh giai đoạn. Giai đoạn do
+     portal tính chỉ nhìn đề xuất hợp đồng — đúng cho máy, nhưng một deal mất
+     khoản tạm ứng có thể không còn là deal ấy nữa. Không có huy hiệu này thì
+     nó trông hệt mọi deal đang ở "legal". */
+  const lech = inboxLech(o);
+  if(lech){
+    ra += '<span class="badge" title="'+esc(o.contract.chiTiet||'')+'">'+
+      '<span class="dot" style="background:var(--brand)"></span>'+
+      esc(lech.map(x=>t('dx_'+x.loai)||x.loai).join(', ')+' '+t('dxBiTra'))+'</span>';
+  }
+  return ra;
 }
 /* Nút mở hợp đồng. target _blank kèm rel noopener để trang đích không với được
    window.opener của CRM; noreferrer để không rò đường dẫn nội bộ nếu link trỏ ra
@@ -3625,6 +4141,7 @@ function renderNav(){
   document.getElementById('le').className = lang==='en'?'on':'';
   document.getElementById('cu').className = cur==='USD'?'on':'';
   document.getElementById('cv').className = cur==='VND'?'on':'';
+  document.getElementById('ce').className = cur==='EUR'?'on':'';
   document.documentElement.lang = lang;
 }
 /* Ba trạng thái: 'auto' đi theo hệ điều hành (không gắn data-theme), 'light' và
@@ -3645,7 +4162,13 @@ function toggleTheme(){
    là bảng ảo hoá mất vị trí cuộn — đang xem dòng thứ 800 mà lỡ bấm USD (vốn
    đang bật) thì bị ném về đầu bảng, không rõ vì sao. */
 function setLang(l){ if(l===lang) return; lang=l; saveSoon(); renderLogin(); render(); if(state.drawer) openDrawer(state.drawer.kind, state.drawer.id); }
-function setCur(c){ if(c===cur) return; cur=c; saveSoon(); render(); if(state.drawer) openDrawer(state.drawer.kind, state.drawer.id); }
+function setCur(c){
+  /* Kiểm tên tiền tệ: hàm này nằm trong onclick, tức là ai gõ được vào thanh
+     địa chỉ cũng gọi được nó. Một `cur` lạ làm rate() trả 1 câm lặng, và cả
+     màn hình hiện số đô la mà dán nhãn tiền khác. */
+  if(CURRENCIES.indexOf(c) < 0 || c === cur) return;
+  cur=c; saveSoon(); render(); if(state.drawer) openDrawer(state.drawer.kind, state.drawer.id);
+}
 function go(v){ inboxApply(); selClear(); state.view=v; state.q=''; document.getElementById('q').value=''; state.sort={key:null,dir:1};
   closeDrawer(); render(); }
 function onSearch(v){ state.q=v.trim().toLowerCase(); render(); }
@@ -4398,8 +4921,22 @@ VIEWS.oppDetail = function(){
       const sec = OPP_FORM[i]; if(!sec) return '';
       if(sec.custom==='advance'){
         const a = (o.ext||{}).advCalcResult;
+        /* NÚT MỞ BỘ TÍNH TRÊN DEAL ĐÃ TỒN TẠI.
+           Trước đây bộ tính advance chỉ sống bên trong biểu mẫu TẠO deal, sau
+           một ô tích. Deal đã lưu rồi thì tab "Đề xuất deal" chỉ còn một bảng
+           đọc — hoặc câu "không dùng advance" không kèm nút nào. Người ta không
+           có đường nào tính, tính lại, hay thử một bội số khác trên deal đang
+           đàm phán, tức đúng lúc cần nhất. File R&D có openAdvanceModal ở cả
+           hai trạng thái; đem sang và nối với mọi luật đã đặt hôm nay. */
+        const nutTinh = rw
+          ? '<button class="btn btn-sm" style="float:right;margin-top:-3px" onclick="openAdvanceModal(\''+o.id+'\')">'+
+              esc(a ? t('advRecalc') : t('advOpen'))+'</button>'
+          : '';
+        /* trạng thái trống: một nút trong thân là đủ, đừng lặp ở tiêu đề */
         if(!a) return '<div class="dgrp">'+esc(L(sec.t))+'</div>'+
-          '<div class="mini-empty">'+esc(L(['Deal này không dùng advance.','No advance on this deal.']))+'</div>';
+          '<div class="mini-empty">'+esc(L(['Deal này chưa có tính toán advance.','No advance calculated for this deal yet.']))+
+          (rw ? '<div style="margin-top:12px"><button class="btn btn-primary" onclick="openAdvanceModal(\''+o.id+'\')">'+
+                  esc(t('advOpen'))+'</button></div>' : '')+'</div>';
         /* Deal lưu từ form có đủ trường dẫn xuất, deal nhập sẵn chỉ có ĐIỀU KHOẢN.
            Bản cũ đọc thẳng a.trigger1.amount nên tab này vỡ ở mọi deal nhập sẵn.
            Số dẫn xuất giờ tính lại tại chỗ từ điều khoản — vừa không vỡ, vừa
@@ -4410,7 +4947,9 @@ VIEWS.oppDetail = function(){
         const rowsA = [
           [L(['Advance ban đầu','Initial advance']), money(a.initialAdvance||0)],
           [L(['Marketing fund','Marketing fund']), money(a.marketingFund||0)],
-          [L(['Tổng advance','Total advance']), money((a.initialAdvance||0)+(a.marketingFund||0))],
+          [L(['Quỹ sản xuất','Production fund']), money(prodOf(a))],
+          /* cộng đủ BA khoản — cùng chỗ rò đã vá ở gói bàn giao, chưa vá ở đây */
+          [L(['Tổng advance','Total advance']), money((a.initialAdvance||0)+(a.marketingFund||0)+prodOf(a))],
           [L(['Tỷ lệ nghệ sĩ','Artist share']), Math.round(pctOf(a.artistShare)*100)+'%'],
           [L(['Thời hạn','Term']), (a.termMonths||0)+L([' tháng',' months'])],
           [L(['Độc quyền','Exclusivity']), (a.exclusivityMonths||0)+L([' tháng',' months'])],
@@ -4422,7 +4961,7 @@ VIEWS.oppDetail = function(){
           ['Trigger 1', a.trigger1 ? money(a.trigger1.amount)+' · +'+a.trigger1.addMonths+L([' tháng',' months']) : '—'],
           ['Trigger 2', a.trigger2 ? money(a.trigger2.amount)+' · +'+a.trigger2.addMonths+L([' tháng',' months']) : '—']
         ];
-        return '<div class="dgrp">'+esc(L(sec.t))+'</div><div class="dgrid">'+
+        return '<div class="dgrp">'+esc(L(sec.t))+nutTinh+'</div><div class="dgrid">'+
           rowsA.map(r=>'<div class="drow"><div class="dlab">'+esc(r[0])+'</div>'+
           '<div class="dval">'+esc(r[1])+'</div><span></span></div>').join('')+'</div>';
       }
@@ -4575,9 +5114,33 @@ VIEWS.leads = function(){
 };
 function setLeadF(f){ state.leadFilter=f; render(); }
 
+/* TRẠNG THÁI CẦU NỐI — vì im lặng là thứ đắt nhất ở đây.
+   Đo trên dữ liệu thật: 13 deal đang ở phần portal cầm lái, 158.600 USD, và
+   KHÔNG deal nào từng nhận một dòng trạng thái nào về. Trên màn hình không có
+   một chữ nào nói điều đó — A&R nhìn vào chỉ thấy deal nằm im và tưởng bên kia
+   đang xử lý. Dải này nói thẳng: gói xuất lúc nào, nhận tin về lần cuối lúc
+   nào, và nếu chưa bao giờ thì nói CHƯA BAO GIỜ kèm lý do đọc được. */
+function cauNoiTrangThai(){
+  const cho = DB.opps.filter(o=>PORTAL_OWNED.includes(o.stage));
+  const daNhan = cho.filter(o=>o.contract).length;
+  let j=null, loi='';
+  try {
+    const raw = localStorage.getItem(INBOX_KEY);
+    if(!raw) loi = t('cnKhongCoKhoa');
+    else {
+      const x = JSON.parse(raw);
+      if(!x || (x.v!==INBOX_VERSION && x.v!==INBOX_VERSION_11)) loi = t('cnSaiBan',{v:esc(String(x&&x.v||'?'))});
+      else if(!Array.isArray(x.deals)) loi = t('cnThieuDeals');
+      else j = x;
+    }
+  } catch(e){ loi = t('cnHongJson'); }
+  const lucCuoi = Object.values(INBOX_SEEN).sort().pop() || null;
+  return {cho:cho.length, tien:cho.reduce((a,o)=>a+(o.amount||0),0), daNhan, j, loi, lucCuoi};
+}
 VIEWS.handoff = function(){
   const rows = handoffRows();
   const unbound = rows.filter(r=>!r.portalPartyKey).length;
+  const cn = cauNoiTrangThai();
   const cells = (r)=>[
     {c:'t-name trunc', h:esc(r.dealName)},
     {c:'trunc',        h:esc(r.account)+' <span class="pill">'+esc(t('ty_'+(r.accountType||'artist')))+'</span>'},
@@ -4600,8 +5163,41 @@ VIEWS.handoff = function(){
     rows, cells, (r)=>openBind(r.dealId))
     : emptyBox(t('hoEmptyT'), t('hoEmptyS'));
 
+  /* Deal đang chờ mà CHƯA deal nào có tin về = đường về đang gãy. Nói thành
+     lời, đừng để người dùng tự suy ra từ một bảng không đổi. */
+  const gay = cn.cho > 0 && cn.daNhan === 0;
+  const dai =
+    '<div class="card" style="margin-bottom:16px' + (gay?';border-color:var(--brand)':'') + '">'+
+      '<div class="card-h"><span class="card-t">'+esc(t('cnTieuDe'))+'</span>'+
+        (gay ? '<span class="badge"><span class="dot" style="background:var(--brand)"></span>'+esc(t('cnGay'))+'</span>' : '')+
+      '</div>'+
+      '<div class="card-b"><div class="unote" style="margin:0">'+
+        esc(t('cnDangCho',{n:cn.cho, tien:money(cn.tien)}))+'<br>'+
+        esc(cn.daNhan ? t('cnDaNhan',{a:cn.daNhan, b:cn.cho, luc:cn.lucCuoi||'—'})
+                      : t('cnChuaNhan'))+
+        (cn.loi ? '<br><b>'+esc(t('cnViSao'))+'</b> '+esc(cn.loi) : '')+
+      '</div></div></div>';
+
+  /* FLOW-THROUGH ĐI THEO TỪNG DEAL — nên nói theo từng deal, đừng nói một mức.
+     Dải này đọc mức thật của các deal đang chờ (thấp nhất tới cao nhất) thay
+     vì in ra một tỷ lệ chuẩn nào đó, vì không có tỷ lệ chuẩn nào cả. */
+  const ftMuc = rows.map(r=>r.terms ? (r.terms.flowThroughPct||0) : 0).filter(x=>x>0);
+  const ftDai =
+    '<div class="card" style="margin-bottom:16px' + (ftMuc.length?';border-color:var(--brand)':'') + '">'+
+      '<div class="card-h"><span class="card-t">'+esc(t('ftTieuDe'))+'</span>'+
+        (ftMuc.length ? '<span class="badge"><span class="dot" style="background:var(--brand)"></span>'+esc(t('ftChan'))+'</span>' : '')+
+      '</div>'+
+      '<div class="card-b"><div class="unote" style="margin:0">'+
+        (ftMuc.length
+          ? esc(t('ftCo',{n:ftMuc.length, b:rows.length,
+                          lo:Math.min.apply(null,ftMuc), hi:Math.max.apply(null,ftMuc)}))+
+            '<br><b>'+esc(t('cnViSao'))+'</b> '+esc(t('ftChuaNoi'))
+          : esc(t('ftKhong')))+
+      '</div></div></div>';
+
   return phead(t('handoff'), rows.length+' '+t('hoSigned'),
       '<button class="btn" onclick="handoffExport()">'+esc(t('hoExport'))+'</button>')+
+    dai+ ftDai+
     '<div class="card" style="margin-bottom:16px"><div class="card-b">'+
       '<div class="unote" style="margin:0">'+esc(t('hoNote1'))+'<br>'+esc(t('hoNote2'))+
       '<br><b>'+esc(HANDOFF_KEY)+'</b> · '+esc(t('hoBoundN',{a:rows.length-unbound, b:rows.length}))+
@@ -4615,11 +5211,17 @@ function openBind(dealId){
   if(!can('approve')) return;
   const o = DB.opps.find(x=>x.id===dealId); if(!o) return;
   const r = handoffOf(o);
-  const calls = handoffCalls(r);
+  const calls = handoffSteps(r);
   document.getElementById('overlay').innerHTML = shell(t('handoff'), r.dealName,
     '<div class="fld"><div class="fld-l">'+esc(t('hoParty'))+'</div>'+
       '<input class="in" id="bindKey" placeholder="A:123  /  L:7" value="'+esc(r.portalPartyKey||'')+'"></div>'+
     '<div class="unote">'+esc(t('hoBindHint'))+'</div>'+
+    (r.terms ? '<div class="unote">'+
+        esc(t('ftDeal'))+': <b>'+esc(String(r.terms.flowThroughPct||0))+'%</b> · '+
+        esc(t('ftBenCap'))+': <b>'+esc(t('bc_'+(r.terms.rightsHolder||'artist')))+'</b>'+
+        ((r.terms.flowThroughPct||0) >= 100 ? '<br><b>'+esc(t('ftKhongXong'))+'</b>' : '')+
+        ((r.terms.flowThroughPct||0) > 0 ? '<br>'+esc(t('ftChuaNoi')) : '')+
+      '</div>' : '')+
     (calls.length ? '<div class="sec"><div class="sec-t">'+esc(t('hoCalls'))+'</div>'+
         '<pre style="font-family:var(--mono);font-size:11.5px;white-space:pre-wrap;'+
         'background:var(--surface);border-radius:6px;padding:10px;line-height:1.6">'+
@@ -4727,7 +5329,7 @@ function cellEdit(o, f, display, isNum){
         STAGES.map(x=>'<option value="'+x.id+'"'+(x.id===o.stage?' selected':'')+'>'+esc(t('st_'+x.id))+'</option>').join('')+
         '</select>';
     if(f==='amount')
-      return '<input class="iedit" type="number" value="'+Math.round(fx(o.amount))+'"'+stop+
+      return '<input class="iedit" type="text" inputmode="decimal" value="'+esc(soTienRaO(o.amount))+'"'+stop+
         ' onblur="inlineSave(\''+o.id+'\',\'amount\',this.value)"'+
         ' onkeypress="if(event.key===\'Enter\')this.blur()">';
     if(f==='close')
@@ -4761,7 +5363,9 @@ function inlineSave(id,f,val){
     o.stage=val; changed=true;
   }
   if(f==='amount'){
-    const n = Math.round((parseFloat(val)||0)/(cur==='VND'?FX:1));
+    const r = tienVao(val);
+    if(!r.ok){ toast(r.msg); return; }
+    const n = r.usd;
     if(n!==o.amount){ logDiff('opp',o.id,o.name,'amount',o.amount,n); o.amount=n; changed=true; }
   }
   if(f==='close' && val){
@@ -4878,6 +5482,37 @@ function toggleTask(id){
 function myApprovals(){
   return sOpps().filter(o=>APPROVAL[o.stage] && APPROVAL[o.stage].perm && canAdvance(o));
 }
+/* Dòng con số dưới tên deal trên màn Chờ duyệt.
+   ═══ VÌ SAO CÓ ═══
+   Người duyệt trước đây thấy đúng bảy cột: tên, khách, giai đoạn, MỘT con
+   số giá trị, ngày gửi, người yêu cầu, và hai cái nút. Không một dòng nào
+   từ advCalcResult — nghĩa là sếp country và sếp vùng bấm Duyệt cho một
+   khoản tạm ứng mà không thấy khoản ấy bao nhiêu, bao lâu thu hồi, ROI ra
+   sao, hay nó có thu hồi nổi không. Bấm xong là deal đi tiếp tới portal
+   và tiền vào sổ.
+   Không thêm cột — bảy cột đã chật. Một dòng nhỏ dưới tên: chỉ ba con số
+   người duyệt thật sự cần, và chỉ hiện khi deal có điều khoản tiền. */
+function duyetSo(o){
+  const a = (o.ext||{}).advCalcResult;
+  if(!a) return '';
+  const ung = (a.initialAdvance||0) + (a.marketingFund||0) + prodOf(a);
+  if(!(ung > 0)) return '';
+  const mau = [];
+  mau.push(esc(t('apUng'))+' <b>'+esc(money(ung))+'</b>');
+  /* monthsToRecoup = null KÈM neverRecoups nghĩa là không bao giờ xong —
+     khác hẳn "chưa tính được". Người duyệt phải đọc ra được sự khác ấy. */
+  if(a.neverRecoups){
+    /* Không bao giờ thu hồi xong thì ROI là con số vô nghĩa — in ra chỉ tổ
+       làm người duyệt tưởng vẫn có một tỷ suất để cân nhắc. Dừng ở đây. */
+    mau.push('<span class="xau"><b>'+esc(t('apKhongThuHoi'))+'</b></span>');
+    return '<div class="t-sub">'+mau.join('<span class="sep">·</span>')+'</div>';
+  }
+  if(typeof a.monthsToRecoup === 'number' && a.monthsToRecoup > 0)
+    mau.push(esc(t('apThuHoi'))+' <b>'+a.monthsToRecoup.toFixed(1)+' '+esc(t('apThang'))+'</b>');
+  if(typeof a.roiAnnual === 'number' && isFinite(a.roiAnnual))
+    mau.push(esc(t('apRoi'))+' <b>'+(a.roiAnnual*100).toFixed(0)+'%</b>');
+  return '<div class="t-sub">'+mau.join('<span class="sep">·</span>')+'</div>';
+}
 VIEWS.approvals = function(){
   const rows = myApprovals()
     .filter(o=>matches(o.name)||matches(accName(o.accountId)))
@@ -4886,11 +5521,18 @@ VIEWS.approvals = function(){
   const cells = (o)=>{
     const skip = o.stage==='waiting' && o.amount > 0 && o.amount < REGION_THRESHOLD;
     return [
-      {c:'t-name trunc', h:esc(o.name)},
+      /* Lớp `t-name` chỉ đặt trên CHỮ TÊN, không đặt trên cả ô: text-decoration
+         của tổ tiên lan xuống mọi con và không gỡ được bằng
+         text-decoration:none ở con. Để trên ô thì di chuột vào hàng là cả
+         dòng con số cũng bị gạch chân và nhuộm màu link. */
+      {c:'t-name-2', h:'<span class="t-name">'+esc(o.name)+'</span>'+duyetSo(o)},
       {c:'trunc',        h:esc(accName(o.accountId))},
       {c:'',             h:stageBadge(o.stage)},
-      {c:'num',          h:esc(money(o.amount))+(skip
-          ? ' <span class="pill" title="'+esc(t('thrHint'))+'">'+esc(t('skipRegion'))+'</span>' : '')},
+      {c:'num',          h:(o.amount>0
+          ? esc(money(o.amount))
+          : '<span class="badge" title="'+esc(t('apChuaDinhGiaHint'))+'">'+
+              '<span class="dot" style="background:var(--brand)"></span>'+esc(t('apChuaDinhGia'))+'</span>')
+        +(skip ? ' <span class="pill" title="'+esc(t('thrHint'))+'">'+esc(t('skipRegion'))+'</span>' : '')},
       {c:'dim',          h:esc(fdate(o.lastAct))},
       {c:'dim',          h:esc(o.owner)},
       {c:'num',          h:'<span class="btnpair">'+
@@ -5238,7 +5880,7 @@ function managerReports(){
     '<div class="tnote" style="color:var(--muted);background:var(--zebra)">'+
       esc(t('goalYearNote'))+' · '+esc(t('kpiNote'))+'</div></div>';
 
-  return phead(t('reports'), cur==='VND' ? fxNote()+' · '+perLbl : perLbl)+
+  return phead(t('reports'), cur!=='USD' ? fxNote()+' · '+perLbl : perLbl)+
     periodChips()+ kpi+
     '<div class="grid2" style="margin-bottom:16px">'+
       donutCard(t('rpValueStage'), dStage, String(nLive), t('deals'), true,
@@ -5510,20 +6152,31 @@ function fld(l,v){ return '<div class="fld"><div class="fld-l">'+esc(l)+'</div><
    nhánh 'snapshot', nên panel sẽ bị treo rỗng. */
 function openSnapshot(){
   const ok = store.available();
+  /* NHẬP và ĐẶT LẠI là hành vi quản trị — chúng thay cả sổ, kể cả vai của
+     chính người đang ngồi. TẢI VỀ thì không: xuất dữ liệu của mình ra là
+     việc bình thường.
+     Trước đây ô dán và nút Nạp hiện cho MỌI vai, rồi snapImport lặng lẽ
+     từ chối. Một nút luôn hỏng còn tệ hơn một nút không có: người dùng
+     không biết mình thiếu quyền hay mình dán sai, và thử lại vài lần. Đã
+     khoá ở thân hàm rồi thì đừng bày cái cửa ấy ra nữa. */
+  const quanTri = can('users');
   const body =
     '<div class="fld"><div class="fld-l">'+esc(t('snapState'))+'</div>'+
       '<div class="fld-v">'+esc(ok ? t('snapOn') : t('snapOff'))+'</div></div>'+
-    '<div class="fld" style="margin-top:12px"><div class="fld-l">'+esc(t('snapPaste'))+'</div>'+
-      '<textarea class="in" id="snapIn" rows="7" spellcheck="false" '+
-        'style="min-height:130px;resize:vertical;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11.5px" '+
-        'placeholder=\'{"v":"'+STORE_VERSION+'", …}\'></textarea></div>'+
+    (quanTri
+      ? '<div class="fld" style="margin-top:12px"><div class="fld-l">'+esc(t('snapPaste'))+'</div>'+
+          '<textarea class="in" id="snapIn" rows="7" spellcheck="false" '+
+            'style="min-height:130px;resize:vertical;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11.5px" '+
+            'placeholder=\'{"v":"'+STORE_VERSION+'", …}\'></textarea></div>'
+      : '<div class="unote" style="margin:12px 0 0">'+esc(t('snapChiTai'))+'</div>')+
     '<div style="display:flex;gap:7px;flex-wrap:wrap;margin-top:12px">'+
       '<button class="btn" onclick="snapDownload()">'+esc(t('snapDownload'))+'</button>'+
-      '<button class="btn" onclick="snapReset()">'+esc(t('snapReset'))+'</button></div>';
+      (quanTri ? '<button class="btn" onclick="snapReset()">'+esc(t('snapReset'))+'</button>' : '')+
+    '</div>';
   document.getElementById('overlay').innerHTML =
     shell(t('snapEyebrow'), t('snapTitle'), body,
       '<button class="btn" onclick="closeDrawer()">'+esc(t('cancel'))+'</button>'+
-      '<button class="btn btn-primary" onclick="snapImport()">'+esc(t('snapLoad'))+'</button>');
+      (quanTri ? '<button class="btn btn-primary" onclick="snapImport()">'+esc(t('snapLoad'))+'</button>' : ''));
   setTimeout(()=>{ const e=document.getElementById('snapIn'); if(e) e.focus(); },60);
 }
 function snapDownload(){
@@ -5532,9 +6185,23 @@ function snapDownload(){
     .then(function(ok){ if(ok) toast(t('snapSaved')); });
 }
 function snapImport(){
+  /* CỬA SAU CỦA can('users').
+     setFX() và saveThreshold() canh quyền rất cẩn thận. Nhưng dán một bản
+     lưu vào đây thì ghi đè TOÀN BỘ trạng thái — tỷ giá, ngưỡng duyệt vùng,
+     và cả ME/vai của chính người đang ngồi. Đo được với vai 'ar': gọi
+     setFX() và saveThreshold() đều bị chặn đúng, nhưng dán một JSON sửa tay
+     thì tỷ giá thành 1.000.000, ngưỡng thành 1e12, vai thành manager — và
+     DB.audit KHÔNG thêm một dòng nào. Cửa trước khoá ba lần, cửa sau không
+     có khoá.
+     Nhập bản lưu là thay cả sổ, nên nó phải cùng hạng với quản trị hệ
+     thống. Và phải để lại dấu, kể cả khi bản mới ghi đè luôn nhật ký cũ —
+     dòng ghi trước khi nhập vẫn nằm trong bản sao lưu mà storeRescue giữ. */
+  if(!can('users')){ toast(t('noPermTitle')); return; }
   const el = document.getElementById('snapIn');
   const txt = el ? el.value.trim() : '';
   if(!txt) return;
+  logAudit({objType:'system', objName:t('snapTitle'), action:'update',
+            field:'snapshot', oldV:t('snapFrom',{n:DB.opps.length}), newV:'—'});
   try { store.importJSON(txt); }
   catch(e){ toast(String((e && e.message) || t('snapBadVer'))); return; }
   if(store.available()){ location.reload(); return; }
@@ -5546,7 +6213,10 @@ function snapImport(){
   }
   renderLogin(); render(); toast(t('snapLoaded'));
 }
+/* Giữ nguyên nút TẢI VỀ cho mọi người — xuất dữ liệu của chính mình không
+   phải hành vi quản trị. Chỉ khoá đường NHẬP. */
 function snapReset(){
+  if(!can('users')){ toast(t('noPermTitle')); return; }
   if(!confirm(t('snapResetAsk'))) return;
   store.clear();
   location.reload();
@@ -5742,7 +6412,7 @@ const CONTRACT_FIELDS = [
   {k:'advance',           l:['Tiền tạm ứng','Advance'], src:['Cơ hội · Tài chính','Opp · Financials'], g:o=>ctrMny(ctrAdv(o).initialAdvance!==undefined?ctrAdv(o).initialAdvance:ctrExt(o).advance)},
   {k:'advance_details',   l:['Chi tiết tạm ứng','Advance details'], src:['Cơ hội · Tài chính','Opp · Financials'], g:o=>ctrExt(o).advDetails},
   {k:'marketing_budget',  l:['Ngân sách marketing','Marketing budget'], src:['Cơ hội · Tài chính','Opp · Financials'], g:o=>ctrMny(ctrAdv(o).marketingFund!==undefined?ctrAdv(o).marketingFund:ctrExt(o).mktBudget)},
-  {k:'production_fund',   l:['Quỹ sản xuất','Production fund'], src:['Cơ hội · Tài chính','Opp · Financials'], g:o=>ctrMny(ctrAdv(o).productionFund!==undefined?ctrAdv(o).productionFund:ctrExt(o).prodFund)},
+  {k:'production_fund',   l:['Quỹ sản xuất','Production fund'], src:['Cơ hội · Tài chính','Opp · Financials'], g:o=>ctrMny(ctrAdv(o).productionFund!==undefined||ctrAdv(o).prodFund!==undefined?prodOf(ctrAdv(o)):ctrExt(o).prodFund)},
   {k:'recoup_rate',       l:['Tỷ lệ thu hồi','Recoupment rate'], src:['Cơ hội · Tài chính','Opp · Financials'], g:o=>ctrPct(ctrExt(o).recoupRate)},
   {k:'triggers',          l:['Điều kiện kích hoạt','Triggers'], src:['Cơ hội · Tài chính','Opp · Financials'], g:o=>ctrExt(o).triggers},
   {k:'option_details',    l:['Chi tiết quyền chọn','Option details'], src:['Cơ hội · Tài chính','Opp · Financials'], g:o=>ctrExt(o).optionDetails},
@@ -5754,22 +6424,72 @@ const CONTRACT_FIELDS = [
 function ctrExt(o){ return (o && o.ext) || {}; }
 function ctrAdv(o){ return (o && o.ext && o.ext.advCalcResult) || {}; }
 function ctrPct(v){ return (v===undefined||v===null||v==='') ? '' : (String(v).indexOf('%')>=0?String(v):v+'%'); }
-function ctrMny(v){ if(v===undefined||v===null||v==='') return ''; const n=Number(v); return isNaN(n)?'':money(n); }
+/* Tiền trên hợp đồng.
+   ═══ VÌ SAO CÓ THAM SỐ `ghim` ═══
+   Hàm này từng gọi thẳng money(), tức quy đổi theo TỶ GIÁ VÀ ĐỒNG TIỀN
+   ĐANG HIỂN THỊ tại lúc ai đó mở bản hợp đồng ra xem. Khi tỷ giá còn là
+   hằng số trong mã thì chuyện ấy không lộ ra. Sửa được tỷ giá là nó thành
+   thật ngay: đo được, một hợp đồng ĐÃ KÝ với tạm ứng 357.000.000 ₫ in ra
+   420.000.000 ₫ sau khi tỷ giá đổi từ 25.500 lên 30.000 — ba trường cùng
+   trôi (tạm ứng, ngân sách marketing, quỹ sản xuất), không ai chạm vào deal.
+   Một văn bản hai bên đã ký thì phải in ra đúng con số đã ký, bằng đúng
+   đồng tiền đã ký — bất kể hôm nay thanh tiền tệ đang để gì. */
+/* KHÔNG dùng money() ở đây. money() = fmtMoney(n, true), và cờ ấy biến số 0
+   thành dấu gạch "—". Trên một bảng danh sách thì "—" là đúng: không có số.
+   Trên một VĂN BẢN PHÁP LÝ thì "Tiền tạm ứng: —" không phải "không đồng nào",
+   cũng không phải "còn trống" — nó là một ký tự vô nghĩa gửi cho bên cấp
+   quyền. Tệ hơn: bộ soát trường thiếu lọc bằng `!vals[k]`, mà "—" là chuỗi
+   truthy, nên băng cảnh báo vẫn báo "Đã điền đủ mọi trường" và pháp chế
+   không nhận được lời nhắc nào. Một hợp đồng không advance phải in "0 USD". */
+function ctrMny(v){
+  if(v===undefined||v===null||v==='') return '';
+  const n=Number(v); if(isNaN(n)) return '';
+  /* USD LÀ ĐIỀU KHOẢN, ĐỒNG LÀ SỐ ĐÃ CHỐT.
+     Luật chủ dự án đặt: sổ ghi bằng đô, còn đồng chỉ chốt số ở đúng hai
+     thời điểm — chuyển tiền cho khách và thu tiền từ nền tảng về. Một hợp
+     đồng đã ký là thời điểm thứ ba cùng tính chất: bên kia cầm tờ giấy có
+     con số ấy, nên nó không được trôi.
+     Nên trên văn bản ĐÃ CHỐT mà dựng bằng đơn vị khác đô, in cả hai: con
+     số đô là điều khoản, con số đồng là số đã chốt kèm tỷ giá lúc chốt —
+     đúng cách hợp đồng Việt Nam vẫn viết cho nghĩa vụ tính bằng ngoại tệ.
+     Người đọc không phải đoán số nào mới là số ràng buộc.
+     Bản nháp thì in một số thôi: pháp chế đang soạn, thêm chữ chỉ tổ rối. */
+  if(FX_GHIM && FX_GHIM.donVi !== 'USD'){
+    const daChot = fmtMoney(n, false);
+    const cuC = cur; cur = 'USD';
+    const dieuKhoan = fmtMoney(n, false);
+    cur = cuC;
+    const fm = x => new Intl.NumberFormat('vi-VN').format(Math.round(x));
+    return dieuKhoan + ' (' + daChot + ' ' + t('ctrChot', {r: fm(FX_GHIM.tyGia)}) + ')';
+  }
+  return fmtMoney(n, false);
+}
 const CONTRACT_STATES = ['draft','pending','approved','sent','signed'];
 /* Chỉ soạn được cho deal đã qua cửa CEO. Trước đó điều khoản còn đang đàm
    phán, soạn ra là soạn trên số sắp đổi. */
 const CTR_STAGES = ['legal','signature','won'];
 
-function ctrFieldVals(o){
-  const out = {};
-  CONTRACT_FIELDS.forEach(f=>{
-    let v; try { v = f.g(o); } catch(err){ v = ''; }
-    out[f.k] = (v===undefined||v===null) ? '' : String(v);
+function ctrFieldVals(o, ghim){
+  return voiGhim(ghim, function(){
+    const out = {};
+    CONTRACT_FIELDS.forEach(f=>{
+      let v; try { v = f.g(o); } catch(err){ v = ''; }
+      out[f.k] = (v===undefined||v===null) ? '' : String(v);
+    });
+    return out;
   });
-  return out;
+}
+/* Trạng thái mà con số đã chốt với bên kia: từ đây trở đi văn bản không
+   được đổi số theo tỷ giá nữa. 'draft' và 'pending' thì vẫn tính sống —
+   pháp chế đang soạn, thấy số mới là đúng ý. */
+const CTR_DONG_BANG = ['approved','sent','signed'];
+function ctrGhim(c){
+  if(!c || CTR_DONG_BANG.indexOf(c.status) < 0) return null;
+  if(!c.donVi || !(c.tyGia > 0)) return null;   /* hợp đồng cũ chưa đóng dấu */
+  return {donVi: c.donVi, tyGia: c.tyGia};
 }
 function ctrVals(c, o){
-  const out = ctrFieldVals(o);
+  const out = ctrFieldVals(o, ctrGhim(c));
   /* giá trị gõ tay đè lên giá trị tự điền — pháp chế là người chốt */
   Object.keys(c.manual||{}).forEach(k=>{ if(c.manual[k]) out[k] = c.manual[k]; });
   return out;
@@ -5784,7 +6504,18 @@ function ctrMissing(c, o){
    So giá trị tự điền hiện tại với ảnh chụp lúc soạn. */
 function ctrDrift(c, o){
   if(!c.snap) return [];
-  const now = ctrFieldVals(o);
+  /* So trong CÙNG hệ quy chiếu, kể cả với bản nháp.
+     ctrGhim() chỉ trả về hệ quy chiếu cho hợp đồng đã chốt, nên với bản
+     NHÁP phép so vẫn chạy theo đồng tiền đang hiển thị. Đo được: một hợp
+     đồng nháp không ai đụng tới báo TRÔI 3 TRƯỜNG chỉ vì người soạn bấm
+     nút VND để xem. Cảnh báo sai kiểu ấy dạy người ta bỏ qua cảnh báo —
+     tốn hơn là không có cảnh báo nào.
+     Bản nháp vẫn phải TÍNH theo tỷ giá mới (pháp chế đang soạn, thấy số
+     mới là đúng ý); chỉ phép SO là phải đứng yên, và nó đứng yên bằng cách
+     dựng lại ảnh chụp trong đúng hệ quy chiếu lúc chụp. */
+  const heQuyChieu = ctrGhim(c)
+    || (c.donVi && c.tyGia > 0 ? {donVi:c.donVi, tyGia:c.tyGia} : null);
+  const now = ctrFieldVals(o, heQuyChieu);
   return Object.keys(c.snap).filter(k=>String(c.snap[k]||'') !== String(now[k]||''));
 }
 
@@ -5969,6 +6700,10 @@ function makeContract(){
   const c = {
     id:'ct'+(++uid), name:tp.name+' — '+o.name, oppId:o.id, templateId:tp.id,
     status:'draft', by:ME, created:new Date(TODAY), manual:{}, notes:'',
+    /* Đồng tiền và tỷ giá văn bản này được dựng lên. Đóng dấu lại mỗi lần
+       trạng thái tiến một bước, để con số đông cứng đúng lúc chốt chứ không
+       phải lúc mới mở bản nháp. */
+    donVi: cur, tyGia: rate(cur),
     /* Ảnh chụp giá trị tự điền lúc soạn. Deal đổi sau đó thì ctrDrift() so ra
        được — không có ảnh này thì không cách nào biết bản đang cầm đã cũ. */
     snap: ctrFieldVals(o)
@@ -6011,7 +6746,25 @@ function ctrSetManual(cid, k, v){
 }
 function ctrSetStatus(cid, st, okKey){
   const c = DB.contracts.find(x=>x.id===cid); if(!c) return;
+  /* KIỂM QUYỀN TRONG THÂN HÀM, không chỉ ở chỗ dựng nút.
+     Mọi handler của ứng dụng này là hàm toàn cục gắn vào onclick, nên "ẩn
+     nút" không phải là kiểm soát — gõ một dòng vào console là xong. Đo
+     được: đăng nhập vai 'ar' (không có quyền duyệt nào, ngăn hợp đồng
+     không sinh ra nút nào), gọi thẳng ctrSetStatus(id,'approved') thì
+     trạng thái đi từ Nháp sang Đã duyệt, VÀ nhật ký kiểm toán ghi lại như
+     một lượt duyệt hợp lệ mang tên người ấy. Cái thứ hai nguy hơn cái thứ
+     nhất: người đối soát về sau đọc sổ thấy mọi thứ đúng thủ tục. */
+  if(!(can('approveCountry') || can('approveRegion') || can('editAll'))){
+    toast(t('noPermTitle')); return;
+  }
   const old = c.status;
+  /* Đóng dấu lại NGAY TRƯỚC khi bước sang trạng thái đông cứng, và cũng khi
+     bị trả về nháp — để bản nháp lại chạy theo tỷ giá hiện hành. Chụp lại
+     `snap` cùng lúc: hai thứ phải cùng một thời điểm, lệch nhau là ctrDrift
+     báo trôi trong khi chẳng ai chạm vào deal. */
+  const o0 = DB.opps.find(x=>x.id===c.oppId);
+  c.donVi = cur; c.tyGia = rate(cur);
+  if(o0) c.snap = ctrFieldVals(o0, CTR_DONG_BANG.indexOf(st)>=0 ? {donVi:c.donVi, tyGia:c.tyGia} : null);
   c.status = st;
   logAudit({objType:'contract', objId:c.id, objName:c.name, action:'update',
             field:'status', oldV:t('cs_'+old), newV:t('cs_'+st)});
@@ -6170,8 +6923,9 @@ function openDrawer(kind,id){
       '<div class="row2">'+
         '<div class="fld"><div class="fld-l">'+esc(t('cStage'))+'</div>'+
         '<select class="in" id="f_stage">'+selOpts(STAGES.map(s=>s.id),o.stage,x=>t('st_'+x))+'</select></div>'+
-        '<div class="fld"><div class="fld-l">'+esc(t('cAmount'))+' ('+cur+')</div>'+
-        '<input class="in" id="f_amount" type="number" value="'+Math.round(fx(o.amount))+'"></div>'+
+        '<div class="fld"><div class="fld-l">'+esc(t('cAmount'))+'</div>'+
+        '<div class="curin" data-cur="'+esc(cur)+'"><input class="in" id="f_amount" type="text" '+
+          'inputmode="decimal" value="'+esc(soTienRaO(o.amount))+'"></div></div>'+
       '</div>'+
       '<div class="row2">'+
         '<div class="fld"><div class="fld-l">'+esc(t('cClose'))+'</div>'+
@@ -6259,7 +7013,9 @@ function saveOpp(id){
     text:t('st_'+o.stage)+' → '+t('st_'+ns),date:TODAY,who:ME});
   logDiff('opp',o.id,o.name,'stage',o.stage,ns);
   o.stage=ns;
-  const na=Math.round((parseFloat(document.getElementById('f_amount').value||0))/(cur==='VND'?FX:1));
+  const rAmt = tienVao((document.getElementById('f_amount')||{}).value);
+  if(!rAmt.ok){ toast(rAmt.msg); return; }
+  const na=rAmt.usd;
   logDiff('opp',o.id,o.name,'amount',o.amount,na);
   o.amount=na;
   const dv=document.getElementById('f_close').value;
@@ -6322,8 +7078,8 @@ function openGoalForm(name){
   const row = (id,label,val,unit)=>
     '<div class="fld"><div class="fld-l">'+esc(label)+'</div>'+
     (unit==='money'
-      ? '<div class="curin" data-cur="'+esc(cur)+'"><input class="in" type="number" id="'+id+'" value="'+
-         Math.round(fx(val))+'" oninput="goalPreview()"></div>'
+      ? '<div class="curin" data-cur="'+esc(cur)+'"><input class="in" type="text" inputmode="decimal" id="'+id+'" value="'+
+         esc(soTienRaO(val))+'" oninput="goalPreview()"></div>'
       : '<input class="in" type="number" id="'+id+'" value="'+val+'" oninput="goalPreview()">')+
     '</div>';
   const body =
@@ -6345,7 +7101,7 @@ function openGoalForm(name){
 function goalPreview(){
   const n = id => { const e=document.getElementById(id); const v=parseFloat(e?e.value:0); return isNaN(v)?0:v; };
   const nego = n('g_nego'), won = Math.round(nego*GOAL_RATE);
-  const yr   = cur==='VND' ? n('g_value')/FX : n('g_value');
+  const yr   = toUSD(n('g_value'));
   const set=(id,v)=>{ const e=document.getElementById(id); if(e) e.textContent=v; };
   set('gp_won', won);
   set('gp_week', money(Math.round(yr/GOAL_WEEKS)));
@@ -6353,9 +7109,9 @@ function goalPreview(){
 function saveThreshold(){
   if(!can('users')) return;
   const e = document.getElementById('thrIn');
-  const raw = parseFloat(e ? e.value : 0);
-  if(isNaN(raw) || raw < 0){ toast(t('completeField')); return; }
-  const usd = Math.round(cur==='VND' ? raw/FX : raw);
+  const rNg = tienVao(e ? e.value : '');
+  if(!rNg.ok){ toast(rNg.msg); return; }
+  const usd = rNg.usd;
   const old = REGION_THRESHOLD;
   /* trước đây im lặng thoát ra: người dùng bấm Lưu và không nhận được gì cả,
      không phân biệt nổi "đã lưu" với "nút hỏng" */
@@ -6368,9 +7124,11 @@ function saveThreshold(){
 function saveGoal(name){
   const n = id => { const e=document.getElementById(id); const v=parseFloat(e?e.value:0); return isNaN(v)?0:v; };
   const old = goalFor(name);
+  const rMuc = tienVao((document.getElementById('g_value')||{}).value);
+  if(!rMuc.ok){ toast(rMuc.msg); return; }
   const nw = {leads:Math.round(n('g_leads')), opps:Math.round(n('g_opps')),
               nego:Math.round(n('g_nego')),
-              yearUSD: Math.round(cur==='VND' ? n('g_value')/FX : n('g_value'))};
+              yearUSD: rMuc.usd};
   [['leads','gLeads'],['opps','gOpps'],['nego','gNego'],['yearUSD','gValue']].forEach(k=>{
     const o = k[0]==='yearUSD' ? old.yearUSD : old[k[0]];
     if(o !== nw[k[0]])
@@ -6482,12 +7240,86 @@ VIEWS.perms = function(){
     '<div class="card-b">'+
       '<div class="unote" style="margin:0 0 10px">'+esc(t('thrHint'))+'</div>'+
       '<div class="thrrow">'+
-        '<div class="curin" data-cur="'+esc(cur)+'"><input class="in" type="number" id="thrIn" '+
-          'value="'+Math.round(fx(REGION_THRESHOLD))+'"></div>'+
+        '<div class="curin" data-cur="'+esc(cur)+'"><input class="in" type="text" inputmode="decimal" id="thrIn" '+
+          'value="'+esc(soTienRaO(REGION_THRESHOLD))+'"></div>'+
         '<button class="btn btn-primary" onclick="saveThreshold()">'+esc(t('save'))+'</button>'+
       '</div></div></div>';
-  return phead(t('permsTitle'), t('permsNote')) + thrCard + matrix + users + usageTbl;
+  const fm = x => new Intl.NumberFormat('vi-VN').format(Math.round(x));
+  const lan = c => FX_LOG.find(x=>x && x.cur===c);
+  const lu = lan('VND'), le = lan('EUR');
+  const fxCard = '<div class="card" style="margin-bottom:14px">'+
+    '<div class="card-h"><span class="card-t">'+esc(t('fxTitle'))+'</span>'+
+      '<span class="card-note">'+esc(fxDerived())+'</span></div>'+
+    '<div class="card-b">'+
+      '<div class="unote" style="margin:0 0 10px">'+esc(t('fxHint'))+'</div>'+
+      '<div class="thrrow">'+
+        '<div class="curin" data-cur="VND"><input class="in" type="text" inputmode="decimal" id="fxVnd" '+
+          'value="'+VCB.VND+'" onkeydown="if(event.key===\'Enter\')event.preventDefault()"></div>'+
+        '<span class="dim" style="font-size:12px">'+esc(t('fxPerUsd'))+
+          (lu ? ' · '+esc(fdate(lu.date))+' · '+esc(lu.by||'—') : '')+'</span>'+
+      '</div>'+
+      '<div class="thrrow" style="margin-top:8px">'+
+        '<div class="curin" data-cur="VND"><input class="in" type="text" inputmode="decimal" id="fxEur" '+
+          'value="'+VCB.EUR+'" onkeydown="if(event.key===\'Enter\')event.preventDefault()"></div>'+
+        '<span class="dim" style="font-size:12px">'+esc(t('fxPerEur'))+
+          (le ? ' · '+esc(fdate(le.date))+' · '+esc(le.by||'—') : '')+'</span>'+
+      '</div>'+
+      '<div class="thrrow" style="margin-top:8px">'+
+        '<input class="in" id="fxNote" placeholder="'+esc(t('fxNotePh'))+'" style="max-width:320px">'+
+        '<button class="btn btn-primary" onclick="setFX()">'+esc(t('save'))+'</button>'+
+      '</div>'+
+      (FX_LOG.length
+        ? '<div class="tscroll" style="margin-top:12px"><table><thead><tr>'+
+            '<th>'+esc(t('cTime'))+'</th><th>'+esc(t('fxWhich'))+'</th>'+
+            '<th class="num">'+esc(t('fxOld'))+'</th><th class="num">'+esc(t('fxNew'))+'</th>'+
+            '<th>'+esc(t('cUser'))+'</th><th>'+esc(t('fxSrc'))+'</th></tr></thead><tbody>'+
+          FX_LOG.slice(0,12).map(x=>'<tr><td class="dim">'+esc(fdate(x.date))+'</td>'+
+            '<td>1 '+esc(x.cur==='EUR'?'EUR':'USD')+' → VND</td>'+
+            '<td class="num dim">'+esc(fm(x.cu))+'</td><td class="num"><b>'+esc(fm(x.moi))+'</b></td>'+
+            '<td class="dim">'+esc(x.by||'—')+'</td>'+
+            '<td class="dim trunc">'+esc(x.note||'—')+'</td></tr>').join('')+
+          '</tbody></table></div>'
+        : '<div class="unote" style="margin:12px 0 0">'+esc(t('fxNoLog'))+'</div>')+
+    '</div></div>';
+  return phead(t('permsTitle'), t('permsNote')) + fxCard + thrCard + matrix + users + usageTbl;
 };
+function fxDerived(){
+  return '1 USD = '+new Intl.NumberFormat('de-DE',
+    {minimumFractionDigits:4, maximumFractionDigits:4}).format(rate('EUR'))+' EUR';
+}
+/* Đổi tỷ giá. Cùng khuôn với saveThreshold ngay trên: kiểm quyền, kiểm giá
+   trị, so với giá trị cũ, logAudit, rồi mới ghi.
+   MỘT CHỖ KHÁC HẲN BẢN CỦA ĐỘI R&D. Bản ấy chặn bước nhảy >5% bằng cách
+   nhớ cặp số vừa bị chặn vào window.__fxConfirm, nên bấm lần thứ hai là qua
+   — mà ô nhập của họ lại gắn onkeydown Enter gọi thẳng setFX(). Gõ nhầm
+   255000 thay vì 25500 rồi nhấn Enter hai lần (đúng thói quen của người đang
+   vội) là tỷ giá sai gấp mười lần đi thẳng vào sổ, không một hộp thoại nào.
+   Ở đây: Enter trong ô KHÔNG lưu, và bước nhảy lớn phải xác nhận bằng
+   confirm() — một cử chỉ khác hẳn cử chỉ vừa làm, không phải lặp lại nó. */
+function setFX(){
+  if(!can('users')) return;
+  const doc = id => { const e=document.getElementById(id); const x=docSoTien(e?e.value:''); return x===null?NaN:x; };
+  const nv = doc('fxVnd'), ne = doc('fxEur');
+  if(!fxHopLe(nv) || !fxHopLe(ne)){ toast(t('fxBad')); return; }
+  const moiV = Math.round(nv), moiE = Math.round(ne);
+  if(moiV===VCB.VND && moiE===VCB.EUR){ toast(t('fxSame')); return; }
+  const nhay = Math.max(Math.abs(moiV-VCB.VND)/VCB.VND, Math.abs(moiE-VCB.EUR)/VCB.EUR)*100;
+  if(nhay > 5 && !window.confirm(t('fxJump',{p:nhay.toFixed(1)}))) return;
+  const ghiChu = (document.getElementById('fxNote')||{}).value || '';
+  const fm = x => new Intl.NumberFormat('vi-VN').format(x);
+  const doi = [];
+  [['VND','fxPerUsd',moiV],['EUR','fxPerEur',moiE]].forEach(function(r){
+    const c=r[0], moi=r[2], cu=VCB[c];
+    if(moi===cu) return;
+    logAudit({objType:'system', objName:t('fxTitle'), action:'update',
+              field:'fx'+c, oldV:cu, newV:moi});
+    FX_LOG.unshift({date:new Date(), cur:c, cu:cu, moi:moi, by:ME, note:ghiChu});
+    VCB[c]=moi; doi.push(t(r[1])+' = '+fm(moi));
+  });
+  if(FX_LOG.length > FX_LOG_KEEP) FX_LOG.length = FX_LOG_KEEP;
+  toast(t('fxSaved',{r:doi.join(' · ')}));
+  saveSoon(); render();
+}
 function setRole(name, role){
   const u = USERS.find(x=>x.name===name); if(!u) return;
   const old = u.role;
@@ -6550,7 +7382,17 @@ const OPP_FORM = [
     {k:'dealType', l:['Loại hợp đồng','Deal type'], f:'sel', o:[['Nghệ sĩ','Artist'],['Label','Label'],
       ['Nhà xuất bản','Publisher'],['Nhạc sĩ','Writer']]},
     {k:'bu', l:['Đơn vị kinh doanh','Business unit'], f:'sel', o:'BU'},
-    {k:'currency', l:['Đơn vị tiền','Currency'], f:'sel', o:['USD','VND'], d:'USD'},
+    /* Ô này từng là một ô CHẾT: người dùng chọn USD hay VND, giá trị được
+       lưu xuống ext.currency, và tuyệt đối không mã nào đọc nó (đếm: đúng
+       một lần xuất hiện trong cả tệp, chính là dòng khai báo này). Con số
+       tiền thì lại quy đổi theo THANH TIỀN TỆ ở đầu trang tại thời điểm gõ.
+       Nên một deal có thể mang nhãn "VND" mà số bên trong nhập bằng đô, và
+       ngược lại — một ô trông như điều khoản, thật ra là đồ trang trí.
+       Nay nó không hỏi nữa mà GHI LẠI: đơn vị và tỷ giá thật sự đã dùng lúc
+       lưu. Chỉ đọc, vì người dùng không chọn được chuyện đã xảy ra rồi. */
+    {k:'currency', l:['Đơn vị tiền lúc nhập','Currency at entry'], f:'text', ro:1,
+      tip:['Sổ ghi bằng USD. Ô này chỉ nói người nhập đã gõ bằng đơn vị nào và ở tỷ giá nào, để về sau dựng lại được con số họ nhìn thấy lúc gõ. Ghi lại, không chọn.',
+           'The book is kept in USD. This only records which currency the figures were typed in, and at what rate, so the number they saw can be reconstructed later. Recorded, not chosen.']},
     {k:'committee', l:['Ghi chú hội đồng','Committee notes'], f:'ta'},
     {k:'prob', l:['Xác suất thành công','Probability'], f:'pct'},
     {k:'curDist', l:['Label / nhà phân phối hiện tại','Current label / distributor'], f:'sel', o:DISTRIBUTORS},
@@ -6771,13 +7613,18 @@ function ofField(fd){
   const d = fd.d || '';
   const ro = fd.ro ? ' readonly style="background:#f4f5f7;color:var(--ink-2)"' : '';
   const rc = fd.calc ? ' oninput="dealCalc()"' : '';
-  if(fd.f==='text')  ctrl = '<input class="fin" id="'+id+'" value="'+esc(d)+'">';
-  else if(fd.f==='num') ctrl = '<input class="fin" type="number" id="'+id+'" value="'+esc(d)+'">';
+  /* `ro` phải áp cho CẢ text và num. Trước đây hai nhánh này bỏ qua nó, nên
+     một trường khai ro:1 vẫn gõ vào được — chỉ chưa ai khai text+ro:1 nên
+     chưa lộ. Ô "Đơn vị tiền lúc nhập" là trường đầu tiên cần nó. */
+  if(fd.f==='text')  ctrl = '<input class="fin" id="'+id+'" value="'+esc(d)+'"'+ro+'>';
+  else if(fd.f==='num') ctrl = '<input class="fin" type="number" id="'+id+'" value="'+esc(d)+'"'+ro+'>';
   else if(fd.f==='date')ctrl = '<input class="fin" type="date" id="'+id+'">';
   else if(fd.f==='ta')  ctrl = '<textarea class="fin" id="'+id+'"></textarea>';
   else if(fd.f==='pct') ctrl = '<div class="pctin"><input class="fin" type="number" id="'+id+'" value="'+esc(d)+'"'+ro+rc+'></div>';
   else if(fd.f==='money')
-    ctrl = '<div class="curin" data-cur="'+esc(cur)+'"><input class="fin" type="number" id="'+id+'" value="'+esc(d)+'"'+ro+rc+'></div>';
+    /* type="text" chứ KHÔNG phải "number": trình duyệt cắt dấu phân nhóm kiểu
+       Việt Nam trước khi mã nhìn thấy, biến 25.000.000 thành 25. Xem docSoTien. */
+    ctrl = '<div class="curin" data-cur="'+esc(cur)+'"><input class="fin" type="text" inputmode="decimal" id="'+id+'" value="'+esc(d)+'"'+ro+rc+'></div>';
   else if(fd.f==='chk') ctrl = '<div class="fchk"><span class="cbox" id="'+id+'" data-on="0" onclick="togChk(\''+id+'\')"></span></div>';
   else if(fd.f==='acc')
     ctrl = '<input class="fin" id="'+id+'" list="ofAccounts" placeholder="'+esc(L(['Tìm khách hàng…','Search accounts…']))+'">';
@@ -6837,8 +7684,25 @@ const ADV_F = [
         'Pulled automatically from Monthly income in Deal details (YouTube + Audio).']},
   {id:'ac_share',l:['Tỷ lệ chia cho nghệ sĩ','Artist share'], k:'pct', d:'70'},
   {id:'ac_pass', l:['Pass through','Pass through'], k:'pct', d:'0',
-   tip:['Phần doanh thu nghệ sĩ vẫn nhận trong thời gian thu hồi vốn, dùng khi nghệ sĩ không muốn dồn 100% doanh thu vào recoupment.',
-        'The share the artist still receives during recoupment, used when they do not want 100% of revenue going to recoupment.']},
+   tip:['Phần doanh thu nghệ sĩ vẫn nhận trong thời gian thu hồi vốn. CẢNH BÁO: sổ cái portal hiện thu hồi 100% phần của bên (recoup = min(dư nợ, thu nhập kỳ)), và gói bàn giao chưa mang trường này — nên con số bạn gõ ở đây CHƯA được bên kia tôn trọng. Đừng hứa với đối tác cho tới khi portal áp.',
+        'The share the artist still receives during recoupment. WARNING: the portal ledger currently recoups 100% of the party share, and the handoff payload does not carry this field yet — what you type here is NOT yet honoured downstream. Do not promise it to the partner until the portal implements it.']},
+  /* BÊN CẤP QUYỀN LÀ AI — quyết định thu hồi lấy được từ đâu.
+     Portal chia ba lớp: gộp → phí Haustek → net, rồi net mới chia tiếp giữa
+     LABEL và NGHỆ SĨ CỦA LABEL (splitRec, portal dòng 1227-1228). Thu hồi chỉ
+     lấy từ phần bên vay THẬT SỰ nhận. Nghệ sĩ độc lập nhận trọn net nên hai
+     con số là một; label KHÔNG tự trả chỉ nhận net × (1 − tỷ lệ nghệ sĩ), nên
+     cùng một khoản ứng sẽ thu hồi chậm hơn nhiều lần.
+     Thiếu hai ô này, CRM hứa một số mà portal ra số khác — đo được quá tay
+     tới 3,4 lần trên deal label. */
+  {id:'ac_ben', l:['Bên cấp quyền','Rights holder'], k:'chon', d:'artist',
+   chon:[['artist',['Nghệ sĩ độc lập','Independent artist']],
+         ['label_tutra',['Label · tự trả nghệ sĩ','Label · pays its own artists']],
+         ['label',['Label · Haustek trả nghệ sĩ','Label · Haustek pays the artists']]],
+   tip:['Nghệ sĩ độc lập và label tự trả nhận trọn phần sau phí, nên thu hồi lấy từ toàn bộ phần ấy. Label để Haustek trả nghệ sĩ thì chỉ nhận phần label giữ lại — thu hồi chỉ lấy được từ phần đó.',
+        'An independent artist, or a label that pays its own artists, receives the whole post-fee share, so recoupment draws on all of it. A label whose artists Haustek pays keeps only the label cut — recoupment can only draw on that.']},
+  {id:'ac_lrate',l:['Tỷ lệ nghệ sĩ của label','Label\u2019s artist rate'], k:'pct', d:'70',
+   tip:['Phần net mà nghệ sĩ THUỘC LABEL được hưởng. Chỉ dùng khi Haustek trả nghệ sĩ thay label. Phần còn lại mới là phần label giữ, và thu hồi chỉ lấy từ đó.',
+        'The share of net that the label\u2019s own artists receive. Only used when Haustek pays them. What is left is the label cut, and recoupment draws only on that.']},
   {id:'ac_adv',  l:['Advance ban đầu','Initial advance'], k:'money', d:'0'},
   {id:'ac_mkt',  l:['Marketing fund','Marketing fund'], k:'money', d:'0',
    tip:['Cộng vào tổng advance và tính vào ROI.','Added to total advance and included in ROI.']},
@@ -6863,11 +7727,17 @@ function advInput(f){
   const on = ' oninput="advCalc()" onchange="advCalc()"';
   const ro = f.ro ? ' readonly style="background:#f4f5f7;color:var(--ink-2)"' : '';
   let ctrl;
-  if(f.k==='pct')        ctrl = '<div class="pctin"><input class="fin" type="number" id="'+f.id+'" value="'+f.d+'"'+ro+on+'></div>';
-  else if(f.k==='money') ctrl = '<div class="curin" data-cur="'+esc(cur)+'"><input class="fin" type="number" id="'+f.id+'" value="'+f.d+'"'+ro+on+'></div>';
+  if(f.k==='chon')       ctrl = '<select class="fin" id="'+f.id+'"'+on+'>'+
+                                  f.chon.map(c=>'<option value="'+esc(c[0])+'"'+(c[0]===f.d?' selected':'')+'>'+esc(L(c[1]))+'</option>').join('')+
+                                '</select>';
+  else if(f.k==='pct')   ctrl = '<div class="pctin"><input class="fin" type="number" id="'+f.id+'" value="'+f.d+'"'+ro+on+'></div>';
+  else if(f.k==='money') ctrl = '<div class="curin" data-cur="'+esc(cur)+'"><input class="fin" type="text" inputmode="decimal" id="'+f.id+'" value="'+f.d+'"'+ro+on+'></div>';
   else                   ctrl = '<input class="fin" type="number" id="'+f.id+'" value="'+f.d+'"'+ro+on+'>';
   return frow(L(f.l), ctrl, {tip: f.tip ? L(f.tip) : 0});
 }
+/* Đọc ô chọn. advNum() parseFloat nên nó trả 0 cho mọi ô không phải số —
+   dùng nhầm là im lặng ra 'artist' cho mọi deal. */
+function advVal(id){ const e=document.getElementById(id); return e ? e.value : ''; }
 function advanceHTML(){
   const half = Math.ceil(ADV_F.length/2);
   return '<div class="fgrid">'+
@@ -6894,7 +7764,29 @@ function advanceHTML(){
         esc(L(['Áp dụng xuống Chia sẻ publishing','Apply to publishing shares']))+'</button></div>'+
     '</div>';
 }
-function advNum(id){ const e=document.getElementById(id); const v=parseFloat(e?e.value:0); return isNaN(v)?0:v; }
+function advNum(id){
+  const e=document.getElementById(id);
+  const v=docSoTien(e?e.value:'');
+  return (v===null || !isFinite(v)) ? 0 : v;
+}
+/* Ô TIỀN của bộ tính advance, đọc ra USD.
+   ═══ VÌ SAO PHẢI CÓ HÀM RIÊNG ═══
+   Bộ tính advance từng đọc ô tiền bằng advNum() thuần — parseFloat, không
+   quy đổi. Nghĩa là nó làm việc bằng ĐƠN VỊ ĐANG HIỂN THỊ, còn các ô tiền
+   của biểu mẫu cơ hội ngay cạnh nó thì đi qua toUSD(). Hai đường, một biểu
+   mẫu, và không chỗ nào ghi lại đơn vị mình dùng.
+   Đo được hậu quả, đầu tới cuối: A&R để thanh tiền ở VND rồi gõ tạm ứng
+   1.275.000.000 ₫ (đúng 50.000 USD ở tỷ giá 25.500). Cùng một lượt lưu:
+       ext.advance                      = 50.000        ← đúng, qua toUSD
+       advCalcResult.initialAdvance     = 1.275.000.000 ← thô, không quy đổi
+       gói gửi portal initialAdvanceUSD = 1.275.000.000 ← dán nhãn USD
+   Lệch ĐÚNG 25.500 lần, và con số sai chính là con số đi sang portal. Cũng
+   con số ấy chạy vào hợp đồng qua ctrMny(), mà ctrMny lại gọi money() —
+   nhân tỷ giá LẦN NỮA.
+   Bộ mẫu không lộ ra vì deal gieo sẵn ghi thẳng bằng USD (advCalcResult
+   .initialAdvance = 14000 cho deal 18.000 USD): cùng một khoá, hai đơn vị,
+   và không ai phân biệt được bằng cách nhìn. */
+function advTien(id){ return toUSD(advNum(id)); }
 
 /* ---- bảng lời lỗ theo năm, dựng ngay trong form ---- */
 function finBoxHTML(){
@@ -6990,7 +7882,7 @@ function finFromForm(){
     /* chưa nhập theo nguồn thì dùng con số tổng ở phần advance, tỷ lệ chung */
     streams.length = 0;
     streams.push({k:'all', l:['Tổng doanh thu','Total revenue'], curve:'cat',
-                  gross: advNum('ac_avg'), share: advNum('ac_share')/100});
+                  gross: advTien('ac_avg'), share: advNum('ac_share')/100});
   }
   return {
     streams,
@@ -7000,7 +7892,7 @@ function finFromForm(){
        pass-through là phần còn lại. Hai ô này vốn là hai mặt của một số —
        trước đây nhập hai lần, sửa một chỗ thì chỗ kia sai. */
     pass: ofHas('recoupRate') ? 1-clamp01(ofNum('recoupRate')/100) : advNum('ac_pass')/100,
-    adv: advNum('ac_adv'), mkt: advNum('ac_mkt'), prod: advNum('ac_prod'),
+    adv: advTien('ac_adv'), mkt: advTien('ac_mkt'), prod: advTien('ac_prod'),
     legal: ofNum('legalFee'),
     prob: ofHas('prob') && ofNum('prob')>0 ? ofNum('prob')/100 : null,
     term: advNum('ac_term'), fee: advNum('ac_fee')/100,
@@ -7208,33 +8100,52 @@ function finGap(now, ceil){
   if(now<=ceil) return '<span class="fingap good">'+esc(L(['còn dư ','headroom '])+acFmt(ceil-now))+'</span>';
   return '<span class="fingap bad">'+esc(L(['vượt ','over by '])+acFmt(now-ceil))+'</span>';
 }
-function acFmt(n){
-  return new Intl.NumberFormat(cur==='VND'?'vi-VN':'en-US',
-    cur==='VND'?{minimumFractionDigits:2,maximumFractionDigits:2}:{maximumFractionDigits:0})
-    .format(n||0)+' '+cur;
-}
+/* Bộ tính advance nay làm việc bằng USD từ đầu tới cuối (xem advTien), nên
+   chỗ hiển thị của nó phải QUY ĐỔI y như mọi chỗ khác. Trước đây hàm này
+   chỉ định dạng rồi dán nhãn `cur` — cùng một con số, đổi thanh tiền tệ là
+   đổi mỗi cái nhãn. Dùng thẳng fmtMoney để hai nơi không bao giờ hiện cùng
+   một số theo hai kiểu. */
+function acFmt(n){ return fmtMoney(n, false); }
 function roiBand(pct){
   if(pct>=35) return {cls:'good', col:'var(--green)', bg:'#e8f5ee', fg:'#1f6b41'};
   if(pct>=25) return {cls:'warn', col:'#dd8a12',     bg:'#fdf3e0', fg:'#8a5606'};
   return          {cls:'bad',  col:'var(--brand)',  bg:'var(--brand-tint)', fg:'var(--brand-dark)'};
 }
 function advModel(advOverride){
-  const avg=advNum('ac_avg'), share=advNum('ac_share')/100, pass=advNum('ac_pass')/100;
-  const adv=(advOverride==null?advNum('ac_adv'):advOverride);
-  const mkt=advNum('ac_mkt'), prod=advNum('ac_prod');
+  /* bốn ô tiền đọc ra USD; mọi ô còn lại là phần trăm hoặc số tháng */
+  const avg=advTien('ac_avg'), share=advNum('ac_share')/100, pass=advNum('ac_pass')/100;
+  const adv=(advOverride==null?advTien('ac_adv'):advOverride);
+  const mkt=advTien('ac_mkt'), prod=advTien('ac_prod');
   const term=advNum('ac_term'), excl=advNum('ac_excl'), fee=advNum('ac_fee')/100;
   const totalAdv = adv + mkt + prod;
-  const net    = avg*(1-share);
+  const net    = avg*(1-share);      /* phần HAUSTEK giữ — phí hợp đồng */
   const pt     = (avg-net)*pass;
-  const recoup = avg-net-pt;
+  /* THU HỒI LẤY TỪ PHẦN BÊN VAY THẬT SỰ NHẬN, không phải toàn bộ phần sau phí.
+     Portal: net chia tiếp giữa label và nghệ sĩ của label (splitRec), và
+     earnedByParty của một label KHÔNG tự trả chỉ là phần label giữ lại.
+     Bản trước dùng luôn (avg − net) cho mọi loại bên, nên với label để Haustek
+     trả nghệ sĩ thì CRM hứa một con số mà portal không bao giờ ra. */
+  const ben    = advVal('ac_ben');
+  const lrate  = advNum('ac_lrate')/100;
+  const heSoBen = (ben === 'label') ? Math.max(0, 1 - lrate) : 1;
+  const phanBen = (avg - net) * heSoBen;      /* phần bên vay thật sự nhận mỗi tháng */
+  const recoup = phanBen * (1 - pass);
   const bal1   = -totalAdv+recoup;
-  const months = recoup>0 ? totalAdv/recoup : 0;
+  /* "KHÔNG BAO GIỜ THU HỒI XONG" KHÁC "THU HỒI XONG NGAY" — bản trước trả 0
+     cho cả hai. Với flow-through 100% thì recoup = 0, hàm ra 0, và số 0 ấy
+     đi hai đường cùng lúc: màn hình đọc nó là falsy nên hiện "—" (nhìn như
+     chưa nhập), còn gói bàn giao mang monthsToRecoup: 0 — đọc xuôi là thu
+     hồi xong tức thì. Một con số, hai nghĩa, không nghĩa nào đúng.
+     Tách hẳn: không có khoản ứng thì 0 (đúng nghĩa: không có gì để thu),
+     có khoản ứng mà mỗi tháng thu về 0 đồng thì Infinity. */
+  const months = totalAdv<=0 ? 0 : (recoup>0 ? totalAdv/recoup : Infinity);
   const total  = net*term;
   const roi    = totalAdv>0 ? total/totalAdv : 0;
   const roiY   = term>0 ? roi/term*12 : 0;
   const finder = fee*(1-share)*avg*term;
   const roiNet = totalAdv>0 ? (total-finder)/totalAdv : 0;
-  return {avg,share,pass,adv,mkt,prod,totalAdv,term,excl,fee,net,pt,recoup,bal1,months,total,roi,roiY,finder,roiNet};
+  return {avg,share,pass,adv,mkt,prod,totalAdv,term,excl,fee,net,pt,recoup,bal1,months,total,roi,roiY,finder,roiNet,
+          ben,lrate,heSoBen,phanBen};
 }
 /* ===================== MÔ HÌNH TÀI CHÍNH ĐA NĂM =====================
    Bảng ROI cũ ("Catalog ROI.") trả lời được một câu: toàn kỳ lời bao nhiêu lần.
@@ -7453,6 +8364,15 @@ function finVerdict(r){
   return {k:'bad', key:'finVWeak'};
 }
 
+/* Một chỗ duy nhất đọc `months` ra chữ, vì có BA trạng thái chứ không hai:
+   không có khoản ứng (0), thu hồi được (số tháng), và không bao giờ xong
+   (Infinity — flow-through nuốt hết phần thu hồi). Trước đây mỗi chỗ tự
+   viết `m.months ? toFixed(1) : '—'`, nên Infinity sẽ in ra chữ "Infinity". */
+function thangThuHoi(m, ngan){
+  if(!isFinite(m)) return L(ngan?['không xong','never']:['không bao giờ xong','never recouped']);
+  if(!m) return '\u2014 '+L(ngan?['tháng','mo']:['tháng','months']);
+  return m.toFixed(1)+' '+L(ngan?['tháng','mo']:['tháng','months']);
+}
 function advCalc(){
   try { finRender(); } catch(e){ if(window.console) console.warn('finRender', e); }
   const box = document.getElementById('acRes'); if(!box) return;
@@ -7465,7 +8385,7 @@ function advCalc(){
     [['Doanh thu thu hồi được / tháng','Recoupable royalties / month'], acFmt(m.recoup), ''],
     [['Số dư sau tháng đầu','Account balance after month 1'], acFmt(m.bal1), m.bal1>=0?'good':'bad'],
     [['Số tháng thu hồi vốn','Months to recoup'],
-      (m.months?m.months.toFixed(1):'—')+' '+L(['tháng','months']),
+      thangThuHoi(m.months),
       (m.months && m.months<=m.term)?'good':'bad'],
     [['Tổng thu HAUSTEK toàn kỳ','Total HAUSTEK income over term'], acFmt(m.total), ''],
     [['Finders fee','Finders fee'], acFmt(m.finder), ''],
@@ -7489,7 +8409,7 @@ function advCalc(){
         '<div class="acsug-a">'+acFmt(a)+'</div>'+
         '<div class="actrig-row"><span>'+esc(L(['Tổng advance','Total advance']))+'</span><b>'+acFmt(s2.totalAdv)+'</b></div>'+
         '<div class="actrig-row"><span>'+esc(L(['Thu hồi','Recoup']))+'</span><b>'+
-          (s2.months?s2.months.toFixed(1):'—')+' '+esc(L(['tháng','mo']))+'</b></div>'+
+          esc(thangThuHoi(s2.months, true))+'</b></div>'+
         '<div class="actrig-row"><span>'+esc(L(['ROI / năm','ROI / yr']))+'</span>'+
           '<b style="color:'+bd.col+'">'+(s2.roiY*100).toFixed(1)+'%</b></div>'+
         '<button type="button" class="acsug-b" style="background:'+bd.bg+';color:'+bd.fg+
@@ -7535,20 +8455,27 @@ function advCalc(){
 /* Chọn một gợi ý rồi đổ toàn bộ xuống phần Chia sẻ publishing */
 function advApply(mult){
   /* tính trước, ghi DOM sau, vẽ lại sau cùng — tránh vẽ lại giữa chừng làm nút bị bấm hai lần */
-  const m = advModel(mult!=null ? advNum('ac_avg')*mult : null);
+  /* m.* nay là USD (xem advTien). Mọi ô người ta nhìn và gõ thì lại nằm ở
+     ĐƠN VỊ ĐANG HIỂN THỊ, nên viết ngược ra phải fx() — đúng một lần, không
+     hơn. Thiếu chỗ này là bộ tính đổ số USD vào một ô mà lượt lưu sau đó
+     sẽ chia tỷ giá lần nữa. */
+  const m = advModel(mult!=null ? advTien('ac_avg')*mult : null);
+  const raO = v => soTienRaO(v);   /* m.* là USD; ô nhận số theo đơn vị hiển thị, có phân nhóm */
   if(mult!=null){
     const el=document.getElementById('ac_adv');
-    if(el) el.value = Math.round(m.adv);
+    if(el) el.value = raO(m.adv);
   }
   const set=(id,val)=>{ const e=document.getElementById('of_'+id); if(e) e.value=val; };
-  set('advance',    Math.round(m.adv));
-  set('mktBudget',  Math.round(m.mkt));
-  set('prodFund',   Math.round(m.prod));
+  set('advance',    raO(m.adv));
+  set('mktBudget',  raO(m.mkt));
+  set('prodFund',   raO(m.prod));
   set('recoupRate', advNum('ac_rate'));
-  set('monthsRecoup', m.months ? m.months.toFixed(1) : '');
+  /* Ô này kiểu 'num'. Infinity không phải một số viết được vào đó, và
+     "Infinity" là chữ. Để trống, rồi câu chữ ở advDetails nói rõ vì sao. */
+  set('monthsRecoup', (isFinite(m.months) && m.months) ? m.months.toFixed(1) : '');
   set('totalROI',   (m.roi*100).toFixed(0)+'%');
   set('roiAnnual',  (m.roiY*100).toFixed(1)+'%');
-  set('roiEarnings', Math.round(m.total));
+  set('roiEarnings', acFmt(m.total));   /* ô kiểu 'text': ghi kèm đơn vị, đừng để số trần không ai biết tiền gì */
   const capPct = advNum('ac_cap')/100, cap = m.avg*12*(1+capPct);
   set('triggers', L([
     'Trigger 1: advance = doanh thu tháng × 15 = '+acFmt(m.avg*15)+', cộng thêm 24 tháng độc quyền và 24 tháng licensing.\n'+
@@ -7559,11 +8486,124 @@ function advApply(mult){
     'Fires once '+advNum('ac_rate')+'% of total advance ('+acFmt(m.totalAdv)+') is recouped. Cap = '+acFmt(cap)+'.']));
   set('advDetails', L([
     'Advance ban đầu '+acFmt(m.adv)+'. Marketing fund '+acFmt(m.mkt)+'. Production fund '+acFmt(m.prod)+
-    '. Tổng '+acFmt(m.totalAdv)+', thu hồi trong '+(m.months?m.months.toFixed(1):'—')+' tháng.',
+    '. Tổng '+acFmt(m.totalAdv)+(isFinite(m.months)
+      ? ', thu hồi trong '+(m.months?m.months.toFixed(1):'\u2014')+' tháng.'
+      : '. KHÔNG BAO GIỜ THU HỒI XONG: flow-through '+(m.pass*100).toFixed(0)+'% lấy hết phần dùng để thu hồi.'),
     'Initial advance '+acFmt(m.adv)+'. Marketing fund '+acFmt(m.mkt)+'. Production fund '+acFmt(m.prod)+
-    '. Total '+acFmt(m.totalAdv)+', recouped in '+(m.months?m.months.toFixed(1):'—')+' months.']));
+    '. Total '+acFmt(m.totalAdv)+(isFinite(m.months)
+      ? ', recouped in '+(m.months?m.months.toFixed(1):'\u2014')+' months.'
+      : '. NEVER RECOUPS: flow-through of '+(m.pass*100).toFixed(0)+'% consumes everything recoupment draws on.')]));
   advCalc();
   toast(L(['Đã áp dụng xuống Chia sẻ publishing','Applied to publishing shares']));
+}
+
+/* ═══ MÀN TÍNH TOÁN ADVANCE TRÊN DEAL ĐÃ TỒN TẠI ═══════════════════════
+   Cùng một advanceHTML() với biểu mẫu tạo deal — một bộ tính, hai cửa vào —
+   nhưng đổ sẵn số của deal ấy vào và ghi ngược khi lưu.
+   Mọi luật đặt hôm nay đều áp ở đây:
+     · ô tiền là ĐƠN VỊ ĐANG HIỂN THỊ, có phân nhóm (soTienRaO), đọc về USD
+       qua advTien/toUSD — không phải số trần;
+     · bên cấp quyền (ac_ben, ac_lrate) và quỹ sản xuất đổ lại đúng, vì thiếu
+       chúng thì CRM hứa một số mà portal ra số khác;
+     · soatTien('ac_') chặn số âm / quá lớn TRƯỚC khi ghi;
+     · khoản không bao giờ thu hồi xong lưu monthsToRecoup=null + neverRecoups,
+       không lưu Infinity (JSON biến nó thành null lặng lẽ). */
+function openAdvanceModal(oppId){
+  const o = DB.opps.find(x=>x.id===oppId);
+  if(!o || !canEdit(o.owner)){ toast(t('noPermTitle')); return; }
+  state.drawer = null;
+  document.getElementById('overlay').innerHTML =
+    '<div class="mscrim" onclick="if(event.target===this)closeDrawer()">'+
+    '<div class="modal" role="dialog" style="width:min(1080px,100%)">'+
+      '<div class="modal-h"><div class="modal-t">'+esc(t('advTitle'))+' — '+esc(o.name)+'</div>'+
+        '<button class="modal-x" onclick="closeDrawer()" aria-label="Close">×</button></div>'+
+      '<div class="modal-b">'+
+        (PORTAL_OWNED.includes(o.stage)
+          ? '<div class="unote" style="margin:0 0 12px;border-color:var(--brand)">'+esc(t('advPortalLock'))+'</div>' : '')+
+        advanceHTML()+'</div>'+
+      '<div class="modal-f"><button class="btn" onclick="closeDrawer()">'+esc(t('cancel'))+'</button>'+
+        (PORTAL_OWNED.includes(o.stage) ? ''
+          : '<button class="btn btn-primary" onclick="saveAdvanceModal(\''+o.id+'\')">'+esc(t('saveOnly'))+'</button>')+
+      '</div></div></div>';
+  setTimeout(()=>{ advModalFill(o); advCalc(); }, 40);
+}
+/* Đổ số của deal vào các ô. Tách riêng để bài kiểm gọi được không cần chờ. */
+function advModalFill(o){
+  const e = o.ext || {}, a = e.advCalcResult || null, fi = e.finInput || null;
+  const set = (id, v) => { const el=document.getElementById(id); if(el && v!==undefined && v!==null && v!=='') el.value = v; };
+  const tien = (id, usd) => { if(typeof usd==='number' && isFinite(usd)) set(id, soTienRaO(usd)); };
+  /* doanh thu tháng: ô này readonly trong biểu mẫu vì được tính từ các dòng
+     thu nhập; ở đây không có các dòng ấy nên mở khoá cho sửa được */
+  const avg = document.getElementById('ac_avg');
+  if(avg){ avg.removeAttribute('readonly'); avg.removeAttribute('style'); }
+  const thang = (a && typeof a.avg==='number' && a.avg>0) ? a.avg
+              : (typeof e.monthlyIncome==='number' && e.monthlyIncome>0) ? e.monthlyIncome
+              : (o.amount||0)/12;
+  tien('ac_avg', thang);
+  if(a){
+    tien('ac_adv', a.initialAdvance); tien('ac_mkt', a.marketingFund); tien('ac_prod', prodOf(a));
+    set('ac_term', a.termMonths); set('ac_excl', a.exclusivityMonths);
+    if(typeof a.artistShare==='number') set('ac_share', Math.round(pctOf(a.artistShare)*100));
+    if(typeof a.passThrough==='number') set('ac_pass', Math.round(pctOf(a.passThrough)*100));
+    if(typeof a.findersFeePct==='number') set('ac_fee', Math.round(pctOf(a.findersFeePct)*100));
+    set('ac_rate', a.triggerRatePct); set('ac_cap', a.capPct);
+    if(a.rightsHolder) set('ac_ben', a.rightsHolder);
+    if(typeof a.labelArtistRate==='number') set('ac_lrate', Math.round(pctOf(a.labelArtistRate)*100));
+  } else {
+    /* chưa có tính toán: lấy điều khoản gõ tay ở phần Tài chính nếu có */
+    tien('ac_adv', e.advance); tien('ac_mkt', e.mktBudget); tien('ac_prod', e.prodFund);
+    if(typeof e.pctDist==='number') set('ac_share', e.pctDist);
+  }
+  if(fi){
+    if(typeof fi.growth==='number') set('ac_growth', fi.growth);
+    if(typeof fi.dist==='number')   set('ac_dist', Math.round(fi.dist*100));
+    if(typeof fi.disc==='number')   set('ac_disc', fi.disc);
+  }
+}
+function saveAdvanceModal(oppId){
+  const o = DB.opps.find(x=>x.id===oppId);
+  if(!o || !canEdit(o.owner)){ toast(t('noPermTitle')); return; }
+  /* Không sửa điều khoản trong lúc portal đang cầm deal — chính hướng dẫn ở
+     trang chi tiết đã nói vậy; đây là chỗ thực thi nó thay vì chỉ nhắc. */
+  if(PORTAL_OWNED.includes(o.stage)){ toast(t('advPortalLock')); return; }
+  const loi = soatTien('ac_');
+  if(loi){ loi.el.classList.add('err'); loi.el.focus(); loi.el.scrollIntoView({block:'center'}); toast(loi.msg); return; }
+  const am = advModel();                     /* USD từ đầu tới cuối */
+  if(!(am.totalAdv > 0)){ toast(t('advNoAmount')); return; }
+  o.ext = o.ext || {};
+  const cu = o.ext.advCalcResult || {};
+  const cuTong = (cu.initialAdvance||0)+(cu.marketingFund||0)+prodOf(cu);
+  o.ext.advCalcResult = {
+    avg:am.avg, artistShare:am.share, passThrough:am.pass, initialAdvance:am.adv,
+    termMonths:am.term, exclusivityMonths:am.excl, findersFeePct:am.fee, marketingFund:am.mkt,
+    productionFund:am.prod,
+    monthlyNet:am.net, recoupPerMonth:am.recoup,
+    monthsToRecoup: isFinite(am.months) ? am.months : null,
+    neverRecoups: !isFinite(am.months),
+    rightsHolder: am.ben, labelArtistRate: am.lrate,
+    totalIncome:am.total, roi:am.roi, roiAnnual:am.roiY, roiAfterCosts:am.roiNet,
+    triggerRatePct:advNum('ac_rate'), capPct:advNum('ac_cap'),
+    cap:am.avg*12*(1+advNum('ac_cap')/100),
+    trigger1:{mult:15, addMonths:24, amount:am.avg*15},
+    trigger2:{mult:12, addMonths:18, amount:am.avg*12}
+  };
+  /* Modal LÀ cửa nhập điều khoản, nên ba ô Tài chính nhận theo — đúng luật
+     "một khoản tiền, một con số" đã đặt ở saveOppForm, chỉ đảo chiều. */
+  o.ext.advance = am.adv; o.ext.mktBudget = am.mkt; o.ext.prodFund = am.prod;
+  o.ext.advanceDeal = true;
+  o.ext.monthlyIncome = am.avg;
+  o.ext.recoupRate = advNum('ac_rate');
+  o.ext.monthsRecoup = (isFinite(am.months) && am.months) ? am.months.toFixed(1) : '';
+  o.ext.totalROI = (am.roi*100).toFixed(0)+'%';
+  o.ext.roiAnnual = (am.roiY*100).toFixed(1)+'%';
+  o.ext.roiEarnings = acFmt(am.total);
+  o.ext.finInput = finFromForm();
+  o.ext.currency = cur; o.ext.fxRate = rate(cur);
+  if(!o.amount) o.amount = Math.round(am.avg*12*100)/100;
+  o.lastAct = TODAY;
+  logAudit({objType:'opp', objId:o.id, objName:o.name, action:'update',
+            field:'advance', oldV:cuTong, newV:am.totalAdv});
+  closeDrawer(); toast(t('advSaved')); render();
 }
 
 function openOppForm(){
@@ -7606,9 +8646,27 @@ function saveOppForm(again){
   if(!ok){ bad.focus(); bad.scrollIntoView({block:'center'}); return; }
 
   const v  = id => { const e=document.getElementById('of_'+id); return e ? e.value.trim() : ''; };
-  const nn = id => { const x = parseFloat(v(id)); return isNaN(x) ? 0 : x; };
+  const nn = id => { const x = docSoTien(v(id)); return (x===null || !isFinite(x)) ? 0 : x; };
   const bk = id => chkOn('of_'+id);
-  const toUSD = x => cur==='VND' ? Math.round(x/FX) : x;
+
+  /* SOÁT CÁC Ô TIỀN TRƯỚC KHI GHI. Đo trên bản trước: gõ -5000 vào ô tạm ứng
+     thì lưu thẳng -5000; gõ 1e12 thì lưu một nghìn tỷ đô la; gõ "abc" thì
+     `parseFloat||0` lặng lẽ biến thành 0 và deal thành vô giá trị mà không
+     ai được báo. Cả ba đều đi qua không một lời.
+     Chỗ tệ nhất là trường hợp thứ ba: hai cái đầu còn nhìn thấy trên màn
+     hình, còn số 0 thì trông y hệt một ô người ta cố ý để trống. */
+  /* Chỉ soát ô của bộ tính advance KHI bộ tính ấy thật sự được dùng.
+     Nó chỉ hiện ra khi tích ô "Deal có advance", và khi không tích thì
+     saveOppForm đặt advCalcResult = null — giá trị trong đó không đi tới
+     đâu cả. Soát nó lúc ấy là chặn lượt lưu vì một con số nằm trong một
+     khối đang ẩn: người dùng nhận một câu báo lỗi, focus() và
+     scrollIntoView() không đưa họ tới đâu, và không có cách nào sửa thứ
+     không nhìn thấy. Đo được: ô ac_adv "BỊ ẨN" mà soatTien vẫn bắt.
+     Chốt chặn chặn đúng chỗ thì là an toàn; chặn chỗ không thấy thì là
+     một ứng dụng hỏng. */
+  const loi = soatTien(chkOn('of_advanceDeal') ? ['of_','ac_'] : ['of_']);
+  if(loi){ loi.el.classList.add('err'); loi.el.focus();
+           loi.el.scrollIntoView({block:'center'}); toast(loi.msg); return; }
 
   const ext = {};
   OPP_FORM.forEach(sn => sn.Lc.concat(sn.Rc).forEach(fd=>{
@@ -7621,6 +8679,9 @@ function saveOppForm(again){
     else if(fd.f==='money') ext[fd.k] = toUSD(nn(fd.k));
     else ext[fd.k] = v(fd.k);
   }));
+  /* Đè lên giá trị đọc từ ô: đây là thứ ĐÃ xảy ra, không phải thứ ai đó gõ. */
+  ext.currency = cur;
+  ext.fxRate   = rate(cur);
 
   /* đặt sau vòng lặp và dùng khoá riêng để không trùng với ô "Tiền tạm ứng" (advance) */
   try {
@@ -7628,7 +8689,21 @@ function saveOppForm(again){
     ext.advCalcResult = {
       avg:am.avg, artistShare:am.share, passThrough:am.pass, initialAdvance:am.adv,
       termMonths:am.term, exclusivityMonths:am.excl, findersFeePct:am.fee, marketingFund:am.mkt,
-      monthlyNet:am.net, recoupPerMonth:am.recoup, monthsToRecoup:am.months,
+      /* QUỸ SẢN XUẤT. advModel cộng nó vào totalAdv (adv + mkt + prod) và mọi
+         con số trên màn hình đều tính từ đó, nhưng bảng này lại không mang
+         nó, nên nó rụng ngay ở biên. Dùng ĐÚNG tên bộ mẫu đã dùng
+         (productionFund); trước đây cùng một khoản có hai cách viết —
+         productionFund ở bộ mẫu, prodFund ở ext — và CONTRACT_FIELDS phải
+         thử lần lượt cả hai để tìm ra nó. */
+      productionFund:am.prod,
+      monthlyNet:am.net, recoupPerMonth:am.recoup,
+      /* JSON.stringify(Infinity) ra null, nên đừng để nó lặng lẽ thành null
+         và bị đọc lại thành 0. Gửi null CÓ CHỦ Ý kèm một cờ đọc được. */
+      monthsToRecoup: isFinite(am.months) ? am.months : null,
+      neverRecoups: !isFinite(am.months),
+      /* Bên cấp quyền quyết định thu hồi lấy được từ đâu (xem advModel).
+         Thiếu hai trường này thì chỉ CRM biết, còn portal dựng lại ra số khác. */
+      rightsHolder: am.ben, labelArtistRate: am.lrate,
       totalIncome:am.total, roi:am.roi, roiAnnual:am.roiY, roiAfterCosts:am.roiNet,
       triggerRatePct:advNum('ac_rate'), capPct:advNum('ac_cap'),
       cap:am.avg*12*(1+advNum('ac_cap')/100),
@@ -7640,6 +8715,31 @@ function saveOppForm(again){
     ext.finInput = finFromForm();
   } catch(e){ ext.advCalcResult = null; ext.finInput = null; }
   if(!bk('advanceDeal')){ ext.advCalcResult = null; ext.finInput = null; }
+
+  /* MỘT KHOẢN TIỀN, MỘT CON SỐ — HOÀ GIẢI TRƯỚC KHI GHI.
+     Ba khoản tạm ứng có HAI ô nhập trên cùng biểu mẫu: ô của phần Tài chính
+     (of_advance / of_mktBudget / of_prodFund, đều là ô BẮT BUỘC) và ô của
+     bộ tính advance (ac_adv / ac_mkt / ac_prod). Bấm "áp dụng" trong bộ tính
+     thì hai bên khớp; gõ thẳng vào ô biểu mẫu thì không.
+     Đo được trong một vòng chạy thật: gõ quỹ sản xuất 75.000.000 ₫ vào ô
+     biểu mẫu thì ext.prodFund = 2.941,18 USD, nhưng advCalcResult
+     .productionFund = 0 — và gói gửi portal lấy từ vế sau, nên
+     productionFundUSD = 0. Đúng cái rò vừa bịt ở vòng trước, đi vào bằng
+     một cửa khác.
+     Luật: Ô BIỂU MẪU LÀ ĐIỀU KHOẢN, bộ tính chỉ là công cụ thử. Nên ô biểu
+     mẫu thắng, và con số ấy được ghi ngược vào advCalcResult để mọi nơi đọc
+     xuống dưới — hợp đồng, gói bàn giao, mô hình tài chính — đều thấy đúng
+     một số. Hoà giải ở ĐÂY, một lần, thay vì bắt từng nơi đọc tự chọn giữa
+     hai nguồn rồi mỗi nơi chọn một kiểu. */
+  if(ext.advCalcResult){
+    const hoaGiai = [['advance','initialAdvance'], ['mktBudget','marketingFund'],
+                     ['prodFund','productionFund']];
+    hoaGiai.forEach(function(c){
+      const oBieuMau = ext[c[0]];
+      if(typeof oBieuMau === 'number' && isFinite(oBieuMau))
+        ext.advCalcResult[c[1]] = oBieuMau;
+    });
+  }
 
   let acct = DB.accounts.find(a=>a.name === v('account'));
   if(!acct){
@@ -7975,17 +9075,23 @@ function advToggle(){
 }
 /* Thu nhập tháng = YouTube + Audio; net = (tháng + bản mới) × tỷ lệ ròng */
 function dealCalc(){
-  const g = id => { const e=document.getElementById('of_'+id); const v=parseFloat(e?e.value:0); return isNaN(v)?0:v; };
+  /* ĐỌC bằng docSoTien và GHI bằng soRaO — cùng một cặp.
+     Bản trước đọc bằng parseFloat: khi ô tiền hiện số có phân nhóm thì
+     parseFloat("459.000.000") ra 459, nên mọi ô tự tính bên dưới (Thu nhập
+     hàng tháng, Thu nhập ròng, và ô doanh thu của bộ tính advance) đều sai
+     đúng cái tỷ lệ ấy — mà không ô nào báo gì. */
+  const g = id => { const e=document.getElementById('of_'+id);
+                    const v=docSoTien(e?e.value:''); return (v===null||!isFinite(v))?0:v; };
   /* Trước đây chỉ cộng YouTube với Audio, nên publishing, sync, quyền liên quan
      và UGC không vào giá trị deal lẫn mô hình — mất trắng phần doanh thu đó. */
   const monthly = FIN_STREAMS.reduce((a,st)=>a + g(st.inc), 0);
   const mi = document.getElementById('of_monthlyIncome');
-  if(mi) mi.value = Math.round(monthly*100)/100;
-  const net = (monthly + g('newRelIncome')) * (g('netPct')/100);
+  if(mi) mi.value = soRaO(Math.round(monthly*100)/100);
+  const net = (monthly + g('newRelIncome')) * (advNum('of_netPct')/100);
   const ni = document.getElementById('of_netIncome');
-  if(ni) ni.value = Math.round(net*100)/100;
+  if(ni) ni.value = soRaO(Math.round(net*100)/100);
   const avg = document.getElementById('ac_avg');
-  if(avg){ avg.value = Math.round(monthly*100)/100; advCalc(); }
+  if(avg){ avg.value = soRaO(Math.round(monthly*100)/100); advCalc(); }
 }
 function chkOn(id){ const e=document.getElementById(id); return !!e && e.getAttribute('data-on')==='1'; }
 
@@ -8255,8 +9361,10 @@ function createNew(kind){
       email:val('n_email'),phone:val('n_phone'),status:'new',source:val('n_source'),owner:'Ethan Nguyen',created:TODAY});
     state.view='leads'; state.leadFilter='all';
   } else if(kind==='opp'){
+    const rNhanh = tienVao(val('n_amount'));
+    if(!rNhanh.ok){ toast(rNhanh.msg); return; }
     const o={id:'o'+(++uid),name,accountId:val('n_acc'),stage:val('n_stage'),
-      amount:Math.round((parseFloat(val('n_amount')||0))/(cur==='VND'?FX:1)),closeDate:new Date(TODAY.getFullYear(),TODAY.getMonth()+2,0),
+      amount:rNhanh.usd,closeDate:new Date(TODAY.getFullYear(),TODAY.getMonth()+2,0),
       owner:'Ethan Nguyen',rights:{dist:true,pub:false,yt:false},created:TODAY,lastAct:TODAY};
     DB.opps.unshift(o); state.view='opps'; state.oppFilter='all';
   } else if(kind==='account'){

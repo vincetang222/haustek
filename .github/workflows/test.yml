@@ -2,19 +2,18 @@
 # Cổng kiểm thử cho cả hai app.
 #
 # VÌ SAO CÓ FILE NÀY
-# CRM và portal nói chuyện với nhau qua một hợp đồng dữ liệu (portal/SYNC.md).
-# Hợp đồng đó hiện chỉ được giữ bằng việc ai đó NHỚ chạy lệnh trước khi merge.
-# Hai đội làm song song thì trí nhớ là thứ hỏng đầu tiên: một bên đổi hình dạng
-# một trường, bên kia không hay, và không gì báo cho tới lúc người vận hành mở
-# màn hình Bàn giao ra thấy trống.
-#
-# Cổng này biến hợp đồng đó thành thứ máy kiểm được.
+# CRM và portal nói chuyện với nhau qua một hợp đồng dữ liệu. Hợp đồng đó
+# nếu chỉ giữ bằng việc ai đó NHỚ chạy lệnh trước khi merge thì hỏng sớm:
+# hai đội làm song song, một bên đổi hình dạng một trường, bên kia không
+# hay, và không gì báo cho tới lúc người vận hành mở màn hình Bàn giao ra
+# thấy trống. Cổng này biến hợp đồng đó thành thứ máy kiểm được.
 #
 # CHẠY ĐƯỢC TRÊN MỌI NHÁNH, KỂ CẢ NHÁNH CHỈ CÓ MỘT NỬA
-# Mỗi bước tự tìm file test có mặt rồi mới chạy. Nhánh chỉ có crm/ thì bỏ qua
-# phần portal và ngược lại; không nhánh nào đỏ chỉ vì thiếu nửa kia. Riêng
-# crm/test/handoff-e2e.mjs tự BỎ QUA (thoát 0) khi thiếu một nửa — nó chỉ thực
-# sự chạy trên nhánh hoặc trên main có đủ cả hai.
+# Không job nào gõ cứng tên file. .github/scripts/kiem.sh tự đọc thư mục
+# test và suy ra loại từng bộ, nên nhánh chỉ có crm/ bỏ qua phần portal và
+# ngược lại, còn nhánh dựng lại portal thành v2 thì bộ mới tự được chạy.
+# Lý do đầy đủ nằm trong đầu file kiem.sh — tóm lại: danh sách gõ cứng ở
+# bản trước đã khiến nhánh v2 chạy 0/41 bộ mà vẫn xanh.
 # =====================================================================
 name: Kiểm thử
 
@@ -23,8 +22,8 @@ on:
   push:
     branches: [main]
 
-# Đẩy liên tiếp lên cùng một PR thì huỷ lượt chạy cũ: không ai cần kết quả của
-# commit đã bị thay thế, và runner thì có hạn.
+# Đẩy liên tiếp lên cùng một PR thì huỷ lượt chạy cũ: không ai cần kết quả
+# của commit đã bị thay thế, và runner thì có hạn.
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -32,8 +31,9 @@ concurrency:
 jobs:
   ranh-gioi:
     # Cổng RẺ NHẤT và là thứ phải xanh trước mọi thứ khác. Không cần trình
-    # duyệt, chạy thẳng trên lõi, xong trong vài giây. Nó chứng minh nghệ sĩ A
-    # không truy vấn được dữ liệu nghệ sĩ B — mốc số 2 trong tài liệu bàn giao.
+    # duyệt, chạy thẳng trên lõi, xong trong vài giây. Nó chứng minh nghệ sĩ
+    # A không truy vấn được dữ liệu nghệ sĩ B — mốc số 2 trong tài liệu bàn
+    # giao. Vì thế nó đứng riêng chứ không nằm chung nhóm node bên dưới.
     name: Ranh giới quyền
     runs-on: ubuntu-latest
     timeout-minutes: 5
@@ -50,10 +50,27 @@ jobs:
             echo "Nhánh này không có portal/test/api-guard.js — bỏ qua."
           fi
 
+  nhanh:
+    # Nhóm chạy thẳng bằng node: lược đồ, di trú, ma trận quyền, bất biến
+    # tiền, mã định danh, i18n… Trên nhánh v2 là 17 bộ.
+    #
+    # Tách khỏi job trình duyệt vì cài Playwright mất khoảng ba phút. Một
+    # lỗi lược đồ mà phải chờ ba phút cài trình duyệt mới thấy là ba phút
+    # mua bằng không gì cả.
+    name: Kiểm thử không cần trình duyệt
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+      - run: bash .github/scripts/kiem.sh node
+
   trinh-duyet:
     name: Kiểm thử trình duyệt
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 40
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-node@v5
@@ -69,17 +86,21 @@ jobs:
           npm i -D playwright@1 --no-audit --no-fund
           npx playwright install --with-deps chromium
 
-      # smoke/flow/edge của portal cần một máy chủ tĩnh sẵn có ở BASE. Hai bộ
-      # upgrade và handoff-e2e tự dựng máy chủ riêng nên không đụng tới cái này.
+      # Bộ kiểm trình duyệt của portal cần một máy chủ tĩnh sẵn có ở BASE.
+      # Trang cổng nằm ở portal/intranet.html (bản v1) hay portal/v2/
+      # intranet.html (bản v2) tuỳ nhánh, nên ĐỪNG dò đúng một đường dẫn:
+      # bản trước gác bước này bằng hashFiles('portal/intranet.html'), và
+      # trên nhánh v2 máy chủ không bao giờ lên.
       - name: Dựng máy chủ tĩnh cho portal
-        if: hashFiles('portal/intranet.html') != ''
+        if: hashFiles('portal/**/*.html') != ''
         run: |
           cat > /tmp/srv.cjs <<'JS'
           const http = require("http"), fs = require("fs"), path = require("path");
           const ROOT = path.resolve("portal");
           const T = { ".html":"text/html", ".js":"text/javascript", ".css":"text/css",
                       ".json":"application/json", ".png":"image/png", ".svg":"image/svg+xml",
-                      ".webp":"image/webp", ".jpg":"image/jpeg", ".ico":"image/x-icon" };
+                      ".webp":"image/webp", ".jpg":"image/jpeg", ".ico":"image/x-icon",
+                      ".woff2":"font/woff2", ".woff":"font/woff" };
           http.createServer((q, s) => {
             let u = decodeURIComponent(q.url.split("?")[0]);
             if (u.endsWith("/")) u += "index.html";
@@ -97,93 +118,21 @@ jobs:
           # bước mở thì runner có thể treo ở đó chờ hết giờ.
           node /tmp/srv.cjs > /tmp/srv.log 2>&1 &
           # Đợi cho tới khi nó thực sự trả lời, đừng ngủ một khoảng đoán mò:
-          # runner chậm thì sleep 2 là đủ đỏ một cách ngẫu nhiên.
+          # runner chậm thì sleep 2 là đủ đỏ một cách ngẫu nhiên. Nhận bất kỳ
+          # trang cổng nào có mặt — v2 trước, v1 sau, cuối cùng là trang chủ.
           for i in $(seq 1 30); do
-            curl -sf -o /dev/null http://127.0.0.1:8099/intranet.html && exit 0
+            for u in v2/intranet.html intranet.html index.html; do
+              if curl -sf -o /dev/null "http://127.0.0.1:8099/$u"; then
+                echo "máy chủ tĩnh trả lời ở /$u"; exit 0
+              fi
+            done
             sleep 1
           done
           echo "Máy chủ tĩnh không lên sau 30 giây" >&2
+          cat /tmp/srv.log >&2
           exit 1
 
-      - name: CRM
-        run: |
-          # Mỗi bộ test một trần thời gian riêng. Không có trần thì một bộ treo
-          # nuốt trọn timeout-minutes của cả job, và log chỉ còn 25 phút im
-          # lặng — không nói được bộ nào treo. Có trần thì hỏng nhanh và chỉ
-          # đúng mặt thủ phạm.
-          #
-          # 300s là gấp ~3 lần bộ chậm nhất đo được (portal/test/smoke.js: 54s
-          # trên máy 4 nhân), đủ rộng cho runner chậm mà vẫn bắt được treo thật.
-          # --kill-after cho Playwright 30s để đóng trình duyệt tử tế trước khi
-          # bị KILL; KILL thẳng thì Chromium thành tiến trình mồ côi.
-          #
-          # Chạy HẾT rồi mới báo hỏng, không dừng ở bộ đầu tiên: một lượt chạy
-          # cho biết cả ba chỗ hỏng vẫn hơn ba lượt mỗi lượt một chỗ.
-          FAILS=0
-          chay() {
-            local f="$1" rc=0
-            timeout --kill-after=30 300 node "$f" || rc=$?
-            [ $rc -eq 0 ] && return 0
-            if [ $rc -eq 124 ] || [ $rc -eq 137 ]; then
-              echo "::error file=$f::$f TREO — bị cắt sau 300 giây"
-            else
-              echo "::error file=$f::$f hỏng, mã thoát $rc"
-            fi
-            FAILS=$((FAILS + 1))
-            return 0
-          }
-          shopt -s nullglob
-          files=(crm/test/*.mjs)
-          if [ ${#files[@]} -eq 0 ]; then
-            echo "Nhánh này không có crm/test — bỏ qua."
-            exit 0
-          fi
-          for f in "${files[@]}"; do
-            echo "::group::$f"
-            chay "$f"
-            echo "::endgroup::"
-          done
-          [ $FAILS -eq 0 ] || { echo "$FAILS bộ test CRM hỏng"; exit 1; }
-
-      - name: Portal
+      - name: Bộ kiểm cần trình duyệt
         env:
           BASE: http://127.0.0.1:8099
-        run: |
-          # Mỗi bộ test một trần thời gian riêng. Không có trần thì một bộ treo
-          # nuốt trọn timeout-minutes của cả job, và log chỉ còn 25 phút im
-          # lặng — không nói được bộ nào treo. Có trần thì hỏng nhanh và chỉ
-          # đúng mặt thủ phạm.
-          #
-          # 300s là gấp ~3 lần bộ chậm nhất đo được (portal/test/smoke.js: 54s
-          # trên máy 4 nhân), đủ rộng cho runner chậm mà vẫn bắt được treo thật.
-          # --kill-after cho Playwright 30s để đóng trình duyệt tử tế trước khi
-          # bị KILL; KILL thẳng thì Chromium thành tiến trình mồ côi.
-          #
-          # Chạy HẾT rồi mới báo hỏng, không dừng ở bộ đầu tiên: một lượt chạy
-          # cho biết cả ba chỗ hỏng vẫn hơn ba lượt mỗi lượt một chỗ.
-          FAILS=0
-          chay() {
-            local f="$1" rc=0
-            timeout --kill-after=30 300 node "$f" || rc=$?
-            [ $rc -eq 0 ] && return 0
-            if [ $rc -eq 124 ] || [ $rc -eq 137 ]; then
-              echo "::error file=$f::$f TREO — bị cắt sau 300 giây"
-            else
-              echo "::error file=$f::$f hỏng, mã thoát $rc"
-            fi
-            FAILS=$((FAILS + 1))
-            return 0
-          }
-          shopt -s nullglob
-          # api-guard đã chạy ở job kia rồi, không chạy lại.
-          files=(portal/test/upgrade.mjs portal/test/smoke.js portal/test/flow.js portal/test/edge.js)
-          ran=0
-          for f in "${files[@]}"; do
-            [ -f "$f" ] || continue
-            echo "::group::$f"
-            chay "$f"
-            echo "::endgroup::"
-            ran=1
-          done
-          [ $ran -eq 1 ] || echo "Nhánh này không có bộ kiểm thử trình duyệt của portal — bỏ qua."
-          [ $FAILS -eq 0 ] || { echo "$FAILS bộ test portal hỏng"; exit 1; }
+        run: bash .github/scripts/kiem.sh trinh-duyet
