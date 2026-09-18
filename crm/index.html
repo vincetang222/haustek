@@ -1592,7 +1592,7 @@ vi:{
   thrTitle:'Ngưỡng bỏ qua sếp vùng', thrHint:'Deal dưới mức này chỉ cần sếp country duyệt rồi trình thẳng portal. Ngưỡng là chính sách tính bằng USD; gõ vào bằng đơn vị nào cũng được, hệ quy về đô để lưu.',
   ctrChot:'chốt theo tỷ giá {r}',
   fxTitle:'Tỷ giá quy đổi',
-  fxHint:'Số đồng cho một đơn vị ngoại tệ, đúng như bảng niêm yết Vietcombank. Tỷ giá USD↔EUR suy ra từ hai số này, không nhập riêng.\n\nSỔ GHI BẰNG ĐÔ LA. Mọi con số tiền đều lưu bằng USD, và đổi tỷ giá là đổi cách HIỆN chúng chứ không đổi giá trị nào. Đồng chỉ CHỐT thành một con số cố định ở ba chỗ: hợp đồng đã ký, lúc chuyển tiền cho khách, và lúc thu tiền từ nền tảng về — ba chỗ ấy ghi kèm tỷ giá lúc chốt và không trôi theo tỷ giá sau đó.',
+  fxHint:'Số đồng cho một đơn vị ngoại tệ, đúng như bảng niêm yết Vietcombank. Tỷ giá USD↔EUR suy ra từ hai số này, không nhập riêng.\n\nSỔ GHI BẰNG ĐÔ LA. Mọi con số tiền đều lưu bằng USD, và đổi tỷ giá là đổi cách HIỆN chúng chứ không đổi giá trị nào. Đồng chỉ CHỐT thành một con số cố định ở ba chỗ: hợp đồng đã ký, lúc chuyển tiền cho khách, và lúc thu tiền từ nền tảng về — ba chỗ ấy ghi kèm tỷ giá lúc chốt và không trôi theo tỷ giá sau đó.\n\nTỷ giá ở đây dùng để BÁO GIÁ. Tỷ giá RÀNG BUỘC lúc chi trả là tỷ giá Portal chốt cho từng kỳ (tỷ giá bán ra Vietcombank ngày cuối tháng của kỳ ấy, khoá lại không đổi). Giữ con số ở đây khớp với Portal, đừng để hai app báo hai tỷ giá.',
   fxPerUsd:'1 USD', fxPerEur:'1 EUR',
   fxNotePh:'Nguồn / lý do (ví dụ: bảng VCB ngày 17/09)',
   fxBad:'Tỷ giá phải là số đồng cho một đơn vị ngoại tệ, trong khoảng 1.000 – 1.000.000.',
@@ -1940,7 +1940,7 @@ en:{
   thrTitle:'Regional-step threshold', thrHint:'Deals below this only need the country head, then go straight to the portal. The threshold is a USD policy; type it in any currency and it is converted to dollars for storage.',
   ctrChot:'fixed at rate {r}',
   fxTitle:'Exchange rates',
-  fxHint:'Dong per one unit of foreign currency, exactly as Vietcombank posts them. The USD↔EUR rate is derived from these two, never entered separately.\n\nTHE BOOK IS KEPT IN DOLLARS. Every money figure is stored in USD, and changing a rate changes how they are SHOWN, never any stored value. Dong is fixed to a hard number in exactly three places: a signed contract, a payment out to a client, and a collection in from a platform — each records the rate it was fixed at and does not drift afterwards.',
+  fxHint:'Dong per one unit of foreign currency, exactly as Vietcombank posts them. The USD↔EUR rate is derived from these two, never entered separately.\n\nTHE BOOK IS KEPT IN DOLLARS. Every money figure is stored in USD, and changing a rate changes how they are SHOWN, never any stored value. Dong is fixed to a hard number in exactly three places: a signed contract, a payment out to a client, and a collection in from a platform — each records the rate it was fixed at and does not drift afterwards.\n\nThe rate here is for QUOTING. The BINDING rate at payout is the one the Portal locks per period (Vietcombank selling rate on the last day of that period\u2019s month, frozen thereafter). Keep this figure in step with the Portal; two apps posting two rates is two answers to the same question.',
   fxPerUsd:'1 USD', fxPerEur:'1 EUR',
   fxNotePh:'Source / reason (e.g. VCB board, 17 Sep)',
   fxBad:'A rate is dong per one unit of foreign currency, between 1,000 and 1,000,000.',
@@ -2201,7 +2201,12 @@ let cur = 'USD';
    CRM đã tự nhận mình làm việc ở vùng euro từ lâu mà chỉ nói được hai thứ
    tiền. Người ký deal ở Berlin phải tự nhẩm ra đô la trước khi gõ. */
 const CURRENCIES = ['USD','VND','EUR'];
-var VCB = {VND:25500, EUR:27720};   /* đồng cho 1 USD · đồng cho 1 EUR */
+/* Mặc định khớp tỷ giá portal đang giữ (state.fx.rate = 26.150) chứ không
+   phải một con số riêng. Đo được lúc chưa khớp: CRM 25.500 so với portal
+   26.150 — lệch 2,55%, tức 32,5 triệu ₫ trên một khoản ứng 50.000 USD. Một
+   công ty mà hai app báo hai tỷ giá thì mọi con số đồng đưa cho khách đều
+   tuỳ vào việc họ đang nhìn màn hình nào. */
+var VCB = {VND:26150, EUR:28430};   /* đồng cho 1 USD · đồng cho 1 EUR */
 /* TỶ GIÁ GHIM. Khi khác null, mọi phép quy đổi trong lượt ấy dùng tỷ giá
    này thay vì tỷ giá hiện hành. Dùng cho văn bản đã chốt với bên kia: một
    hợp đồng đã ký phải in ra đúng con số đã ký.

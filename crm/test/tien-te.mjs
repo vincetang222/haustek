@@ -129,17 +129,23 @@ try {
     const el = id => document.getElementById(id);
     if (!el("fxVnd")) return { loi: "không thấy ô tỷ giá trên màn Phân quyền" };
     const truoc = VCB.VND, nDangKy = FX_LOG.length, nAudit = DB.audit.length;
-    el("fxVnd").value = "26100";                /* +2,35% — dưới ngưỡng hỏi lại */
+    /* Tỷ giá MỚI suy từ tỷ giá đang chạy (+2%), không đóng cứng một con số:
+       mặc định của ứng dụng đổi theo bảng Vietcombank, và một số đóng cứng
+       trong bài kiểm sẽ đỏ mỗi lần mặc định ấy đổi — đỏ vì lý do chẳng
+       liên quan gì tới chuyện đang kiểm. */
+    const moiVnd = Math.round(truoc * 1.02);    /* dưới ngưỡng 5% nên không hỏi lại */
+    el("fxVnd").value = String(moiVnd);
     el("fxNote").value = "bảng VCB thử";
     setFX();
-    return { truoc, sau: VCB.VND, themLog: FX_LOG.length - nDangKy,
+    return { truoc, moiVnd, sau: VCB.VND, themLog: FX_LOG.length - nDangKy,
              themAudit: DB.audit.length - nAudit,
              dong: FX_LOG[0] ? { cur: FX_LOG[0].cur, cu: FX_LOG[0].cu, moi: FX_LOG[0].moi,
                                  by: FX_LOG[0].by, note: FX_LOG[0].note } : null };
   });
-  F("đổi được tỷ giá từ trong ứng dụng", !doi.loi && doi.sau === 26100, JSON.stringify(doi));
+  F("đổi được tỷ giá từ trong ứng dụng",
+    !doi.loi && doi.sau === doi.moiVnd && doi.sau !== doi.truoc, JSON.stringify(doi));
   F("mỗi lần đổi ghi một dòng lịch sử kèm người và nguồn",
-    doi.themLog === 1 && doi.dong && doi.dong.cu === 25500 && doi.dong.moi === 26100
+    doi.themLog === 1 && doi.dong && doi.dong.cu === doi.truoc && doi.dong.moi === doi.moiVnd
       && !!doi.dong.by && doi.dong.note === "bảng VCB thử", JSON.stringify(doi.dong));
   F("và ghi cả vào nhật ký kiểm toán", doi.themAudit >= 1, "thêm " + doi.themAudit + " dòng");
 
@@ -148,9 +154,10 @@ try {
     const o = DB.opps.find(x => typeof x.amount === "number" && x.amount > 0);
     const usdTruoc = o.amount;
     const cu = cur; cur = "VND"; const vndTruoc = fx(o.amount);
-    VCB.VND = 30000;                            /* giả lập đồng mất giá */
+    const moiVnd = VCB.VND;                     /* tỷ giá đang chạy, vừa đổi ở trên */
+    VCB.VND = Math.round(moiVnd * 1.15);        /* giả lập đồng mất giá */
     const vndSau = fx(o.amount), usdSau = o.amount;
-    VCB.VND = 26100; cur = cu;
+    VCB.VND = moiVnd; cur = cu;
     return { usdTruoc, usdSau, vndTruoc, vndSau };
   });
   F("đổi tỷ giá KHÔNG đụng vào con số đã lưu (USD đứng yên)",
@@ -168,12 +175,13 @@ try {
 
   const vong = await p.evaluate(() => {
     const s = JSON.parse(JSON.stringify(snapshot()));
+    const mong = VCB.VND;                       /* giá trị đang có, phải trở lại đúng nó */
     VCB.VND = 25500; FX_LOG = [];               /* xoá sạch rồi nạp lại */
     applySnapshot(s);
-    return { vnd: VCB.VND, nLog: FX_LOG.length, ngayLaDate: FX_LOG[0] && FX_LOG[0].date instanceof Date };
+    return { vnd: VCB.VND, mong, nLog: FX_LOG.length, ngayLaDate: FX_LOG[0] && FX_LOG[0].date instanceof Date };
   });
   F("nạp lại bản lưu thì tỷ giá trở về đúng giá trị đã đổi",
-    vong.vnd === 26100, String(vong.vnd));
+    vong.vnd === vong.mong, vong.vnd + " ≠ " + vong.mong);
   F("và lịch sử trở lại với ngày là Date, không phải chuỗi",
     vong.nLog > 0 && vong.ngayLaDate === true, "n=" + vong.nLog + " date=" + vong.ngayLaDate);
 
