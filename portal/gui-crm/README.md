@@ -21,7 +21,8 @@ cd portal && node test/thuong-vu.js      # 63 đạt
 
 | File | Của ai | Nội dung |
 |---|---|---|
-| `HOP-DONG-DU-LIEU-1-1.md` | Portal | sáu đề nghị để hai hệ đi cùng nhịp |
+| `HOP-DONG-DU-LIEU-1-2.md` | Portal | **bản đang dùng** · gói vào cắt còn 23 khoá, gói ra 1.2.0 báo cả ba trạng thái |
+| `HOP-DONG-DU-LIEU-1-1.md` | Portal | *(đã thay bằng 1.2)* sáu đề nghị để hai hệ đi cùng nhịp |
 | `NOTE-GUI-CRM.md` | Portal | bản chất bốn lỗi, hai luật kiểm thử, thương hiệu chung |
 | `QUY-TRINH-KY-HOP-DONG.md` | Portal | tư vấn quy trình ký điện tử, và một lỗ trong chuỗi tiền |
 | `TAM-UNG-VA-VIEC-CAN-CRM.md` | Portal | phí tạm ứng là gì (đo thật), và toàn bộ việc CRM cần đáp ứng |
@@ -38,16 +39,18 @@ cd portal && node test/thuong-vu.js      # 63 đạt
 | Chế độ tối | **không** kéo theo phép ghim `tương phản(--card, --head) ≥ 3:1`. Thẻ tối đã sát sàn, đen tuyền cũng chỉ được 1,35:1 — ghim 3:1 chỉ cho chế độ sáng | 32 |
 | Trục xám H240 | **có đổi**, nhưng để **một lượt riêng** trên cây đã xanh. Gộp hai thay đổi màu vào một lượt thì hỏng không biết tại cái nào | 32 |
 | `--card` / `--muted` | thắng `--paper` / `--faint`. Đổi tên, không đổi một pixel nào | 31 |
-| Phí tạm ứng deal CRM | giữ `ADVANCE_FEE` của Portal cho tới khi có chỉ đạo khác, xem `QUY-TRINH-KY-HOP-DONG.md` mục 7 | 32 |
+| Phí tạm ứng | **BỎ HẲN.** Ứng bao nhiêu thu hồi đúng bấy nhiêu. Lợi nhuận Haustek đến từ phí dịch vụ theo hợp đồng, không từ một khoản thu của đối tác. Hằng số xoá hẳn khỏi lõi, không giữ tham số mặc định 0 | 35 |
+| Cửa cảnh báo tạm ứng | đo bằng **số tháng thu hồi**, không bằng ROI. Bỏ phí thì `roi = retained/amount` và `amount` triệt tiêu: đo trên L:38, ứng 0,25× đến 1,25× trần đều ra 0,489 | 35 |
+| Gói CRM → Portal | cắt tám trường không đổi được quyết định nào; khoá lạ **mang số** bị chặn ở cửa trình, mang chuỗi hoặc boolean thì cho qua | 35 |
+| Đóng băng sau khi trình | chỉ đóng băng **điều khoản**, không đóng băng nhãn. Trước đây mọi trường đều đóng băng, nên một khác biệt ngoài `terms` sinh ra dòng chênh lệch có cột trước trùng khít cột sau | 35 |
 
 ## Còn chờ quyết
 
 1. `feeOf` đọc `signedAt` hay `approvedAt` — **chặn cả luồng ký điện tử**.
 2. Phí mới chạy từ kỳ ký, kỳ duyệt, hay kỳ thoả thuận (hiện hồi tố 3 tháng,
-   không ai từng quyết).
-3. **Phí tạm ứng 12% hay 0%** — Haustek kiếm tiền bằng 30% hợp đồng, thì
-   khoản ứng có tính phí nữa không? Ảnh hưởng thẳng tới con số hoà vốn A&R
-   hứa với đối tác. Xem `TAM-UNG-VA-VIEC-CAN-CRM.md` mục 1.
+   không ai từng quyết). Hộp xác nhận trình đang in "từ kỳ mở tiếp theo";
+   câu ấy chỉ đúng khi quyết định số 2 chốt theo hướng ấy.
+3. ~~Phí tạm ứng 12% hay 0%~~ — **đã chốt vòng 35: bỏ hẳn.**
 
 ## Lệ chung rút ra, cả hai đội cùng giữ
 
