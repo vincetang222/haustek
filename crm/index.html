@@ -1590,6 +1590,7 @@ vi:{
   sendBack:'Trả lại', role_country:'Giám đốc quốc gia', role_region:'Giám đốc khu vực',
   pApproveCountry:'Duyệt cấp country', pApproveRegion:'Duyệt cấp vùng',
   thrTitle:'Ngưỡng bỏ qua sếp vùng', thrHint:'Deal dưới mức này chỉ cần sếp country duyệt rồi trình thẳng portal.',
+  thrTroi:'Đặt là {luc} ngày {ngay}. Ở tỷ giá hôm nay cùng con số ấy là {nay} ({p}%) — ngưỡng tính bằng USD không đổi, nhưng ý định tính bằng đơn vị lúc đặt thì đã lệch.',
   fxTitle:'Tỷ giá quy đổi',
   fxHint:'Số đồng cho một đơn vị ngoại tệ, đúng như bảng niêm yết Vietcombank. Tỷ giá USD↔EUR suy ra từ hai số này, không nhập riêng. Mọi con số tiền trong hệ đều lưu bằng USD; đổi tỷ giá là đổi cách HIỆN chúng, không đổi giá trị đã ký.',
   fxPerUsd:'1 USD', fxPerEur:'1 EUR',
@@ -1827,6 +1828,7 @@ vi:{
   snapResetAsk:'Đặt lại toàn bộ? Mọi thay đổi đã làm sẽ mất, dữ liệu mẫu sinh lại y hệt.',
   snapLoaded:'Đã nạp snapshot', snapSaved:'Đã tải snapshot về máy',
   snapFrom:'thay cho sổ đang có ({n} cơ hội)',
+  snapChiTai:'Bạn tải được bản lưu của mình về máy. Nạp một bản lưu là thay toàn bộ sổ — kể cả tỷ giá, ngưỡng duyệt và phân quyền — nên việc ấy dành cho Manager.',
   snapBadVer:'Snapshot không đúng phiên bản ',
 },
 en:{
@@ -1936,6 +1938,7 @@ en:{
   sendBack:'Send back', role_country:'Country head', role_region:'Regional head',
   pApproveCountry:'Approve at country level', pApproveRegion:'Approve at regional level',
   thrTitle:'Regional-step threshold', thrHint:'Deals below this only need the country head, then go straight to the portal.',
+  thrTroi:'Set as {luc} on {ngay}. At today\u2019s rate the same stored figure is {nay} ({p}%) — the USD threshold has not moved, but the intent as set in that currency has.',
   fxTitle:'Exchange rates',
   fxHint:'Dong per one unit of foreign currency, exactly as Vietcombank posts them. The USD↔EUR rate is derived from these two, never entered separately. Every money figure is stored in USD; changing a rate changes how they are SHOWN, not the value anyone signed.',
   fxPerUsd:'1 USD', fxPerEur:'1 EUR',
@@ -2171,6 +2174,7 @@ en:{
   snapResetAsk:'Reset everything? Every change you made is lost; the sample data regenerates identically.',
   snapLoaded:'Snapshot loaded', snapSaved:'Snapshot downloaded',
   snapFrom:'replacing the current book ({n} opportunities)',
+  snapChiTai:'You can download your own snapshot. Loading one replaces the entire book — rates, approval thresholds and permissions included — so that is a Manager action.',
   snapBadVer:'Snapshot is not version ',
 }};
 let lang = 'vi';
@@ -2439,6 +2443,16 @@ const USERS = [
    country duyệt. Sếp country vẫn thấy mọi deal trong vùng mình — chỉ bớt một
    chặng cho deal nhỏ, không bớt người giám sát. Manager sửa được ở tab Phân quyền. */
 var REGION_THRESHOLD = 10000;
+/* NGƯỠNG ĐƯỢC ĐẶT BẰNG ĐƠN VỊ NÀO, Ở TỶ GIÁ NÀO.
+   Ngưỡng lưu bằng USD, và deal cũng lưu bằng USD, nên phép so luôn đúng và
+   việc đổi tỷ giá KHÔNG đổi deal nào phải trình ai. Chỗ trôi nằm ở Ý ĐỊNH:
+   người đặt "dưới 255 triệu ₫" ở tỷ giá 25.500 thì hệ ghi 10.000 USD; tỷ
+   giá lên 26.155 và cùng con số ấy nay là 261,55 triệu ₫. Chính sách tính
+   bằng đồng đã nới ra 2,6% mà không ai quyết định gì.
+   Không tự sửa ý định ấy — đó là việc của người đặt chính sách. Việc của
+   mã là ĐỪNG GIẤU: ghi lại đặt bằng gì, lúc nào, ở tỷ giá nào, rồi nói
+   thẳng khi con số theo đồng đã lệch khỏi lúc đặt. */
+var THR_META = null;   /* {donVi, tyGia, luc} */
 let ME = 'Ethan Nguyen';
 /* Thời gian sử dụng. Trong demo, số liệu 6 ngày trước là dữ liệu mẫu;
    ngày hôm nay được đếm thật từ lúc mở trang. */
@@ -2945,6 +2959,21 @@ function docSoTien(raw){
   const n = Number(dau + (nguyen || '0') + (le ? '.' + le : ''));
   return isFinite(n) ? n : NaN;
 }
+/* SỐ TIỀN VIẾT VÀO MỘT Ô NHẬP — có phân nhóm, không có tên tiền tệ.
+   Ô nhập trước đây nhận số trần: mở một deal 18.000 USD ở chế độ VND thì ô
+   hiện "459000000". Chín chữ số liền nhau, trong khi chính người ấy vừa gõ
+   vào đó "459.000.000". Đọc lại một con số như thế là việc mắt phải tự đếm
+   hàng — và đếm nhầm một hàng là sai mười lần.
+   Phân nhóm theo đúng tập quán của đồng tiền đang hiển thị, và docSoTien()
+   đọc ngược lại được, nên gõ vào rồi lưu ra vẫn đúng một số. Tên tiền tệ
+   thì không viết vào ô: nó đã nằm ở nhãn .curin bên trái rồi. */
+function soRaO(n){                 /* số ĐÃ ở đơn vị hiển thị */
+  const c = CURRENCIES.indexOf(cur)>=0 ? cur : 'USD';
+  const d = CUR_DEC[c];
+  return new Intl.NumberFormat(CUR_LOC[c],
+    {minimumFractionDigits:d, maximumFractionDigits:d}).format(Number(n)||0);
+}
+function soTienRaO(usd){ return soRaO(fx(usd)); }   /* số đang ở USD */
 /* Một ô tiền đơn lẻ: đọc ra USD và nói rõ vì sao nếu không đọc được.
    soatTien() ở dưới lo cho cả một biểu mẫu và tô đỏ ô sai; hàm này lo cho
    những chỗ chỉ có MỘT ô — sửa nhanh trên bảng, ngăn deal, ô mục tiêu, hộp
@@ -2974,6 +3003,8 @@ function soatTien(tienTo){
     const el = els[i];
     if(dsTo && !dsTo.some(x => String(el.id).indexOf(x) === 0)) continue;
     if(el.disabled || el.readOnly) continue;
+    /* Ô đang ẩn thì không soát: không ai sửa được thứ không nhìn thấy. */
+    if(!el.offsetParent && el.getClientRects().length === 0) continue;
     const n = docSoTien(el.value);
     if(n === null) continue;                       /* để trống là chuyện khác */
     if(!isFinite(n))      return {el:el, msg:t('nanErr')};
@@ -3464,7 +3495,7 @@ function snapshot(){
        R&D giữ chúng trong bộ nhớ: tải lại trang là tỷ giá lặng lẽ về mặc
        định còn lịch sử biến mất — với một bản demo thì không sao, với ứng
        dụng có sổ lưu thì đó là một dấu vết kiểm toán giả. */
-    fx: {VND: VCB.VND, EUR: VCB.EUR}, fxLog: FX_LOG,
+    fx: {VND: VCB.VND, EUR: VCB.EUR}, fxLog: FX_LOG, thrMeta: THR_META,
     recentOpps: state.recentOpps, recentLeads: state.recentLeads, views: state.views,
     db: DB
   };
@@ -3505,6 +3536,9 @@ function applySnapshot(s){
   HANDOFF_BIND = (s.handoff && typeof s.handoff==='object') ? s.handoff : {};
   INBOX_SEEN   = (s.inbox   && typeof s.inbox  ==='object') ? s.inbox   : {};
   if(typeof s.thr === 'number' && s.thr >= 0) REGION_THRESHOLD = s.thr;
+  THR_META = (s.thrMeta && typeof s.thrMeta === 'object'
+              && CURRENCIES.indexOf(s.thrMeta.donVi) >= 0 && s.thrMeta.tyGia > 0)
+    ? {donVi: s.thrMeta.donVi, tyGia: s.thrMeta.tyGia, luc: toDate(s.thrMeta.luc)} : null;
   if(Array.isArray(s.recentOpps))  state.recentOpps  = s.recentOpps.slice(0,5);
   if(Array.isArray(s.recentLeads)) state.recentLeads = s.recentLeads.slice(0,5);
   if(s.views && typeof s.views==='object') state.views = s.views;
@@ -5219,7 +5253,7 @@ function cellEdit(o, f, display, isNum){
         STAGES.map(x=>'<option value="'+x.id+'"'+(x.id===o.stage?' selected':'')+'>'+esc(t('st_'+x.id))+'</option>').join('')+
         '</select>';
     if(f==='amount')
-      return '<input class="iedit" type="text" inputmode="decimal" value="'+Math.round(fx(o.amount))+'"'+stop+
+      return '<input class="iedit" type="text" inputmode="decimal" value="'+esc(soTienRaO(o.amount))+'"'+stop+
         ' onblur="inlineSave(\''+o.id+'\',\'amount\',this.value)"'+
         ' onkeypress="if(event.key===\'Enter\')this.blur()">';
     if(f==='close')
@@ -6004,20 +6038,31 @@ function fld(l,v){ return '<div class="fld"><div class="fld-l">'+esc(l)+'</div><
    nhánh 'snapshot', nên panel sẽ bị treo rỗng. */
 function openSnapshot(){
   const ok = store.available();
+  /* NHẬP và ĐẶT LẠI là hành vi quản trị — chúng thay cả sổ, kể cả vai của
+     chính người đang ngồi. TẢI VỀ thì không: xuất dữ liệu của mình ra là
+     việc bình thường.
+     Trước đây ô dán và nút Nạp hiện cho MỌI vai, rồi snapImport lặng lẽ
+     từ chối. Một nút luôn hỏng còn tệ hơn một nút không có: người dùng
+     không biết mình thiếu quyền hay mình dán sai, và thử lại vài lần. Đã
+     khoá ở thân hàm rồi thì đừng bày cái cửa ấy ra nữa. */
+  const quanTri = can('users');
   const body =
     '<div class="fld"><div class="fld-l">'+esc(t('snapState'))+'</div>'+
       '<div class="fld-v">'+esc(ok ? t('snapOn') : t('snapOff'))+'</div></div>'+
-    '<div class="fld" style="margin-top:12px"><div class="fld-l">'+esc(t('snapPaste'))+'</div>'+
-      '<textarea class="in" id="snapIn" rows="7" spellcheck="false" '+
-        'style="min-height:130px;resize:vertical;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11.5px" '+
-        'placeholder=\'{"v":"'+STORE_VERSION+'", …}\'></textarea></div>'+
+    (quanTri
+      ? '<div class="fld" style="margin-top:12px"><div class="fld-l">'+esc(t('snapPaste'))+'</div>'+
+          '<textarea class="in" id="snapIn" rows="7" spellcheck="false" '+
+            'style="min-height:130px;resize:vertical;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11.5px" '+
+            'placeholder=\'{"v":"'+STORE_VERSION+'", …}\'></textarea></div>'
+      : '<div class="unote" style="margin:12px 0 0">'+esc(t('snapChiTai'))+'</div>')+
     '<div style="display:flex;gap:7px;flex-wrap:wrap;margin-top:12px">'+
       '<button class="btn" onclick="snapDownload()">'+esc(t('snapDownload'))+'</button>'+
-      '<button class="btn" onclick="snapReset()">'+esc(t('snapReset'))+'</button></div>';
+      (quanTri ? '<button class="btn" onclick="snapReset()">'+esc(t('snapReset'))+'</button>' : '')+
+    '</div>';
   document.getElementById('overlay').innerHTML =
     shell(t('snapEyebrow'), t('snapTitle'), body,
       '<button class="btn" onclick="closeDrawer()">'+esc(t('cancel'))+'</button>'+
-      '<button class="btn btn-primary" onclick="snapImport()">'+esc(t('snapLoad'))+'</button>');
+      (quanTri ? '<button class="btn btn-primary" onclick="snapImport()">'+esc(t('snapLoad'))+'</button>' : ''));
   setTimeout(()=>{ const e=document.getElementById('snapIn'); if(e) e.focus(); },60);
 }
 function snapDownload(){
@@ -6057,6 +6102,7 @@ function snapImport(){
 /* Giữ nguyên nút TẢI VỀ cho mọi người — xuất dữ liệu của chính mình không
    phải hành vi quản trị. Chỉ khoá đường NHẬP. */
 function snapReset(){
+  if(!can('users')){ toast(t('noPermTitle')); return; }
   if(!confirm(t('snapResetAsk'))) return;
   store.clear();
   location.reload();
@@ -6322,10 +6368,18 @@ function ctrMissing(c, o){
    So giá trị tự điền hiện tại với ảnh chụp lúc soạn. */
 function ctrDrift(c, o){
   if(!c.snap) return [];
-  /* So với CÙNG hệ quy chiếu đã chụp. Không ghim thì đổi thanh tiền tệ là
-     mọi trường tiền đều "trôi", và người soạn thấy một cảnh báo không có
-     thật mỗi lần bấm USD/VND. */
-  const now = ctrFieldVals(o, ctrGhim(c));
+  /* So trong CÙNG hệ quy chiếu, kể cả với bản nháp.
+     ctrGhim() chỉ trả về hệ quy chiếu cho hợp đồng đã chốt, nên với bản
+     NHÁP phép so vẫn chạy theo đồng tiền đang hiển thị. Đo được: một hợp
+     đồng nháp không ai đụng tới báo TRÔI 3 TRƯỜNG chỉ vì người soạn bấm
+     nút VND để xem. Cảnh báo sai kiểu ấy dạy người ta bỏ qua cảnh báo —
+     tốn hơn là không có cảnh báo nào.
+     Bản nháp vẫn phải TÍNH theo tỷ giá mới (pháp chế đang soạn, thấy số
+     mới là đúng ý); chỉ phép SO là phải đứng yên, và nó đứng yên bằng cách
+     dựng lại ảnh chụp trong đúng hệ quy chiếu lúc chụp. */
+  const heQuyChieu = ctrGhim(c)
+    || (c.donVi && c.tyGia > 0 ? {donVi:c.donVi, tyGia:c.tyGia} : null);
+  const now = ctrFieldVals(o, heQuyChieu);
   return Object.keys(c.snap).filter(k=>String(c.snap[k]||'') !== String(now[k]||''));
 }
 
@@ -6735,7 +6789,7 @@ function openDrawer(kind,id){
         '<select class="in" id="f_stage">'+selOpts(STAGES.map(s=>s.id),o.stage,x=>t('st_'+x))+'</select></div>'+
         '<div class="fld"><div class="fld-l">'+esc(t('cAmount'))+'</div>'+
         '<div class="curin" data-cur="'+esc(cur)+'"><input class="in" id="f_amount" type="text" '+
-          'inputmode="decimal" value="'+Math.round(fx(o.amount))+'"></div></div>'+
+          'inputmode="decimal" value="'+esc(soTienRaO(o.amount))+'"></div></div>'+
       '</div>'+
       '<div class="row2">'+
         '<div class="fld"><div class="fld-l">'+esc(t('cClose'))+'</div>'+
@@ -6889,7 +6943,7 @@ function openGoalForm(name){
     '<div class="fld"><div class="fld-l">'+esc(label)+'</div>'+
     (unit==='money'
       ? '<div class="curin" data-cur="'+esc(cur)+'"><input class="in" type="text" inputmode="decimal" id="'+id+'" value="'+
-         Math.round(fx(val))+'" oninput="goalPreview()"></div>'
+         esc(soTienRaO(val))+'" oninput="goalPreview()"></div>'
       : '<input class="in" type="number" id="'+id+'" value="'+val+'" oninput="goalPreview()">')+
     '</div>';
   const body =
@@ -6922,6 +6976,7 @@ function saveThreshold(){
   const rNg = tienVao(e ? e.value : '');
   if(!rNg.ok){ toast(rNg.msg); return; }
   const usd = rNg.usd;
+  THR_META = {donVi: cur, tyGia: rate(cur), luc: new Date()};
   const old = REGION_THRESHOLD;
   /* trước đây im lặng thoát ra: người dùng bấm Lưu và không nhận được gì cả,
      không phân biệt nổi "đã lưu" với "nút hỏng" */
@@ -7048,10 +7103,10 @@ VIEWS.perms = function(){
   const thrCard = '<div class="card" style="margin-bottom:14px">'+
     '<div class="card-h"><span class="card-t">'+esc(t('thrTitle'))+'</span></div>'+
     '<div class="card-b">'+
-      '<div class="unote" style="margin:0 0 10px">'+esc(t('thrHint'))+'</div>'+
+      '<div class="unote" style="margin:0 0 10px">'+esc(t('thrHint'))+thrTroi()+'</div>'+
       '<div class="thrrow">'+
         '<div class="curin" data-cur="'+esc(cur)+'"><input class="in" type="text" inputmode="decimal" id="thrIn" '+
-          'value="'+Math.round(fx(REGION_THRESHOLD))+'"></div>'+
+          'value="'+esc(soTienRaO(REGION_THRESHOLD))+'"></div>'+
         '<button class="btn btn-primary" onclick="saveThreshold()">'+esc(t('save'))+'</button>'+
       '</div></div></div>';
   const fm = x => new Intl.NumberFormat('vi-VN').format(Math.round(x));
@@ -7129,6 +7184,24 @@ function setFX(){
   if(FX_LOG.length > FX_LOG_KEEP) FX_LOG.length = FX_LOG_KEEP;
   toast(t('fxSaved',{r:doi.join(' · ')}));
   saveSoon(); render();
+}
+/* Câu nói thêm dưới ô ngưỡng, chỉ hiện khi con số theo đơn vị lúc đặt đã
+   lệch khỏi lúc đặt. Im lặng khi chưa lệch — một dòng chữ hiện mãi thì
+   người ta thôi đọc nó. */
+function thrTroi(){
+  if(!THR_META || THR_META.donVi === 'USD') return '';
+  const nay = REGION_THRESHOLD * rate(THR_META.donVi);
+  const luc = REGION_THRESHOLD * THR_META.tyGia;
+  if(!isFinite(nay) || !isFinite(luc) || luc <= 0) return '';
+  const pct = (nay - luc) / luc * 100;
+  if(Math.abs(pct) < 0.5) return '';
+  const c = THR_META.donVi, d = CUR_DEC[c];
+  const fm = x => new Intl.NumberFormat(CUR_LOC[c],
+    {minimumFractionDigits:d, maximumFractionDigits:d}).format(x)+' '+c;
+  return '<br><b>'+esc(t('thrTroi',{
+    luc: fm(luc), ngay: THR_META.luc ? fdate(THR_META.luc) : '—',
+    nay: fm(nay), p: (pct>0?'+':'')+pct.toFixed(1)
+  }))+'</b>';
 }
 function setRole(name, role){
   const u = USERS.find(x=>x.name===name); if(!u) return;
@@ -8270,7 +8343,7 @@ function advApply(mult){
      hơn. Thiếu chỗ này là bộ tính đổ số USD vào một ô mà lượt lưu sau đó
      sẽ chia tỷ giá lần nữa. */
   const m = advModel(mult!=null ? advTien('ac_avg')*mult : null);
-  const raO = v => Math.round(fx(v));
+  const raO = v => soTienRaO(v);   /* m.* là USD; ô nhận số theo đơn vị hiển thị, có phân nhóm */
   if(mult!=null){
     const el=document.getElementById('ac_adv');
     if(el) el.value = raO(m.adv);
@@ -8356,7 +8429,16 @@ function saveOppForm(again){
      ai được báo. Cả ba đều đi qua không một lời.
      Chỗ tệ nhất là trường hợp thứ ba: hai cái đầu còn nhìn thấy trên màn
      hình, còn số 0 thì trông y hệt một ô người ta cố ý để trống. */
-  const loi = soatTien(['of_','ac_']);
+  /* Chỉ soát ô của bộ tính advance KHI bộ tính ấy thật sự được dùng.
+     Nó chỉ hiện ra khi tích ô "Deal có advance", và khi không tích thì
+     saveOppForm đặt advCalcResult = null — giá trị trong đó không đi tới
+     đâu cả. Soát nó lúc ấy là chặn lượt lưu vì một con số nằm trong một
+     khối đang ẩn: người dùng nhận một câu báo lỗi, focus() và
+     scrollIntoView() không đưa họ tới đâu, và không có cách nào sửa thứ
+     không nhìn thấy. Đo được: ô ac_adv "BỊ ẨN" mà soatTien vẫn bắt.
+     Chốt chặn chặn đúng chỗ thì là an toàn; chặn chỗ không thấy thì là
+     một ứng dụng hỏng. */
+  const loi = soatTien(chkOn('of_advanceDeal') ? ['of_','ac_'] : ['of_']);
   if(loi){ loi.el.classList.add('err'); loi.el.focus();
            loi.el.scrollIntoView({block:'center'}); toast(loi.msg); return; }
 
@@ -8742,17 +8824,23 @@ function advToggle(){
 }
 /* Thu nhập tháng = YouTube + Audio; net = (tháng + bản mới) × tỷ lệ ròng */
 function dealCalc(){
-  const g = id => { const e=document.getElementById('of_'+id); const v=parseFloat(e?e.value:0); return isNaN(v)?0:v; };
+  /* ĐỌC bằng docSoTien và GHI bằng soRaO — cùng một cặp.
+     Bản trước đọc bằng parseFloat: khi ô tiền hiện số có phân nhóm thì
+     parseFloat("459.000.000") ra 459, nên mọi ô tự tính bên dưới (Thu nhập
+     hàng tháng, Thu nhập ròng, và ô doanh thu của bộ tính advance) đều sai
+     đúng cái tỷ lệ ấy — mà không ô nào báo gì. */
+  const g = id => { const e=document.getElementById('of_'+id);
+                    const v=docSoTien(e?e.value:''); return (v===null||!isFinite(v))?0:v; };
   /* Trước đây chỉ cộng YouTube với Audio, nên publishing, sync, quyền liên quan
      và UGC không vào giá trị deal lẫn mô hình — mất trắng phần doanh thu đó. */
   const monthly = FIN_STREAMS.reduce((a,st)=>a + g(st.inc), 0);
   const mi = document.getElementById('of_monthlyIncome');
-  if(mi) mi.value = Math.round(monthly*100)/100;
-  const net = (monthly + g('newRelIncome')) * (g('netPct')/100);
+  if(mi) mi.value = soRaO(Math.round(monthly*100)/100);
+  const net = (monthly + g('newRelIncome')) * (advNum('of_netPct')/100);
   const ni = document.getElementById('of_netIncome');
-  if(ni) ni.value = Math.round(net*100)/100;
+  if(ni) ni.value = soRaO(Math.round(net*100)/100);
   const avg = document.getElementById('ac_avg');
-  if(avg){ avg.value = Math.round(monthly*100)/100; advCalc(); }
+  if(avg){ avg.value = soRaO(Math.round(monthly*100)/100); advCalc(); }
 }
 function chkOn(id){ const e=document.getElementById(id); return !!e && e.getAttribute('data-on')==='1'; }
 

@@ -76,12 +76,16 @@ try {
       const d = Math.abs(fx(toUSD(v)) - v); if (d > max) max = d;
     }
     cur = cu;
-    return { ra, max, nuaTyGia: 25500 / 2 };
+    return { ra, max, tyGia: VCB.VND, nuaTyGia: VCB.VND / 2 };
   });
-  F("khứ hồi VND lệch không quá 128 ₫ mỗi ô",
-    kh.max <= 128, "lệch lớn nhất đo được " + kh.max.toFixed(2) + " ₫");
-  F("và nhỏ hơn bản cũ (nửa tỷ giá = 12.750 ₫) ít nhất 90 lần",
-    kh.max * 90 <= kh.nuaTyGia, "12750 / " + kh.max.toFixed(2) + " = " + (kh.nuaTyGia / kh.max).toFixed(0) + "×");
+  /* Cận trên là NỬA XU quy ra đồng, tức tỷ_giá/200 — bám theo tỷ giá đang
+     chạy chứ không đóng cứng một con số. */
+  F("khứ hồi VND lệch không quá nửa xu (tỷ giá ÷ 200)",
+    kh.max <= kh.tyGia / 200 + 0.01,
+    "lệch lớn nhất " + kh.max.toFixed(2) + " ₫ · cận " + (kh.tyGia / 200).toFixed(2));
+  F("và nhỏ hơn bản cũ (làm tròn về đô chẵn = nửa tỷ giá) đúng 100 lần",
+    Math.abs(kh.tyGia / 2 / (kh.tyGia / 200) - 100) < 1e-9,
+    (kh.tyGia / 2).toFixed(0) + " ₫ → " + (kh.tyGia / 200).toFixed(2) + " ₫");
   F("gõ 1.000.000 ₫ không còn ra 994.500 ₫",
     Math.abs(kh.ra[0].lai - 1000000) < 200, kh.ra[0].lai + " ₫");
 
@@ -472,10 +476,94 @@ try {
   F("nhưng bảng danh sách vẫn dùng '—' cho ô trống — hai chỗ, hai ý nghĩa",
     z.danhSach === "\u2014", z.danhSach);
 
+  /* ---------- 15. QUY TRÌNH: SỐ DỄ ĐỌC, CHẶN ĐÚNG CHỖ, KHÔNG BÁO SUÔNG ----------
+     Ba thứ làm một ứng dụng tiền tệ thành ra loạn: số dài không phân nhóm,
+     chốt chặn chặn cái người dùng không nhìn thấy, và cảnh báo sai. */
+  const nhom = await p.evaluate(() => {
+    const cu = cur; setCur("VND");
+    const o = DB.opps.find(x => x.amount > 1000);
+    openDrawer("opp", o.id);
+    const e = document.getElementById("f_amount");
+    const ra = { usd: o.amount, oHien: e ? e.value : null,
+                 docLai: docSoTien(e ? e.value : ""), tyGia: rate("VND") };
+    closeDrawer(); setCur(cu);
+    return ra;
+  });
+  F("ô tiền hiện số CÓ PHÂN NHÓM, không phải chuỗi chín chữ số liền",
+    /\./.test(nhom.oHien || ""), String(nhom.oHien));
+  F("và đọc ngược lại ra đúng số cũ — gõ vào rồi lưu ra vẫn một số",
+    Math.abs(nhom.docLai / nhom.usd - nhom.tyGia) < 0.01,
+    nhom.oHien + " ÷ " + nhom.usd);
+
+  const an = await p.evaluate(() => {
+    go("opps"); openOppForm();
+    const cb = document.getElementById("of_advanceDeal");
+    const daTich = cb && cb.getAttribute("data-on") === "1";
+    const ac = document.getElementById("ac_adv");
+    const r = ac ? ac.getBoundingClientRect() : null;
+    const dangAn = !r || (r.width === 0 && r.height === 0);
+    if (ac) ac.value = "-1";
+    const batKhiAn = soatTien(chkOn("of_advanceDeal") ? ["of_", "ac_"] : ["of_"]);
+    if (ac) ac.value = "0";
+    closeDrawer();
+    return { daTich, dangAn, batKhiAn: batKhiAn ? batKhiAn.el.id : null };
+  });
+  F("bộ tính advance đang ẩn khi chưa tích ô 'Deal có advance'", an.dangAn && !an.daTich);
+  F("và chốt chặn KHÔNG chặn vì một ô đang ẩn — không ai sửa được thứ không thấy",
+    an.batKhiAn === null, String(an.batKhiAn));
+
+  const sn = await p.evaluate(() => {
+    const ra = {}; const cu = ME;
+    ["manager", "ar"].forEach(vai => {
+      ME = USERS.find(x => x.role === vai).name;
+      openSnapshot();
+      ra[vai] = { oDan: !!document.getElementById("snapIn"),
+                  nut: Array.from(document.querySelectorAll("#overlay button"))
+                         .map(b => b.textContent.trim()).filter(Boolean) };
+      closeDrawer();
+    });
+    ME = cu; return ra;
+  });
+  F("manager thấy ô dán và nút Nạp bản lưu",
+    sn.manager.oDan && sn.manager.nut.some(x => /Nạp|Load/i.test(x)));
+  F("vai không có quyền KHÔNG thấy nút luôn hỏng — chỉ còn Tải về",
+    !sn.ar.oDan && !sn.ar.nut.some(x => /Nạp|Load|Đặt lại|Reset/i.test(x))
+      && sn.ar.nut.some(x => /Tải|Download/i.test(x)), JSON.stringify(sn.ar.nut));
+
+  /* ---------- 16. NGƯỠNG VÙNG MANG THEO ĐƠN VỊ LÚC ĐẶT ---------- */
+  const thr = await p.evaluate(() => {
+    const cuT = REGION_THRESHOLD, cuM = THR_META, cuV = VCB.VND, cuC = cur;
+    setCur("VND"); go("perms");
+    const e = document.getElementById("thrIn");
+    e.value = soRaO(255000000);
+    saveThreshold();
+    const dat = { usd: REGION_THRESHOLD, donVi: THR_META && THR_META.donVi,
+                  tyGia: THR_META && THR_META.tyGia, imLang: thrTroi() === "",
+                  tyGiaDangChay: cuV };
+    const moi = Math.round(cuV * 1.08);          /* +8% so với tỷ giá đang chạy */
+    VCB.VND = moi;
+    const troi = thrTroi().replace(/<[^>]+>/g, "");
+    const nay = REGION_THRESHOLD * rate("VND");
+    VCB.VND = cuV; REGION_THRESHOLD = cuT; THR_META = cuM; setCur(cuC);
+    return { dat, troi, nay, moi };
+  });
+  /* Kỳ vọng suy từ TỶ GIÁ ĐANG CHẠY, không đóng cứng: một phép kiểm phía
+     trên trong chính file này đã đổi tỷ giá, và số đóng cứng sẽ đỏ vì lý do
+     chẳng liên quan. Đã mắc đúng lỗi ấy một lần. */
+  F("đặt ngưỡng bằng đồng thì ghi lại đơn vị và tỷ giá lúc đặt",
+    thr.dat.donVi === "VND" && thr.dat.tyGia === thr.dat.tyGiaDangChay
+      && Math.abs(thr.dat.usd - 255000000 / thr.dat.tyGiaDangChay) < 1,
+    JSON.stringify(thr.dat));
+  F("và im lặng khi chưa lệch — một dòng chữ hiện mãi thì người ta thôi đọc",
+    thr.dat.imLang === true);
+  F("tỷ giá trôi thì nói thẳng ý định đã lệch bao nhiêu",
+    /8[.,]0%/.test(thr.troi) && thr.nay > 255000000 * 1.07 && thr.nay < 255000000 * 1.09,
+    thr.troi.slice(0, 130));
+
   F("không lỗi JavaScript nào", loi.length === 0, loi[0]);
 } finally {
   await b.close();
   srv.close();
 }
-console.log(FAILED ? "\n" + FAILED + " phép kiểm HỎNG" : "\n55 đạt · 0 hỏng");
+console.log(FAILED ? "\n" + FAILED + " phép kiểm HỎNG" : "\n64 đạt · 0 hỏng");
 process.exit(FAILED ? 1 : 0);
