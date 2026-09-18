@@ -2899,6 +2899,21 @@ const TIEN_TRAN_USD = 1e9;
    hoặc null nếu sạch. Nhận diện ô tiền qua lớp `curin` mà mọi ô tiền trong
    file này đều nằm trong — thêm ô tiền mới là tự được soát, không phải nhớ
    ghi tên nó vào một danh sách nào. */
+/* Một ô tiền đơn lẻ: đọc ra USD và nói rõ vì sao nếu không đọc được.
+   soatTien() ở dưới lo cho cả một biểu mẫu và tô đỏ ô sai; hàm này lo cho
+   những chỗ chỉ có MỘT ô — sửa nhanh trên bảng, ngăn deal, ô mục tiêu, hộp
+   tạo nhanh. Bốn chỗ ấy trước đây không kiểm gì cả, nên chốt chặn ở biểu
+   mẫu lớn chỉ là khoá cửa trước rồi để ngỏ bốn cửa sau. */
+function tienVao(raw){
+  const t0 = String(raw === undefined || raw === null ? '' : raw).trim();
+  if(t0 === '') return {ok:true, usd:0};
+  const n = Number(t0);
+  if(!isFinite(n))              return {ok:false, msg:t('nanErr')};
+  if(n < 0)                     return {ok:false, msg:t('negErr')};
+  if(n / rate(cur) > TIEN_TRAN_USD)
+                                return {ok:false, msg:t('bigErr',{n:money(TIEN_TRAN_USD)})};
+  return {ok:true, usd:toUSD(n)};
+}
 function soatTien(tienTo){
   const els = Array.from(document.querySelectorAll('.curin input'));
   for(let i=0;i<els.length;i++){
@@ -5167,7 +5182,9 @@ function inlineSave(id,f,val){
     o.stage=val; changed=true;
   }
   if(f==='amount'){
-    const n = toUSD(parseFloat(val)||0);
+    const r = tienVao(val);
+    if(!r.ok){ toast(r.msg); return; }
+    const n = r.usd;
     if(n!==o.amount){ logDiff('opp',o.id,o.name,'amount',o.amount,n); o.amount=n; changed=true; }
   }
   if(f==='close' && val){
@@ -6700,7 +6717,9 @@ function saveOpp(id){
     text:t('st_'+o.stage)+' → '+t('st_'+ns),date:TODAY,who:ME});
   logDiff('opp',o.id,o.name,'stage',o.stage,ns);
   o.stage=ns;
-  const na=toUSD(parseFloat(document.getElementById('f_amount').value||0));
+  const rAmt = tienVao((document.getElementById('f_amount')||{}).value);
+  if(!rAmt.ok){ toast(rAmt.msg); return; }
+  const na=rAmt.usd;
   logDiff('opp',o.id,o.name,'amount',o.amount,na);
   o.amount=na;
   const dv=document.getElementById('f_close').value;
@@ -6794,9 +6813,9 @@ function goalPreview(){
 function saveThreshold(){
   if(!can('users')) return;
   const e = document.getElementById('thrIn');
-  const raw = parseFloat(e ? e.value : 0);
-  if(isNaN(raw) || raw < 0){ toast(t('completeField')); return; }
-  const usd = toUSD(raw);
+  const rNg = tienVao(e ? e.value : '');
+  if(!rNg.ok){ toast(rNg.msg); return; }
+  const usd = rNg.usd;
   const old = REGION_THRESHOLD;
   /* trước đây im lặng thoát ra: người dùng bấm Lưu và không nhận được gì cả,
      không phân biệt nổi "đã lưu" với "nút hỏng" */
@@ -6809,9 +6828,11 @@ function saveThreshold(){
 function saveGoal(name){
   const n = id => { const e=document.getElementById(id); const v=parseFloat(e?e.value:0); return isNaN(v)?0:v; };
   const old = goalFor(name);
+  const rMuc = tienVao((document.getElementById('g_value')||{}).value);
+  if(!rMuc.ok){ toast(rMuc.msg); return; }
   const nw = {leads:Math.round(n('g_leads')), opps:Math.round(n('g_opps')),
               nego:Math.round(n('g_nego')),
-              yearUSD: toUSD(n('g_value'))};
+              yearUSD: rMuc.usd};
   [['leads','gLeads'],['opps','gOpps'],['nego','gNego'],['yearUSD','gValue']].forEach(k=>{
     const o = k[0]==='yearUSD' ? old.yearUSD : old[k[0]];
     if(o !== nw[k[0]])
@@ -7065,7 +7086,17 @@ const OPP_FORM = [
     {k:'dealType', l:['Loại hợp đồng','Deal type'], f:'sel', o:[['Nghệ sĩ','Artist'],['Label','Label'],
       ['Nhà xuất bản','Publisher'],['Nhạc sĩ','Writer']]},
     {k:'bu', l:['Đơn vị kinh doanh','Business unit'], f:'sel', o:'BU'},
-    {k:'currency', l:['Đơn vị tiền','Currency'], f:'sel', o:['USD','VND'], d:'USD'},
+    /* Ô này từng là một ô CHẾT: người dùng chọn USD hay VND, giá trị được
+       lưu xuống ext.currency, và tuyệt đối không mã nào đọc nó (đếm: đúng
+       một lần xuất hiện trong cả tệp, chính là dòng khai báo này). Con số
+       tiền thì lại quy đổi theo THANH TIỀN TỆ ở đầu trang tại thời điểm gõ.
+       Nên một deal có thể mang nhãn "VND" mà số bên trong nhập bằng đô, và
+       ngược lại — một ô trông như điều khoản, thật ra là đồ trang trí.
+       Nay nó không hỏi nữa mà GHI LẠI: đơn vị và tỷ giá thật sự đã dùng lúc
+       lưu. Chỉ đọc, vì người dùng không chọn được chuyện đã xảy ra rồi. */
+    {k:'currency', l:['Đơn vị tiền lúc nhập','Currency at entry'], f:'text', ro:1,
+      tip:['Đơn vị và tỷ giá dùng để quy đổi số tiền của deal này sang USD lúc lưu. Ghi lại, không chọn: đổi thanh tiền tệ ở đầu trang rồi lưu lại là ô này đổi theo.',
+           'The currency and rate used to convert this deal\u2019s money into USD at save time. Recorded, not chosen: switch the currency toggle and save again and this follows.']},
     {k:'committee', l:['Ghi chú hội đồng','Committee notes'], f:'ta'},
     {k:'prob', l:['Xác suất thành công','Probability'], f:'pct'},
     {k:'curDist', l:['Label / nhà phân phối hiện tại','Current label / distributor'], f:'sel', o:DISTRIBUTORS},
@@ -7286,8 +7317,11 @@ function ofField(fd){
   const d = fd.d || '';
   const ro = fd.ro ? ' readonly style="background:#f4f5f7;color:var(--ink-2)"' : '';
   const rc = fd.calc ? ' oninput="dealCalc()"' : '';
-  if(fd.f==='text')  ctrl = '<input class="fin" id="'+id+'" value="'+esc(d)+'">';
-  else if(fd.f==='num') ctrl = '<input class="fin" type="number" id="'+id+'" value="'+esc(d)+'">';
+  /* `ro` phải áp cho CẢ text và num. Trước đây hai nhánh này bỏ qua nó, nên
+     một trường khai ro:1 vẫn gõ vào được — chỉ chưa ai khai text+ro:1 nên
+     chưa lộ. Ô "Đơn vị tiền lúc nhập" là trường đầu tiên cần nó. */
+  if(fd.f==='text')  ctrl = '<input class="fin" id="'+id+'" value="'+esc(d)+'"'+ro+'>';
+  else if(fd.f==='num') ctrl = '<input class="fin" type="number" id="'+id+'" value="'+esc(d)+'"'+ro+'>';
   else if(fd.f==='date')ctrl = '<input class="fin" type="date" id="'+id+'">';
   else if(fd.f==='ta')  ctrl = '<textarea class="fin" id="'+id+'"></textarea>';
   else if(fd.f==='pct') ctrl = '<div class="pctin"><input class="fin" type="number" id="'+id+'" value="'+esc(d)+'"'+ro+rc+'></div>';
@@ -8225,6 +8259,9 @@ function saveOppForm(again){
     else if(fd.f==='money') ext[fd.k] = toUSD(nn(fd.k));
     else ext[fd.k] = v(fd.k);
   }));
+  /* Đè lên giá trị đọc từ ô: đây là thứ ĐÃ xảy ra, không phải thứ ai đó gõ. */
+  ext.currency = cur;
+  ext.fxRate   = rate(cur);
 
   /* đặt sau vòng lặp và dùng khoá riêng để không trùng với ô "Tiền tạm ứng" (advance) */
   try {
@@ -8866,8 +8903,10 @@ function createNew(kind){
       email:val('n_email'),phone:val('n_phone'),status:'new',source:val('n_source'),owner:'Ethan Nguyen',created:TODAY});
     state.view='leads'; state.leadFilter='all';
   } else if(kind==='opp'){
+    const rNhanh = tienVao(val('n_amount'));
+    if(!rNhanh.ok){ toast(rNhanh.msg); return; }
     const o={id:'o'+(++uid),name,accountId:val('n_acc'),stage:val('n_stage'),
-      amount:toUSD(parseFloat(val('n_amount')||0)),closeDate:new Date(TODAY.getFullYear(),TODAY.getMonth()+2,0),
+      amount:rNhanh.usd,closeDate:new Date(TODAY.getFullYear(),TODAY.getMonth()+2,0),
       owner:'Ethan Nguyen',rights:{dist:true,pub:false,yt:false},created:TODAY,lastAct:TODAY};
     DB.opps.unshift(o); state.view='opps'; state.oppFilter='all';
   } else if(kind==='account'){
