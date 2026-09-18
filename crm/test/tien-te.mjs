@@ -639,10 +639,64 @@ try {
       && hg.goi.prod > 0,
     JSON.stringify(hg.goi));
 
+  /* ---------- 18. MÀN CHỜ DUYỆT PHẢI HIỆN CON SỐ ----------
+     Người duyệt trước đây thấy đúng bảy cột: tên, khách, giai đoạn, MỘT
+     con số giá trị, ngày gửi, người yêu cầu, và hai cái nút. Không một
+     dòng nào từ advCalcResult — tức sếp bấm Duyệt cho một khoản tạm ứng
+     mà không thấy khoản ấy bao nhiêu, bao lâu thu hồi, hay nó có thu hồi
+     nổi không. Bấm xong là deal đi tiếp và tiền vào sổ. */
+  const dyt = await p.evaluate(() => {
+    go("approvals");
+    const rows = myApprovals();
+    const coDk = rows.filter(o => (o.ext || {}).advCalcResult);
+    const t2 = document.body.innerText;
+    return {
+      soDeal: rows.length,
+      soCoDieuKhoan: coDk.length,
+      tienUngChoDuyet: coDk.reduce((s2, o) => {
+        const a = o.ext.advCalcResult;
+        return s2 + (a.initialAdvance || 0) + (a.marketingFund || 0) + prodOf(a);
+      }, 0),
+      coDongTamUng: /tạm ứng/i.test(t2),
+      coThuHoi: /thu hồi/i.test(t2),
+      coRoi: /ROI\/năm/i.test(t2),
+      coChuaDinhGia: /chưa định giá/i.test(t2),
+      soO: document.querySelectorAll(".t-sub").length
+    };
+  });
+  F("bộ mẫu có deal ĐANG CHỜ DUYỆT mang điều khoản tiền — nếu không, màn này không chứng minh được gì",
+    dyt.soCoDieuKhoan > 0, dyt.soCoDieuKhoan + "/" + dyt.soDeal);
+  F("và số tiền tạm ứng đang chờ duyệt là con số thật, khác 0",
+    dyt.tienUngChoDuyet > 0, dyt.tienUngChoDuyet + " USD");
+  F("màn Chờ duyệt hiện tạm ứng, số tháng thu hồi và ROI",
+    dyt.coDongTamUng && dyt.coThuHoi && dyt.coRoi, JSON.stringify(dyt));
+  F("mỗi deal có điều khoản có đúng một dòng con số",
+    dyt.soO === dyt.soCoDieuKhoan, dyt.soO + " dòng / " + dyt.soCoDieuKhoan + " deal");
+  F("deal chưa điền giá trị nói 'chưa định giá', không phải một dấu gạch",
+    dyt.coChuaDinhGia);
+
+  const ds = await p.evaluate(() => {
+    const o = myApprovals().find(x => (x.ext || {}).advCalcResult);
+    const a = o.ext.advCalcResult;
+    const mong = (a.initialAdvance || 0) + (a.marketingFund || 0) + prodOf(a);
+    const html = duyetSo(o);
+    /* dựng một deal KHÔNG BAO GIỜ thu hồi xong */
+    const o2 = { ext: { advCalcResult: Object.assign({}, a, {
+      monthsToRecoup: null, neverRecoups: true, roiAnnual: 0 }) } };
+    return { mong, html, khongThuHoi: duyetSo(o2) };
+  });
+  F("dòng con số cộng đủ cả ba khoản tạm ứng",
+    ds.html.indexOf(new Intl.NumberFormat("en-US").format(ds.mong)) >= 0,
+    "mong " + ds.mong + " · " + ds.html.replace(/<[^>]+>/g, " ").trim().slice(0, 70));
+  F("deal KHÔNG bao giờ thu hồi xong được cảnh báo rõ",
+    /KHÔNG thu hồi xong|NEVER recoups/.test(ds.khongThuHoi), ds.khongThuHoi);
+  F("và KHÔNG in ROI kèm theo — ROI của một khoản không thu hồi nổi là con số vô nghĩa",
+    ds.khongThuHoi.indexOf("ROI") < 0, ds.khongThuHoi.replace(/<[^>]+>/g, " ").trim());
+
   F("không lỗi JavaScript nào", loi.length === 0, loi[0]);
 } finally {
   await b.close();
   srv.close();
 }
-console.log(FAILED ? "\n" + FAILED + " phép kiểm HỎNG" : "\n71 đạt · 0 hỏng");
+console.log(FAILED ? "\n" + FAILED + " phép kiểm HỎNG" : "\n79 đạt · 0 hỏng");
 process.exit(FAILED ? 1 : 0);

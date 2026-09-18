@@ -519,6 +519,20 @@ tbody tr:nth-child(even){background:var(--zebra)}
 tbody tr:hover,tbody tr:nth-child(even):hover{background:var(--row-hover);cursor:pointer}
 .t-name{font-weight:500;color:var(--ice-dark)}
 tbody tr:hover .t-name{text-decoration:underline}
+/* Dòng con số dưới tên deal ở màn Chờ duyệt. Tách hẳn khỏi kiểu của tên:
+   nó không phải một phần của cái link, nên không gạch chân theo và không
+   lấy màu theo. `white-space:nowrap` của .trunc cũng phải gỡ ở đây, nếu
+   không ba con số sẽ tràn ra ngoài ô. */
+.t-sub{display:flex;gap:9px;flex-wrap:wrap;align-items:baseline;margin-top:2px;
+  font-size:11.5px;font-weight:400;line-height:1.35;white-space:normal;
+  color:var(--ink-2);text-decoration:none}
+tbody tr:hover .t-sub{text-decoration:none}
+.t-sub b{font-weight:600;color:var(--ink)}
+.t-sub .sep{opacity:.4}
+.t-sub .xau b{color:var(--brand-dark)}
+/* ô tên ở màn Chờ duyệt cần cao hai dòng, nên bỏ cắt một dòng */
+.t-name-2{max-width:260px;white-space:normal;overflow:visible}
+.t-name-2 .t-name{display:inline-block}
 .num{text-align:right;font-variant-numeric:tabular-nums}
 .dim{color:var(--muted)}
 .trunc{max-width:210px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -1589,6 +1603,10 @@ vi:{
   submitCountry:'Trình sếp country', approveC:'Duyệt (country)', approveR:'Duyệt (vùng)',
   sendBack:'Trả lại', role_country:'Giám đốc quốc gia', role_region:'Giám đốc khu vực',
   pApproveCountry:'Duyệt cấp country', pApproveRegion:'Duyệt cấp vùng',
+  apUng:'tạm ứng', apThuHoi:'thu hồi', apThang:'tháng', apRoi:'ROI/năm',
+  apKhongThuHoi:'KHÔNG thu hồi xong',
+  apChuaDinhGia:'chưa định giá',
+  apChuaDinhGiaHint:'Deal chưa điền giá trị. Giá trị 0 nghĩa là chưa ai định giá, không phải "đáng 0 đồng" — nên nó KHÔNG được coi là deal nhỏ để bỏ qua sếp vùng.',
   thrTitle:'Ngưỡng bỏ qua sếp vùng', thrHint:'Deal dưới mức này chỉ cần sếp country duyệt rồi trình thẳng portal. Ngưỡng là chính sách tính bằng USD; gõ vào bằng đơn vị nào cũng được, hệ quy về đô để lưu.',
   ctrChot:'chốt theo tỷ giá {r}',
   fxTitle:'Tỷ giá quy đổi',
@@ -1937,6 +1955,10 @@ en:{
   submitCountry:'Submit to country head', approveC:'Approve (country)', approveR:'Approve (region)',
   sendBack:'Send back', role_country:'Country head', role_region:'Regional head',
   pApproveCountry:'Approve at country level', pApproveRegion:'Approve at regional level',
+  apUng:'advance', apThuHoi:'recoups in', apThang:'months', apRoi:'ROI/yr',
+  apKhongThuHoi:'NEVER recoups',
+  apChuaDinhGia:'not valued',
+  apChuaDinhGiaHint:'No deal value entered. A value of 0 means nobody has priced it, not "worth nothing" — so it does NOT count as a small deal that skips the regional head.',
   thrTitle:'Regional-step threshold', thrHint:'Deals below this only need the country head, then go straight to the portal. The threshold is a USD policy; type it in any currency and it is converted to dollars for storage.',
   ctrChot:'fixed at rate {r}',
   fxTitle:'Exchange rates',
@@ -2869,17 +2891,43 @@ DB.opps.filter(o=>['legal','signature','won'].indexOf(o.stage)>=0).forEach((o,i)
                         'Có điều khoản audit một lần mỗi năm tài chính.',
                         'Ưu tiên gia hạn 30 ngày trước khi hết hạn.'][i%3];
 });
-DB.opps.filter(o=>o.stage==='won').forEach((o,i)=>{
+/* Gắn điều khoản cho deal ĐANG CHỜ DUYỆT nữa, không chỉ deal đã ký.
+   Bản trước chỉ gắn cho stage 'won', nên đo ra 0/6 deal trên màn Chờ duyệt
+   có điều khoản — tức màn quan trọng nhất của bộ mẫu không có gì để trình
+   bày, và một khiếm khuyết thật của sản phẩm (sếp duyệt tiền mà không
+   thấy số) bị bộ dữ liệu che đi. Chờ duyệt chính là chỗ con số tạm ứng có
+   trọng lượng nhất: sau khi bấm Duyệt là tiền đi. */
+DB.opps.filter(o=>o.stage==='won' || APPROVAL[o.stage]).forEach((o,i)=>{
   if(i%3===2) return;                       /* chừa vài deal chưa có điều khoản */
   const share = [0.7,0.75,0.65,0.8][i%4];
   /* tạm ứng bám theo giá trị deal — bội số 0,6–1,4 lần, làm tròn nghìn */
   const adv   = Math.max(2000, Math.round((o.amount||5000)*[0.8,1.2,0.6,1.4][i%4]/1000)*1000);
   o.ext = o.ext || {};
+  /* Dẫn ra các con số phái sinh bằng ĐÚNG công thức advModel dùng, chứ
+     không gieo số rời. Bản trước chỉ gieo bảy trường đầu vào, nên màn Chờ
+     duyệt có điều khoản mà vẫn không hiện nổi số tháng thu hồi hay ROI —
+     và nếu gieo bừa hai con số ấy thì bộ mẫu sẽ dạy người đọc một quan hệ
+     sai giữa chúng. Một công thức, hai nơi dùng. */
+  const mkt  = Math.round(adv*0.15), prod = Math.round(adv*0.10);
+  const term = [72,60,48][i%3];
+  const avg  = (o.amount||0)/12;                 /* giá trị deal = thu nhập tháng × 12 */
+  const net  = avg*(1-share);                    /* phần Haustek giữ */
+  const recoup = avg - net;                      /* nghệ sĩ độc lập, pass-through 0 */
+  const tong = adv + mkt + prod;
+  const months = tong<=0 ? 0 : (recoup>0 ? tong/recoup : Infinity);
+  const total = net*term;
+  const roi   = tong>0 ? total/tong : 0;
   o.ext.advCalcResult = {
-    artistShare:share, initialAdvance:adv, marketingFund:Math.round(adv*0.15),
-    termMonths:[72,60,48][i%3], exclusivityMonths:[36,24,18][i%3],
+    avg:avg,
+    artistShare:share, initialAdvance:adv, marketingFund:mkt,
+    termMonths:term, exclusivityMonths:[36,24,18][i%3],
     findersFeePct:[0,2,3][i%3], passThrough:0,
-    productionFund:Math.round(adv*0.10)
+    productionFund:prod,
+    monthlyNet:net, recoupPerMonth:recoup,
+    monthsToRecoup: isFinite(months) ? months : null,
+    neverRecoups: !isFinite(months),
+    rightsHolder:'artist', labelArtistRate:0.7,
+    totalIncome:total, roi:roi, roiAnnual: term>0 ? roi/term*12 : 0
   };
 });
 DB.opps.forEach(o=>{
@@ -5406,6 +5454,37 @@ function toggleTask(id){
 function myApprovals(){
   return sOpps().filter(o=>APPROVAL[o.stage] && APPROVAL[o.stage].perm && canAdvance(o));
 }
+/* Dòng con số dưới tên deal trên màn Chờ duyệt.
+   ═══ VÌ SAO CÓ ═══
+   Người duyệt trước đây thấy đúng bảy cột: tên, khách, giai đoạn, MỘT con
+   số giá trị, ngày gửi, người yêu cầu, và hai cái nút. Không một dòng nào
+   từ advCalcResult — nghĩa là sếp country và sếp vùng bấm Duyệt cho một
+   khoản tạm ứng mà không thấy khoản ấy bao nhiêu, bao lâu thu hồi, ROI ra
+   sao, hay nó có thu hồi nổi không. Bấm xong là deal đi tiếp tới portal
+   và tiền vào sổ.
+   Không thêm cột — bảy cột đã chật. Một dòng nhỏ dưới tên: chỉ ba con số
+   người duyệt thật sự cần, và chỉ hiện khi deal có điều khoản tiền. */
+function duyetSo(o){
+  const a = (o.ext||{}).advCalcResult;
+  if(!a) return '';
+  const ung = (a.initialAdvance||0) + (a.marketingFund||0) + prodOf(a);
+  if(!(ung > 0)) return '';
+  const mau = [];
+  mau.push(esc(t('apUng'))+' <b>'+esc(money(ung))+'</b>');
+  /* monthsToRecoup = null KÈM neverRecoups nghĩa là không bao giờ xong —
+     khác hẳn "chưa tính được". Người duyệt phải đọc ra được sự khác ấy. */
+  if(a.neverRecoups){
+    /* Không bao giờ thu hồi xong thì ROI là con số vô nghĩa — in ra chỉ tổ
+       làm người duyệt tưởng vẫn có một tỷ suất để cân nhắc. Dừng ở đây. */
+    mau.push('<span class="xau"><b>'+esc(t('apKhongThuHoi'))+'</b></span>');
+    return '<div class="t-sub">'+mau.join('<span class="sep">·</span>')+'</div>';
+  }
+  if(typeof a.monthsToRecoup === 'number' && a.monthsToRecoup > 0)
+    mau.push(esc(t('apThuHoi'))+' <b>'+a.monthsToRecoup.toFixed(1)+' '+esc(t('apThang'))+'</b>');
+  if(typeof a.roiAnnual === 'number' && isFinite(a.roiAnnual))
+    mau.push(esc(t('apRoi'))+' <b>'+(a.roiAnnual*100).toFixed(0)+'%</b>');
+  return '<div class="t-sub">'+mau.join('<span class="sep">·</span>')+'</div>';
+}
 VIEWS.approvals = function(){
   const rows = myApprovals()
     .filter(o=>matches(o.name)||matches(accName(o.accountId)))
@@ -5414,11 +5493,18 @@ VIEWS.approvals = function(){
   const cells = (o)=>{
     const skip = o.stage==='waiting' && o.amount > 0 && o.amount < REGION_THRESHOLD;
     return [
-      {c:'t-name trunc', h:esc(o.name)},
+      /* Lớp `t-name` chỉ đặt trên CHỮ TÊN, không đặt trên cả ô: text-decoration
+         của tổ tiên lan xuống mọi con và không gỡ được bằng
+         text-decoration:none ở con. Để trên ô thì di chuột vào hàng là cả
+         dòng con số cũng bị gạch chân và nhuộm màu link. */
+      {c:'t-name-2', h:'<span class="t-name">'+esc(o.name)+'</span>'+duyetSo(o)},
       {c:'trunc',        h:esc(accName(o.accountId))},
       {c:'',             h:stageBadge(o.stage)},
-      {c:'num',          h:esc(money(o.amount))+(skip
-          ? ' <span class="pill" title="'+esc(t('thrHint'))+'">'+esc(t('skipRegion'))+'</span>' : '')},
+      {c:'num',          h:(o.amount>0
+          ? esc(money(o.amount))
+          : '<span class="badge" title="'+esc(t('apChuaDinhGiaHint'))+'">'+
+              '<span class="dot" style="background:var(--brand)"></span>'+esc(t('apChuaDinhGia'))+'</span>')
+        +(skip ? ' <span class="pill" title="'+esc(t('thrHint'))+'">'+esc(t('skipRegion'))+'</span>' : '')},
       {c:'dim',          h:esc(fdate(o.lastAct))},
       {c:'dim',          h:esc(o.owner)},
       {c:'num',          h:'<span class="btnpair">'+
