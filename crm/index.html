@@ -1826,6 +1826,7 @@ vi:{
   snapLoad:'Nạp snapshot', snapReset:'Đặt lại toàn bộ',
   snapResetAsk:'Đặt lại toàn bộ? Mọi thay đổi đã làm sẽ mất, dữ liệu mẫu sinh lại y hệt.',
   snapLoaded:'Đã nạp snapshot', snapSaved:'Đã tải snapshot về máy',
+  snapFrom:'thay cho sổ đang có ({n} cơ hội)',
   snapBadVer:'Snapshot không đúng phiên bản ',
 },
 en:{
@@ -2169,6 +2170,7 @@ en:{
   snapLoad:'Load snapshot', snapReset:'Reset everything',
   snapResetAsk:'Reset everything? Every change you made is lost; the sample data regenerates identically.',
   snapLoaded:'Snapshot loaded', snapSaved:'Snapshot downloaded',
+  snapFrom:'replacing the current book ({n} opportunities)',
   snapBadVer:'Snapshot is not version ',
 }};
 let lang = 'vi';
@@ -2899,15 +2901,58 @@ const TIEN_TRAN_USD = 1e9;
    hoặc null nếu sạch. Nhận diện ô tiền qua lớp `curin` mà mọi ô tiền trong
    file này đều nằm trong — thêm ô tiền mới là tự được soát, không phải nhớ
    ghi tên nó vào một danh sách nào. */
+/* ĐỌC MỘT SỐ TIỀN NGƯỜI VIỆT GÕ RA.
+   ═══ VÌ SAO KHÔNG DÙNG Number() ═══
+   Ô tiền từng khai type="number". Gõ "25.000.000" — cách viết hai mươi lăm
+   triệu mà mọi người Việt đều dùng — thì CHÍNH TRÌNH DUYỆT nuốt dấu chấm
+   thứ hai trước khi JavaScript nhìn thấy gì: ô còn "25.000000", Number()
+   đọc ra 25, và hai mươi lăm triệu đồng vào sổ thành 0 USD. Đo bằng bàn
+   phím thật trên Chromium:
+       gõ 25.000.000  → ô giữ "25.000000" → Number 25   → lưu 0 USD
+       gõ  1.000.000  → ô giữ "1.000000"  → Number 1    → lưu 0 USD
+       gõ  2,500,000  → ô giữ "2500000"   → Number 2,5tr → lưu 98,04 USD ✓
+   Tức là hệ đọc đúng dấu phẩy kiểu Anh–Mỹ và đọc sai dấu chấm kiểu Việt —
+   đúng cái ký hiệu người dùng của nó viết. Không phép kiểm nào bắt được,
+   vì sau khi trình duyệt cắt xong thì 25 là một con số hoàn toàn hợp lệ.
+   Chốt chặn âm/quá lớn/không phải số đều cho qua.
+
+   Nên ô tiền chuyển sang type="text" inputmode="decimal" và đi qua hàm này.
+   Luật: dấu XUẤT HIỆN SAU CÙNG là dấu thập phân, dấu còn lại là phân nhóm.
+   Một dấu duy nhất mà theo sau đúng ba chữ số tới hết chuỗi thì coi là phân
+   nhóm — "25.000" là hai mươi lăm nghìn, không phải hai mươi lăm phẩy không.
+   Đó là quy ước gây tranh cãi duy nhất, và nó nghiêng về phía số tiền tròn
+   nghìn, thứ chiếm gần hết dữ liệu thật. Muốn ghi phần lẻ thì viết "25.000,50". */
+function docSoTien(raw){
+  let x = String(raw === undefined || raw === null ? '' : raw)
+            .replace(/[\s\u00A0\u202F]/g, '');
+  if(x === '') return null;
+  let dau = '';
+  if(x[0] === '-' || x[0] === '+'){ dau = x[0]; x = x.slice(1); }
+  if(!/^[0-9.,]+$/.test(x)) return NaN;
+  const cham = x.lastIndexOf('.'), phay = x.lastIndexOf(',');
+  let thapPhan = -1;
+  if(cham >= 0 && phay >= 0) thapPhan = Math.max(cham, phay);
+  else if(cham >= 0 || phay >= 0){
+    const i = Math.max(cham, phay);
+    const duoi = x.length - i - 1;
+    const soDau = (x.match(/[.,]/g) || []).length;
+    /* nhiều dấu cùng loại → chắc chắn phân nhóm; một dấu + đúng 3 số → phân nhóm */
+    thapPhan = (soDau > 1 || duoi === 3) ? -1 : i;
+  }
+  const nguyen = (thapPhan < 0 ? x : x.slice(0, thapPhan)).replace(/[.,]/g, '');
+  const le     = thapPhan < 0 ? '' : x.slice(thapPhan + 1).replace(/[.,]/g, '');
+  if(nguyen === '' && le === '') return NaN;
+  const n = Number(dau + (nguyen || '0') + (le ? '.' + le : ''));
+  return isFinite(n) ? n : NaN;
+}
 /* Một ô tiền đơn lẻ: đọc ra USD và nói rõ vì sao nếu không đọc được.
    soatTien() ở dưới lo cho cả một biểu mẫu và tô đỏ ô sai; hàm này lo cho
    những chỗ chỉ có MỘT ô — sửa nhanh trên bảng, ngăn deal, ô mục tiêu, hộp
    tạo nhanh. Bốn chỗ ấy trước đây không kiểm gì cả, nên chốt chặn ở biểu
    mẫu lớn chỉ là khoá cửa trước rồi để ngỏ bốn cửa sau. */
 function tienVao(raw){
-  const t0 = String(raw === undefined || raw === null ? '' : raw).trim();
-  if(t0 === '') return {ok:true, usd:0};
-  const n = Number(t0);
+  const n = docSoTien(raw);
+  if(n === null) return {ok:true, usd:0};
   if(!isFinite(n))              return {ok:false, msg:t('nanErr')};
   if(n < 0)                     return {ok:false, msg:t('negErr')};
   if(n / rate(cur) > TIEN_TRAN_USD)
@@ -2915,14 +2960,22 @@ function tienVao(raw){
   return {ok:true, usd:toUSD(n)};
 }
 function soatTien(tienTo){
+  /* `tienTo` nhận một tiền tố hoặc một MẢNG tiền tố. Bản trước chỉ nhận một
+     chuỗi, và chỗ gọi truyền 'of_' — nên toàn bộ ô tiền của bộ tính advance
+     (ac_adv, ac_mkt, ac_prod, ac_avg) nằm ngoài tầm soát, dù chúng ở ngay
+     trong cùng biểu mẫu và nằm trong .curin y hệt. Đo được: gõ -50000 vào
+     ô "Tiền tạm ứng" của biểu mẫu thì bị chặn; gõ đúng con số ấy vào ô tạm
+     ứng của bộ tính thì đi lọt, rồi in ra hợp đồng "Tiền tạm ứng: -50.000
+     USD" và sang portal thành totalAdvanceUSD âm. Hai ô mang đúng một ý
+     nghĩa, một ô khoá một ô mở, và ô mở mới là ô chảy ra ngoài. */
+  const dsTo = tienTo == null ? null : (Array.isArray(tienTo) ? tienTo : [tienTo]);
   const els = Array.from(document.querySelectorAll('.curin input'));
   for(let i=0;i<els.length;i++){
     const el = els[i];
-    if(tienTo && String(el.id).indexOf(tienTo) !== 0) continue;
+    if(dsTo && !dsTo.some(x => String(el.id).indexOf(x) === 0)) continue;
     if(el.disabled || el.readOnly) continue;
-    const raw = String(el.value).trim();
-    if(raw === '') continue;                       /* để trống là chuyện khác */
-    const n = Number(raw);
+    const n = docSoTien(el.value);
+    if(n === null) continue;                       /* để trống là chuyện khác */
     if(!isFinite(n))      return {el:el, msg:t('nanErr')};
     if(n < 0)             return {el:el, msg:t('negErr')};
     if(n / rate(cur) > TIEN_TRAN_USD)
@@ -3580,6 +3633,15 @@ function isoDay(dt){
   const p = n=>String(n).padStart(2,'0');
   return dt.getFullYear()+'-'+p(dt.getMonth()+1)+'-'+p(dt.getDate());
 }
+/* Quỹ sản xuất từng mang hai tên: `productionFund` ở bộ mẫu, `prodFund` ở
+   ext của biểu mẫu. Bản ghi cũ vẫn còn nguyên trên máy người dùng, nên đọc
+   cả hai; ghi thì chỉ ghi một. */
+function prodOf(adv){
+  if(!adv) return 0;
+  const v = adv.productionFund !== undefined ? adv.productionFund : adv.prodFund;
+  const n = Number(v);
+  return isFinite(n) ? n : 0;
+}
 function handoffOf(o){
   const a   = DB.accounts.find(x=>x.id===o.accountId) || {};
   const adv = (o.ext||{}).advCalcResult || null;
@@ -3603,7 +3665,16 @@ function handoffOf(o){
       artistSharePct:     Math.round((adv.artistShare||0)*1000)/10,
       initialAdvanceUSD:  Math.round(adv.initialAdvance||0),
       marketingFundUSD:   Math.round(adv.marketingFund||0),
-      totalAdvanceUSD:    Math.round((adv.initialAdvance||0)+(adv.marketingFund||0)),
+      /* QUỸ SẢN XUẤT RỤNG Ở ĐÂY. advModel tính totalAdv = adv + mkt + prod,
+         và mọi con số A&R nhìn thấy (số tháng thu hồi, ROI, cảnh báo) đều
+         dựa trên tổng ba khoản. Gói gửi đi thì chỉ cộng hai. Đo trên dữ liệu
+         mẫu: 6 deal lệch, tổng 9.900 USD — o173 thiếu 2.900, o165 thiếu
+         1.500. Portal không biết khoản ấy tồn tại nên không bao giờ ghi nợ
+         và không bao giờ thu hồi: tiền Haustek đã chi mà sổ bên kia không
+         có. Thêm nữa hai app tính số tháng thu hồi trên hai mẫu số lệch
+         nhau ~8%, nên chúng không bao giờ ra cùng một câu trả lời. */
+      productionFundUSD:  Math.round(prodOf(adv)),
+      totalAdvanceUSD:    Math.round((adv.initialAdvance||0)+(adv.marketingFund||0)+prodOf(adv)),
       termMonths:         adv.termMonths||0,
       exclusivityMonths:  adv.exclusivityMonths||0,
       /* Tên trường kết thúc bằng Pct nên giá trị phải là PHẦN TRĂM, y như
@@ -5148,7 +5219,7 @@ function cellEdit(o, f, display, isNum){
         STAGES.map(x=>'<option value="'+x.id+'"'+(x.id===o.stage?' selected':'')+'>'+esc(t('st_'+x.id))+'</option>').join('')+
         '</select>';
     if(f==='amount')
-      return '<input class="iedit" type="number" value="'+Math.round(fx(o.amount))+'"'+stop+
+      return '<input class="iedit" type="text" inputmode="decimal" value="'+Math.round(fx(o.amount))+'"'+stop+
         ' onblur="inlineSave(\''+o.id+'\',\'amount\',this.value)"'+
         ' onkeypress="if(event.key===\'Enter\')this.blur()">';
     if(f==='close')
@@ -5955,9 +6026,23 @@ function snapDownload(){
     .then(function(ok){ if(ok) toast(t('snapSaved')); });
 }
 function snapImport(){
+  /* CỬA SAU CỦA can('users').
+     setFX() và saveThreshold() canh quyền rất cẩn thận. Nhưng dán một bản
+     lưu vào đây thì ghi đè TOÀN BỘ trạng thái — tỷ giá, ngưỡng duyệt vùng,
+     và cả ME/vai của chính người đang ngồi. Đo được với vai 'ar': gọi
+     setFX() và saveThreshold() đều bị chặn đúng, nhưng dán một JSON sửa tay
+     thì tỷ giá thành 1.000.000, ngưỡng thành 1e12, vai thành manager — và
+     DB.audit KHÔNG thêm một dòng nào. Cửa trước khoá ba lần, cửa sau không
+     có khoá.
+     Nhập bản lưu là thay cả sổ, nên nó phải cùng hạng với quản trị hệ
+     thống. Và phải để lại dấu, kể cả khi bản mới ghi đè luôn nhật ký cũ —
+     dòng ghi trước khi nhập vẫn nằm trong bản sao lưu mà storeRescue giữ. */
+  if(!can('users')){ toast(t('noPermTitle')); return; }
   const el = document.getElementById('snapIn');
   const txt = el ? el.value.trim() : '';
   if(!txt) return;
+  logAudit({objType:'system', objName:t('snapTitle'), action:'update',
+            field:'snapshot', oldV:t('snapFrom',{n:DB.opps.length}), newV:'—'});
   try { store.importJSON(txt); }
   catch(e){ toast(String((e && e.message) || t('snapBadVer'))); return; }
   if(store.available()){ location.reload(); return; }
@@ -5969,6 +6054,8 @@ function snapImport(){
   }
   renderLogin(); render(); toast(t('snapLoaded'));
 }
+/* Giữ nguyên nút TẢI VỀ cho mọi người — xuất dữ liệu của chính mình không
+   phải hành vi quản trị. Chỉ khoá đường NHẬP. */
 function snapReset(){
   if(!confirm(t('snapResetAsk'))) return;
   store.clear();
@@ -6165,7 +6252,7 @@ const CONTRACT_FIELDS = [
   {k:'advance',           l:['Tiền tạm ứng','Advance'], src:['Cơ hội · Tài chính','Opp · Financials'], g:o=>ctrMny(ctrAdv(o).initialAdvance!==undefined?ctrAdv(o).initialAdvance:ctrExt(o).advance)},
   {k:'advance_details',   l:['Chi tiết tạm ứng','Advance details'], src:['Cơ hội · Tài chính','Opp · Financials'], g:o=>ctrExt(o).advDetails},
   {k:'marketing_budget',  l:['Ngân sách marketing','Marketing budget'], src:['Cơ hội · Tài chính','Opp · Financials'], g:o=>ctrMny(ctrAdv(o).marketingFund!==undefined?ctrAdv(o).marketingFund:ctrExt(o).mktBudget)},
-  {k:'production_fund',   l:['Quỹ sản xuất','Production fund'], src:['Cơ hội · Tài chính','Opp · Financials'], g:o=>ctrMny(ctrAdv(o).productionFund!==undefined?ctrAdv(o).productionFund:ctrExt(o).prodFund)},
+  {k:'production_fund',   l:['Quỹ sản xuất','Production fund'], src:['Cơ hội · Tài chính','Opp · Financials'], g:o=>ctrMny(ctrAdv(o).productionFund!==undefined||ctrAdv(o).prodFund!==undefined?prodOf(ctrAdv(o)):ctrExt(o).prodFund)},
   {k:'recoup_rate',       l:['Tỷ lệ thu hồi','Recoupment rate'], src:['Cơ hội · Tài chính','Opp · Financials'], g:o=>ctrPct(ctrExt(o).recoupRate)},
   {k:'triggers',          l:['Điều kiện kích hoạt','Triggers'], src:['Cơ hội · Tài chính','Opp · Financials'], g:o=>ctrExt(o).triggers},
   {k:'option_details',    l:['Chi tiết quyền chọn','Option details'], src:['Cơ hội · Tài chính','Opp · Financials'], g:o=>ctrExt(o).optionDetails},
@@ -6187,7 +6274,14 @@ function ctrPct(v){ return (v===undefined||v===null||v==='') ? '' : (String(v).i
    trôi (tạm ứng, ngân sách marketing, quỹ sản xuất), không ai chạm vào deal.
    Một văn bản hai bên đã ký thì phải in ra đúng con số đã ký, bằng đúng
    đồng tiền đã ký — bất kể hôm nay thanh tiền tệ đang để gì. */
-function ctrMny(v){ if(v===undefined||v===null||v==='') return ''; const n=Number(v); return isNaN(n)?'':money(n); }
+/* KHÔNG dùng money() ở đây. money() = fmtMoney(n, true), và cờ ấy biến số 0
+   thành dấu gạch "—". Trên một bảng danh sách thì "—" là đúng: không có số.
+   Trên một VĂN BẢN PHÁP LÝ thì "Tiền tạm ứng: —" không phải "không đồng nào",
+   cũng không phải "còn trống" — nó là một ký tự vô nghĩa gửi cho bên cấp
+   quyền. Tệ hơn: bộ soát trường thiếu lọc bằng `!vals[k]`, mà "—" là chuỗi
+   truthy, nên băng cảnh báo vẫn báo "Đã điền đủ mọi trường" và pháp chế
+   không nhận được lời nhắc nào. Một hợp đồng không advance phải in "0 USD". */
+function ctrMny(v){ if(v===undefined||v===null||v==='') return ''; const n=Number(v); return isNaN(n)?'':fmtMoney(n,false); }
 const CONTRACT_STATES = ['draft','pending','approved','sent','signed'];
 /* Chỉ soạn được cho deal đã qua cửa CEO. Trước đó điều khoản còn đang đàm
    phán, soạn ra là soạn trên số sắp đổi. */
@@ -6462,6 +6556,17 @@ function ctrSetManual(cid, k, v){
 }
 function ctrSetStatus(cid, st, okKey){
   const c = DB.contracts.find(x=>x.id===cid); if(!c) return;
+  /* KIỂM QUYỀN TRONG THÂN HÀM, không chỉ ở chỗ dựng nút.
+     Mọi handler của ứng dụng này là hàm toàn cục gắn vào onclick, nên "ẩn
+     nút" không phải là kiểm soát — gõ một dòng vào console là xong. Đo
+     được: đăng nhập vai 'ar' (không có quyền duyệt nào, ngăn hợp đồng
+     không sinh ra nút nào), gọi thẳng ctrSetStatus(id,'approved') thì
+     trạng thái đi từ Nháp sang Đã duyệt, VÀ nhật ký kiểm toán ghi lại như
+     một lượt duyệt hợp lệ mang tên người ấy. Cái thứ hai nguy hơn cái thứ
+     nhất: người đối soát về sau đọc sổ thấy mọi thứ đúng thủ tục. */
+  if(!(can('approveCountry') || can('approveRegion') || can('editAll'))){
+    toast(t('noPermTitle')); return;
+  }
   const old = c.status;
   /* Đóng dấu lại NGAY TRƯỚC khi bước sang trạng thái đông cứng, và cũng khi
      bị trả về nháp — để bản nháp lại chạy theo tỷ giá hiện hành. Chụp lại
@@ -6628,8 +6733,9 @@ function openDrawer(kind,id){
       '<div class="row2">'+
         '<div class="fld"><div class="fld-l">'+esc(t('cStage'))+'</div>'+
         '<select class="in" id="f_stage">'+selOpts(STAGES.map(s=>s.id),o.stage,x=>t('st_'+x))+'</select></div>'+
-        '<div class="fld"><div class="fld-l">'+esc(t('cAmount'))+' ('+cur+')</div>'+
-        '<input class="in" id="f_amount" type="number" value="'+Math.round(fx(o.amount))+'"></div>'+
+        '<div class="fld"><div class="fld-l">'+esc(t('cAmount'))+'</div>'+
+        '<div class="curin" data-cur="'+esc(cur)+'"><input class="in" id="f_amount" type="text" '+
+          'inputmode="decimal" value="'+Math.round(fx(o.amount))+'"></div></div>'+
       '</div>'+
       '<div class="row2">'+
         '<div class="fld"><div class="fld-l">'+esc(t('cClose'))+'</div>'+
@@ -6782,7 +6888,7 @@ function openGoalForm(name){
   const row = (id,label,val,unit)=>
     '<div class="fld"><div class="fld-l">'+esc(label)+'</div>'+
     (unit==='money'
-      ? '<div class="curin" data-cur="'+esc(cur)+'"><input class="in" type="number" id="'+id+'" value="'+
+      ? '<div class="curin" data-cur="'+esc(cur)+'"><input class="in" type="text" inputmode="decimal" id="'+id+'" value="'+
          Math.round(fx(val))+'" oninput="goalPreview()"></div>'
       : '<input class="in" type="number" id="'+id+'" value="'+val+'" oninput="goalPreview()">')+
     '</div>';
@@ -6944,7 +7050,7 @@ VIEWS.perms = function(){
     '<div class="card-b">'+
       '<div class="unote" style="margin:0 0 10px">'+esc(t('thrHint'))+'</div>'+
       '<div class="thrrow">'+
-        '<div class="curin" data-cur="'+esc(cur)+'"><input class="in" type="number" id="thrIn" '+
+        '<div class="curin" data-cur="'+esc(cur)+'"><input class="in" type="text" inputmode="decimal" id="thrIn" '+
           'value="'+Math.round(fx(REGION_THRESHOLD))+'"></div>'+
         '<button class="btn btn-primary" onclick="saveThreshold()">'+esc(t('save'))+'</button>'+
       '</div></div></div>';
@@ -6957,13 +7063,13 @@ VIEWS.perms = function(){
     '<div class="card-b">'+
       '<div class="unote" style="margin:0 0 10px">'+esc(t('fxHint'))+'</div>'+
       '<div class="thrrow">'+
-        '<div class="curin" data-cur="VND"><input class="in" type="number" id="fxVnd" '+
+        '<div class="curin" data-cur="VND"><input class="in" type="text" inputmode="decimal" id="fxVnd" '+
           'value="'+VCB.VND+'" onkeydown="if(event.key===\'Enter\')event.preventDefault()"></div>'+
         '<span class="dim" style="font-size:12px">'+esc(t('fxPerUsd'))+
           (lu ? ' · '+esc(fdate(lu.date))+' · '+esc(lu.by||'—') : '')+'</span>'+
       '</div>'+
       '<div class="thrrow" style="margin-top:8px">'+
-        '<div class="curin" data-cur="VND"><input class="in" type="number" id="fxEur" '+
+        '<div class="curin" data-cur="VND"><input class="in" type="text" inputmode="decimal" id="fxEur" '+
           'value="'+VCB.EUR+'" onkeydown="if(event.key===\'Enter\')event.preventDefault()"></div>'+
         '<span class="dim" style="font-size:12px">'+esc(t('fxPerEur'))+
           (le ? ' · '+esc(fdate(le.date))+' · '+esc(le.by||'—') : '')+'</span>'+
@@ -7002,7 +7108,7 @@ function fxDerived(){
    confirm() — một cử chỉ khác hẳn cử chỉ vừa làm, không phải lặp lại nó. */
 function setFX(){
   if(!can('users')) return;
-  const doc = id => { const e=document.getElementById(id); return e ? Number(e.value) : NaN; };
+  const doc = id => { const e=document.getElementById(id); const x=docSoTien(e?e.value:''); return x===null?NaN:x; };
   const nv = doc('fxVnd'), ne = doc('fxEur');
   if(!fxHopLe(nv) || !fxHopLe(ne)){ toast(t('fxBad')); return; }
   const moiV = Math.round(nv), moiE = Math.round(ne);
@@ -7326,7 +7432,9 @@ function ofField(fd){
   else if(fd.f==='ta')  ctrl = '<textarea class="fin" id="'+id+'"></textarea>';
   else if(fd.f==='pct') ctrl = '<div class="pctin"><input class="fin" type="number" id="'+id+'" value="'+esc(d)+'"'+ro+rc+'></div>';
   else if(fd.f==='money')
-    ctrl = '<div class="curin" data-cur="'+esc(cur)+'"><input class="fin" type="number" id="'+id+'" value="'+esc(d)+'"'+ro+rc+'></div>';
+    /* type="text" chứ KHÔNG phải "number": trình duyệt cắt dấu phân nhóm kiểu
+       Việt Nam trước khi mã nhìn thấy, biến 25.000.000 thành 25. Xem docSoTien. */
+    ctrl = '<div class="curin" data-cur="'+esc(cur)+'"><input class="fin" type="text" inputmode="decimal" id="'+id+'" value="'+esc(d)+'"'+ro+rc+'></div>';
   else if(fd.f==='chk') ctrl = '<div class="fchk"><span class="cbox" id="'+id+'" data-on="0" onclick="togChk(\''+id+'\')"></span></div>';
   else if(fd.f==='acc')
     ctrl = '<input class="fin" id="'+id+'" list="ofAccounts" placeholder="'+esc(L(['Tìm khách hàng…','Search accounts…']))+'">';
@@ -7433,7 +7541,7 @@ function advInput(f){
                                   f.chon.map(c=>'<option value="'+esc(c[0])+'"'+(c[0]===f.d?' selected':'')+'>'+esc(L(c[1]))+'</option>').join('')+
                                 '</select>';
   else if(f.k==='pct')   ctrl = '<div class="pctin"><input class="fin" type="number" id="'+f.id+'" value="'+f.d+'"'+ro+on+'></div>';
-  else if(f.k==='money') ctrl = '<div class="curin" data-cur="'+esc(cur)+'"><input class="fin" type="number" id="'+f.id+'" value="'+f.d+'"'+ro+on+'></div>';
+  else if(f.k==='money') ctrl = '<div class="curin" data-cur="'+esc(cur)+'"><input class="fin" type="text" inputmode="decimal" id="'+f.id+'" value="'+f.d+'"'+ro+on+'></div>';
   else                   ctrl = '<input class="fin" type="number" id="'+f.id+'" value="'+f.d+'"'+ro+on+'>';
   return frow(L(f.l), ctrl, {tip: f.tip ? L(f.tip) : 0});
 }
@@ -7466,7 +7574,11 @@ function advanceHTML(){
         esc(L(['Áp dụng xuống Chia sẻ publishing','Apply to publishing shares']))+'</button></div>'+
     '</div>';
 }
-function advNum(id){ const e=document.getElementById(id); const v=parseFloat(e?e.value:0); return isNaN(v)?0:v; }
+function advNum(id){
+  const e=document.getElementById(id);
+  const v=docSoTien(e?e.value:'');
+  return (v===null || !isFinite(v)) ? 0 : v;
+}
 /* Ô TIỀN của bộ tính advance, đọc ra USD.
    ═══ VÌ SAO PHẢI CÓ HÀM RIÊNG ═══
    Bộ tính advance từng đọc ô tiền bằng advNum() thuần — parseFloat, không
@@ -8235,7 +8347,7 @@ function saveOppForm(again){
   if(!ok){ bad.focus(); bad.scrollIntoView({block:'center'}); return; }
 
   const v  = id => { const e=document.getElementById('of_'+id); return e ? e.value.trim() : ''; };
-  const nn = id => { const x = parseFloat(v(id)); return isNaN(x) ? 0 : x; };
+  const nn = id => { const x = docSoTien(v(id)); return (x===null || !isFinite(x)) ? 0 : x; };
   const bk = id => chkOn('of_'+id);
 
   /* SOÁT CÁC Ô TIỀN TRƯỚC KHI GHI. Đo trên bản trước: gõ -5000 vào ô tạm ứng
@@ -8244,7 +8356,7 @@ function saveOppForm(again){
      ai được báo. Cả ba đều đi qua không một lời.
      Chỗ tệ nhất là trường hợp thứ ba: hai cái đầu còn nhìn thấy trên màn
      hình, còn số 0 thì trông y hệt một ô người ta cố ý để trống. */
-  const loi = soatTien('of_');
+  const loi = soatTien(['of_','ac_']);
   if(loi){ loi.el.classList.add('err'); loi.el.focus();
            loi.el.scrollIntoView({block:'center'}); toast(loi.msg); return; }
 
@@ -8269,6 +8381,13 @@ function saveOppForm(again){
     ext.advCalcResult = {
       avg:am.avg, artistShare:am.share, passThrough:am.pass, initialAdvance:am.adv,
       termMonths:am.term, exclusivityMonths:am.excl, findersFeePct:am.fee, marketingFund:am.mkt,
+      /* QUỸ SẢN XUẤT. advModel cộng nó vào totalAdv (adv + mkt + prod) và mọi
+         con số trên màn hình đều tính từ đó, nhưng bảng này lại không mang
+         nó, nên nó rụng ngay ở biên. Dùng ĐÚNG tên bộ mẫu đã dùng
+         (productionFund); trước đây cùng một khoản có hai cách viết —
+         productionFund ở bộ mẫu, prodFund ở ext — và CONTRACT_FIELDS phải
+         thử lần lượt cả hai để tìm ra nó. */
+      productionFund:am.prod,
       monthlyNet:am.net, recoupPerMonth:am.recoup,
       /* JSON.stringify(Infinity) ra null, nên đừng để nó lặng lẽ thành null
          và bị đọc lại thành 0. Gửi null CÓ CHỦ Ý kèm một cờ đọc được. */

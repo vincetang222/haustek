@@ -376,10 +376,106 @@ try {
   F("ghim được trả lại sau mỗi lượt, không rò sang phần còn lại của ứng dụng",
     hd.ghimCon === null, JSON.stringify(hd.ghimCon));
 
+  /* ---------- 10. CÁCH VIẾT SỐ CỦA NGƯỜI VIỆT ----------
+     Ô tiền từng khai type="number", và CHÍNH TRÌNH DUYỆT nuốt dấu chấm thứ
+     hai trước khi mã nhìn thấy gì: "25.000.000" còn "25.000000", Number()
+     đọc 25, hai mươi lăm triệu đồng vào sổ thành 0 USD. Không chốt chặn nào
+     bắt được, vì 25 là một con số hoàn toàn hợp lệ. Bài này gõ BẰNG BÀN
+     PHÍM THẬT, vì gán thẳng .value không dựng lại được lỗi ấy. */
+  await p.evaluate(() => { setCur("VND"); go("opps"); openOppForm(); });
+  await p.waitForTimeout(350);
+  for (const [id, chuoi] of [["of_ytIncome", "25.000.000"], ["of_advance", "1.000.000"],
+                             ["of_mktBudget", "2,500,000"]]) {
+    await p.click("#" + id); await p.fill("#" + id, "");
+    await p.type("#" + id, chuoi, { delay: 6 });
+  }
+  const go2 = await p.evaluate(() => {
+    const d = id => { const e = document.getElementById(id);
+                      return { oGiu: e.value, qua: tienVao(e.value) }; };
+    const ra = { yt: d("of_ytIncome"), adv: d("of_advance"), mkt: d("of_mktBudget"),
+                 tyGia: rate("VND") };
+    closeDrawer(); setCur("USD");
+    return ra;
+  });
+  F("ô tiền giữ nguyên chuỗi người dùng gõ, trình duyệt không cắt dấu nữa",
+    go2.yt.oGiu === "25.000.000", go2.yt.oGiu);
+  F("25.000.000 ₫ đọc ra đúng ~980 USD, KHÔNG phải 0",
+    Math.abs(go2.yt.qua.usd - 25000000 / go2.tyGia) < 1 && go2.yt.qua.usd > 900,
+    JSON.stringify(go2.yt.qua));
+  F("1.000.000 ₫ cũng vậy", go2.adv.qua.usd > 35, JSON.stringify(go2.adv.qua));
+  F("và cách viết dấu phẩy kiểu Anh–Mỹ vẫn đọc đúng",
+    Math.abs(go2.mkt.qua.usd - 2500000 / go2.tyGia) < 1, JSON.stringify(go2.mkt.qua));
+
+  const parser = await p.evaluate(() =>
+    [["25.000.000", 25000000], ["1.234.567,89", 1234567.89], ["25,000.50", 25000.5],
+     ["25.000", 25000], ["0,92", 0.92], ["abc", "NaN"], ["", "null"], ["1e5", "NaN"]]
+      .map(([a, b]) => { const r = docSoTien(a);
+        const s2 = r === null ? "null" : (Number.isNaN(r) ? "NaN" : r);
+        return { a, mong: b, ra: s2, ok: s2 === b }; }));
+  F("docSoTien đọc đúng cả tám cách viết",
+    parser.every(x => x.ok), JSON.stringify(parser.filter(x => !x.ok)));
+
+  /* ---------- 11. SOÁT TIỀN PHẢI NHÌN CẢ Ô CỦA BỘ TÍNH ADVANCE ----------
+     Hai ô mang đúng một ý nghĩa nằm trên cùng biểu mẫu: of_advance và
+     ac_adv. Bản trước chỉ soát ô đầu, mà ô thứ hai mới là ô chảy vào hợp
+     đồng và vào gói bàn giao. */
+  const acAm = await p.evaluate(() => {
+    go("opps");
+    if (!document.getElementById("ac_adv"))
+      document.body.insertAdjacentHTML("beforeend", '<div id="__ac">' + advanceHTML() + "</div>");
+    const e = document.getElementById("ac_adv");
+    e.value = "-50000";
+    const r1 = soatTien(["of_", "ac_"]);
+    const r2 = soatTien("of_");
+    e.value = "0";
+    const nut = document.getElementById("__ac"); if (nut) nut.remove();
+    return { caHai: r1 ? r1.el.id : null, chiOf: r2 ? r2.el.id : null };
+  });
+  F("soatTien(['of_','ac_']) bắt được số âm ở ô của bộ tính advance",
+    acAm.caHai === "ac_adv", String(acAm.caHai));
+  F("và đúng là một tiền tố thôi thì KHÔNG bắt được — đó là lỗ cũ",
+    acAm.chiOf === null, String(acAm.chiOf));
+
+  /* ---------- 12. QUYỀN PHẢI KIỂM TRONG THÂN HÀM ----------
+     Mọi handler là hàm toàn cục gắn onclick, nên ẩn nút không phải kiểm soát. */
+  const q = await p.evaluate(() => ({
+    hopDong: String(ctrSetStatus).indexOf("can(") >= 0,
+    napBanLuu: String(snapImport).indexOf("can(") >= 0,
+    doiTyGia: String(setFX).indexOf("can(") >= 0,
+    nguong: String(saveThreshold).indexOf("can(") >= 0
+  }));
+  F("ctrSetStatus kiểm quyền trong thân hàm", q.hopDong);
+  F("snapImport kiểm quyền — nhập bản lưu là thay cả sổ, kể cả vai của chính mình", q.napBanLuu);
+  F("setFX và saveThreshold vẫn kiểm", q.doiTyGia && q.nguong);
+
+  /* ---------- 13. QUỸ SẢN XUẤT KHÔNG ĐƯỢC RỤNG Ở BIÊN ---------- */
+  const pf = await p.evaluate(() => {
+    const lech = [];
+    handoffRows().forEach(r => {
+      if (!r.terms) return;
+      const d = DB.opps.find(x => x.id === r.dealId);
+      const a = (d.ext || {}).advCalcResult || {};
+      const manHinh = (a.initialAdvance || 0) + (a.marketingFund || 0) + prodOf(a);
+      if (Math.abs(manHinh - r.terms.totalAdvanceUSD) > 0.5)
+        lech.push({ id: r.dealId, manHinh, goi: r.terms.totalAdvanceUSD });
+    });
+    return { lech, coTruong: handoffRows().some(r => r.terms && "productionFundUSD" in r.terms) };
+  });
+  F("tổng tạm ứng trong gói khớp tổng trên màn hình ở MỌI deal",
+    pf.lech.length === 0, JSON.stringify(pf.lech.slice(0, 3)));
+  F("và gói mang hẳn trường quỹ sản xuất", pf.coTruong);
+
+  /* ---------- 14. VĂN BẢN PHÁP LÝ IN SỐ 0, KHÔNG IN DẤU GẠCH ---------- */
+  const z = await p.evaluate(() => ({ danhSach: money(0), hopDong: ctrMny(0) }));
+  F("hợp đồng in '0 USD' cho khoản bằng không, không phải '—'",
+    /^0\s/.test(z.hopDong), z.hopDong);
+  F("nhưng bảng danh sách vẫn dùng '—' cho ô trống — hai chỗ, hai ý nghĩa",
+    z.danhSach === "\u2014", z.danhSach);
+
   F("không lỗi JavaScript nào", loi.length === 0, loi[0]);
 } finally {
   await b.close();
   srv.close();
 }
-console.log(FAILED ? "\n" + FAILED + " phép kiểm HỎNG" : "\n41 đạt · 0 hỏng");
+console.log(FAILED ? "\n" + FAILED + " phép kiểm HỎNG" : "\n55 đạt · 0 hỏng");
 process.exit(FAILED ? 1 : 0);
