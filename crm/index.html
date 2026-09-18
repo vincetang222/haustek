@@ -1603,6 +1603,10 @@ vi:{
   submitCountry:'Trình sếp country', approveC:'Duyệt (country)', approveR:'Duyệt (vùng)',
   sendBack:'Trả lại', role_country:'Giám đốc quốc gia', role_region:'Giám đốc khu vực',
   pApproveCountry:'Duyệt cấp country', pApproveRegion:'Duyệt cấp vùng',
+  advTitle:'Tính toán advance', advOpen:'Tính advance', advRecalc:'Tính lại',
+  advSaved:'Đã lưu tính toán advance vào deal',
+  advNoAmount:'Chưa có khoản advance nào để lưu — nhập tạm ứng hoặc chọn một bội số.',
+  advPortalLock:'Deal đang ở phía portal cầm lái. Xem và thử số thì được; không sửa điều khoản trong lúc chờ duyệt — muốn đổi thì rút deal về trước.',
   apUng:'tạm ứng', apThuHoi:'thu hồi', apThang:'tháng', apRoi:'ROI/năm',
   apKhongThuHoi:'KHÔNG thu hồi xong',
   apChuaDinhGia:'chưa định giá',
@@ -1955,6 +1959,10 @@ en:{
   submitCountry:'Submit to country head', approveC:'Approve (country)', approveR:'Approve (region)',
   sendBack:'Send back', role_country:'Country head', role_region:'Regional head',
   pApproveCountry:'Approve at country level', pApproveRegion:'Approve at regional level',
+  advTitle:'Advance calculation', advOpen:'Run advance calculation', advRecalc:'Recalculate',
+  advSaved:'Advance calculation saved to the deal',
+  advNoAmount:'No advance amount to save — enter an advance or pick a multiple.',
+  advPortalLock:'The portal holds this deal now. You can view and try figures; terms cannot change while it awaits approval — pull the deal back first.',
   apUng:'advance', apThuHoi:'recoups in', apThang:'months', apRoi:'ROI/yr',
   apKhongThuHoi:'NEVER recoups',
   apChuaDinhGia:'not valued',
@@ -3020,9 +3028,13 @@ function docSoTien(raw){
    thì không viết vào ô: nó đã nằm ở nhãn .curin bên trái rồi. */
 function soRaO(n){                 /* số ĐÃ ở đơn vị hiển thị */
   const c = CURRENCIES.indexOf(cur)>=0 ? cur : 'USD';
-  const d = CUR_DEC[c];
+  /* Ô NHẬP giữ tới xu, KHÔNG làm tròn theo kiểu hiển thị. fmtMoney hiện
+     "342 USD" là đúng cho một bảng; nhưng đổ "342" vào ô nhập rồi đọc lại
+     là mất 0,67 — đo được: doanh thu tháng 341,67 → ô "342" → ×12 ra 4.104
+     thay vì 4.100. Cùng lớp lỗi làm tròn ở biên đã vá ở toUSD. Tối đa hai
+     số lẻ, không ép số 0 đuôi, nên số chẵn vẫn gọn như trước. */
   return new Intl.NumberFormat(CUR_LOC[c],
-    {minimumFractionDigits:d, maximumFractionDigits:d}).format(Number(n)||0);
+    {minimumFractionDigits:0, maximumFractionDigits:2}).format(Number(n)||0);
 }
 function soTienRaO(usd){ return soRaO(fx(usd)); }   /* số đang ở USD */
 /* Một ô tiền đơn lẻ: đọc ra USD và nói rõ vì sao nếu không đọc được.
@@ -4909,8 +4921,22 @@ VIEWS.oppDetail = function(){
       const sec = OPP_FORM[i]; if(!sec) return '';
       if(sec.custom==='advance'){
         const a = (o.ext||{}).advCalcResult;
+        /* NÚT MỞ BỘ TÍNH TRÊN DEAL ĐÃ TỒN TẠI.
+           Trước đây bộ tính advance chỉ sống bên trong biểu mẫu TẠO deal, sau
+           một ô tích. Deal đã lưu rồi thì tab "Đề xuất deal" chỉ còn một bảng
+           đọc — hoặc câu "không dùng advance" không kèm nút nào. Người ta không
+           có đường nào tính, tính lại, hay thử một bội số khác trên deal đang
+           đàm phán, tức đúng lúc cần nhất. File R&D có openAdvanceModal ở cả
+           hai trạng thái; đem sang và nối với mọi luật đã đặt hôm nay. */
+        const nutTinh = rw
+          ? '<button class="btn btn-sm" style="float:right;margin-top:-3px" onclick="openAdvanceModal(\''+o.id+'\')">'+
+              esc(a ? t('advRecalc') : t('advOpen'))+'</button>'
+          : '';
+        /* trạng thái trống: một nút trong thân là đủ, đừng lặp ở tiêu đề */
         if(!a) return '<div class="dgrp">'+esc(L(sec.t))+'</div>'+
-          '<div class="mini-empty">'+esc(L(['Deal này không dùng advance.','No advance on this deal.']))+'</div>';
+          '<div class="mini-empty">'+esc(L(['Deal này chưa có tính toán advance.','No advance calculated for this deal yet.']))+
+          (rw ? '<div style="margin-top:12px"><button class="btn btn-primary" onclick="openAdvanceModal(\''+o.id+'\')">'+
+                  esc(t('advOpen'))+'</button></div>' : '')+'</div>';
         /* Deal lưu từ form có đủ trường dẫn xuất, deal nhập sẵn chỉ có ĐIỀU KHOẢN.
            Bản cũ đọc thẳng a.trigger1.amount nên tab này vỡ ở mọi deal nhập sẵn.
            Số dẫn xuất giờ tính lại tại chỗ từ điều khoản — vừa không vỡ, vừa
@@ -4921,7 +4947,9 @@ VIEWS.oppDetail = function(){
         const rowsA = [
           [L(['Advance ban đầu','Initial advance']), money(a.initialAdvance||0)],
           [L(['Marketing fund','Marketing fund']), money(a.marketingFund||0)],
-          [L(['Tổng advance','Total advance']), money((a.initialAdvance||0)+(a.marketingFund||0))],
+          [L(['Quỹ sản xuất','Production fund']), money(prodOf(a))],
+          /* cộng đủ BA khoản — cùng chỗ rò đã vá ở gói bàn giao, chưa vá ở đây */
+          [L(['Tổng advance','Total advance']), money((a.initialAdvance||0)+(a.marketingFund||0)+prodOf(a))],
           [L(['Tỷ lệ nghệ sĩ','Artist share']), Math.round(pctOf(a.artistShare)*100)+'%'],
           [L(['Thời hạn','Term']), (a.termMonths||0)+L([' tháng',' months'])],
           [L(['Độc quyền','Exclusivity']), (a.exclusivityMonths||0)+L([' tháng',' months'])],
@@ -4933,7 +4961,7 @@ VIEWS.oppDetail = function(){
           ['Trigger 1', a.trigger1 ? money(a.trigger1.amount)+' · +'+a.trigger1.addMonths+L([' tháng',' months']) : '—'],
           ['Trigger 2', a.trigger2 ? money(a.trigger2.amount)+' · +'+a.trigger2.addMonths+L([' tháng',' months']) : '—']
         ];
-        return '<div class="dgrp">'+esc(L(sec.t))+'</div><div class="dgrid">'+
+        return '<div class="dgrp">'+esc(L(sec.t))+nutTinh+'</div><div class="dgrid">'+
           rowsA.map(r=>'<div class="drow"><div class="dlab">'+esc(r[0])+'</div>'+
           '<div class="dval">'+esc(r[1])+'</div><span></span></div>').join('')+'</div>';
       }
@@ -8467,6 +8495,115 @@ function advApply(mult){
       : '. NEVER RECOUPS: flow-through of '+(m.pass*100).toFixed(0)+'% consumes everything recoupment draws on.')]));
   advCalc();
   toast(L(['Đã áp dụng xuống Chia sẻ publishing','Applied to publishing shares']));
+}
+
+/* ═══ MÀN TÍNH TOÁN ADVANCE TRÊN DEAL ĐÃ TỒN TẠI ═══════════════════════
+   Cùng một advanceHTML() với biểu mẫu tạo deal — một bộ tính, hai cửa vào —
+   nhưng đổ sẵn số của deal ấy vào và ghi ngược khi lưu.
+   Mọi luật đặt hôm nay đều áp ở đây:
+     · ô tiền là ĐƠN VỊ ĐANG HIỂN THỊ, có phân nhóm (soTienRaO), đọc về USD
+       qua advTien/toUSD — không phải số trần;
+     · bên cấp quyền (ac_ben, ac_lrate) và quỹ sản xuất đổ lại đúng, vì thiếu
+       chúng thì CRM hứa một số mà portal ra số khác;
+     · soatTien('ac_') chặn số âm / quá lớn TRƯỚC khi ghi;
+     · khoản không bao giờ thu hồi xong lưu monthsToRecoup=null + neverRecoups,
+       không lưu Infinity (JSON biến nó thành null lặng lẽ). */
+function openAdvanceModal(oppId){
+  const o = DB.opps.find(x=>x.id===oppId);
+  if(!o || !canEdit(o.owner)){ toast(t('noPermTitle')); return; }
+  state.drawer = null;
+  document.getElementById('overlay').innerHTML =
+    '<div class="mscrim" onclick="if(event.target===this)closeDrawer()">'+
+    '<div class="modal" role="dialog" style="width:min(1080px,100%)">'+
+      '<div class="modal-h"><div class="modal-t">'+esc(t('advTitle'))+' — '+esc(o.name)+'</div>'+
+        '<button class="modal-x" onclick="closeDrawer()" aria-label="Close">×</button></div>'+
+      '<div class="modal-b">'+
+        (PORTAL_OWNED.includes(o.stage)
+          ? '<div class="unote" style="margin:0 0 12px;border-color:var(--brand)">'+esc(t('advPortalLock'))+'</div>' : '')+
+        advanceHTML()+'</div>'+
+      '<div class="modal-f"><button class="btn" onclick="closeDrawer()">'+esc(t('cancel'))+'</button>'+
+        (PORTAL_OWNED.includes(o.stage) ? ''
+          : '<button class="btn btn-primary" onclick="saveAdvanceModal(\''+o.id+'\')">'+esc(t('saveOnly'))+'</button>')+
+      '</div></div></div>';
+  setTimeout(()=>{ advModalFill(o); advCalc(); }, 40);
+}
+/* Đổ số của deal vào các ô. Tách riêng để bài kiểm gọi được không cần chờ. */
+function advModalFill(o){
+  const e = o.ext || {}, a = e.advCalcResult || null, fi = e.finInput || null;
+  const set = (id, v) => { const el=document.getElementById(id); if(el && v!==undefined && v!==null && v!=='') el.value = v; };
+  const tien = (id, usd) => { if(typeof usd==='number' && isFinite(usd)) set(id, soTienRaO(usd)); };
+  /* doanh thu tháng: ô này readonly trong biểu mẫu vì được tính từ các dòng
+     thu nhập; ở đây không có các dòng ấy nên mở khoá cho sửa được */
+  const avg = document.getElementById('ac_avg');
+  if(avg){ avg.removeAttribute('readonly'); avg.removeAttribute('style'); }
+  const thang = (a && typeof a.avg==='number' && a.avg>0) ? a.avg
+              : (typeof e.monthlyIncome==='number' && e.monthlyIncome>0) ? e.monthlyIncome
+              : (o.amount||0)/12;
+  tien('ac_avg', thang);
+  if(a){
+    tien('ac_adv', a.initialAdvance); tien('ac_mkt', a.marketingFund); tien('ac_prod', prodOf(a));
+    set('ac_term', a.termMonths); set('ac_excl', a.exclusivityMonths);
+    if(typeof a.artistShare==='number') set('ac_share', Math.round(pctOf(a.artistShare)*100));
+    if(typeof a.passThrough==='number') set('ac_pass', Math.round(pctOf(a.passThrough)*100));
+    if(typeof a.findersFeePct==='number') set('ac_fee', Math.round(pctOf(a.findersFeePct)*100));
+    set('ac_rate', a.triggerRatePct); set('ac_cap', a.capPct);
+    if(a.rightsHolder) set('ac_ben', a.rightsHolder);
+    if(typeof a.labelArtistRate==='number') set('ac_lrate', Math.round(pctOf(a.labelArtistRate)*100));
+  } else {
+    /* chưa có tính toán: lấy điều khoản gõ tay ở phần Tài chính nếu có */
+    tien('ac_adv', e.advance); tien('ac_mkt', e.mktBudget); tien('ac_prod', e.prodFund);
+    if(typeof e.pctDist==='number') set('ac_share', e.pctDist);
+  }
+  if(fi){
+    if(typeof fi.growth==='number') set('ac_growth', fi.growth);
+    if(typeof fi.dist==='number')   set('ac_dist', Math.round(fi.dist*100));
+    if(typeof fi.disc==='number')   set('ac_disc', fi.disc);
+  }
+}
+function saveAdvanceModal(oppId){
+  const o = DB.opps.find(x=>x.id===oppId);
+  if(!o || !canEdit(o.owner)){ toast(t('noPermTitle')); return; }
+  /* Không sửa điều khoản trong lúc portal đang cầm deal — chính hướng dẫn ở
+     trang chi tiết đã nói vậy; đây là chỗ thực thi nó thay vì chỉ nhắc. */
+  if(PORTAL_OWNED.includes(o.stage)){ toast(t('advPortalLock')); return; }
+  const loi = soatTien('ac_');
+  if(loi){ loi.el.classList.add('err'); loi.el.focus(); loi.el.scrollIntoView({block:'center'}); toast(loi.msg); return; }
+  const am = advModel();                     /* USD từ đầu tới cuối */
+  if(!(am.totalAdv > 0)){ toast(t('advNoAmount')); return; }
+  o.ext = o.ext || {};
+  const cu = o.ext.advCalcResult || {};
+  const cuTong = (cu.initialAdvance||0)+(cu.marketingFund||0)+prodOf(cu);
+  o.ext.advCalcResult = {
+    avg:am.avg, artistShare:am.share, passThrough:am.pass, initialAdvance:am.adv,
+    termMonths:am.term, exclusivityMonths:am.excl, findersFeePct:am.fee, marketingFund:am.mkt,
+    productionFund:am.prod,
+    monthlyNet:am.net, recoupPerMonth:am.recoup,
+    monthsToRecoup: isFinite(am.months) ? am.months : null,
+    neverRecoups: !isFinite(am.months),
+    rightsHolder: am.ben, labelArtistRate: am.lrate,
+    totalIncome:am.total, roi:am.roi, roiAnnual:am.roiY, roiAfterCosts:am.roiNet,
+    triggerRatePct:advNum('ac_rate'), capPct:advNum('ac_cap'),
+    cap:am.avg*12*(1+advNum('ac_cap')/100),
+    trigger1:{mult:15, addMonths:24, amount:am.avg*15},
+    trigger2:{mult:12, addMonths:18, amount:am.avg*12}
+  };
+  /* Modal LÀ cửa nhập điều khoản, nên ba ô Tài chính nhận theo — đúng luật
+     "một khoản tiền, một con số" đã đặt ở saveOppForm, chỉ đảo chiều. */
+  o.ext.advance = am.adv; o.ext.mktBudget = am.mkt; o.ext.prodFund = am.prod;
+  o.ext.advanceDeal = true;
+  o.ext.monthlyIncome = am.avg;
+  o.ext.recoupRate = advNum('ac_rate');
+  o.ext.monthsRecoup = (isFinite(am.months) && am.months) ? am.months.toFixed(1) : '';
+  o.ext.totalROI = (am.roi*100).toFixed(0)+'%';
+  o.ext.roiAnnual = (am.roiY*100).toFixed(1)+'%';
+  o.ext.roiEarnings = acFmt(am.total);
+  o.ext.finInput = finFromForm();
+  o.ext.currency = cur; o.ext.fxRate = rate(cur);
+  if(!o.amount) o.amount = Math.round(am.avg*12*100)/100;
+  o.lastAct = TODAY;
+  logAudit({objType:'opp', objId:o.id, objName:o.name, action:'update',
+            field:'advance', oldV:cuTong, newV:am.totalAdv});
+  closeDrawer(); toast(t('advSaved')); render();
 }
 
 function openOppForm(){

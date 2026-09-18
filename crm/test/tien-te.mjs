@@ -693,10 +693,102 @@ try {
   F("và KHÔNG in ROI kèm theo — ROI của một khoản không thu hồi nổi là con số vô nghĩa",
     ds.khongThuHoi.indexOf("ROI") < 0, ds.khongThuHoi.replace(/<[^>]+>/g, " ").trim());
 
+  /* ---------- 19. MÀN TÍNH TOÁN ADVANCE TRÊN DEAL ĐÃ TỒN TẠI ----------
+     Bộ tính advance từng chỉ sống bên trong biểu mẫu TẠO deal, sau một ô
+     tích. Deal đã lưu thì tab "Đề xuất deal" chỉ còn bảng đọc — không có
+     đường nào tính, tính lại, hay thử bội số khác trên deal đang đàm phán.
+     Chủ dự án hỏi đúng chỗ ấy. File R&D có openAdvanceModal; đem sang và
+     nối với mọi luật đã đặt: tiền theo đơn vị hiển thị có phân nhóm, bên
+     cấp quyền, quỹ sản xuất, soát số âm, khoá khi portal cầm deal. */
+  const am1 = await p.evaluate(() => {
+    const o = DB.opps.find(x => !(x.ext && x.ext.advCalcResult) && !PORTAL_OWNED.includes(x.stage) && x.amount > 0);
+    openOpp(o.id); setOppTab("proposed");
+    const nut = Array.from(document.querySelectorAll("button")).filter(b => /Tính advance|Run advance/.test(b.textContent));
+    return { id: o.id, amount: o.amount, tab: state.oppTab, soNut: nut.length,
+             coCauChua: /chưa có tính toán advance|No advance calculated/i.test(document.body.innerText) };
+  });
+  F("tab 'Đề xuất deal' của deal chưa có advance có ĐÚNG MỘT nút Tính advance",
+    am1.tab === "proposed" && am1.soNut === 1, JSON.stringify(am1));
+
+  const am2 = await p.evaluate(id => new Promise(res => { openAdvanceModal(id); setTimeout(() => {
+    const v = k => (document.getElementById(k) || {}).value;
+    const o = DB.opps.find(x => x.id === id);
+    res({ tieuDe: (document.querySelector(".modal-t") || {}).textContent || "",
+          acAvg: docSoTien(v("ac_avg")), mongAvg: fx(o.amount / 12),
+          avgSuaDuoc: !document.getElementById("ac_avg").hasAttribute("readonly"),
+          coNutLuu: Array.from(document.querySelectorAll(".modal-f button")).some(b => /^Lưu$|^Save$/.test(b.textContent.trim())) });
+  }, 120); }), am1.id);
+  F("modal mở ra mang tên deal và đổ sẵn doanh thu tháng = giá trị deal ÷ 12",
+    /Tính toán advance|Advance calculation/.test(am2.tieuDe) && Math.abs(am2.acAvg - am2.mongAvg) < 1,
+    JSON.stringify(am2));
+  F("ô doanh thu tháng sửa được trong modal (không còn readonly như trong biểu mẫu tạo)", am2.avgSuaDuoc);
+  F("và có nút Lưu vì deal đang ở phía CRM cầm lái", am2.coNutLuu);
+
+  const am3 = await p.evaluate(id => {
+    advApply(12);
+    const o = DB.opps.find(x => x.id === id); const n0 = DB.audit.length;
+    saveAdvanceModal(id);
+    const a = o.ext.advCalcResult; const au = DB.audit[DB.audit.length - 1];
+    return { adv: a.initialAdvance, extAdv: o.ext.advance, mongAdv: Math.round(o.amount / 12 * 12 * 100) / 100,
+             thang: a.monthsToRecoup, ben: a.rightsHolder, coProd: "productionFund" in a,
+             advanceDeal: o.ext.advanceDeal === true, themAudit: DB.audit.length - n0,
+             audit: { field: au.field, oldV: au.oldV, newV: au.newV }, modalDong: !document.querySelector(".modal") };
+  }, am1.id);
+  F("chọn ×12 rồi Lưu: advCalcResult VÀ ô Tài chính cùng nhận một con số USD",
+    am3.adv > 0 && am3.adv === am3.extAdv && Math.abs(am3.adv - am3.mongAdv) < 1, JSON.stringify(am3));
+  F("bản lưu mang đủ bên cấp quyền, quỹ sản xuất, số tháng thu hồi",
+    am3.ben === "artist" && am3.coProd && typeof am3.thang === "number" && am3.thang > 0, JSON.stringify(am3));
+  F("có một dòng kiểm toán ghi tổng tạm ứng cũ → mới, và modal tự đóng",
+    am3.themAudit === 1 && am3.audit.field === "advance" && am3.audit.oldV === 0 && am3.audit.newV === am3.adv && am3.modalDong,
+    JSON.stringify(am3.audit));
+
+  const am4 = await p.evaluate(id => {
+    const o = DB.opps.find(x => x.id === id); const a = o.ext.advCalcResult;
+    const tong = (a.initialAdvance || 0) + (a.marketingFund || 0) + prodOf(a);
+    const txt = document.body.innerText;
+    return { coQuy: /Quỹ sản xuất|Production fund/.test(txt), tongHien: txt.indexOf(money(tong)) >= 0,
+             nutTinhLai: Array.from(document.querySelectorAll("button")).filter(b => /Tính lại|Recalculate/.test(b.textContent)).length };
+  }, am1.id);
+  F("trang chi tiết nay hiện bảng số, có dòng Quỹ sản xuất và Tổng cộng đủ ba khoản",
+    am4.coQuy && am4.tongHien, JSON.stringify(am4));
+  F("và đúng một nút Tính lại", am4.nutTinhLai === 1, String(am4.nutTinhLai));
+
+  const am5 = await p.evaluate(id => new Promise(res => { openAdvanceModal(id); setTimeout(() => {
+    const el = document.getElementById("ac_adv"); const doSan = el.value;
+    el.value = soRaO(fx(12345)); advCalc();
+    const o = DB.opps.find(x => x.id === id); saveAdvanceModal(id);
+    res({ doSan, coPhanNhom: /[.,]/.test(doSan), sau: o.ext.advCalcResult.initialAdvance, extAdv: o.ext.advance });
+  }, 120); }), am1.id);
+  F("mở lại: ô đổ sẵn số đã lưu, CÓ phân nhóm", am5.coPhanNhom, am5.doSan);
+  F("sửa tay rồi Lưu: cả hai chỗ cùng nhận 12.345 USD", am5.sau === 12345 && am5.extAdv === 12345, JSON.stringify(am5));
+
+  const am6 = await p.evaluate(id => new Promise(res => { openAdvanceModal(id); setTimeout(() => {
+    const el = document.getElementById("ac_adv"); el.value = "-5000";
+    const o = DB.opps.find(x => x.id === id); const truoc = o.ext.advCalcResult.initialAdvance;
+    saveAdvanceModal(id);
+    const ra = { giu: o.ext.advCalcResult.initialAdvance === truoc, oDo: el.classList.contains("err"), conMo: !!document.querySelector(".modal") };
+    closeDrawer(); res(ra);
+  }, 120); }), am1.id);
+  F("tạm ứng âm bị chặn ngay trong modal: không ghi, ô tô đỏ, modal còn mở để sửa",
+    am6.giu && am6.oDo && am6.conMo, JSON.stringify(am6));
+
+  const am7 = await p.evaluate(() => new Promise(res => {
+    const o = DB.opps.find(x => PORTAL_OWNED.includes(x.stage));
+    openOpp(o.id); setOppTab("proposed"); openAdvanceModal(o.id);
+    setTimeout(() => {
+      const nut = Array.from(document.querySelectorAll(".modal-f button")).map(b => b.textContent.trim());
+      const khoa = /portal cầm lái|portal holds/i.test(document.querySelector(".modal-b").innerText);
+      const truoc = JSON.stringify(o.ext && o.ext.advCalcResult); saveAdvanceModal(o.id);
+      const ra = { stage: o.stage, nut, khoa, khongDoi: JSON.stringify(o.ext && o.ext.advCalcResult) === truoc };
+      closeDrawer(); res(ra);
+    }, 120); }));
+  F("deal portal đang cầm: xem và thử số được, nhưng KHÔNG có nút Lưu và gọi thẳng saveAdvanceModal cũng không ghi",
+    !am7.nut.some(x => /^Lưu$|^Save$/.test(x)) && am7.khoa && am7.khongDoi, JSON.stringify(am7));
+
   F("không lỗi JavaScript nào", loi.length === 0, loi[0]);
 } finally {
   await b.close();
   srv.close();
 }
-console.log(FAILED ? "\n" + FAILED + " phép kiểm HỎNG" : "\n79 đạt · 0 hỏng");
+console.log(FAILED ? "\n" + FAILED + " phép kiểm HỎNG" : "\n91 đạt · 0 hỏng");
 process.exit(FAILED ? 1 : 0);
